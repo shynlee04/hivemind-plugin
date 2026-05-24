@@ -195,6 +195,14 @@ export class MessageCapture {
    *
    * Extracts agent metadata via {@link AgentTransform.extractAssistantMetadata},
    * filters out thinking blocks, and appends the agent block to the session `.md`.
+   *
+   * **NOTE: This method is currently unreachable for main sessions.**
+   * The `chat.message` hook provides only `UserMessage` (role: "user") — it
+   * never delivers `AssistantMessage`. Therefore this code path is dead code
+   * for the `chat.message` hook. Assistant text for main sessions is instead
+   * captured via the `session.next.text.ended` event in event-capture.ts.
+   * This method is retained for when/if the SDK adds assistant message support
+   * to the `chat.message` hook, or for alternative hook sources.
    */
   private async handleAssistantMessage(
     input: ChatMessageInput,

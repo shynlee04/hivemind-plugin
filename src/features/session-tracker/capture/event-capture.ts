@@ -1,9 +1,10 @@
 /**
  * Session lifecycle event capture handler.
  *
- * Handles `session.created`, `session.idle`, `session.deleted`, and
- * `session.error` events from the OpenCode `event` hook. Distinguishes
- * root sessions from child sessions via SDK `parentID` check.
+ * Handles `session.created`, `session.idle`, `session.deleted`,
+ * `session.error`, `session.compacted`, and `session.next.text.ended`
+ * events from the OpenCode `event` hook. Distinguishes root sessions
+ * from child sessions via SDK `parentID` check.
  *
  * Root sessions: creates `.hivemind/session-tracker/{sessionID}/` subdir
  * and `{sessionID}.md` file. Child sessions: skipped (handled by tool-capture
@@ -85,9 +86,11 @@ export class EventCapture {
    * @remarks
    * Supported event types:
    * - `session.created` — creates subdir + .md for root sessions
-   * - `session.idle` — updates session status to "idle"
+   * - `session.idle` — updates session status to "completed", backfills lastMessage
    * - `session.deleted` — marks session status as "completed"
    * - `session.error` — marks session status as "error"
+   * - `session.compacted` — appends compaction summary block
+   * - `session.next.text.ended` — captures assistant text as lastMessage
    */
   async handleSessionEvent(event: {
     eventType: string
@@ -127,6 +130,9 @@ export class EventCapture {
           break
         case "session.compacted":
           await this.handleSessionCompacted(event.sessionID, event.event as Record<string, unknown>)
+          break
+        case "session.next.text.ended":
+          await this.handleSessionNextTextEnded(event.sessionID, event.event as Record<string, unknown>)
           break
         default:
           void this.client.app?.log?.({
@@ -303,8 +309,12 @@ export class EventCapture {
         return
       }
       // Main session — "completed" is a valid terminal transition from "running"
+      const lastMessageEntry = this.pendingRegistry?.get(sessionID)
+      const lastMessage = lastMessageEntry?.lastMessage
+      
       await this.sessionWriter.updateFrontmatter(sessionID, {
         status: "completed",
+        lastMessage: lastMessage,
       } as Partial<import("../types.js").SessionRecord>)
     } catch (err) {
       void this.client.app?.log?.({
@@ -590,6 +600,54 @@ export class EventCapture {
 
     const rootMainID = this.hierarchyIndex?.getRootMain(sessionID) ?? effectiveParentID
     return { parentID: effectiveParentID, rootMainID }
+  }
+
+  /**
+   * Handles `session.next.text.ended` — captures assistant text as `lastMessage`.
+   *
+   * This is the PRIMARY mechanism for capturing `lastMessage` for main sessions.
+   * The `chat.message` hook only provides `UserMessage` (role: "user"), so assistant
+   * text is never delivered via `handleAssistantMessage()` in message-capture.ts.
+   * The `session.next.text.ended` event fires when the model completes a text
+   * response, providing `properties.text` with the full assistant output.
+   *
+   * For main sessions, updates the .md frontmatter's lastMessage.
+   * Child sessions are skipped — their lastMessage is already captured via
+   * `backfillChildTurnsFromSdk` on completion.
+   *
+   * @param sessionID - The session that completed a text response.
+   * @param event - Raw event payload from the SDK.
+   */
+  private async handleSessionNextTextEnded(
+    sessionID: string,
+    event: Record<string, unknown> | undefined,
+  ): Promise<void> {
+    try {
+      const text = asString(getNestedValue(event, ["properties", "text"]))
+      if (!text || text.trim().length === 0) {
+        return
+      }
+
+      // Skip child sessions — their lastMessage is captured via backfillChildTurnsFromSdk
+      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
+      if (childRoute) {
+        return
+      }
+
+      // Main session — update .md frontmatter with assistant text
+      await this.sessionWriter.updateFrontmatter(sessionID, {
+        lastMessage: text.trim(),
+      })
+    } catch (err) {
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Session tracker: failed to capture lastMessage from session.next.text.ended for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
   }
 
   /**

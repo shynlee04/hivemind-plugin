@@ -32,6 +32,8 @@ export interface PendingDispatchEntry {
   childSessionID?: string
   /** Delegation depth (1 for direct, >1 for nested). */
   delegationDepth?: number
+  /** Last message content captured by message-capture.ts. */
+  lastMessage?: string
 }
 
 // ---------------------------------------------------------------------------
