@@ -10,6 +10,7 @@ import { mkdtempSync, readFileSync, existsSync, rmSync, mkdirSync } from "node:f
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { ChildWriter } from "../../../../src/features/session-tracker/persistence/child-writer.js"
+import { HierarchyManifestWriter } from "../../../../src/features/session-tracker/persistence/hierarchy-manifest.js"
 import type { ChildSessionRecord, Turn } from "../../../../src/features/session-tracker/types.js"
 
 let tmpDir: string
@@ -644,6 +645,134 @@ describe("backfillChildMetadata (F-18)", () => {
       writer.backfillChildMetadata("root-session", "non-existent-child", {
         agentName: "test-agent",
       }),
+    ).resolves.toBeUndefined()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Bug C: appendChildTurn syncs turnCount to hierarchy manifest
+// ---------------------------------------------------------------------------
+
+describe("appendChildTurn — manifest turnCount sync (Bug C)", () => {
+  let bugTmpDir: string
+  let bugProjectRoot: string
+  let bugManifestWriter: HierarchyManifestWriter
+  let bugChildWriter: ChildWriter
+
+  beforeEach(() => {
+    bugTmpDir = mkdtempSync(join(tmpdir(), "st-bug-c-"))
+    bugProjectRoot = join(bugTmpDir, "project")
+    mkdirSync(join(bugProjectRoot, ".hivemind", "session-tracker"), { recursive: true })
+    bugManifestWriter = new HierarchyManifestWriter({ projectRoot: bugProjectRoot })
+    bugChildWriter = new ChildWriter({
+      projectRoot: bugProjectRoot,
+      manifestWriter: bugManifestWriter,
+    })
+  })
+
+  afterEach(() => {
+    rmSync(bugTmpDir, { recursive: true, force: true })
+  })
+
+  it("updates manifest turnCount after appending a turn", async () => {
+    const rootMain = "ses_rootBugC"
+    const childID = "ses_childBugC"
+
+    // Register child in manifest
+    await bugManifestWriter.addChild({
+      rootMainSessionID: rootMain,
+      childSessionID: childID,
+      parentSessionID: rootMain,
+      delegationDepth: 1,
+      delegatedBy: "test-agent",
+      subagentType: "test-sub",
+      childFile: `${childID}.json`,
+    })
+
+    // Create child .json file
+    const metadata: ChildSessionRecord = {
+      sessionID: childID,
+      parentSessionID: rootMain,
+      delegationDepth: 1,
+      delegatedBy: {
+        agentName: "test-agent",
+        tool: "task",
+        description: "Bug C test",
+        subagentType: "test-sub",
+      },
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      status: "active",
+      mainAgent: { name: "TestAgent", model: "test" },
+      turns: [],
+      children: [],
+    }
+    await bugChildWriter.createChildFile(rootMain, childID, metadata)
+
+    // Verify initial turnCount is 0
+    const before = await bugManifestWriter.getChild(rootMain, childID)
+    expect(before!.turnCount).toBe(0)
+
+    // Append a turn
+    const turn: Turn = {
+      turn: 0,
+      actor: "assistant",
+      content: "Hello world",
+      tools: [],
+    }
+    await bugChildWriter.appendChildTurn(rootMain, childID, turn)
+
+    // Verify manifest turnCount updated to 1
+    const after = await bugManifestWriter.getChild(rootMain, childID)
+    expect(after!.turnCount).toBe(1)
+
+    // Append another turn
+    const turn2: Turn = {
+      turn: 0,
+      actor: "assistant",
+      content: "Second turn",
+      tools: [],
+    }
+    await bugChildWriter.appendChildTurn(rootMain, childID, turn2)
+
+    const after2 = await bugManifestWriter.getChild(rootMain, childID)
+    expect(after2!.turnCount).toBe(2)
+  })
+
+  it("does not fail when manifestWriter is not provided", async () => {
+    const rootMain = "ses_rootNoManifest"
+    const childID = "ses_childNoManifest"
+
+    const writerNoManifest = new ChildWriter({ projectRoot: bugProjectRoot })
+
+    const metadata: ChildSessionRecord = {
+      sessionID: childID,
+      parentSessionID: rootMain,
+      delegationDepth: 1,
+      delegatedBy: {
+        agentName: "test-agent",
+        tool: "task",
+        description: "No manifest test",
+        subagentType: "test-sub",
+      },
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      status: "active",
+      mainAgent: { name: "TestAgent", model: "test" },
+      turns: [],
+      children: [],
+    }
+    await writerNoManifest.createChildFile(rootMain, childID, metadata)
+
+    const turn: Turn = {
+      turn: 0,
+      actor: "assistant",
+      content: "Turn without manifest",
+      tools: [],
+    }
+    // Should not throw even without manifestWriter
+    await expect(
+      writerNoManifest.appendChildTurn(rootMain, childID, turn),
     ).resolves.toBeUndefined()
   })
 })

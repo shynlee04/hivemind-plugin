@@ -15,6 +15,7 @@ import { atomicWriteJson, ensureDirectory, safeSessionPath } from "./atomic-writ
 import type { ChildSessionRecord, Turn, JourneyEntry } from "../types.js"
 import type { HierarchyIndex } from "./hierarchy-index.js"
 import type { ChildWriteRetryQueue } from "./retry-queue.js"
+import type { HierarchyManifestWriter } from "./hierarchy-manifest.js"
 
 // ---------------------------------------------------------------------------
 // ChildWriter class
@@ -40,6 +41,12 @@ export class ChildWriter {
    * Failed writes are enqueued here for automatic retry with exponential backoff.
    */
   private retryQueue: ChildWriteRetryQueue | undefined
+
+  /**
+   * Optional hierarchy manifest writer for syncing turnCount after turn appends.
+   * When present, `appendChildTurn` updates the manifest's child turnCount.
+   */
+  private manifestWriter: HierarchyManifestWriter | undefined
 
   /**
    * Per-child serial write queues (key: `parentID/childID`).
@@ -72,15 +79,18 @@ export class ChildWriter {
    * @param deps.projectRoot - Absolute path to the project root.
    * @param deps.hierarchyIndex - Optional hierarchy index for root main resolution (D-03).
    * @param deps.retryQueue - Optional retry queue for failed child writes (RC-5).
+   * @param deps.manifestWriter - Optional manifest writer for turnCount sync (Bug C).
    */
   constructor(deps: {
     projectRoot: string
     hierarchyIndex?: HierarchyIndex
     retryQueue?: ChildWriteRetryQueue
+    manifestWriter?: HierarchyManifestWriter
   }) {
     this.projectRoot = deps.projectRoot
     this.hierarchyIndex = deps.hierarchyIndex
     this.retryQueue = deps.retryQueue
+    this.manifestWriter = deps.manifestWriter
   }
 
   /**
@@ -385,6 +395,15 @@ export class ChildWriter {
 
         const filePath = this.getChildFilePath(writeParent, childSessionID)
         await atomicWriteJson(filePath, record)
+
+        // Sync turnCount to hierarchy manifest (Bug C)
+        if (this.manifestWriter) {
+          await this.manifestWriter.updateTurnCount(
+            writeParent,
+            childSessionID,
+            record.turns.length,
+          )
+        }
       },
     )
   }

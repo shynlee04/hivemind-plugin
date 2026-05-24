@@ -288,6 +288,48 @@ describe("addChild", () => {
   })
 
   // -------------------------------------------------------------------------
+  // Test: updateTurnCount updates turnCount of an existing child entry
+  // -------------------------------------------------------------------------
+
+  it("updateTurnCount updates turnCount of an existing child entry", async () => {
+    const rootMain = "ses_rootMainTurnCount"
+    const child = "ses_childTurnCount"
+
+    await writer.addChild({
+      rootMainSessionID: rootMain,
+      childSessionID: child,
+      parentSessionID: rootMain,
+      delegationDepth: 1,
+      delegatedBy: "hm-l0-orchestrator",
+      subagentType: "hm-l2-researcher",
+      childFile: `${child}.json`,
+    })
+
+    // Initially turnCount is 0
+    const before = await writer.getChild(rootMain, child)
+    expect(before!.turnCount).toBe(0)
+
+    await writer.updateTurnCount(rootMain, child, 5)
+
+    const after = await writer.getChild(rootMain, child)
+    expect(after!.turnCount).toBe(5)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test: updateTurnCount silently no-ops for non-existent children
+  // -------------------------------------------------------------------------
+
+  it("updateTurnCount silently no-ops for non-existent children", async () => {
+    const rootMain = "ses_rootMainTurnCountNoop"
+
+    // Should not throw
+    await writer.updateTurnCount(rootMain, "ses_nonexistent", 5)
+
+    const children = await writer.getChildren(rootMain)
+    expect(Object.keys(children)).toHaveLength(0)
+  })
+
+  // -------------------------------------------------------------------------
   // Test: totalChildren and maxDepth are correctly maintained
   // -------------------------------------------------------------------------
 

@@ -121,6 +121,34 @@ export class HierarchyManifestWriter {
   }
 
   /**
+   * Updates the turnCount for a child session in the manifest.
+   *
+   * Called after each turn append to keep the manifest's turnCount in sync
+   * with the actual number of turns in the child `.json` file.
+   * Silently no-ops if the child is not found in the manifest.
+   *
+   * @param rootMainSessionID - The root main session that owns the manifest.
+   * @param childSessionID - The child session ID to update.
+   * @param turnCount - The current number of turns in the child session.
+   * @returns Promise that resolves when the manifest has been updated.
+   */
+  async updateTurnCount(
+    rootMainSessionID: string,
+    childSessionID: string,
+    turnCount: number,
+  ): Promise<void> {
+    const manifest = await this.loadManifest(rootMainSessionID)
+    const entry = manifest.children[childSessionID]
+    if (!entry) return
+
+    entry.turnCount = turnCount
+    entry.updatedAt = new Date().toISOString()
+    manifest.lastUpdated = entry.updatedAt
+
+    await this.writeManifest(rootMainSessionID, manifest)
+  }
+
+  /**
    * Returns all child entries from the manifest.
    *
    * @param rootMainSessionID - The root main session that owns the manifest.
