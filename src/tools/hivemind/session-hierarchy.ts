@@ -10,10 +10,10 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import { readFile } from "node:fs/promises"
 import { SessionHierarchyInputSchema, type SessionHierarchyInput } from "../../schema-kernel/session-tracker.schema.js"
-import { safeSessionPath } from "../../features/session-tracker/persistence/atomic-write.js"
 import { isValidSessionID } from "../../features/session-tracker/types.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
+import { resolveSessionFile } from "./session-resolver.js"
 
 import type { ChildRef } from "../../features/session-tracker/types.js"
 
@@ -57,15 +57,68 @@ export function createSessionHierarchyTool(projectRoot: string): ReturnType<type
   })
 }
 
+/** Recursively searches the hierarchy tree to find the entry matching targetId. */
+function findHierarchyEntry(
+  children: Record<string, any> | undefined,
+  targetId: string,
+  parentId: string | null = null,
+): { entry: any; parentId: string | null } | null {
+  if (!children) return null
+  if (children[targetId]) {
+    return { entry: children[targetId], parentId }
+  }
+  for (const [childId, childEntry] of Object.entries(children)) {
+    const found = findHierarchyEntry(childEntry.children, targetId, childId)
+    if (found) return found
+  }
+  return null
+}
+
 /** Read session continuity JSON, returning parsed record or null. */
 async function readContinuity(projectRoot: string, sessionId: string): Promise<ContinuityRecord | null> {
-  if (!isValidSessionID(sessionId)) return null
-  const indexPath = safeSessionPath(projectRoot, sessionId, "session-continuity.json")
-  try {
-    const raw = await readFile(indexPath, "utf-8")
-    return JSON.parse(raw) as ContinuityRecord
-  } catch {
-    return null
+  const resolved = await resolveSessionFile(projectRoot, sessionId)
+  if (!resolved) return null
+
+  if (resolved.type === "main") {
+    try {
+      const raw = await readFile(resolved.continuityPath, "utf-8")
+      return JSON.parse(raw) as ContinuityRecord
+    } catch {
+      return null
+    }
+  } else {
+    // Child session
+    try {
+      const raw = await readFile(resolved.continuityPath, "utf-8")
+      const rootContinuity = JSON.parse(raw) as ContinuityRecord
+      const found = findHierarchyEntry(rootContinuity.hierarchy?.children, sessionId, resolved.rootSessionId)
+      if (found) {
+        return {
+          sessionID: sessionId,
+          parentSessionID: found.parentId,
+          delegationDepth: found.entry.depth ?? found.entry.delegationDepth,
+          status: found.entry.status,
+          hierarchy: {
+            root: resolved.rootSessionId,
+            children: found.entry.children || {},
+          },
+        }
+      }
+      // Fallback to child record metadata
+      const record = resolved.childRecord!
+      return {
+        sessionID: sessionId,
+        parentSessionID: record.parentSessionID,
+        delegationDepth: record.delegationDepth,
+        status: record.status,
+        hierarchy: {
+          root: resolved.rootSessionId,
+          children: {},
+        },
+      }
+    } catch {
+      return null
+    }
   }
 }
 
@@ -155,8 +208,10 @@ async function computeDepth(projectRoot: string, sessionId: string, visited: Set
 /** Read hierarchy-manifest.json for a session. */
 async function handleGetManifest(projectRoot: string, sessionId: string) {
   if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
+  const resolved = await resolveSessionFile(projectRoot, sessionId)
+  if (!resolved) return renderToolResult(error(`Manifest not found for session: ${sessionId}`))
   try {
-    const manifestPath = safeSessionPath(projectRoot, sessionId, "hierarchy-manifest.json")
+    const manifestPath = resolved.manifestPath
     const raw = await readFile(manifestPath, "utf-8")
     const manifest = JSON.parse(raw) as {
       version?: string
@@ -189,7 +244,7 @@ async function handleGetManifest(projectRoot: string, sessionId: string) {
     }))
     return renderToolResult(success(`Manifest for ${sessionId}`, {
       sessionId,
-      rootMainSessionID: manifest.rootMainSessionID ?? sessionId,
+      rootMainSessionID: manifest.rootMainSessionID ?? resolved.rootSessionId,
       childCount: children.length,
       totalChildren: manifest.totalChildren ?? children.length,
       maxDepth: manifest.maxDepth ?? 0,
@@ -205,7 +260,7 @@ async function handleGetManifest(projectRoot: string, sessionId: string) {
         if (children.length > 0) {
           return renderToolResult(success(`Manifest (from continuity fallback) for ${sessionId}`, {
             sessionId,
-            rootMainSessionID: sessionId,
+            rootMainSessionID: resolved.rootSessionId,
             childCount: children.length,
             totalChildren: children.length,
             maxDepth: 0,

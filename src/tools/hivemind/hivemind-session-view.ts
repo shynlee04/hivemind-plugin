@@ -11,9 +11,9 @@ import { tool } from "@opencode-ai/plugin/tool"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { SessionViewInputSchema, type SessionViewInput } from "../../schema-kernel/session-view.schema.js"
-import { safeSessionPath } from "../../features/session-tracker/persistence/atomic-write.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
+import { resolveSessionFile } from "./session-resolver.js"
 
 type ToolContext = { sessionID?: string }
 
@@ -53,11 +53,16 @@ export function createHivemindSessionViewTool(projectRoot: string): ReturnType<t
 
 /** Read session continuity data from session-tracker. */
 async function readSessionData(projectRoot: string, sessionId: string): Promise<Record<string, unknown> | null> {
-  try {
-    const continuityPath = safeSessionPath(projectRoot, sessionId, "session-continuity.json")
-    const raw = await readFile(continuityPath, "utf-8")
-    return JSON.parse(raw) as Record<string, unknown>
-  } catch { return null }
+  const resolved = await resolveSessionFile(projectRoot, sessionId)
+  if (!resolved) return null
+  if (resolved.type === "main") {
+    try {
+      const raw = await readFile(resolved.continuityPath, "utf-8")
+      return JSON.parse(raw) as Record<string, unknown>
+    } catch { return null }
+  } else {
+    return resolved.childRecord as unknown as Record<string, unknown>
+  }
 }
 
 /** Read delegations for a session from state/delegations.json. */

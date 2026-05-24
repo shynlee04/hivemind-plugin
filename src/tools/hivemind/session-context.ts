@@ -16,6 +16,7 @@ import { safeSessionPath, sessionTrackerRoot } from "../../features/session-trac
 import { isValidSessionID } from "../../features/session-tracker/types.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
+import { resolveSessionFile } from "./session-resolver.js"
 
 type ToolContext = { sessionID?: string }
 
@@ -28,6 +29,10 @@ interface ContinuityRecord {
   sessionID: string; status?: string; parentSessionID?: string | null
   delegationDepth?: number; turnCount?: number; childCount?: number
   toolSummary?: Record<string, number>; lastUpdated?: string
+  hierarchy?: {
+    root?: string
+    children?: Record<string, any>
+  }
 }
 
 const TIME_PROXIMITY_MS = 30 * 60 * 1000 // ±30 minutes
@@ -70,14 +75,69 @@ async function readProjectIndex(projectRoot: string): Promise<ProjectIndex | nul
   } catch { return null }
 }
 
+/** Recursively searches the hierarchy tree to find the entry matching targetId. */
+function findHierarchyEntry(
+  children: Record<string, any> | undefined,
+  targetId: string,
+  parentId: string | null = null,
+): { entry: any; parentId: string | null } | null {
+  if (!children) return null
+  if (children[targetId]) {
+    return { entry: children[targetId], parentId }
+  }
+  for (const [childId, childEntry] of Object.entries(children)) {
+    const found = findHierarchyEntry(childEntry.children, targetId, childId)
+    if (found) return found
+  }
+  return null
+}
+
 /** Read a session's continuity JSON or return null. */
 async function readContinuity(projectRoot: string, sessionId: string): Promise<ContinuityRecord | null> {
-  if (!isValidSessionID(sessionId)) return null
-  try {
-    const jsonPath = safeSessionPath(projectRoot, sessionId, "session-continuity.json")
-    const raw = await readFile(jsonPath, "utf-8")
-    return JSON.parse(raw) as ContinuityRecord
-  } catch { return null }
+  const resolved = await resolveSessionFile(projectRoot, sessionId)
+  if (!resolved) return null
+
+  if (resolved.type === "main") {
+    try {
+      const raw = await readFile(resolved.continuityPath, "utf-8")
+      return JSON.parse(raw) as ContinuityRecord
+    } catch {
+      return null
+    }
+  } else {
+    // Child session
+    try {
+      const raw = await readFile(resolved.continuityPath, "utf-8")
+      const rootContinuity = JSON.parse(raw) as ContinuityRecord
+      const found = findHierarchyEntry(rootContinuity.hierarchy?.children, sessionId, resolved.rootSessionId)
+      if (found) {
+        return {
+          sessionID: sessionId,
+          parentSessionID: found.parentId,
+          delegationDepth: found.entry.depth ?? found.entry.delegationDepth,
+          status: found.entry.status,
+          hierarchy: {
+            root: resolved.rootSessionId,
+            children: found.entry.children || {},
+          },
+        }
+      }
+      // Fallback to child record metadata
+      const record = resolved.childRecord!
+      return {
+        sessionID: sessionId,
+        parentSessionID: record.parentSessionID,
+        delegationDepth: record.delegationDepth,
+        status: record.status,
+        hierarchy: {
+          root: resolved.rootSessionId,
+          children: {},
+        },
+      }
+    } catch {
+      return null
+    }
+  }
 }
 
 /** Find sessions related by tool overlap and time proximity. */
@@ -141,12 +201,27 @@ async function handleSynthesizeContext(projectRoot: string, sessionId: string) {
   if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
   const record = await readContinuity(projectRoot, sessionId)
   if (!record) return renderToolResult(error(`Session not found: ${sessionId}`))
-  const mdPath = safeSessionPath(projectRoot, sessionId, `${sessionId}.md`)
+  const resolved = await resolveSessionFile(projectRoot, sessionId)
+  if (!resolved) return renderToolResult(error(`Session not found: ${sessionId}`))
   let frontmatter: Record<string, unknown> = {}
   try {
-    const raw = await readFile(mdPath, "utf-8")
-    const parsed = matter(raw)
-    frontmatter = parsed.data as Record<string, unknown>
+    if (resolved.type === "main") {
+      const raw = await readFile(resolved.filePath, "utf-8")
+      const parsed = matter(raw)
+      frontmatter = parsed.data as Record<string, unknown>
+    } else {
+      const childRecord = resolved.childRecord!
+      frontmatter = {
+        sessionID: childRecord.sessionID,
+        parentSessionID: childRecord.parentSessionID,
+        delegationDepth: childRecord.delegationDepth,
+        status: childRecord.status,
+        created: childRecord.created,
+        updated: childRecord.updated,
+        delegatedBy: childRecord.delegatedBy,
+        mainAgent: childRecord.mainAgent,
+      }
+    }
   } catch { /* frontmatter optional */ }
   const tools = record.toolSummary ?? {}
   const toolList = Object.entries(tools)
@@ -189,23 +264,25 @@ async function handleAggregate(projectRoot: string, groupBy: "subagentType" | "s
       counts[status] = (counts[status] ?? 0) + 1
     }
   } else if (groupBy === "subagentType") {
-    // Slow path: need to read individual continuity files
-    for (const [sessionId] of Object.entries(sessions)) {
-      const continuity = await readContinuity(projectRoot, sessionId)
-      if (!continuity) continue
-      // Use sessionID prefix as agent type heuristic.
-      // Real session IDs from OpenCode start with "ses_", while "hm-"/"hf-"/"gsd-"
-      // prefixes are reserved for future harness-native session lineages.
-      const agentType = continuity.sessionID?.startsWith("ses_")
-        ? "opencode-session"
-        : continuity.sessionID?.startsWith("hm-")
-          ? "hm-lineage"
-          : continuity.sessionID?.startsWith("hf-")
-            ? "hf-lineage"
-            : continuity.sessionID?.startsWith("gsd-")
-              ? "gsd-lineage"
-              : "generic-session"
-      counts[agentType] = (counts[agentType] ?? 0) + 1
+    // Loop through all root sessions from the project index and aggregate real subagent types
+    for (const rootId of Object.keys(sessions)) {
+      // 1. Every root session itself is an opencode-session
+      counts["opencode-session"] = (counts["opencode-session"] ?? 0) + 1
+
+      // 2. Read its hierarchy manifest to get all child sessions and count their actual subagentType
+      const manifestPath = safeSessionPath(projectRoot, rootId, "hierarchy-manifest.json")
+      try {
+        const raw = await readFile(manifestPath, "utf-8")
+        const manifest = JSON.parse(raw) as { children?: Record<string, { subagentType?: string }> }
+        if (manifest.children) {
+          for (const child of Object.values(manifest.children)) {
+            const agentType = child.subagentType || "unknown-subagent"
+            counts[agentType] = (counts[agentType] ?? 0) + 1
+          }
+        }
+      } catch {
+        // No hierarchy manifest or unreadable, check if the directory exists
+      }
     }
   }
 

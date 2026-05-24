@@ -2,6 +2,7 @@ import { tool } from "@opencode-ai/plugin"
 import type { PluginInput, ToolDefinition } from "@opencode-ai/plugin"
 import { discoverCommandBundles } from "../../routing/command-engine/index.js"
 import type { CommandBundle } from "../../routing/command-engine/types.js"
+import { resolveSessionFile } from "../hivemind/session-resolver.js"
 
 const DEFERRED_SUBTASK_DISPATCH_DELAY_MS = 50
 
@@ -194,6 +195,9 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
           }
         }
 
+        const resolved = await resolveSessionFile(projectRoot, ctx.sessionID)
+        const isChildSession = resolved ? resolved.type === "child" : false
+
         // Build the slash command text exactly as a user would type it in the TUI
         // Format: [@agent] [/command] [arguments]
         const parts: string[] = []
@@ -212,6 +216,40 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
         }
 
         const promptText = parts.join(" ")
+
+        if (isChildSession) {
+          // Bypassing TUI pipeline for child sessions to avoid global prompt clearing and workspace interference
+          dispatchPromptAfterToolReturn(client, {
+            path: { id: ctx.sessionID },
+            body: {
+              parts: [
+                {
+                  type: "text",
+                  text: promptText,
+                },
+              ],
+            },
+            query: { directory: ctx.directory },
+          })
+
+          return {
+            output: [
+              `✓ Command ${cmdDisplay} dispatched directly to child session ${ctx.sessionID} (bypassed TUI).`,
+              `  Prompt text: ${promptText}`,
+              `  The command will execute immediately after this tool call returns.`,
+              args.agent ? `  Agent: ${args.agent}` : null,
+              args.model ? `  Model: ${args.model}` : null,
+            ].filter(Boolean).join("\n"),
+            metadata: {
+              command: args.command,
+              promptText,
+              dispatched: true,
+              mode: "session-prompt",
+              ...(args.agent && { agent: args.agent }),
+              ...(args.model && { model: args.model }),
+            },
+          }
+        }
 
         // Step 1: Clear any existing prompt to avoid stale state
         await client.tui.clearPrompt()

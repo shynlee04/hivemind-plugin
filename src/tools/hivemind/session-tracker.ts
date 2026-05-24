@@ -17,6 +17,7 @@ import { sessionTrackerRoot, safeSessionPath } from "../../features/session-trac
 import { isValidSessionID } from "../../features/session-tracker/types.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
+import { resolveSessionFile } from "./session-resolver.js"
 
 const MAX_QUERY_LENGTH = 1000
 type ToolContext = { sessionID?: string }
@@ -60,20 +61,6 @@ export function createSessionTrackerTool(projectRoot: string): ReturnType<typeof
   })
 }
 
-/** Validates sessionId and returns safe paths. Returns error string if invalid. */
-function resolvePaths(
-  projectRoot: string,
-  sessionId: string,
-): { safeMd: string; safeJson: string } | string {
-  if (!isValidSessionID(sessionId)) {
-    return renderToolResult(error(`Invalid session ID: ${sessionId}`))
-  }
-  return {
-    safeMd: safeSessionPath(projectRoot, sessionId, `${sessionId}.md`),
-    safeJson: safeSessionPath(projectRoot, sessionId, "session-continuity.json"),
-  }
-}
-
 /** Search for query in session's child .json files, returning matches. */
 async function searchChildJsonFiles(
   projectRoot: string,
@@ -82,19 +69,12 @@ async function searchChildJsonFiles(
 ): Promise<Array<{ childId: string; field: string; snippet: string }>> {
   const matches: Array<{ childId: string; field: string; snippet: string }> = []
   try {
-    const continuityPath = safeSessionPath(projectRoot, sessionId, "session-continuity.json")
-    const raw = await readFile(continuityPath, "utf-8")
-    const continuity = JSON.parse(raw) as Record<string, unknown>
-    const hierarchy = continuity.hierarchy as { children?: Record<string, { sessionID?: string; file?: string; childFile?: string }> } | undefined
-    const children = hierarchy?.children ?? {}
-    const childArray = typeof children === "object" && !Array.isArray(children)
-      ? Object.values(children)
-      : (Array.isArray(children) ? children : [])
-    for (const child of childArray) {
-      const childEntry = child as Record<string, unknown>
-      const childId = typeof childEntry.sessionID === "string" ? childEntry.sessionID : ""
-      const childFile = typeof childEntry.childFile === "string" ? childEntry.childFile : (typeof childEntry.file === "string" ? childEntry.file : "")
-      if (!childId || !childFile) continue
+    const manifestPath = safeSessionPath(projectRoot, sessionId, "hierarchy-manifest.json")
+    const raw = await readFile(manifestPath, "utf-8")
+    const manifest = JSON.parse(raw) as { children?: Record<string, { sessionID: string; childFile: string }> }
+    const children = manifest.children ?? {}
+    for (const [childId, childMeta] of Object.entries(children)) {
+      const childFile = childMeta.childFile || `${childId}.json`
       const childPath = safeSessionPath(projectRoot, sessionId, childFile)
       try {
         const childData = JSON.parse(await readFile(childPath, "utf-8")) as Record<string, unknown>
@@ -124,60 +104,130 @@ async function searchChildJsonFiles(
         }
       } catch { /* skip unreadable child file */ }
     }
-  } catch { /* no session-continuity.json found */ }
+  } catch { /* no hierarchy manifest found */ }
   return matches
 }
 
 async function handleExportSession(projectRoot: string, sessionId: string, format?: "markdown" | "json") {
-  if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
-  const paths = resolvePaths(projectRoot, sessionId)
-  if (typeof paths === "string") return paths
+  const resolved = await resolveSessionFile(projectRoot, sessionId)
+  if (!resolved) return renderToolResult(error(`Session not found: ${sessionId}`))
   try {
-    const content = await readFile(paths.safeMd, "utf-8")
-    if (format === "json") {
-      const { data: frontmatter } = matter(content)
-      return renderToolResult(success(`Session export (JSON): ${sessionId}`, {
-        sessionId, frontmatter, filePath: paths.safeMd,
+    if (resolved.type === "main") {
+      const content = await readFile(resolved.filePath, "utf-8")
+      if (format === "json") {
+        const { data: frontmatter } = matter(content)
+        return renderToolResult(success(`Session export (JSON): ${sessionId}`, {
+          sessionId, frontmatter, filePath: resolved.filePath,
+        }))
+      }
+      return renderToolResult(success(`Session export: ${sessionId}`, {
+        sessionId, content, filePath: resolved.filePath,
+      }))
+    } else {
+      const record = resolved.childRecord!
+      if (format === "json") {
+        return renderToolResult(success(`Session export (JSON): ${sessionId}`, {
+          sessionId, frontmatter: {
+            sessionID: record.sessionID,
+            parentSessionID: record.parentSessionID,
+            delegationDepth: record.delegationDepth,
+            status: record.status,
+            created: record.created,
+            updated: record.updated,
+          },
+          filePath: resolved.filePath,
+        }))
+      }
+      const frontmatterLines = [
+        "---",
+        `sessionID: ${record.sessionID}`,
+        `created: ${record.created}`,
+        `updated: ${record.updated}`,
+        `parentSessionID: ${record.parentSessionID}`,
+        `delegationDepth: ${record.delegationDepth}`,
+        `status: ${record.status}`,
+        "---",
+      ]
+      const turnsLines = record.turns.map((turn) => {
+        const isUser = turn.role === "user" || turn.actor === "user"
+        const header = isUser ? `## USER (turn ${turn.turn})` : `## ${turn.actor || "assistant"}`
+        return `${header}\n\n${turn.content}`
+      })
+      const markdown = [...frontmatterLines, "", ...turnsLines].join("\n")
+      return renderToolResult(success(`Session export: ${sessionId}`, {
+        sessionId, content: markdown, filePath: resolved.filePath,
       }))
     }
-    return renderToolResult(success(`Session export: ${sessionId}`, {
-      sessionId, content, filePath: paths.safeMd,
-    }))
   } catch {
     return renderToolResult(error(`Session not found: ${sessionId}`))
   }
 }
 
 async function handleGetStatus(projectRoot: string, sessionId: string) {
-  if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
-  const paths = resolvePaths(projectRoot, sessionId)
-  if (typeof paths === "string") return paths
+  const resolved = await resolveSessionFile(projectRoot, sessionId)
+  if (!resolved) return renderToolResult(error(`Session status not found: ${sessionId}`))
   try {
-    const raw = await readFile(paths.safeJson, "utf-8")
-    const json = JSON.parse(raw) as Record<string, unknown>
-    return renderToolResult(success(`Session status for ${sessionId}`, {
-      sessionId,
-      status: json.status ?? "unknown",
-      lastUpdated: json.lastUpdated ?? null,
-      turnCount: json.turnCount ?? 0,
-      childCount: json.childCount ?? 0,
-      toolSummary: json.toolSummary ?? {},
-    }))
+    if (resolved.type === "main") {
+      const raw = await readFile(resolved.continuityPath, "utf-8")
+      const json = JSON.parse(raw) as Record<string, unknown>
+      return renderToolResult(success(`Session status for ${sessionId}`, {
+        sessionId,
+        status: json.status ?? "unknown",
+        lastUpdated: json.lastUpdated ?? null,
+        turnCount: json.turnCount ?? 0,
+        childCount: json.childCount ?? 0,
+        toolSummary: json.toolSummary ?? {},
+      }))
+    } else {
+      const record = resolved.childRecord!
+      const toolSummary: Record<string, number> = {}
+      for (const turn of record.turns) {
+        for (const toolCall of turn.tools || []) {
+          if (toolCall.tool) {
+            toolSummary[toolCall.tool] = (toolSummary[toolCall.tool] ?? 0) + 1
+          }
+        }
+      }
+      return renderToolResult(success(`Session status for ${sessionId}`, {
+        sessionId,
+        status: record.status ?? "unknown",
+        lastUpdated: record.updated ?? null,
+        turnCount: record.turns.length,
+        childCount: record.children?.length ?? 0,
+        toolSummary,
+      }))
+    }
   } catch {
     return renderToolResult(error(`Session status not found: ${sessionId}`))
   }
 }
 
 async function handleGetSummary(projectRoot: string, sessionId: string) {
-  if (!isValidSessionID(sessionId)) return renderToolResult(error(`Invalid session ID: ${sessionId}`))
-  const paths = resolvePaths(projectRoot, sessionId)
-  if (typeof paths === "string") return paths
+  const resolved = await resolveSessionFile(projectRoot, sessionId)
+  if (!resolved) return renderToolResult(error(`Session summary not found: ${sessionId}`))
   try {
-    const raw = await readFile(paths.safeMd, "utf-8")
-    const { data: frontmatter } = matter(raw)
-    return renderToolResult(success(`Session summary for ${sessionId}`, {
-      sessionId, frontmatter,
-    }))
+    if (resolved.type === "main") {
+      const raw = await readFile(resolved.filePath, "utf-8")
+      const { data: frontmatter } = matter(raw)
+      return renderToolResult(success(`Session summary for ${sessionId}`, {
+        sessionId, frontmatter,
+      }))
+    } else {
+      const record = resolved.childRecord!
+      const frontmatter = {
+        sessionID: record.sessionID,
+        parentSessionID: record.parentSessionID,
+        delegationDepth: record.delegationDepth,
+        status: record.status,
+        created: record.created,
+        updated: record.updated,
+        delegatedBy: record.delegatedBy,
+        mainAgent: record.mainAgent,
+      }
+      return renderToolResult(success(`Session summary for ${sessionId}`, {
+        sessionId, frontmatter,
+      }))
+    }
   } catch {
     return renderToolResult(error(`Session summary not found: ${sessionId}`))
   }

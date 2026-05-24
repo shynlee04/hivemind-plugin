@@ -146,7 +146,8 @@ export function createDelegationStatusTool(
 
         if (args.delegationId) {
           const delegation = delegationManager.getStatus(args.delegationId)
-            ?? readPersisted().find((entry) => entry.id === args.delegationId)
+            ?? delegationManager.getAllDelegations().find((entry) => entry.childSessionId === args.delegationId)
+            ?? readPersisted().find((entry) => entry.id === args.delegationId || entry.childSessionId === args.delegationId)
 
         if (!delegation) {
           return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
@@ -184,7 +185,9 @@ async function renderList(args: DelegationStatusInput, sessionID: string, manage
 
 async function handleControl(args: DelegationStatusInput, context: ToolContext, manager: ManagerLike, readPersisted: () => Delegation[], deps: StatusDeps): Promise<string> {
   if (!args.delegationId || !args.control) return renderToolResult(error("[Harness] control action requires delegationId and control"))
-  const delegation = (manager.getStatus(args.delegationId) ?? readPersisted().find((d) => d.id === args.delegationId)) as (Delegation & { prompt?: string }) | undefined
+  const delegation = (manager.getStatus(args.delegationId)
+    ?? manager.getAllDelegations().find((d) => d.childSessionId === args.delegationId)
+    ?? readPersisted().find((d) => d.id === args.delegationId || d.childSessionId === args.delegationId)) as (Delegation & { prompt?: string }) | undefined
   if (!delegation) return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
   if (!manager.canSessionAccessDelegation(context.sessionID, delegation)) return renderToolResult(error(`[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`))
   if (deps.lifecycle?.isTerminal(delegation.status)) {
