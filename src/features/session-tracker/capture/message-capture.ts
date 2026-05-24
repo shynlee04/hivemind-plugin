@@ -242,7 +242,7 @@ export class MessageCapture {
       return textContent
     }
 
-    const toolCalls = parts.filter((p) => p.type === "tool_use" || p.type === "tool_call")
+    const toolCalls = parts.filter((p) => p.type === "tool")
     if (toolCalls.length > 0) {
       const toolNames = toolCalls
         .map((p) => {

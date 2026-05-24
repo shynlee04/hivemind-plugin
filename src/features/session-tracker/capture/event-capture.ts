@@ -768,14 +768,28 @@ export class EventCapture {
   }
 
   private extractTextFromSdkMessage(message: unknown): string | undefined {
-    const parts = getNestedValue(message, ["parts"])
-    if (!Array.isArray(parts)) return undefined
-    const content = parts
-      .filter((part) => getNestedValue(part, ["type"]) === "text")
-      .map((part) => asString(getNestedValue(part, ["text"])) ?? "")
-      .filter((text) => text.length > 0)
-      .join("\n")
-    return content.length > 0 ? content : undefined
+    const parts = getNestedValue(message, ["parts"]) as unknown[] | undefined
+    if (!Array.isArray(parts) || parts.length === 0) return undefined
+
+    const textParts = parts
+      .filter((part: unknown) => getNestedValue(part, ["type"]) === "text")
+      .map((part: unknown) => asString(getNestedValue(part, ["text"])))
+      .filter((text): text is string => typeof text === "string" && text.length > 0)
+
+    if (textParts.length > 0) return textParts.join("\n")
+
+    // Fallback: extract tool names for tool-only messages
+    const toolParts = parts
+      .filter((part: unknown) => getNestedValue(part, ["type"]) === "tool")
+      .map((part: unknown): string => {
+        const toolName = asString(getNestedValue(part, ["tool"])) || asString(getNestedValue(part, ["name"])) || "tool"
+        return toolName
+      })
+      .filter((name): name is string => name.length > 0)
+
+    if (toolParts.length > 0) return "Tools: " + toolParts.join(", ")
+
+    return undefined
   }
 
   /**
