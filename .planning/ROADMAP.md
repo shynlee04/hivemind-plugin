@@ -712,26 +712,214 @@ Plan list:
 **Depends on:** Phase 23
 **Debts inherited from Phase 23:** C-1 (delegate-task proxy war), M-1 (L0 max skills), M-8 (start-work routing) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
+### Phase 24.1: Agent Hierarchy Restructure (Cluster A — Agent Quality, INSERTED)
+
+**Goal:** Restructure agent hierarchy — remove L1 agent, retain L0 as sole front-facing orchestrator, restructure L2/L3 by domain. Fix C-1 (delegate-task vs task conflict), C-3 (hallucinated `websearch`), H-2 (hm-l2-build 86 lines underspecified), M-1 (8 skills vs max 3), L-2/L-3 (temperature/size violations across L2 agents).
+
+**Why this exists:** Agent quality audit (Phase 23 — 23-DEBTS-REGISTER) found systemic quality failures: contradictory delegation directives (C-1), hallucinated tool permissions (C-3), severely underspecified agents (H-2), skill overload (M-1), and temp/size violations (L-2/L-3). These must be fixed before agent profiles can be enforced.
+
+**Depends on:** Phase 24
+**Blocks:** P24.2, P24.3, P24.4, P24.5, P24.6
+
+**Success Criteria:**
+1. L1 agent directory removed or migrated — L0 is sole front-facing orchestrator
+2. L2/L3 agents restructured by domain (Coordination, Routing, Schema, Structural)
+3. C-1 resolved: `task` tool standardized as preferred delegation method across all agents
+4. C-3 resolved: `websearch` removed from all agent permissions
+5. M-1 resolved: every agent declares ≤3 skills
+
+### Phase 24.2: Agent Profile Quality Enforcement (Cluster A — Agent Quality, INSERTED)
+
+**Goal:** Rewrite ALL hm-* agents with proper execution flows, success metrics, input/output contracts, artifact delivery templates, and anti-pattern sections. Enforce quality gate per agent profile.
+
+**Why this exists:** Phase 24.1 restructures hierarchy; Phase 24.2 fills the content gap. Most hm-* agents lack execution protocols, success criteria, and behavioral contracts — producing unpredictable subagent behavior.
+
+**Depends on:** Phase 24.1
+**Blocks:** P24.3, P24.4, P24.5, P24.6
+
+**Success Criteria:**
+1. Every hm-* agent (45 agents) has documented execution flow (≥150 lines minimum)
+2. Every hm-* agent declares success metrics and artifact delivery contract
+3. Every hm-* agent has anti-patterns section
+4. Quality gate (lifecycle → spec → evidence) passes for agent profile batch
+5. Zero agents below minimum line threshold
+
+### Phase 24.3: Commands Infrastructure (Cluster C — Commands & Workflows, INSERTED)
+
+**Goal:** Design and implement namespace routers, workflow separation patterns, YAML frontmatter schema for command definitions, and execute-slash-command routing integration. Based on GSD research evidence: 67 commands + 88 workflows pattern.
+
+**Why this exists:** GSD deep research (Phase 23, P23-S01) revealed a structured command system with namespace routers, workflow modes, and frontmatter-driven execution — all of which Hivemind currently lacks. Commands are scattered across `.opencode/commands/` without classification, routing, or standardized schema.
+
+**Depends on:** Phase 24.2
+**Blocks:** P24.4, P24.5, P24.6
+
+**Success Criteria:**
+1. Namespace router design documented — command groups by domain (hm-*, gsd-*, hf-*)
+2. Workflow separation pattern established: discussion vs planning vs execution vs verification vs shipping
+3. YAML frontmatter schema defined for all command `.md` files
+4. `execute-slash-command` routing integration designed — route by namespace to correct handler
+5. Backward compatibility with existing `.opencode/commands/` preserved
+
+### Phase 24.4: References & Templates System (Cluster C — Commands & Workflows, INSERTED)
+
+**Goal:** Create standardized reference format, template engine, and @-reference mechanism for commands and workflows. Establish `.hivemind/references/` and `.hivemind/templates/` as canonical structure.
+
+**Why this exists:** Commands and workflows need shared reference data (agents, skills, commands, permissions) and templates for common patterns. Currently references are ad-hoc and templates don't exist at all — every command author rewrites from scratch.
+
+**Depends on:** Phase 24.3
+**Blocks:** P24.5, P24.6
+
+**Success Criteria:**
+1. Standardized reference format defined — YAML frontmatter + markdown body per reference type
+2. Template engine designed — parameterized templates with variable substitution
+3. @-reference mechanism documented — `@agent:name`, `@skill:name`, `@command:name` resolution
+4. `.hivemind/references/` directory created with initial reference schemas
+5. `.hivemind/templates/` directory created with command and workflow templates
+
+### Phase 24.5: Workflow Files Architecture (Cluster C — Commands & Workflows, INSERTED)
+
+**Goal:** Design workflow file architecture with size budgets (XL=1700, LARGE=1500, DEFAULT=1000, STRICT=500). Implement modes/ and templates/ decomposition. Establish pipeline: discuss → plan → execute → verify → ship.
+
+**Why this exists:** Workflow files grow unbounded without size governance. GSD research revealed workflow size budgets as a critical quality control mechanism. Without size limits, workflows degrade into unreadable monoliths. The modes/ decomposition enables reusable execution profiles.
+
+**Depends on:** Phase 24.4
+**Blocks:** P24.6
+
+**Success Criteria:**
+1. Workflow size budget tiers defined and documented (XL/LARGE/DEFAULT/STRICT)
+2. Workflow decomposition into phases/phases/ templates established
+3. Pipeline stages documented: discuss → plan → execute → verify → ship
+4. Mode system defined: mvp, standard, strict, research per phase
+5. Size enforcement mechanism designed (gate at creation time)
+
+### Phase 24.6: Build HM-* Commands (Cluster C — Commands & Workflows, INSERTED)
+
+**Goal:** Create actual hm-* command implementations: hm-init-project, hm-discuss, hm-plan, hm-execute, hm-verify, hm-gate, hm-debug, hm-audit, hm-research. Each command uses the infrastructure from P24.3-P24.5.
+
+**Why this exists:** Hivemind needs its own command family distinct from GSD tooling. Currently all workflows route through gsd-* commands. HM-* commands provide Hivemind-native project initialization, discussion, planning, execution, verification, gating, debugging, auditing, and research workflows.
+
+**Depends on:** Phase 24.5
+**Blocks:** P25
+
+**Success Criteria:**
+1. `hm-init-project` command creates new Hivemind project structure
+2. `hm-discuss` command starts phase discussion cycle
+3. `hm-plan` command creates phase plans from discussion output
+4. `hm-execute` command runs phase plans
+5. `hm-verify` command runs verification gates
+6. `hm-gate` command runs quality gate triad
+7. `hm-debug` command starts debugging workflow
+8. `hm-audit` command audits phase or project state
+9. `hm-research` command runs research chain
+10. All commands use `.hivemind/references/` and `.hivemind/templates/` from P24.4
+
 ### Phase 25: Trajectory + Agent-Work-Contract Redesign (Group 1 — was Phase 24)
 
 **Goal:** Fix trajectory state transitions. Add trajectory tests (zero currently). Fix agent-work-contract lifecycle. Deduplicate deriveSurface(). Incorporate P23-06 assessment findings.
-**Depends on:** Phase 23, 24
+**Depends on:** Phase 23, 24, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6
 **Debts inherited from Phase 23:** M-4 (legacy .harness/ path) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 26: Pressure + Notification Redesign (Group 1 — was Phase 25)
 
 **Goal:** Fix pressure scoring (zero tests, 625 LOC). Fix authority-matrix overlap. Complete notification delivery redesign (TTL + retry + delivery tracking + injection plane patterns from P23-07). Fix SDK handler race.
-**Depends on:** Phase 23, 24, 25
+**Depends on:** Phase 23, 24, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6, 25
 
-### Phase 27: Routing + Intent Loop Foundation (Group 2 — was Phase 26)
+### Phase 26.1: Artifact Naming & Pathing Convention (Cluster B — Documents, INSERTED)
 
-**Goal:** Fix intent-classifier (fragile substring). Remove dead registry validator. Delete dead no-op profile methods. Add tests for 3 sub-modules (~1,200 LOC untested).
-**Depends on:** Phase 21-P26
+**Goal:** Establish standardized artifact naming convention, pathing structure, YAML frontmatter format, and artifact classification system across all `.planning/` and `.hivemind/` documents. Fix C-5 (Document/Artifact Naming & Pathing Governance Collapse) from DEBTS-REGISTER.
+
+**Why this exists:** Systemic debt C-5 identified documents created without naming standards, inconsistent format (lowercase vs uppercase mixed), no gatekeeping on artifact creation, no cross-session validation, and overlapping/conflicting documents across sessions. Pulled forward from P31 (where P31-01 through P31-07 were originally planned) to enable downstream artifact-dependent phases.
+
+**Depends on:** Phase 26
+
+**Success Criteria:**
+1. Canonical naming convention defined: `{PHASE}-{TYPE}[-{SUBTYPE}][-{DATE}].md` with TYPE = uppercase
+2. Artifact classification schema established: research/, specs/, plans/, syntheses/, audits/ per phase
+3. YAML frontmatter template defined for all artifacts
+4. Standardized artifact structure per phase: SPEC.md, RESEARCH.md, PLAN.md, SUMMARY.md, SYNTHESIS.md, DEBTS-REGISTER.md
+5. Existing artifacts batch-renamed to match convention (non-destructive — symlinks/aliases preserved)
+
+### Phase 26.2: Artifact Dependency & Gatekeeping (Cluster B — Documents, INSERTED)
+
+**Goal:** Implement cross-reference validation, gatekeeping loops, and dependency chain management for all artifacts. Ensure documents are validated on creation, checked against existing artifacts for overlap, and traceable across sessions.
+
+**Why this exists:** C-5 sibling gap: even with naming conventions (P26.1), there is no mechanism to validate artifact quality, cross-reference integrity, or dependency ordering. Regressions occur because multiple sessions create overlapping/conflicting documents without awareness.
+
+**Depends on:** Phase 26.1
+
+**Success Criteria:**
+1. Gatekeeping loop validates each artifact on creation (naming, location, format, YAML frontmatter)
+2. Cross-session validation checks existing artifacts before creating new ones (prevent overlap)
+3. Dependency chain between artifacts is documented and enforceable
+4. Debt tracking (DEBTS-REGISTER.md) integrated into workflow commands as default step
+5. Cross-reference validation detects dead/broken artifact links
+
+### Phase 24.7: Primitives Asset Schema (Cluster E — Primitives Distribution, INSERTED)
+
+**Goal:** Design and implement schema for each primitive type (agent, command, skill, tool, workflow). Code-gen from schema → `src/assets/`. Runtime validation. Fix current broken pattern: primitives live in `.hivefiver-meta-builder/` → symlinks → `.opencode/` which is WRONG — shipped primitives should be install-time extracted from `assets/` as real files.
+
+**Why this exists:** Current primitive architecture uses symlinks from `.hivefiver-meta-builder/` to `.opencode/`. This is a development-time convenience that breaks on `npm install` in end-user projects. Shipped primitives must be extracted at install time from a bundled `assets/` directory. The symlink pattern is ONLY correct for development of this harness project.
+
+**Depends on:** Phase 26
+**Blocks:** P24.8
+
+**Success Criteria:**
+1. Primitive type schema defined for each: agent, command, skill, tool, workflow
+2. Zod schema for each primitive type with validation rules
+3. Code-gen pipeline: schema → TypeScript types → `src/assets/` module
+4. Runtime validation: loaded primitives validated against schema at activation
+5. Legacy `.hivefiver-meta-builder/` symlink pattern documented as dev-only
+
+### Phase 24.8: Primitives Install-Time Extraction (Cluster E — Primitives Distribution, INSERTED)
+
+**Goal:** Implement `npx hivemind init` primitive extraction from `assets/` into `.opencode/`. Real files (not symlinks). Global vs project-based resolution. Permissions resolution and validation.
+
+**Why this exists:** When a user runs `npx hivemind init` in their project, shipped primitives must be extracted as real files into `.opencode/`. The current symlink-to-meta-builder pattern only works in this development repo. End-user projects need atomic file extraction with permission resolution.
+
+**Depends on:** Phase 24.7
+**Blocks:** P24.9
+
+**Success Criteria:**
+1. `npx hivemind init` extracts primitives from `assets/` to `.opencode/` as real files
+2. Global install extracts to global `.opencode/` directory
+3. Project install extracts to project `.opencode/` directory
+4. Permissions resolution: project-level overrides global defaults
+5. Atomic extraction: partial failure rolls back cleanly
+6. No symlinks to `.hivefiver-meta-builder/` in shipped output
+7. Legacy `bootstrap-recover` tool updated to use extraction (not symlinks)
+
+### Phase 24.9: Bootstrap Init Flow Expansion (Cluster F — Bootstrap & Init, INSERTED)
+
+**Goal:** Expand bootstrap initialization flow: create `.hivemind/` structure, extract primitives (from P24.8), initialize routing governance plane, detect framework conflicts, configure user config plane. Full end-to-end `npx hivemind init` experience.
+
+**Why this exists:** Current bootstrap (BOOT-02..BOOT-07) creates `.hivemind/` structure and restores symlinks. With P24.8 delivering real-file extraction, bootstrap must be expanded to coordinate the full init flow: directory creation, primitive extraction, governance initialization, and framework conflict detection.
+
+**Depends on:** Phase 24.8
+**Blocks:** P27
+
+**Success Criteria:**
+1. `npx hivemind init` creates complete `.hivemind/` directory tree
+2. `npx hivemind init` extracts shipped primitives to `.opencode/` as real files
+3. Routing governance plane initialized with default configuration
+4. Framework conflict detection: warns if GSD, BMAD, or other frameworks present
+5. User config plane created with interactive prompts for preferences
+6. `npx hivemind doctor` reports all init operations PASS
+7. End-to-end clean temp project proof: init → doctor → verify primitives exist
+
+### Phase 27: Routing + Intent Loop Foundation (Group 2 — was Phase 26, SCOPE EXPANDED)
+
+**Goal:** Fix intent-classifier (fragile substring). Remove dead registry validator. Delete dead no-op profile methods. Add tests for 3 sub-modules (~1,200 LOC untested). **Expanded scope:** Implement namespace meta-skills (two-stage routing) and workflow separation pattern inspired by GSD research.
+
+**Why scope expanded:** GSD deep research (Phase 23, P23-S01) revealed two patterns critical for routing reliability: (1) namespace meta-skills that enable two-stage routing (classify → route) instead of single-pass fragile substring matching, and (2) workflow separation pattern that decouples routing from execution. These address M-3 (conductor domain mismatch) and M-7 (context-mapper underspecified) by providing a structured routing framework.
+
+**Depends on:** Phase 21-P26.2, P24.7, P24.8, P24.9
 **Debts inherited from Phase 23:** M-3 (conductor domain mismatch), M-7 (context-mapper underspecified) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
-### Phase 28: Hook Injection Plane Redesign (Group 2 — was Phase 27)
+### Phase 28: Hook Injection Plane Redesign (Group 2 — was Phase 27, SCOPE EXPANDED)
 
-**Goal:** Fix CQRS violation in tool-after-workflow. Enforce assertHookWriteBoundary. Type hook signatures. Classify silent vs required (incorporate P23-07 delivery patterns). Inline thin observers.
+**Goal:** Fix CQRS violation in tool-after-workflow. Enforce assertHookWriteBoundary. Type hook signatures. Classify silent vs required (incorporate P23-07 delivery patterns). Inline thin observers. **Expanded scope:** Implement workflow size budget enforcement and command inventory drift-guard.
+
+**Why scope expanded:** GSD research identified two unaddressed risks: (1) workflow size budget enforcement prevents bloated workflows from degrading hook injection performance, and (2) command inventory drift-guard detects when registered commands drift from their on-disk definitions — preventing the silent mismatch between `.opencode/commands/` and the command engine's internal registry.
 **Depends on:** Phase 27
 
 ### Phase 29: Auto-Looping + PTY + Background Command Revamp (Group 2 — was Phase 28)

@@ -3,21 +3,21 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-23T19:53:46.625Z"
+last_updated: "2026-05-25T12:00:00.000Z"
 progress:
-  total_phases: 29
+  total_phases: 40
   completed_phases: 11
   total_plans: 51
   completed_plans: 47
-  percent: 92
+  percent: 78
 ---
 
 <!-- generated-by: gsd-doc-writer -->
 
 # Hivemind — State
 
-**Last updated:** 2026-05-24
-**Last advance:** Phase 23.1 Plan 01 complete — session-tracker race condition fixed: sync constructCoreDependencies() before delegation wiring, defensive [Harness] logging, .then(cleanup) removed. Typecheck clean, 400/400 unit tests pass.
+**Last updated:** 2026-05-25
+**Last advance:** Roadmap expanded — 7 additional phases inserted (P24.3-P24.9) completing the P24.x series (Cluster C Commands/Workflows, Cluster E Primitives Distribution, Cluster F Bootstrap Init). P24.3-P24.6 inserted after P24.2; P24.7-P24.9 inserted after P26.2. Dependency chains updated for P25, P26, P27. Total phases: 33→40.
 **Current focus:** Phase 23 (remaining notification bugs) + Phase 23.1 (session-tracker investigation — Plan 01 done)
 **Next recommended run:** Continue debug session `ses_1aa92e240ffeEpaWmxUFFxFh67` for U2/U3/double-wrapped fixes. Route Phase 23.1 via gsd-research-chain for session-tracker investigation.
 
@@ -36,11 +36,22 @@ progress:
 **Phase 21.2:** 🟡 PROTOTYPE — front-agent switching; L3 unit/typecheck pass, L1 live UAT pending.
 **Phase 22:** ✅ COMPLETE — Coordination Status + Error Unification. 9/9 REQs, 3/3 gates PASS. 176/176 tests.
 **Phase 23:** 🟡 ACTIVE — Notification Architecture Fix + Holistic Tool Surface Documentation + GSD Research Synthesis + Debt Registry. Fix CRITICAL synthetic:true notification bug, audit/rewrite ALL hm-* coordination skills + hivemind-power-on, create tool-surface differentiation + injection delivery patterns skills. SYNTHESIS: 6 GSD deep-dive documents, 25 debts/gaps registered and DEFERRED to owning phases (24-38). Phase 23 does NOT fix these debts — documentation only.
-**Phase 24:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (was P23, Depends: P23).
-**Phase 25:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (was P24, Depends: P23, P24).
-**Phase 26:** 📋 PENDING — Pressure + Notification Redesign (was P25, Depends: P23, P24, P25).
-**Phase 27:** 📋 PENDING — Routing + Intent Loop Foundation (Group 2, was P26).
-**Phase 28:** 📋 PENDING — Hook Injection Plane Redesign (Group 2, was P27).
+**Phase 24:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (Group 1, Depends: P23).
+**Phase 24.1:** 📋 PENDING — Agent Hierarchy Restructure (Cluster A — Agent Quality, Depends: P24).
+**Phase 24.2:** 📋 PENDING — Agent Profile Quality Enforcement (Cluster A — Agent Quality, Depends: P24.1).
+**Phase 24.3:** 📋 PENDING — Commands Infrastructure (Cluster C — Commands & Workflows, INSERTED, Depends: P24.2).
+**Phase 24.4:** 📋 PENDING — References & Templates System (Cluster C — Commands & Workflows, INSERTED, Depends: P24.3).
+**Phase 24.5:** 📋 PENDING — Workflow Files Architecture (Cluster C — Commands & Workflows, INSERTED, Depends: P24.4).
+**Phase 24.6:** 📋 PENDING — Build HM-* Commands (Cluster C — Commands & Workflows, INSERTED, Depends: P24.5).
+**Phase 25:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Group 1, Depends: P23, P24, P24.1, P24.2, P24.3, P24.4, P24.5, P24.6).
+**Phase 26:** 📋 PENDING — Pressure + Notification Redesign (Group 1, Depends: P23, P24, P24.1, P24.2, P24.3, P24.4, P24.5, P24.6, P25).
+**Phase 26.1:** 📋 PENDING — Artifact Naming & Pathing Convention (Cluster B — Documents, Depends: P26).
+**Phase 26.2:** 📋 PENDING — Artifact Dependency & Gatekeeping (Cluster B — Documents, Depends: P26.1).
+**Phase 24.7:** 📋 PENDING — Primitives Asset Schema (Cluster E — Primitives Distribution, INSERTED, Depends: P26).
+**Phase 24.8:** 📋 PENDING — Primitives Install-Time Extraction (Cluster E — Primitives Distribution, INSERTED, Depends: P24.7).
+**Phase 24.9:** 📋 PENDING — Bootstrap Init Flow Expansion (Cluster F — Bootstrap & Init, INSERTED, Depends: P24.8).
+**Phase 27:** 📋 PENDING — Routing + Intent Loop Foundation — scope expanded (Group 2, Depends: P21-P26.2, P24.7, P24.8, P24.9).
+**Phase 28:** 📋 PENDING — Hook Injection Plane Redesign — scope expanded (Group 2, Depends: P27).
 **Phase 29:** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Group 2, was P28).
 **Phase 30:** 📋 PENDING — Schema Kernel Cleanup (Group 3, was P29).
 **Phase 31:** 📋 PENDING — Config Plane Redesign (Group 3, was P30).
@@ -190,6 +201,19 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-19-02 | Historical trace locked: `session-classification-hook.ts`, `schema-normalizer.ts`, and `delegation-packet.ts` were intended-but-unwired feature gaps, not meaningless dead code; future rebuild must use requirements f-04c, REQ-ST-12, and F-09a. | NEW — 2026-05-21 |
 | D-19-03 | Final cleanup removed stale `concurrency-key` test, empty `src/kernel`/`src/harness` folders, and synchronized ROADMAP/STATE/codebase/AGENTS drift before clean dist rebuild. | NEW — 2026-05-21 |
 | D-23.1-01 | Sync constructCoreDependencies() before setupDelegationModules() eliminates race window where onChildSessionCreated callbacks silently dropped session events before Object.assign. 3 atomic commits across index.ts + plugin.ts. | COMPLETE — 2026-05-24 |
+| D-P24.1-INSERT | Phase 24.1 (Agent Hierarchy Restructure) inserted after P24 per DEBTS-REGISTER analysis — fixes C-1, C-3, H-2, M-1, L-2/L-3 agent quality gaps. Remove L1 agent, restructure L2/L3 by domain. | NEW — 2026-05-25 |
+| D-P24.2-INSERT | Phase 24.2 (Agent Profile Quality Enforcement) inserted after P24.1 — rewrite ALL hm-* agents with proper execution flows, success metrics, artifact contracts, and anti-patterns. | NEW — 2026-05-25 |
+| D-P26.1-INSERT | Phase 26.1 (Artifact Naming & Pathing Convention) inserted after P26 — fixes C-5 systemic debt. Standardize format, naming, YAML frontmatter for all artifacts. Pulled forward from P31. | NEW — 2026-05-25 |
+| D-P26.2-INSERT | Phase 26.2 (Artifact Dependency & Gatekeeping) inserted after P26.1 — cross-reference validation, gatekeeping loops, dependency chain for artifacts. | NEW — 2026-05-25 |
+| D-P27-SCOPE-EXPAND | Phase 27 scope expanded — add namespace meta-skills (two-stage routing) and workflow separation pattern from GSD research. | NEW — 2026-05-25 |
+| D-P28-SCOPE-EXPAND | Phase 28 scope expanded — add workflow size budget enforcement and command inventory drift-guard. | NEW — 2026-05-25 |
+| D-P24.3-INSERT | Phase 24.3 (Commands Infrastructure) inserted after P24.2 — namespace routers, workflow separation, YAML frontmatter schema. From GSD research: 67 commands + 88 workflows pattern. | NEW — 2026-05-25 |
+| D-P24.4-INSERT | Phase 24.4 (References & Templates System) inserted after P24.3 — standardized reference format, template engine, @-reference mechanism. `.hivemind/references/` + `.hivemind/templates/` structure. | NEW — 2026-05-25 |
+| D-P24.5-INSERT | Phase 24.5 (Workflow Files Architecture) inserted after P24.4 — size budgets (XL/LARGE/DEFAULT/STRICT), modes/ decomposition, pipeline: discuss→plan→execute→verify→ship. | NEW — 2026-05-25 |
+| D-P24.6-INSERT | Phase 24.6 (Build HM-* Commands) inserted after P24.5 — hm-init-project, hm-discuss, hm-plan, hm-execute, hm-verify, hm-gate, hm-debug, hm-audit, hm-research. | NEW — 2026-05-25 |
+| D-P24.7-INSERT | Phase 24.7 (Primitives Asset Schema) inserted after P26.2 — schema per primitive type, code-gen from schema to `src/assets/`, runtime validation. Fixes symlink-only pattern. | NEW — 2026-05-25 |
+| D-P24.8-INSERT | Phase 24.8 (Primitives Install-Time Extraction) inserted after P24.7 — `npx hivemind init` extracts primitives from `assets/` as real files (not symlinks). | NEW — 2026-05-25 |
+| D-P24.9-INSERT | Phase 24.9 (Bootstrap Init Flow Expansion) inserted after P24.8 — expanded init flow: `.hivemind/` creation + primitive extraction + governance init + conflict detection. | NEW — 2026-05-25 |
 
 ---
 
@@ -286,25 +310,39 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ## Next Actions
 
-1. **P00.5** 📋 — Non-destructive foundation sweep (delete 3 dead schemas, rebuild dist/, remove 2 legacy hooks).
-2. **Phase 21** 📋 — Session-Tracker Design Fix (Group 1, HIGHEST PRIORITY — fix F-01 temp leak, F-02 manifest wire, F-04/F-07/F-08 recovery).
-3. **Phase 22** 📋 — Coordination Status + Error Unification (Depends: P21).
-4. **Phase 23** 📋 — Coordination Dispatch + Delegate-Task Fix (Depends: P22). Includes CP-DT-01 runtime block resolution.
-5. **Phase 24** 📋 — Trajectory + Agent-Work-Contract Redesign (Depends: P23).
-6. **Phase 25** 📋 — Pressure + Notification Redesign (Depends: P23).
-7. **Phase 26** 📋 — Routing + Intent Loop Foundation (Group 2, Depends: P21-P25).
-8. **Phase 27** 📋 — Hook Injection Plane Redesign (Group 2, Depends: P26).
-9. **Phase 28** 📋 — Auto-Looping + PTY + Background Command Revamp (Group 2, Depends: P27).
-10. **Phase 29** 📋 — Schema Kernel Cleanup (Group 3, can run parallel to Groups 1-2).
-11. **Phase 30** 📋 — Config Plane Redesign (Group 3, Depends: P29).
-12. **Phase 31** 📋 — Shipped Primitives + Governance Wire (Group 3, Depends: P30).
-13. **Phase 32** 📋 — Plugin.ts Decomposition (Group 4, LAST — Depends: P21-P31 design fixes settled).
-14. **Phase 33** 📋 — Async I/O Conversion + Typed Errors (Group 4, Depends: P32).
-15. **Phase 34** 📋 — Module Splits + Legacy Inventory (Group 4, Depends: P33).
-16. **Phase 35** 📋 — Integration Verification (Group 4, Depends: P34).
-17. **Phase 36** 📋 — Fix sync-oss.yml workflow (deferred, Depends: P35).
-18. **Phase 37** 📋 — Package .opencode/ primitives (deferred, Depends: P36).
-19. **CP-PTY-01** — Background Shell Control-Plane MVP (after restructuring runway).
+1. **P00.5** ✅ COMPLETE — Non-destructive foundation sweep.
+2. **Phase 21** ✅ COMPLETE — Session-Tracker Design Fix.
+3. **Phase 22** ✅ COMPLETE — Coordination Status + Error Unification.
+4. **Phase 23** 🟡 ACTIVE — Notification Architecture Fix + Holistic Tool Surface Documentation.
+5. **Phase 23.1** 🟡 ACTIVE — Session-Tracker SDK Dispatch Investigation.
+6. **Phase 23.2** 📋 PENDING — Session-Tracker Bugfix — Unified task/delegate-task (Depends: 23.1).
+7. **Phase 24** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (Depends: P23).
+8. **Phase 24.1** 📋 PENDING — Agent Hierarchy Restructure (Depends: P24).
+9. **Phase 24.2** 📋 PENDING — Agent Profile Quality Enforcement (Depends: P24.1).
+10. **Phase 24.3** 📋 PENDING — Commands Infrastructure (INSERTED, Depends: P24.2).
+11. **Phase 24.4** 📋 PENDING — References & Templates System (INSERTED, Depends: P24.3).
+12. **Phase 24.5** 📋 PENDING — Workflow Files Architecture (INSERTED, Depends: P24.4).
+13. **Phase 24.6** 📋 PENDING — Build HM-* Commands (INSERTED, Depends: P24.5).
+14. **Phase 25** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Depends: P23, P24, P24.1-P24.6).
+15. **Phase 26** 📋 PENDING — Pressure + Notification Redesign (Depends: P23-P25).
+16. **Phase 26.1** 📋 PENDING — Artifact Naming & Pathing Convention (Depends: P26).
+17. **Phase 26.2** 📋 PENDING — Artifact Dependency & Gatekeeping (Depends: P26.1).
+18. **Phase 24.7** 📋 PENDING — Primitives Asset Schema (INSERTED, Depends: P26).
+19. **Phase 24.8** 📋 PENDING — Primitives Install-Time Extraction (INSERTED, Depends: P24.7).
+20. **Phase 24.9** 📋 PENDING — Bootstrap Init Flow Expansion (INSERTED, Depends: P24.8).
+21. **Phase 27** 📋 PENDING — Routing + Intent Loop Foundation — scope expanded (Group 2, Depends: P21-P26.2, P24.7-P24.9).
+22. **Phase 28** 📋 PENDING — Hook Injection Plane Redesign — scope expanded (Group 2, Depends: P27).
+23. **Phase 29** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Group 2, Depends: P28).
+24. **Phase 30** 📋 PENDING — Schema Kernel Cleanup (Group 3, can run parallel to Groups 1-2).
+25. **Phase 31** 📋 PENDING — Config Plane Redesign (Group 3, Depends: P30).
+26. **Phase 32** 📋 PENDING — Shipped Primitives + Governance Wire (Group 3, Depends: P31).
+27. **Phase 33** 📋 PENDING — Plugin.ts Decomposition (Group 4, LAST — Depends: P21-P32 design fixes settled).
+28. **Phase 34** 📋 PENDING — Async I/O Conversion + Typed Errors (Group 4, Depends: P33).
+29. **Phase 35** 📋 PENDING — Module Splits + Legacy Inventory (Group 4, Depends: P34).
+30. **Phase 36** 📋 PENDING — Integration Verification (Group 4, Depends: P35).
+31. **Phase 37** 📋 deferred — Fix sync-oss.yml workflow (Depends: P36).
+32. **Phase 38** 📋 deferred — Package .opencode/ primitives (Depends: P37).
+33. **CP-PTY-01** — Background Shell Control-Plane MVP (after restructuring runway).
 
 ## Option 3 Foundation Artifacts
 
