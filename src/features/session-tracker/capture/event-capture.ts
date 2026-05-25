@@ -15,6 +15,7 @@
  * @module session-tracker/capture/event-capture
  */
 
+import { parseSessionTitle } from "../../../shared/session-naming.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
 import { getSession, getSessionMessages } from "../../../shared/session-api.js"
 import type { SessionWriter } from "../persistence/session-writer.js"
@@ -406,10 +407,21 @@ export class EventCapture {
           await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         }
         // F-18: Backfill child metadata with real agent identity
+        // Priority: 1. Parse from naming service session title, 2. pendingRegistry, 3. "unknown"
+        let parsedAgentName: string | undefined
+        try {
+          const session = await getSession(this.client, sessionID)
+          const title = (session as Record<string, unknown>).title as string | undefined
+          if (title) {
+            const parsed = parseSessionTitle(title)
+            if (parsed) parsedAgentName = parsed.agent
+          }
+        } catch { /* session fetch failed - fall through */ }
+
         const pendingEntry = this.pendingRegistry?.get(sessionID)
         // Fix: handle union type PendingDispatchEntry | PendingDispatchEntry[]
         const entry = Array.isArray(pendingEntry) ? pendingEntry[0] : pendingEntry
-        const agentName = entry?.subagentType ?? "unknown"
+        const agentName = parsedAgentName ?? entry?.subagentType ?? "unknown"
         const model = entry?.model ?? ""
         await this.childWriter.backfillChildMetadata(
           childRoute.parentID,

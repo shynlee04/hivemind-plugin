@@ -314,13 +314,12 @@ export class ToolDelegation {
       input.sessionID,
     )
     // REQ-23.2-04: Populate hierarchy-manifest.json (was missing — addChild defined but never called)
-    const resolvedAgentName = deriveAgentNameFromSession(input as unknown as Record<string, unknown>)
     await this.manifestWriter.addChild({
       rootMainSessionID: rootMain,
       childSessionID,
       parentSessionID: input.sessionID,
       delegationDepth: depth,
-      delegatedBy: resolvedAgentName ?? input.tool ?? "unknown",
+      delegatedBy: deriveAgentNameFromSession(input as unknown as Record<string, unknown>) ?? input.tool ?? "unknown",
       subagentType,
       childFile: `${childSessionID}.json`,
     })

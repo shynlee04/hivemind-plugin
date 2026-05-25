@@ -224,8 +224,14 @@ export class HierarchyManifestWriter {
           parentSessionID: parentID,
           rootMainSessionID: rootMainID,
           delegationDepth: entry.depth ?? 1,
-          delegatedBy: entry.delegatedBy ?? "unknown",
-          subagentType: entry.subagentType ?? entry.delegatedBy ?? "unknown",
+          delegatedBy:
+            (entry.delegatedBy && entry.delegatedBy !== "unknown")
+              ? entry.delegatedBy
+              : entry.subagentType ?? "unknown",
+          subagentType:
+            (entry.subagentType && entry.subagentType !== "unknown")
+              ? entry.subagentType
+              : entry.delegatedBy ?? "unknown",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           status: entry.status ?? "active",
