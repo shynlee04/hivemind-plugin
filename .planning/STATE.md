@@ -5,7 +5,7 @@ milestone_name: milestone
 status: planned
 last_updated: "2026-05-25T12:00:00.000Z"
 progress:
-  total_phases: 40
+  total_phases: 41
   completed_phases: 11
   total_plans: 51
   completed_plans: 47
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-25
-**Last advance:** Roadmap expanded — 7 additional phases inserted (P24.3-P24.9) completing the P24.x series (Cluster C Commands/Workflows, Cluster E Primitives Distribution, Cluster F Bootstrap Init). P24.3-P24.6 inserted after P24.2; P24.7-P24.9 inserted after P26.2. Dependency chains updated for P25, P26, P27. Total phases: 33→40.
+**Last advance:** Roadmap expanded — 8 additional phases inserted (P24.3-P24.9, P24.3.1) completing the P24.x series (Cluster C Commands/Workflows, Cluster E Primitives Distribution, Cluster F Bootstrap Init). P24.3-P24.6 inserted after P24.2; P24.7-P24.9 inserted after P26.2; P24.3.1 (Governance Session Prototype) inserted after P24.3. Dependency chains updated for P24.4 (now depends on P24.3.1), P25, P26, P27. Total phases: 33→41.
 **Current focus:** Phase 23 (remaining notification bugs) + Phase 23.1 (session-tracker investigation — Plan 01 done)
 **Next recommended run:** Continue debug session `ses_1aa92e240ffeEpaWmxUFFxFh67` for U2/U3/double-wrapped fixes. Route Phase 23.1 via gsd-research-chain for session-tracker investigation.
 
@@ -40,7 +40,8 @@ progress:
 **Phase 24.1:** 📋 PENDING — Agent Hierarchy Restructure (Cluster A — Agent Quality, Depends: P24).
 **Phase 24.2:** 📋 PENDING — Agent Profile Quality Enforcement (Cluster A — Agent Quality, Depends: P24.1).
 **Phase 24.3:** 📋 PENDING — Commands Infrastructure (Cluster C — Commands & Workflows, INSERTED, Depends: P24.2).
-**Phase 24.4:** 📋 PENDING — References & Templates System (Cluster C — Commands & Workflows, INSERTED, Depends: P24.3).
+**Phase 24.3.1:** 🟡 PLANNED — Governance Session Prototype (Cluster C — Commands & Workflows, MỚI, Depends: P24, Blocks: P24.3, P24.4, P24.5, P24.6).
+**Phase 24.4:** 📋 PENDING — References & Templates System (Cluster C — Commands & Workflows, INSERTED, Depends: P24.3, P24.3.1).
 **Phase 24.5:** 📋 PENDING — Workflow Files Architecture (Cluster C — Commands & Workflows, INSERTED, Depends: P24.4).
 **Phase 24.6:** 📋 PENDING — Build HM-* Commands (Cluster C — Commands & Workflows, INSERTED, Depends: P24.5).
 **Phase 25:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Group 1, Depends: P23, P24, P24.1, P24.2, P24.3, P24.4, P24.5, P24.6).
@@ -214,6 +215,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-P24.7-INSERT | Phase 24.7 (Primitives Asset Schema) inserted after P26.2 — schema per primitive type, code-gen from schema to `src/assets/`, runtime validation. Fixes symlink-only pattern. | NEW — 2026-05-25 |
 | D-P24.8-INSERT | Phase 24.8 (Primitives Install-Time Extraction) inserted after P24.7 — `npx hivemind init` extracts primitives from `assets/` as real files (not symlinks). | NEW — 2026-05-25 |
 | D-P24.9-INSERT | Phase 24.9 (Bootstrap Init Flow Expansion) inserted after P24.8 — expanded init flow: `.hivemind/` creation + primitive extraction + governance init + conflict detection. | NEW — 2026-05-25 |
+| D-P24.3.1-PROTOTYPE | Phase 24.3.1 (Governance Session Prototype) inserted after P24.3 — prototype custom tool `create-governance-session` using OpenCode SDK `session.create()`, `tui.showToast()`, `tui.appendPrompt()` to validate technical feasibility before Commands Infrastructure investment. Validates: session auto-naming with parentID, TUI injection display, git commit before handoff. Evidence required: L2-L3 (working SDK calls). Blocks P24.3, P24.4, P24.5, P24.6. | NEW — 2026-05-25 |
 
 ---
 
@@ -320,29 +322,30 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 8. **Phase 24.1** 📋 PENDING — Agent Hierarchy Restructure (Depends: P24).
 9. **Phase 24.2** 📋 PENDING — Agent Profile Quality Enforcement (Depends: P24.1).
 10. **Phase 24.3** 📋 PENDING — Commands Infrastructure (INSERTED, Depends: P24.2).
-11. **Phase 24.4** 📋 PENDING — References & Templates System (INSERTED, Depends: P24.3).
-12. **Phase 24.5** 📋 PENDING — Workflow Files Architecture (INSERTED, Depends: P24.4).
-13. **Phase 24.6** 📋 PENDING — Build HM-* Commands (INSERTED, Depends: P24.5).
-14. **Phase 25** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Depends: P23, P24, P24.1-P24.6).
-15. **Phase 26** 📋 PENDING — Pressure + Notification Redesign (Depends: P23-P25).
-16. **Phase 26.1** 📋 PENDING — Artifact Naming & Pathing Convention (Depends: P26).
-17. **Phase 26.2** 📋 PENDING — Artifact Dependency & Gatekeeping (Depends: P26.1).
-18. **Phase 24.7** 📋 PENDING — Primitives Asset Schema (INSERTED, Depends: P26).
-19. **Phase 24.8** 📋 PENDING — Primitives Install-Time Extraction (INSERTED, Depends: P24.7).
-20. **Phase 24.9** 📋 PENDING — Bootstrap Init Flow Expansion (INSERTED, Depends: P24.8).
-21. **Phase 27** 📋 PENDING — Routing + Intent Loop Foundation — scope expanded (Group 2, Depends: P21-P26.2, P24.7-P24.9).
-22. **Phase 28** 📋 PENDING — Hook Injection Plane Redesign — scope expanded (Group 2, Depends: P27).
-23. **Phase 29** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Group 2, Depends: P28).
-24. **Phase 30** 📋 PENDING — Schema Kernel Cleanup (Group 3, can run parallel to Groups 1-2).
-25. **Phase 31** 📋 PENDING — Config Plane Redesign (Group 3, Depends: P30).
-26. **Phase 32** 📋 PENDING — Shipped Primitives + Governance Wire (Group 3, Depends: P31).
-27. **Phase 33** 📋 PENDING — Plugin.ts Decomposition (Group 4, LAST — Depends: P21-P32 design fixes settled).
-28. **Phase 34** 📋 PENDING — Async I/O Conversion + Typed Errors (Group 4, Depends: P33).
-29. **Phase 35** 📋 PENDING — Module Splits + Legacy Inventory (Group 4, Depends: P34).
-30. **Phase 36** 📋 PENDING — Integration Verification (Group 4, Depends: P35).
-31. **Phase 37** 📋 deferred — Fix sync-oss.yml workflow (Depends: P36).
-32. **Phase 38** 📋 deferred — Package .opencode/ primitives (Depends: P37).
-33. **CP-PTY-01** — Background Shell Control-Plane MVP (after restructuring runway).
+11. **Phase 24.3.1** 🟡 PLANNED — Governance Session Prototype (MỚI, Depends: P24, Blocks: P24.3, P24.4, P24.5, P24.6).
+12. **Phase 24.4** 📋 PENDING — References & Templates System (INSERTED, Depends: P24.3, P24.3.1).
+13. **Phase 24.5** 📋 PENDING — Workflow Files Architecture (INSERTED, Depends: P24.4).
+14. **Phase 24.6** 📋 PENDING — Build HM-* Commands (INSERTED, Depends: P24.5).
+15. **Phase 25** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Depends: P23, P24, P24.1-P24.6).
+16. **Phase 26** 📋 PENDING — Pressure + Notification Redesign (Depends: P23-P25).
+17. **Phase 26.1** 📋 PENDING — Artifact Naming & Pathing Convention (Depends: P26).
+18. **Phase 26.2** 📋 PENDING — Artifact Dependency & Gatekeeping (Depends: P26.1).
+19. **Phase 24.7** 📋 PENDING — Primitives Asset Schema (INSERTED, Depends: P26).
+20. **Phase 24.8** 📋 PENDING — Primitives Install-Time Extraction (INSERTED, Depends: P24.7).
+21. **Phase 24.9** 📋 PENDING — Bootstrap Init Flow Expansion (INSERTED, Depends: P24.8).
+22. **Phase 27** 📋 PENDING — Routing + Intent Loop Foundation — scope expanded (Group 2, Depends: P21-P26.2, P24.7-P24.9).
+23. **Phase 28** 📋 PENDING — Hook Injection Plane Redesign — scope expanded (Group 2, Depends: P27).
+24. **Phase 29** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Group 2, Depends: P28).
+25. **Phase 30** 📋 PENDING — Schema Kernel Cleanup (Group 3, can run parallel to Groups 1-2).
+26. **Phase 31** 📋 PENDING — Config Plane Redesign (Group 3, Depends: P30).
+27. **Phase 32** 📋 PENDING — Shipped Primitives + Governance Wire (Group 3, Depends: P31).
+28. **Phase 33** 📋 PENDING — Plugin.ts Decomposition (Group 4, LAST — Depends: P21-P32 design fixes settled).
+29. **Phase 34** 📋 PENDING — Async I/O Conversion + Typed Errors (Group 4, Depends: P33).
+30. **Phase 35** 📋 PENDING — Module Splits + Legacy Inventory (Group 4, Depends: P34).
+31. **Phase 36** 📋 PENDING — Integration Verification (Group 4, Depends: P35).
+32. **Phase 37** 📋 deferred — Fix sync-oss.yml workflow (Depends: P36).
+33. **Phase 38** 📋 deferred — Package .opencode/ primitives (Depends: P37).
+34. **CP-PTY-01** — Background Shell Control-Plane MVP (after restructuring runway).
 
 ## Option 3 Foundation Artifacts
 

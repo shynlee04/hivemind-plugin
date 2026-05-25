@@ -760,13 +760,39 @@ Plan list:
 4. `execute-slash-command` routing integration designed — route by namespace to correct handler
 5. Backward compatibility with existing `.opencode/commands/` preserved
 
+### Phase 24.3.1: Governance Session Prototype (Cluster C — Commands & Workflows, MỚI)
+
+**Goal:** Build a prototype custom tool `create-governance-session` that validates the technical feasibility of OpenCode SDK session creation + TUI injection + named session handoff before full Commands Infrastructure investment.
+
+**Why this exists:** OpenCode SDK provides `sdk.session.create()`, `sdk.session.prompt()`, `sdk.tui.appendPrompt()`, `sdk.tui.showToast()` — but these APIs have not been tested in Hivemind's context. This prototype verifies: (1) Session auto-naming works with explicit title + parentID, (2) TUI injection displays correctly in OpenCode message stream, (3) Git commit flow before handoff is feasible. Without this validation, P24.3 risks building infrastructure on unverified SDK assumptions.
+
+**Scope:**
+1. Create custom tool `create-governance-session` that:
+   - Creates a new OpenCode session via `sdk.session.create()` with explicit title naming
+   - Injects TUI notification via `sdk.tui.showToast()` + `sdk.tui.appendPrompt()`
+   - Auto-names session with format: `hm-governance:<workflow>-<context>`
+   - Git-commits current context before handoff
+   - Outputs user instruction: "chuyển tới session 'name, meta, ses_id' để hoàn thành..."
+2. L2-L3 evidence: prototype with working SDK calls
+3. Verdict: PASS/FAIL for Commands Infrastructure SDK path
+
+**Depends on:** Phase 24
+**Blocks:** P24.3 (validates technical feasibility of Command Infrastructure SDK path), P24.4, P24.5, P24.6
+
+**Success Criteria:**
+1. `create-governance-session` tool registers in plugin.ts without conflicts
+2. Tool creates OpenCode session with formatted name `hm-governance:<workflow>-<context>` and parentID linkage
+3. TUI notification (`showToast` + `appendPrompt`) displays in main session message stream
+4. Git commit of current context executes before handoff instruction
+5. User receives actionable handoff text: "chuyển tới session 'name, meta, ses_id' để hoàn thành..."
+
 ### Phase 24.4: References & Templates System (Cluster C — Commands & Workflows, INSERTED)
 
 **Goal:** Create standardized reference format, template engine, and @-reference mechanism for commands and workflows. Establish `.hivemind/references/` and `.hivemind/templates/` as canonical structure.
 
 **Why this exists:** Commands and workflows need shared reference data (agents, skills, commands, permissions) and templates for common patterns. Currently references are ad-hoc and templates don't exist at all — every command author rewrites from scratch.
 
-**Depends on:** Phase 24.3
+**Depends on:** Phase 24.3, P24.3.1
 **Blocks:** P24.5, P24.6
 
 **Success Criteria:**
