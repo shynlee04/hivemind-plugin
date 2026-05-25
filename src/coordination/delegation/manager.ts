@@ -305,8 +305,62 @@ export class DelegationManager {
   }
 
   canSessionAccessDelegation(callerSessionId: string | undefined, delegation: Delegation | undefined): boolean {
-    const ownsV2Record = !!callerSessionId && !!delegation && delegation.parentSessionId === callerSessionId
-    return ownsV2Record || (this.runtime?.canSessionAccessDelegation(callerSessionId, delegation) ?? false)
+    if (!callerSessionId || !delegation) {
+      return false
+    }
+    if (delegation.parentSessionId === callerSessionId) {
+      return true
+    }
+
+    // Consolidated check across both in-memory stores (v2 lifecycle & v1 runtime)
+    const all = [
+      ...(this.options.lifecycle?.list() ?? []),
+      ...(this.runtime?.getAllDelegations() ?? [])
+    ]
+    const byId = new Map<string, Delegation>()
+    for (const d of all) {
+      byId.set(d.id, d)
+    }
+
+    const getDelegationIdForSession = (sessionId: string): string | undefined => {
+      if (this.runtime) {
+        return this.runtime.delegationsBySession.get(sessionId)
+      }
+      if (this.options.lifecycle) {
+        const found = (this.options.lifecycle.list() ?? []).find(d => {
+          const childId = this.options.lifecycle!.getChildSessionId(d.id)
+          return childId === sessionId
+        })
+        return found?.id
+      }
+      return undefined
+    }
+
+    let currentDelegationId = getDelegationIdForSession(callerSessionId)
+    const visited = new Set<string>()
+
+    while (currentDelegationId && !visited.has(currentDelegationId)) {
+      visited.add(currentDelegationId)
+
+      if (currentDelegationId === delegation.id) {
+        return true
+      }
+
+      const current = byId.get(currentDelegationId)
+      if (!current) break
+
+      if (current.childSessionId === delegation.parentSessionId) {
+        return true
+      }
+      if (current.parentSessionId === delegation.childSessionId) {
+        return true
+      }
+
+      if (!current.parentSessionId) break
+      currentDelegationId = getDelegationIdForSession(current.parentSessionId)
+    }
+
+    return false
   }
 
   getVisibleDelegationsForSession(callerSessionId: string): Delegation[] {
