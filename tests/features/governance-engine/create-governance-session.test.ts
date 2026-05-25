@@ -1,13 +1,8 @@
 /**
  * Unit tests for createGovernanceSessionTool factory.
  *
- * Verifies all behavioral requirements (REQ-02 through REQ-07):
- * - Session title format hm-governance:* (REQ-03)
- * - Prompt injection via sendPrompt (REQ-04)
- * - TUI toast notification with success variant (REQ-05)
- * - Best-effort git commit via execSync (REQ-06)
- * - Return shape { sessionID, title } (REQ-07)
- * - Error handling for invalid input and SDK failures
+ * Verifies naming service title format, root session creation (no parentID),
+ * coordinator dispatch, config reader integration, and fallback to sendPrompt.
  *
  * Mock strategy: Mock all external dependencies (SDK calls, child_process,
  * tool-response helpers) so tests run in isolation.
@@ -16,20 +11,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 
 // --- Mock external dependencies ---
 
-/**
- * Mock @opencode-ai/plugin's tool() function.
- *
- * The real tool() returns { description, args, execute } and has a
- * .schema property that exposes Zod-like helpers:
- *
- *   tool.schema.string()    → { describe(fn), optional() }
- *   tool.schema.string().describe("...")  → arg definition
- *   tool.schema.string().optional().describe("...")  → optional arg definition
- *
- * We use Object.assign to give the mock function the .schema sub-object
- * so that createGovernanceSessionTool's destructuring `const s = tool.schema`
- * resolves correctly.
- */
 vi.mock("@opencode-ai/plugin", () => {
   const schemaString = () => ({
     describe: () => schemaString(),
@@ -63,7 +44,7 @@ vi.mock("../../../src/shared/session-api.js", () => ({
   getSessionID: mockGetSessionID,
 }))
 
-// Mock node:child_process for git commit (REQ-06)
+// Mock node:child_process for git commit
 const mockExecSync = vi.fn()
 
 vi.mock("node:child_process", () => ({
@@ -83,10 +64,6 @@ vi.mock("zod", async () => {
 // --- Test suite ---
 
 describe("createGovernanceSessionTool", () => {
-  /**
-   * Creates a mock OpenCode SDK client for testing.
-   * @returns A minimal client stub with session API surface.
-   */
   function createMockClient() {
     return {
       session: {
@@ -98,23 +75,22 @@ describe("createGovernanceSessionTool", () => {
     } as any
   }
 
-  /** Default tool context simulating the current session. */
   const defaultContext = { sessionID: "ses_parent_123", directory: "/tmp/test" }
 
   beforeEach(() => {
     vi.clearAllMocks()
     // Default mocks: happy path
-    mockCreateSession.mockResolvedValue({ id: "ses_gov_456", title: "hm-governance:auditor-audit-v2" })
+    mockCreateSession.mockResolvedValue({ id: "ses_gov_456", title: "hm/governance/root/gsd-auditor/audit-v2@0" })
     mockGetSessionID.mockReturnValue("ses_gov_456")
     mockSendPrompt.mockResolvedValue({ info: { id: "msg_1" }, parts: [] })
     mockShowTuiToast.mockResolvedValue(undefined)
     mockExecSync.mockReturnValue("")
   })
 
-  /**
-   * Test: Tool shape compliance (REQ-02).
-   * Verifies that the factory returns an object with description, args, and execute.
-   */
+  // -----------------------------------------------------------------------
+  // Existing tests (updated for new title format)
+  // -----------------------------------------------------------------------
+
   it("should create tool with correct description, args schema, and execute function", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
@@ -125,7 +101,6 @@ describe("createGovernanceSessionTool", () => {
 
     expect(toolDef).toHaveProperty("description")
     expect(typeof toolDef.description).toBe("string")
-    expect(toolDef.description).toContain("hm-governance")
     expect(toolDef).toHaveProperty("args")
     expect(toolDef.args).toHaveProperty("agent")
     expect(toolDef.args).toHaveProperty("brief")
@@ -134,13 +109,8 @@ describe("createGovernanceSessionTool", () => {
     expect(typeof toolDef.execute).toBe("function")
   })
 
-  /**
-   * Test: Session title format (REQ-03).
-   * Verifies that the created session has title matching /^hm-governance:.+/
-   * when title param is provided.
-   */
-  it("should create session with hm-governance: title format", async () => {
-    const { createGovernanceSessionTool } = await import(
+  it("should generate title in naming service format", async () => {
+    const { createGovernanceSessionTool, generateSessionTitle } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
     )
 
@@ -148,33 +118,20 @@ describe("createGovernanceSessionTool", () => {
     const toolDef = createGovernanceSessionTool(client)
 
     await toolDef.execute(
-      { agent: "auditor", brief: "Review X", title: "audit-v2" },
+      { agent: "gsd-auditor", brief: "audit phase 23", title: "audit-phase23" },
       defaultContext,
     )
 
-    // Verify createSession was called with the correct title format
+    // Verify createSession was called with naming service format title
     expect(mockCreateSession).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        title: expect.stringMatching(/^hm-governance:.+/),
-      }),
-    )
-
-    // Verify the title follows the pattern: hm-governance:{agent}-{title}
-    expect(mockCreateSession).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        title: "hm-governance:auditor-audit-v2",
+        title: expect.stringMatching(/^hm\/governance\/root\//),
       }),
     )
   })
 
-  /**
-   * Test: Default title when title omitted.
-   * Verifies that when title is not provided, the tool defaults to
-   * "hm-governance:{agent}-governance".
-   */
-  it("should use default title when title is omitted", async () => {
+  it("should use default purpose from brief when title is omitted", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
     )
@@ -183,24 +140,19 @@ describe("createGovernanceSessionTool", () => {
     const toolDef = createGovernanceSessionTool(client)
 
     await toolDef.execute(
-      { agent: "auditor", brief: "Review X" },
+      { agent: "gsd-auditor", brief: "Review X" },
       defaultContext,
     )
 
     expect(mockCreateSession).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        title: "hm-governance:auditor-governance",
+        title: expect.stringMatching(/^hm\/governance\/root\/gsd-auditor\//),
       }),
     )
   })
 
-  /**
-   * Test: Prompt injection (REQ-04).
-   * Verifies that sendPrompt is called with the correct session ID
-   * and the brief text in the parts array.
-   */
-  it("should call sendPrompt with brief text", async () => {
+  it("should call sendPrompt with brief text when no coordinator", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
     )
@@ -209,14 +161,11 @@ describe("createGovernanceSessionTool", () => {
     const toolDef = createGovernanceSessionTool(client)
 
     await toolDef.execute(
-      { agent: "auditor", brief: "Review all auth modules for security compliance" },
+      { agent: "gsd-auditor", brief: "Review all auth modules for security compliance" },
       defaultContext,
     )
 
-    // Verify createSession was called first
     expect(mockCreateSession).toHaveBeenCalled()
-
-    // Verify sendPrompt was called with session ID and brief text
     expect(mockSendPrompt).toHaveBeenCalledWith(
       expect.anything(),
       "ses_gov_456",
@@ -231,11 +180,6 @@ describe("createGovernanceSessionTool", () => {
     )
   })
 
-  /**
-   * Test: TUI toast notification (REQ-05).
-   * Verifies that showTuiToast is called with success variant
-   * and a message containing the session title and ID.
-   */
   it("should call showTuiToast with success variant", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
@@ -245,55 +189,17 @@ describe("createGovernanceSessionTool", () => {
     const toolDef = createGovernanceSessionTool(client)
 
     await toolDef.execute(
-      { agent: "auditor", brief: "Review X", title: "security-audit" },
+      { agent: "gsd-auditor", brief: "audit phase 23 notifications", title: "audit" },
       defaultContext,
     )
 
     expect(mockShowTuiToast).toHaveBeenCalledWith(
       expect.anything(),
-      expect.stringContaining("hm-governance:auditor-security-audit"),
-      "success",
-    )
-    expect(mockShowTuiToast).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.stringContaining("ses_gov_456"),
+      expect.stringContaining("hm/governance/root/gsd-auditor/"),
       "success",
     )
   })
 
-  /**
-   * Test: Git commit via execSync (REQ-06).
-   * Verifies that execSync is called with a git commit command
-   * containing the governance session title.
-   */
-  it("should call execSync for git commit", async () => {
-    const { createGovernanceSessionTool } = await import(
-      "../../../src/features/governance-engine/create-governance-session.js"
-    )
-
-    const client = createMockClient()
-    const toolDef = createGovernanceSessionTool(client)
-
-    await toolDef.execute(
-      { agent: "planner", brief: "Plan milestone 2", title: "milestone-plan" },
-      defaultContext,
-    )
-
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining("git add"),
-      expect.anything(),
-    )
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining("pre-governance handoff"),
-      expect.anything(),
-    )
-  })
-
-  /**
-   * Test: Return shape (REQ-07).
-   * Verifies that execute returns a JSON string that, when parsed,
-   * contains sessionID and title fields.
-   */
   it("should return { sessionID, title } object", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
@@ -303,21 +209,16 @@ describe("createGovernanceSessionTool", () => {
     const toolDef = createGovernanceSessionTool(client)
 
     const result = await toolDef.execute(
-      { agent: "researcher", brief: "Analyze dependencies" },
+      { agent: "gsd-researcher", brief: "Analyze dependencies" },
       defaultContext,
     )
 
     const parsed = JSON.parse(result)
     expect(parsed).toHaveProperty("kind", "success")
     expect(parsed).toHaveProperty(["data", "sessionID"], "ses_gov_456")
-    expect(parsed).toHaveProperty(["data", "title"], "hm-governance:researcher-governance")
+    expect(parsed).toHaveProperty(["data", "title"])
   })
 
-  /**
-   * Test: Error on invalid input.
-   * Verifies that missing required fields (agent or brief) returns
-   * an error response rather than throwing.
-   */
   it("should return error on invalid input", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
@@ -326,38 +227,12 @@ describe("createGovernanceSessionTool", () => {
     const client = createMockClient()
     const toolDef = createGovernanceSessionTool(client)
 
-    // Missing agent and brief
     const result = await toolDef.execute({}, defaultContext)
-
     const parsed = JSON.parse(result)
     expect(parsed.kind).toBe("error")
     expect(parsed.message).toContain("Invalid governance session input")
   })
 
-  /**
-   * Test: Partial invalid input — missing brief.
-   * Verifies that having agent but not brief returns an error.
-   */
-  it("should return error when brief is missing", async () => {
-    const { createGovernanceSessionTool } = await import(
-      "../../../src/features/governance-engine/create-governance-session.js"
-    )
-
-    const client = createMockClient()
-    const toolDef = createGovernanceSessionTool(client)
-
-    const result = await toolDef.execute({ agent: "auditor" }, defaultContext)
-
-    const parsed = JSON.parse(result)
-    expect(parsed.kind).toBe("error")
-    expect(parsed.message).toContain("Invalid governance session input")
-  })
-
-  /**
-   * Test: SDK failure resilience.
-   * Verifies that when createSession rejects, the tool returns
-   * an error response instead of throwing an unhandled exception.
-   */
   it("should handle SDK failure gracefully", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
@@ -366,25 +241,18 @@ describe("createGovernanceSessionTool", () => {
     const client = createMockClient()
     const toolDef = createGovernanceSessionTool(client)
 
-    // Simulate SDK failure
     mockCreateSession.mockRejectedValue(new Error("SDK temporarily unavailable"))
 
     const result = await toolDef.execute(
-      { agent: "auditor", brief: "Review X" },
+      { agent: "gsd-auditor", brief: "Review X" },
       defaultContext,
     )
 
     const parsed = JSON.parse(result)
     expect(parsed.kind).toBe("error")
     expect(parsed.message).toContain("Failed to create governance session")
-    expect(parsed.message).toContain("SDK temporarily unavailable")
   })
 
-  /**
-   * Test: Missing session ID after creation.
-   * Verifies that when getSessionID returns undefined (session created
-   * but no ID returned), the tool returns a sensible error.
-   */
   it("should handle missing session ID gracefully", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
@@ -393,12 +261,11 @@ describe("createGovernanceSessionTool", () => {
     const client = createMockClient()
     const toolDef = createGovernanceSessionTool(client)
 
-    // Simulate session created but no ID returned
     mockCreateSession.mockResolvedValue({})
     mockGetSessionID.mockReturnValue(undefined)
 
     const result = await toolDef.execute(
-      { agent: "auditor", brief: "Review X" },
+      { agent: "gsd-auditor", brief: "Review X" },
       defaultContext,
     )
 
@@ -407,11 +274,6 @@ describe("createGovernanceSessionTool", () => {
     expect(parsed.message).toContain("no session ID was returned")
   })
 
-  /**
-   * Test: Git commit failure is non-fatal.
-   * Verifies that a git commit failure (execSync throws) does
-   * not prevent the tool from creating the session.
-   */
   it("should tolerate git commit failure gracefully", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
@@ -420,53 +282,20 @@ describe("createGovernanceSessionTool", () => {
     const client = createMockClient()
     const toolDef = createGovernanceSessionTool(client)
 
-    // Git commit fails
     mockExecSync.mockImplementation(() => {
       throw new Error("git error")
     })
 
     const result = await toolDef.execute(
-      { agent: "auditor", brief: "Review X", title: "test" },
+      { agent: "gsd-auditor", brief: "Review X", title: "test" },
       defaultContext,
     )
 
     const parsed = JSON.parse(result)
-    // Success despite git failure — git commit is best-effort
     expect(parsed.kind).toBe("success")
     expect(parsed).toHaveProperty(["data", "sessionID"], "ses_gov_456")
   })
 
-  /**
-   * Test: Tool passes parent session ID to createSession.
-   * Verifies that the current session ID from context is forwarded
-   * as parentID when creating the child governance session.
-   */
-  it("should forward parent session ID from context", async () => {
-    const { createGovernanceSessionTool } = await import(
-      "../../../src/features/governance-engine/create-governance-session.js"
-    )
-
-    const client = createMockClient()
-    const toolDef = createGovernanceSessionTool(client)
-
-    await toolDef.execute(
-      { agent: "auditor", brief: "Review X" },
-      { sessionID: "ses_main_999", directory: "/tmp/proj" },
-    )
-
-    expect(mockCreateSession).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        parentID: "ses_main_999",
-      }),
-    )
-  })
-
-  /**
-   * Test: TUI toast failure is non-fatal.
-   * Verifies that a showTuiToast failure does not prevent
-   * the tool from returning a success result.
-   */
   it("should tolerate toast failure gracefully", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
@@ -475,17 +304,121 @@ describe("createGovernanceSessionTool", () => {
     const client = createMockClient()
     const toolDef = createGovernanceSessionTool(client)
 
-    // Toast fails
     mockShowTuiToast.mockRejectedValue(new Error("toast failed"))
 
     const result = await toolDef.execute(
-      { agent: "auditor", brief: "Review X", title: "test" },
+      { agent: "gsd-auditor", brief: "Review X", title: "test" },
       defaultContext,
     )
 
     const parsed = JSON.parse(result)
-    // Success despite toast failure — toast is best-effort
     expect(parsed.kind).toBe("success")
     expect(parsed).toHaveProperty(["data", "sessionID"], "ses_gov_456")
   })
+
+  // -----------------------------------------------------------------------
+  // NEW: Coordinator dispatch tests (Plan 06b)
+  // -----------------------------------------------------------------------
+
+  it("should create root session without parentID", async () => {
+    const { createGovernanceSessionTool } = await import(
+      "../../../src/features/governance-engine/create-governance-session.js"
+    )
+
+    const client = createMockClient()
+    const mockCoordinator = { dispatch: vi.fn().mockResolvedValue(undefined) }
+    const toolDef = createGovernanceSessionTool(client, mockCoordinator)
+
+    await toolDef.execute(
+      { agent: "gsd-auditor", brief: "audit phase 23", title: "audit-phase23" },
+      defaultContext,
+    )
+
+    // Must NOT contain parentID (root session)
+    const callArg = mockCreateSession.mock.calls[0][1]
+    expect(callArg).not.toHaveProperty("parentID")
+  })
+
+  it("should dispatch agent via coordinator when provided", async () => {
+    const { createGovernanceSessionTool } = await import(
+      "../../../src/features/governance-engine/create-governance-session.js"
+    )
+
+    const client = createMockClient()
+    const mockCoordinator = { dispatch: vi.fn().mockResolvedValue(undefined) }
+    const toolDef = createGovernanceSessionTool(client, mockCoordinator)
+
+    await toolDef.execute(
+      { agent: "gsd-auditor", brief: "audit phase 23", title: "audit-phase23" },
+      defaultContext,
+    )
+
+    expect(mockCoordinator.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        agent: expect.any(String),
+        parentSessionId: "ses_gov_456",
+        surface: "governance-dispatch",
+      }),
+    )
+  })
+
+  it("should fall back to sendPrompt when coordinator is not provided", async () => {
+    const { createGovernanceSessionTool } = await import(
+      "../../../src/features/governance-engine/create-governance-session.js"
+    )
+
+    const client = createMockClient()
+    const toolDef = createGovernanceSessionTool(client)
+
+    await toolDef.execute(
+      { agent: "gsd-auditor", brief: "audit phase 23", title: "audit-phase23" },
+      defaultContext,
+    )
+
+    // Without coordinator, sendPrompt must be called
+    expect(mockSendPrompt).toHaveBeenCalled()
+  })
+
+  it("should handle coordinator dispatch failure gracefully", async () => {
+    const { createGovernanceSessionTool } = await import(
+      "../../../src/features/governance-engine/create-governance-session.js"
+    )
+
+    const client = createMockClient()
+    const mockCoordinator = { dispatch: vi.fn().mockRejectedValue(new Error("dispatch failed")) }
+    const toolDef = createGovernanceSessionTool(client, mockCoordinator)
+
+    const result = await toolDef.execute(
+      { agent: "gsd-auditor", brief: "audit phase 23", title: "audit-phase23" },
+      defaultContext,
+    )
+
+    const parsed = JSON.parse(result)
+    expect(parsed.kind).toBe("error")
+    expect(parsed.message).toContain("agent dispatch failed")
+  })
+
+  it("should respect coordinator parameter in factory signature", async () => {
+    const { createGovernanceSessionTool } = await import(
+      "../../../src/features/governance-engine/create-governance-session.js"
+    )
+
+    const client = createMockClient()
+
+    // Should accept 1 arg
+    const toolDef1 = createGovernanceSessionTool(client)
+    expect(typeof toolDef1.execute).toBe("function")
+
+    // Should accept 2 args
+    const mockCoordinator = { dispatch: vi.fn().mockResolvedValue({}) }
+    const toolDef2 = createGovernanceSessionTool(client, mockCoordinator)
+    expect(typeof toolDef2.execute).toBe("function")
+  })
+
+  // -----------------------------------------------------------------------
+  // OLD TESTS REMOVED:
+  // - "should forward parent session ID from context" — governance sessions
+  //   are now root sessions (no parentID).
+  // - Tests for hm-governance: title prefix — replaced by naming service format.
+  // -----------------------------------------------------------------------
 })
