@@ -1,0 +1,70 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1a0368fb7ffejsLPsdLHV3bNt5",
+  "lastUpdated": "2026-05-25T16:03:42.967Z",
+  "hierarchy": {
+    "root": "ses_1a0368fb7ffejsLPsdLHV3bNt5",
+    "children": {
+      "ses_1a029e886ffez3qOPK5XwWZOeZ": {
+        "file": "ses_1a029e886ffez3qOPK5XwWZOeZ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-advisor-researcher",
+        "children": {}
+      },
+      "ses_1a02942a6ffe9rYHZH1N8cxrQw": {
+        "file": "ses_1a02942a6ffe9rYHZH1N8cxrQw.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-assumptions-analyzer",
+        "children": {}
+      },
+      "ses_1a028ee6cffe88tQmKJIL0TQg7": {
+        "file": "ses_1a028ee6cffe88tQmKJIL0TQg7.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_1a02848eeffePujn3rROjmohaK": {
+        "file": "ses_1a02848eeffePujn3rROjmohaK.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-roadmapper",
+        "children": {}
+      },
+      "ses_1a02064d9ffetGKnkAomhYDs60": {
+        "file": "ses_1a02064d9ffetGKnkAomhYDs60.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-advisor-researcher",
+        "children": {}
+      },
+      "ses_1a01fcc58ffeLY5cXYAWP0q5ER": {
+        "file": "ses_1a01fcc58ffeLY5cXYAWP0q5ER.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-assumptions-analyzer",
+        "children": {}
+      },
+      "ses_1a01f857dffevwGlvRPsNmm2nw": {
+        "file": "ses_1a01f857dffevwGlvRPsNmm2nw.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-assumptions-analyzer",
+        "children": {}
+      },
+      "ses_1a01f4929ffeKmf2PLf86jnvM8": {
+        "file": "ses_1a01f4929ffeKmf2PLf86jnvM8.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 6,
+  "toolSummary": {
+    "task": 4
+  }
+}

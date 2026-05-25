@@ -1,0 +1,30 @@
+{
+  "sessionID": "ses_1a067a6f8ffeysX5Nb5UtCqhRN",
+  "parentSessionID": "ses_1a06824d2ffeTk02yGNJuLv83q",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "unknown",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": "unknown"
+  },
+  "created": "2026-05-25T14:44:40.344Z",
+  "updated": "2026-05-25T14:44:41.742Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "unknown",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "unknown",
+      "content": "Audit the notification architecture fix implemented in Phase 23. Check: 1) Are synthetic notifications properly handled? 2) Is the notification router correctly filtering types? 3) Are there any remaining bugs in the delegation notification loop? Read src/plugin.ts lines 82-84 and src/coordination/delegation/notification-router.ts. Report findings back to this session.",
+      "tools": [],
+      "role": "user"
+    }
+  ],
+  "children": [],
+  "journey": []
+}

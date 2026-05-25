@@ -762,14 +762,18 @@ Plan list:
 
 ### Phase 24.3.1: Governance Session Prototype (Cluster C — Commands & Workflows, MỚI)
 
-**Goal:** Build a prototype custom tool `create-governance-session` that validates the technical feasibility of OpenCode SDK session creation + TUI injection + named session handoff before full Commands Infrastructure investment.
+**Goal:** Build a prototype custom tool `create-governance-session` that validates the technical feasibility of OpenCode SDK session creation + TUI injection + named session handoff before full Commands Infrastructure investment. After L2 verification, 5 CRITICAL runtime failures found in live UAT — gap closure plans (04-07) address these.
 
 **Why this exists:** OpenCode SDK provides `sdk.session.create()`, `sdk.session.prompt()`, `sdk.tui.appendPrompt()`, `sdk.tui.showToast()` — but these APIs have not been tested in Hivemind's context. This prototype verifies: (1) Session auto-naming works with explicit title + parentID, (2) TUI injection displays correctly in OpenCode message stream, (3) Git commit flow before handoff is feasible. Without this validation, P24.3 risks building infrastructure on unverified SDK assumptions.
 
-**Plans:** 3 plans in 3 waves — ✅ ALL COMPLETE
+**Plans:** 7 plans in 5 waves — 3 original (✅ COMPLETE) + 4 gap closure
 - [x] 24.3.1-01-PLAN.md — Wave 1: Create governance engine directory + tool implementation (Zod schema, SDK session creation, prompt injection, TUI toast, git commit) ✅ `0287eb10`, `6f28296f`, `98ea6b80`
 - [x] 24.3.1-02-PLAN.md — Wave 2: Register tool in plugin.ts + unit tests with mocked SDK calls ✅ `b0f1b087`, `f4057c82`
 - [x] 24.3.1-03-PLAN.md — Wave 3: Full verification — typecheck, test suite, regression check, grep evidence ✅ `56228b96`
+- [ ] 24.3.1-04-PLAN.md — Wave 1: Session Tracker Title Capture — add title field to SessionRecord, fix initializeSessionFile frontmatter, fix hardcoded `title: "unknown"` in KernelPacket
+- [ ] 24.3.1-05-PLAN.md — Wave 1: Governance Config Plane — create `.hivemind/governance/config.json` with agents/commands/templates schema + typed config reader
+- [ ] 24.3.1-06-PLAN.md — Wave 2: Real Root Session + Agent Dispatch — create root session (no parentID), replace raw sendPrompt with coordinator.dispatch()
+- [ ] 24.3.1-07-PLAN.md — Wave 3: Delegation Metadata Propagation — fix delegatedBy.agentName, mainAgent.name, subagentType from "unknown" to real values
 
 **Scope:**
 1. Create custom tool `create-governance-session` that:
@@ -780,6 +784,7 @@ Plan list:
    - Outputs user instruction: "chuyển tới session 'name, meta, ses_id' để hoàn thành..."
 2. L2-L3 evidence: prototype with working SDK calls
 3. Verdict: PASS/FAIL for Commands Infrastructure SDK path
+4. **Gap closure (04-07):** Fix 5 CRITICAL runtime UAT failures — phantom session, missing agent dispatch, missing config plane, missing title capture, "unknown" delegation metadata
 
 **Depends on:** Phase 24
 **Blocks:** P24.3 (validates technical feasibility of Command Infrastructure SDK path), P24.4, P24.5, P24.6
@@ -790,6 +795,7 @@ Plan list:
 3. TUI notification (`showToast` + `appendPrompt`) displays in main session message stream
 4. Git commit of current context executes before handoff instruction
 5. User receives actionable handoff text: "chuyển tới session 'name, meta, ses_id' để hoàn thành..."
+6. **Gap closure (L1 UAT):** 5 CRITICAL runtime failures resolved — governance session visible in `opencode session list`, agent dispatched to process brief, config plane exists, session titles captured in tracker, delegation metadata shows real values
 
 ### Phase 24.4: References & Templates System (Cluster C — Commands & Workflows, INSERTED)
 

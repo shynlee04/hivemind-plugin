@@ -1,14 +1,70 @@
 {
   "version": "2.0",
   "sessionID": "ses_1a06824d2ffeTk02yGNJuLv83q",
-  "lastUpdated": "2026-05-25T14:44:31.599Z",
+  "lastUpdated": "2026-05-25T16:03:50.930Z",
   "hierarchy": {
     "root": "ses_1a06824d2ffeTk02yGNJuLv83q",
-    "children": {}
+    "children": {
+      "ses_1a067a6f8ffeysX5Nb5UtCqhRN": {
+        "file": "ses_1a067a6f8ffeysX5Nb5UtCqhRN.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1a05a4b26ffeNAEyUfAy79EUDz": {
+        "file": "ses_1a05a4b26ffeNAEyUfAy79EUDz.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1a04de757ffeTgudRmcRFT0bli": {
+        "file": "ses_1a04de757ffeTgudRmcRFT0bli.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1a048fd42ffeaJfj52Fc36h0BN": {
+        "file": "ses_1a048fd42ffeaJfj52Fc36h0BN.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      },
+      "ses_1a040e383ffeR3aZGCqGumr4hJ": {
+        "file": "ses_1a040e383ffeR3aZGCqGumr4hJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1a03d4b27ffeIi5OXm0DUN29rC": {
+        "file": "ses_1a03d4b27ffeIi5OXm0DUN29rC.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      },
+      "ses_1a03b0735ffeBrWF32VwiHsVVb": {
+        "file": "ses_1a03b0735ffeBrWF32VwiHsVVb.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
   },
-  "turnCount": 1,
+  "turnCount": 11,
   "toolSummary": {
-    "bash": 4,
-    "grep": 1
+    "bash": 51,
+    "grep": 10,
+    "create-governance-session": 1,
+    "read": 26,
+    "glob": 3,
+    "task": 6,
+    "todowrite": 5,
+    "edit": 1
   }
 }
