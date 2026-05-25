@@ -8,7 +8,6 @@
  * @module session-tracker/child-recorder
  */
 
-import { parseSessionTitle } from "../../shared/session-naming.js"
 import type { ChildWriter } from "./persistence/child-writer.js"
 
 /**
@@ -99,17 +98,8 @@ export class ChildRecorder {
 
     // Bug D-2: Prefer delegation context from PendingDispatchRegistry
     // (carried via ChildWriter) when hook payload has empty agent/model.
-    // Priority: 1. Parse from naming service title, 2. input.agent, 3. delegation context
-    const childSessionTitle = (input as unknown as Record<string, unknown>).sessionTitle as string | undefined
-      ?? (input as unknown as Record<string, unknown>).title as string | undefined
-    const parsedTitle = childSessionTitle ? parseSessionTitle(childSessionTitle) : null
-
     const delegationCtx = this.childWriter.getDelegationContext(sessionID)
-    const effectiveActor =
-      parsedTitle?.agent ??
-      input.agent ??
-      delegationCtx?.agentName ??
-      "unknown"
+    const effectiveActor = input.agent || delegationCtx?.agentName || "unknown"
     const effectiveModel =
       (typeof input.model === "string" ? input.model : input.model?.modelID)
       || delegationCtx?.model

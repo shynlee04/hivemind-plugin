@@ -1,6 +1,5 @@
 import type { OpenCodeClient } from "../../shared/session-api.js"
 import { createSession, getSessionID, sendPromptAsync } from "../../shared/session-api.js"
-import { generateSessionTitle } from "../../shared/session-naming.js"
 import { resolveDelegationPermissionProfile } from "../spawner/spawn-request-builder.js"
 import type { ChildSessionStartParams, ChildSessionStartResult } from "./coordinator.js"
 
@@ -24,14 +23,7 @@ export function createSdkChildSessionStarter(client: OpenCodeClient): {
       const childSession = await createSession(client, {
         directory: params.workingDirectory,
         parentID: params.parentSessionId,
-        title: generateSessionTitle({
-          framework: "hm",
-          workflow: "delegate",
-          classification: "child",
-          agent: params.agent,
-          purpose: params.prompt.slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
-          depth: 1,
-        }),
+        title: `Delegation: ${params.agent}`,
       })
       const childSessionId = getSessionID(childSession)
       if (!childSessionId) throw new Error("[Harness] Child session creation did not return a session ID.")

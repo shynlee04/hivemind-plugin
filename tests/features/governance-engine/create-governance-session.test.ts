@@ -144,10 +144,11 @@ describe("createGovernanceSessionTool", () => {
       defaultContext,
     )
 
+    // Title should use naming service format (agent resolved by config reader)
     expect(mockCreateSession).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        title: expect.stringMatching(/^hm\/governance\/root\/gsd-auditor\//),
+        title: expect.stringMatching(/^hm\/governance\/root\/[^/]+\/review-x@0$/),
       }),
     )
   })
@@ -195,7 +196,7 @@ describe("createGovernanceSessionTool", () => {
 
     expect(mockShowTuiToast).toHaveBeenCalledWith(
       expect.anything(),
-      expect.stringContaining("hm/governance/root/gsd-auditor/"),
+      expect.stringMatching(/hm\/governance\/root\/.*audit/),
       "success",
     )
   })

@@ -1,4 +1,3 @@
-import { generateSessionTitle } from "../../shared/session-naming.js"
 import type { DelegationSpawnRequest } from "./spawner-types.js"
 
 type PrimitivePermission = Record<string, unknown>
@@ -41,14 +40,7 @@ export function buildSdkSpawnRequest(
   return {
     parentSessionId: params.parentSessionId,
     agent: agent.name,
-    title: params.title ?? generateSessionTitle({
-      framework: "hm",
-      workflow: "delegate",
-      classification: "child",
-      agent: agent.name,
-      purpose: params.prompt.slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
-      depth: 1,
-    }),
+    title: params.title ?? `Delegation: ${agent.name}`,
     prompt: params.prompt,
     workingDirectory,
     executionMode: "sdk",

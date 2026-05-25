@@ -51,9 +51,6 @@ type ToolContext = {
 /**
  * Creates the `create-governance-session` custom tool.
  *
- * Factory pattern that accepts an OpenCode SDK client via closure
- * injection and an optional coordinator for agent dispatch.
- *
  * @param client - The OpenCode SDK client instance.
  * @param coordinator - Optional coordinator for agent dispatch.
  * @returns ToolDefinition for the create-governance-session tool.
@@ -122,7 +119,6 @@ export function createGovernanceSessionTool(
       let session: Record<string, unknown>
       try {
         session = await createSession(client, {
-          // NO parentID — creates a root session visible in session list
           title: sessionTitle,
           directory: context.directory,
         })
@@ -140,7 +136,7 @@ export function createGovernanceSessionTool(
         )
       }
 
-      // --- Step 6: Dispatch agent via coordinator or fall back to sendPrompt ---
+      // --- Step 6: Dispatch via coordinator or fall back to sendPrompt ---
       if (coordinator) {
         try {
           await coordinator.dispatch({
@@ -162,7 +158,6 @@ export function createGovernanceSessionTool(
           )
         }
       } else {
-        // Fallback: raw sendPrompt if no coordinator available
         try {
           await sendPrompt(client, sessionID, {
             parts: [{ type: "text", text: args.brief }],
