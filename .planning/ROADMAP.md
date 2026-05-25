@@ -9,43 +9,101 @@
 **MVP minimum:** P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36
 **Dependency order:** Phase 0 Governance Baseline → Cluster D (Coordination) → A (Agent) + C (Commands) → P25→P26→B (Documents) → E/F (Primitives/Bootstrap) → G (Routing) → H (Hooks) → I (Auto-loop/PTY) → J (Schema/Config, parallel) → K (Cleanup) → L (Verification)
 
+---
+
+## CRITICAL GOVERNANCE REFLECTIONS
+
+These 5 reflections apply to EVERY phase. They are not optional — each must be traced in every phase entry below.
+
+### Reflection 1: GSD Repo Change — Research Invalidation
+- **Original GSD repo abandoned** (owner allegedly scammed). New maintainer: https://github.com/open-gsd/get-shit-done-redux
+- All 6 GSD research documents from Phase 23 (`23-GSD-agent-architecture`, `23-GSD-command-system`, `23-GSD-workflow-pipeline`, `23-GSD-quality-gates`, `23-GSD-sdk-surface`, `23-GSD-REFERENCE`) are based on the **OLD repo**
+- **Every phase that references GSD patterns must include:** "Re-validate against open-gsd/get-shit-done-redux"
+- Add a research validation gate BEFORE any phase that depends on GSD architecture patterns
+
+### Reflection 2: Architecture Absorption — Features NOT Agent Profiles
+GSD features like session-tracker, delegation-status, coordination, agent-work-contract, injection, trajectory exist in the Hivemind codebase. Their looping/gating/hierarchy/delegation/checkpoint MECHANISMS must be:
+- **ABSORBED into programmatic features** (tools, commands, skills) at `src/`
+- **NOT** placed in agent profiles (`.opencode/agents/`)
+- The L0 orchestrator's coordination logic must use programmatic tools, not agent instruction bloat
+- Each phase must explicitly say: "This logic goes into [tools/commands/skills at src/] NOT into agent profiles"
+
+### Reflection 3: Core Protocol Chain — Every Phase Must Respect
+Every phase must explicitly trace through these protocols:
+1. **Spec-driven**: What spec artifact does this phase produce?
+2. **Research-driven**: What needs research before implementation?
+3. **Context-driven**: What context artifacts feed into this phase?
+4. **Dependencies**: What are the cross-phase dependency links?
+5. **Tech compliance**: Must be validated against actual package.json versions and online docs
+6. **Patterns**: Must reference existing codebase patterns
+7. **Feature completeness**: What's the acceptance criteria?
+8. **Test-driven**: Tests must exist before claiming completion
+9. **Gatekeeping**: Quality/validation/verification gates required
+
+### Reflection 4: Phase Interdependency — No Phase is Independent
+- Every phase WILL generate TBD items that must be tracked
+- Every phase WILL need integration checkpoints with adjacent phases
+- Every phase WILL generate deferred items for gradual stacking in later phases
+- Every phase WILL need a dependency graph/traversal note
+- Every phase WILL need a live UAT node on real OpenCode environment
+
+### Reflection 5: Knowledge Sources Need Validation
+- The paths listed below contain research that may now be inaccurate due to GSD repo change
+- They should be tagged as `⚠️ NEEDS RE-VALIDATION` until verified against open-gsd/get-shit-done-redux
+```
+.hivemind/registries
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-W4-SYNTHESIS.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-W3-SYNTHESIS.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-W2-SYNTHESIS.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-SYNTHESIS-REPORT-2026-05-23.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-GSD-workflow-pipeline-2026-05-23.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-GSD-sdk-surface-2026-05-23.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-GSD-REFERENCE-2026-05-23.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-GSD-quality-gates-2026-05-23.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-GSD-agent-architecture-2026-05-23.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-GSD-command-system-2026-05-23.md
+.planning/phases/23-notification-fix-and-tool-surface-docs/23-DEBTS-REGISTER-2026-05-23.md
+```
+
+---
+
 ## Phases (Clusters A-L, Dependency Ordered)
 
 - [ ] **P23.3 (GAP-01): Notification Delivery L1 UAT** — Verify all 5 bug fixes with live UAT
-- [ ] **P24 (Cluster D): Coordination Dispatch** — Delegate-Task Fix, DelegationManager decomposition
-- [ ] **P23.4 (GAP-02): D→A Integration Gate** — Verify Coordination + Agent integration
-- [ ] **P24.1 (Cluster A): Agent Hierarchy Restructure** — Remove L1, restructure L2/L3 by domain
-- [ ] **P24.2 (Cluster A): Agent Profile Quality Enforcement** — Rewrite ALL hm-* agents
-- [ ] **P24.3 (Cluster C): Commands Infrastructure** — Namespace routers, workflow separation
-- [ ] **P24.3.1 (Cluster C): Governance Session Prototype** — SDK session creation + TUI injection
-- [ ] **P23.5 (GAP-03): A→C Integration Gate** — Verify Agents + Commands integration
-- [ ] **P24.4 (Cluster C): References & Templates System** — Standardized references/templates
-- [ ] **P24.5 (Cluster C): Workflow Files Architecture** — Size budgets, modes decomposition
-- [ ] **P24.6 (Cluster C): Build HM-* Commands** — hm-init-project, hm-discuss, hm-plan, etc.
-- [ ] **P25: Trajectory Redesign** — Trajectory + Agent-Work-Contract redesign
-- [ ] **P26: Pressure + Notification Redesign** — Pressure scoring, notification delivery redesign
-- [ ] **P26.1 (Cluster B): Artifact Naming Convention** — Standardized naming/pathing
-- [ ] **P26.2 (Cluster B): Artifact Dependency & Gatekeeping** — Cross-reference validation
-- [ ] **P23.6 (GAP-04): P25→P26→B Integration Gate** — Verify Trajectory/Pressure/Artifacts
-- [ ] **P24.7 (Cluster E): Primitives Asset Schema** — Schema per primitive type + code-gen
-- [ ] **P24.8 (Cluster E): Primitives Install-Time Extraction** — Real file extraction (not symlinks)
-- [ ] **P24.9 (Cluster F): Bootstrap Init Flow Expansion** — Full end-to-end init experience
-- [ ] **P27 (Cluster G): Routing + Intent Loop** — Intent classification, two-stage routing
-- [ ] **P23.7 (GAP-05): E/F/G Integration Gate** — Verify Primitives/Bootstrap/Routing
-- [ ] **P28 (Cluster H): Hook Injection Plane Redesign** — CQRS enforcement, typed hooks
-- [ ] **P29 (Cluster I): Auto-looping + PTY Revamp** — Verification patterns, routing pipeline
-- [ ] **P23.8 (GAP-06): G/H/I Integration Gate** — Verify Routing/Hooks/Auto-loop
-- [ ] **P30 (Cluster J): Schema Kernel Cleanup** — Delete dead schemas, add tests (parallel)
-- [ ] **P31 (Cluster J): Config Plane Redesign** — Config subscriber fix, artifact governance
-- [ ] **P32 (Cluster J): Shipped Primitives + Governance Wire** — Lineage routing, permission wiring
-- [ ] **P23.9 (GAP-07): Schema+Config Integration Gate** — Verify schemas match config consumers
-- [ ] **P23.10 (GAP-08): Pre-Cleanup Readiness Gate** — Design freeze before Group 4
-- [ ] **P33 (Cluster K): Plugin.ts Decomposition** — Extract registry, startup, composer
-- [ ] **P34 (Cluster K): Async I/O + Typed Errors** — fs→fs/promises, typed error classes
-- [ ] **P35 (Cluster K): Module Splits + Legacy Inventory** — Split event-capture, types
-- [ ] **P36 (Cluster L): Integration Verification** — Full regression, dist rebuild, smoke tests
-- [ ] **P37: Fix sync-oss.yml** (DEFERRED)
-- [ ] **P38: Package .opencode/ Primitives** (DEFERRED)
+- [ ] **P24 (Cluster D): Coordination Dispatch** — Delegate-Task Fix, DelegationManager decomposition [GSD-reval: NO] [Arch-src: YES - coordination/ + tools/delegation] [UAT: live dispatch test]
+- [ ] **P23.4 (GAP-02): D→A Integration Gate** — Verify Coordination + Agent integration [GSD-reval: NO]
+- [ ] **P24.1 (Cluster A): Agent Hierarchy Restructure** — Remove L1, restructure L2/L3 by domain [GSD-reval: NO] [Arch-src: NO - .opencode/agents/ only] [UAT: agent list + dispatch]
+- [ ] **P24.2 (Cluster A): Agent Profile Quality Enforcement** — Rewrite ALL hm-* agents [GSD-reval: NO] [Arch-src: NO - .opencode/agents/ only] [UAT: agent profile validation]
+- [ ] **P24.3 (Cluster C): Commands Infrastructure** — Namespace routers, workflow separation [GSD-reval: YES - GSD research on 67+88 pattern needs re-validation] [Arch-src: YES - tools/ + routing/] [UAT: command dispatch E2E]
+- [ ] **P24.3.1 (Cluster C): Governance Session Prototype** — SDK session creation + TUI injection [GSD-reval: NO] [Arch-src: YES - src/tools/governance/] [UAT: live session create]
+- [ ] **P23.5 (GAP-03): A→C Integration Gate** — Verify Agents + Commands integration [GSD-reval: YES - command patterns may have changed]
+- [ ] **P24.4 (Cluster C): References & Templates System** — Standardized references/templates [GSD-reval: YES - reference patterns from old GSD] [Arch-src: YES - src/features/ or src/shared/] [UAT: reference lookup test]
+- [ ] **P24.5 (Cluster C): Workflow Files Architecture** — Size budgets, modes decomposition [GSD-reval: YES - size budgets sourced from old GSD] [Arch-src: YES - src/routing/ or src/features/] [UAT: workflow file creation]
+- [ ] **P24.6 (Cluster C): Build HM-* Commands** — hm-init-project, hm-discuss, hm-plan, etc. [GSD-reval: YES - command patterns from old GSD research] [Arch-src: YES - src/cli/commands/ + .opencode/commands/] [UAT: each command runnable]
+- [ ] **P25: Trajectory Redesign** — Trajectory + Agent-Work-Contract redesign [GSD-reval: NO] [Arch-src: YES - src/task-management/trajectory/] [UAT: trajectory state transitions]
+- [ ] **P26: Pressure + Notification Redesign** — Pressure scoring, notification delivery redesign [GSD-reval: NO] [Arch-src: YES - src/features/pressure/ + src/features/notification/] [UAT: pressure scoring live]
+- [ ] **P26.1 (Cluster B): Artifact Naming Convention** — Standardized naming/pathing [GSD-reval: YES - ADR-0006 from old GSD] [Arch-src: YES - src/shared/ or src/features/governance/] [UAT: artifact naming validation]
+- [ ] **P26.2 (Cluster B): Artifact Dependency & Gatekeeping** — Cross-reference validation [GSD-reval: YES - gate patterns from old GSD] [Arch-src: YES - src/features/governance/] [UAT: cross-ref validation gate]
+- [ ] **P23.6 (GAP-04): P25→P26→B Integration Gate** — Verify Trajectory/Pressure/Artifacts [GSD-reval: NO]
+- [ ] **P24.7 (Cluster E): Primitives Asset Schema** — Schema per primitive type + code-gen [GSD-reval: YES - primitive schema patterns from old GSD] [Arch-src: YES - src/schema-kernel/ + src/assets/] [UAT: schema validation test]
+- [ ] **P24.8 (Cluster E): Primitives Install-Time Extraction** — Real file extraction (not symlinks) [GSD-reval: NO] [Arch-src: YES - src/cli/init + src/tools/bootstrap] [UAT: npx hivemind init E2E]
+- [ ] **P24.9 (Cluster F): Bootstrap Init Flow Expansion** — Full end-to-end init experience [GSD-reval: NO] [Arch-src: YES - src/cli/ + src/tools/bootstrap] [UAT: init → doctor E2E]
+- [ ] **P27 (Cluster G): Routing + Intent Loop** — Intent classification, two-stage routing [GSD-reval: YES - two-stage routing from old GSD research] [Arch-src: YES - src/routing/] [UAT: route intent → correct handler]
+- [ ] **P23.7 (GAP-05): E/F/G Integration Gate** — Verify Primitives/Bootstrap/Routing [GSD-reval: NO]
+- [ ] **P28 (Cluster H): Hook Injection Plane Redesign** — CQRS enforcement, typed hooks [GSD-reval: NO] [Arch-src: YES - src/hooks/] [UAT: hook registration + CQRS enforcement]
+- [ ] **P29 (Cluster I): Auto-looping + PTY Revamp** — Verification patterns, routing pipeline [GSD-reval: YES - loop patterns from old GSD research] [Arch-src: YES - src/features/auto-loop/ + src/features/pty/] [UAT: auto-loop E2E]
+- [ ] **P23.8 (GAP-06): G/H/I Integration Gate** — Verify Routing/Hooks/Auto-loop [GSD-reval: NO]
+- [ ] **P30 (Cluster J): Schema Kernel Cleanup** — Delete dead schemas, add tests (parallel) [GSD-reval: NO] [Arch-src: YES - src/schema-kernel/] [UAT: test suite pass]
+- [ ] **P31 (Cluster J): Config Plane Redesign** — Config subscriber fix, artifact governance [GSD-reval: YES - ADR-0006 from old GSD] [Arch-src: YES - src/config/] [UAT: config read/write E2E]
+- [ ] **P32 (Cluster J): Shipped Primitives + Governance Wire** — Lineage routing, permission wiring [GSD-reval: YES - lineage routing from old GSD] [Arch-src: YES - src/routing/ + src/config/] [UAT: permission enforcement live]
+- [ ] **P23.9 (GAP-07): Schema+Config Integration Gate** — Verify schemas match config consumers [GSD-reval: NO]
+- [ ] **P23.10 (GAP-08): Pre-Cleanup Readiness Gate** — Design freeze before Group 4 [GSD-reval: NO]
+- [ ] **P33 (Cluster K): Plugin.ts Decomposition** — Extract registry, startup, composer [GSD-reval: NO] [Arch-src: YES - src/plugin.ts → src/plugin/] [UAT: build + typecheck pass]
+- [ ] **P34 (Cluster K): Async I/O + Typed Errors** — fs→fs/promises, typed error classes [GSD-reval: NO] [Arch-src: YES - src/shared/errors/ + cross-cutting] [UAT: I/O operations work]
+- [ ] **P35 (Cluster K): Module Splits + Legacy Inventory** — Split event-capture, types [GSD-reval: NO] [Arch-src: YES - src/features/ + src/shared/] [UAT: test suite pass]
+- [ ] **P36 (Cluster L): Integration Verification** — Full regression, dist rebuild, smoke tests [GSD-reval: NO] [Arch-src: N/A - verification only] [UAT: full suite pass]
+- [ ] **P37: Fix sync-oss.yml** (DEFERRED) [GSD-reval: NO]
+- [ ] **P38: Package .opencode/ Primitives** (DEFERRED) [GSD-reval: NO]
 
 ---
 
@@ -901,6 +959,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Depends on:** P23.3 (GAP-01 — notification delivery verified)
 **Debts inherited from Phase 23:** C-1 (delegate-task proxy war), M-1 (L0 max skills), M-8 (start-work routing) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
+**Governance:**
+- **GSD Re-validation:** NO — coordination dispatch is Hivemind-native, not sourced from GSD
+- **Architecture Absorption:** YES — DelegationManager decomposition belongs in `src/coordination/delegation/` and `src/tools/delegation/`, NOT in agent profiles
+- **Protocol Chain:** Spec (SPEC.md) → Research (CP-DT-01 research) → Context (CP-DT-01 CONTEXT.md) → Dependencies (P23.3) → Tech compliance (package.json SDK version) → Patterns (existing manager.ts patterns) → Feature completeness (CP-DT-01 REQs) → Tests (unit + integration) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P23.3 (input), P24.1 (output), P23.4 (D→A gate)
+- **TBD Registry:** TBD-24-01: DelegationManager decomposition may expose further god-objects in coordinator.ts; TBD-24-02: dual store consolidation may require new store module
+- **Live UAT Node:** Run `delegate-task` in real OpenCode session — verify child session dispatch, completion detection, notification delivery
+- **Deferred Stacking:** coordinator.ts deep refactor (if scope exceeds phase), notification-triggered retry logic (deferred to P26)
+
 ### Phase 24.1: Agent Hierarchy Restructure (Cluster A — Agent Quality, INSERTED)
 
 **Goal:** Restructure agent hierarchy — remove L1 agent, retain L0 as sole front-facing orchestrator, restructure L2/L3 by domain. Fix C-1 (delegate-task vs task conflict), C-3 (hallucinated `websearch`), H-2 (hm-l2-build 86 lines underspecified), M-1 (8 skills vs max 3), L-2/L-3 (temperature/size violations across L2 agents).
@@ -916,6 +983,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 3. C-1 resolved: `task` tool standardized as preferred delegation method across all agents
 4. C-3 resolved: `websearch` removed from all agent permissions
 5. M-1 resolved: every agent declares ≤3 skills
+
+**Governance:**
+- **GSD Re-validation:** NO — agent hierarchy is Hivemind-native design, not GSD-sourced
+- **Architecture Absorption:** NO — agent profiles live in `.opencode/agents/` (soft meta-concepts). Hierarchy restructure modifies agent files only, NOT `src/`
+- **Protocol Chain:** Spec (P24.1-SPEC.md) → Research (DEBTS-REGISTER audit) → Context (C-1/C-3/H-2/M-1/L-2/L-3 debt descriptions) → Dependencies (P24) → Feature completeness (5 success criteria) → Tests (agent validation script) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P24 (input), P24.2 (output), P23.4 (D→A gate)
+- **TBD Registry:** TBD-24.1-01: Agent domain classification may reveal ambiguous agents that span multiple domains; TBD-24.1-02: L1 removal may break existing command references to L1 agent
+- **Live UAT Node:** Run `opencode agent list` after restructure — verify L0 appears, L1 missing, L2/L3 grouped by domain. Run a dispatch test — verify L0 routes correctly
+- **Deferred Stacking:** Agent permission fine-tuning (deferred to P32), agent-specific tool overrides (deferred to P32)
 
 ### Phase 24.2: Agent Profile Quality Enforcement (Cluster A — Agent Quality, INSERTED)
 
@@ -933,6 +1009,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 4. Quality gate (lifecycle → spec → evidence) passes for agent profile batch
 5. Zero agents below minimum line threshold
 
+**Governance:**
+- **GSD Re-validation:** NO — agent quality is Hivemind-native, quality standards from HMQUAL-01..08
+- **Architecture Absorption:** NO — agent profiles are `.opencode/agents/` only. Quality enforcement tools (scanner, validator) belong in `src/features/agent-quality/` at `src/`
+- **Protocol Chain:** Spec (P24.2-SPEC.md with quality criteria) → Research (HMQUAL-01..08 contracts) → Context (agent audit findings from P23) → Dependencies (P24.1) → Patterns (existing well-written agents as templates) → Feature completeness (5 success criteria) → Tests (agent quality scanner script) → Gates (profile batch quality gate)
+- **Integration Checkpoints:** Adjacent: P24.1 (input), P24.3 (output), P23.4/23.5 (gates)
+- **TBD Registry:** TBD-24.2-01: 45 agents × 150 lines minimum = 6,750 lines — verify this is achievable within phase budget; TBD-24.2-02: Quality scanner tool may need to be built if no existing validation exists
+- **Live UAT Node:** Run quality scanner on updated agents — verify all 45 pass. Run a subagent dispatch — verify quality-enforced agent produces correct behavior
+- **Deferred Stacking:** Agent eval framework (deferred to post-P36), agent benchmark suite (deferred to v2.0)
+
 ### Phase 24.3: Commands Infrastructure (Cluster C — Commands & Workflows, INSERTED)
 
 **Goal:** Design and implement namespace routers, workflow separation patterns, YAML frontmatter schema for command definitions, and execute-slash-command routing integration. Based on GSD research evidence: 67 commands + 88 workflows pattern.
@@ -948,6 +1033,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 3. YAML frontmatter schema defined for all command `.md` files
 4. `execute-slash-command` routing integration designed — route by namespace to correct handler
 5. Backward compatibility with existing `.opencode/commands/` preserved
+
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — 67+88 commands/workflows pattern sourced from OLD GSD repo. Must re-validate against open-gsd/get-shit-done-redux. The namespace router and workflow separation patterns may differ in the new repo.
+- **Architecture Absorption:** YES — namespace routers go in `src/routing/command-engine/`, YAML schema in `src/schema-kernel/`, routing integration in `src/routing/`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P24.3-SPEC.md) → Research (GSD re-validation + existing execute-slash-command code) → Context (P23-S01 synthesis documents, P24.3.1 prototype findings) → Dependencies (P24.2, P24.3.1) → Tech compliance (validate against OpenCode SDK command schema) → Patterns (existing `.opencode/commands/` files) → Feature completeness (5 success criteria) → Tests (command dispatch unit + integration) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P24.2 (input), P24.4 (output), P24.3.1 (parallel prototype), P23.5 (A→C gate)
+- **TBD Registry:** TBD-24.3-01: GSD re-validation may invalidate 67+88 estimate — adjust scope accordingly; TBD-24.3-02: `.opencode/commands/` may have hidden compatibility issues with new schema; TBD-24.3-03: Namespace router may need coexisting legacy router during migration
+- **Live UAT Node:** Register a test command via new infrastructure → verify it appears in `opencode command list` → dispatch it via `/` → verify correct handler invoked
+- **Deferred Stacking:** Command permission wiring (deferred to P32), command analytics/tracking (deferred to post-P36)
 
 ### Phase 24.3.1: Governance Session Prototype (Cluster C — Commands & Workflows, MỚI)
 
@@ -974,6 +1068,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 2. L2-L3 evidence: prototype with working SDK calls
 3. Verdict: PASS/FAIL for Commands Infrastructure SDK path
 4. **Gap closure (04-07):** Fix 5 CRITICAL runtime UAT failures — phantom session, missing agent dispatch, missing config plane, missing title capture, "unknown" delegation metadata
+
+**Governance:**
+- **GSD Re-validation:** NO — governance session is a Hivemind-native prototype, not GSD-sourced
+- **Architecture Absorption:** YES — the tool itself lives at `src/tools/governance/create-governance-session.ts` (already exists). Config plane logic in `src/config/governance/`. NOT in agent profiles.
+- **Protocol Chain:** Spec (24.3.1-SPEC.md) → Research (OpenCode SDK session.create() API) → Context (existing prototype, 5 gap items) → Dependencies (P24) → Tech compliance (validate against @opencode-ai/plugin SDK version) → Patterns (existing tool registration pattern) → Feature completeness (7 plans × success criteria) → Tests (14 unit tests exist, gap closure tests needed) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P24 (input), P24.3 (output - validates feasibility), P24.4 (parallel)
+- **TBD Registry:** TBD-24.3.1-01: SDK session.create() may have undocumented rate limits; TBD-24.3.1-02: Phantom session root cause may be deeper than current gap plans address
+- **Live UAT Node:** Run `create-governance-session` in real OpenCode session → verify: (1) session appears in `opencode session list`, (2) TUI notification displays, (3) agent dispatch works, (4) delegation metadata is NOT "unknown", (5) session titles captured correctly
+- **Deferred Stacking:** Full governance workflow abstraction (deferred to P24.6 hm-commands), multi-session orchestration (deferred to post-P36)
 
 **Depends on:** Phase 24
 **Blocks:** P24.3 (validates technical feasibility of Command Infrastructure SDK path), P24.4, P24.5, P24.6
@@ -1002,6 +1105,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 4. `.hivemind/references/` directory created with initial reference schemas
 5. `.hivemind/templates/` directory created with command and workflow templates
 
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — reference/template patterns may reference GSD ADR conventions from old repo. Must verify against open-gsd/get-shit-done-redux reference architecture.
+- **Architecture Absorption:** YES — template engine implementation goes in `src/features/templates/` or `src/shared/template-engine.ts`. Reference format schema in `src/schema-kernel/reference.schema.ts`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P24.4-SPEC.md) → Research (existing `.hivemind/` structure patterns + GSD reference conventions re-validated) → Context (P24.3 command infrastructure output) → Dependencies (P24.3, P24.3.1) → Patterns (existing `.hivemind/registries` structure) → Feature completeness (5 success criteria) → Tests (template engine unit tests + reference format validation) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P24.3 (input), P24.5 (output), P24.6 (consumer)
+- **TBD Registry:** TBD-24.4-01: @-reference resolution may require a resolver tool in `src/tools/`; TBD-24.4-02: `.hivemind/references/` and `.hivemind/templates/` may conflict with existing registry structure
+- **Live UAT Node:** Create a reference file → reference it via @-mechanism in a command → verify resolution works in real session
+- **Deferred Stacking:** Web-based template editor (deferred), reference validation CI hook (deferred to post-P36), template sharing/registry (deferred)
+
 ### Phase 24.5: Workflow Files Architecture (Cluster C — Commands & Workflows, INSERTED)
 
 **Goal:** Design workflow file architecture with size budgets (XL=1700, LARGE=1500, DEFAULT=1000, STRICT=500). Implement modes/ and templates/ decomposition. Establish pipeline: discuss → plan → execute → verify → ship.
@@ -1017,6 +1129,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 3. Pipeline stages documented: discuss → plan → execute → verify → ship
 4. Mode system defined: mvp, standard, strict, research per phase
 5. Size enforcement mechanism designed (gate at creation time)
+
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — size budget tiers and mode system are sourced directly from old GSD workflow patterns. Re-validate against open-gsd/get-shit-done-redux to verify tier values, mode definitions, and pipeline stages.
+- **Architecture Absorption:** YES — size enforcement gate in `src/routing/workflow-validator.ts` or `src/features/workflow/`. Pipeline orchestration in `src/features/workflow/pipeline.ts`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P24.5-SPEC.md) → Research (GSD workflow architecture re-validated + existing Hivemind workflow patterns) → Context (P24.4 references/templates output) → Dependencies (P24.4) → Tech compliance (validate size budget implementation against real workflow files) → Patterns (existing `.planning/phases/` structure) → Feature completeness (5 success criteria) → Tests (size budget validation tests + pipeline stage transition tests) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P24.4 (input), P24.6 (output)
+- **TBD Registry:** TBD-24.5-01: Size budgets may need adjustment after measuring actual Hivemind workflow files; TBD-24.5-02: Mode definitions may overlap with existing BOOT/CP-* workstream modes
+- **Live UAT Node:** Create a workflow file exceeding size budget → verify enforcement gate rejects it. Create within budget → verify gate passes. Run pipeline stages end-to-end.
+- **Deferred Stacking:** Workflow analytics (deferred), auto-split for oversized workflows (deferred), workflow visualization (deferred)
 
 ### Phase 24.6: Build HM-* Commands (Cluster C — Commands & Workflows, INSERTED)
 
@@ -1039,16 +1160,43 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 9. `hm-research` command runs research chain
 10. All commands use `.hivemind/references/` and `.hivemind/templates/` from P24.4
 
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — HM-* command patterns (discuss → plan → execute → verify → ship) are derived from GSD workflow patterns. Each command's behavior must be re-validated against open-gsd/get-shit-done-redux. The 9-command list itself is Hivemind-native.
+- **Architecture Absorption:** YES — command implementations go in `src/cli/commands/hm-*` or as `.opencode/commands/hm-*` definitions. Core logic (discussion, planning, execution) belongs in `src/features/workflow/` NOT in agent profiles.
+- **Protocol Chain:** Spec (P24.6-SPEC.md per command) → Research (GSD re-validation + Hivemind workflow patterns) → Context (P24.3 infrastructure, P24.4 references, P24.5 workflows) → Dependencies (P24.5) → Patterns (existing GSD commands as reference, but must be transformed) → Feature completeness (10 success criteria) → Tests (each command unit test + E2E test) → Gates (lifecycle → spec → evidence per command)
+- **Integration Checkpoints:** Adjacent: P24.5 (input), P25 (output - trajectory commands), P23.5 (A→C gate)
+- **TBD Registry:** TBD-24.6-01: 9 commands × full implementation may exceed single phase budget — consider MVP subset; TBD-24.6-02: Some commands may overlap with existing GSD commands — resolve routing conflicts
+- **Live UAT Node:** Run each hm-* command in live OpenCode session → verify correct behavior, output format, and absence of cross-contamination with gsd-* commands
+- **Deferred Stacking:** HM-* command help system (deferred), command discovery/indexing (deferred), command analytics (deferred)
+
 ### Phase 25: Trajectory + Agent-Work-Contract Redesign (Group 1 — was Phase 24)
 
 **Goal:** Fix trajectory state transitions. Add trajectory tests (zero currently). Fix agent-work-contract lifecycle. Deduplicate deriveSurface(). Incorporate P23-06 assessment findings.
 **Depends on:** Phase 23, 24, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6
 **Debts inherited from Phase 23:** M-4 (legacy .harness/ path) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
+**Governance:**
+- **GSD Re-validation:** NO — trajectory is Hivemind-native (session-tracker lineage), not GSD-sourced
+- **Architecture Absorption:** YES — trajectory logic in `src/task-management/trajectory/`, agent-work-contract in `src/features/work-contract/`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P25-SPEC.md including P23-06 assessment) → Research (existing trajectory code + P23-06 structured assessment) → Context (P23-06 findings, trajectory debts) → Dependencies (P23-P24.6 chain) → Tech compliance (validate against session-tracker types) → Patterns (existing trajectory.ts patterns) → Feature completeness (trajectory tests exist + correct state transitions) → Tests (TDD: RED tests for trajectory first) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P24.6 (input), P26 (output), P23.6 (P25→P26→B gate)
+- **TBD Registry:** TBD-25-01: deriveSurface deduplication may reveal further code duplication across modules; TBD-25-02: Legacy .harness/ path may have more consumers than currently identified
+- **Live UAT Node:** Run a multi-session delegation chain → verify trajectory states (PENDING→ACTIVE→COMPLETED→ARCHIVED) transition correctly in session-tracker logs
+- **Deferred Stacking:** Trajectory visualization (deferred), trajectory analytics (deferred to post-P36)
+
 ### Phase 26: Pressure + Notification Redesign (Group 1 — was Phase 25)
 
 **Goal:** Fix pressure scoring (zero tests, 625 LOC). Fix authority-matrix overlap. Complete notification delivery redesign (TTL + retry + delivery tracking + injection plane patterns from P23-07). Fix SDK handler race.
 **Depends on:** Phase 23, 24, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6, 25
+
+**Governance:**
+- **GSD Re-validation:** NO — pressure scoring and notification delivery are Hivemind-native
+- **Architecture Absorption:** YES — pressure scoring in `src/features/pressure/`, notification delivery in `src/features/notification/`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P26-SPEC.md) → Research (existing pressure.ts 625 LOC + P23-07 injection patterns) → Context (P23-07 patterns, notification debts) → Dependencies (P25 trajectory as input) → Tech compliance (validate against existing notification schema) → Patterns (existing notification-handler patterns) → Feature completeness (pressure tests + notification TTL/retry working) → Tests (TDD for pressure scoring + notification delivery) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P25 (input), P26.1 (output), P23.6 (P25→P26→B gate)
+- **TBD Registry:** TBD-26-01: Authority-matrix overlap may be more extensive than current scope; TBD-26-02: SDK handler race may require deeper SDK investigation
+- **Live UAT Node:** Trigger a high-pressure condition → verify pressure scoring produces correct output. Send a delegation notification → verify TTL/retry/delivery tracking works in real session.
+- **Deferred Stacking:** Pressure-based routing decisions (deferred to P27), notification channel plugins (deferred)
 
 ### Phase 26.1: Artifact Naming & Pathing Convention (Cluster B — Documents, INSERTED)
 
@@ -1065,6 +1213,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 4. Standardized artifact structure per phase: SPEC.md, RESEARCH.md, PLAN.md, SUMMARY.md, SYNTHESIS.md, DEBTS-REGISTER.md
 5. Existing artifacts batch-renamed to match convention (non-destructive — symlinks/aliases preserved)
 
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — artifact naming conventions reference GSD ADR-0006 (Planning Path Projection Module). Must re-validate against open-gsd/get-shit-done-redux ADR conventions.
+- **Architecture Absorption:** YES — naming convention validation goes in `src/features/governance/artifact-validator.ts` or `src/routing/artifact-governance/`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P26.1-SPEC.md) → Research (existing artifact patterns audit + GSD ADR re-validation) → Context (C-5 debt description, existing naming chaos) → Dependencies (P26) → Patterns (`.planning/architecture/` existing conventions) → Feature completeness (5 success criteria) → Tests (naming validation tests + batch rename dry-run) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P26 (input), P26.2 (output), P23.6 (P25→P26→B gate)
+- **TBD Registry:** TBD-26.1-01: Batch renaming 100+ artifacts may find hidden cross-references that break; TBD-26.1-02: Some artifacts may have date-stamp naming that conflicts with new convention
+- **Live UAT Node:** Create a new artifact → verify naming validator accepts it. Run batch rename dry-run → verify no broken references.
+- **Deferred Stacking:** Automated artifact migration tool (deferred), artifact quality scoring (deferred)
+
 ### Phase 26.2: Artifact Dependency & Gatekeeping (Cluster B — Documents, INSERTED)
 
 **Goal:** Implement cross-reference validation, gatekeeping loops, and dependency chain management for all artifacts. Ensure documents are validated on creation, checked against existing artifacts for overlap, and traceable across sessions.
@@ -1079,6 +1236,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 3. Dependency chain between artifacts is documented and enforceable
 4. Debt tracking (DEBTS-REGISTER.md) integrated into workflow commands as default step
 5. Cross-reference validation detects dead/broken artifact links
+
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — gatekeeping loops and dependency chains reference GSD quality gate patterns. Must re-validate against open-gsd/get-shit-done-redux gate architecture.
+- **Architecture Absorption:** YES — cross-reference validator in `src/features/governance/cross-ref-validator.ts`, gatekeeping loop in `src/features/governance/artifact-gate.ts`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P26.2-SPEC.md) → Research (existing gate skills + GSD gate patterns re-validated) → Context (P26.1 naming output) → Dependencies (P26.1) → Patterns (gate-l3-* skill patterns) → Feature completeness (5 success criteria) → Tests (gate loop unit tests + cross-ref integrity tests) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P26.1 (input), P24.7 (output - primitives depend on artifact conventions), P23.6 (P25→P26→B gate)
+- **TBD Registry:** TBD-26.2-01: Cross-session validation may need access to `.hivemind/session-tracker/` for full context; TBD-26.2-02: Gatekeeping loop may conflict with existing GSD workflow gates
+- **Live UAT Node:** Create a deliberately invalid artifact → verify gatekeeping loop rejects it. Create a cross-reference to non-existent artifact → verify dead link detection fires.
+- **Deferred Stacking:** Automated artifact repair (deferred), gatekeeping dashboard (deferred)
 
 ### Phase 24.7: Primitives Asset Schema (Cluster E — Primitives Distribution, INSERTED)
 
@@ -1095,6 +1261,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 3. Code-gen pipeline: schema → TypeScript types → `src/assets/` module
 4. Runtime validation: loaded primitives validated against schema at activation
 5. Legacy `.hivefiver-meta-builder/` symlink pattern documented as dev-only
+
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — primitive schema patterns may reference GSD primitive conventions. Verify against open-gsd/get-shit-done-redux.
+- **Architecture Absorption:** YES — schemas in `src/schema-kernel/primitive-*.schema.ts`, code-gen in `src/shared/codegen/`, runtime validation in `src/shared/primitive-validator.ts`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P24.7-SPEC.md) → Research (existing primitive formats + GSD conventions re-validated) → Context (P26 artifact conventions, existing `.hivefiver-meta-builder/` structure) → Dependencies (P26) → Tech compliance (validate against @opencode-ai/plugin primitive format) → Patterns (existing Zod schema patterns) → Feature completeness (5 success criteria) → Tests (schema validation + code-gen output tests) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P26 (input), P24.8 (output), P23.7 (E/F/G gate)
+- **TBD Registry:** TBD-24.7-01: 5 primitive types × full schema may exceed phase budget — prioritize agent+skill; TBD-24.7-02: Code-gen pipeline may need AST-level primitive parsing
+- **Live UAT Node:** Generate primitives from schema → verify they load correctly in OpenCode. Validate against existing primitives → verify no breaking changes.
+- **Deferred Stacking:** Custom primitive type extensions (deferred), schema evolution/migration (deferred)
 
 ### Phase 24.8: Primitives Install-Time Extraction (Cluster E — Primitives Distribution, INSERTED)
 
@@ -1114,6 +1289,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 6. No symlinks to `.hivefiver-meta-builder/` in shipped output
 7. Legacy `bootstrap-recover` tool updated to use extraction (not symlinks)
 
+**Governance:**
+- **GSD Re-validation:** NO — primitive extraction is Hivemind-native (extends existing BOOT workstream)
+- **Architecture Absorption:** YES — extraction logic in `src/tools/bootstrap-extract.ts` or `src/cli/commands/init.ts`. Permissions resolution in `src/shared/permissions/`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P24.8-SPEC.md) → Research (existing BOOT-02..BOOT-07 patterns + npm install hooks) → Context (P24.7 schema output) → Dependencies (P24.7) → Tech compliance (validate against OpenCode's `.opencode/` primitive discovery) → Patterns (BOOT-04 symlink restoration as baseline) → Feature completeness (7 success criteria) → Tests (extraction unit tests + atomic rollback tests + E2E init test) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P24.7 (input), P24.9 (output), P23.7 (E/F/G gate)
+- **TBD Registry:** TBD-24.8-01: Global vs project permissions resolution may conflict with existing BOOT config; TBD-24.8-02: `bootstrap-recover` refactor may need to coexist with legacy version during migration
+- **Live UAT Node:** Run `npx hivemind init` in a temp project → verify `.opencode/` contains real files (not symlinks) → verify `doctor` PASSes
+- **Deferred Stacking:** Partial primitive update/reinstall (deferred), primitive versioning (deferred)
+
 ### Phase 24.9: Bootstrap Init Flow Expansion (Cluster F — Bootstrap & Init, INSERTED)
 
 **Goal:** Expand bootstrap initialization flow: create `.hivemind/` structure, extract primitives (from P24.8), initialize routing governance plane, detect framework conflicts, configure user config plane. Full end-to-end `npx hivemind init` experience.
@@ -1132,6 +1316,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 6. `npx hivemind doctor` reports all init operations PASS
 7. End-to-end clean temp project proof: init → doctor → verify primitives exist
 
+**Governance:**
+- **GSD Re-validation:** NO — bootstrap is Hivemind-native (BOOT-02..BOOT-07 already delivered)
+- **Architecture Absorption:** YES — full init orchestration in `src/cli/commands/init.ts`, framework conflict detection in `src/features/governance/framework-detector.ts`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P24.9-SPEC.md) → Research (existing BOOT workstream patterns) → Context (P24.8 extraction output, existing BOOT artifacts) → Dependencies (P24.8) → Patterns (BOOT-07 E2E proof pattern) → Feature completeness (7 success criteria) → Tests (E2E init test + conflict detection test) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P24.8 (input), P27 (output), P23.7 (E/F/G gate)
+- **TBD Registry:** TBD-24.9-01: Framework conflict detection may have false positives with existing .planning/ directories; TBD-24.9-02: Interactive prompts may fail in CI environments — add --yes flag
+- **Live UAT Node:** Run `npx hivemind init --yes` in a temp project with existing GSD framework → verify conflict warning appears. Run in clean project → verify init completes, doctor PASSes.
+- **Deferred Stacking:** Full interactive onboarding wizard (deferred), migration tool from GSD/BMAD (deferred)
+
 ### Phase 27: Routing + Intent Loop Foundation (Group 2 — was Phase 26, SCOPE EXPANDED)
 
 **Goal:** Fix intent-classifier (fragile substring). Remove dead registry validator. Delete dead no-op profile methods. Add tests for 3 sub-modules (~1,200 LOC untested). **Expanded scope:** Implement namespace meta-skills (two-stage routing) and workflow separation pattern inspired by GSD research.
@@ -1141,6 +1334,15 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Depends on:** Phase 21-P26.2, P24.7, P24.8, P24.9
 **Debts inherited from Phase 23:** M-3 (conductor domain mismatch), M-7 (context-mapper underspecified) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — two-stage routing (namespace meta-skills) and workflow separation pattern are sourced from old GSD research. Must re-validate against open-gsd/get-shit-done-redux to verify these patterns still apply.
+- **Architecture Absorption:** YES — routing engine in `src/routing/`, intent classifier in `src/routing/intent-classifier/`, namespace meta-skills in `src/routing/namespace-router/`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P27-SPEC.md with expanded scope) → Research (GSD routing patterns re-validated + existing intent-classifier analysis) → Context (M-3, M-7 debts, P23-S01 synthesis) → Dependencies (P21-P26.2 chain, P24.7-P24.9) → Tech compliance (validate against existing routing code) → Patterns (existing routing/ module patterns) → Feature completeness (fragile substring fixed + two-stage routing + workflow separation) → Tests (1,200 LOC of untested code covered + new routing tests) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P24.9 (input), P28 (output), P23.7 (E/F/G gate), P23.8 (G/H/I gate)
+- **TBD Registry:** TBD-27-01: Two-stage routing may introduce latency that single-pass classification didn't have; TBD-27-02: Namespace meta-skills may conflict with existing agent skill loading
+- **Live UAT Node:** Submit various intent queries → verify first stage (classify) and second stage (route) produce correct results. Verify fragile substring bugs no longer occur.
+- **Deferred Stacking:** Adaptive routing based on historical accuracy (deferred), routing analytics dashboard (deferred)
+
 ### Phase 28: Hook Injection Plane Redesign (Group 2 — was Phase 27, SCOPE EXPANDED)
 
 **Goal:** Fix CQRS violation in tool-after-workflow. Enforce assertHookWriteBoundary. Type hook signatures. Classify silent vs required (incorporate P23-07 delivery patterns). Inline thin observers. **Expanded scope:** Implement workflow size budget enforcement and command inventory drift-guard.
@@ -1148,11 +1350,29 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Why scope expanded:** GSD research identified two unaddressed risks: (1) workflow size budget enforcement prevents bloated workflows from degrading hook injection performance, and (2) command inventory drift-guard detects when registered commands drift from their on-disk definitions — preventing the silent mismatch between `.opencode/commands/` and the command engine's internal registry.
 **Depends on:** Phase 27
 
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — workflow size budget enforcement and command inventory drift-guard are sourced from old GSD patterns. Re-validate against open-gsd/get-shit-done-redux.
+- **Architecture Absorption:** YES — hook injection in `src/hooks/`, CQRS enforcement in `src/hooks/guards/`, drift-guard in `src/routing/command-engine/drift-guard.ts`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P28-SPEC.md with expanded scope) → Research (existing hook code + GSD patterns re-validated + P23-07 delivery patterns) → Context (P27 routing output) → Dependencies (P27) → Tech compliance (validate hook signatures against @opencode-ai/plugin SDK) → Patterns (existing hook module patterns) → Feature completeness (CQRS fix + typed signatures + silent/required classification + size budgets + drift-guard) → Tests (hook type tests + CQRS violation tests + drift detection tests) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P27 (input), P29 (output), P23.8 (G/H/I gate)
+- **TBD Registry:** TBD-28-01: assertHookWriteBoundary may need exceptions for legitimate cross-boundary hooks; TBD-28-02: Command inventory drift-guard may have false positives during active development
+- **Live UAT Node:** Register a hook that violates CQRS → verify enforcement fires. Modify a command file without updating registry → verify drift-guard detects mismatch.
+- **Deferred Stacking:** Hook performance monitoring (deferred), hook dependency visualization (deferred)
+
 ### Phase 29: Auto-Looping + PTY + Background Command Revamp (Group 2 — was Phase 28)
 
 **Goal:** Fix auto-loop session-tracker dependency. Replace ralph-loop with practical verification patterns (per P23-04 rewrite). Wire into routing pipeline. Delete dead prompt-packet (348 LOC).
 **Depends on:** Phase 28
 **Debts inherited from Phase 23:** H-5 (external scripts), M-11 (gate dependencies) — see `23-DEBTS-REGISTER-2026-05-23.md`
+
+**Governance:**
+- **GSD Re-validation:** ⚠️ YES — auto-looping patterns and verification patterns are sourced from old GSD ralph-loop research. Re-validate against open-gsd/get-shit-done-redux.
+- **Architecture Absorption:** YES — auto-loop engine in `src/features/auto-loop/`, PTY integration in `src/features/pty/`, background commands in `src/features/background-command/`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P29-SPEC.md) → Research (existing auto-loop code + GSD loop patterns re-validated + PTY CP-PTY-00 research) → Context (P23-04 rewritten skills, P28 hook output) → Dependencies (P28) → Tech compliance (validate PTY against bun-pty version in package.json) → Patterns (existing auto-loop module patterns) → Feature completeness (session-tracker dependency fixed + ralph-loop replaced + routing pipeline wired + prompt-packet deleted) → Tests (auto-loop unit + PTY integration) → Gates (lifecycle → spec → evidence)
+- **Integration Checkpoints:** Adjacent: P28 (input), P30 (output - parallel), P23.8 (G/H/I gate)
+- **TBD Registry:** TBD-29-01: PTY implementation may have platform-specific issues (Linux vs macOS); TBD-29-02: Ralph-loop replacement may need migration path for existing loops
+- **Live UAT Node:** Run an auto-loop task → verify session-tracker correctly tracks iterations. Verify PTY commands work in real terminal session.
+- **Deferred Stacking:** Advanced loop patterns (deferred), multi-agent loop coordination (deferred), PTY multiplexing (deferred)
 
 ### Phase 30: Schema Kernel Cleanup (Group 3 — was Phase 29)
 
