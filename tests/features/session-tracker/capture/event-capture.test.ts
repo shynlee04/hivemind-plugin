@@ -46,6 +46,7 @@ describe("EventCapture", () => {
       appendUserTurn: vi.fn(),
       appendAgentBlock: vi.fn(),
       appendToolBlock: vi.fn(),
+      appendAssistantTurn: vi.fn().mockResolvedValue(undefined),
     } as unknown as SessionWriter
 
     childWriter = {

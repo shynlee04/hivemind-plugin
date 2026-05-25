@@ -447,7 +447,7 @@ describe("MessageCapture", () => {
         expect.objectContaining({
           body: expect.objectContaining({
             level: "debug",
-            message: expect.stringContaining("extractTextContent found no text"),
+            message: expect.stringContaining("extractTextContent: found parts but no text content"),
           }),
         }),
       )
