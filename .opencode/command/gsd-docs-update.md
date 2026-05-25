@@ -1,6 +1,7 @@
 ---
 description: Generate or update project documentation verified against the codebase
 argument-hint: "[--force] [--verify-only]"
+requires: [update]
 tools:
   read: true
   write: true

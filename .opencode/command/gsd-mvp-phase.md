@@ -1,6 +1,7 @@
 ---
 description: Plan a phase as a vertical MVP slice — user story, SPIDR splitting, then plan-phase
 argument-hint: "<phase-number>"
+requires: [new-project, phase, plan-phase]
 tools:
   read: true
   write: true

@@ -1,6 +1,7 @@
 ---
 description: "exploration capture | explore sketch spike spec capture"
 argument-hint: ""
+requires: [capture, explore, sketch, spike, spec-phase]
 tools:
   read: true
   skill: true

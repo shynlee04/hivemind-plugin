@@ -1,6 +1,7 @@
 ---
 description: "Safe git revert. Roll back phase or plan commits using the phase manifest with dependency checks."
 argument-hint: "--last N | --phase NN | --plan NN-MM"
+requires: [phase]
 tools:
   read: true
   bash: true

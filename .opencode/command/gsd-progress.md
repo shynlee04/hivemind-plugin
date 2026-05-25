@@ -1,6 +1,7 @@
 ---
 description: Check progress, advance workflow, or dispatch freeform intent — the unified GSD situational command
 argument-hint: "[--forensic | --next | --do \"task description\"]"
+requires: [phase]
 tools:
   read: true
   bash: true
@@ -21,6 +22,7 @@ Three modes:
 
 <flags>
 - **--next**: Detect current project state and automatically invoke the next logical GSD workflow step. Scans all prior phases for incomplete work before routing. `--next --force` bypasses safety gates.
+- **--next --auto**: Like `--next`, but after the determined step completes, automatically re-invokes `/gsd-progress --next --auto` to continue chaining steps until completion or a blocking decision. Enables hands-free plan→execute→verify→complete progression.
 - **--do "..."**: Smart dispatcher — match freeform intent to the best GSD command using routing rules, confirm the match, then hand off.
 - **--forensic**: Run 6-check integrity audit after the standard progress report.
 - **(no flag)**: Standard progress check + intelligent routing (Routes A through F).
@@ -34,8 +36,9 @@ Three modes:
 </execution_context>
 
 <process>
-Parse the first token of $ARGUMENTS:
-- If it is `--next`: strip the flag, execute the next workflow (passing remaining args e.g. --force).
+Arguments provided: "$ARGUMENTS"
+Parse the first token from the provided arguments:
+- If it is `--next`: strip the flag, execute the next workflow (passing remaining args e.g. --force, --auto).
 - If it is `--do`: strip the flag, pass remainder as freeform intent to the do workflow.
 - Otherwise: execute the progress workflow end-to-end (pass --forensic through if present).
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.41.1
+// gsd-hook-version: 1.1.0
 // SessionStart banner that surfaces GSD update availability when GSD's
 // statusline isn't installed. Reads the cache that
 // gsd-check-update-worker.js writes to ~/.cache/gsd/gsd-update-check.json.
@@ -41,7 +41,7 @@ function buildBannerOutput(state) {
   const installed = cache.installed || 'unknown';
   const latest = cache.latest || 'unknown';
   return {
-    systemMessage: `GSD update available: ${installed} → ${latest}. Run /gsd-update.`,
+    systemMessage: `GSD update available: ${installed} → ${latest}. Run /gsd:update.`,
   };
 }
 

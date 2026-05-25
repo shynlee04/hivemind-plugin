@@ -1,6 +1,7 @@
 ---
 description: Interactive command center for managing multiple phases from one terminal
 argument-hint: "[--analyze-deps]"
+requires: [phase]
 tools:
   read: true
   write: true

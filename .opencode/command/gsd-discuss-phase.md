@@ -1,6 +1,7 @@
 ---
 description: Gather phase context through adaptive questioning before planning.
 argument-hint: "<phase> [--all] [--auto] [--chain] [--batch] [--analyze] [--text] [--power] [--assumptions]"
+requires: [config, phase]
 tools:
   read: true
   write: true

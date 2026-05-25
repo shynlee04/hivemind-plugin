@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1a4edeb95ffeH4EoLqHpx1HlqH",
+  "lastUpdated": "2026-05-24T19:42:36.849Z",
+  "children": {
+    "ses_1a486a426ffe0zZny3khIRuu4r": {
+      "sessionID": "ses_1a486a426ffe0zZny3khIRuu4r",
+      "parentSessionID": "ses_1a4edeb95ffeH4EoLqHpx1HlqH",
+      "rootMainSessionID": "ses_1a4edeb95ffeH4EoLqHpx1HlqH",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-debugger",
+      "createdAt": "2026-05-24T19:32:20.611Z",
+      "updatedAt": "2026-05-24T19:34:14.853Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a486a426ffe0zZny3khIRuu4r.json"
+    },
+    "ses_1a482b385ffeU1XtxLsHOKjLpy": {
+      "sessionID": "ses_1a482b385ffeU1XtxLsHOKjLpy",
+      "parentSessionID": "ses_1a4edeb95ffeH4EoLqHpx1HlqH",
+      "rootMainSessionID": "ses_1a4edeb95ffeH4EoLqHpx1HlqH",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-build",
+      "createdAt": "2026-05-24T19:36:38.822Z",
+      "updatedAt": "2026-05-24T19:42:36.849Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a482b385ffeU1XtxLsHOKjLpy.json"
+    }
+  },
+  "totalChildren": 2,
+  "maxDepth": 1
+}

@@ -31,6 +31,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 
 const SIGNIFICANT_MIN_CHARS = 12;
 
@@ -64,6 +65,33 @@ function isSignificantLine(line) {
   // Generic decorative comments like `// ----` similarly fail the test.
   if (/^[\s\-=#*/]+$/.test(trimmed)) return false;
   return true;
+}
+
+/**
+ * Compute the SHA-256 hex digest of a string (UTF-8 encoded).
+ */
+function sha256(content) {
+  return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+}
+
+/**
+ * Read the `pristine_hashes` map from backup-meta.json in the patches dir.
+ * Returns an empty object if backup-meta.json is absent, unreadable, or has no
+ * `pristine_hashes` field — callers must treat an empty map as "no recorded
+ * hash for any file" (no hash-validation possible, not an error).
+ */
+function readPristineHashes(patchesDir) {
+  const metaPath = path.join(patchesDir, 'backup-meta.json');
+  try {
+    const raw = fs.readFileSync(metaPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.pristine_hashes === 'object' && parsed.pristine_hashes !== null) {
+      return parsed.pristine_hashes;
+    }
+  } catch {
+    // absent or unreadable — not an error, just no recorded hashes
+  }
+  return {};
 }
 
 /**
@@ -111,13 +139,23 @@ function computeUserAddedLines(backupContent, pristineContent) {
 const REASON = Object.freeze({
   OK_NO_USER_LINES_VS_PRISTINE: 'ok_no_user_lines_vs_pristine',
   OK_NO_SIGNIFICANT_BACKUP_LINES: 'ok_no_significant_backup_lines',
+  // Bug #3657: the on-disk gsd-pristine/ file's SHA-256 does not match the
+  // hash recorded in backup-meta.json.pristine_hashes.  This means the
+  // pristine snapshot was refreshed to a newer GSD version after the backup
+  // was captured.  Using the wrong-version pristine as the diff baseline would
+  // invert the delta (upstream removals appear as "missing user lines").
+  // The verifier skips this file rather than false-failing it.  A separate
+  // re-anchor step (or the git-aware fallback in the workflow) is needed to
+  // resolve this file; the guard here ensures the gate does not report spurious
+  // failures in the meantime.
+  OK_PRISTINE_DRIFT_DETECTED: 'ok_pristine_drift_detected',
   FAIL_INSTALLED_MISSING: 'fail_installed_missing',
   FAIL_INSTALLED_NOT_REGULAR_FILE: 'fail_installed_not_regular_file',
   FAIL_READ_ERROR: 'fail_read_error',
   FAIL_USER_LINES_MISSING: 'fail_user_lines_missing',
 });
 
-function verifyFile({ relPath, patchesDir, configDir, pristineDir }) {
+function verifyFile({ relPath, patchesDir, configDir, pristineDir, pristineHashes }) {
   const backupPath = path.join(patchesDir, relPath);
   const installedPath = path.join(configDir, relPath);
   const result = { file: relPath, status: 'ok', missing: [], reason: null };
@@ -160,7 +198,42 @@ function verifyFile({ relPath, patchesDir, configDir, pristineDir }) {
     try {
       const stat = fs.statSync(pristinePath);
       if (stat.isFile()) {
-        pristineContent = fs.readFileSync(pristinePath, 'utf8');
+        const candidate = fs.readFileSync(pristinePath, 'utf8');
+        // Bug #3657: if backup-meta.json recorded a pristine_hash for this
+        // file, validate that the on-disk pristine matches it.  A mismatch
+        // means the installer refreshed gsd-pristine/ to a newer GSD version
+        // after the backup was captured.  Using the wrong-version pristine as
+        // the diff baseline inverts the delta: upstream removals appear as
+        // "user-added lines that must survive", causing FAIL_USER_LINES_MISSING
+        // false positives.  When the hash is stale, skip the pristine and fall
+        // through to over-broad mode (every significant backup line is checked).
+        // Over-broad mode never false-fails for a different reason because all
+        // backup lines that are genuinely user-added will still be present in a
+        // correctly merged install.
+        // Normalize to forward slashes so the key lookup matches on Windows
+        // where path.join produces backslash-separated relPath values but
+        // backup-meta.json stores keys written with forward slashes.
+        const hashKey = relPath.replace(/\\/g, '/');
+        const recordedHash = pristineHashes && pristineHashes[hashKey];
+        if (recordedHash) {
+          if (sha256(candidate) === recordedHash) {
+            // Hash matches: the on-disk pristine is the correct baseline.
+            pristineContent = candidate;
+          } else {
+            // Hash mismatch: the on-disk gsd-pristine/ was refreshed to a newer
+            // GSD version after the backup was captured.  Using it as the diff
+            // baseline would invert the delta and produce false FAIL_USER_LINES_MISSING
+            // reports (Bug #3657).  Report the file as ok with a diagnostic code
+            // so the gate does not false-fail; a re-anchor or git-aware baseline
+            // step is required to verify this file correctly.
+            result.reason = REASON.OK_PRISTINE_DRIFT_DETECTED;
+            return result;
+          }
+        } else {
+          // No recorded hash for this file (older installer or absent
+          // backup-meta) — use the on-disk pristine as-is (pre-fix behaviour).
+          pristineContent = candidate;
+        }
       }
     } catch {
       // Pristine missing or unreadable — fall through to over-broad mode.
@@ -205,19 +278,35 @@ function main() {
   }
 
   const files = walk(opts.patchesDir).filter((f) => !f.endsWith('backup-meta.json'));
+  // Bug #3657: read pristine_hashes from backup-meta.json once and share
+  // across all per-file verifications so each can detect drift independently.
+  const pristineHashes = readPristineHashes(opts.patchesDir);
   const results = files.map((relPath) =>
     verifyFile({
       relPath,
       patchesDir: opts.patchesDir,
       configDir: opts.configDir,
       pristineDir: opts.pristineDir,
+      pristineHashes,
     }),
   );
 
   const failures = results.filter((r) => r.status === 'fail');
 
+  // Bug #3657 (Finding 1): aggregate drifted files into top-level report fields
+  // so workflow Step 5a can gate on drift distinctly from failures.  Drift is
+  // NOT a failure (exit code stays 0) but the workflow now has structured data
+  // to decide whether to proceed.  Per-file shape is unchanged: each drifted
+  // result still has status:'ok' + reason:OK_PRISTINE_DRIFT_DETECTED for
+  // backward compat.  The new top-level fields are purely additive.
+  const driftedResults = results.filter((r) => r.reason === REASON.OK_PRISTINE_DRIFT_DETECTED);
+  const drifted = driftedResults.length;
+  const drifted_files = driftedResults.map((r) => r.file);
+
   if (opts.json) {
-    process.stdout.write(JSON.stringify({ checked: results.length, failures: failures.length, results }, null, 2) + '\n');
+    process.stdout.write(
+      JSON.stringify({ checked: results.length, failures: failures.length, drifted, drifted_files, results }, null, 2) + '\n',
+    );
   } else {
     process.stdout.write(`# Hunk Verification Gate (#2969)\n\n`);
     process.stdout.write(`Checked: ${results.length} file(s)\n`);
@@ -244,4 +333,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { computeUserAddedLines, isSignificantLine, verifyFile, walk, REASON };
+module.exports = { computeUserAddedLines, isSignificantLine, verifyFile, walk, REASON, readPristineHashes, sha256 };

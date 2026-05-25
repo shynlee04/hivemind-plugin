@@ -2,6 +2,7 @@
 description: Extract decisions, lessons, patterns, and surprises from completed phase artifacts
 argument-hint: <phase-number>
 type: prompt
+requires: [phase]
 tools:
   read: true
   write: true

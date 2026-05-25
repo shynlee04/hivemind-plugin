@@ -1,5 +1,6 @@
 ---
 description: Review and promote backlog items to active milestone
+requires: [phase, review]
 tools:
   read: true
   write: true

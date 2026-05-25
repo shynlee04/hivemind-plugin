@@ -1,6 +1,7 @@
 ---
 description: Manage persistent context threads for cross-session work
 argument-hint: "[list [--open | --resolved] | close <slug> | status <slug> | name | description]"
+requires: [phase]
 tools:
   read: true
   write: true

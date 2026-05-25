@@ -1,6 +1,7 @@
 ---
 description: "quality gates | code review debug audit security eval ui"
 argument-hint: ""
+requires: [code-review, audit-uat, secure-phase, eval-review, ui-review, validate-phase, debug, forensics]
 tools:
   read: true
   skill: true

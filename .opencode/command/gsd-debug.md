@@ -1,6 +1,6 @@
 ---
 description: Systematic debugging with persistent state across context resets
-argument-hint: [list | status <slug> | continue <slug> | --diagnose] [issue description]
+argument-hint: "[list | status <slug> | continue <slug> | --diagnose] [issue description]"
 tools:
   read: true
   write: true

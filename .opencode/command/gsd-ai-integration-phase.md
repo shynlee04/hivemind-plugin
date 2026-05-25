@@ -1,6 +1,7 @@
 ---
 description: Generate an AI-SPEC.md design contract for phases that involve building AI systems.
 argument-hint: "[phase number]"
+requires: [phase]
 tools:
   read: true
   write: true

@@ -115,6 +115,18 @@ For each phase that should be complete:
 - SUMMARY.md missing → phase was not properly closed
 - VERIFICATION.md missing → quality check was skipped
 
+### Partial-plan Drift Detection
+
+**Signal:** commits exist but SUMMARY.md is missing for the current or recently
+active plan.
+
+Run the same comparison as the execute-phase safe-resume verifier: identify the
+active plan from STATE.md/phase artifacts, search git history for that plan id,
+then compare against the expected SUMMARY.md path. If production commits exist
+but SUMMARY.md is missing, flag a high-confidence partial-plan drift anomaly.
+This usually means an executor was interrupted after implementation commits but
+before atomic close-out.
+
 ### Abandoned Work Detection
 
 **Signal:** Large gap between last commit and current time, with STATE.md showing mid-execution.
@@ -244,14 +256,14 @@ If actionable anomalies were found (HIGH or MEDIUM confidence):
 If confirmed:
 ```bash
 # Check if "bug" label exists before using it
-BUG_LABEL=$(gh label list --repo gsd-build/get-shit-done --search "bug" --json name -q '.[0].name' 2>/dev/null)
+BUG_LABEL=$(gh label list --repo open-gsd/get-shit-done-redux --search "bug" --json name -q '.[0].name' 2>/dev/null)
 LABEL_FLAG=""
 if [ -n "$BUG_LABEL" ]; then
   LABEL_FLAG="--label bug"
 fi
 
 gh issue create \
-  --repo gsd-build/get-shit-done \
+  --repo open-gsd/get-shit-done-redux \
   --title "bug: {concise description from anomaly}" \
   $LABEL_FLAG \
   --body "{formatted findings from report}"
@@ -260,7 +272,18 @@ gh issue create \
 ## Step 8: Update STATE.md
 
 ```bash
-gsd-sdk query state.record-session "" \
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+$GSD_SDK query state.record-session "" \
   "Forensic investigation complete" \
   ".planning/forensics/report-{timestamp}.md"
 ```

@@ -20,7 +20,18 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 Load all context in one call:
 
 ```bash
-INIT=$(gsd-sdk query init.resume)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+INIT=$($GSD_SDK query init.resume)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -66,8 +77,15 @@ Look for incomplete work that needs attention:
 # Check for structured handoff (preferred — machine-readable)
 cat .planning/HANDOFF.json 2>/dev/null || true
 
-# Check for continue-here files (mid-plan resumption)
-ls .planning/phases/*/.continue-here*.md 2>/dev/null || true
+# Check for continue-here files (phase + non-phase + legacy fallback).
+# Use `find` rather than a chained `ls` of bare globs: under zsh's default
+# NOMATCH option (macOS default shell), a single non-matching glob aborts
+# the entire command during word-expansion — silently dropping every
+# pattern after the first miss, including `.planning/.continue-here*.md`.
+# `find` does not use shell glob expansion and tolerates absent
+# directories on both bash and zsh.
+find .planning -maxdepth 3 -name '.continue-here*.md' -print 2>/dev/null || true
+find . -maxdepth 1 -name '.continue-here*.md' -print 2>/dev/null || true
 
 # Check for plans without summaries (incomplete execution)
 for plan in .planning/phases/*/*-PLAN.md; do
@@ -93,7 +111,7 @@ fi
 - Flag: "Found structured handoff — resuming from task {task}/{total_tasks}"
 - **After successful resumption, delete HANDOFF.json** (it's a one-shot artifact)
 
-**If .continue-here file exists (fallback):**
+**If .continue-here file exists (phase/non-phase/legacy fallback):**
 
 - This is a mid-plan resumption point
 - Read the file for specific resumption context

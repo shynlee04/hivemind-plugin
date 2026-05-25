@@ -1,6 +1,7 @@
 ---
 description: "[BETA] Offload plan phase to Claude Code's ultraplan cloud; review in browser and import back."
 argument-hint: "[phase-number]"
+requires: [import, phase, plan-phase]
 tools:
   read: true
   bash: true

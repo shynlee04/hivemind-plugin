@@ -65,7 +65,18 @@ Gap: Flow "View dashboard" broken at data fetch
 Find highest existing phase:
 ```bash
 # Get sorted phase list, extract last one
-HIGHEST=$(gsd-sdk query phases.list --pick directories[-1])
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+HIGHEST=$($GSD_SDK query phases.list --pick directories[-1])
 ```
 
 New phases continue from there:
@@ -139,14 +150,21 @@ grep -c "Pending" .planning/REQUIREMENTS.md
 
 ## 8. Create Phase Directories
 
+For each new phase (N, N+1, …), resolve the directory name via `init.phase-op` so the `project_code` prefix is honoured:
+
 ```bash
-mkdir -p ".planning/phases/{NN}-{name}"
+INIT=$($GSD_SDK query init.phase-op "{NN}")
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+expected_phase_dir=$(echo "$INIT" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).expected_phase_dir)")
+mkdir -p "${expected_phase_dir}"
 ```
+
+Repeat for each gap-closure phase number. This produces `{CODE}-{NN}-{slug}/` when `project_code` is set in `.planning/config.json`, and `{NN}-{slug}/` otherwise — consistent with all other phase-creation paths.
 
 ## 9. Commit Roadmap and Requirements Update
 
 ```bash
-gsd-sdk query commit "docs(roadmap): add gap closure phases {N}-{M}" --files .planning/ROADMAP.md .planning/REQUIREMENTS.md
+$GSD_SDK query commit "docs(roadmap): add gap closure phases {N}-{M}" --files .planning/ROADMAP.md .planning/REQUIREMENTS.md
 ```
 
 ## 10. Offer Next Steps

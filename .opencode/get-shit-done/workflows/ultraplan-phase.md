@@ -29,7 +29,16 @@ Use /gsd-plan-phase for stable local planning.
 Check that the session is running inside Claude Code:
 
 ```bash
-echo "$CLAUDE_CODE_VERSION"
+if [ "$CLAUDECODE" = "1" ] || [ -n "$CLAUDE_CODE_ENTRYPOINT" ]; then
+  CC_VERSION="$(claude --version 2>/dev/null | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)"
+  if [ -n "$CC_VERSION" ] && [ "$(printf '%s\n' "2.1.91" "$CC_VERSION" | sort -V | head -n1)" = "2.1.91" ]; then
+    echo "claude-code:${CC_VERSION}"
+  else
+    echo ""
+  fi
+else
+  echo ""
+fi
 ```
 
 If the output is empty or unset, display the following error and exit:
@@ -57,7 +66,18 @@ unplanned phase from the roadmap (same logic as /gsd-plan-phase).
 Load GSD phase context:
 
 ```bash
-INIT=$(gsd-sdk query init.plan-phase "$PHASE")
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+INIT=$($GSD_SDK query init.plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 

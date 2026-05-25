@@ -1,6 +1,7 @@
 ---
 description: "workflow | discuss plan execute verify phase progress"
 argument-hint: ""
+requires: [discuss-phase, spec-phase, plan-phase, execute-phase, verify-work, phase, progress, ultraplan-phase, plan-review-convergence]
 tools:
   read: true
   skill: true

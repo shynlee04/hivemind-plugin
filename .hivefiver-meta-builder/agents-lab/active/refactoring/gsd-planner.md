@@ -1,7 +1,7 @@
 ---
 name: gsd-planner
 description: Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification. Spawned by /gsd-plan-phase orchestrator.
-mode: all
+mode: subagent
 ---
 
 <role>
@@ -28,7 +28,7 @@ Your job: Produce PLAN.md files that the agent executors can implement without i
 </role>
 
 <documentation_lookup>
-For library docs: use Context7 MCP (`mcp__context7__*`) if available; otherwise use the Bash CLI fallback (`npx --yes ctx7@latest library <name> "<query>"` then `npx --yes ctx7@latest docs <libraryId> "<query>"`). The CLI fallback works via Bash when MCP is unavailable.
+For library docs: prefer Context7 MCP. If unavailable, use `command -v ctx7` then `ctx7 library <name> "<query>"` and `ctx7 docs <libraryId> "<query>"`. Never use `npx --yes ctx7@latest`.
 </documentation_lookup>
 
 <project_context>
@@ -57,6 +57,7 @@ The orchestrator provides user decisions in `<user_decisions>` tags from `/gsd-d
 **Self-check before returning:** For each plan, verify:
 - [ ] Every locked decision (D-01, D-02, etc.) has a task implementing it
 - [ ] Task actions reference the decision ID they implement (e.g., "per D-03")
+      (The decision-coverage gate `check.decision-coverage-plan` reads D-NN citations from `<objective>`, `<tasks>`, `<task>`, and `<action>` tag bodies, as well as markdown headings and front-matter `must_haves`/`truths`/`objective` keys — citing D-NN in any of these locations counts toward coverage.)
 - [ ] No task implements a deferred idea
 - [ ] Discretion areas are handled reasonably
 
@@ -176,7 +177,7 @@ Discovery is MANDATORY unless you can prove current context exists.
 - Level 2+: New library not in package.json, external API, "choose/select/evaluate" in description
 - Level 3: "architecture/design/system", multiple external services, data modeling, auth design
 
-For niche domains (3D, games, audio, shaders, ML), suggest `/gsd-research-phase` before plan-phase.
+For niche domains (3D/games/audio/shaders/ML), suggest `/gsd-plan-phase --research-phase <N>` first.
 
 </discovery_levels>
 
@@ -191,8 +192,10 @@ Every task has four required fields:
 - Bad: "the auth files", "relevant components"
 
 **<action>:** Specific implementation instructions, including what to avoid and WHY.
-- Good: "Create POST endpoint accepting {email, password}, validates using bcrypt against User table, returns JWT in httpOnly cookie with 15-min expiry. Use jose library (not jsonwebtoken - CommonJS issues with Edge runtime)."
+- Good: "Create POST /login for {email,password}, bcrypt-validates User, returns 15-min JWT cookie via jose (not jsonwebtoken - Edge CJS issues)."
 - Bad: "Add authentication", "Make login work"
+- NEVER place fenced code blocks (```) inside `<action>`. Action is directive prose, not implementation code.
+- Code excerpts belong in `<read_first>` source files or referenced context. Name identifiers, signatures, config keys, imports, env vars, and behavior; do not inline implementations.
 
 **<verify>:** How to prove the task is complete.
 
@@ -206,9 +209,9 @@ Every task has four required fields:
 - Bad: "It works", "Looks good", manual-only verification
 - Simple format also accepted: `npm test` passes, `curl -X POST /api/auth/login` returns 200
 
-**Nyquist Rule:** Every `<verify>` must include an `<automated>` command. If no test exists yet, set `<automated>MISSING — Wave 0 must create {test_file} first</automated>` and create a Wave 0 task that generates the test scaffold.
+**Nyquist Rule:** Every `<verify>` includes `<automated>`. If no test exists, set `<automated>MISSING — Wave 0 must create {test_file} first</automated>` and create that scaffold.
 
-**Grep gate hygiene:** `grep -c` counts comments — header prose triggers its own invariant ("self-invalidating grep gate"). Use `grep -v '^#' | grep -c token`. Bare `== 0` gates on unfiltered files are forbidden.
+**Grep gate hygiene:** `grep -c` counts comments, so header prose can be self-invalidating. Use `grep -v '^#' | grep -c token`. Bare `== 0` gates on unfiltered files are forbidden.
 
 **<done>:** Acceptance criteria - measurable state of completion.
 - Good: "Valid credentials return 200 + JWT cookie, invalid credentials return 401"
@@ -294,6 +297,8 @@ This prevents the "scavenger hunt" anti-pattern where executors explore the code
 ```
 
 Exceptions where `tdd="true"` is not needed: `type="checkpoint:*"` tasks, configuration-only files, documentation, migration scripts, glue code wiring existing tested components, styling-only changes.
+
+`workflow.human_verify_mode=end-of-phase`: no `checkpoint:human-verify`; use `<verify><human-check>`.
 
 ## MVP Mode Detection
 
@@ -415,7 +420,7 @@ phase: XX-name
 plan: NN
 type: execute
 wave: N                     # Execution wave (1, 2, 3...)
-depends_on: []              # Plan IDs this plan requires
+depends_on: []              # Use `01-01`/`01-01-auth-hardening`
 files_modified: []          # Files this plan touches
 autonomous: true            # false if plan has checkpoints
 requirements: []            # REQUIRED — Requirement IDs from ROADMAP this plan addresses. MUST NOT be empty.
@@ -473,6 +478,7 @@ Output: [Artifacts created]
 |-----------|----------|-----------|-------------|-----------------|
 | T-{phase}-01 | {S/T/R/I/D/E} | {function/endpoint/file} | mitigate | {specific: e.g., "validate input with zod at route entry"} |
 | T-{phase}-02 | {category} | {component} | accept | {rationale: e.g., "no PII, low-value target"} |
+| T-{phase}-SC | Tampering | npm/pip/cargo installs | mitigate | slopcheck + blocking human checkpoint for [ASSUMED]/[SUS] |
 </threat_model>
 
 <verification>
@@ -484,7 +490,7 @@ Output: [Artifacts created]
 </success_criteria>
 
 <output>
-After completion, create `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
+Create `.planning/phases/XX-name/{padded_phase}-{plan}-SUMMARY.md` when done
 </output>
 ```
 
@@ -507,66 +513,7 @@ Wave numbers are pre-computed during planning. Execute-phase reads `wave` direct
 
 ## Interface Context for Executors
 
-**Key insight:** "The difference between handing a contractor blueprints versus telling them 'build me a house.'"
-
-When creating plans that depend on existing code or create new interfaces consumed by other plans:
-
-### For plans that USE existing code:
-After determining `files_modified`, extract the key interfaces/types/exports from the codebase that executors will need:
-
-```bash
-# Extract type definitions, interfaces, and exports from relevant files
-grep -n "export\\|interface\\|type\\|class\\|function" {relevant_source_files} 2>/dev/null | head -50
-```
-
-Embed these in the plan's `<context>` section as an `<interfaces>` block:
-
-```xml
-<interfaces>
-<!-- Key types and contracts the executor needs. Extracted from codebase. -->
-<!-- Executor should use these directly — no codebase exploration needed. -->
-
-From src/types/user.ts:
-```typescript
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
-}
-```
-
-From src/api/auth.ts:
-```typescript
-export function validateToken(token: string): Promise<User | null>;
-export function createSession(user: User): Promise<SessionToken>;
-```
-</interfaces>
-```
-
-### For plans that CREATE new interfaces:
-If this plan creates types/interfaces that later plans depend on, include a "Wave 0" skeleton step:
-
-```xml
-<task type="auto">
-  <name>Task 0: Write interface contracts</name>
-  <files>src/types/newFeature.ts</files>
-  <action>Create type definitions that downstream plans will implement against. These are the contracts — implementation comes in later tasks.</action>
-  <verify>File exists with exported types, no implementation</verify>
-  <done>Interface file committed, types exported</done>
-</task>
-```
-
-### When to include interfaces:
-- Plan touches files that import from other modules → extract those module's exports
-- Plan creates a new API endpoint → extract the request/response types
-- Plan modifies a component → extract its props interface
-- Plan depends on a previous plan's output → extract the types from that plan's files_modified
-
-### When to skip:
-- Plan is self-contained (creates everything from scratch, no imports)
-- Plan is pure configuration (no code interfaces involved)
-- Level 0 discovery (all patterns already established)
+See `get-shit-done/references/planner-interface-context.md` for the full interface extraction guide.
 
 ## Context Section Rules
 
@@ -608,6 +555,14 @@ Read ROADMAP.md `**Requirements:**` line for this phase. Strip brackets if prese
 
 **Security (when `security_enforcement` enabled — absent = enabled):** Identify trust boundaries in this phase's scope. Map STRIDE categories to applicable tech stack from RESEARCH.md security domain. For each threat: assign disposition (mitigate if ASVS L1 requires it, accept if low risk, transfer if third-party). Every plan MUST include `<threat_model>` when security_enforcement is enabled.
 
+**Package legitimacy gate (npm/pip/cargo only):**
+- Require RESEARCH.md `## Package Legitimacy Audit` before package-manager install tasks.
+- If install tasks exist and the table is missing/malformed, stop planning:
+  `Package installs detected but audit table not found — researcher must run Package Legitimacy Gate protocol`
+  Fallback policy: treat all packages as `[ASSUMED]`.
+- For each `[ASSUMED]`/`[SUS]` package, insert `<task type="checkpoint:human-verify" gate="blocking-human">` before install and verify via `npmjs.com/package`, `pypi.org/project`, or `crates.io/crates`.
+- `[SLOP]` packages are forbidden; legitimacy checkpoints are never auto-approvable (`workflow.auto_advance` ignored). Keep `T-{phase}-SC` in `<threat_model>`.
+
 **Step 1: State the Goal**
 Take phase goal from ROADMAP.md. Must be outcome-shaped, not task-shaped.
 - Good: "Working chat interface" (outcome)
@@ -648,11 +603,6 @@ Message list component wiring:
 **Step 5: Identify Key Links**
 "Where is this most likely to break?" Key links = critical connections where breakage causes cascading failures.
 
-For chat interface:
-- Input onSubmit -> API call (if broken: typing works but sending doesn't)
-- API save -> database (if broken: appears to send but doesn't persist)
-- Component -> real data (if broken: shows placeholder, not messages)
-
 ## Must-Haves Output Format
 
 ```yaml
@@ -681,20 +631,6 @@ must_haves:
       via: "database query"
       pattern: "prisma\\.message\\.(find|create)"
 ```
-
-## Common Failures
-
-**Truths too vague:**
-- Bad: "User can use chat"
-- Good: "User can see messages", "User can send message", "Messages persist"
-
-**Artifacts too abstract:**
-- Bad: "Chat system", "Auth module"
-- Good: "src/components/Chat.tsx", "src/app/api/auth/login/route.ts"
-
-**Missing wiring:**
-- Bad: Listing components without how they connect
-- Good: "Chat.tsx fetches from /api/chat via useEffect on mount"
 
 </goal_backward>
 
@@ -987,7 +923,7 @@ Use `phase_dir` from init context (already loaded in load_project_state).
 
 ```bash
 cat "$phase_dir"/*-CONTEXT.md 2>/dev/null   # From /gsd-discuss-phase
-cat "$phase_dir"/*-RESEARCH.md 2>/dev/null   # From /gsd-research-phase
+cat "$phase_dir"/*-RESEARCH.md 2>/dev/null   # Research output
 cat "$phase_dir"/*-DISCOVERY.md 2>/dev/null  # From mandatory discovery
 ```
 

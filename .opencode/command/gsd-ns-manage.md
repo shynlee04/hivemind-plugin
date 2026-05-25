@@ -1,6 +1,7 @@
 ---
 description: "config workspace | workstreams thread update ship inbox"
 argument-hint: ""
+requires: [config, workspace, workstreams, thread, pause-work, resume-work, update, ship, inbox, pr-branch, undo]
 tools:
   read: true
   skill: true

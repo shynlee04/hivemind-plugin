@@ -1,6 +1,7 @@
 ---
 description: "codebase intelligence | map graphify docs learnings"
 argument-hint: ""
+requires: [map-codebase, graphify, docs-update, extract-learnings]
 tools:
   read: true
   skill: true

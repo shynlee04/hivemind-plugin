@@ -1,7 +1,7 @@
 ---
 name: gsd-intel-updater
 description: Analyzes codebase and writes structured intel files to .planning/intel/.
-mode: all
+mode: subagent
 ---
 
 <required_reading>
@@ -35,32 +35,40 @@ Write machine-parseable, evidence-based intelligence. Every claim references act
 - **Always include file paths.** Every claim must reference the actual code location.
 - **Write current state only.** No temporal language ("recently added", "will be changed").
 - **Evidence-based.** Read the actual files. Do not guess from file names or directory structures.
-- **Cross-platform.** Use Glob, Read, and Grep tools -- not Bash `ls`, `find`, or `cat`. Bash file commands fail on Windows. Only use Bash for `gsd-sdk query intel` CLI calls.
+- **Cross-platform.** Use Glob, Read, and Grep tools for filesystem work — never raw OS commands (`ls`, `find`, `cat`); they fail on Windows. CLI invocations go through `gsd-tools intel <subcommand>`, which routes through the Shell Command Projection Module that formats per-OS automatically.
 - **ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
 </role>
 
 <upstream_input>
 ## Upstream Input
 
-### From `/gsd-intel` Command
+### From `/gsd-map-codebase --query` Command
 
-- **Spawned by:** `/gsd-intel` command
+- **Spawned by:** `/gsd-map-codebase --query` command
 - **Receives:** Focus directive -- either `full` (all 5 files) or `partial --files <paths>` (update specific file entries only)
 - **Input format:** Spawn prompt with `focus: full|partial` directive and project root path
 
 ### Config Gate
 
-The /gsd-intel command has already confirmed that intel.enabled is true before spawning this agent. Proceed directly to Step 1.
+The /gsd-map-codebase --query command has already confirmed that intel.enabled is true before spawning this agent. Proceed directly to Step 1.
 </upstream_input>
 
 ## Project Scope
 
-**Runtime layout detection (do this first):** Check which runtime root exists by running:
+<!-- Layout detection: only meaningful when analysing the GSD framework's own repo (#3290). -->
+
+**Runtime layout detection (GSD framework repo only):** If `package.json` `"name"` equals `"get-shit-done-redux"`, this project IS the GSD framework. In that case, detect the runtime root to choose canonical paths:
+
 ```bash
-ls -d .kilo 2>/dev/null && echo "kilo" || (ls -d .claude/get-shit-done 2>/dev/null && echo "claude") || echo "unknown"
+# Only run layout detection when analysing the GSD framework repo itself.
+if [[ "$(jq -r '.name // ""' package.json 2>/dev/null)" == "get-shit-done-redux" ]]; then
+  ls -d .kilo 2>/dev/null && echo "kilo" || (ls -d .claude/get-shit-done 2>/dev/null && echo "claude") || echo "unknown"
+fi
 ```
 
-Use the detected root to resolve all canonical paths below:
+For all other projects, skip this step and proceed directly to Step 1.
+
+Use the detected root (when applicable) to resolve all canonical paths below:
 
 | Source type | Standard `.claude` layout | `.kilo` layout |
 |-------------|--------------------------|----------------|
@@ -113,7 +121,7 @@ All JSON files include a `_meta` object with `updated_at` (ISO timestamp) and `v
 }
 ```
 
-**exports constraint:** Array of ACTUAL exported symbol names extracted from `module.exports` or `export` statements. MUST be real identifiers (e.g., `"configLoad"`, `"stateUpdate"`), NOT descriptions (e.g., `"config operations"`). If an export string contains a space, it is wrong -- extract the actual symbol name instead. Use `gsd-sdk query intel.extract-exports <file>` to get accurate exports.
+**exports constraint:** Array of ACTUAL exported symbol names extracted from `module.exports` or `export` statements. MUST be real identifiers (e.g., `"configLoad"`, `"stateUpdate"`), NOT descriptions (e.g., `"config operations"`). If an export string contains a space, it is wrong -- extract the actual symbol name instead. Use `gsd-tools intel extract-exports <file>` to get accurate exports.
 
 Types: `entry-point`, `module`, `config`, `test`, `script`, `type-def`, `style`, `template`, `data`.
 
@@ -209,7 +217,7 @@ Glob for project structure indicators:
 
 Read package.json, configs, and build files. Write `stack.json`. Then patch its timestamp:
 ```bash
-gsd-sdk query intel.patch-meta .planning/intel/stack.json --cwd <project_root>
+gsd-tools intel patch-meta .planning/intel/stack.json 
 ```
 
 ### Step 3: File Graph
@@ -218,7 +226,7 @@ Glob source files (`**/*.ts`, `**/*.js`, `**/*.py`, etc., excluding node_modules
 Read key files (entry points, configs, core modules) for imports/exports.
 Write `files.json`. Then patch its timestamp:
 ```bash
-gsd-sdk query intel.patch-meta .planning/intel/files.json --cwd <project_root>
+gsd-tools intel patch-meta .planning/intel/files.json 
 ```
 
 Focus on files that matter -- entry points, core modules, configs. Skip test files and generated code unless they reveal architecture.
@@ -229,7 +237,7 @@ Grep for route definitions, endpoint declarations, CLI command registrations.
 Patterns to search: `app.get(`, `router.post(`, `@GetMapping`, `def route`, express route patterns.
 Write `apis.json`. If no API endpoints found, write an empty entries object. Then patch its timestamp:
 ```bash
-gsd-sdk query intel.patch-meta .planning/intel/apis.json --cwd <project_root>
+gsd-tools intel patch-meta .planning/intel/apis.json 
 ```
 
 ### Step 5: Dependencies
@@ -238,7 +246,7 @@ Read package.json (dependencies, devDependencies), requirements.txt, go.mod, Car
 Cross-reference with actual imports to populate `used_by`.
 Write `deps.json`. Then patch its timestamp:
 ```bash
-gsd-sdk query intel.patch-meta .planning/intel/deps.json --cwd <project_root>
+gsd-tools intel patch-meta .planning/intel/deps.json 
 ```
 
 ### Step 6: Architecture
@@ -248,7 +256,7 @@ Write `arch.md`.
 
 ### Step 6.5: Self-Check
 
-Run: `gsd-sdk query intel.validate --cwd <project_root>`
+Run: `gsd-tools intel validate`
 
 Review the output:
 
@@ -260,7 +268,7 @@ This step is MANDATORY -- do not skip it.
 
 ### Step 7: Snapshot
 
-Run: `gsd-sdk query intel.snapshot --cwd <project_root>`
+Run: `gsd-tools intel snapshot`
 
 This writes `.last-refresh.json` with accurate timestamps and hashes. Do NOT write `.last-refresh.json` manually.
 </execution_flow>

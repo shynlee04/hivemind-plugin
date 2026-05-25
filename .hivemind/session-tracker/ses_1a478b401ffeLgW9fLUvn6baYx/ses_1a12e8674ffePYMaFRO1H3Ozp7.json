@@ -1,0 +1,390 @@
+{
+  "sessionID": "ses_1a12e8674ffePYMaFRO1H3Ozp7",
+  "parentSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-debugger",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Investigate OpenCode SDK hooks for continuous assistant text capture",
+    "subagentType": "gsd-debugger"
+  },
+  "created": "2026-05-25T11:07:27.004Z",
+  "updated": "2026-05-25T11:09:48.416Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-debugger",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a subagent: gsd-debugger. The user points out a fundamental design flaw in our session-tracker lastMessage approach.\n\n## The Problem\nWe've been trying to capture `lastMessage` (assistant response text) for main sessions, but we've been doing it WRONG:\n- First we tried `handleAssistantMessage()` in `chat.message` hook — dead code because `chat.message` only delivers `UserMessage` (role: \"user\")\n- Then we tried `session.next.text.ended` event — doesn't exist in SDK\n- Finally we tried reading `getSessionMessages()` on `session.idle` — wrong because:\n  1. lastMessage changes over time across turns\n  2. It's not a single static value\n  3. session.idle fires at specific lifecycle points, not after every turn\n\n## What We Need To Find\nWe need a mechanism to CAPTURE assistant response text CONTINUOUSLY — after every single assistant response turn, not just at session end.\n\n## Investigation Steps\n\n### Step 1: Read the OpenCode SDK source for hooks\nUse Context7 or Deepwiki or the actual SDK package to find ALL available hooks:\n- Read `src/shared/session-api.ts` — this is our SDK wrapper, find what methods exist\n- Check what `this.client` is — what type? What methods does it expose?\n- Search for `hook()` calls in the codebase\n\n### Step 2: Search for OpenCode SDK types\n- Use Context7 with library query `/anomalyco/opencode` to ask: \"What hooks does the OpenCode plugin SDK expose for capturing assistant responses? Is there a hook for when the model finishes generating text?\"\n- Search in the plugin.ts or check what event types exist\n\n### Step 3: Check the SDK package directly\nRun: `cat node_modules/@opencode-ai/plugin/dist/index.d.ts 2>/dev/null | head -200` or check the SDK types\n\n### Step 4: Read our existing hook implementations\n- Read `src/hooks/` directory — how do our existing hooks work?\n- Read `src/plugin.ts` — how are hooks registered?\n- Search for `hook(` across the codebase\n\n### Step 5: Look for any \"response\" or \"assistant\" or \"completion\" events\nSearch in the SDK package for:\n- `grep -r \"response\" node_modules/@opencode-ai/plugin/dist/index.d.ts 2>/dev/null`\n- `grep -r \"assistant\" node_modules/@opencode-ai/plugin/dist/index.d.ts 2>/dev/null`\n- `grep -r \"next\\.text\\|next\\.message\\|text\\.ended\" node_modules/@opencode-ai/plugin/dist/index.d.ts 2>/dev/null`\n\n## The Real Question\nDoes the OpenCode SDK v1.x provide ANY hook or event that fires when the assistant completes a response (delivering the response text)?\n\nPossible candidates:\n1. `session.updated` — does this carry response content?\n2. `session.status` — does this carry response content?\n3. Some RPC mechanism via `client` object\n4. A polling approach (periodically check getSessionMessages)\n\nReturn:\n- A COMPLETE listing of every hook and event available in the SDK\n- For each candidate, explain whether it can capture assistant response text\n- Your recommended approach for continuous lastMessage tracking\n- If NO hook delivers assistant text, propose the best polling or alternative mechanism",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll investigate this systematically. Let me start by loading the debug skill and reading the SDK-related files.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Good, skills loaded. Now let me follow the investigation plan step by step.\n\n**Step 1:** Read the SDK wrapper and search for hook registrations.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Now let me read the hooks reference, the chat message capture, session-tracker, and check the actual SDK types.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Now let me check the actual SDK types, the session-tracker, and search for hook() calls across the codebase.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Now let me read the critical files - event-capture.ts, message-capture.ts, and session-tracker types.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Now let me verify the actual SDK Event type and check how events are wired in the hooks.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Let me check the actual SDK Event type and verify what events exist.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Now I have all the data needed. Let me also quickly verify the `experimental.text.complete` hook and `message.updated` by checking what the plugin.ts actually registers.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "I now have a complete picture. Here is the comprehensive analysis.\n\n---\n\n## Complete Investigation Report\n\n### SDK Version Confirmed\n\n**Package:** `@opencode-ai/sdk` (via plugin peer dependency)\n**Source:** `node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts` (fresh read, not stale reference)\n\n### Complete Listing of ALL Available Events (SDK `Event` union, line 602)\n\n```\nsession.created       session.updated       session.deleted\nsession.idle          session.error         session.status\nsession.compacted     session.diff\nmessage.updated       message.removed\nmessage.part.updated  message.part.removed\npermission.updated    permission.replied\nfile.edited           file.watcher.updated\ntodo.updated          command.executed\ntui.prompt.append     tui.command.execute   tui.toast.show\npty.created           pty.updated           pty.exited      pty.deleted\nlsp.client.diagnostics    lsp.updated\ninstallation.updated      installation.update-available\nserver.instance.disposed  server.connected\nvcs.branch.updated\n```\n\n**`session.next.text.ended` does NOT exist.** Dead code confirmed.\n\n### Complete Listing of ALL Available Hooks (`Hooks` interface, `plugin/dist/index.d.ts`)\n\n| Hook | Input | Output | Captures assistant text? |\n|------|-------|--------|-------------------------|\n| `event` | `{ event: Event }` | - | **YES** via `message.part.updated` + `message.updated` (see below) |\n| `chat.message` | `{ sessionID, agent?, messageID? }` | `{ message: UserMessage, parts: Part[] }` | **NO** — `UserMessage` only (`role: \"user\"`) |\n| `chat.params` | LLM params | temperature, topP, etc. | No |\n| `chat.headers` | LLM headers | headers | No |\n| `permission.ask` | Permission | status | No |\n| `command.execute.before` | command, args | parts | No |\n| `tool.execute.before` | tool, sessionID | args | No |\n| `shell.env` | cwd | env | No |\n| `tool.execute.after` | tool, args | title, output, metadata | No |\n| `experimental.chat.messages.transform` | - | messages[] | Partial (full message array) |\n| `experimental.chat.system.transform` | sessionID, model | system[] | No |\n| `experimental.session.compacting` | sessionID | context, prompt | No |\n| `experimental.compaction.autocontinue` | sessionID, agent, model, message | enabled | No |\n| **`experimental.text.complete`** | `{ sessionID, messageID, partID }` | `{ text: string }` | **PARTIAL** — per-part, experimental, no role info |\n| `tool.definition` | toolID | description, parameters | No |\n\n### Analysis of Each Candidate for Capturing Assistant Response Text\n\n#### Candidate 1: `chat.message` — ❌ DEAD CODE\n- SDK type clearly shows `output.message: UserMessage` (line 196-197 of plugin SDK)\n- UserMessage has `role: \"user\"` (line 40 of types.gen.d.ts)\n- Our code's `handleAssistantMessage()` path (message-capture.ts:207) is unreachable\n- **Verdict:** Will NEVER fire for assistant messages\n\n#### Candidate 2: `session.next.text.ended` — ❌ DOES NOT EXIST\n- Not in the `Event` union (types.gen.d.ts:602)\n- Not in any event type definition\n- Our code's `handleSessionNextTextEnded()` (event-capture.ts:663) is unreachable\n- Comments already acknowledge this (lines 645-658)\n- **Verdict:** Dead code, remove the handler\n\n#### Candidate 3: `session.idle` + `getSessionMessages()` — ⚠️ WORKS BUT NOT CONTINUOUS\n- Currently implemented (event-capture.ts:329-345) — queries SDK messages on idle\n- Problem: `session.idle` fires at lifecycle boundary, not after every turn\n- During a long session with 10 assistant responses, only captures the last one at the end\n- **Verdict:** Useful fallback but doesn't solve continuous tracking\n\n#### Candidate 4: `event` hook + `message.part.updated` — ✅ VIABLE\n```typescript\ntype EventMessagePartUpdated = {\n  type: \"message.part.updated\";\n  properties: { part: Part; delta?: string; };\n};\n```\n- `TextPart` has `text: string` and `time?: { start: number; end?: number; }`\n- When `time.end` is set, the text part is COMPLETE\n- **Problem:** No `role` in the part — need to associate `messageID` with a role\n- Can pair with `message.updated` events which carry `AssistantMessage` (has `role: \"assistant\"`)\n- **Verdict:** Best real-time approach, but requires message ID -> role tracking\n\n#### Candidate 5: `event` hook + `message.updated` — ⚠️ PARTIAL\n```typescript\ntype EventMessageUpdated = {\n  type: \"message.updated\";\n  properties: { info: Message; }; // Message = UserMessage | AssistantMessage\n};\ntype AssistantMessage = {\n  role: \"assistant\";\n  modelID: string;\n  providerID: string;\n  tokens: { input, output, reasoning, cache };\n  // ... but NO text content!\n};\n```\n- `AssistantMessage` has token counts, cost, model info — but **no text parts**\n- Text content is in `Part` objects, delivered via `message.part.updated`\n- **Verdict:** Useful for role tracking but can't get response text alone\n\n#### Candidate 6: `experimental.text.complete` — ⚠️ EXPERIMENTAL\n```typescript\n\"experimental.text.complete\"?: (\n  input: { sessionID: string; messageID: string; partID: string },\n  output: { text: string }\n) => Promise<void>;\n```\n- Would fire when a text part completes\n- But it's `experimental` — not guaranteed to be dispatched by all runtimes\n- Fires per-part, not per-response; may fire for user text too\n- No role information in the input\n- **Verdict:** Possible but unreliable (experimental prefix means it may change/be removed)\n\n#### Candidate 7: Polling `getSessionMessages()` — ✅ RELIABLE BUT COSTLY\n- Always works — it's the core SDK session API\n- Already implemented in our codebase (session-api.ts:79-93)\n- Used by delegation monitoring (session-hooks.ts tracks `lastMessageCount`)\n- **Cost:** Each call is an HTTP request to the OpenCode server\n- **Verdict:** Reliable fallback, but wasteful as sole mechanism\n\n### Recommended Approach\n\n**Strategy: Hybrid — event-driven for real-time + polling for fallback**\n\n**Primary (`message.part.updated` event detection in the `event` hook):**\n\nThe existing `event` hook (wired in `core-hooks.ts`, processed by `lifecycleManager.handleEvent()`) already dispatches ALL events. We need to add a dedicated observer for assistant text capture:\n\n1. **Track `messageID` -> `sessionID` + `role` mapping** from `message.updated` events\n   - When `event.type === \"message.updated\"` and `properties.info.role === \"assistant\"`, store the mapping\n2. **Detect completed text parts** from `message.part.updated` events\n   - When `part.type === \"text\"` and `part.time?.end` is set, the part is complete\n   - Look up `part.messageID` in the role map\n   - If role is `\"assistant\"`, save `part.text` as `lastMessage`\n3. **Handle delta accumulation** for parts that stream:\n   - When `delta` is present, accumulate the text per `messageID`+`partID`\n   - When `time.end` arrives, use the accumulated text\n\n**Secondary (polling as safety net):**\n\nKeep the existing `session.idle` + `getSessionMessages()` fallback as a backstop for cases where:\n- The event-based tracking missed something\n- The plugin started after some messages were already sent\n- The session is a child session (delegation)\n\n**Pragmatic implementation sketch:**\n\n```typescript\n// New module: src/features/session-tracker/capture/assistant-text-capture.ts\n\ninterface AssistantTextCaptureDeps {\n  sessionTracker: SessionTracker // has setLastMessage(sessionID, text)\n}\n\nexport class AssistantTextCapture {\n  // messageID -> { sessionID, role }\n  private messageRoles = new Map<string, { sessionID: string; role: string }>()\n  // sessionID+partID -> accumulated text (for streaming deltas)\n  private partAccumulators = new Map<string, string>()\n\n  handleMessageUpdated(event: EventMessageUpdated) {\n    const msg = event.properties.info\n    this.messageRoles.set(msg.id, {\n      sessionID: msg.sessionID,\n      role: msg.role,\n    })\n  }\n\n  handleMessagePartUpdated(event: EventMessagePartUpdated) {\n    const part = event.properties.part\n    if (part.type !== \"text\") return\n\n    const messageRole = this.messageRoles.get(part.messageID)\n    if (!messageRole || messageRole.role !== \"assistant\") return\n\n    const partKey = `${messageRole.sessionID}:${part.messageID}:${part.id}`\n\n    // Streaming delta: accumulate\n    if (part.time && !part.time.end) {\n      const existing = this.partAccumulators.get(partKey) ?? \"\"\n      this.partAccumulators.set(partKey, existing + (event.properties.delta ?? \"\"))\n      return\n    }\n\n    // Part complete: finalize\n    const finalText = part.text || this.partAccumulators.get(partKey) || \"\"\n    this.partAccumulators.delete(partKey)\n    \n    if (finalText.trim()) {\n      this.sessionTracker.updateLastMessage(messageRole.sessionID, finalText.trim())\n    }\n  }\n}\n```\n\n**This is wired into the existing `event` hook pipeline** (core-hooks.ts:153-167), which already dispatches to `eventObservers`. Add a new observer factory.\n\n### Alternative if event-based is too complex\n\nIf the event-based approach is deemed too complex, the **simpler polling approach** is:\n\n1. Extend the existing pattern in `session-hooks.ts` (which tracks `lastMessageCount`) to `session-tracker`\n2. After each `chat.message` (user message arrives = previous assistant response is done) and `tool.execute.after`, check message count:\n   - Call `getSessionMessages(sessionID)` with `limit=1`\n   - If the last message is assistant, capture it\n3. This adds ~2-3 SDK calls per turn (negligible cost)\n\n### Summary Decision Table\n\n| Mechanism | Continuous? | Reliable? | Complexity | Recommendation |\n|-----------|------------|-----------|------------|---------------|\n| `message.part.updated` + `message.updated` via `event` hook | ✅ Yes | ✅ Yes (SDK guaranteed) | Medium | **BEST** — real-time, no polling |\n| `session.idle` + `getSessionMessages()` | ❌ No (only at end) | ✅ Yes | Low | Keep as fallback only |\n| Polling `getSessionMessages()` on triggers | ✅ Yes | ✅ Yes | Low | Acceptable B-plan |\n| `experimental.text.complete` | ✅ Yes | ⚠️ Experimental | Low | Unreliable |\n| `chat.message` | ❌ No | ❌ UserMessage only | Already wired | Dead code |\n| `session.next.text.ended` | ❌ No | ❌ Doesn't exist | Already coded | Remove handler |",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "gsd-debugger",
+      "content": "I now have a complete picture. Here is the comprehensive analysis.\n\n---\n\n## Complete Investigation Report\n\n### SDK Version Confirmed\n\n**Package:** `@opencode-ai/sdk` (via plugin peer dependency)\n**Source:** `node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts` (fresh read, not stale reference)\n\n### Complete Listing of ALL Available Events (SDK `Event` union, line 602)\n\n```\nsession.created       session.updated       session.deleted\nsession.idle          session.error         session.status\nsession.compacted     session.diff\nmessage.updated       message.removed\nmessage.part.updated  message.part.removed\npermission.updated    permission.replied\nfile.edited           file.watcher.updated\ntodo.updated          command.executed\ntui.prompt.append     tui.command.execute   tui.toast.show\npty.created           pty.updated           pty.exited      pty.deleted\nlsp.client.diagnostics    lsp.updated\ninstallation.updated      installation.update-available\nserver.instance.disposed  server.connected\nvcs.branch.updated\n```\n\n**`session.next.text.ended` does NOT exist.** Dead code confirmed.\n\n### Complete Listing of ALL Available Hooks (`Hooks` interface, `plugin/dist/index.d.ts`)\n\n| Hook | Input | Output | Captures assistant text? |\n|------|-------|--------|-------------------------|\n| `event` | `{ event: Event }` | - | **YES** via `message.part.updated` + `message.updated` (see below) |\n| `chat.message` | `{ sessionID, agent?, messageID? }` | `{ message: UserMessage, parts: Part[] }` | **NO** — `UserMessage` only (`role: \"user\"`) |\n| `chat.params` | LLM params | temperature, topP, etc. | No |\n| `chat.headers` | LLM headers | headers | No |\n| `permission.ask` | Permission | status | No |\n| `command.execute.before` | command, args | parts | No |\n| `tool.execute.before` | tool, sessionID | args | No |\n| `shell.env` | cwd | env | No |\n| `tool.execute.after` | tool, args | title, output, metadata | No |\n| `experimental.chat.messages.transform` | - | messages[] | Partial (full message array) |\n| `experimental.chat.system.transform` | sessionID, model | system[] | No |\n| `experimental.session.compacting` | sessionID | context, prompt | No |\n| `experimental.compaction.autocontinue` | sessionID, agent, model, message | enabled | No |\n| **`experimental.text.complete`** | `{ sessionID, messageID, partID }` | `{ text: string }` | **PARTIAL** — per-part, experimental, no role info |\n| `tool.definition` | toolID | description, parameters | No |\n\n### Analysis of Each Candidate for Capturing Assistant Response Text\n\n#### Candidate 1: `chat.message` — ❌ DEAD CODE\n- SDK type clearly shows `output.message: UserMessage` (line 196-197 of plugin SDK)\n- UserMessage has `role: \"user\"` (line 40 of types.gen.d.ts)\n- Our code's `handleAssistantMessage()` path (message-capture.ts:207) is unreachable\n- **Verdict:** Will NEVER fire for assistant messages\n\n#### Candidate 2: `session.next.text.ended` — ❌ DOES NOT EXIST\n- Not in the `Event` union (types.gen.d.ts:602)\n- Not in any event type definition\n- Our code's `handleSessionNextTextEnded()` (event-capture.ts:663) is unreachable\n- Comments already acknowledge this (lines 645-658)\n- **Verdict:** Dead code, remove the handler\n\n#### Candidate 3: `session.idle` + `getSessionMessages()` — ⚠️ WORKS BUT NOT CONTINUOUS\n- Currently implemented (event-capture.ts:329-345) — queries SDK messages on idle\n- Problem: `session.idle` fires at lifecycle boundary, not after every turn\n- During a long session with 10 assistant responses, only captures the last one at the end\n- **Verdict:** Useful fallback but doesn't solve continuous tracking\n\n#### Candidate 4: `event` hook + `message.part.updated` — ✅ VIABLE\n```typescript\ntype EventMessagePartUpdated = {\n  type: \"message.part.updated\";\n  properties: { part: Part; delta?: string; };\n};\n```\n- `TextPart` has `text: string` and `time?: { start: number; end?: number; }`\n- When `time.end` is set, the text part is COMPLETE\n- **Problem:** No `role` in the part — need to associate `messageID` with a role\n- Can pair with `message.updated` events which carry `AssistantMessage` (has `role: \"assistant\"`)\n- **Verdict:** Best real-time approach, but requires message ID -> role tracking\n\n#### Candidate 5: `event` hook + `message.updated` — ⚠️ PARTIAL\n```typescript\ntype EventMessageUpdated = {\n  type: \"message.updated\";\n  properties: { info: Message; }; // Message = UserMessage | AssistantMessage\n};\ntype AssistantMessage = {\n  role: \"assistant\";\n  modelID: string;\n  providerID: string;\n  tokens: { input, output, reasoning, cache };\n  // ... but NO text content!\n};\n```\n- `AssistantMessage` has token counts, cost, model info — but **no text parts**\n- Text content is in `Part` objects, delivered via `message.part.updated`\n- **Verdict:** Useful for role tracking but can't get response text alone\n\n#### Candidate 6: `experimental.text.complete` — ⚠️ EXPERIMENTAL\n```typescript\n\"experimental.text.complete\"?: (\n  input: { sessionID: string; messageID: string; partID: string },\n  output: { text: string }\n) => Promise<void>;\n```\n- Would fire when a text part completes\n- But it's `experimental` — not guaranteed to be dispatched by all runtimes\n- Fires per-part, not per-response; may fire for user text too\n- No role information in the input\n- **Verdict:** Possible but unreliable (experimental prefix means it may change/be removed)\n\n#### Candidate 7: Polling `getSessionMessages()` — ✅ RELIABLE BUT COSTLY\n- Always works — it's the core SDK session API\n- Already implemented in our codebase (session-api.ts:79-93)\n- Used by delegation monitoring (session-hooks.ts tracks `lastMessageCount`)\n- **Cost:** Each call is an HTTP request to the OpenCode server\n- **Verdict:** Reliable fallback, but wasteful as sole mechanism\n\n### Recommended Approach\n\n**Strategy: Hybrid — event-driven for real-time + polling for fallback**\n\n**Primary (`message.part.updated` event detection in the `event` hook):**\n\nThe existing `event` hook (wired in `core-hooks.ts`, processed by `lifecycleManager.handleEvent()`) already dispatches ALL events. We need to add a dedicated observer for assistant text capture:\n\n1. **Track `messageID` -> `sessionID` + `role` mapping** from `message.updated` events\n   - When `event.type === \"message.updated\"` and `properties.info.role === \"assistant\"`, store the mapping\n2. **Detect completed text parts** from `message.part.updated` events\n   - When `part.type === \"text\"` and `part.time?.end` is set, the part is complete\n   - Look up `part.messageID` in the role map\n   - If role is `\"assistant\"`, save `part.text` as `lastMessage`\n3. **Handle delta accumulation** for parts that stream:\n   - When `delta` is present, accumulate the text per `messageID`+`partID`\n   - When `time.end` arrives, use the accumulated text\n\n**Secondary (polling as safety net):**\n\nKeep the existing `session.idle` + `getSessionMessages()` fallback as a backstop for cases where:\n- The event-based tracking missed something\n- The plugin started after some messages were already sent\n- The session is a child session (delegation)\n\n**Pragmatic implementation sketch:**\n\n```typescript\n// New module: src/features/session-tracker/capture/assistant-text-capture.ts\n\ninterface AssistantTextCaptureDeps {\n  sessionTracker: SessionTracker // has setLastMessage(sessionID, text)\n}\n\nexport class AssistantTextCapture {\n  // messageID -> { sessionID, role }\n  private messageRoles = new Map<string, { sessionID: string; role: string }>()\n  // sessionID+partID -> accumulated text (for streaming deltas)\n  private partAccumulators = new Map<string, string>()\n\n  handleMessageUpdated(event: EventMessageUpdated) {\n    const msg = event.properties.info\n    this.messageRoles.set(msg.id, {\n      sessionID: msg.sessionID,\n      role: msg.role,\n    })\n  }\n\n  handleMessagePartUpdated(event: EventMessagePartUpdated) {\n    const part = event.properties.part\n    if (part.type !== \"text\") return\n\n    const messageRole = this.messageRoles.get(part.messageID)\n    if (!messageRole || messageRole.role !== \"assistant\") return\n\n    const partKey = `${messageRole.sessionID}:${part.messageID}:${part.id}`\n\n    // Streaming delta: accumulate\n    if (part.time && !part.time.end) {\n      const existing = this.partAccumulators.get(partKey) ?? \"\"\n      this.partAccumulators.set(partKey, existing + (event.properties.delta ?? \"\"))\n      return\n    }\n\n    // Part complete: finalize\n    const finalText = part.text || this.partAccumulators.get(partKey) || \"\"\n    this.partAccumulators.delete(partKey)\n    \n    if (finalText.trim()) {\n      this.sessionTracker.updateLastMessage(messageRole.sessionID, finalText.trim())\n    }\n  }\n}\n```\n\n**This is wired into the existing `event` hook pipeline** (core-hooks.ts:153-167), which already dispatches to `eventObservers`. Add a new observer factory.\n\n### Alternative if event-based is too complex\n\nIf the event-based approach is deemed too complex, the **simpler polling approach** is:\n\n1. Extend the existing pattern in `session-hooks.ts` (which tracks `lastMessageCount`) to `session-tracker`\n2. After each `chat.message` (user message arrives = previous assistant response is done) and `tool.execute.after`, check message count:\n   - Call `getSessionMessages(sessionID)` with `limit=1`\n   - If the last message is assistant, capture it\n3. This adds ~2-3 SDK calls per turn (negligible cost)\n\n### Summary Decision Table\n\n| Mechanism | Continuous? | Reliable? | Complexity | Recommendation |\n|-----------|------------|-----------|------------|---------------|\n| `message.part.updated` + `message.updated` via `event` hook | ✅ Yes | ✅ Yes (SDK guaranteed) | Medium | **BEST** — real-time, no polling |\n| `session.idle` + `getSessionMessages()` | ❌ No (only at end) | ✅ Yes | Low | Keep as fallback only |\n| Polling `getSessionMessages()` on triggers | ✅ Yes | ✅ Yes | Low | Acceptable B-plan |\n| `experimental.text.complete` | ✅ Yes | ⚠️ Experimental | Low | Unreliable |\n| `chat.message` | ❌ No | ❌ UserMessage only | Already wired | Dead code |\n| `session.next.text.ended` | ❌ No | ❌ Doesn't exist | Already coded | Remove handler |",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-25T11:07:32.397Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_s40WC8EX6NXol5qq6kJk4786",
+        "input": {
+          "name": "gsd-debug"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:32.570Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_01_DaNhgEGEC57AO5p6dPem4477",
+        "input": {
+          "name": "hm-l3-opencode-platform-reference"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:38.461Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_OWLt2umLixWtGEp3dqXk2830",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:38.711Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_9GxMPyTla5zozDpUxdJo9044",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:38.926Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_iC8QGeRVdTRgNStu1hnD5672",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:45.035Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_PONtbN74JEejH869kQzY4087",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l3-opencode-platform-reference/references/opencode-plugins.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:45.269Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_vupfU4eMsNAVzWXh13XC1850",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/transforms/chat-message-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:45.708Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_ER847jvl40UowxOZsaSB1298",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:51.264Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_1k94FZa3TQGNAS8HAwfs0044",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/plugin/dist/index.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:51.526Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_RguOgC2V7lD5HWdIeKrC7357",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:51.867Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_02_FVNS0mkeHf4fK2IOyIsb0269",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:58.079Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Qo9ROKcKMt5egAdzJgmj5731",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/event-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:58.373Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_yFhIv07W7oWdlC8FtITB5533",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/message-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:07:58.599Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_a2VKKQ9JHUoAFnfDSz7v1708",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:08:06.244Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_tgAkEyGJMI6tHAPUiC2v8669",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:08:06.489Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_HQGPjgyUaInhSdLAxxbQ0109",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/core-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:08:12.510Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_SmWnwvjH8lgMiF6D7KeT1320",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:08:13.123Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_61O9tGT0aFhqCbo3hNX34891",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:08:18.356Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_wULsTVzo1sAK38f6B6lZ8798",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/gen/core/serverSentEvents.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:08:18.662Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_rlyp5CzxQoS77KnOP1AR4793",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:09:14.753Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_uJeEk9ON8yF9YUfdZBuF6171",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:09:15.111Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_RiYbZuQEm2glM9D5uUPc0114",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/session-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:09:48.377Z",
+      "type": "assistant_message",
+      "content": "I now have a complete picture. Here is the comprehensive analysis.\n\n---\n\n## Complete Investigation Report\n\n### SDK Version Confirmed\n\n**Package:** `@opencode-ai/sdk` (via plugin peer dependency)\n**Source:** `node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts` (fresh read, not stale reference)\n\n### Complete Listing of ALL Available Events (SDK `Event` union, line 602)\n\n```\nsession.created       session.updated       session.deleted\nsession.idle          session.error         session.status\nsession.compacted     session.diff\nmessage.updated       message.removed\nmessage.part.updated  message.part.removed\npermission.updated    permission.replied\nfile.edited           file.watcher.updated\ntodo.updated          command.executed\ntui.prompt.append     tui.command.execute   tui.toast.show\npty.created           pty.updated           pty.exited      pty.deleted\nlsp.client.diagnostics    lsp.updated\ninstallation.updated      installation.update-available\nserver.instance.disposed  server.connected\nvcs.branch.updated\n```\n\n**`session.next.text.ended` does NOT exist.** Dead code confirmed.\n\n### Complete Listing of ALL Available Hooks (`Hooks` interface, `plugin/dist/index.d.ts`)\n\n| Hook | Input | Output | Captures assistant text? |\n|------|-------|--------|-------------------------|\n| `event` | `{ event: Event }` | - | **YES** via `message.part.updated` + `message.updated` (see below) |\n| `chat.message` | `{ sessionID, agent?, messageID? }` | `{ message: UserMessage, parts: Part[] }` | **NO** — `UserMessage` only (`role: \"user\"`) |\n| `chat.params` | LLM params | temperature, topP, etc. | No |\n| `chat.headers` | LLM headers | headers | No |\n| `permission.ask` | Permission | status | No |\n| `command.execute.before` | command, args | parts | No |\n| `tool.execute.before` | tool, sessionID | args | No |\n| `shell.env` | cwd | env | No |\n| `tool.execute.after` | tool, args | title, output, metadata | No |\n| `experimental.chat.messages.transform` | - | messages[] | Partial (full message array) |\n| `experimental.chat.system.transform` | sessionID, model | system[] | No |\n| `experimental.session.compacting` | sessionID | context, prompt | No |\n| `experimental.compaction.autocontinue` | sessionID, agent, model, message | enabled | No |\n| **`experimental.text.complete`** | `{ sessionID, messageID, partID }` | `{ text: string }` | **PARTIAL** — per-part, experimental, no role info |\n| `tool.definition` | toolID | description, parameters | No |\n\n### Analysis of Each Candidate for Capturing Assistant Response Text\n\n#### Candidate 1: `chat.message` — ❌ DEAD CODE\n- SDK type clearly shows `output.message: UserMessage` (line 196-197 of plugin SDK)\n- UserMessage has `role: \"user\"` (line 40 of types.gen.d.ts)\n- Our code's `handleAssistantMessage()` path (message-capture.ts:207) is unreachable\n- **Verdict:** Will NEVER fire for assistant messages\n\n#### Candidate 2: `session.next.text.ended` — ❌ DOES NOT EXIST\n- Not in the `Event` union (types.gen.d.ts:602)\n- Not in any event type definition\n- Our code's `handleSessionNextTextEnded()` (event-capture.ts:663) is unreachable\n- Comments already acknowledge this (lines 645-658)\n- **Verdict:** Dead code, remove the handler\n\n#### Candidate 3: `session.idle` + `getSessionMessages()` — ⚠️ WORKS BUT NOT CONTINUOUS\n- Currently implemented (event-capture.ts:329-345) — queries SDK messages on idle\n- Problem: `session.idle` fires at lifecycle boundary, not after every turn\n- During a long session with 10 assistant responses, only captures the last one at the end\n- **Verdict:** Useful fallback but doesn't solve continuous tracking\n\n#### Candidate 4: `event` hook + `message.part.updated` — ✅ VIABLE\n```typescript\ntype EventMessagePartUpdated = {\n  type: \"message.part.updated\";\n  properties: { part: Part; delta?: string; };\n};\n```\n- `TextPart` has `text: string` and `time?: { start: number; end?: number; }`\n- When `time.end` is set, the text part is COMPLETE\n- **Problem:** No `role` in the part — need to associate `messageID` with a role\n- Can pair with `message.updated` events which carry `AssistantMessage` (has `role: \"assistant\"`)\n- **Verdict:** Best real-time approach, but requires message ID -> role tracking\n\n#### Candidate 5: `event` hook + `message.updated` — ⚠️ PARTIAL\n```typescript\ntype EventMessageUpdated = {\n  type: \"message.updated\";\n  properties: { info: Message; }; // Message = UserMessage | AssistantMessage\n};\ntype AssistantMessage = {\n  role: \"assistant\";\n  modelID: string;\n  providerID: string;\n  tokens: { input, output, reasoning, cache };\n  // ... but NO text content!\n};\n```\n- `AssistantMessage` has token counts, cost, model info — but **no text parts**\n- Text content is in `Part` objects, delivered via `message.part.updated`\n- **Verdict:** Useful for role tracking but can't get response text alone\n\n#### Candidate 6: `experimental.text.complete` — ⚠️ EXPERIMENTAL\n```typescript\n\"experimental.text.complete\"?: (\n  input: { sessionID: string; messageID: string; partID: string },\n  output: { text: string }\n) => Promise<void>;\n```\n- Would fire when a text part completes\n- But it's `experimental` — not guaranteed to be dispatched by all runtimes\n- Fires per-part, not per-response; may fire for user text too\n- No role information in the input\n- **Verdict:** Possible but unreliable (experimental prefix means it may change/be removed)\n\n#### Candidate 7: Polling `getSessionMessages()` — ✅ RELIABLE BUT COSTLY\n- Always works — it's the core SDK session API\n- Already implemented in our codebase (session-api.ts:79-93)\n- Used by delegation monitoring (session-hooks.ts tracks `lastMessageCount`)\n- **Cost:** Each call is an HTTP request to the OpenCode server\n- **Verdict:** Reliable fallback, but wasteful as sole mechanism\n\n### Recommended Approach\n\n**Strategy: Hybrid — event-driven for real-time + polling for fallback**\n\n**Primary (`message.part.updated` event detection in the `event` hook):**\n\nThe existing `event` hook (wired in `core-hooks.ts`, processed by `lifecycleManager.handleEvent()`) already dispatches ALL events. We need to add a dedicated observer for assistant text capture:\n\n1. **Track `messageID` -> `sessionID` + `role` mapping** from `message.updated` events\n   - When `event.type === \"message.updated\"` and `properties.info.role === \"assistant\"`, store the mapping\n2. **Detect completed text parts** from `message.part.updated` events\n   - When `part.type === \"text\"` and `part.time?.end` is set, the part is complete\n   - Look up `part.messageID` in the role map\n   - If role is `\"assistant\"`, save `part.text` as `lastMessage`\n3. **Handle delta accumulation** for parts that stream:\n   - When `delta` is present, accumulate the text per `messageID`+`partID`\n   - When `time.end` arrives, use the accumulated text\n\n**Secondary (polling as safety net):**\n\nKeep the existing `session.idle` + `getSessionMessages()` fallback as a backstop for cases where:\n- The event-based tracking missed something\n- The plugin started after some messages were already sent\n- The session is a child session (delegation)\n\n**Pragmatic implementation sketch:**\n\n```typescript\n// New module: src/features/session-tracker/capture/assistant-text-capture.ts\n\ninterface AssistantTextCaptureDeps {\n  sessionTracker: SessionTracker // has setLastMessage(sessionID, text)\n}\n\nexport class AssistantTextCapture {\n  // messageID -> { sessionID, role }\n  private messageRoles = new Map<string, { sessionID: string; role: string }>()\n  // sessionID+partID -> accumulated text (for streaming deltas)\n  private partAccumulators = new Map<string, string>()\n\n  handleMessageUpdated(event: EventMessageUpdated) {\n    const msg = event.properties.info\n    this.messageRoles.set(msg.id, {\n      sessionID: msg.sessionID,\n      role: msg.role,\n    })\n  }\n\n  handleMessagePartUpdated(event: EventMessagePartUpdated) {\n    const part = event.properties.part\n    if (part.type !== \"text\") return\n\n    const messageRole = this.messageRoles.get(part.messageID)\n    if (!messageRole || messageRole.role !== \"assistant\") return\n\n    const partKey = `${messageRole.sessionID}:${part.messageID}:${part.id}`\n\n    // Streaming delta: accumulate\n    if (part.time && !part.time.end) {\n      const existing = this.partAccumulators.get(partKey) ?? \"\"\n      this.partAccumulators.set(partKey, existing + (event.properties.delta ?? \"\"))\n      return\n    }\n\n    // Part complete: finalize\n    const finalText = part.text || this.partAccumulators.get(partKey) || \"\"\n    this.partAccumulators.delete(partKey)\n    \n    if (finalText.trim()) {\n      this.sessionTracker.updateLastMessage(messageRole.sessionID, finalText.trim())\n    }\n  }\n}\n```\n\n**This is wired into the existing `event` hook pipeline** (core-hooks.ts:153-167), which already dispatches to `eventObservers`. Add a new observer factory.\n\n### Alternative if event-based is too complex\n\nIf the event-based approach is deemed too complex, the **simpler polling approach** is:\n\n1. Extend the existing pattern in `session-hooks.ts` (which tracks `lastMessageCount`) to `session-tracker`\n2. After each `chat.message` (user message arrives = previous assistant response is done) and `tool.execute.after`, check message count:\n   - Call `getSessionMessages(sessionID)` with `limit=1`\n   - If the last message is assistant, capture it\n3. This adds ~2-3 SDK calls per turn (negligible cost)\n\n### Summary Decision Table\n\n| Mechanism | Continuous? | Reliable? | Complexity | Recommendation |\n|-----------|------------|-----------|------------|---------------|\n| `message.part.updated` + `message.updated` via `event` hook | ✅ Yes | ✅ Yes (SDK guaranteed) | Medium | **BEST** — real-time, no polling |\n| `session.idle` + `getSessionMessages()` | ❌ No (only at end) | ✅ Yes | Low | Keep as fallback only |\n| Polling `getSessionMessages()` on triggers | ✅ Yes | ✅ Yes | Low | Acceptable B-plan |\n| `experimental.text.complete` | ✅ Yes | ⚠️ Experimental | Low | Unreliable |\n| `chat.message` | ❌ No | ❌ UserMessage only | Already wired | Dead code |\n| `session.next.text.ended` | ❌ No | ❌ Doesn't exist | Already coded | Remove handler |",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1a12e8674ffePYMaFRO1H3Ozp7"
+      }
+    }
+  ],
+  "lastMessage": "I now have a complete picture. Here is the comprehensive analysis.\n\n---\n\n## Complete Investigation Report\n\n### SDK Version Confirmed\n\n**Package:** `@opencode-ai/sdk` (via plugin peer dependency)\n**Source:** `node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts` (fresh read, not stale reference)\n\n### Complete Listing of ALL Available Events (SDK `Event` union, line 602)\n\n```\nsession.created       session.updated       session.deleted\nsession.idle          session.error         session.status\nsession.compacted     session.diff\nmessage.updated       message.removed\nmessage.part.updated  message.part.removed\npermission.updated    permission.replied\nfile.edited           file.watcher.updated\ntodo.updated          command.executed\ntui.prompt.append     tui.command.execute   tui.toast.show\npty.created           pty.updated           pty.exited      pty.deleted\nlsp.client.diagnostics    lsp.updated\ninstallation.updated      installation.update-available\nserver.instance.disposed  server.connected\nvcs.branch.updated\n```\n\n**`session.next.text.ended` does NOT exist.** Dead code confirmed.\n\n### Complete Listing of ALL Available Hooks (`Hooks` interface, `plugin/dist/index.d.ts`)\n\n| Hook | Input | Output | Captures assistant text? |\n|------|-------|--------|-------------------------|\n| `event` | `{ event: Event }` | - | **YES** via `message.part.updated` + `message.updated` (see below) |\n| `chat.message` | `{ sessionID, agent?, messageID? }` | `{ message: UserMessage, parts: Part[] }` | **NO** — `UserMessage` only (`role: \"user\"`) |\n| `chat.params` | LLM params | temperature, topP, etc. | No |\n| `chat.headers` | LLM headers | headers | No |\n| `permission.ask` | Permission | status | No |\n| `command.execute.before` | command, args | parts | No |\n| `tool.execute.before` | tool, sessionID | args | No |\n| `shell.env` | cwd | env | No |\n| `tool.execute.after` | tool, args | title, output, metadata | No |\n| `experimental.chat.messages.transform` | - | messages[] | Partial (full message array) |\n| `experimental.chat.system.transform` | sessionID, model | system[] | No |\n| `experimental.session.compacting` | sessionID | context, prompt | No |\n| `experimental.compaction.autocontinue` | sessionID, agent, model, message | enabled | No |\n| **`experimental.text.complete`** | `{ sessionID, messageID, partID }` | `{ text: string }` | **PARTIAL** — per-part, experimental, no role info |\n| `tool.definition` | toolID | description, parameters | No |\n\n### Analysis of Each Candidate for Capturing Assistant Response Text\n\n#### Candidate 1: `chat.message` — ❌ DEAD CODE\n- SDK type clearly shows `output.message: UserMessage` (line 196-197 of plugin SDK)\n- UserMessage has `role: \"user\"` (line 40 of types.gen.d.ts)\n- Our code's `handleAssistantMessage()` path (message-capture.ts:207) is unreachable\n- **Verdict:** Will NEVER fire for assistant messages\n\n#### Candidate 2: `session.next.text.ended` — ❌ DOES NOT EXIST\n- Not in the `Event` union (types.gen.d.ts:602)\n- Not in any event type definition\n- Our code's `handleSessionNextTextEnded()` (event-capture.ts:663) is unreachable\n- Comments already acknowledge this (lines 645-658)\n- **Verdict:** Dead code, remove the handler\n\n#### Candidate 3: `session.idle` + `getSessionMessages()` — ⚠️ WORKS BUT NOT CONTINUOUS\n- Currently implemented (event-capture.ts:329-345) — queries SDK messages on idle\n- Problem: `session.idle` fires at lifecycle boundary, not after every turn\n- During a long session with 10 assistant responses, only captures the last one at the end\n- **Verdict:** Useful fallback but doesn't solve continuous tracking\n\n#### Candidate 4: `event` hook + `message.part.updated` — ✅ VIABLE\n```typescript\ntype EventMessagePartUpdated = {\n  type: \"message.part.updated\";\n  properties: { part: Part; delta?: string; };\n};\n```\n- `TextPart` has `text: string` and `time?: { start: number; end?: number; }`\n- When `time.end` is set, the text part is COMPLETE\n- **Problem:** No `role` in the part — need to associate `messageID` with a role\n- Can pair with `message.updated` events which carry `AssistantMessage` (has `role: \"assistant\"`)\n- **Verdict:** Best real-time approach, but requires message ID -> role tracking\n\n#### Candidate 5: `event` hook + `message.updated` — ⚠️ PARTIAL\n```typescript\ntype EventMessageUpdated = {\n  type: \"message.updated\";\n  properties: { info: Message; }; // Message = UserMessage | AssistantMessage\n};\ntype AssistantMessage = {\n  role: \"assistant\";\n  modelID: string;\n  providerID: string;\n  tokens: { input, output, reasoning, cache };\n  // ... but NO text content!\n};\n```\n- `AssistantMessage` has token counts, cost, model info — but **no text parts**\n- Text content is in `Part` objects, delivered via `message.part.updated`\n- **Verdict:** Useful for role tracking but can't get response text alone\n\n#### Candidate 6: `experimental.text.complete` — ⚠️ EXPERIMENTAL\n```typescript\n\"experimental.text.complete\"?: (\n  input: { sessionID: string; messageID: string; partID: string },\n  output: { text: string }\n) => Promise<void>;\n```\n- Would fire when a text part completes\n- But it's `experimental` — not guaranteed to be dispatched by all runtimes\n- Fires per-part, not per-response; may fire for user text too\n- No role information in the input\n- **Verdict:** Possible but unreliable (experimental prefix means it may change/be removed)\n\n#### Candidate 7: Polling `getSessionMessages()` — ✅ RELIABLE BUT COSTLY\n- Always works — it's the core SDK session API\n- Already implemented in our codebase (session-api.ts:79-93)\n- Used by delegation monitoring (session-hooks.ts tracks `lastMessageCount`)\n- **Cost:** Each call is an HTTP request to the OpenCode server\n- **Verdict:** Reliable fallback, but wasteful as sole mechanism\n\n### Recommended Approach\n\n**Strategy: Hybrid — event-driven for real-time + polling for fallback**\n\n**Primary (`message.part.updated` event detection in the `event` hook):**\n\nThe existing `event` hook (wired in `core-hooks.ts`, processed by `lifecycleManager.handleEvent()`) already dispatches ALL events. We need to add a dedicated observer for assistant text capture:\n\n1. **Track `messageID` -> `sessionID` + `role` mapping** from `message.updated` events\n   - When `event.type === \"message.updated\"` and `properties.info.role === \"assistant\"`, store the mapping\n2. **Detect completed text parts** from `message.part.updated` events\n   - When `part.type === \"text\"` and `part.time?.end` is set, the part is complete\n   - Look up `part.messageID` in the role map\n   - If role is `\"assistant\"`, save `part.text` as `lastMessage`\n3. **Handle delta accumulation** for parts that stream:\n   - When `delta` is present, accumulate the text per `messageID`+`partID`\n   - When `time.end` arrives, use the accumulated text\n\n**Secondary (polling as safety net):**\n\nKeep the existing `session.idle` + `getSessionMessages()` fallback as a backstop for cases where:\n- The event-based tracking missed something\n- The plugin started after some messages were already sent\n- The session is a child session (delegation)\n\n**Pragmatic implementation sketch:**\n\n```typescript\n// New module: src/features/session-tracker/capture/assistant-text-capture.ts\n\ninterface AssistantTextCaptureDeps {\n  sessionTracker: SessionTracker // has setLastMessage(sessionID, text)\n}\n\nexport class AssistantTextCapture {\n  // messageID -> { sessionID, role }\n  private messageRoles = new Map<string, { sessionID: string; role: string }>()\n  // sessionID+partID -> accumulated text (for streaming deltas)\n  private partAccumulators = new Map<string, string>()\n\n  handleMessageUpdated(event: EventMessageUpdated) {\n    const msg = event.properties.info\n    this.messageRoles.set(msg.id, {\n      sessionID: msg.sessionID,\n      role: msg.role,\n    })\n  }\n\n  handleMessagePartUpdated(event: EventMessagePartUpdated) {\n    const part = event.properties.part\n    if (part.type !== \"text\") return\n\n    const messageRole = this.messageRoles.get(part.messageID)\n    if (!messageRole || messageRole.role !== \"assistant\") return\n\n    const partKey = `${messageRole.sessionID}:${part.messageID}:${part.id}`\n\n    // Streaming delta: accumulate\n    if (part.time && !part.time.end) {\n      const existing = this.partAccumulators.get(partKey) ?? \"\"\n      this.partAccumulators.set(partKey, existing + (event.properties.delta ?? \"\"))\n      return\n    }\n\n    // Part complete: finalize\n    const finalText = part.text || this.partAccumulators.get(partKey) || \"\"\n    this.partAccumulators.delete(partKey)\n    \n    if (finalText.trim()) {\n      this.sessionTracker.updateLastMessage(messageRole.sessionID, finalText.trim())\n    }\n  }\n}\n```\n\n**This is wired into the existing `event` hook pipeline** (core-hooks.ts:153-167), which already dispatches to `eventObservers`. Add a new observer factory.\n\n### Alternative if event-based is too complex\n\nIf the event-based approach is deemed too complex, the **simpler polling approach** is:\n\n1. Extend the existing pattern in `session-hooks.ts` (which tracks `lastMessageCount`) to `session-tracker`\n2. After each `chat.message` (user message arrives = previous assistant response is done) and `tool.execute.after`, check message count:\n   - Call `getSessionMessages(sessionID)` with `limit=1`\n   - If the last message is assistant, capture it\n3. This adds ~2-3 SDK calls per turn (negligible cost)\n\n### Summary Decision Table\n\n| Mechanism | Continuous? | Reliable? | Complexity | Recommendation |\n|-----------|------------|-----------|------------|---------------|\n| `message.part.updated` + `message.updated` via `event` hook | ✅ Yes | ✅ Yes (SDK guaranteed) | Medium | **BEST** — real-time, no polling |\n| `session.idle` + `getSessionMessages()` | ❌ No (only at end) | ✅ Yes | Low | Keep as fallback only |\n| Polling `getSessionMessages()` on triggers | ✅ Yes | ✅ Yes | Low | Acceptable B-plan |\n| `experimental.text.complete` | ✅ Yes | ⚠️ Experimental | Low | Unreliable |\n| `chat.message` | ❌ No | ❌ UserMessage only | Already wired | Dead code |\n| `session.next.text.ended` | ❌ No | ❌ Doesn't exist | Already coded | Remove handler |"
+}

@@ -21,9 +21,20 @@ Read from project config (`config.json`):
 ## Step 1: Guard Checks
 
 ```bash
-GRADUATION_ENABLED=$(gsd-sdk query config-get features.graduation 2>/dev/null || echo "true")
-GRADUATION_WINDOW=$(gsd-sdk query config-get features.graduation_window 2>/dev/null || echo "5")
-GRADUATION_THRESHOLD=$(gsd-sdk query config-get features.graduation_threshold 2>/dev/null || echo "3")
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+GRADUATION_ENABLED=$($GSD_SDK query config-get features.graduation 2>/dev/null || echo "true")
+GRADUATION_WINDOW=$($GSD_SDK query config-get features.graduation_window 2>/dev/null || echo "5")
+GRADUATION_THRESHOLD=$($GSD_SDK query config-get features.graduation_threshold 2>/dev/null || echo "3")
 ```
 
 **Skip silently (print nothing) if:**

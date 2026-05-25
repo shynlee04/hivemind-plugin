@@ -66,7 +66,18 @@ Report any summaries with placeholder content as incomplete items.
 **Write structured handoff to `.planning/HANDOFF.json`:**
 
 ```bash
-timestamp=$(gsd-sdk query current-timestamp full --raw)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+timestamp=$($GSD_SDK query current-timestamp full --raw)
 ```
 
 ```json
@@ -201,13 +212,13 @@ Be specific enough for a fresh the agent to understand immediately.
 
 Use `current-timestamp` for last_updated field. You can use init todos (which provides timestamps) or call directly:
 ```bash
-timestamp=$(gsd-sdk query current-timestamp full --raw)
+timestamp=$($GSD_SDK query current-timestamp full --raw)
 ```
 </step>
 
 <step name="commit">
 ```bash
-gsd-sdk query commit "wip: [context-name] paused at [X]/[Y]" --files [handoff-path] .planning/HANDOFF.json
+$GSD_SDK query commit "wip: [context-name] paused at [X]/[Y]" --files [handoff-path] .planning/HANDOFF.json
 ```
 </step>
 

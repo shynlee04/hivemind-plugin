@@ -1,6 +1,7 @@
 ---
 description: Validate built features through conversational UAT
-argument-hint: "[phase number, e.g., '4']"
+argument-hint: "[phase number, e.g., '4'] [--ws <name>]"
+requires: [execute-phase, phase]
 tools:
   read: true
   bash: true

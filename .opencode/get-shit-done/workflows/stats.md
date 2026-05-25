@@ -12,7 +12,18 @@ Read all files referenced by the invoking prompt's execution_context before star
 Gather project statistics:
 
 ```bash
-STATS=$(gsd-sdk query stats.json)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+STATS=$($GSD_SDK query stats.json)
 if [[ "$STATS" == @file:* ]]; then STATS=$(cat "${STATS#@file:}"); fi
 ```
 
@@ -55,7 +66,7 @@ If no `.planning/` directory exists, inform the user to run `/gsd-new-project` f
 **MVP phase summary.** Read all phases via `gsd-sdk query roadmap.analyze` (Phase 1's `cmdRoadmapAnalyze` surfaces a `mode` field per phase). Count phases by mode:
 
 ```bash
-ANALYZE=$(gsd-sdk query roadmap.analyze)
+ANALYZE=$($GSD_SDK query roadmap.analyze)
 if [[ "$ANALYZE" == @file:* ]]; then ANALYZE=$(cat "${ANALYZE#@file:}"); fi
 MVP_COUNT=$(echo "$ANALYZE" | jq '[.phases[] | select(.mode == "mvp")] | length')
 TOTAL_COUNT=$(echo "$ANALYZE" | jq '.phases | length')

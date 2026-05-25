@@ -1,6 +1,7 @@
 ---
 description: Diagnose planning directory health and optionally repair issues
 argument-hint: "[--repair] [--context]"
+requires: [thread]
 tools:
   read: true
   bash: true

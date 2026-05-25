@@ -1,0 +1,444 @@
+{
+  "sessionID": "ses_1a12a2dceffeYnSvyguoiqRIC8",
+  "parentSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-l2-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research SDK event structures",
+    "subagentType": "hm-l2-researcher"
+  },
+  "created": "2026-05-25T11:12:11.839Z",
+  "updated": "2026-05-25T11:14:43.393Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-l2-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a subagent: general. Research the EXACT OpenCode SDK event structures for designing a correct continuous lastMessage capture mechanism.\n\n## Step 1: Read the ACTUAL SDK type definitions\nRead these files:\n- `node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts` — search for and extract:\n  - `EventMessagePartUpdated` type definition\n  - `EventMessageUpdated` type definition  \n  - `TextPart` type definition\n  - `AssistantMessage` type definition\n  - The `Part` union type\n  - The `Event` union type (all possible event types)\n  \n- `node_modules/@opencode-ai/plugin/dist/index.d.ts` — search for:\n  - The `Hooks` interface — specifically the `event` hook signature\n  - What does the event hook receive?\n\n## Step 2: Read our existing event processing\nRead these files:\n- `src/hooks/core-hooks.ts` — how event hook is registered and dispatched\n- `src/features/session-tracker/capture/event-capture.ts` — find:\n  - The handleEvent switch statement\n  - messageRole() helper\n  - extractTextFromSdkMessage() helper\n\n## Step 3: Answer these exact questions\n1. What is the EXACT type of `EventMessagePartUpdated`? What fields does it have?\n2. What is the EXACT type of `EventMessageUpdated`? What fields does it have? Does it have `properties.info` with role?\n3. Does `TextPart` have a `messageID` field?\n4. Does `AssistantMessage` have `role: \"assistant\"` and an `id` field?\n5. What events fire FIRST when a new assistant response starts — `message.updated` or `message.part.updated`?\n6. For streaming text, does `message.part.updated` fire multiple times with a `delta` field?\n7. How does our `event` hook currently receive events — what's the parameter structure?\n\n## Step 4: Design the event flow\nCreate a clear table:\n\n| Event type | Condition | What to extract | Action |\n|------------|-----------|-----------------|--------|\n| `message.updated` | `properties.info.role === \"assistant\"` | `info.id` (messageID), `info.sessionID` | Store `messageID → { sessionID, role }` in Map |\n| `message.part.updated` | `properties.part.type === \"text\"` | `part.messageID`, `part.text`, `delta` | If messageID is assistant, accumulate/update lastMessage |\n| ... | ... | ... | ... |\n\n## Step 5: Return\n1. EXACT type definitions found (with field names)\n2. The event flow table\n3. What events to IGNORE\n4. How to handle streaming (delta accumulation)\n5. Edge cases to handle\n\nReturn ALL the raw SDK type data so the user can verify our analysis.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I am hm-l2-researcher, L2 research specialist for hm-* lineage. Loading mandatory skills and beginning investigation.\n\nLet me start by loading the required skills and reading the source files in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Skills loaded. Proceeding with Step 1 — reading SDK type definitions and our existing event processing code in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "SDK type files not found at expected paths. Let me search more broadly.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: bash, bash, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Now let me read the SDK type definitions and plugin types to find the actual event structures.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Excellent data. Now let me find the core-hooks file and also check the v2 data types for completeness.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Now let me check how the event observer dispatches to the session tracker.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Let me also check how `getEventSessionID` works, and how the lifecycle manager routes events.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Let me get the remaining helpers from session-api.ts and check for `isMessageScopedEvent`:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "All evidence collected. Now I have a complete picture. Let me compile the comprehensive research report.\n\n---\n\n## Research Report\n\n**Agent:** hm-l2-researcher\n**Domain:** Research\n**Question:** What are the EXACT OpenCode SDK event structures for designing a correct continuous lastMessage capture mechanism?\n**Status:** COMPLETED\n\n---\n\n### Findings\n\n#### 1. EXACT Type Definitions\n\n**`EventMessagePartUpdated`** (node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts:354)\n```typescript\ntype EventMessagePartUpdated = {\n    type: \"message.part.updated\";\n    properties: {\n        part: Part;\n        delta?: string;   // <-- OPTIONAL, only present during streaming for incremental text\n    };\n};\n```\n- `properties.part` is a `Part` union (see below)\n- `delta` is the **key field for streaming** — it contains the incremental text chunk when present\n\n**`EventMessageUpdated`** (types.gen.d.ts:129)\n```typescript\ntype EventMessageUpdated = {\n    type: \"message.updated\";\n    properties: {\n        info: Message;   // Message = UserMessage | AssistantMessage\n    };\n};\n```\n- `properties.info` is the full `Message` object\n- For assistant messages, `info` is an `AssistantMessage`\n- **Does NOT have `properties.info.role` as a nested path** — `role` is directly on the Message object at `info.role` (since `AssistantMessage` has `role: \"assistant\"` at top level)\n\n**`TextPart`** (types.gen.d.ts:142)\n```typescript\ntype TextPart = {\n    id: string;\n    sessionID: string;\n    messageID: string;      // <-- YES, links to parent message\n    type: \"text\";\n    text: string;           // <-- Full/accumulated text content\n    synthetic?: boolean;\n    ignored?: boolean;\n    time?: { start: number; end?: number };\n    metadata?: { [key: string]: unknown };\n};\n```\n- ✅ **Has `messageID`** — directly links to its parent message\n\n**`AssistantMessage`** (types.gen.d.ts:98)\n```typescript\ntype AssistantMessage = {\n    id: string;\n    sessionID: string;\n    role: \"assistant\";      // <-- YES, role is directly on the object\n    time: { created: number; completed?: number };\n    error?: ProviderAuthError | UnknownError | MessageOutputLengthError | MessageAbortedError | ApiError;\n    parentID: string;       // <-- Links to the user message it's replying to\n    modelID: string;\n    providerID: string;\n    mode: string;\n    path: { cwd: string; root: string };\n    summary?: boolean;\n    cost: number;\n    tokens: { input: number; output: number; reasoning: number; cache: { read: number; write: number } };\n    finish?: string;\n};\n```\n- ✅ Has `role: \"assistant\"` at top level\n- ✅ Has `id` field\n- **Note:** Does NOT contain text content directly — text is in the message's parts\n\n**`Message` union** (types.gen.d.ts:128)\n```typescript\ntype Message = UserMessage | AssistantMessage;\n```\n\n**`Part` union** (types.gen.d.ts:345)\n```typescript\ntype Part = TextPart | { type: \"subtask\"; ... } | ReasoningPart | FilePart | ToolPart \n           | StepStartPart | StepFinishPart | SnapshotPart | PatchPart | AgentPart \n           | RetryPart | CompactionPart;\n```\n\n**`Event` union** (types.gen.d.ts:602) — ALL 31 possible event types:\n```typescript\ntype Event = EventServerInstanceDisposed | EventInstallationUpdated | ...\n           | EventMessageUpdated         // \"message.updated\"\n           | EventMessageRemoved         // \"message.removed\"\n           | EventMessagePartUpdated     // \"message.part.updated\"\n           | EventMessagePartRemoved     // \"message.part.removed\"\n           | EventPermissionUpdated | EventPermissionReplied\n           | EventSessionStatus | EventSessionIdle | EventSessionCompacted\n           | EventFileEdited | EventTodoUpdated | EventCommandExecuted\n           | EventSessionCreated | EventSessionUpdated | EventSessionDeleted\n           | EventSessionDiff | EventSessionError | EventFileWatcherUpdated\n           | EventVcsBranchUpdated | EventTuiPromptAppend | EventTuiCommandExecute\n           | EventTuiToastShow | EventPtyCreated | EventPtyUpdated\n           | EventPtyExited | EventPtyDeleted | EventServerConnected;\n```\n\n**Plugin `Hooks` interface `event` hook signature** (node_modules/@opencode-ai/plugin/dist/index.d.ts:174):\n```typescript\nevent?: (input: {\n    event: Event;\n}) => Promise<void>;\n```\n\n---\n\n#### 2. Event Flow Analysis\n\n**Event firing order for a new assistant response:**\n\n1. **`message.updated`** fires FIRST when a message is created/updated. For assistant messages, `properties.info` is an `AssistantMessage` with `role: \"assistant\"` and `id`. However, this event does NOT contain text content — text is in parts.\n\n2. **`message.part.updated`** fires repeatedly during streaming. Each firing has a `Part` in `properties.part`. For text parts, the `TextPart` has:\n   - `text` — the **accumulated** text so far (complete up to that point)\n   - `delta` — the **incremental** text chunk (present only during active streaming)\n   - `messageID` — links back to the assistant message\n\n3. **`message.part.updated`** fires FINAL time when streaming completes, with full `text` and no `delta` (or `delta` is the last chunk).\n\n**IMPORTANT:** There is NO `session.next.text.ended` event in the SDK. The existing code at `event-capture.ts:134` that handles `session.next.text.ended` is indeed dead code as the comment on lines 643-652 correctly documents.\n\n---\n\n#### 3. Our Current Architecture\n\n**Event hook wiring chain:**\n1. Plugin `event` hook → `core-hooks.ts:event()` (line 153)\n2. Extracts `eventType` and `sessionID` from raw event object\n3. Routes to `lifecycleManager.handleEvent()` for completion detection (session.idle/error/deleted only)\n4. Also routes to `eventObservers[]` — which includes `sessionTrackerConsumer`\n5. `sessionTrackerConsumer` extracts `eventType` + `sessionID` + raw `event` → `sessionTracker.handleSessionEvent()`\n6. `EventCapture.handleSessionEvent()` switch handles: `session.created`, `session.idle`, `session.deleted`, `session.error`, `session.compacted`, `session.next.text.ended` (dead), `session.next.compaction.ended`\n\n**Current lastMessage capture (works but is POST-hoc):**\n- Child sessions: `backfillChildTurnsFromSdk()` queries `getSessionMessages()` on session.idle/deleted/error — **reads message history from SDK API**\n- Main sessions: `handleSessionIdle()` fallback: queries `getSessionMessages()` when `pendingRegistry.lastMessage` is empty\n- **Problem:** lastMessage is only captured at session termination, not continuously\n\n---\n\n#### 4. Event Flow Table for Continuous lastMessage Capture\n\n| Event type | Condition | What to extract | Action |\n|------------|-----------|-----------------|--------|\n| `message.updated` | `properties.info.role === \"assistant\"` | `info.id` (messageID), `info.sessionID` | Store `messageID → { sessionID, accumulatedText: \"\" }` in Map |\n| `message.updated` | `properties.info.role === \"user\"` | `info.id` (messageID) | Track user message start — possibly reset or note context |\n| `message.part.updated` | `properties.part.type === \"text\"` AND `part.messageID` is tracked as assistant | `part.text`, `part.delta` | **If `delta` exists:** append to Map entry's accumulatedText. **If `delta` missing:** `part.text` is the complete text — replace accumulatedText. For **streaming**, prefer `delta` for incremental updates; after delta exhausts, use `part.text` for final. |\n| `session.idle` | Always | Session termination | Finalize lastMessage from the accumulated Map entry; store to frontmatter/child file |\n| `session.deleted` | Always | Session termination | Same as idle — finalize lastMessage |\n| `session.error` | Always | Session termination | Same — capture best available text even on error |\n\n---\n\n#### 5. Events to IGNORE\n\n| Event type | Reason to ignore |\n|------------|-----------------|\n| `message.removed` | Message was deleted — if it was the tracked assistant message, clear the accumulator |\n| `message.part.removed` | Part was removed — partial rollback, low-value for lastMessage |\n| `session.compacted` | No new text content; compaction events contain summaries, not streaming text |\n| `session.created` | Session started — no text yet |\n| `session.updated` | Session metadata change (title, etc.) — no text |\n| `session.diff` | File diff events — no assistant text |\n| `session.status` | Session status change (busy/retry) — no text |\n| All non-message events | Permission, pty, file, vcs, tui, server events — irrelevant |\n\n---\n\n#### 6. Streaming Handling (Delta Accumulation)\n\n**Key insight from the type definitions:**\n\n- During streaming, `message.part.updated` fires potentially **many times** for the same `part.id`\n- `part.delta` contains the **incremental** text chunk. It is present during active streaming.\n- `part.text` contains the **accumulated** full text. It is always present.\n- Strategy: Use `part.text` (the accumulated text) as the source of truth, because it is always available and always correct regardless of streaming state. The `delta` is informational but `text` is more reliable.\n- Edge case: The first `message.part.updated` for a given part ID might have partial text. Subsequent events have fuller text. The last event (when streaming completes) has the complete text.\n\n**RECOMMENDED approach:** Track `messageID → { sessionID, lastText: string }` in a Map. On each `message.part.updated` where `part.type === \"text\"` and the message is an assistant message, **overwrite** `lastText` with `part.text` (not `delta`). This handles both streaming and non-streaming cases uniformly.\n\n---\n\n#### 7. Edge Cases to Handle\n\n| Edge case | Problem | Solution |\n|-----------|---------|----------|\n| **Multiple concurrent assistant messages** | Several assistant messages streaming simultaneously (rare but possible) | Key the Map by `messageID`, not sessionID. Each message has independent state. |\n| **`message.updated` fires before `message.part.updated`** | Text not yet available | The Map entry for the messageID exists but has empty text. First `message.part.updated` populates it. |\n| **`message.part.updated` with no text** | Part.type is not \"text\" (e.g., \"tool\", \"reasoning\") | Ignore non-text parts — they don't contribute to lastMessage. |\n| **Session terminates mid-stream** | `session.idle` fires before final `message.part.updated` | Capture whatever accumulatedText exists. Even partial text is better than nothing. |\n| **Message removed after text accumulated** | `message.removed` fires for the tracked messageID | Clear the Map entry for that messageID. The lastMessage should reference the previous one or be empty. |\n| **SDK version mismatch** | Event type shape changed | Use version-tolerant extraction: check `event.type`, handle unknown types gracefully. The existing event-capture.ts already does this via `asString(getNestedValue(...))` patterns. |\n| **Memory leak from abandoned messages** | Map grows unbounded with completed messages | Evict entries when: (a) a new assistant message starts (replace previous), or (b) session terminates, or (c) message.removed fires, or (d) use LRU bounded cache (e.g., keep last 5 entries). |\n\n---\n\n#### 8. Cross-Source Conflicts\n- **None found.** The SDK type definitions (gen/types.gen.d.ts) are consistent with the plugin hook interface (plugin/dist/index.d.ts). The existing `event-capture.ts` code's conclusion that `session.next.text.ended` is dead code (line 643-652) is **confirmed** by the Event union type which contains no such event.\n\n#### 9. Synthesized Artifact\n\n**Design summary for continuous lastMessage capture:**\n\nThe correct approach is a **message-part tracking strategy** using two events:\n\n1. **`message.updated`** with `info.role === \"assistant\"` → **register** the messageID as an assistant message\n2. **`message.part.updated`** with `part.type === \"text\"` and tracked messageID → **accumulate** text via `part.text`\n\nThis is a **write-side CQRS handler** that should live in `src/features/session-tracker/capture/` alongside the existing `event-capture.ts`. It should NOT be in the hooks layer — the hooks layer dispatches events to observers, and the observers call into features.\n\n**File location:** `src/features/session-tracker/capture/last-message-capture.ts`\n**Pattern:** New `EventCapture`-style class with `handleMessageEvent()` method, registered as an additional event observer that checks `event.type.startsWith(\"message.\")`.\n\n#### 10. Knowledge Gaps\n- Does `message.updated` fire ONCE when the assistant response starts, or multiple times? The type suggests one per message, but this needs **L1 live runtime verification** (instrument the event hook and log every `message.updated` event seen during a single assistant response).\n- Is `part.delta` present on EVERY `message.part.updated` during streaming, or only some? The `delta?: string` in the type means it's optional. We need to verify whether it is always present during streaming or only present for text updates.\n\n#### 11. Recommendations\n1. **Create** `src/features/session-tracker/capture/last-message-capture.ts` with a `LastMessageCapture` class\n2. **Register** it as a new event observer in the hooks composition layer, positioned AFTER the session tracker observer\n3. **Use** a `Map<messageID, { sessionID: string; lastText: string }>` bounded to 5 entries\n4. **Handle** `message.updated` and `message.part.updated` only — ignore all other events\n5. **Expose** via `getLastMessage(sessionID): string | undefined` method for consumers\n6. **Wire** into existing `handleSessionIdle` and `backfillChildTurnsFromSdk` to use the in-memory lastMessage instead of SDK API queries (reduces SDK round trips)\n7. **Run L1 UAT** to verify the exact event firing sequence before shipping",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "hm-l2-researcher",
+      "content": "All evidence collected. Now I have a complete picture. Let me compile the comprehensive research report.\n\n---\n\n## Research Report\n\n**Agent:** hm-l2-researcher\n**Domain:** Research\n**Question:** What are the EXACT OpenCode SDK event structures for designing a correct continuous lastMessage capture mechanism?\n**Status:** COMPLETED\n\n---\n\n### Findings\n\n#### 1. EXACT Type Definitions\n\n**`EventMessagePartUpdated`** (node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts:354)\n```typescript\ntype EventMessagePartUpdated = {\n    type: \"message.part.updated\";\n    properties: {\n        part: Part;\n        delta?: string;   // <-- OPTIONAL, only present during streaming for incremental text\n    };\n};\n```\n- `properties.part` is a `Part` union (see below)\n- `delta` is the **key field for streaming** — it contains the incremental text chunk when present\n\n**`EventMessageUpdated`** (types.gen.d.ts:129)\n```typescript\ntype EventMessageUpdated = {\n    type: \"message.updated\";\n    properties: {\n        info: Message;   // Message = UserMessage | AssistantMessage\n    };\n};\n```\n- `properties.info` is the full `Message` object\n- For assistant messages, `info` is an `AssistantMessage`\n- **Does NOT have `properties.info.role` as a nested path** — `role` is directly on the Message object at `info.role` (since `AssistantMessage` has `role: \"assistant\"` at top level)\n\n**`TextPart`** (types.gen.d.ts:142)\n```typescript\ntype TextPart = {\n    id: string;\n    sessionID: string;\n    messageID: string;      // <-- YES, links to parent message\n    type: \"text\";\n    text: string;           // <-- Full/accumulated text content\n    synthetic?: boolean;\n    ignored?: boolean;\n    time?: { start: number; end?: number };\n    metadata?: { [key: string]: unknown };\n};\n```\n- ✅ **Has `messageID`** — directly links to its parent message\n\n**`AssistantMessage`** (types.gen.d.ts:98)\n```typescript\ntype AssistantMessage = {\n    id: string;\n    sessionID: string;\n    role: \"assistant\";      // <-- YES, role is directly on the object\n    time: { created: number; completed?: number };\n    error?: ProviderAuthError | UnknownError | MessageOutputLengthError | MessageAbortedError | ApiError;\n    parentID: string;       // <-- Links to the user message it's replying to\n    modelID: string;\n    providerID: string;\n    mode: string;\n    path: { cwd: string; root: string };\n    summary?: boolean;\n    cost: number;\n    tokens: { input: number; output: number; reasoning: number; cache: { read: number; write: number } };\n    finish?: string;\n};\n```\n- ✅ Has `role: \"assistant\"` at top level\n- ✅ Has `id` field\n- **Note:** Does NOT contain text content directly — text is in the message's parts\n\n**`Message` union** (types.gen.d.ts:128)\n```typescript\ntype Message = UserMessage | AssistantMessage;\n```\n\n**`Part` union** (types.gen.d.ts:345)\n```typescript\ntype Part = TextPart | { type: \"subtask\"; ... } | ReasoningPart | FilePart | ToolPart \n           | StepStartPart | StepFinishPart | SnapshotPart | PatchPart | AgentPart \n           | RetryPart | CompactionPart;\n```\n\n**`Event` union** (types.gen.d.ts:602) — ALL 31 possible event types:\n```typescript\ntype Event = EventServerInstanceDisposed | EventInstallationUpdated | ...\n           | EventMessageUpdated         // \"message.updated\"\n           | EventMessageRemoved         // \"message.removed\"\n           | EventMessagePartUpdated     // \"message.part.updated\"\n           | EventMessagePartRemoved     // \"message.part.removed\"\n           | EventPermissionUpdated | EventPermissionReplied\n           | EventSessionStatus | EventSessionIdle | EventSessionCompacted\n           | EventFileEdited | EventTodoUpdated | EventCommandExecuted\n           | EventSessionCreated | EventSessionUpdated | EventSessionDeleted\n           | EventSessionDiff | EventSessionError | EventFileWatcherUpdated\n           | EventVcsBranchUpdated | EventTuiPromptAppend | EventTuiCommandExecute\n           | EventTuiToastShow | EventPtyCreated | EventPtyUpdated\n           | EventPtyExited | EventPtyDeleted | EventServerConnected;\n```\n\n**Plugin `Hooks` interface `event` hook signature** (node_modules/@opencode-ai/plugin/dist/index.d.ts:174):\n```typescript\nevent?: (input: {\n    event: Event;\n}) => Promise<void>;\n```\n\n---\n\n#### 2. Event Flow Analysis\n\n**Event firing order for a new assistant response:**\n\n1. **`message.updated`** fires FIRST when a message is created/updated. For assistant messages, `properties.info` is an `AssistantMessage` with `role: \"assistant\"` and `id`. However, this event does NOT contain text content — text is in parts.\n\n2. **`message.part.updated`** fires repeatedly during streaming. Each firing has a `Part` in `properties.part`. For text parts, the `TextPart` has:\n   - `text` — the **accumulated** text so far (complete up to that point)\n   - `delta` — the **incremental** text chunk (present only during active streaming)\n   - `messageID` — links back to the assistant message\n\n3. **`message.part.updated`** fires FINAL time when streaming completes, with full `text` and no `delta` (or `delta` is the last chunk).\n\n**IMPORTANT:** There is NO `session.next.text.ended` event in the SDK. The existing code at `event-capture.ts:134` that handles `session.next.text.ended` is indeed dead code as the comment on lines 643-652 correctly documents.\n\n---\n\n#### 3. Our Current Architecture\n\n**Event hook wiring chain:**\n1. Plugin `event` hook → `core-hooks.ts:event()` (line 153)\n2. Extracts `eventType` and `sessionID` from raw event object\n3. Routes to `lifecycleManager.handleEvent()` for completion detection (session.idle/error/deleted only)\n4. Also routes to `eventObservers[]` — which includes `sessionTrackerConsumer`\n5. `sessionTrackerConsumer` extracts `eventType` + `sessionID` + raw `event` → `sessionTracker.handleSessionEvent()`\n6. `EventCapture.handleSessionEvent()` switch handles: `session.created`, `session.idle`, `session.deleted`, `session.error`, `session.compacted`, `session.next.text.ended` (dead), `session.next.compaction.ended`\n\n**Current lastMessage capture (works but is POST-hoc):**\n- Child sessions: `backfillChildTurnsFromSdk()` queries `getSessionMessages()` on session.idle/deleted/error — **reads message history from SDK API**\n- Main sessions: `handleSessionIdle()` fallback: queries `getSessionMessages()` when `pendingRegistry.lastMessage` is empty\n- **Problem:** lastMessage is only captured at session termination, not continuously\n\n---\n\n#### 4. Event Flow Table for Continuous lastMessage Capture\n\n| Event type | Condition | What to extract | Action |\n|------------|-----------|-----------------|--------|\n| `message.updated` | `properties.info.role === \"assistant\"` | `info.id` (messageID), `info.sessionID` | Store `messageID → { sessionID, accumulatedText: \"\" }` in Map |\n| `message.updated` | `properties.info.role === \"user\"` | `info.id` (messageID) | Track user message start — possibly reset or note context |\n| `message.part.updated` | `properties.part.type === \"text\"` AND `part.messageID` is tracked as assistant | `part.text`, `part.delta` | **If `delta` exists:** append to Map entry's accumulatedText. **If `delta` missing:** `part.text` is the complete text — replace accumulatedText. For **streaming**, prefer `delta` for incremental updates; after delta exhausts, use `part.text` for final. |\n| `session.idle` | Always | Session termination | Finalize lastMessage from the accumulated Map entry; store to frontmatter/child file |\n| `session.deleted` | Always | Session termination | Same as idle — finalize lastMessage |\n| `session.error` | Always | Session termination | Same — capture best available text even on error |\n\n---\n\n#### 5. Events to IGNORE\n\n| Event type | Reason to ignore |\n|------------|-----------------|\n| `message.removed` | Message was deleted — if it was the tracked assistant message, clear the accumulator |\n| `message.part.removed` | Part was removed — partial rollback, low-value for lastMessage |\n| `session.compacted` | No new text content; compaction events contain summaries, not streaming text |\n| `session.created` | Session started — no text yet |\n| `session.updated` | Session metadata change (title, etc.) — no text |\n| `session.diff` | File diff events — no assistant text |\n| `session.status` | Session status change (busy/retry) — no text |\n| All non-message events | Permission, pty, file, vcs, tui, server events — irrelevant |\n\n---\n\n#### 6. Streaming Handling (Delta Accumulation)\n\n**Key insight from the type definitions:**\n\n- During streaming, `message.part.updated` fires potentially **many times** for the same `part.id`\n- `part.delta` contains the **incremental** text chunk. It is present during active streaming.\n- `part.text` contains the **accumulated** full text. It is always present.\n- Strategy: Use `part.text` (the accumulated text) as the source of truth, because it is always available and always correct regardless of streaming state. The `delta` is informational but `text` is more reliable.\n- Edge case: The first `message.part.updated` for a given part ID might have partial text. Subsequent events have fuller text. The last event (when streaming completes) has the complete text.\n\n**RECOMMENDED approach:** Track `messageID → { sessionID, lastText: string }` in a Map. On each `message.part.updated` where `part.type === \"text\"` and the message is an assistant message, **overwrite** `lastText` with `part.text` (not `delta`). This handles both streaming and non-streaming cases uniformly.\n\n---\n\n#### 7. Edge Cases to Handle\n\n| Edge case | Problem | Solution |\n|-----------|---------|----------|\n| **Multiple concurrent assistant messages** | Several assistant messages streaming simultaneously (rare but possible) | Key the Map by `messageID`, not sessionID. Each message has independent state. |\n| **`message.updated` fires before `message.part.updated`** | Text not yet available | The Map entry for the messageID exists but has empty text. First `message.part.updated` populates it. |\n| **`message.part.updated` with no text** | Part.type is not \"text\" (e.g., \"tool\", \"reasoning\") | Ignore non-text parts — they don't contribute to lastMessage. |\n| **Session terminates mid-stream** | `session.idle` fires before final `message.part.updated` | Capture whatever accumulatedText exists. Even partial text is better than nothing. |\n| **Message removed after text accumulated** | `message.removed` fires for the tracked messageID | Clear the Map entry for that messageID. The lastMessage should reference the previous one or be empty. |\n| **SDK version mismatch** | Event type shape changed | Use version-tolerant extraction: check `event.type`, handle unknown types gracefully. The existing event-capture.ts already does this via `asString(getNestedValue(...))` patterns. |\n| **Memory leak from abandoned messages** | Map grows unbounded with completed messages | Evict entries when: (a) a new assistant message starts (replace previous), or (b) session terminates, or (c) message.removed fires, or (d) use LRU bounded cache (e.g., keep last 5 entries). |\n\n---\n\n#### 8. Cross-Source Conflicts\n- **None found.** The SDK type definitions (gen/types.gen.d.ts) are consistent with the plugin hook interface (plugin/dist/index.d.ts). The existing `event-capture.ts` code's conclusion that `session.next.text.ended` is dead code (line 643-652) is **confirmed** by the Event union type which contains no such event.\n\n#### 9. Synthesized Artifact\n\n**Design summary for continuous lastMessage capture:**\n\nThe correct approach is a **message-part tracking strategy** using two events:\n\n1. **`message.updated`** with `info.role === \"assistant\"` → **register** the messageID as an assistant message\n2. **`message.part.updated`** with `part.type === \"text\"` and tracked messageID → **accumulate** text via `part.text`\n\nThis is a **write-side CQRS handler** that should live in `src/features/session-tracker/capture/` alongside the existing `event-capture.ts`. It should NOT be in the hooks layer — the hooks layer dispatches events to observers, and the observers call into features.\n\n**File location:** `src/features/session-tracker/capture/last-message-capture.ts`\n**Pattern:** New `EventCapture`-style class with `handleMessageEvent()` method, registered as an additional event observer that checks `event.type.startsWith(\"message.\")`.\n\n#### 10. Knowledge Gaps\n- Does `message.updated` fire ONCE when the assistant response starts, or multiple times? The type suggests one per message, but this needs **L1 live runtime verification** (instrument the event hook and log every `message.updated` event seen during a single assistant response).\n- Is `part.delta` present on EVERY `message.part.updated` during streaming, or only some? The `delta?: string` in the type means it's optional. We need to verify whether it is always present during streaming or only present for text updates.\n\n#### 11. Recommendations\n1. **Create** `src/features/session-tracker/capture/last-message-capture.ts` with a `LastMessageCapture` class\n2. **Register** it as a new event observer in the hooks composition layer, positioned AFTER the session tracker observer\n3. **Use** a `Map<messageID, { sessionID: string; lastText: string }>` bounded to 5 entries\n4. **Handle** `message.updated` and `message.part.updated` only — ignore all other events\n5. **Expose** via `getLastMessage(sessionID): string | undefined` method for consumers\n6. **Wire** into existing `handleSessionIdle` and `backfillChildTurnsFromSdk` to use the in-memory lastMessage instead of SDK API queries (reduces SDK round trips)\n7. **Run L1 UAT** to verify the exact event firing sequence before shipping",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-25T11:12:19.977Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_8779wQyoc631VBicmT6g4039",
+        "input": {
+          "name": "hm-l3-detective"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:20.198Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_01_T6BrRS1vrhil9x3YqI1o8702",
+        "input": {
+          "name": "hm-l3-deep-research"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:26.629Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_8fvttHzS46UHxFJCmuIV4072",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:26.836Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_CinGbJ5njsdzE8jsvtFp8653",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:27.063Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_p5sg0FsDyq6J5s0T7ZdY3672",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:27.299Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_w7GIgaGHetTv8EQfrW0q6441",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:32.247Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_6ZeC5vBAviEVf3G8pGHd7340",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:32.719Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_jES2PawFmYnSmiNgyuz01077",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:38.936Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_HawQ5fRv53odwKa98bh95098",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:38.941Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_QyrgIM5VxPq9r8WW6Yds2659",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:44.823Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_qnw64qoAQFK9NWG3R1A98277",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:45.141Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_0F6hca1FNAEppGOhwkA83778",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/event-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:49.212Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_7LdjOu80r0ZLGfAXYddU8386",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:49.221Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_EPfxPvmrBwCta9h8XlFJ2687",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:55.017Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_tAmZKtOGGfNtzTMqVUYd3280",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:12:55.336Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_VeHukYIhQQN3ZBGqGgL43194",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/plugin/dist/index.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:02.148Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_bxtYtB1ajyIeytmZPuO53159",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/sdk/dist/v2/data.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:25.571Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_Xe97ABi2EzxfVh3I1f561132",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:31.770Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_5oRgmeg0wV7qJ47p7WtA4919",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/core-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:37.572Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_KjZlpAujdPTGaMfBHb7m5198",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/observers/event-observers.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:37.866Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_dRFyYG87gxMp2gLhEJBs7288",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/observers/session-tracker-consumer.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:43.929Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_qCwjxJidmf4LrBnTPer36131",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:44.202Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_7k6aItmlqoKbYwNzeudG7060",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:49.733Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ET_Mj8osuP8xYwpI185bTlw1781",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:50.190Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_ET_84mDJRq90xQVSKOFmuiz1886",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/lifecycle/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:13:55.680Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Dj0pEyY60McPtviuqrVX9534",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-api.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T11:14:43.355Z",
+      "type": "assistant_message",
+      "content": "All evidence collected. Now I have a complete picture. Let me compile the comprehensive research report.\n\n---\n\n## Research Report\n\n**Agent:** hm-l2-researcher\n**Domain:** Research\n**Question:** What are the EXACT OpenCode SDK event structures for designing a correct continuous lastMessage capture mechanism?\n**Status:** COMPLETED\n\n---\n\n### Findings\n\n#### 1. EXACT Type Definitions\n\n**`EventMessagePartUpdated`** (node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts:354)\n```typescript\ntype EventMessagePartUpdated = {\n    type: \"message.part.updated\";\n    properties: {\n        part: Part;\n        delta?: string;   // <-- OPTIONAL, only present during streaming for incremental text\n    };\n};\n```\n- `properties.part` is a `Part` union (see below)\n- `delta` is the **key field for streaming** — it contains the incremental text chunk when present\n\n**`EventMessageUpdated`** (types.gen.d.ts:129)\n```typescript\ntype EventMessageUpdated = {\n    type: \"message.updated\";\n    properties: {\n        info: Message;   // Message = UserMessage | AssistantMessage\n    };\n};\n```\n- `properties.info` is the full `Message` object\n- For assistant messages, `info` is an `AssistantMessage`\n- **Does NOT have `properties.info.role` as a nested path** — `role` is directly on the Message object at `info.role` (since `AssistantMessage` has `role: \"assistant\"` at top level)\n\n**`TextPart`** (types.gen.d.ts:142)\n```typescript\ntype TextPart = {\n    id: string;\n    sessionID: string;\n    messageID: string;      // <-- YES, links to parent message\n    type: \"text\";\n    text: string;           // <-- Full/accumulated text content\n    synthetic?: boolean;\n    ignored?: boolean;\n    time?: { start: number; end?: number };\n    metadata?: { [key: string]: unknown };\n};\n```\n- ✅ **Has `messageID`** — directly links to its parent message\n\n**`AssistantMessage`** (types.gen.d.ts:98)\n```typescript\ntype AssistantMessage = {\n    id: string;\n    sessionID: string;\n    role: \"assistant\";      // <-- YES, role is directly on the object\n    time: { created: number; completed?: number };\n    error?: ProviderAuthError | UnknownError | MessageOutputLengthError | MessageAbortedError | ApiError;\n    parentID: string;       // <-- Links to the user message it's replying to\n    modelID: string;\n    providerID: string;\n    mode: string;\n    path: { cwd: string; root: string };\n    summary?: boolean;\n    cost: number;\n    tokens: { input: number; output: number; reasoning: number; cache: { read: number; write: number } };\n    finish?: string;\n};\n```\n- ✅ Has `role: \"assistant\"` at top level\n- ✅ Has `id` field\n- **Note:** Does NOT contain text content directly — text is in the message's parts\n\n**`Message` union** (types.gen.d.ts:128)\n```typescript\ntype Message = UserMessage | AssistantMessage;\n```\n\n**`Part` union** (types.gen.d.ts:345)\n```typescript\ntype Part = TextPart | { type: \"subtask\"; ... } | ReasoningPart | FilePart | ToolPart \n           | StepStartPart | StepFinishPart | SnapshotPart | PatchPart | AgentPart \n           | RetryPart | CompactionPart;\n```\n\n**`Event` union** (types.gen.d.ts:602) — ALL 31 possible event types:\n```typescript\ntype Event = EventServerInstanceDisposed | EventInstallationUpdated | ...\n           | EventMessageUpdated         // \"message.updated\"\n           | EventMessageRemoved         // \"message.removed\"\n           | EventMessagePartUpdated     // \"message.part.updated\"\n           | EventMessagePartRemoved     // \"message.part.removed\"\n           | EventPermissionUpdated | EventPermissionReplied\n           | EventSessionStatus | EventSessionIdle | EventSessionCompacted\n           | EventFileEdited | EventTodoUpdated | EventCommandExecuted\n           | EventSessionCreated | EventSessionUpdated | EventSessionDeleted\n           | EventSessionDiff | EventSessionError | EventFileWatcherUpdated\n           | EventVcsBranchUpdated | EventTuiPromptAppend | EventTuiCommandExecute\n           | EventTuiToastShow | EventPtyCreated | EventPtyUpdated\n           | EventPtyExited | EventPtyDeleted | EventServerConnected;\n```\n\n**Plugin `Hooks` interface `event` hook signature** (node_modules/@opencode-ai/plugin/dist/index.d.ts:174):\n```typescript\nevent?: (input: {\n    event: Event;\n}) => Promise<void>;\n```\n\n---\n\n#### 2. Event Flow Analysis\n\n**Event firing order for a new assistant response:**\n\n1. **`message.updated`** fires FIRST when a message is created/updated. For assistant messages, `properties.info` is an `AssistantMessage` with `role: \"assistant\"` and `id`. However, this event does NOT contain text content — text is in parts.\n\n2. **`message.part.updated`** fires repeatedly during streaming. Each firing has a `Part` in `properties.part`. For text parts, the `TextPart` has:\n   - `text` — the **accumulated** text so far (complete up to that point)\n   - `delta` — the **incremental** text chunk (present only during active streaming)\n   - `messageID` — links back to the assistant message\n\n3. **`message.part.updated`** fires FINAL time when streaming completes, with full `text` and no `delta` (or `delta` is the last chunk).\n\n**IMPORTANT:** There is NO `session.next.text.ended` event in the SDK. The existing code at `event-capture.ts:134` that handles `session.next.text.ended` is indeed dead code as the comment on lines 643-652 correctly documents.\n\n---\n\n#### 3. Our Current Architecture\n\n**Event hook wiring chain:**\n1. Plugin `event` hook → `core-hooks.ts:event()` (line 153)\n2. Extracts `eventType` and `sessionID` from raw event object\n3. Routes to `lifecycleManager.handleEvent()` for completion detection (session.idle/error/deleted only)\n4. Also routes to `eventObservers[]` — which includes `sessionTrackerConsumer`\n5. `sessionTrackerConsumer` extracts `eventType` + `sessionID` + raw `event` → `sessionTracker.handleSessionEvent()`\n6. `EventCapture.handleSessionEvent()` switch handles: `session.created`, `session.idle`, `session.deleted`, `session.error`, `session.compacted`, `session.next.text.ended` (dead), `session.next.compaction.ended`\n\n**Current lastMessage capture (works but is POST-hoc):**\n- Child sessions: `backfillChildTurnsFromSdk()` queries `getSessionMessages()` on session.idle/deleted/error — **reads message history from SDK API**\n- Main sessions: `handleSessionIdle()` fallback: queries `getSessionMessages()` when `pendingRegistry.lastMessage` is empty\n- **Problem:** lastMessage is only captured at session termination, not continuously\n\n---\n\n#### 4. Event Flow Table for Continuous lastMessage Capture\n\n| Event type | Condition | What to extract | Action |\n|------------|-----------|-----------------|--------|\n| `message.updated` | `properties.info.role === \"assistant\"` | `info.id` (messageID), `info.sessionID` | Store `messageID → { sessionID, accumulatedText: \"\" }` in Map |\n| `message.updated` | `properties.info.role === \"user\"` | `info.id` (messageID) | Track user message start — possibly reset or note context |\n| `message.part.updated` | `properties.part.type === \"text\"` AND `part.messageID` is tracked as assistant | `part.text`, `part.delta` | **If `delta` exists:** append to Map entry's accumulatedText. **If `delta` missing:** `part.text` is the complete text — replace accumulatedText. For **streaming**, prefer `delta` for incremental updates; after delta exhausts, use `part.text` for final. |\n| `session.idle` | Always | Session termination | Finalize lastMessage from the accumulated Map entry; store to frontmatter/child file |\n| `session.deleted` | Always | Session termination | Same as idle — finalize lastMessage |\n| `session.error` | Always | Session termination | Same — capture best available text even on error |\n\n---\n\n#### 5. Events to IGNORE\n\n| Event type | Reason to ignore |\n|------------|-----------------|\n| `message.removed` | Message was deleted — if it was the tracked assistant message, clear the accumulator |\n| `message.part.removed` | Part was removed — partial rollback, low-value for lastMessage |\n| `session.compacted` | No new text content; compaction events contain summaries, not streaming text |\n| `session.created` | Session started — no text yet |\n| `session.updated` | Session metadata change (title, etc.) — no text |\n| `session.diff` | File diff events — no assistant text |\n| `session.status` | Session status change (busy/retry) — no text |\n| All non-message events | Permission, pty, file, vcs, tui, server events — irrelevant |\n\n---\n\n#### 6. Streaming Handling (Delta Accumulation)\n\n**Key insight from the type definitions:**\n\n- During streaming, `message.part.updated` fires potentially **many times** for the same `part.id`\n- `part.delta` contains the **incremental** text chunk. It is present during active streaming.\n- `part.text` contains the **accumulated** full text. It is always present.\n- Strategy: Use `part.text` (the accumulated text) as the source of truth, because it is always available and always correct regardless of streaming state. The `delta` is informational but `text` is more reliable.\n- Edge case: The first `message.part.updated` for a given part ID might have partial text. Subsequent events have fuller text. The last event (when streaming completes) has the complete text.\n\n**RECOMMENDED approach:** Track `messageID → { sessionID, lastText: string }` in a Map. On each `message.part.updated` where `part.type === \"text\"` and the message is an assistant message, **overwrite** `lastText` with `part.text` (not `delta`). This handles both streaming and non-streaming cases uniformly.\n\n---\n\n#### 7. Edge Cases to Handle\n\n| Edge case | Problem | Solution |\n|-----------|---------|----------|\n| **Multiple concurrent assistant messages** | Several assistant messages streaming simultaneously (rare but possible) | Key the Map by `messageID`, not sessionID. Each message has independent state. |\n| **`message.updated` fires before `message.part.updated`** | Text not yet available | The Map entry for the messageID exists but has empty text. First `message.part.updated` populates it. |\n| **`message.part.updated` with no text** | Part.type is not \"text\" (e.g., \"tool\", \"reasoning\") | Ignore non-text parts — they don't contribute to lastMessage. |\n| **Session terminates mid-stream** | `session.idle` fires before final `message.part.updated` | Capture whatever accumulatedText exists. Even partial text is better than nothing. |\n| **Message removed after text accumulated** | `message.removed` fires for the tracked messageID | Clear the Map entry for that messageID. The lastMessage should reference the previous one or be empty. |\n| **SDK version mismatch** | Event type shape changed | Use version-tolerant extraction: check `event.type`, handle unknown types gracefully. The existing event-capture.ts already does this via `asString(getNestedValue(...))` patterns. |\n| **Memory leak from abandoned messages** | Map grows unbounded with completed messages | Evict entries when: (a) a new assistant message starts (replace previous), or (b) session terminates, or (c) message.removed fires, or (d) use LRU bounded cache (e.g., keep last 5 entries). |\n\n---\n\n#### 8. Cross-Source Conflicts\n- **None found.** The SDK type definitions (gen/types.gen.d.ts) are consistent with the plugin hook interface (plugin/dist/index.d.ts). The existing `event-capture.ts` code's conclusion that `session.next.text.ended` is dead code (line 643-652) is **confirmed** by the Event union type which contains no such event.\n\n#### 9. Synthesized Artifact\n\n**Design summary for continuous lastMessage capture:**\n\nThe correct approach is a **message-part tracking strategy** using two events:\n\n1. **`message.updated`** with `info.role === \"assistant\"` → **register** the messageID as an assistant message\n2. **`message.part.updated`** with `part.type === \"text\"` and tracked messageID → **accumulate** text via `part.text`\n\nThis is a **write-side CQRS handler** that should live in `src/features/session-tracker/capture/` alongside the existing `event-capture.ts`. It should NOT be in the hooks layer — the hooks layer dispatches events to observers, and the observers call into features.\n\n**File location:** `src/features/session-tracker/capture/last-message-capture.ts`\n**Pattern:** New `EventCapture`-style class with `handleMessageEvent()` method, registered as an additional event observer that checks `event.type.startsWith(\"message.\")`.\n\n#### 10. Knowledge Gaps\n- Does `message.updated` fire ONCE when the assistant response starts, or multiple times? The type suggests one per message, but this needs **L1 live runtime verification** (instrument the event hook and log every `message.updated` event seen during a single assistant response).\n- Is `part.delta` present on EVERY `message.part.updated` during streaming, or only some? The `delta?: string` in the type means it's optional. We need to verify whether it is always present during streaming or only present for text updates.\n\n#### 11. Recommendations\n1. **Create** `src/features/session-tracker/capture/last-message-capture.ts` with a `LastMessageCapture` class\n2. **Register** it as a new event observer in the hooks composition layer, positioned AFTER the session tracker observer\n3. **Use** a `Map<messageID, { sessionID: string; lastText: string }>` bounded to 5 entries\n4. **Handle** `message.updated` and `message.part.updated` only — ignore all other events\n5. **Expose** via `getLastMessage(sessionID): string | undefined` method for consumers\n6. **Wire** into existing `handleSessionIdle` and `backfillChildTurnsFromSdk` to use the in-memory lastMessage instead of SDK API queries (reduces SDK round trips)\n7. **Run L1 UAT** to verify the exact event firing sequence before shipping",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1a12a2dceffeYnSvyguoiqRIC8"
+      }
+    }
+  ],
+  "lastMessage": "All evidence collected. Now I have a complete picture. Let me compile the comprehensive research report.\n\n---\n\n## Research Report\n\n**Agent:** hm-l2-researcher\n**Domain:** Research\n**Question:** What are the EXACT OpenCode SDK event structures for designing a correct continuous lastMessage capture mechanism?\n**Status:** COMPLETED\n\n---\n\n### Findings\n\n#### 1. EXACT Type Definitions\n\n**`EventMessagePartUpdated`** (node_modules/@opencode-ai/sdk/dist/gen/types.gen.d.ts:354)\n```typescript\ntype EventMessagePartUpdated = {\n    type: \"message.part.updated\";\n    properties: {\n        part: Part;\n        delta?: string;   // <-- OPTIONAL, only present during streaming for incremental text\n    };\n};\n```\n- `properties.part` is a `Part` union (see below)\n- `delta` is the **key field for streaming** — it contains the incremental text chunk when present\n\n**`EventMessageUpdated`** (types.gen.d.ts:129)\n```typescript\ntype EventMessageUpdated = {\n    type: \"message.updated\";\n    properties: {\n        info: Message;   // Message = UserMessage | AssistantMessage\n    };\n};\n```\n- `properties.info` is the full `Message` object\n- For assistant messages, `info` is an `AssistantMessage`\n- **Does NOT have `properties.info.role` as a nested path** — `role` is directly on the Message object at `info.role` (since `AssistantMessage` has `role: \"assistant\"` at top level)\n\n**`TextPart`** (types.gen.d.ts:142)\n```typescript\ntype TextPart = {\n    id: string;\n    sessionID: string;\n    messageID: string;      // <-- YES, links to parent message\n    type: \"text\";\n    text: string;           // <-- Full/accumulated text content\n    synthetic?: boolean;\n    ignored?: boolean;\n    time?: { start: number; end?: number };\n    metadata?: { [key: string]: unknown };\n};\n```\n- ✅ **Has `messageID`** — directly links to its parent message\n\n**`AssistantMessage`** (types.gen.d.ts:98)\n```typescript\ntype AssistantMessage = {\n    id: string;\n    sessionID: string;\n    role: \"assistant\";      // <-- YES, role is directly on the object\n    time: { created: number; completed?: number };\n    error?: ProviderAuthError | UnknownError | MessageOutputLengthError | MessageAbortedError | ApiError;\n    parentID: string;       // <-- Links to the user message it's replying to\n    modelID: string;\n    providerID: string;\n    mode: string;\n    path: { cwd: string; root: string };\n    summary?: boolean;\n    cost: number;\n    tokens: { input: number; output: number; reasoning: number; cache: { read: number; write: number } };\n    finish?: string;\n};\n```\n- ✅ Has `role: \"assistant\"` at top level\n- ✅ Has `id` field\n- **Note:** Does NOT contain text content directly — text is in the message's parts\n\n**`Message` union** (types.gen.d.ts:128)\n```typescript\ntype Message = UserMessage | AssistantMessage;\n```\n\n**`Part` union** (types.gen.d.ts:345)\n```typescript\ntype Part = TextPart | { type: \"subtask\"; ... } | ReasoningPart | FilePart | ToolPart \n           | StepStartPart | StepFinishPart | SnapshotPart | PatchPart | AgentPart \n           | RetryPart | CompactionPart;\n```\n\n**`Event` union** (types.gen.d.ts:602) — ALL 31 possible event types:\n```typescript\ntype Event = EventServerInstanceDisposed | EventInstallationUpdated | ...\n           | EventMessageUpdated         // \"message.updated\"\n           | EventMessageRemoved         // \"message.removed\"\n           | EventMessagePartUpdated     // \"message.part.updated\"\n           | EventMessagePartRemoved     // \"message.part.removed\"\n           | EventPermissionUpdated | EventPermissionReplied\n           | EventSessionStatus | EventSessionIdle | EventSessionCompacted\n           | EventFileEdited | EventTodoUpdated | EventCommandExecuted\n           | EventSessionCreated | EventSessionUpdated | EventSessionDeleted\n           | EventSessionDiff | EventSessionError | EventFileWatcherUpdated\n           | EventVcsBranchUpdated | EventTuiPromptAppend | EventTuiCommandExecute\n           | EventTuiToastShow | EventPtyCreated | EventPtyUpdated\n           | EventPtyExited | EventPtyDeleted | EventServerConnected;\n```\n\n**Plugin `Hooks` interface `event` hook signature** (node_modules/@opencode-ai/plugin/dist/index.d.ts:174):\n```typescript\nevent?: (input: {\n    event: Event;\n}) => Promise<void>;\n```\n\n---\n\n#### 2. Event Flow Analysis\n\n**Event firing order for a new assistant response:**\n\n1. **`message.updated`** fires FIRST when a message is created/updated. For assistant messages, `properties.info` is an `AssistantMessage` with `role: \"assistant\"` and `id`. However, this event does NOT contain text content — text is in parts.\n\n2. **`message.part.updated`** fires repeatedly during streaming. Each firing has a `Part` in `properties.part`. For text parts, the `TextPart` has:\n   - `text` — the **accumulated** text so far (complete up to that point)\n   - `delta` — the **incremental** text chunk (present only during active streaming)\n   - `messageID` — links back to the assistant message\n\n3. **`message.part.updated`** fires FINAL time when streaming completes, with full `text` and no `delta` (or `delta` is the last chunk).\n\n**IMPORTANT:** There is NO `session.next.text.ended` event in the SDK. The existing code at `event-capture.ts:134` that handles `session.next.text.ended` is indeed dead code as the comment on lines 643-652 correctly documents.\n\n---\n\n#### 3. Our Current Architecture\n\n**Event hook wiring chain:**\n1. Plugin `event` hook → `core-hooks.ts:event()` (line 153)\n2. Extracts `eventType` and `sessionID` from raw event object\n3. Routes to `lifecycleManager.handleEvent()` for completion detection (session.idle/error/deleted only)\n4. Also routes to `eventObservers[]` — which includes `sessionTrackerConsumer`\n5. `sessionTrackerConsumer` extracts `eventType` + `sessionID` + raw `event` → `sessionTracker.handleSessionEvent()`\n6. `EventCapture.handleSessionEvent()` switch handles: `session.created`, `session.idle`, `session.deleted`, `session.error`, `session.compacted`, `session.next.text.ended` (dead), `session.next.compaction.ended`\n\n**Current lastMessage capture (works but is POST-hoc):**\n- Child sessions: `backfillChildTurnsFromSdk()` queries `getSessionMessages()` on session.idle/deleted/error — **reads message history from SDK API**\n- Main sessions: `handleSessionIdle()` fallback: queries `getSessionMessages()` when `pendingRegistry.lastMessage` is empty\n- **Problem:** lastMessage is only captured at session termination, not continuously\n\n---\n\n#### 4. Event Flow Table for Continuous lastMessage Capture\n\n| Event type | Condition | What to extract | Action |\n|------------|-----------|-----------------|--------|\n| `message.updated` | `properties.info.role === \"assistant\"` | `info.id` (messageID), `info.sessionID` | Store `messageID → { sessionID, accumulatedText: \"\" }` in Map |\n| `message.updated` | `properties.info.role === \"user\"` | `info.id` (messageID) | Track user message start — possibly reset or note context |\n| `message.part.updated` | `properties.part.type === \"text\"` AND `part.messageID` is tracked as assistant | `part.text`, `part.delta` | **If `delta` exists:** append to Map entry's accumulatedText. **If `delta` missing:** `part.text` is the complete text — replace accumulatedText. For **streaming**, prefer `delta` for incremental updates; after delta exhausts, use `part.text` for final. |\n| `session.idle` | Always | Session termination | Finalize lastMessage from the accumulated Map entry; store to frontmatter/child file |\n| `session.deleted` | Always | Session termination | Same as idle — finalize lastMessage |\n| `session.error` | Always | Session termination | Same — capture best available text even on error |\n\n---\n\n#### 5. Events to IGNORE\n\n| Event type | Reason to ignore |\n|------------|-----------------|\n| `message.removed` | Message was deleted — if it was the tracked assistant message, clear the accumulator |\n| `message.part.removed` | Part was removed — partial rollback, low-value for lastMessage |\n| `session.compacted` | No new text content; compaction events contain summaries, not streaming text |\n| `session.created` | Session started — no text yet |\n| `session.updated` | Session metadata change (title, etc.) — no text |\n| `session.diff` | File diff events — no assistant text |\n| `session.status` | Session status change (busy/retry) — no text |\n| All non-message events | Permission, pty, file, vcs, tui, server events — irrelevant |\n\n---\n\n#### 6. Streaming Handling (Delta Accumulation)\n\n**Key insight from the type definitions:**\n\n- During streaming, `message.part.updated` fires potentially **many times** for the same `part.id`\n- `part.delta` contains the **incremental** text chunk. It is present during active streaming.\n- `part.text` contains the **accumulated** full text. It is always present.\n- Strategy: Use `part.text` (the accumulated text) as the source of truth, because it is always available and always correct regardless of streaming state. The `delta` is informational but `text` is more reliable.\n- Edge case: The first `message.part.updated` for a given part ID might have partial text. Subsequent events have fuller text. The last event (when streaming completes) has the complete text.\n\n**RECOMMENDED approach:** Track `messageID → { sessionID, lastText: string }` in a Map. On each `message.part.updated` where `part.type === \"text\"` and the message is an assistant message, **overwrite** `lastText` with `part.text` (not `delta`). This handles both streaming and non-streaming cases uniformly.\n\n---\n\n#### 7. Edge Cases to Handle\n\n| Edge case | Problem | Solution |\n|-----------|---------|----------|\n| **Multiple concurrent assistant messages** | Several assistant messages streaming simultaneously (rare but possible) | Key the Map by `messageID`, not sessionID. Each message has independent state. |\n| **`message.updated` fires before `message.part.updated`** | Text not yet available | The Map entry for the messageID exists but has empty text. First `message.part.updated` populates it. |\n| **`message.part.updated` with no text** | Part.type is not \"text\" (e.g., \"tool\", \"reasoning\") | Ignore non-text parts — they don't contribute to lastMessage. |\n| **Session terminates mid-stream** | `session.idle` fires before final `message.part.updated` | Capture whatever accumulatedText exists. Even partial text is better than nothing. |\n| **Message removed after text accumulated** | `message.removed` fires for the tracked messageID | Clear the Map entry for that messageID. The lastMessage should reference the previous one or be empty. |\n| **SDK version mismatch** | Event type shape changed | Use version-tolerant extraction: check `event.type`, handle unknown types gracefully. The existing event-capture.ts already does this via `asString(getNestedValue(...))` patterns. |\n| **Memory leak from abandoned messages** | Map grows unbounded with completed messages | Evict entries when: (a) a new assistant message starts (replace previous), or (b) session terminates, or (c) message.removed fires, or (d) use LRU bounded cache (e.g., keep last 5 entries). |\n\n---\n\n#### 8. Cross-Source Conflicts\n- **None found.** The SDK type definitions (gen/types.gen.d.ts) are consistent with the plugin hook interface (plugin/dist/index.d.ts). The existing `event-capture.ts` code's conclusion that `session.next.text.ended` is dead code (line 643-652) is **confirmed** by the Event union type which contains no such event.\n\n#### 9. Synthesized Artifact\n\n**Design summary for continuous lastMessage capture:**\n\nThe correct approach is a **message-part tracking strategy** using two events:\n\n1. **`message.updated`** with `info.role === \"assistant\"` → **register** the messageID as an assistant message\n2. **`message.part.updated`** with `part.type === \"text\"` and tracked messageID → **accumulate** text via `part.text`\n\nThis is a **write-side CQRS handler** that should live in `src/features/session-tracker/capture/` alongside the existing `event-capture.ts`. It should NOT be in the hooks layer — the hooks layer dispatches events to observers, and the observers call into features.\n\n**File location:** `src/features/session-tracker/capture/last-message-capture.ts`\n**Pattern:** New `EventCapture`-style class with `handleMessageEvent()` method, registered as an additional event observer that checks `event.type.startsWith(\"message.\")`.\n\n#### 10. Knowledge Gaps\n- Does `message.updated` fire ONCE when the assistant response starts, or multiple times? The type suggests one per message, but this needs **L1 live runtime verification** (instrument the event hook and log every `message.updated` event seen during a single assistant response).\n- Is `part.delta` present on EVERY `message.part.updated` during streaming, or only some? The `delta?: string` in the type means it's optional. We need to verify whether it is always present during streaming or only present for text updates.\n\n#### 11. Recommendations\n1. **Create** `src/features/session-tracker/capture/last-message-capture.ts` with a `LastMessageCapture` class\n2. **Register** it as a new event observer in the hooks composition layer, positioned AFTER the session tracker observer\n3. **Use** a `Map<messageID, { sessionID: string; lastText: string }>` bounded to 5 entries\n4. **Handle** `message.updated` and `message.part.updated` only — ignore all other events\n5. **Expose** via `getLastMessage(sessionID): string | undefined` method for consumers\n6. **Wire** into existing `handleSessionIdle` and `backfillChildTurnsFromSdk` to use the in-memory lastMessage instead of SDK API queries (reduces SDK round trips)\n7. **Run L1 UAT** to verify the exact event firing sequence before shipping"
+}

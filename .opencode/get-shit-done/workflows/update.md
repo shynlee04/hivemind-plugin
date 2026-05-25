@@ -14,6 +14,7 @@ Detect whether GSD is installed locally or globally by checking both locations a
 First, derive `PREFERRED_CONFIG_DIR` and `PREFERRED_RUNTIME` from the invoking prompt's `execution_context` path:
 - If the path contains `/get-shit-done/workflows/update.md`, strip that suffix and store the remainder as `PREFERRED_CONFIG_DIR`
 - Path contains `/.codex/` -> `codex`
+- Path contains `/.gemini/antigravity/` -> `antigravity`
 - Path contains `/.gemini/` -> `gemini`
 - Path contains `/.config/kilo/` or `/.kilo/`, or `PREFERRED_CONFIG_DIR` contains `kilo.json` / `kilo.jsonc` -> `kilo`
 - Path contains `/.config/opencode/` or `/.opencode/`, or `PREFERRED_CONFIG_DIR` contains `opencode.json` / `opencode.jsonc` -> `opencode`
@@ -36,7 +37,7 @@ expand_home() {
 # Using an array instead of a space-separated string ensures correct
 # iteration in both bash and zsh (zsh does not word-split unquoted
 # variables by default). Fixes #1173.
-RUNTIME_DIRS=( "claude:.claude" "opencode:.config/opencode" "opencode:.opencode" "gemini:.gemini" "kilo:.config/kilo" "kilo:.kilo" "codex:.codex" )
+RUNTIME_DIRS=( "claude:.claude" "opencode:.config/opencode" "opencode:.opencode" "antigravity:.gemini/antigravity" "gemini:.gemini" "kilo:.config/kilo" "kilo:.kilo" "codex:.codex" )
 ENV_RUNTIME_DIRS=()
 
 # PREFERRED_CONFIG_DIR / PREFERRED_RUNTIME should be set from execution_context
@@ -58,6 +59,8 @@ fi
 if [ -z "$PREFERRED_RUNTIME" ]; then
   if [ -n "$CODEX_HOME" ]; then
     PREFERRED_RUNTIME="codex"
+  elif [ -n "$ANTIGRAVITY_CONFIG_DIR" ]; then
+    PREFERRED_RUNTIME="antigravity"
   elif [ -n "$GEMINI_CONFIG_DIR" ]; then
     PREFERRED_RUNTIME="gemini"
   elif [ -n "$KILO_CONFIG_DIR" ]; then
@@ -95,7 +98,7 @@ if [ -n "$PREFERRED_CONFIG_DIR" ] && { [ -f "$PREFERRED_CONFIG_DIR/get-shit-done
     printf '%s' "$p"
   }
   normalized_preferred="$(normalize_path "$PREFERRED_CONFIG_DIR")"
-  for dir in .claude .config/opencode .opencode .gemini .config/kilo .kilo .codex; do
+  for dir in .claude .config/opencode .opencode .gemini/antigravity .gemini .config/kilo .kilo .codex; do
     resolved_local="$(cd "./$dir" 2>/dev/null && pwd)"
     normalized_local="$(normalize_path "$resolved_local")"
     if [ -n "$normalized_local" ] && [ "$normalized_local" = "$normalized_preferred" ]; then
@@ -125,6 +128,9 @@ fi
 # Absolute global candidates from env overrides (covers custom config dirs).
 if [ -n "$CLAUDE_CONFIG_DIR" ]; then
   ENV_RUNTIME_DIRS+=( "claude:$(expand_home "$CLAUDE_CONFIG_DIR")" )
+fi
+if [ -n "$ANTIGRAVITY_CONFIG_DIR" ]; then
+  ENV_RUNTIME_DIRS+=( "antigravity:$(expand_home "$ANTIGRAVITY_CONFIG_DIR")" )
 fi
 if [ -n "$GEMINI_CONFIG_DIR" ]; then
   ENV_RUNTIME_DIRS+=( "gemini:$(expand_home "$GEMINI_CONFIG_DIR")" )
@@ -320,7 +326,7 @@ fi
 ```text
 Couldn't check for updates (reason: {LATEST_REASON}, exit: {LATEST_STATUS}).
 
-To update manually: `npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc --global`
+To update manually: `npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux --global`
 ```
 
 Exit.
@@ -366,28 +372,48 @@ Exit.
 <step name="show_changes_and_confirm">
 **If update available**, fetch and show what's new BEFORE updating:
 
-1. Fetch changelog from GitHub raw URL
-2. Extract entries between installed and latest versions
-3. Display preview and ask for confirmation:
+1. Fetch changelog from GitHub raw URL and save to a temp file, e.g. `/tmp/gsd-changelog-$$.md`.
+2. Extract entries between installed and latest versions using the deterministic range helper (fix for #3496 — do NOT use ad-hoc grep/awk extraction which silently skips intermediate versions):
+
+```bash
+CHANGELOG_TMP="/tmp/gsd-changelog-$$.md"
+curl -fsSL "https://raw.githubusercontent.com/open-gsd/get-shit-done-redux/main/CHANGELOG.md" -o "$CHANGELOG_TMP" 2>/dev/null \
+  || wget -qO "$CHANGELOG_TMP" "https://raw.githubusercontent.com/open-gsd/get-shit-done-redux/main/CHANGELOG.md" 2>/dev/null
+
+EXTRACT_JSON=$(node "$GSD_DIR/get-shit-done/scripts/changeset/cli.cjs" extract \
+  --from "$INSTALLED_VERSION" \
+  --to "$LATEST_VERSION" \
+  --changelog "$CHANGELOG_TMP" \
+  --json 2>/dev/null)
+EXTRACT_EXIT=$?
+rm -f "$CHANGELOG_TMP"
+
+if [ "$EXTRACT_EXIT" -eq 2 ]; then
+  # Exit 2 = no releases in range (e.g. versions are equal or changelog is sparse)
+  CHANGELOG_PREVIEW="No changelog updates between v${INSTALLED_VERSION} and v${LATEST_VERSION}."
+elif [ "$EXTRACT_EXIT" -ne 0 ] || [ -z "$EXTRACT_JSON" ]; then
+  CHANGELOG_PREVIEW="(Could not extract changelog — update will still proceed)"
+else
+  # Re-run without --json to get the human-readable markdown for display
+  CHANGELOG_PREVIEW=$(node "$GSD_DIR/get-shit-done/scripts/changeset/cli.cjs" extract \
+    --from "$INSTALLED_VERSION" \
+    --to "$LATEST_VERSION" \
+    --changelog "$CHANGELOG_TMP" 2>/dev/null || echo "(changelog unavailable)")
+fi
+```
+
+3. Display preview and ask for confirmation, using `$CHANGELOG_PREVIEW` from the extract step above:
 
 ```
 ## GSD Update Available
 
-**Installed:** 1.5.10
-**Latest:** 1.5.15
+**Installed:** {INSTALLED_VERSION}
+**Latest:** {LATEST_VERSION}
 
 ### What's New
 ────────────────────────────────────────────────────────────
 
-## [1.5.15] - 2026-01-20
-
-### Added
-- Feature X
-
-## [1.5.14] - 2026-01-18
-
-### Fixed
-- Bug fix Y
+{CHANGELOG_PREVIEW}
 
 ────────────────────────────────────────────────────────────
 
@@ -457,10 +483,10 @@ Otherwise run `detect-custom-files` (prefer SDK when available):
 ```bash
 GSD_TOOLS="$RUNTIME_DIR/get-shit-done/bin/gsd-tools.cjs"
 CUSTOM_JSON=''
-if [ -n "$RUNTIME_DIR" ] && command -v gsd-sdk >/dev/null 2>&1; then
-  CUSTOM_JSON=$(gsd-sdk query detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
-elif [ -f "$GSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
+if [ -f "$GSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
   CUSTOM_JSON=$(node "$GSD_TOOLS" detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
+elif [ -n "$RUNTIME_DIR" ] && command -v gsd-sdk >/dev/null 2>&1; then
+  CUSTOM_JSON=$(gsd-sdk query detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
 fi
 if [ -z "$CUSTOM_JSON" ]; then
   CUSTOM_JSON='{"custom_files":[],"custom_count":0}'
@@ -521,17 +547,17 @@ RUNTIME_FLAG="--$TARGET_RUNTIME"
 
 **If LOCAL install:**
 ```bash
-npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc "$RUNTIME_FLAG" --local
+npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux "$RUNTIME_FLAG" --local
 ```
 
 **If GLOBAL install:**
 ```bash
-npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc "$RUNTIME_FLAG" --global
+npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux "$RUNTIME_FLAG" --global
 ```
 
 **If UNKNOWN install:**
 ```bash
-npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc --claude --global
+npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux --claude --global
 ```
 
 Capture output. If install fails, show error and exit.
@@ -581,7 +607,7 @@ for dir in "${CACHE_DIRS[@]}"; do
   fi
 done
 
-for dir in .claude .config/opencode .opencode .gemini .config/kilo .kilo .codex; do
+for dir in .claude .config/opencode .opencode .gemini/antigravity .gemini .config/kilo .kilo .codex; do
   rm -f "./$dir/cache/gsd-update-check.json"
   rm -f "$HOME/$dir/cache/gsd-update-check.json"
 done
@@ -605,7 +631,7 @@ Format completion message (changelog was already shown in confirmation step):
 
 ⚠️  Restart your runtime to pick up the new commands.
 
-[View full changelog](https://github.com/gsd-build/get-shit-done/blob/main/CHANGELOG.md)
+[View full changelog](https://github.com/open-gsd/get-shit-done-redux/blob/main/CHANGELOG.md)
 ```
 </step>
 

@@ -1,5 +1,6 @@
 ---
 description: Archive accumulated phase directories from completed milestones
+requires: [phase]
 tools:
   read: true
   write: true

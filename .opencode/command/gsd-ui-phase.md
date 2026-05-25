@@ -1,6 +1,7 @@
 ---
 description: Generate UI design contract (UI-SPEC.md) for frontend phases
 argument-hint: "[phase]"
+requires: [phase]
 tools:
   read: true
   write: true

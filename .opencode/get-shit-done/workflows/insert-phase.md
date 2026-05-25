@@ -13,7 +13,7 @@ Parse the command arguments:
 - First argument: integer phase number to insert after
 - Remaining arguments: phase description
 
-Example: `/gsd-insert-phase 72 Fix critical auth bug`
+Example: `/gsd-phase --insert 72 Fix critical auth bug`
 -> after = 72
 -> description = "Fix critical auth bug"
 
@@ -21,8 +21,8 @@ If arguments missing:
 
 ```
 ERROR: Both phase number and description required
-Usage: /gsd-insert-phase <after> <description>
-Example: /gsd-insert-phase 72 Fix critical auth bug
+Usage: /gsd-phase --insert <after> <description>
+Example: /gsd-phase --insert 72 Fix critical auth bug
 ```
 
 Exit.
@@ -34,7 +34,18 @@ Validate first argument is an integer.
 Load phase operation context:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${after_phase}")
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+INIT=$($GSD_SDK query init.phase-op "${after_phase}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -49,7 +60,7 @@ Exit.
 **Delegate the phase insertion to `gsd-sdk query phase.insert`:**
 
 ```bash
-RESULT=$(gsd-sdk query phase.insert "${after_phase}" "${description}")
+RESULT=$($GSD_SDK query phase.insert "${after_phase}" "${description}")
 ```
 
 The CLI handles:
@@ -71,7 +82,7 @@ blocks direct STATE.md writes):
    `{decimal_phase}`:
 
    ```bash
-   gsd-sdk query state.patch '{"Current Phase":"{decimal_phase}","Next recommended run":"/gsd-plan-phase {decimal_phase}"}'
+   $GSD_SDK query state.patch '{"Current Phase":"{decimal_phase}","Next recommended run":"/gsd-plan-phase {decimal_phase}"}'
    ```
 
    (Adjust field names to whatever pointers STATE.md exposes — the handler
@@ -82,7 +93,7 @@ blocks direct STATE.md writes):
    and dedupes identical entries:
 
    ```bash
-   gsd-sdk query state.add-roadmap-evolution \
+   $GSD_SDK query state.add-roadmap-evolution \
      --phase {decimal_phase} \
      --action inserted \
      --after {after_phase} \

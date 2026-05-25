@@ -2,6 +2,7 @@
 type: prompt
 description: Post-mortem investigation for failed GSD workflows — diagnoses what went wrong.
 argument-hint: "[problem description]"
+requires: [phase, progress, update]
 tools:
   read: true
   write: true

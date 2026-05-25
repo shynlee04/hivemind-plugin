@@ -1,6 +1,7 @@
 ---
 description: Create context handoff when pausing work mid-phase
 argument-hint: "[--report]"
+requires: [phase, progress]
 tools:
   read: true
   write: true

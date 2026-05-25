@@ -1,5 +1,6 @@
 ---
 description: Configure GSD workflow toggles and model profile
+requires: [quick]
 tools:
   read: true
   write: true

@@ -11,7 +11,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
-const { execFileSync } = require('child_process');
+const { probeTty, platformWriteSync, platformReadSync, platformEnsureDir } = require('./shell-command-projection.cjs');
+const { isValidActiveWorkstreamName } = require('./workstream-name-policy.cjs');
 
 const WORKSTREAM_SESSION_ENV_KEYS = [
   'GSD_SESSION_KEY',
@@ -38,6 +39,23 @@ process.on('exit', () => {
     try { fs.unlinkSync(lockPath); } catch { /* already gone */ }
   }
 });
+
+// Transient errno codes that indicate a temporary filesystem condition under
+// concurrent O_EXCL races — Docker overlay-fs (ENOENT/EINVAL/EIO), NFS
+// (ESTALE), and OS-level interrupt/retry signals (EAGAIN/EINTR).  These are
+// recoverable; withPlanningLock retries instead of propagating them.
+// Truly fatal codes (EMFILE, ENOSPC, EROFS, EACCES) are NOT in this set and
+// will still throw immediately.
+const PLANNING_LOCK_RETRY_ERRNOS = new Set([
+  'EPERM',   // Windows / macOS AV scanner holds the file open during delete
+  'EBUSY',   // Windows: file in use by another process
+  'EAGAIN',  // POSIX: resource temporarily unavailable
+  'EINTR',   // POSIX: syscall interrupted by signal
+  'EINVAL',  // Docker overlay-fs: transient during concurrent O_EXCL creation
+  'EIO',     // Docker overlay-fs / NFS: transient I/O error
+  'ENOENT',  // Docker overlay-fs: parent dir transiently missing during race
+  'ESTALE',  // NFS: stale file handle (self-resolves on retry)
+]);
 
 function planningDir(cwd, ws, project) {
   if (project === undefined) project = process.env.GSD_PROJECT || null;
@@ -91,16 +109,11 @@ function probeControllingTtyToken() {
     return cachedControllingTtyToken;
   }
 
-  try {
-    const ttyPath = execFileSync('tty', [], {
-      encoding: 'utf-8',
-      stdio: ['inherit', 'pipe', 'ignore'],
-    }).trim();
-    if (ttyPath && ttyPath !== 'not a tty') {
-      const token = sanitizeWorkstreamSessionToken(ttyPath.replace(/^\/dev\//, ''));
-      if (token) cachedControllingTtyToken = `tty-${token}`;
-    }
-  } catch {}
+  const ttyPath = probeTty();
+  if (ttyPath) {
+    const token = sanitizeWorkstreamSessionToken(ttyPath.replace(/^\/dev\//, ''));
+    if (token) cachedControllingTtyToken = `tty-${token}`;
+  }
 
   return cachedControllingTtyToken;
 }
@@ -157,14 +170,11 @@ function createSharedPointerAdapter(cwd) {
   const filePath = path.join(planningRoot(cwd), 'active-workstream');
   return {
     read() {
-      try {
-        return fs.readFileSync(filePath, 'utf-8').trim() || null;
-      } catch {
-        return null;
-      }
+      const raw = platformReadSync(filePath);
+      return raw ? raw.trim() || null : null;
     },
     write(name) {
-      fs.writeFileSync(filePath, name + '\n', 'utf-8');
+      platformWriteSync(filePath, name + '\n');
     },
     clear() {
       try { fs.unlinkSync(filePath); } catch {}
@@ -178,15 +188,12 @@ function createSessionScopedPointerAdapter(cwd, fixedSessionKey) {
 
   return {
     read() {
-      try {
-        return fs.readFileSync(scoped.filePath, 'utf-8').trim() || null;
-      } catch {
-        return null;
-      }
+      const raw = platformReadSync(scoped.filePath);
+      return raw ? raw.trim() || null : null;
     },
     write(name) {
-      fs.mkdirSync(scoped.dirPath, { recursive: true });
-      fs.writeFileSync(scoped.filePath, name + '\n', 'utf-8');
+      platformEnsureDir(scoped.dirPath);
+      platformWriteSync(scoped.filePath, name + '\n');
     },
     clear() {
       try { fs.unlinkSync(scoped.filePath); } catch {}
@@ -235,7 +242,7 @@ function pickActiveWorkstreamAdapter(cwd, opts = {}) {
 }
 
 function validateWorkstreamName(name) {
-  return /^[a-zA-Z0-9_-]+$/.test(name);
+  return isValidActiveWorkstreamName(name);
 }
 
 function withPlanningLock(cwd, fn) {
@@ -244,7 +251,7 @@ function withPlanningLock(cwd, fn) {
   const start = Date.now();
 
   // Ensure .planning/ exists
-  try { fs.mkdirSync(planningDir(cwd), { recursive: true }); } catch { /* ok */ }
+  try { platformEnsureDir(planningDir(cwd)); } catch { /* ok */ }
 
   function runWithHeldLock() {
     // Atomic create — fails if file exists
@@ -269,6 +276,13 @@ function withPlanningLock(cwd, fn) {
     try {
       return runWithHeldLock();
     } catch (err) {
+      // Transient filesystem errors (Docker overlay-fs, NFS, OS signals, AV scanners)
+      // are recoverable — wait and retry rather than propagating.
+      // See PLANNING_LOCK_RETRY_ERRNOS for the full list and rationale.
+      if (PLANNING_LOCK_RETRY_ERRNOS.has(err.code)) {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+        continue;
+      }
       if (err.code === 'EEXIST') {
         // Lock exists — check if stale (>30s old)
         try {
@@ -333,11 +347,11 @@ function createPlanningWorkspace(cwd, opts = {}) {
           return;
         }
         if (!validateWorkstreamName(name)) {
-          throw new Error('Invalid workstream name: must be alphanumeric, hyphens, and underscores only');
+          throw new Error('Invalid workstream name: must be alphanumeric, hyphens, underscores, or dots');
         }
 
         const wsDir = path.join(planningRoot(cwd), 'workstreams', name);
-        fs.mkdirSync(wsDir, { recursive: true });
+        platformEnsureDir(wsDir);
         adapter.write(name);
       },
       clear() {
@@ -357,6 +371,35 @@ function setActiveWorkstream(cwd, name) {
   createPlanningWorkspace(cwd).activeWorkstream.set(name);
 }
 
+/**
+ * Locate the CONTEXT.md file in a phase directory, handling both the bare
+ * form (`CONTEXT.md`) and the padded-prefix convention (`NN-CONTEXT.md`,
+ * `NN.N-CONTEXT.md`, etc.) used by gsd-discuss-phase output.
+ *
+ * Returns the filename (not the full path) of the first match, or null if
+ * no CONTEXT.md exists in the directory.
+ *
+ * Canonical dual-form predicate extracted here to eliminate the 5-site
+ * duplication that previously existed across init.cjs, roadmap.cjs,
+ * core.cjs, gap-checker.cjs (#3739).
+ *
+ * @param {string|string[]} absDirOrFiles - Absolute path to the phase directory,
+ *   OR an already-read files array (avoids a redundant readdirSync at call sites
+ *   that already hold a directory listing).
+ * @returns {string|null}
+ */
+function findContextMdIn(absDirOrFiles) {
+  try {
+    const files = Array.isArray(absDirOrFiles)
+      ? absDirOrFiles
+      : fs.readdirSync(absDirOrFiles);
+    if (files.includes('CONTEXT.md')) return 'CONTEXT.md';
+    return files.find(f => f.endsWith('-CONTEXT.md')) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 module.exports = {
   createPlanningWorkspace,
   createSharedPointerAdapter,
@@ -368,4 +411,5 @@ module.exports = {
   withPlanningLock,
   getActiveWorkstream,
   setActiveWorkstream,
+  findContextMdIn,
 };

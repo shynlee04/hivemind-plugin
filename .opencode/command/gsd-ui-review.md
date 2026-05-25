@@ -1,6 +1,7 @@
 ---
 description: Retroactive 6-pillar visual audit of implemented frontend code
 argument-hint: "[phase]"
+requires: [phase]
 tools:
   read: true
   write: true

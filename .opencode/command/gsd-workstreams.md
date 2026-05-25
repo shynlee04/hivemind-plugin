@@ -1,5 +1,6 @@
 ---
 description: Manage parallel workstreams — list, create, switch, status, progress, complete, and resume
+requires: [new-milestone, phase, progress, resume-work]
 tools:
   read: true
   bash: true

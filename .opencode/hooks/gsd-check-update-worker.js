@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.41.1
+// gsd-hook-version: 1.1.0
 // Background worker spawned by gsd-check-update.js (SessionStart hook).
 // Checks for GSD updates and stale hooks, writes result to cache file.
 // Receives paths via environment variables set by the parent hook.
@@ -50,6 +50,7 @@ const MANAGED_HOOKS = [
   'gsd-check-update-worker.js',
   'gsd-check-update.js',
   'gsd-context-monitor.js',
+  'gsd-graphify-update.sh',
   'gsd-phase-boundary.sh',
   'gsd-prompt-guard.js',
   'gsd-read-guard.js',
@@ -89,7 +90,7 @@ if (configDir) {
 
 let latest = null;
 try {
-  latest = execFileSync('npm', ['view', 'get-shit-done-cc', 'version'], {
+  latest = execFileSync('npm', ['view', 'get-shit-done-redux', 'version'], {
     encoding: 'utf8',
     timeout: 10000,
     windowsHide: true,

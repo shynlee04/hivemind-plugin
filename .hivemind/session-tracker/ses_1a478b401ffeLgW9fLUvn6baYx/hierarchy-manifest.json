@@ -1,0 +1,87 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+  "lastUpdated": "2026-05-25T11:57:14.857Z",
+  "children": {
+    "ses_1a4782246ffebLMFQxvwatoonU": {
+      "sessionID": "ses_1a4782246ffebLMFQxvwatoonU",
+      "parentSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "rootMainSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-debugger",
+      "createdAt": "2026-05-24T19:48:11.375Z",
+      "updatedAt": "2026-05-24T20:09:05.118Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a4782246ffebLMFQxvwatoonU.json"
+    },
+    "ses_1a162ee5cffeX5dq5Fc9M39qCY": {
+      "sessionID": "ses_1a162ee5cffeX5dq5Fc9M39qCY",
+      "parentSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "rootMainSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-debugger",
+      "createdAt": "2026-05-25T10:10:12.595Z",
+      "updatedAt": "2026-05-25T10:37:03.658Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a162ee5cffeX5dq5Fc9M39qCY.json"
+    },
+    "ses_1a13ae5d8ffeEtGmUByk1Z7AP6": {
+      "sessionID": "ses_1a13ae5d8ffeEtGmUByk1Z7AP6",
+      "parentSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "rootMainSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-debugger",
+      "createdAt": "2026-05-25T10:53:56.210Z",
+      "updatedAt": "2026-05-25T11:01:34.268Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a13ae5d8ffeEtGmUByk1Z7AP6.json"
+    },
+    "ses_1a12e8674ffePYMaFRO1H3Ozp7": {
+      "sessionID": "ses_1a12e8674ffePYMaFRO1H3Ozp7",
+      "parentSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "rootMainSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-debugger",
+      "createdAt": "2026-05-25T11:07:27.051Z",
+      "updatedAt": "2026-05-25T11:09:48.394Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a12e8674ffePYMaFRO1H3Ozp7.json"
+    },
+    "ses_1a12a2dceffeYnSvyguoiqRIC8": {
+      "sessionID": "ses_1a12a2dceffeYnSvyguoiqRIC8",
+      "parentSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "rootMainSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-researcher",
+      "createdAt": "2026-05-25T11:12:11.882Z",
+      "updatedAt": "2026-05-25T11:14:43.371Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a12a2dceffeYnSvyguoiqRIC8.json"
+    },
+    "ses_1a1268180fferYca5WWauSqXEJ": {
+      "sessionID": "ses_1a1268180fferYca5WWauSqXEJ",
+      "parentSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "rootMainSessionID": "ses_1a478b401ffeLgW9fLUvn6baYx",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-25T11:16:12.602Z",
+      "updatedAt": "2026-05-25T11:57:14.857Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a1268180fferYca5WWauSqXEJ.json"
+    }
+  },
+  "totalChildren": 6,
+  "maxDepth": 1
+}

@@ -2,6 +2,7 @@
 type: prompt
 description: Archive completed milestone and prepare for next version
 argument-hint: <version>
+requires: [audit-milestone, discuss-phase, execute-phase, new-milestone, phase, plan-phase, stats, update]
 tools:
   read: true
   write: true
@@ -124,7 +125,7 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 - `.planning/REQUIREMENTS.md` deleted (fresh for next milestone)
 - ROADMAP.md collapsed to one-line entry
 - PROJECT.md updated with current state
-- Git tag v{{version}} created
+- Git tag v{{version}} created (if `git.create_tag` enabled)
 - Commit successful
 - User knows next steps (including need for fresh requirements)
   </success_criteria>

@@ -1,6 +1,7 @@
 ---
 description: Request cross-AI peer review of phase plans from external AI CLIs
 argument-hint: "--phase N [--gemini] [--claude] [--codex] [--opencode] [--qwen] [--cursor] [--all]"
+requires: [config, phase, plan-phase]
 tools:
   read: true
   write: true

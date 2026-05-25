@@ -1,0 +1,26 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1a48c4519ffeYdYTHreMnJ3ywy",
+  "lastUpdated": "2026-05-24T19:29:15.947Z",
+  "hierarchy": {
+    "root": "ses_1a48c4519ffeYdYTHreMnJ3ywy",
+    "children": {
+      "ses_1a48bd28dffetaYADM1pb5hf98": {
+        "file": "ses_1a48bd28dffetaYADM1pb5hf98.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-l2-build",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 7,
+  "toolSummary": {
+    "glob": 6,
+    "read": 3,
+    "delegate-task": 1,
+    "delegation-status": 5,
+    "bash": 5,
+    "hivemind-session-view": 1
+  }
+}

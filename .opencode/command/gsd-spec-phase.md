@@ -1,6 +1,7 @@
 ---
 description: Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase.
 argument-hint: "<phase> [--auto] [--text]"
+requires: [discuss-phase, execute-phase, phase, plan-phase]
 tools:
   read: true
   write: true

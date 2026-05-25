@@ -1,6 +1,7 @@
 ---
 description: Run all remaining phases autonomously — discuss→plan→execute per phase
 argument-hint: "[--from N] [--to N] [--only N] [--interactive]"
+requires: [cleanup, phase, progress]
 tools:
   read: true
   write: true

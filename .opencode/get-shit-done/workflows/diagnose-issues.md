@@ -58,7 +58,18 @@ gaps = [
 **Read worktree config:**
 
 ```bash
-USE_WORKTREES=$(gsd-sdk query config-get workflow.use_worktrees 2>/dev/null || echo "true")
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+USE_WORKTREES=$($GSD_SDK query config-get workflow.use_worktrees 2>/dev/null || echo "true")
 ```
 
 **Report diagnosis plan to user:**
@@ -87,7 +98,7 @@ This runs in parallel - all gaps investigated simultaneously.
 **Load agent skills:**
 
 ```bash
-AGENT_SKILLS_DEBUGGER=$(gsd-sdk query agent-skills gsd-debugger)
+AGENT_SKILLS_DEBUGGER=$($GSD_SDK query agent-skills gsd-debugger)
 EXPECTED_BASE=$(git rev-parse HEAD)
 ```
 
@@ -97,7 +108,7 @@ For each gap, fill the debug-subagent-prompt template and spawn:
 
 ```
 Agent(
-  prompt=filled_debug_subagent_prompt + "\n\n<worktree_branch_check>\nFIRST ACTION: run git merge-base HEAD {EXPECTED_BASE} — if result differs from {EXPECTED_BASE}, run git reset --hard {EXPECTED_BASE} to correct the branch base (safe — runs before any agent work). Then verify: if [ \"$(git rev-parse HEAD)\" != \"{EXPECTED_BASE}\" ]; then echo \"ERROR: Could not correct worktree base\"; exit 1; fi. Fixes EnterWorktree creating branches from main on all platforms.\n</worktree_branch_check>\n\n<files_to_read>\n- {phase_dir}/{phase_num}-UAT.md\n- .planning/STATE.md\n</files_to_read>\n${AGENT_SKILLS_DEBUGGER}",
+  prompt=filled_debug_subagent_prompt + "\n\n<worktree_branch_check>\nFIRST ACTION: assert this is a disposable worktree branch before any repair. Run:\n```bash\nHEAD_REF=$(git symbolic-ref --quiet HEAD || echo \"DETACHED\")\nACTUAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)\nif [ \"$HEAD_REF\" = \"DETACHED\" ] || echo \"$ACTUAL_BRANCH\" | grep -Eq '^(main|master|develop|trunk|release/.*)$'; then\n  echo \"FATAL: diagnose worktree HEAD on '$ACTUAL_BRANCH'; refusing reset --hard on a protected branch.\" >&2\n  exit 1\nfi\nif ! echo \"$ACTUAL_BRANCH\" | grep -Eq '^worktree-agent-[A-Za-z0-9._/-]+$'; then\n  echo \"FATAL: diagnose worktree HEAD '$ACTUAL_BRANCH' is not in the worktree-agent-* namespace; refusing reset --hard.\" >&2\n  exit 1\nfi\nACTUAL_BASE=$(git merge-base HEAD {EXPECTED_BASE})\nif [ \"$ACTUAL_BASE\" != \"{EXPECTED_BASE}\" ]; then\n  git reset --hard {EXPECTED_BASE}\n  [ \"$(git rev-parse HEAD)\" != \"{EXPECTED_BASE}\" ] && { echo \"ERROR: Could not correct worktree base\"; exit 1; }\nfi\n```\nFixes EnterWorktree creating branches from main on all platforms while preventing protected-branch data loss.\n</worktree_branch_check>\n\n<files_to_read>\n- {phase_dir}/{phase_num}-UAT.md\n- .planning/STATE.md\n</files_to_read>\n${AGENT_SKILLS_DEBUGGER}",
   subagent_type="gsd-debugger",
   ${USE_WORKTREES !== "false" ? 'isolation="worktree",' : ''}
   description="Debug: {truth_short}"
@@ -179,7 +190,7 @@ Update status in frontmatter to "diagnosed".
 
 Commit the updated UAT.md:
 ```bash
-gsd-sdk query commit "docs({phase_num}): add root causes from diagnosis" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
+$GSD_SDK query commit "docs({phase_num}): add root causes from diagnosis" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
 ```
 </step>
 

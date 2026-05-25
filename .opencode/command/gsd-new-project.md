@@ -1,6 +1,7 @@
 ---
 description: Initialize a new project with deep context gathering and PROJECT.md
 argument-hint: "[--auto]"
+requires: [config, phase, plan-phase]
 tools:
   read: true
   bash: true

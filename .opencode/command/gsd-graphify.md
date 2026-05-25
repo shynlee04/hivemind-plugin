@@ -1,6 +1,7 @@
 ---
 description: "Build, query, and inspect the project knowledge graph in .planning/graphs/"
 argument-hint: "[build|query <term>|status|diff]"
+requires: [config, fast, phase, update]
 tools:
   read: true
   bash: true

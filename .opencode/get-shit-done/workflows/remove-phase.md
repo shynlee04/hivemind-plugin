@@ -29,7 +29,18 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${target}")
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+INIT=$($GSD_SDK query init.phase-op "${target}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -80,13 +91,13 @@ Wait for confirmation.
 **Delegate the entire removal operation to `gsd-sdk query phase.remove`:**
 
 ```bash
-RESULT=$(gsd-sdk query phase.remove "${target}")
+RESULT=$($GSD_SDK query phase.remove "${target}")
 ```
 
 If the phase has executed plans (SUMMARY.md files), the CLI will error. Use `--force` only if the user confirms:
 
 ```bash
-RESULT=$(gsd-sdk query phase.remove "${target}" --force)
+RESULT=$($GSD_SDK query phase.remove "${target}" --force)
 ```
 
 The CLI handles:
@@ -103,7 +114,7 @@ Extract from result: `removed`, `directory_deleted`, `renamed_directories`, `ren
 Stage and commit the removal:
 
 ```bash
-gsd-sdk query commit "chore: remove phase {target} ({original-phase-name})" --files .planning/
+$GSD_SDK query commit "chore: remove phase {target} ({original-phase-name})" --files .planning/
 ```
 
 The commit message preserves the historical record of what was removed.

@@ -1,0 +1,13 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1a4f84115ffe2rfmmznA2MGncp",
+  "lastUpdated": "2026-05-24T17:34:11.533Z",
+  "hierarchy": {
+    "root": "ses_1a4f84115ffe2rfmmznA2MGncp",
+    "children": {}
+  },
+  "turnCount": 4,
+  "toolSummary": {
+    "bash": 3
+  }
+}

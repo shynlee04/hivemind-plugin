@@ -1,6 +1,7 @@
 ---
 description: Audit an executed AI phase's evaluation coverage and produce an EVAL-REVIEW.md remediation plan.
 argument-hint: "[phase number]"
+requires: [phase]
 tools:
   read: true
   write: true

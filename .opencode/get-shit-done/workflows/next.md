@@ -14,7 +14,18 @@ Read project state to determine current position:
 
 ```bash
 # Get state snapshot
-gsd-sdk query state.json 2>/dev/null || echo "{}"
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+$GSD_SDK query state.json 2>/dev/null || echo "{}"
 ```
 
 Also read:
@@ -127,7 +138,7 @@ Choice [S]:
 ```
 2. Commit the deferral record:
 ```bash
-gsd-sdk query commit "docs: defer incomplete Phase {src} items to backlog"
+$GSD_SDK query commit "docs: defer incomplete Phase {src} items to backlog"
 ```
 3. Continue routing to `determine_next_action` immediately — no second prompt.
 
@@ -208,6 +219,18 @@ Display the determination:
 
 Then immediately invoke the determined command via skill.
 Do not ask for confirmation — the whole point of `/gsd-progress --next` is zero-friction advancement.
+
+**If `--auto` was passed:** after the determined command completes, automatically re-invoke `/gsd-progress --next --auto` to continue chaining to the next step. Repeat until one of:
+- A milestone completes (`/gsd-complete-milestone` is reached)
+- A blocking decision is required (safety gate triggers, prior-phase completeness prompt, user input needed)
+- An error or paused state is detected
+
+When stopping due to a blocker, display:
+```
+⛔ Auto-chain stopped: [reason — e.g. safety gate, blocking decision required]
+
+Resume with: `/gsd-progress --next --auto` once resolved.
+```
 </step>
 
 </process>

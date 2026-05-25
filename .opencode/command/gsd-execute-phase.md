@@ -1,6 +1,7 @@
 ---
 description: Execute all plans in a phase with wave-based parallelization
 argument-hint: "<phase-number> [--wave N] [--gaps-only] [--interactive] [--tdd]"
+requires: [phase, verify-work]
 tools:
   read: true
   write: true

@@ -1,6 +1,7 @@
 ---
 description: Audit milestone completion against original intent before archiving
 argument-hint: "[version]"
+requires: [execute-phase]
 tools:
   read: true
   glob: true

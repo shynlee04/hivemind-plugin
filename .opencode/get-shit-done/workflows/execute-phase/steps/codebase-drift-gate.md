@@ -6,7 +6,7 @@ error here MUST fall through and continue to `verify_phase_goal`. The phase
 is never failed by this gate.
 
 ```bash
-DRIFT=$(gsd-sdk query verify.codebase-drift 2>/dev/null || echo '{"skipped":true,"reason":"sdk-failed"}')
+DRIFT=$(gsd-tools verify codebase-drift 2>/dev/null || echo '{"skipped":true,"reason":"sdk-failed"}')
 ```
 
 Parse JSON for: `skipped`, `reason`, `action_required`, `directive`,
@@ -45,7 +45,7 @@ First load the mapper agent's skill bundle (the executor's `AGENT_SKILLS`
 from step `init_context` is for `gsd-executor`, not the mapper):
 
 ```bash
-AGENT_SKILLS_MAPPER=$(gsd-sdk query agent-skills gsd-codebase-mapper)
+AGENT_SKILLS_MAPPER=$($GSD_SDK query agent-skills gsd-codebase-mapper)
 ```
 
 Then spawn `gsd-codebase-mapper` agents with the `--paths` hint:
