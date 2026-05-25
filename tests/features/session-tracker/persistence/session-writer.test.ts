@@ -332,6 +332,161 @@ describe("updateFrontmatter", () => {
 // addChildRef tests (Bug A fix — Phase 23.2)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Title capture lifecycle tests (Phase 24.3.1, Plan 04)
+// ---------------------------------------------------------------------------
+
+describe("initializeSessionFile with title", () => {
+  /**
+   * Test: initializeSessionFile writes title into frontmatter when provided.
+   */
+  it("writes title into frontmatter when provided", async () => {
+    const sessionID = "ses_title_test_001"
+    await writer.createSessionDir(sessionID)
+
+    await writer.initializeSessionFile(sessionID, {
+      sessionID,
+      title: "hm/governance/root/gsd-auditor/audit-v2@0",
+      created: "2026-01-01T00:00:00Z",
+      updated: "2026-01-01T00:00:00Z",
+      parentSessionID: null,
+      delegationDepth: 0,
+      children: [],
+      continuityIndex: "session-continuity.json",
+      status: "active",
+    })
+
+    const dirPath = join(projectRoot, ".hivemind", "session-tracker", sessionID)
+    const mdFile = require("node:fs").readdirSync(dirPath).find((f: string) => f.endsWith(".md"))
+    expect(mdFile).toBeDefined()
+
+    const content = readFileSync(join(dirPath, mdFile!), "utf-8")
+    expect(content).toContain("hm/governance/root/gsd-auditor/audit-v2@0")
+  })
+
+  /**
+   * Test: initializeSessionFile sets title to null when not provided.
+   */
+  it("sets title to null when not provided", async () => {
+    const sessionID = "ses_title_test_002"
+    await writer.createSessionDir(sessionID)
+
+    await writer.initializeSessionFile(sessionID, {
+      sessionID,
+      created: "2026-01-01T00:00:00Z",
+      updated: "2026-01-01T00:00:00Z",
+      parentSessionID: null,
+      delegationDepth: 0,
+      children: [],
+      continuityIndex: "session-continuity.json",
+      status: "active",
+    })
+
+    const dirPath = join(projectRoot, ".hivemind", "session-tracker", sessionID)
+    const mdFile = require("node:fs").readdirSync(dirPath).find((f: string) => f.endsWith(".md"))
+    expect(mdFile).toBeDefined()
+
+    const content = readFileSync(join(dirPath, mdFile!), "utf-8")
+    expect(content).toContain("title: null")
+  })
+
+  /**
+   * Test: updateFrontmatter can update title.
+   */
+  it("updateFrontmatter can update title", async () => {
+    const sessionID = "ses_title_test_003"
+    await writer.createSessionDir(sessionID)
+
+    await writer.initializeSessionFile(sessionID, {
+      sessionID,
+      title: "hm/governance/root/gsd-auditor/audit-v2@0",
+      created: "2026-01-01T00:00:00Z",
+      updated: "2026-01-01T00:00:00Z",
+      parentSessionID: null,
+      delegationDepth: 0,
+      children: [],
+      continuityIndex: "session-continuity.json",
+      status: "active",
+    })
+
+    await writer.updateFrontmatter(sessionID, {
+      title: "hm/delegate/child/gsd-researcher/research-v2@1",
+    } as Partial<import("../../../../src/features/session-tracker/types.js").SessionRecord>)
+
+    const dirPath = join(projectRoot, ".hivemind", "session-tracker", sessionID)
+    const mdFile = require("node:fs").readdirSync(dirPath).find((f: string) => f.endsWith(".md"))
+    const content = readFileSync(join(dirPath, mdFile!), "utf-8")
+
+    expect(content).toContain("hm/delegate/child/gsd-researcher/research-v2@1")
+  })
+
+  /**
+   * Test: re-initialization preserves existing title.
+   */
+  it("re-initialization preserves existing title", async () => {
+    const sessionID = "ses_title_test_004"
+    await writer.createSessionDir(sessionID)
+
+    // First init with title
+    await writer.initializeSessionFile(sessionID, {
+      sessionID,
+      title: "hm/governance/root/gsd-auditor/audit-v2@0",
+      created: "2026-01-01T00:00:00Z",
+      updated: "2026-01-01T00:00:00Z",
+      parentSessionID: null,
+      delegationDepth: 0,
+      children: [],
+      continuityIndex: "session-continuity.json",
+      status: "active",
+    })
+
+    // Re-init without title
+    await writer.initializeSessionFile(sessionID, {
+      sessionID,
+      created: "2026-01-01T00:00:00Z",
+      updated: "2026-01-01T00:00:00Z",
+      parentSessionID: null,
+      delegationDepth: 0,
+      children: [],
+      continuityIndex: "session-continuity.json",
+      status: "active",
+    })
+
+    const dirPath = join(projectRoot, ".hivemind", "session-tracker", sessionID)
+    const mdFile = require("node:fs").readdirSync(dirPath).find((f: string) => f.endsWith(".md"))
+    const content = readFileSync(join(dirPath, mdFile!), "utf-8")
+
+    // Original title should still be present
+    expect(content).toContain("audit-v2@0")
+  })
+
+  /**
+   * Test: Title field accepts any string format (not just naming service).
+   */
+  it("accepts any string format (backward compatible)", async () => {
+    const sessionID = "ses_title_test_005"
+    await writer.createSessionDir(sessionID)
+
+    await writer.initializeSessionFile(sessionID, {
+      sessionID,
+      title: "Custom Session Name",
+      created: "2026-01-01T00:00:00Z",
+      updated: "2026-01-01T00:00:00Z",
+      parentSessionID: null,
+      delegationDepth: 0,
+      children: [],
+      continuityIndex: "session-continuity.json",
+      status: "active",
+    })
+
+    const dirPath = join(projectRoot, ".hivemind", "session-tracker", sessionID)
+    const mdFile = require("node:fs").readdirSync(dirPath).find((f: string) => f.endsWith(".md"))
+    const content = readFileSync(join(dirPath, mdFile!), "utf-8")
+
+    expect(content).toContain("Custom Session Name")
+  })
+})
+
 describe("addChildRef", () => {
   beforeEach(async () => {
     const sessionID = "ses_root0000000000"

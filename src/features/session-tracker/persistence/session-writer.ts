@@ -94,6 +94,7 @@ export class SessionWriter {
       children: metadata.children ?? [],
       continuityIndex: metadata.continuityIndex ?? "session-continuity.json",
       status: metadata.status ?? "active",
+      title: metadata.title ?? existingFrontmatter.title ?? null,
     }
 
     const yamlStr = yamlStringify(frontmatter)

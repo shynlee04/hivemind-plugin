@@ -304,6 +304,7 @@ export type DelegationPacket = {
 export type SessionContinuityMetadata = {
   status: TaskStatus
   description: string
+  title?: string
   delegation: DelegationMeta | null
   category?: string
   constraints: string[]

@@ -299,7 +299,7 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
             session_id: sessionID,
             parent_session_id: null,
             root_session_id: continuity?.metadata.delegation?.rootID ?? null,
-            title: "unknown",
+            title: continuity?.metadata?.title ?? continuity?.metadata?.delegation?.agent ?? sessionID,
             description: continuity?.metadata.description ?? "",
             purpose_category: intake.purpose.purpose,
             agent_type: continuity?.metadata.delegation?.agent ?? null,
