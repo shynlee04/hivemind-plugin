@@ -140,7 +140,17 @@ export function constructDependencies(
   const agentTransform = new AgentTransform()
 
   // Create capture handlers
-  const lastMessageCapture = new LastMessageCapture()
+  const lastMessageCapture = new LastMessageCapture({
+    onLastMessageUpdate: (sessionID: string, text: string) => {
+      // Continuous frontmatter update as assistant text streams in.
+      // This preserves the latest text even if the session crashes or
+      // the user disconnects before session.idle fires.
+      sessionWriter.updateFrontmatter(
+        sessionID,
+        { lastMessage: text },
+      ).catch(() => {})
+    },
+  })
   const eventCapture = new EventCapture({
     client,
     sessionWriter,

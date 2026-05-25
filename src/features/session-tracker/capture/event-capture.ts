@@ -52,6 +52,12 @@ export class EventCapture {
   private lastMessageCapture: LastMessageCapture | undefined
 
   /**
+   * Per-session assistant turn counters for body writing.
+   * Incremented each time an assistant turn is appended to the body.
+   */
+  private assistantTurnCounters: Map<string, number> = new Map()
+
+  /**
    * @param deps - Injected dependencies.
    * @param deps.client - The OpenCode SDK client for session queries.
    * @param deps.sessionWriter - The session writer for persistence.
@@ -354,6 +360,13 @@ export class EventCapture {
         } catch {
           // SDK call failed — proceed without lastMessage
         }
+      }
+
+      // Write assistant text to body (continuous preservation, not just frontmatter)
+      if (lastMessage && lastMessage.trim().length > 0) {
+        const currentTurn = (this.assistantTurnCounters.get(sessionID) ?? 0) + 1
+        this.assistantTurnCounters.set(sessionID, currentTurn)
+        await this.sessionWriter.appendAssistantTurn(sessionID, currentTurn, lastMessage).catch(() => {})
       }
 
       const updates: Record<string, unknown> = { status: "completed" }

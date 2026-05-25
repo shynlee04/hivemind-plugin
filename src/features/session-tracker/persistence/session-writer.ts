@@ -125,6 +125,27 @@ export class SessionWriter {
   }
 
   /**
+   * Appends an assistant response section to the session `.md` file.
+   *
+   * Writes the full (unpruned) assistant text so every turn is preserved
+   * in the body, not just the lastMessage in frontmatter.
+   *
+   * @param sessionID - The session identifier.
+   * @param turnNumber - The one-based assistant turn number.
+   * @param content - The assistant's full response text (no pruning).
+   * @returns Promise that resolves when the turn is appended.
+   */
+  async appendAssistantTurn(
+    sessionID: string,
+    turnNumber: number,
+    content: string,
+  ): Promise<void> {
+    const filePath = this.getSessionFilePath(sessionID)
+    const section = `## ASSISTANT (turn ${turnNumber})\n\n${content}\n`
+    await atomicAppendMarkdown(filePath, section)
+  }
+
+  /**
    * Appends a `main_l0_agent` section to the session `.md` file.
    *
    * @param sessionID - The session identifier.
