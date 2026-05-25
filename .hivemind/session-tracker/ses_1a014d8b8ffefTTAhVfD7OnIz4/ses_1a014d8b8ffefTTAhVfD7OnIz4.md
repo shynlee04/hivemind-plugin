@@ -553,3 +553,20 @@ task_id: ses_1a00ca218ffeb7ZPbO9sesuKQc
 task_id: ses_1a00c7b00ffe5YnZqoFUoZCZQk
 ```
 
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Codebase mapper broad scan",
+  "subagent_type": "gsd-codebase-mapper",
+  "task_id": "ses_1a00a3196ffeFmkFNSuD2F7GUp"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1a00a3196ffeFmkFNSuD2F7GUp
+```
+
