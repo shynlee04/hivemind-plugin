@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-25T14:34:29.882Z"
+last_updated: "2026-05-25T20:00:00.000Z"
 progress:
-  total_phases: 42
-  completed_phases: 13
-  total_plans: 58
-  completed_plans: 54
-  percent: 93
+  total_phases: 51
+  completed_phases: 14
+  total_plans: 62
+  completed_plans: 58
+  percent: 94
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,16 +17,15 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-25
-**Last advance:** Roadmap expanded — 8 additional phases inserted (P24.3-P24.9, P24.3.1) completing the P24.x series (Cluster C Commands/Workflows, Cluster E Primitives Distribution, Cluster F Bootstrap Init). P24.3-P24.6 inserted after P24.2; P24.7-P24.9 inserted after P26.2; P24.3.1 (Governance Session Prototype) inserted after P24.3. Dependency chains updated for P24.4 (now depends on P24.3.1), P25, P26, P27. Total phases: 33→41.
-**Current focus:** Phase 23 (remaining notification bugs) + Phase 23.1 (session-tracker investigation — Plan 01 done)
-**Next recommended run:** Continue debug session `ses_1aa92e240ffeEpaWmxUFFxFh67` for U2/U3/double-wrapped fixes. Route Phase 23.1 via gsd-research-chain for session-tracker investigation.
+**Last advance:** Phase 23.2 COMPLETE — all 5 session-tracker bugs fixed (assistant text extraction, compaction summary, tool attribution race, hierarchy manifest, actor metadata). 8 gap phases (P23.3-P23.10) inserted after P23.2 — including notification delivery L1 UAT verification, 5 cross-cluster integration gates, Schema+Config parallel track integration, and pre-structural-cleanup readiness gate. Total phases: 41→51. Cluster restructuring completed with dependency-ordered A-L clusters: D → A + C → B → E/F → G → H → I → J (parallel) → K → L.
+**Current focus:** Gap Phase P23.3 — Notification Delivery Completion & L1 UAT Verification (GAP-01)
+**Next recommended run:** Execute P23.3 to verify all 5 session-tracker bug fixes with live UAT evidence before proceeding to P24 (Coordination Dispatch).
 
 ---
 
 ## Current Status
 
-**Active phase:** Phase 23 — Notification Architecture Fix + Holistic Tool Surface Documentation (Group 1, HIGHEST PRIORITY).
-**Sub-phase:** Phase 23.1 — Session-Tracker SDK Dispatch Investigation — investigate root cause session-tracker miss child sessions (U4/U5 failed 4 UAT rounds).
+**Active phase:** Gap P23.3 — Notification Delivery L1 UAT Verification (GAP-01, Depends: P23.2 COMPLETE).
 **Phase 18:** ✅ COMPLETE — 4/4 plans.
 **Phase 19:** ✅ COMPLETE — Non-destructive remediation.
 **Phase 20:** ✅ COMPLETE — Dependency cleanup (11 deps removed, yaml consolidated, react→optional).
@@ -36,7 +35,17 @@ progress:
 **Phase 21.2:** 🟡 PROTOTYPE — front-agent switching; L3 unit/typecheck pass, L1 live UAT pending.
 **Phase 22:** ✅ COMPLETE — Coordination Status + Error Unification. 9/9 REQs, 3/3 gates PASS. 176/176 tests.
 **Phase 23:** 🟡 ACTIVE — Notification Architecture Fix + Holistic Tool Surface Documentation + GSD Research Synthesis + Debt Registry. Fix CRITICAL synthetic:true notification bug, audit/rewrite ALL hm-* coordination skills + hivemind-power-on, create tool-surface differentiation + injection delivery patterns skills. SYNTHESIS: 6 GSD deep-dive documents, 25 debts/gaps registered and DEFERRED to owning phases (24-38). Phase 23 does NOT fix these debts — documentation only.
-**Phase 24:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (Group 1, Depends: P23).
+**Phase 23.1:** ✅ COMPLETE — Session-Tracker SDK Dispatch Investigation — confirmed root cause: code written exclusively for task tool, never adapted for delegate-task.
+**Phase 23.2:** ✅ COMPLETE — Session-Tracker Bugfix — all 5 bugs fixed (assistant text, compaction, tool attribution, hierarchy manifest, actor metadata). 4/4 plans complete.
+**P23.3 (GAP-01):** 📋 PENDING — Notification Delivery L1 UAT Verification — verify all 5 bug fixes with live UAT. Depends: P23.2. Blocks: P24.
+**P23.4 (GAP-02):** 📋 PENDING — Cross-Cluster Gate D→A — verify Coordination + Agent Hierarchy + Agent Quality integration. Depends: P24, P24.1, P24.2. Blocks: P24.3.
+**P23.5 (GAP-03):** 📋 PENDING — Cross-Cluster Gate A→C — verify Agent Quality + Commands Infrastructure integration. Depends: P23.4, P24.3-P24.6. Blocks: P25.
+**P23.6 (GAP-04):** 📋 PENDING — Post-P25→P26→B Integration Gate — verify Trajectory/Pressure + Artifact naming consistency. Depends: P25, P26, P26.1, P26.2. Blocks: P24.7-P24.9.
+**P23.7 (GAP-05):** 📋 PENDING — Post-E/F/G Integration Gate — verify Primitives + Bootstrap + Routing integration. Depends: P24.7, P24.8, P24.9, P27. Blocks: P28.
+**P23.8 (GAP-06):** 📋 PENDING — Post-G/H/I Integration Gate — verify Routing + Hooks + Auto-looping integration. Depends: P27, P28, P29. Blocks: P30/P31 parallel track, P33.
+**P23.9 (GAP-07):** 📋 PENDING — Schema+Config Parallel Track Integration — verify P30+P31 produce consistent schemas/configs. Depends: P30, P31. Blocks: P33-P35.
+**P23.10 (GAP-08):** 📋 PENDING — Pre-Structural-Cleanup Readiness Gate — final design freeze before Group 4. Depends: P23.7, P23.8, P23.9. Blocks: P33.
+**Phase 24:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (Cluster D, Depends: P23.3).
 **Phase 24.1:** 📋 PENDING — Agent Hierarchy Restructure (Cluster A — Agent Quality, Depends: P24).
 **Phase 24.2:** 📋 PENDING — Agent Profile Quality Enforcement (Cluster A — Agent Quality, Depends: P24.1).
 **Phase 24.3:** 📋 PENDING — Commands Infrastructure (Cluster C — Commands & Workflows, INSERTED, Depends: P24.2).
@@ -104,7 +113,7 @@ Core workstreams delivered: SR restructuring (SR-0 through SR-10) — `src/lib/`
 
 See: .planning/PROJECT.md (updated 2026-05-07)  
 **Core value:** Agents build on each other's work across sessions  
-**Current focus:** Phase 21 — Session-Tracker Design Fix (Group 1, HIGHEST PRIORITY)
+**Current focus:** P23.3 (GAP-01) — Notification Delivery L1 UAT Verification
 
 **Docs-only foundation delivered:** Option 3 — Sector Governance Foundation completed. 9 sector AGENTS.md files, gate-cleared for docs scope. O3-01 through O3-04 all delivered. Runtime readiness remains blocked (by design).
 
@@ -134,6 +143,8 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | Agent migration verification | ✅ | MCM-01: 56 shipped agents (45 hm-* + 11 hf-*) classified and discoverable |
 | Skill migration verification | ✅ | MCM-02: 48 shipped skills (35 hm-* + 13 hf-*) classified and discoverable |
 | Session Tracker Root Cause Rewrite | ✅ | CP-ST-06: 6 root causes fixed, 418/418 tests pass, retry queue, runtime preservation, parent task result capture |
+| Session-Tracker Bugfix — Unified task/delegate-task | ✅ | P23.2: all 5 bugs fixed (assistant text, compaction, tool attribution, hierarchy manifest, actor metadata). 4/4 plans complete |
+| 8 Gap Phases for Cross-Cluster Integration | 📋 INSERTED | P23.3-P23.10: integration gates between cluster transitions — D→A, A→C, P25→P26→B, E/F/G, G/H/I, Schema+Config, pre-cleanup readiness |
 
 ---
 
@@ -221,6 +232,16 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-P24.3.1-PROTOTYPE | Phase 24.3.1 (Governance Session Prototype) inserted after P24.3 — prototype custom tool `create-governance-session` using OpenCode SDK `session.create()`, `tui.showToast()`, `tui.appendPrompt()` to validate technical feasibility before Commands Infrastructure investment. Validates: session auto-naming with parentID, TUI injection display, git commit before handoff. Evidence required: L2-L3 (working SDK calls). Blocks P24.3, P24.4, P24.5, P24.6. | NEW — 2026-05-25 |
 | D-24.3.1-01 | Plan 01 complete: governance engine directory + createGovernanceSessionTool factory with Zod schema, SDK session creation, prompt injection, TUI toast, best-effort git commit. 3 atomic commits, typecheck clean. | COMPLETE — 2026-05-25 |
 | D-24.3.1-02 | Plan 02 complete: tool registered in plugin.ts + 14 unit tests covering REQ-02 through REQ-07. 2 atomic commits, typecheck clean, no regressions. | COMPLETE — 2026-05-25 |
+| D-P23.2-COMPLETE | Phase 23.2 COMPLETE — all 5 session-tracker bugs fixed (BUG#1: extractTextContent multi-field, BUG#2: compaction summary fallback, BUG#3: tool attribution race, BUG#4: manifestWriter.addChild, BUG#5: subagentType dual-key). 4/4 plans, 0 regressions. | COMPLETE — 2026-05-25 |
+| D-GAP-01-INSERT | GAP-01 (P23.3): Notification Delivery L1 UAT Verification — inserted after P23.2 to provide L1 runtime proof before P24 Coordination Dispatch depends on notification delivery. Blocks P24. | NEW — 2026-05-25 |
+| D-GAP-02-INSERT | GAP-02 (P23.4): D→A Cross-Cluster Integration Gate — inserted after P24/P24.1/P24.2 to verify Coordination + Agent integration before C cluster (Commands) depends on A cluster. Blocks P24.3. | NEW — 2026-05-25 |
+| D-GAP-03-INSERT | GAP-03 (P23.5): A→C Cross-Cluster Integration Gate — inserted after P24.3-P24.6 to verify Agent + Commands integration before P25 trajectory work. Blocks P25. | NEW — 2026-05-25 |
+| D-GAP-04-INSERT | GAP-04 (P23.6): P25→P26→B Integration Gate — inserted after P25/P26/P26.1/P26.2 to verify Trajectory/Pressure/Artifact consistency before E/F clusters consume. Blocks P24.7-P24.9. | NEW — 2026-05-25 |
+| D-GAP-05-INSERT | GAP-05 (P23.7): E/F/G Integration Gate — inserted after P24.7-P24.9/P27 to verify Primitives/Bootstrap/Routing pipeline before Hooks cluster. Blocks P28. | NEW — 2026-05-25 |
+| D-GAP-06-INSERT | GAP-06 (P23.8): G/H/I Integration Gate — inserted after P27/P28/P29 to verify Routing/Hooks/Auto-loop runtime pipeline before Cleanup clusters. Blocks P33. | NEW — 2026-05-25 |
+| D-GAP-07-INSERT | GAP-07 (P23.9): Schema+Config Parallel Track Integration — inserted after P30/P31 to verify schemas match config consumers before structural cleanup. Blocks P33-P35. | NEW — 2026-05-25 |
+| D-GAP-08-INSERT | GAP-08 (P23.10): Pre-Structural-Cleanup Readiness Gate — final design freeze gate before Group 4. All Groups 1-3 must be PASS quality gates. Blocks P33. | NEW — 2026-05-25 |
+| D-CLUSTER-ORDERING | Critical cluster dependency ordering locked: D → A + C → P25 → P26 → B → E/F → G → H → I → J (parallel) → K → L. J (Schema/Config) can run parallel to Groups 1-2. MVP minimum: P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36. | NEW — 2026-05-25 |
 
 ---
 
@@ -301,6 +322,9 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-05-21** — **REORDERED per owner's 3-group framework**: Group 1 (Orchestration Design Fix, P21-P25) → Group 2 (Routing/Coordination, P26-P28) → Group 3 (Schema/Config, P29-P31) → Group 4 (Structural Cleanup, P32-P35) → P36-P37 independent. Based on 16 research artifacts (6,621 LOC), 6 deep-analysis reports, phase-reordering analysis (4 critical violations). Session-tracker FIRST with production evidence.
 - Phase 21.1 inserted after Phase 21: Execute-Slash-Command SDK Redesign — agent switching, native SDK execution, primitive awareness, subtask wiring (URGENT)
 
+- **2026-05-25** — Phase 23.2 COMPLETE: all 5 session-tracker bugs fixed across 4 plans. BUG#1: extractTextContent multi-field support. BUG#2: compaction summary fallback via message history. BUG#3: tool attribution race fix. BUG#4: manifestWriter.addChild() in both tool-delegation.ts and event-capture.ts. BUG#5: subagentType dual-key extraction.
+- **2026-05-25** — 8 gap phases (P23.3-P23.10) INSERTED after P23.2. Critical cluster dependency ordering locked: D → A + C → P25 → P26 → B → E/F → G → H → I → J (parallel) → K → L. MVP minimum: P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36. Cross-cluster integration gates verify compatibility before downstream consumption.
+
 ### Key Restructuring Decisions
 
 | ID | Decision |
@@ -315,42 +339,73 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ---
 
-## Next Actions
+## Next Actions (Cluster-Ordered Execution)
 
-1. **P00.5** ✅ COMPLETE — Non-destructive foundation sweep.
-2. **Phase 21** ✅ COMPLETE — Session-Tracker Design Fix.
-3. **Phase 22** ✅ COMPLETE — Coordination Status + Error Unification.
-4. **Phase 23** 🟡 ACTIVE — Notification Architecture Fix + Holistic Tool Surface Documentation.
-5. **Phase 23.1** 🟡 ACTIVE — Session-Tracker SDK Dispatch Investigation.
-6. **Phase 23.2** 📋 PENDING — Session-Tracker Bugfix — Unified task/delegate-task (Depends: 23.1).
-7. **Phase 24** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (Depends: P23).
-8. **Phase 24.1** 📋 PENDING — Agent Hierarchy Restructure (Depends: P24).
-9. **Phase 24.2** 📋 PENDING — Agent Profile Quality Enforcement (Depends: P24.1).
-10. **Phase 24.3** 📋 PENDING — Commands Infrastructure (INSERTED, Depends: P24.2).
-11. **Phase 24.3.1** 🟡 PLANNED — Governance Session Prototype (MỚI, Depends: P24, Blocks: P24.3, P24.4, P24.5, P24.6).
-12. **Phase 24.4** 📋 PENDING — References & Templates System (INSERTED, Depends: P24.3, P24.3.1).
-13. **Phase 24.5** 📋 PENDING — Workflow Files Architecture (INSERTED, Depends: P24.4).
-14. **Phase 24.6** 📋 PENDING — Build HM-* Commands (INSERTED, Depends: P24.5).
-15. **Phase 25** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Depends: P23, P24, P24.1-P24.6).
-16. **Phase 26** 📋 PENDING — Pressure + Notification Redesign (Depends: P23-P25).
-17. **Phase 26.1** 📋 PENDING — Artifact Naming & Pathing Convention (Depends: P26).
-18. **Phase 26.2** 📋 PENDING — Artifact Dependency & Gatekeeping (Depends: P26.1).
-19. **Phase 24.7** 📋 PENDING — Primitives Asset Schema (INSERTED, Depends: P26).
-20. **Phase 24.8** 📋 PENDING — Primitives Install-Time Extraction (INSERTED, Depends: P24.7).
-21. **Phase 24.9** 📋 PENDING — Bootstrap Init Flow Expansion (INSERTED, Depends: P24.8).
-22. **Phase 27** 📋 PENDING — Routing + Intent Loop Foundation — scope expanded (Group 2, Depends: P21-P26.2, P24.7-P24.9).
-23. **Phase 28** 📋 PENDING — Hook Injection Plane Redesign — scope expanded (Group 2, Depends: P27).
-24. **Phase 29** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Group 2, Depends: P28).
-25. **Phase 30** 📋 PENDING — Schema Kernel Cleanup (Group 3, can run parallel to Groups 1-2).
-26. **Phase 31** 📋 PENDING — Config Plane Redesign (Group 3, Depends: P30).
-27. **Phase 32** 📋 PENDING — Shipped Primitives + Governance Wire (Group 3, Depends: P31).
-28. **Phase 33** 📋 PENDING — Plugin.ts Decomposition (Group 4, LAST — Depends: P21-P32 design fixes settled).
-29. **Phase 34** 📋 PENDING — Async I/O Conversion + Typed Errors (Group 4, Depends: P33).
-30. **Phase 35** 📋 PENDING — Module Splits + Legacy Inventory (Group 4, Depends: P34).
-31. **Phase 36** 📋 PENDING — Integration Verification (Group 4, Depends: P35).
-32. **Phase 37** 📋 deferred — Fix sync-oss.yml workflow (Depends: P36).
-33. **Phase 38** 📋 deferred — Package .opencode/ primitives (Depends: P37).
-34. **CP-PTY-01** — Background Shell Control-Plane MVP (after restructuring runway).
+### Gap Phases (Integration Gates)
+
+1. **P23.3 (GAP-01)** 📋 PENDING — Notification Delivery L1 UAT Verification — verify all 5 bug fixes with live UAT before P24. Depends: P23.2 COMPLETE.
+2. **P23.4 (GAP-02)** 📋 PENDING — Cross-Cluster Gate D→A — Coordination + Agent integration. Depends: P24, P24.1, P24.2.
+3. **P23.5 (GAP-03)** 📋 PENDING — Cross-Cluster Gate A→C — Agents + Commands integration. Depends: P23.4, P24.3-P24.6.
+4. **P23.6 (GAP-04)** 📋 PENDING — Post-P25→P26→B Integration — Trajectory/Pressure + Artifacts. Depends: P25, P26, P26.1, P26.2.
+5. **P23.7 (GAP-05)** 📋 PENDING — Post-E/F/G Integration — Primitives/Bootstrap/Routing. Depends: P24.7, P24.8, P24.9, P27.
+6. **P23.8 (GAP-06)** 📋 PENDING — Post-G/H/I Integration — Routing/Hooks/Auto-loop. Depends: P27, P28, P29.
+7. **P23.9 (GAP-07)** 📋 PENDING — Schema+Config Parallel Track Integration. Depends: P30, P31.
+8. **P23.10 (GAP-08)** 📋 PENDING — Pre-Structural-Cleanup Readiness Gate. Depends: P23.7, P23.8, P23.9.
+
+### Cluster D — Coordination
+9. **Phase 24** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (Depends: P23.3).
+
+### Cluster A — Agent Quality
+10. **Phase 24.1** 📋 PENDING — Agent Hierarchy Restructure (Depends: P24).
+11. **Phase 24.2** 📋 PENDING — Agent Profile Quality Enforcement (Depends: P24.1).
+
+### Cluster C — Commands & Workflows
+12. **Phase 24.3** 📋 PENDING — Commands Infrastructure (Depends: P23.4, P24.2).
+13. **Phase 24.3.1** 🟡 PLANNED — Governance Session Prototype (Depends: P24, Blocks: P24.3-P24.6).
+14. **Phase 24.4** 📋 PENDING — References & Templates System (Depends: P24.3, P24.3.1).
+15. **Phase 24.5** 📋 PENDING — Workflow Files Architecture (Depends: P24.4).
+16. **Phase 24.6** 📋 PENDING — Build HM-* Commands (Depends: P24.5).
+
+### Trajectory + Pressure
+17. **Phase 25** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Depends: P23.5, P24-P24.6).
+18. **Phase 26** 📋 PENDING — Pressure + Notification Redesign (Depends: P23.5, P25).
+
+### Cluster B — Documents
+19. **Phase 26.1** 📋 PENDING — Artifact Naming & Pathing Convention (Depends: P26).
+20. **Phase 26.2** 📋 PENDING — Artifact Dependency & Gatekeeping (Depends: P26.1).
+
+### Cluster E — Primitives Distribution
+21. **Phase 24.7** 📋 PENDING — Primitives Asset Schema (Depends: P23.6, P26).
+22. **Phase 24.8** 📋 PENDING — Primitives Install-Time Extraction (Depends: P24.7).
+
+### Cluster F — Bootstrap & Init
+23. **Phase 24.9** 📋 PENDING — Bootstrap Init Flow Expansion (Depends: P24.8).
+
+### Cluster G — Routing
+24. **Phase 27** 📋 PENDING — Routing + Intent Loop Foundation (Depends: P23.6, P24.7-P24.9, P21-P26.2).
+
+### Cluster H — Hooks
+25. **Phase 28** 📋 PENDING — Hook Injection Plane Redesign (Depends: P23.7, P27).
+
+### Cluster I — Auto-looping + PTY
+26. **Phase 29** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Depends: P28).
+
+### Cluster J — Schema + Config (Parallel Track)
+27. **Phase 30** 📋 PENDING — Schema Kernel Cleanup (Depends: nothing — leaf module, parallel to Groups 1-2).
+28. **Phase 31** 📋 PENDING — Config Plane Redesign (Depends: P30).
+29. **Phase 32** 📋 PENDING — Shipped Primitives + Governance Wire (Depends: P31).
+
+### Cluster K — Cleanup
+30. **Phase 33** 📋 PENDING — Plugin.ts Decomposition (Depends: P23.8, P23.9, P23.10, P21-P32).
+31. **Phase 34** 📋 PENDING — Async I/O Conversion + Typed Errors (Depends: P33).
+32. **Phase 35** 📋 PENDING — Module Splits + Legacy Inventory (Depends: P34).
+
+### Cluster L — Verification
+33. **Phase 36** 📋 PENDING — Integration Verification (Depends: P35).
+
+### Deferred
+34. **Phase 37** 📋 deferred — Fix sync-oss.yml workflow (Depends: P36).
+35. **Phase 38** 📋 deferred — Package .opencode/ primitives (Depends: P37).
 
 ## Option 3 Foundation Artifacts
 

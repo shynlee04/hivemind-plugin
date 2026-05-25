@@ -204,10 +204,12 @@ export class EventCapture {
       // Retry logic: the SDK might not report parentID on the first call
       // if the child session was JUST created (race with task tool completion).
       let parentID: string | null | undefined
+      let sessionTitle: string | undefined
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
           const session = await getSession(this.client, sessionID)
           parentID = session.parentID as string | null | undefined
+          sessionTitle = (session as Record<string, unknown>).title as string | undefined
           if (parentID) break
           // If parentID is null/undefined on first attempt, wait and retry
           if (attempt === 0) {
@@ -265,13 +267,14 @@ export class EventCapture {
         },
       })
 
-      // Root session — create subdirectory + .md file
+      // Root session — create subdirectory + .md file with title
       await this.sessionWriter.createSessionDir(sessionID)
       await this.sessionWriter.initializeSessionFile(sessionID, {
         sessionID,
         parentSessionID: null,
         delegationDepth: 0,
         status: "active",
+        title: sessionTitle,
       })
 
       // Register the session in the project-level continuity index

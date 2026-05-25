@@ -2,8 +2,50 @@
 # Hivemind — Roadmap
 
 **Created:** 2017-05-07  
-**Status:** Active  
-**Dependency order:** Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway (CP-PTY-00..04) → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience
+**Status:** Active (Gap-Refined Cluster Restructuring)
+**Current phase:** P23.3 (GAP-01) — Notification Delivery L1 UAT Verification
+**Phase 23.2:** ✅ COMPLETE — all 5 session-tracker bugs fixed
+**Total phases:** 51 (26 mainline + 8 gap + 10 workstream + 7 historical)
+**MVP minimum:** P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36
+**Dependency order:** Phase 0 Governance Baseline → Cluster D (Coordination) → A (Agent) + C (Commands) → P25→P26→B (Documents) → E/F (Primitives/Bootstrap) → G (Routing) → H (Hooks) → I (Auto-loop/PTY) → J (Schema/Config, parallel) → K (Cleanup) → L (Verification)
+
+## Phases (Clusters A-L, Dependency Ordered)
+
+- [ ] **P23.3 (GAP-01): Notification Delivery L1 UAT** — Verify all 5 bug fixes with live UAT
+- [ ] **P24 (Cluster D): Coordination Dispatch** — Delegate-Task Fix, DelegationManager decomposition
+- [ ] **P23.4 (GAP-02): D→A Integration Gate** — Verify Coordination + Agent integration
+- [ ] **P24.1 (Cluster A): Agent Hierarchy Restructure** — Remove L1, restructure L2/L3 by domain
+- [ ] **P24.2 (Cluster A): Agent Profile Quality Enforcement** — Rewrite ALL hm-* agents
+- [ ] **P24.3 (Cluster C): Commands Infrastructure** — Namespace routers, workflow separation
+- [ ] **P24.3.1 (Cluster C): Governance Session Prototype** — SDK session creation + TUI injection
+- [ ] **P23.5 (GAP-03): A→C Integration Gate** — Verify Agents + Commands integration
+- [ ] **P24.4 (Cluster C): References & Templates System** — Standardized references/templates
+- [ ] **P24.5 (Cluster C): Workflow Files Architecture** — Size budgets, modes decomposition
+- [ ] **P24.6 (Cluster C): Build HM-* Commands** — hm-init-project, hm-discuss, hm-plan, etc.
+- [ ] **P25: Trajectory Redesign** — Trajectory + Agent-Work-Contract redesign
+- [ ] **P26: Pressure + Notification Redesign** — Pressure scoring, notification delivery redesign
+- [ ] **P26.1 (Cluster B): Artifact Naming Convention** — Standardized naming/pathing
+- [ ] **P26.2 (Cluster B): Artifact Dependency & Gatekeeping** — Cross-reference validation
+- [ ] **P23.6 (GAP-04): P25→P26→B Integration Gate** — Verify Trajectory/Pressure/Artifacts
+- [ ] **P24.7 (Cluster E): Primitives Asset Schema** — Schema per primitive type + code-gen
+- [ ] **P24.8 (Cluster E): Primitives Install-Time Extraction** — Real file extraction (not symlinks)
+- [ ] **P24.9 (Cluster F): Bootstrap Init Flow Expansion** — Full end-to-end init experience
+- [ ] **P27 (Cluster G): Routing + Intent Loop** — Intent classification, two-stage routing
+- [ ] **P23.7 (GAP-05): E/F/G Integration Gate** — Verify Primitives/Bootstrap/Routing
+- [ ] **P28 (Cluster H): Hook Injection Plane Redesign** — CQRS enforcement, typed hooks
+- [ ] **P29 (Cluster I): Auto-looping + PTY Revamp** — Verification patterns, routing pipeline
+- [ ] **P23.8 (GAP-06): G/H/I Integration Gate** — Verify Routing/Hooks/Auto-loop
+- [ ] **P30 (Cluster J): Schema Kernel Cleanup** — Delete dead schemas, add tests (parallel)
+- [ ] **P31 (Cluster J): Config Plane Redesign** — Config subscriber fix, artifact governance
+- [ ] **P32 (Cluster J): Shipped Primitives + Governance Wire** — Lineage routing, permission wiring
+- [ ] **P23.9 (GAP-07): Schema+Config Integration Gate** — Verify schemas match config consumers
+- [ ] **P23.10 (GAP-08): Pre-Cleanup Readiness Gate** — Design freeze before Group 4
+- [ ] **P33 (Cluster K): Plugin.ts Decomposition** — Extract registry, startup, composer
+- [ ] **P34 (Cluster K): Async I/O + Typed Errors** — fs→fs/promises, typed error classes
+- [ ] **P35 (Cluster K): Module Splits + Legacy Inventory** — Split event-capture, types
+- [ ] **P36 (Cluster L): Integration Verification** — Full regression, dist rebuild, smoke tests
+- [ ] **P37: Fix sync-oss.yml** (DEFERRED)
+- [ ] **P38: Package .opencode/ Primitives** (DEFERRED)
 
 ---
 
@@ -549,9 +591,15 @@ Plans:
 
 ---
 
-## Cluster-Based Hard Restructuring (Reordered 2026-05-21)
+## Cluster-Based Hard Restructuring (Reordered 2026-05-25 — Gap-Refined)
 
-18 phases following owner's 3-group framework: **Group 1 (Orchestration Design Fix) → Group 2 (Routing/Coordination) → Group 3 (Schema/Config) → Group 4 (Structural Cleanup LAST)**. Based on 16 research artifacts (6,621 LOC), 6 deep-analysis cluster reports, production session evidence (16,053 LOC), and phase-reordering analysis (4 critical violations).
+26 mainline phases (P21-P38) + 8 gap phases (P23.3-P23.10) following owner's 3-group framework with cluster dependency ordering: **D → A + C → P25 → P26 → B → E/F → G → H → I → J (parallel) → K → L**. Based on 16 research artifacts (6,621 LOC), 6 deep-analysis cluster reports, production session evidence (16,053 LOC), and phase-reordering analysis (4 critical violations). 8 integration gate phases (GAP-01 through GAP-08) added to verify cross-cluster compatibility before downstream consumption.
+
+**Phase 23.2 Status:** ✅ COMPLETE — all 5 session-tracker bugs fixed (assistant text extraction, compaction summary, tool attribution race, hierarchy manifest, actor metadata). See `.planning/phases/P23.2/` for execution evidence.
+
+**Critical Path (dependency-ordered):** D (Coordination) → A (Agent Quality) + C (Commands & Workflows) → P25 (Trajectory) → P26 (Pressure) → B (Documents: naming + gatekeeping) → E/F (Primitives Distribution + Bootstrap) → G (Routing) → H (Hooks) → I (Auto-loop/PTY) → K (Cleanup) → L (Verification). J (Schema/Config) runs parallel to Groups 1-2.
+
+**MVP Minimum (6 phases):** P23.3 (delivery verification) → P24 (coordination) → P24.1+P24.2 (agent quality) → P24.7+P24.8 (primitives) → P30 (schema) → P36 (verification).
 
 ### Prerequisite: P00.5 — Non-Destructive Foundation Sweep
 
@@ -695,21 +743,162 @@ Plan list:
 
 **Why this exists:** Phase 23.1 investigation confirmed 5 bugs sharing a root cause: code written exclusively for `task` tool, never adapted for `delegate-task`. All fixes are surgical (no architecture changes).
 
+**Status:** ✅ COMPLETE — all 5 bugs fixed across 4 plans
+
 **Requirements:** REQ-23.2-01 (assistant text extraction), REQ-23.2-02 (compaction summary), REQ-23.2-03 (tool attribution race), REQ-23.2-04 (hierarchy manifest), REQ-23.2-05 (actor field)
 
-**Plans:** 4 plans
-- [ ] 23.2-01-PLAN.md — BUG#4 + BUG#5: manifestWriter.addChild() in tool-delegation.ts + subagentType dual-key extraction
-- [ ] 23.2-02-PLAN.md — BUG#1: extractTextContent multi-field support in message-capture.ts
-- [ ] 23.2-03-PLAN.md — BUG#3 + BUG#4: Tool attribution race fix + manifestWriter.addChild() in event-capture.ts
-- [ ] 23.2-04-PLAN.md — BUG#2: Compaction summary fallback via message history
+**Plans:** 4/4 plans complete
+- [x] 23.2-01-PLAN.md — BUG#4 + BUG#5: manifestWriter.addChild() in tool-delegation.ts + subagentType dual-key extraction
+- [x] 23.2-02-PLAN.md — BUG#1: extractTextContent multi-field support in message-capture.ts
+- [x] 23.2-03-PLAN.md — BUG#3 + BUG#4: Tool attribution race fix + manifestWriter.addChild() in event-capture.ts
+- [x] 23.2-04-PLAN.md — BUG#2: Compaction summary fallback via message history
 
-**Depends on:** Phase 23.1 (investigation complete)
-**Blocks:** Phase 25 (session-tracker/CP-ST phases)
+**Depends on:** Phase 23.1 (investigation complete) ✅
+**Blocks:** Nothing (now complete)
 
 ---
 
+## Gap Phases (GAP-01 through GAP-08)
+
+These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23 cluster analysis (12 clusters A-L, 16 research artifacts, 6,621 LOC). They address missing delivery verification gates, cross-cluster integration checkpoints, test infrastructure, and documentation gaps.
+
+### P23.3: Notification Delivery Completion & L1 UAT Verification (GAP-01)
+
+**Goal:** Complete live UAT verification for all 5 session-tracker bug fixes from P23.2. Document L1 runtime proof for notification delivery completion. Lock notification architecture as DEFERRED-FINAL state.
+
+**Why this exists:** Phase 23.2 bugs were fixed with L2-L3 unit test evidence, but L1 live UAT remains unproven. Without this phase, notification delivery cannot be safely claimed as complete — risking regression in downstream coordination phases (P24, P25, P26) that depend on reliable notification delivery.
+
+**Depends on:** P23.2 (COMPLETE)
+**Blocks:** P24 (Coordination Dispatch requires verified notification delivery)
+
+**Success Criteria:**
+1. All 5 P23.2 bugs verified with live UAT (L1 evidence in fresh OpenCode session)
+2. Notification delivery logs show correct `synthetic: true` text parts in live session
+3. Session-tracker correctly captures child sessions from both `task` and `delegate-task` dispatch
+4. Notification delivery completion documented with UAT report in `.planning/phases/P23.3/`
+5. Notification architecture state locked as DEFERRED-FINAL with remaining debt items registered
+
+### P23.4: Cross-Cluster Gate D→A—Integration Gate (GAP-02)
+
+**Goal:** Verify that Coordination Dispatch (P24) + Agent Hierarchy Restructure (P24.1) + Agent Profile Quality (P24.2) work together before P25 trajectory work depends on them. Gate: all D→A cluster phases must pass lifecycle → spec → evidence triad.
+
+**Why this exists:** The D→A→C cluster dependency chain (D: Coordination → A: Agent Quality → C: Commands) is the critical path. Without a formal integration gate between D and A, P25 may encounter silent regressions when consuming unverified agent dispatch patterns from P24.
+
+**Depends on:** P24, P24.1, P24.2 (all must be complete)
+**Blocks:** P24.3 (Commands Infrastructure)
+
+**Success Criteria:**
+1. Coordination dispatch (P24) produces correct agent selection for restructured hierarchy (P24.1)
+2. Agent profiles (P24.2) enforce ≤3 skill declarations correctly when dispatched via Coordination
+3. End-to-end test: dispatch subagent → agent with quality profile → verify contract enforcement
+4. Quality gate triad (lifecycle → spec → evidence) passes for D+A cluster
+5. Remaining C-1, C-3, H-2, M-1, L-2/L-3 debt items verified as resolved
+
+### P23.5: Cross-Cluster Gate A→C—Integration Gate (GAP-03)
+
+**Goal:** Verify that Agent Quality improvements integrate correctly with Commands Infrastructure (P24.3-P24.6). Gate: agent-driven commands route correctly through the new namespace routers and workflow separation patterns.
+
+**Why this exists:** Commands Infrastructure (P24.3-P24.6) introduces namespace routers, workflow modes, and frontmatter schemas that agents must use for command dispatch. Without a verified integration gate, agents may dispatch commands using incompatible patterns.
+
+**Depends on:** P23.4 (D→A gate), P24.3, P24.4, P24.5, P24.6
+**Blocks:** P25 (Trajectory + Agent-Work-Contract Redesign)
+
+**Success Criteria:**
+1. Agents from restructured hierarchy can dispatch commands through namespace routers
+2. Workflow separation patterns produce correct command routing decisions
+3. YAML frontmatter schema validates agent-driven command definitions
+4. Backward compatibility with existing command dispatch verified
+5. P25 phase requirements confirmed as compatible with new A+C integration
+
+### P23.6: Post-P25→P26→B Integration Gate (GAP-04)
+
+**Goal:** Verify that Trajectory/Pressure redesign (P25-P26) integrates with Artifact Naming & Gatekeeping conventions (P26.1-P26.2). Ensure trajectory state transitions, pressure scoring, and artifact documentation are consistent before advancing to Primitives Distribution (E) and Bootstrap (F) clusters.
+
+**Why this exists:** P25 (Trajectory) and P26 (Pressure) depend on reliable notification delivery and coordination. Artifact naming (P26.1) and gatekeeping (P26.2) provide the documentation framework these phases need to produce consistent governance artifacts.
+
+**Depends on:** P25, P26, P26.1, P26.2
+**Blocks:** P24.7 (Primitives Asset Schema), P24.8 (Primitives Install-Time Extraction), P24.9 (Bootstrap Init Flow Expansion)
+
+**Success Criteria:**
+1. Trajectory state transitions (P25) produce artifacts matching P26.1 naming conventions
+2. Pressure redesign (P26) produces correct scoring output when consuming P25 trajectory data
+3. Artifact gatekeeping (P26.2) validates P25/P26 output artifacts
+4. Cross-artifact dependency chain is traceable from P25 through P26.2
+5. P24.7-P24.9 phase requirements confirmed as compatible with B cluster output
+
+### P23.7: Post-E/F/G Integration Gate (GAP-05)
+
+**Goal:** Verify that Primitives Distribution (P24.7-P24.8) + Bootstrap Init Flow (P24.9) + Routing/Intent Loop (P27) integrate correctly. Gate: shipped primitives are discoverable via routing, bootstrap init configures routing correctly, and intent classification uses correct primitive metadata.
+
+**Why this exists:** E/F/G clusters form the runtime delivery pipeline: primitives are extracted (E), bootstrap configures them (F), and routing dispatches them (G). Without an integration gate, a failure in any link breaks the entire delivery chain.
+
+**Depends on:** P24.7, P24.8, P24.9, P27
+**Blocks:** P28 (Hook Injection Plane Redesign)
+
+**Success Criteria:**
+1. Primitives extracted in P24.8 are discoverable by P27 routing
+2. Bootstrap init (P24.9) correctly configures routing governance plane
+3. Intent classification reads primitive metadata from extracted files
+4. End-to-end test: init project → extract primitives → route intent → correct agent dispatched
+5. P28 phase requirements confirmed as compatible with E/F/G integration
+
+### P23.8: Post-G/H/I Integration Gate (GAP-06)
+
+**Goal:** Verify that Routing (P27) + Hooks (P28) + Auto-looping/PTY (P29) integrate correctly. Gate: the full runtime pipeline (routing → hooks → auto-looping) executes without regression.
+
+**Why this exists:** G/H/I clusters form the runtime execution pipeline. Routing (G) classifies intent, Hooks (H) intercept and transform, Auto-looping (I) manages iteration. Without an integration gate, dispatches may silently fail or produce incorrect results when routed through the full pipeline.
+
+**Depends on:** P27, P28, P29
+**Blocks:** P30 (Schema Kernel Cleanup - parallel track), P31 (Config Plane Redesign - parallel track), P33 (Plugin.ts Decomposition)
+
+**Success Criteria:**
+1. Intent classification → routing → hook injection → auto-looping path executes end-to-end
+2. Hook injection plane (P28) correctly enforces CQRS boundaries during auto-looping dispatch
+3. Auto-looping (P29) correctly terminates when hook-injected completion criteria met
+4. No regression in session-tracker, delegation, notification, or coordination modules
+5. P30/P31 parallel track confirmed as compatible with G/H/I runtime pipeline
+
+### P23.9: Schema+Config Parallel Track Integration (GAP-07)
+
+**Goal:** Verify that Schema Kernel Cleanup (P30) + Config Plane Redesign (P31) produce consistent schema definitions and runtime consumers. Gate: all Zod schemas have corresponding config fields, all config fields have schema validation.
+
+**Why this exists:** P30 and P31 run in parallel to Groups 1-2 (design/shape phases). They must converge before Group 4 (structural cleanup) to ensure schemas match config consumers. Without this gate, P33-P35 cleanup phases may produce incorrect code — or code that doesn't match the schema definitions.
+
+**Depends on:** P30, P31
+**Blocks:** P33 (Plugin.ts Decomposition), P34 (Async I/O), P35 (Module Splits)
+
+**Success Criteria:**
+1. Every Zod schema in P30 has a corresponding P31 config consumer (or explicit deferral)
+2. Every P31 config field validates against its P30 schema definition
+3. Schema-compiler.ts (410 LOC) split into manageable modules
+4. Config subscriber singleton dependency resolved (testable config consumers)
+5. Cross-track validation: no P30 schema conflicts with P31 configuration model
+
+### P23.10: Pre-Structural-Cleanup Readiness Gate (GAP-08)
+
+**Goal:** Final gate before Group 4 structural cleanup phases (P33-P35). Verify that all design/shape phases (Groups 1-3) have settled and no more foundational changes are expected. Complete regression lock and documentation sync.
+
+**Why this exists:** Group 4 (Structural Cleanup — plugin decomposition, async I/O conversion, module splits) is the LAST group and must not be entered while design changes are still in flux. This gate verifies design freeze before restructuring begins.
+
+**Depends on:** P23.7 (E/F/G gate), P23.8 (G/H/I gate), P23.9 (Schema+Config gate)
+**Blocks:** P33 (Plugin.ts Decomposition)
+
+**Success Criteria:**
+1. All Groups 1-3 phases complete with PASS quality gates
+2. No pending design changes for plugin.ts, delegation, session-tracker, notifications
+3. Full regression test suite runs at baseline (current pass count documented)
+4. ARCHITECTURE.md, STRUCTURE.md, CONCERNS.md synced with current phase ordering
+5. AGENTS.md updated to reflect new cluster-based phase structure
+6. Design freeze confirmed: Group 4 authorizations gated until this PASS
+
+---
+
+## Cluster-Based Phase Execution (Post-Gap Ordering)
+
+### Phase 24: Coordination Dispatch + Delegate-Task Fix (Cluster D — Coordination)
+
 **Goal:** Fix CP-DT-01 runtime block. Decompose DelegationManager god-object (~580 LOC). Consolidate dual in-memory stores. Fix coordinatorRef forward reference.
-**Depends on:** Phase 23
+**Depends on:** P23.3 (GAP-01 — notification delivery verified)
 **Debts inherited from Phase 23:** C-1 (delegate-task proxy war), M-1 (L0 max skills), M-8 (start-work routing) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 ### Phase 24.1: Agent Hierarchy Restructure (Cluster A — Agent Quality, INSERTED)
@@ -1026,18 +1215,21 @@ Plan list:
 
 ---
 
-## Managed Autonomous Loop — Cycle 3: Cluster-Based Restructuring
+## Managed Autonomous Loop — Cycle 3: Cluster-Based Restructuring (Post-Gap Refinement)
 
-**Current authorized cycle: Cycle 3 — Cluster-Based Restructuring** (Phases 21-38)
+**Current authorized cycle: Cycle 3 — Cluster-Based Restructuring** (Phases 21-38 + GAPs P23.3-P23.10)
 - Entry gate: Phase 20 COMPLETE (2026-05-21)
-- 18 phases across 4 groups: Group 1 (design fix FIRST) → Group 2 → Group 3 → Group 4 (structural cleanup LAST)
+- Cluster ordering (critical path): D (Coordination) → A (Agent Quality) + C (Commands & Workflows) → P25 (Trajectory) → P26 (Pressure) → B (Documents) → E (Primitives) + F (Bootstrap) → G (Routing) → H (Hooks) → I (Auto-loop/PTY) → J (Schema/Config, parallel) → K (Cleanup) → L (Verification)
+- 8 integration gate phases (P23.3-P23.10) added to verify cross-cluster compatibility before downstream consumption
+- 51 total phases (33 original + 8 gaps + 10 historical CA/O3/BOOT/MCM/SR/CP-* workstream phases)
+- MVP minimum (6 phases): P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36
 - Non-destructive foundation sweep (P00.5) precedes Group 1
 
 **Previous cycles:**
 - **Cycle 1 — Lifecycle Alignment:** ✅ COMPLETE (O3 docs + sector AGENTS.md + config cleanup)
 - **Cycle 2 — Bootstrap Recovery:** ✅ COMPLETE (BOOT-02 through BOOT-07, Phase 15-20 delivered)
 
-**Completed phases summary (11-20):**
+**Completed phases summary (11-23.2):**
 - Phase 11: Governance reconciliation
 - Phase 12: CP-ST-01 remediation
 - Phase 13: Session-tracker defects (6/6 plans)
@@ -1048,3 +1240,19 @@ Plan list:
 - Phase 18: Root cleanup (4 submodules deleted)
 - Phase 19: Non-destructive (-854 LOC net)
 - Phase 20: Dependency cleanup (11 deps removed)
+- Phase 21: Session-Tracker Design Fix (6/6 plans, 15/15 REQs)
+- Phase 21.1: Execute-Slash-Command SDK redesign
+- Phase 22: Coordination Status + Error Unification (9/9 REQs, 3/3 gates PASS)
+- Phase 23: Notification Architecture Fix + Tool Surface Documentation (Wave 1-4)
+- Phase 23.1: Session-Tracker SDK Dispatch Investigation
+- **Phase 23.2: Session-Tracker Bugfix — Unified task/delegate-task (4/4 plans)** ✅
+
+**Gap phases inserted (P23.3-P23.10):**
+- P23.3: Notification Delivery L1 UAT Verification (GAP-01)
+- P23.4: D→A Cross-Cluster Integration Gate (GAP-02)
+- P23.5: A→C Cross-Cluster Integration Gate (GAP-03)
+- P23.6: P25→P26→B Integration Gate (GAP-04)
+- P23.7: E/F/G Integration Gate (GAP-05)
+- P23.8: G/H/I Integration Gate (GAP-06)
+- P23.9: Schema+Config Parallel Track Integration (GAP-07)
+- P23.10: Pre-Structural-Cleanup Readiness Gate (GAP-08)

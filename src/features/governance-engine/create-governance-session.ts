@@ -15,6 +15,7 @@ import { execSync } from "node:child_process"
 
 import {
   createSession,
+  getSession,
   sendPrompt,
   showTuiToast,
   getSessionID,
@@ -140,7 +141,21 @@ export function createGovernanceSessionTool(
         )
       }
 
-      // --- Step 6: Dispatch agent via coordinator or fall back to sendPrompt ---
+      // --- Step 6: Inherit model from current session ---
+      let inheritedModel: { providerID: string; modelID: string } | undefined
+      try {
+        const currentSession = await getSession(client, context.sessionID)
+        const raw = currentSession as Record<string, unknown>
+        const providerID = raw.providerID ?? (raw as Record<string, unknown>).providerId ?? (raw as Record<string, unknown>).provider
+        const modelID = raw.modelID ?? (raw as Record<string, unknown>).modelId ?? raw.model
+        if (typeof providerID === "string" && typeof modelID === "string") {
+          inheritedModel = { providerID, modelID }
+        }
+      } catch {
+        // Non-fatal — coordinator will resolve model from agent config
+      }
+
+      // --- Step 7: Dispatch agent via coordinator or fall back to sendPrompt ---
       if (coordinator) {
         try {
           await coordinator.dispatch({
@@ -151,6 +166,7 @@ export function createGovernanceSessionTool(
             queueKey: `agent:${resolvedAgent}`,
             surface: "governance-dispatch",
             workingDirectory: context.directory ?? context.worktree ?? process.cwd(),
+            ...(inheritedModel ? { model: inheritedModel } : {}),
           })
         } catch (caughtError: unknown) {
           const msg = caughtError instanceof Error ? caughtError.message : String(caughtError)
@@ -178,7 +194,7 @@ export function createGovernanceSessionTool(
         }
       }
 
-      // --- Step 7: TUI notification ---
+      // --- Step 8: TUI notification ---
       try {
         await showTuiToast(
           client,
@@ -189,7 +205,7 @@ export function createGovernanceSessionTool(
         // Best-effort: toast failure must never fail the tool call
       }
 
-      // --- Step 8: Return result ---
+      // --- Step 9: Return result ---
       return renderToolResult(
         success(`[Harness] Governance session created: ${sessionTitle}`, {
           sessionID,
