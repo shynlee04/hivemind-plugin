@@ -36,7 +36,7 @@ describe("PendingDispatchRegistry — Bug D-1: refreshTimestamp", () => {
 
     const found = registry.getByParent("parent-1")
     expect(found).toBeDefined()
-    expect(found!.subagentType).toBe("hm-executor")
+    expect(found![0].subagentType).toBe("hm-executor")
   })
 
   it("refreshTimestamp keeps the entry alive instead of removing it", () => {
@@ -48,7 +48,7 @@ describe("PendingDispatchRegistry — Bug D-1: refreshTimestamp", () => {
       timestamp: Date.now() - 1000,
     })
 
-    const beforeTimestamp = registry.getByParent("parent-1")!.timestamp
+    const beforeTimestamp = registry.getByParent("parent-1")![0].timestamp
 
     // Simulate PostToolUse: refresh instead of remove
     registry.refreshTimestamp("call-1")
@@ -56,7 +56,7 @@ describe("PendingDispatchRegistry — Bug D-1: refreshTimestamp", () => {
     // Entry should still be present
     const afterEntry = registry.getByParent("parent-1")
     expect(afterEntry).toBeDefined()
-    expect(afterEntry!.timestamp).toBeGreaterThanOrEqual(beforeTimestamp)
+    expect(afterEntry![0].timestamp).toBeGreaterThanOrEqual(beforeTimestamp)
   })
 
   it("refreshTimestamp returns silently for unknown callID", () => {
@@ -106,7 +106,7 @@ describe("PendingDispatchEntry — Bug D-2: model field", () => {
 
     const found = registry.getByParent("parent-1")
     expect(found).toBeDefined()
-    expect(found!.model).toBe("claude-sonnet-4-20250514")
+    expect(found![0].model).toBe("claude-sonnet-4-20250514")
   })
 
   it("model should be undefined when not provided", () => {
@@ -121,7 +121,7 @@ describe("PendingDispatchEntry — Bug D-2: model field", () => {
 
     const found = registry.getByParent("parent-1")
     expect(found).toBeDefined()
-    expect(found!.model).toBeUndefined()
+    expect(found![0].model).toBeUndefined()
   })
 })
 

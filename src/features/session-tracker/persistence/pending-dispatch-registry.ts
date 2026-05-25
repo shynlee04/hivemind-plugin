@@ -65,7 +65,11 @@ export class PendingDispatchRegistry {
   private readonly dispatches = new Map<string, PendingDispatchEntry>()
   private readonly byParent = new Map<string, Set<string>>()
   private readonly callIDToChild = new Map<string, string>()
-
+  clear(): void {
+    this.dispatches.clear()
+    this.byParent.clear()
+    this.callIDToChild.clear()
+  }
   // -----------------------------------------------------------------------
   // Core operations
   // -----------------------------------------------------------------------
