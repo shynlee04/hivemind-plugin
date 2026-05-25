@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
-  "lastUpdated": "2026-05-25T16:34:09.109Z",
+  "lastUpdated": "2026-05-25T17:19:59.378Z",
   "hierarchy": {
     "root": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
     "children": {
@@ -39,14 +39,49 @@
         "status": "active",
         "delegatedBy": "gsd-roadmapper",
         "children": {}
+      },
+      "ses_19ff86ea4fferoY91Rk52w4aMo": {
+        "file": "ses_19ff86ea4fferoY91Rk52w4aMo.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-roadmapper",
+        "children": {}
+      },
+      "ses_19fe5aeceffewi2JT0aMNW53Io": {
+        "file": "ses_19fe5aeceffewi2JT0aMNW53Io.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-assumptions-analyzer",
+        "children": {}
+      },
+      "ses_19fe345c7ffeXyt82JtOJkK6Pm": {
+        "file": "ses_19fe345c7ffeXyt82JtOJkK6Pm.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_19fdf8387ffem78IzZYa3TGuIK": {
+        "file": "ses_19fdf8387ffem78IzZYa3TGuIK.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_19fdaae50ffeCa3uijm5QS2bRc": {
+        "file": "ses_19fdaae50ffeCa3uijm5QS2bRc.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-advisor-researcher",
+        "children": {}
       }
     }
   },
-  "turnCount": 7,
+  "turnCount": 18,
   "toolSummary": {
-    "bash": 5,
+    "bash": 7,
     "invalid": 1,
-    "task": 4,
+    "task": 9,
     "read": 4
   }
 }
