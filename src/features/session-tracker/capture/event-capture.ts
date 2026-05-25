@@ -312,12 +312,39 @@ export class EventCapture {
         return
       }
       // Main session — "completed" is a valid terminal transition from "running"
-      // BUGFIX: Only include lastMessage if it has a value. Writing undefined
-      // via updateFrontmatter's shallow merge would OVERWRITE any lastMessage
-      // previously set by handleSessionNextTextEnded (race condition between
-      // session.next.text.ended and session.idle).
+      // BUGFIX: Fallback to SDK messages when pendingRegistry.lastMessage is empty.
+      // The pendingRegistry.lastMessage is only populated for child sessions (via
+      // delegation tracking), NOT for main sessions. When this field is empty,
+      // read the session messages via SDK to extract the last assistant text.
+      // Note: handleSessionNextTextEnded (session.next.text.ended) is dead code
+      // because the OpenCode SDK does not dispatch this event — see SDK types
+      // (EventSessionIdle, EventSessionStatus, etc.). There is no dedicated event
+      // that delivers completed assistant text; the SDK must be queried directly.
       const lastMessageEntry = this.pendingRegistry?.get(sessionID)
-      const lastMessage = lastMessageEntry?.lastMessage
+      let lastMessage = lastMessageEntry?.lastMessage
+
+      // Fallback: extract lastMessage from SDK messages for main sessions.
+      // This is the same approach used by backfillChildTurnsFromSdk for child
+      // sessions — querying the SDK directly for message history.
+      if (!lastMessage) {
+        try {
+          const messages = await getSessionMessages(this.client, sessionID)
+          if (messages && messages.length > 0) {
+            for (let i = messages.length - 1; i >= 0; i--) {
+              if (this.messageRole(messages[i]) === "assistant") {
+                const text = this.extractTextFromSdkMessage(messages[i])
+                if (text && text.trim().length > 0) {
+                  lastMessage = text.trim()
+                  break
+                }
+              }
+            }
+          }
+        } catch {
+          // SDK call failed — proceed without lastMessage
+        }
+      }
+
       const updates: Record<string, unknown> = { status: "completed" }
       if (lastMessage) {
         updates.lastMessage = lastMessage
@@ -615,18 +642,23 @@ export class EventCapture {
   /**
    * Handles `session.next.text.ended` — captures assistant text as `lastMessage`.
    *
-   * This is the PRIMARY mechanism for capturing `lastMessage` for main sessions.
+   * **NOTE: This method is currently unreachable.**
+   * The OpenCode SDK (`@opencode-ai/sdk`) does NOT dispatch `session.next.text.ended`
+   * — this event type does not exist in the SDK's `Event` union type
+   * (`EventSessionIdle`, `EventSessionStatus`, etc.). The SDK's session events are:
+   * `session.created`, `session.updated`, `session.deleted`, `session.idle`,
+   * `session.error`, `session.status`, `session.compacted`, `session.diff`.
+   *
+   * This method is retained for forward compatibility (if the SDK adds this event
+   * in a future version). The PRIMARY mechanism for capturing `lastMessage` for
+   * main sessions is now the SDK message fallback in `handleSessionIdle`, which
+   * queries `getSessionMessages(this.client, sessionID)` on session idle.
+   *
    * The `chat.message` hook only provides `UserMessage` (role: "user"), so assistant
    * text is never delivered via `handleAssistantMessage()` in message-capture.ts.
-   * The `session.next.text.ended` event fires when the model completes a text
-   * response, providing `properties.text` with the full assistant output.
-   *
-   * For main sessions, updates the .md frontmatter's lastMessage.
-   * Child sessions are skipped — their lastMessage is already captured via
-   * `backfillChildTurnsFromSdk` on completion.
    *
    * @param sessionID - The session that completed a text response.
-   * @param event - Raw event payload from the SDK.
+   * @param event - Raw event payload from the SDK (unused — event is never dispatched).
    */
   private async handleSessionNextTextEnded(
     sessionID: string,

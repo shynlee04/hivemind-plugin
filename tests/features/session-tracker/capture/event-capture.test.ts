@@ -13,10 +13,12 @@ import { SessionIndexWriter } from "../../../../src/features/session-tracker/per
 // Mock the session-api module
 vi.mock("../../../../src/shared/session-api.js", () => ({
   getSession: vi.fn(),
+  getSessionMessages: vi.fn(),
 }))
 
-import { getSession } from "../../../../src/shared/session-api.js"
+import { getSession, getSessionMessages } from "../../../../src/shared/session-api.js"
 const mockGetSession = vi.mocked(getSession)
+const mockGetSessionMessages = vi.mocked(getSessionMessages)
 
 describe("EventCapture", () => {
   let eventCapture: EventCapture
@@ -125,6 +127,57 @@ describe("EventCapture", () => {
 
       expect(mockUpdateFrontmatter).toHaveBeenCalledWith(
         "ses_test12345abcdefg0",
+        { status: "completed" },
+      )
+    })
+
+    it("should backfill lastMessage from SDK messages when pendingRegistry is empty", async () => {
+      mockGetSession.mockResolvedValue({
+        id: "ses_test_fallback_abc123",
+        parentID: null,
+        title: "Test Session",
+        time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+      })
+      mockGetSessionMessages.mockResolvedValue([
+        {
+          info: { role: "user" },
+          parts: [{ type: "text", text: "Hello" }],
+        },
+        {
+          info: { role: "assistant" },
+          parts: [{ type: "text", text: "This is the assistant response" }],
+        },
+      ])
+
+      await eventCapture.handleSessionEvent({
+        eventType: "session.idle",
+        sessionID: "ses_test_fallback_abc123",
+        event: {},
+      })
+
+      expect(mockUpdateFrontmatter).toHaveBeenCalledWith(
+        "ses_test_fallback_abc123",
+        { status: "completed", lastMessage: "This is the assistant response" },
+      )
+    })
+
+    it("should handle SDK message fetch failure gracefully", async () => {
+      mockGetSession.mockResolvedValue({
+        id: "ses_test_fallback_fail_xyz",
+        parentID: null,
+        title: "Test Session",
+        time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+      })
+      mockGetSessionMessages.mockRejectedValue(new Error("SDK error"))
+
+      await eventCapture.handleSessionEvent({
+        eventType: "session.idle",
+        sessionID: "ses_test_fallback_fail_xyz",
+        event: {},
+      })
+
+      expect(mockUpdateFrontmatter).toHaveBeenCalledWith(
+        "ses_test_fallback_fail_xyz",
         { status: "completed" },
       )
     })
