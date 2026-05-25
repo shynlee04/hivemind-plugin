@@ -767,7 +767,7 @@ Plan list:
 **Why this exists:** OpenCode SDK provides `sdk.session.create()`, `sdk.session.prompt()`, `sdk.tui.appendPrompt()`, `sdk.tui.showToast()` — but these APIs have not been tested in Hivemind's context. This prototype verifies: (1) Session auto-naming works with explicit title + parentID, (2) TUI injection displays correctly in OpenCode message stream, (3) Git commit flow before handoff is feasible. Without this validation, P24.3 risks building infrastructure on unverified SDK assumptions.
 
 **Plans:** 3 plans in 3 waves
-- [ ] 24.3.1-01-PLAN.md — Wave 1: Create governance engine directory + tool implementation (Zod schema, SDK session creation, prompt injection, TUI toast, git commit)
+- [x] 24.3.1-01-PLAN.md — Wave 1: Create governance engine directory + tool implementation (Zod schema, SDK session creation, prompt injection, TUI toast, git commit) ✅ `0287eb10`, `6f28296f`, `98ea6b80`
 - [ ] 24.3.1-02-PLAN.md — Wave 2: Register tool in plugin.ts + unit tests with mocked SDK calls
 - [ ] 24.3.1-03-PLAN.md — Wave 3: Full verification — typecheck, test suite, regression check, grep evidence
 
