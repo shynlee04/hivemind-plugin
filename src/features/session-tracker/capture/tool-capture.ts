@@ -22,6 +22,7 @@ import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
 import type { ChildSessionRecord } from "../types.js"
 import { isValidSessionID } from "../types.js"
+import { parseSessionTitle } from "../../../shared/session-naming.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
 
 // ---------------------------------------------------------------------------
@@ -252,11 +253,16 @@ export class ToolCapture {
       await this.sessionIndexWriter.updateToolSummary(input.sessionID, "task")
 
       // Resolve delegator agentName — priority order per D-04:
-      // 1. PendingDispatchRegistry (captured at PreToolUse time, most accurate)
-      // 2. args.subagent_type from tool.execute.after (fallback)
-      // 3. "unknown" (no attribution available)
-      let delegatorAgentName = "unknown"
-      if (this.pendingRegistry) {
+      // 1. Parse from session title (most authoritative — naming service format)
+      // 2. PendingDispatchRegistry (captured at PreToolUse time)
+      // 3. args.subagent_type from tool.execute.after (fallback)
+      // 4. "unknown" (no attribution available)
+      const sessionTitle = (input.args as Record<string, unknown>)?.title as string | undefined
+        ?? (input as unknown as Record<string, unknown>).title as string | undefined
+      const parsedTitle = sessionTitle ? parseSessionTitle(sessionTitle) : null
+
+      let delegatorAgentName = parsedTitle?.agent ?? "unknown"
+      if (delegatorAgentName === "unknown" && this.pendingRegistry) {
         const registryName = this.pendingRegistry.getSubagentType(childSessionID)
         if (registryName) {
           delegatorAgentName = registryName
@@ -283,7 +289,7 @@ export class ToolCapture {
         updated: now,
         status: "active",
         mainAgent: {
-          name: subagentType || "unknown",
+          name: (parsedTitle?.agent ?? subagentType) || "unknown",
           model: "unknown",
         },
         turns: [],
@@ -304,7 +310,7 @@ export class ToolCapture {
         childSessionID,
         {
           turn: 0,
-          actor: subagentType || "unknown",
+          actor: (parsedTitle?.agent ?? subagentType) || "unknown",
           content: description || "Task delegation initiated",
           tools: [],
           role: "user",
@@ -318,7 +324,7 @@ export class ToolCapture {
           childSessionID,
           {
             turn: 0,
-            actor: subagentType || "unknown",
+            actor: (parsedTitle?.agent ?? subagentType) || "unknown",
             content: taskResult,
             tools: [],
             role: "assistant",
@@ -342,7 +348,7 @@ export class ToolCapture {
         childSessionID,
         childFile,
         depth,
-        subagentType || "unknown",
+        (parsedTitle?.agent ?? subagentType) || "unknown",
       )
 
       // Update project-level index

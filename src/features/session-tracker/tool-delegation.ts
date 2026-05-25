@@ -17,6 +17,7 @@ import type { PendingDispatchRegistry } from "./persistence/pending-dispatch-reg
 import type { HierarchyManifestWriter } from "./persistence/hierarchy-manifest.js"
 import type { ChildSessionRecord } from "./types.js"
 import { isValidSessionID } from "./types.js"
+import { parseSessionTitle } from "../../shared/session-naming.js"
 
 /** Dependencies injected by SessionTracker for tool delegation operations. */
 export interface ToolDelegationDeps {
@@ -313,12 +314,13 @@ export class ToolDelegation {
       input.sessionID,
     )
     // REQ-23.2-04: Populate hierarchy-manifest.json (was missing — addChild defined but never called)
+    const resolvedAgentName = deriveAgentNameFromSession(input as unknown as Record<string, unknown>)
     await this.manifestWriter.addChild({
       rootMainSessionID: rootMain,
       childSessionID,
       parentSessionID: input.sessionID,
       delegationDepth: depth,
-      delegatedBy: input.tool,
+      delegatedBy: resolvedAgentName ?? input.tool ?? "unknown",
       subagentType,
       childFile: `${childSessionID}.json`,
     })
@@ -440,6 +442,51 @@ export function extractTaskResult(value: unknown, taskID: string): string | unde
     .replace(new RegExp(`task_id:\\s*${taskID}`, "g"), "")
     .trim()
   return withoutTaskID.length > 0 ? withoutTaskID : undefined
+}
+
+/**
+ * Derives a subagent type string from session metadata with fallback chain.
+ *
+ * Priority:
+ * 1. Parse from session title via naming service (most authoritative)
+ * 2. Explicit subagentType param (if not "unknown")
+ * 3. Agent name (if not "unknown")
+ * 4. "unknown" (last resort)
+ *
+ * @param sessionTitle - Optional session title to parse.
+ * @param explicitSubagentType - Optional explicit subagent type.
+ * @param agent - Optional agent name.
+ * @returns Derived subagent type string.
+ */
+export function deriveSubagentType(
+  sessionTitle?: string,
+  explicitSubagentType?: string,
+  agent?: string,
+): string {
+  if (explicitSubagentType && explicitSubagentType !== "unknown") return explicitSubagentType
+  if (sessionTitle) {
+    const parsed = parseSessionTitle(sessionTitle)
+    if (parsed) return parsed.agent
+  }
+  if (typeof agent === "string" && agent !== "unknown") return agent
+  return "unknown"
+}
+
+/**
+ * Derives an agent name from session metadata by parsing the session title.
+ *
+ * @param input - Record containing title or sessionTitle.
+ * @returns Parsed agent name, or undefined if not parseable.
+ */
+export function deriveAgentNameFromSession(input: Record<string, unknown>): string | undefined {
+  const sessionTitle = typeof input.sessionTitle === "string" ? input.sessionTitle
+    : typeof input.title === "string" ? input.title
+    : undefined
+  if (sessionTitle) {
+    const parsed = parseSessionTitle(sessionTitle)
+    if (parsed) return parsed.agent
+  }
+  return undefined
 }
 
 /**
