@@ -1,3 +1,13 @@
+/**
+ * Governance session tool factory.
+ *
+ * Creates a root session (no parentID) with a naming-service-generated title,
+ * resolves the target agent via config reader, and dispatches governance
+ * context via coordinator.dispatch() or falls back to raw sendPrompt.
+ *
+ * @module governance-engine/create-governance-session
+ */
+
 import { tool } from "@opencode-ai/plugin"
 import type { ToolDefinition } from "@opencode-ai/plugin"
 import { z } from "zod"
@@ -10,17 +20,20 @@ import {
   getSessionID,
   type OpenCodeClient,
 } from "../../shared/session-api.js"
+import { generateSessionTitle } from "../../shared/session-naming.js"
+import { readGovernanceConfig, resolveAgentForBrief } from "./config-reader.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
 
 /**
+ * Coordinator-like interface for agent dispatch.
+ */
+interface CoordinatorLike {
+  dispatch(params: Record<string, unknown>): Promise<unknown>
+}
+
+/**
  * Zod schema for the governance session tool input.
- *
- * Validates the three accepted fields:
- * - `agent` (required): Name of the agent to run the governance session.
- * - `brief` (required): Governance work brief injected as the initial prompt.
- * - `title` (optional): Custom title suffix for the session name.
- *   When omitted, defaults to `"governance"`.
  */
 const GovernanceSessionInput = z.object({
   agent: z.string().min(1, { message: "agent is required" }),
@@ -39,32 +52,16 @@ type ToolContext = {
  * Creates the `create-governance-session` custom tool.
  *
  * Factory pattern that accepts an OpenCode SDK client via closure
- * injection — the client is NOT read from ToolContext. This follows
- * the established convention from `execute-slash-command.ts` and
- * `delegate-task.ts`.
+ * injection and an optional coordinator for agent dispatch.
  *
- * The tool:
- * 1. Validates args via Zod schema (`agent`, `brief`, optional `title`)
- * 2. Commits current workspace state via git (best-effort, never throws)
- * 3. Creates a named child session with `hm-governance:` title prefix
- * 4. Injects governance context via `sendPrompt` on the new session
- * 5. Notifies the user via TUI toast
- * 6. Returns `{ sessionID, title }` on success
- *
- * @param client - The OpenCode SDK client instance (injected from plugin composition root).
+ * @param client - The OpenCode SDK client instance.
+ * @param coordinator - Optional coordinator for agent dispatch.
  * @returns ToolDefinition for the create-governance-session tool.
- *
- * @example
- * ```typescript
- * // In plugin.ts:
- * import { createGovernanceSessionTool } from "./features/governance-engine/index.js"
- * // ...
- * tool: {
- *   "create-governance-session": createGovernanceSessionTool(client),
- * }
- * ```
  */
-export function createGovernanceSessionTool(client: OpenCodeClient): ToolDefinition {
+export function createGovernanceSessionTool(
+  client: OpenCodeClient,
+  coordinator?: CoordinatorLike,
+): ToolDefinition {
   const s = tool.schema
 
   return tool({
@@ -89,11 +86,28 @@ export function createGovernanceSessionTool(client: OpenCodeClient): ToolDefinit
       }
 
       const args = parsed.data
-      const sessionTitle = args.title
-        ? `hm-governance:${args.agent}-${args.title}`
-        : `hm-governance:${args.agent}-governance`
 
-      // --- Step 2: Git commit (best-effort, REQ-06) ---
+      // --- Step 2: Resolve agent from brief via config reader ---
+      let resolvedAgent = args.agent
+      try {
+        const config = await readGovernanceConfig()
+        resolvedAgent = resolveAgentForBrief(args.brief, config)
+      } catch {
+        // Config read failure is non-fatal — use provided agent
+        resolvedAgent = args.agent
+      }
+
+      // --- Step 3: Generate title via naming service ---
+      const sessionTitle = generateSessionTitle({
+        framework: "hm",
+        workflow: "governance",
+        classification: "root",
+        agent: resolvedAgent,
+        purpose: (args.title || args.brief).slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+        depth: 0,
+      })
+
+      // --- Step 4: Git commit (best-effort) ---
       try {
         const cwd = context.directory ?? context.worktree ?? process.cwd()
         execSync(
@@ -101,14 +115,14 @@ export function createGovernanceSessionTool(client: OpenCodeClient): ToolDefinit
           { cwd, env: { ...process.env } },
         )
       } catch {
-        // Best-effort: git failure must never propagate to the caller (T-24.3.1-02)
+        // Best-effort: git failure must never propagate to the caller
       }
 
-      // --- Step 3: Create child session (REQ-03) ---
+      // --- Step 5: Create ROOT session (NO parentID) ---
       let session: Record<string, unknown>
       try {
         session = await createSession(client, {
-          parentID: context.sessionID,
+          // NO parentID — creates a root session visible in session list
           title: sessionTitle,
           directory: context.directory,
         })
@@ -126,22 +140,45 @@ export function createGovernanceSessionTool(client: OpenCodeClient): ToolDefinit
         )
       }
 
-      // --- Step 4: Inject governance brief as prompt (REQ-04) ---
-      try {
-        await sendPrompt(client, sessionID, {
-          parts: [{ type: "text", text: args.brief }],
-        })
-      } catch (caughtError: unknown) {
-        const msg = caughtError instanceof Error ? caughtError.message : String(caughtError)
-        return renderToolResult(
-          error(`[Harness] Governance session created but prompt injection failed: ${msg}`, {
-            sessionID,
-            title: sessionTitle,
-          }),
-        )
+      // --- Step 6: Dispatch agent via coordinator or fall back to sendPrompt ---
+      if (coordinator) {
+        try {
+          await coordinator.dispatch({
+            agent: resolvedAgent,
+            currentDepth: 0,
+            parentSessionId: sessionID,
+            prompt: args.brief,
+            queueKey: `agent:${resolvedAgent}`,
+            surface: "governance-dispatch",
+            workingDirectory: context.directory ?? context.worktree ?? process.cwd(),
+          })
+        } catch (caughtError: unknown) {
+          const msg = caughtError instanceof Error ? caughtError.message : String(caughtError)
+          return renderToolResult(
+            error(`[Harness] Governance session created but agent dispatch failed: ${msg}`, {
+              sessionID,
+              title: sessionTitle,
+            }),
+          )
+        }
+      } else {
+        // Fallback: raw sendPrompt if no coordinator available
+        try {
+          await sendPrompt(client, sessionID, {
+            parts: [{ type: "text", text: args.brief }],
+          })
+        } catch (caughtError: unknown) {
+          const msg = caughtError instanceof Error ? caughtError.message : String(caughtError)
+          return renderToolResult(
+            error(`[Harness] Governance session created but prompt injection failed: ${msg}`, {
+              sessionID,
+              title: sessionTitle,
+            }),
+          )
+        }
       }
 
-      // --- Step 5: TUI notification (REQ-05) ---
+      // --- Step 7: TUI notification ---
       try {
         await showTuiToast(
           client,
@@ -152,7 +189,7 @@ export function createGovernanceSessionTool(client: OpenCodeClient): ToolDefinit
         // Best-effort: toast failure must never fail the tool call
       }
 
-      // --- Step 6: Return result (REQ-07) ---
+      // --- Step 8: Return result ---
       return renderToolResult(
         success(`[Harness] Governance session created: ${sessionTitle}`, {
           sessionID,
