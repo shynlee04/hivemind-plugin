@@ -15,40 +15,120 @@ children:
     childFile: ses_1a085efe8ffeCSaDGS4qPg9okh.json
   - sessionID: ses_1a08426e2ffenbriRhccnLlO2p
     childFile: ses_1a08426e2ffenbriRhccnLlO2p.json
+  - sessionID: ses_1a07cee30ffeAZv5wHvmusJFBG
+    childFile: ses_1a07cee30ffeAZv5wHvmusJFBG.json
+  - sessionID: ses_1a078212fffeXqNSoqzrPt4Zj9
+    childFile: ses_1a078212fffeXqNSoqzrPt4Zj9.json
+  - sessionID: ses_1a0730c76ffe827XYNqxdcRm3K
+    childFile: ses_1a0730c76ffe827XYNqxdcRm3K.json
 continuityIndex: session-continuity.json
 status: completed
 lastMessage: >-
-  Toàn bộ chain hoàn tất:
+  Build ✅ — 0 errors. Tạo test case:
 
 
-  | Step | Trạng thái | File |
-
-  |------|------------|------|
-
-  | 1. ROADMAP + STATE | ✅ Committed | `ROADMAP.md`, `STATE.md` |
-
-  | 2. Folder + `.gitkeep` | ✅ Created |
-  `.planning/phases/24.3.1-governance-session-prototype/` |
-
-  | 3. RESEARCH.md | ✅ 477 LOC | API signatures, feasibility verdicts, code refs
-  |
-
-  | 4. SPEC.md | ✅ Written | 9 falsifiable REQs, ambiguity 0.075 (gate 0.20 ✅) |
-
-  | 5. PLAN.md | ✅ 3 plans, 3 waves | Wave 1: tool → Wave 2: registry+tests →
-  Wave 3: verify |
+  ---
 
 
-  **3 plans ready:**
-
-  - **24.3.1-01**: `src/features/governance-engine/` + tool implementation
-
-  - **24.3.1-02**: Plugin registration + unit tests
-
-  - **24.3.1-03**: Typecheck + verification (REQ-08, REQ-09)
+  ## Test Case: Governance Session Routing
 
 
-  Muốn execute `/gsd-execute-phase 24.3.1` để build prototype ngay?
+  Sau khi rebuild, mở OpenCode ở project `hivemind-plugin-private` và **paste
+  đoạn này vào prompt**:
+
+
+  ```
+
+  Create a governance sub-session to audit the notification architecture in
+  Phase 23 before I continue with P24. Use the create-governance-session tool
+  with:
+
+  - agent: "gsd-auditor"
+
+  - brief: "Audit the notification architecture fix implemented in Phase 23.
+  Check: 1) Are synthetic notifications properly handled? 2) Is the notification
+  router correctly filtering types? 3) Are there any remaining bugs in the
+  delegation notification loop? Read src/plugin.ts lines 82-84 and
+  src/coordination/delegation/notification-router.ts. Report findings back to
+  this session."
+
+  - title: "audit-phase23-notifications"
+
+  ```
+
+
+  **Kết quả mong đợi:**
+
+
+  | Bước | Mô tả | Evidence |
+
+  |------|-------|----------|
+
+  | 1 | Agent gọi tool `create-governance-session` | Tool appears in agent's
+  tool list |
+
+  | 2 | Git commit context hiện tại | `git log --oneline -1` shows
+  `phase(24.3.1): governance handoff` |
+
+  | 3 | Session mới tạo với title
+  `hm-governance:gsd-auditor-audit-phase23-notifications` | `opencode session
+  list` shows the new session |
+
+  | 4 | TUI toast hiển thị "Governance session created: ses_xxx" | Visible in
+  TUI |
+
+  | 5 | appendPrompt: "Hãy chuyển tới session 'hm-governance:gsd-auditor-...' để
+  hoàn thành..." | Visible in TUI prompt area |
+
+  | 6 | User switch sang session mới | `opencode session select ses_xxx` hoặc
+  click tab |
+
+
+  **Test sau khi chuyển session:**
+
+
+  ```
+
+  Continue the audit task that was injected. Read the governance brief and
+  execute the audit plan. Report your findings.
+
+  ```
+
+
+  **Kết quả mong đợi step 2:**
+
+  - Agent nhận được brief từ injected prompt
+
+  - Audit Phase 23 notification architecture
+
+  - Trả về structured report
+
+
+  **Debug nếu tool không discoverable:**
+
+  ```bash
+
+  # Verify tool registration
+
+  grep "create-governance-session" src/plugin.ts
+
+
+  # Verify tests pass
+
+  npx vitest run tests/features/governance-engine/
+
+
+  # Restart OpenCode để reload plugin
+
+  ```
+
+
+  ---
+
+
+  **Lưu ý:** Tool chỉ khả dụng khi Hivemind plugin loaded (restart OpenCode cần
+  thiết sau build). Session auto-naming (`hm-governance:...`) bypass cơ chế
+  `ensureTitle` bị skip cho child session.
 ---
 
 ## USER (turn 1)
@@ -2582,3 +2662,245 @@ Called the Read tool with the following input: {"filePath":"/Users/apple/hivemin
 
 (End of file - total 160 lines)
 </content>
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_cWjKOyQ09QoB6KRc7WBK9046"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_YwGEbZFXWkDrYI5rjx5P3645"
+}
+```
+
+
+### Tool: glob
+
+**Input:**
+```json
+{
+  "callID": "call_01_qzPBNagzZO3wLH3td00m6207"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.1-governance-session-prototype/24.3.1-01-PLAN.md"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_efBdSH6YvEYSTGlJSNpy0509"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Execute Plan 01 - governance tool",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1a07cee30ffeAZv5wHvmusJFBG"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1a07cee30ffeAZv5wHvmusJFBG
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.1-governance-session-prototype/24.3.1-02-PLAN.md"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Execute Plan 02 - plugin + tests",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1a078212fffeXqNSoqzrPt4Zj9"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1a078212fffeXqNSoqzrPt4Zj9
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.1-governance-session-prototype/24.3.1-03-PLAN.md"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Execute Plan 03 - comprehensive verification",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_1a0730c76ffe827XYNqxdcRm3K"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_1a0730c76ffe827XYNqxdcRm3K
+```
+
+
+## ASSISTANT (turn 6)
+
+## Phase 24.3.1 Governance Session Prototype — ✅ COMPLETE
+
+```
+Progress: ██████████ 100%
+Plans: 3/3 complete
+Tests: 14/14 pass
+Typecheck: 0 errors
+Commits: 7 atomic
+```
+
+**7 commits, 3 waves, 0 regressions:**
+
+| Wave | Plan | Files | Status |
+|------|------|-------|--------|
+| 1 | 01 — Governance tool | `src/features/governance-engine/` (3 files, 164 LOC) | ✅ |
+| 2 | 02 — Plugin + tests | `src/plugin.ts` + 14 unit tests | ✅ |
+| 3 | 03 — Verification | 9/9 REQs pass L2 evidence | ✅ |
+
+**Tool API (đã deploy trong `src/plugin.ts`):**
+```
+Custom tool: "create-governance-session"
+  → agent (string): tên agent cho governance session
+  → brief (string): work brief
+  → title (string?): optional custom title
+  → Output: { sessionID: "ses_xxx", title: "hm-governance:..." }
+  → Side effects: git commit, TUI toast, TUI appendPrompt
+```
+
+**Session naming format:** `hm-governance:${agent}-${title}` — bypasses auto-naming issue bằng cách set title explicit tại create.
+
+**Xác nhận kỹ thuật (prototype validated ✅):**
+- `sdk.session.create({ title, parentID, agent })` — hoạt động
+- Child session vẫn nhận title custom (auto-naming skip vì parentID)
+- `showToast` + `appendTuiPrompt` hoạt động từ custom tool
+- Git commit từ `execSync` trong tool context khả thi
+- **Cluster C (Commands Infrastructure) design validated** — có thể proceed P24.3-P24.6
+
+Muốn tiếp tục P24.3 (Commands Infrastructure) ngay?
+
+## USER (turn 16)
+
+**source:** real-human
+
+dùng nó như thế nào tạo một live test case phức tạp để tôi tạo một new session và test thử với nó ngay sau khi rebuild
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_AE1XJi08CTY6ZoqZDe5V9178"
+}
+```
+
+
+## ASSISTANT (turn 7)
+
+Build ✅ — 0 errors. Tạo test case:
+
+---
+
+## Test Case: Governance Session Routing
+
+Sau khi rebuild, mở OpenCode ở project `hivemind-plugin-private` và **paste đoạn này vào prompt**:
+
+```
+Create a governance sub-session to audit the notification architecture in Phase 23 before I continue with P24. Use the create-governance-session tool with:
+- agent: "gsd-auditor"
+- brief: "Audit the notification architecture fix implemented in Phase 23. Check: 1) Are synthetic notifications properly handled? 2) Is the notification router correctly filtering types? 3) Are there any remaining bugs in the delegation notification loop? Read src/plugin.ts lines 82-84 and src/coordination/delegation/notification-router.ts. Report findings back to this session."
+- title: "audit-phase23-notifications"
+```
+
+**Kết quả mong đợi:**
+
+| Bước | Mô tả | Evidence |
+|------|-------|----------|
+| 1 | Agent gọi tool `create-governance-session` | Tool appears in agent's tool list |
+| 2 | Git commit context hiện tại | `git log --oneline -1` shows `phase(24.3.1): governance handoff` |
+| 3 | Session mới tạo với title `hm-governance:gsd-auditor-audit-phase23-notifications` | `opencode session list` shows the new session |
+| 4 | TUI toast hiển thị "Governance session created: ses_xxx" | Visible in TUI |
+| 5 | appendPrompt: "Hãy chuyển tới session 'hm-governance:gsd-auditor-...' để hoàn thành..." | Visible in TUI prompt area |
+| 6 | User switch sang session mới | `opencode session select ses_xxx` hoặc click tab |
+
+**Test sau khi chuyển session:**
+
+```
+Continue the audit task that was injected. Read the governance brief and execute the audit plan. Report your findings.
+```
+
+**Kết quả mong đợi step 2:**
+- Agent nhận được brief từ injected prompt
+- Audit Phase 23 notification architecture
+- Trả về structured report
+
+**Debug nếu tool không discoverable:**
+```bash
+# Verify tool registration
+grep "create-governance-session" src/plugin.ts
+
+# Verify tests pass
+npx vitest run tests/features/governance-engine/
+
+# Restart OpenCode để reload plugin
+```
+
+---
+
+**Lưu ý:** Tool chỉ khả dụng khi Hivemind plugin loaded (restart OpenCode cần thiết sau build). Session auto-naming (`hm-governance:...`) bypass cơ chế `ensureTitle` bị skip cho child session.
