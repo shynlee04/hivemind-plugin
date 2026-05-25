@@ -134,6 +134,9 @@ export class EventCapture {
         case "session.next.text.ended":
           await this.handleSessionNextTextEnded(event.sessionID, event.event as Record<string, unknown>)
           break
+        case "session.next.compaction.ended":
+          await this.handleSessionCompacted(event.sessionID, event.event as Record<string, unknown>)
+          break
         default:
           void this.client.app?.log?.({
             body: {
@@ -309,13 +312,20 @@ export class EventCapture {
         return
       }
       // Main session — "completed" is a valid terminal transition from "running"
+      // BUGFIX: Only include lastMessage if it has a value. Writing undefined
+      // via updateFrontmatter's shallow merge would OVERWRITE any lastMessage
+      // previously set by handleSessionNextTextEnded (race condition between
+      // session.next.text.ended and session.idle).
       const lastMessageEntry = this.pendingRegistry?.get(sessionID)
       const lastMessage = lastMessageEntry?.lastMessage
-      
-      await this.sessionWriter.updateFrontmatter(sessionID, {
-        status: "completed",
-        lastMessage: lastMessage,
-      } as Partial<import("../types.js").SessionRecord>)
+      const updates: Record<string, unknown> = { status: "completed" }
+      if (lastMessage) {
+        updates.lastMessage = lastMessage
+      }
+      await this.sessionWriter.updateFrontmatter(
+        sessionID,
+        updates as Partial<import("../types.js").SessionRecord>,
+      )
     } catch (err) {
       void this.client.app?.log?.({
         body: {
