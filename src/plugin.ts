@@ -43,6 +43,7 @@ import { createDelegationConsumer } from "./hooks/observers/delegation-consumer.
 import { createSessionTrackerConsumer } from "./hooks/observers/session-tracker-consumer.js"
 import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.js"
 import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
+import { createGovernanceSessionTool } from "./features/governance-engine/index.js"
 import { createPromptSkimTool } from "./tools/prompt/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt/prompt-analyze/index.js"
 import { createSessionPatchTool } from "./tools/session/session-patch/index.js"
@@ -480,6 +481,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "validate-restart": createValidateRestartTool(),
       "bootstrap-init": createBootstrapInitTool(),
       "bootstrap-recover": createBootstrapRecoverTool(),
+      "create-governance-session": createGovernanceSessionTool(client),
     },
     // Auto-persist workflow state after configure-primitive calls with workflow params.
     // Best-effort: failures are silently ignored — does not affect the tool call result.
