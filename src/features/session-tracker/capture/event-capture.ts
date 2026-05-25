@@ -28,6 +28,7 @@ import type { ChildSessionRecord, JourneyEntry, Turn } from "../types.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 import { asString, getNestedValue } from "../../../shared/helpers.js"
+import type { LastMessageCapture } from "./last-message-capture.js"
 
 // ---------------------------------------------------------------------------
 // EventCapture class
@@ -48,6 +49,7 @@ export class EventCapture {
   private hierarchyIndex: HierarchyIndex | undefined
   private pendingRegistry: PendingDispatchRegistry | undefined
   private manifestWriter: HierarchyManifestWriter | undefined
+  private lastMessageCapture: LastMessageCapture | undefined
 
   /**
    * @param deps - Injected dependencies.
@@ -66,6 +68,7 @@ export class EventCapture {
     hierarchyIndex?: HierarchyIndex
     pendingRegistry?: PendingDispatchRegistry
     manifestWriter?: HierarchyManifestWriter
+    lastMessageCapture?: LastMessageCapture
   }) {
     this.client = deps.client
     this.sessionWriter = deps.sessionWriter
@@ -75,6 +78,7 @@ export class EventCapture {
     this.hierarchyIndex = deps.hierarchyIndex
     this.pendingRegistry = deps.pendingRegistry
     this.manifestWriter = deps.manifestWriter
+    this.lastMessageCapture = deps.lastMessageCapture
   }
 
   /**
@@ -323,9 +327,16 @@ export class EventCapture {
       const lastMessageEntry = this.pendingRegistry?.get(sessionID)
       let lastMessage = lastMessageEntry?.lastMessage
 
-      // Fallback: extract lastMessage from SDK messages for main sessions.
-      // This is the same approach used by backfillChildTurnsFromSdk for child
-      // sessions — querying the SDK directly for message history.
+      // Fallback: read from LastMessageCapture first (zero-cost — no SDK poll).
+      // This eliminates the getSessionMessages() SDK polling that was previously
+      // required because the SDK does not dispatch session.next.text.ended events.
+      // LastMessageCapture tracks assistant text from message.updated /
+      // message.part.updated events in the event hook pipeline.
+      if (!lastMessage && this.lastMessageCapture) {
+        lastMessage = this.lastMessageCapture.getLastMessage(sessionID)
+      }
+
+      // SDK fallback: only if LastMessageCapture is unavailable or returned empty.
       if (!lastMessage) {
         try {
           const messages = await getSessionMessages(this.client, sessionID)
@@ -408,6 +419,8 @@ export class EventCapture {
       await this.sessionWriter.updateFrontmatter(sessionID, {
         status: "completed",
       } as Partial<import("../types.js").SessionRecord>)
+      // Clean up LastMessageCapture cache for this session
+      this.lastMessageCapture?.clearSession(sessionID)
     } catch (err) {
       void this.client.app?.log?.({
         body: {
@@ -463,6 +476,8 @@ export class EventCapture {
       await this.sessionWriter.updateFrontmatter(sessionID, {
         status: "error",
       } as Partial<import("../types.js").SessionRecord>)
+      // Clean up LastMessageCapture cache for this session
+      this.lastMessageCapture?.clearSession(sessionID)
     } catch (err) {
       void this.client.app?.log?.({
         body: {

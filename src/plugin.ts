@@ -407,7 +407,12 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     config: async () => {},
     ...createCoreHooks({
       ...deps,
-      eventObservers: [consumeDelegationFact, sessionEventObserver, consumeSessionTrackerFact, consumeSessionEntryFact, consumeIsMainSessionFact],
+      eventObservers: [consumeDelegationFact, sessionEventObserver, consumeSessionTrackerFact, consumeSessionEntryFact, consumeIsMainSessionFact, async ({ event }: { event?: unknown }) => {
+        if (event && typeof event === "object") {
+          const lmc = sessionTracker.getLastMessageCapture()
+          lmc?.handleEvent(event as Record<string, unknown>)
+        }
+      }],
     }),
     ...sessionReadHooks,
     // tool.execute.before: combined guard + session-tracker detection.

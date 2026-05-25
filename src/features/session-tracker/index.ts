@@ -66,6 +66,7 @@ export class SessionTracker {
 
   // Capture handlers — initialized in initialize()
   private eventCapture!: Parameters<typeof constructDependencies>[0]["eventCapture"]
+  private lastMessageCapture!: Parameters<typeof constructDependencies>[0]["lastMessageCapture"]
   private messageCapture!: MessageCapture
   private toolCapture!: Parameters<typeof constructDependencies>[0]["toolCapture"]
   // Persistence writers
@@ -98,6 +99,17 @@ export class SessionTracker {
   constructor(deps: { client: OpenCodeClient; projectRoot: string }) {
     this.client = deps.client
     this.projectRoot = deps.projectRoot
+  }
+
+  /**
+   * Returns the LastMessageCapture instance for event observer wiring.
+   *
+   * Used by plugin.ts to register {@link LastMessageCapture.handleEvent}
+   * in the event observer pipeline for `message.updated` /
+   * `message.part.updated` events.
+   */
+  getLastMessageCapture(): Parameters<typeof constructDependencies>[0]["lastMessageCapture"] {
+    return this.lastMessageCapture
   }
 
   /** Lazy-bootstrap a pre-existing session (idempotent). */

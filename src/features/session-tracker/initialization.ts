@@ -24,6 +24,7 @@ import { OrphanCleanup } from "./orphan-cleanup.js"
 import { HierarchyManifestWriter } from "./persistence/hierarchy-manifest.js"
 import { AgentTransform } from "./transform/agent-transform.js"
 import { EventCapture } from "./capture/event-capture.js"
+import { LastMessageCapture } from "./capture/last-message-capture.js"
 import { MessageCapture } from "./capture/message-capture.js"
 import { ToolCapture } from "./capture/tool-capture.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
@@ -56,6 +57,7 @@ export interface InitializedDeps {
   manifestWriter: HierarchyManifestWriter
   agentTransform: AgentTransform
   eventCapture: EventCapture
+  lastMessageCapture: LastMessageCapture
   messageCapture: MessageCapture
   toolCapture: ToolCapture
   recovery: SessionRecovery
@@ -138,6 +140,7 @@ export function constructDependencies(
   const agentTransform = new AgentTransform()
 
   // Create capture handlers
+  const lastMessageCapture = new LastMessageCapture()
   const eventCapture = new EventCapture({
     client,
     sessionWriter,
@@ -147,6 +150,7 @@ export function constructDependencies(
     hierarchyIndex,
     pendingRegistry,
     manifestWriter,
+    lastMessageCapture,
   })
   const messageCapture = new MessageCapture({
     client,
@@ -185,6 +189,7 @@ export function constructDependencies(
     manifestWriter,
     agentTransform,
     eventCapture,
+    lastMessageCapture,
     messageCapture,
     toolCapture,
     recovery,
