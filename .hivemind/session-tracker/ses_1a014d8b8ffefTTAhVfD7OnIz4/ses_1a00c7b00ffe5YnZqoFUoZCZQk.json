@@ -1,0 +1,513 @@
+{
+  "sessionID": "ses_1a00c7b00ffe5YnZqoFUoZCZQk",
+  "parentSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-assumptions-analyzer",
+    "model": "unknown",
+    "tool": "task",
+    "description": "GSD Assumptions Analysis Clusters",
+    "subagentType": "gsd-assumptions-analyzer"
+  },
+  "created": "2026-05-25T16:24:15.379Z",
+  "updated": "2026-05-25T16:26:30.300Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-assumptions-analyzer",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are the subagent gsd-assumptions-analyzer. You must complete this task and return structured findings.\n\n## CONTEXT: Hivemind Architecture Assumptions — Re-evaluation Needed\n\n### Background\n\nHivemind is a runtime composition engine for OpenCode at /Users/apple/hivemind-plugin-private. We are at Phase 23.2 with 41+ phases remaining.\n\nThe user is questioning fundamental architectural assumptions. Key areas:\n\n### ASSUMPTIONS TO ANALYZE\n\n**Assumption A: L0→L1→L2→L3 Agent Hierarchy is Correct**\n- Current state: L0 (orchestrator) → L1 (coordinator) → L2 (specialist) → L3 (skill)\n- User proposes: Remove L1 entirely. L0 only front-facing. L2/L3 reclassified by work group.\n- Check: Read .opencode/agents/ to see how agents are structured\n- Check: Read GSD docs (23-GSD-agent-architecture) to see how GSD does flat hierarchy\n- Question: Is the L0-L1-L2-L3 hierarchy working or causing context bloat?\n\n**Assumption B: Agent Profiles Should Enforce Looping/Gating/Hierarchy/Checkpoints**\n- User claims: Agent profiles are NOT the right place for looping/gating logic\n- User proposes: Move ALL looping/gating/hierarchy/delegation/checkpoint logic to programmatic features (tools, commands, skills)\n- Agent profiles should ONLY define: specialist domain, switch logic, artifact naming, task boundaries\n- Check: Read agent profiles to see how much looping/gating logic exists vs specialist behavior\n- Check: GSD agents don't have these logics - they're in workflow files\n\n**Assumption C: .opencode/ Symlinks are Correct for Primitives**\n- Current: .opencode/ contains symlinks to .hivefiver-meta-builder/\n- User proposes: Primitives should be managed via schema + code at assets/subdirs\n- .opencode/ should contain files extracted during install (not symlinks)\n- Check: OpenCode docs for how primitives SHOULD be distributed\n- Check: The symlink approach for shipped-vs-user-custom primitives\n\n**Assumption D: Current Phase Ordering (24.x → 25 → 26 → 26.x → 27...) is Optimal**\n- User questions whether this ordering is correct for MVP\n- Consider: Cluster Dependencies\n- Consider: What blocks what\n- Consider: Integration verification needs\n\n**Assumption E: GSD Research Documents from Phase 23 are Still Valid**\n- GSD repo changed: https://github.com/open-gsd/get-shit-done-redux\n- Original repo abandoned (owner allegedly scammed)\n- Documents: 23-GSD-REFERENCE, 23-GSD-agent-architecture, 23-GSD-command-system, 23-GSD-workflow-pipeline, 23-GSD-quality-gates, 23-GSD-sdk-surface\n- Question: Are these still accurate? Need re-validation?\n\n**Assumption F: Phase 24.3.1 (Governance Session Prototype) is SUFFICIENT Foundation**\n- It was marked COMPLETE but only tested in test environment\n- Is it production-ready for real routing?\n- What gaps exist?\n\n### Files to Check\nRead these files for evidence:\n1. .opencode/agents/hm-l0-orchestrator.md (lines 1-100)\n2. .opencode/agents/hm-l1-coordinator.md (lines 1-100)\n3. .opencode/agents/hm-l2-conductor.md (lines 1-100)\n4. .opencode/skills/hm-l2-phase-loop/SKILL.md (lines 1-50)\n5. .opencode/skills/hm-l2-coordinating-loop/SKILL.md (lines 1-50)\n\n### OUTPUT REQUIRED\n\nFor each assumption (A through F), provide:\n\n1. **Current Evidence** — What file:line evidence supports or contradicts\n2. **Confidence Level** — Confident / Likely / Unclear\n3. **Risk if Wrong** — What goes wrong if we proceed with this assumption\n4. **Impact on Phase Ordering** — How this affects which phases should run first\n5. **Recommendation** — Keep, modify, or reject this assumption\n\nReturn a structured analysis table.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I am **subagent gsd-assumptions-analyzer**, specialized in codebase evidence-grounded assumptions analysis. I will systematically read the indicated files, examine the codebase, and produce a structured findings report.\n\nLet me start by loading the relevant skills and reading the key files.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Now let me read the key files for evidence gathering.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Let me gather more evidence on the remaining assumptions.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: glob, glob, glob, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: read, read, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Let me check the symlink status, the 24.3.1 validation, and GSD doc dates.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Let me read more of the roadmap for current phase ordering and check the agent permission structure.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Now I have comprehensive evidence. Let me compile the full structured analysis.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "I have now gathered sufficient evidence across all 6 assumptions. Here is the complete structured analysis.\n\n---\n\n## Assumptions Analysis Report\n\n### Assumption A: L0→L1→L2→L3 Agent Hierarchy is Correct\n\n**Current Evidence:**\n- `.opencode/agents/` is a directory symlink → `../.hivefiver-meta-builder/agents-lab/active/refactoring/` (confirmed via `ls -la`). All 90 files inside are **regular files**, not individual symlinks. The hierarchy exists as directory structure, not file-level links.\n- `hm-l0-orchestrator.md` (50,206 bytes, 806 lines) — contains landscape-first doctrine, three-path delegation model, quality gate triad enforcement, session tracking, retry logic (max 3), artifact verification — all baked into the agent profile itself.\n- `hm-l1-coordinator.md` (17,016 bytes, 364 lines) — contains wave decomposition, parallel dispatch, inline validation between waves, gate verdicts, result consolidation, max-2 retry logic, escalation protocols.\n- `hm-l2-conductor.md` (5,549 bytes, 138 lines) — leaner; contains intent classification, delegation protocol, wisdom system, verify-before-complete rules.\n- GSD docs (`23-GSD-agent-architecture-2026-05-23.md` line 12): \"GSD ships **33 agents**... with **no hierarchical depth** — there is no L0/L1/L2 taxonomy. Every agent is a peer. The orchestration hierarchy comes from the workflow files, not the agent definitions.\"\n- GSD comparison table (line 17-18): `GSD: Workflow (orchestrator) → Agent (specialist) → Agent (specialist)` vs `Hivemind: L0 Orchestrator → L1 Coordinator → L2 Specialist → L3 Skill`\n- The L0 agent loads **8 skills** (line 109-117 of hm-l0-orchestrator.md), including `hm-l2-coordinating-loop`, `hm-l2-completion-looping`, `hm-l2-phase-loop`, plus all 3 gate-* skills. This is massive context overhead for a \"routing only\" agent.\n- L0 agent file is 50KB — this IS context bloat.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:** \nThe L0 agent at 806 lines / 50KB is carrying the weight of what should be workflow/skill logic. The L1 coordinator adds another 364 lines / 17KB. Together, ~67KB of agent instruction text is loaded every time any high-level task starts. This directly impacts token budget and response latency. GSD proves that flat hierarchy + workflow-driven orchestration works without this overhead.\n\n**Impact on Phase Ordering:** HIGH. If hierarchy is flattened, it affects ALL phases from P24 onward that depend on L0→L1→L2 dispatch patterns. The coordination, delegation, and session-tracker modules all assume this hierarchy exists.\n\n**Recommendation:** **MODIFY** — Remove L1 entirely. Convert L0 to a thin front-facing router (max 150 lines, no looping/gating logic built-in). Move all looping/gating logic to **skills + workflow files** (GSD pattern). L2/L3 remain as specialist agents. This aligns with GSD's proven model where \"orchestration hierarchy comes from the workflow files, not the agent definitions.\"\n\n---\n\n### Assumption B: Agent Profiles Should Enforce Looping/Gating/Hierarchy/Checkpoints\n\n**Current Evidence:**\n- `hm-l0-orchestrator.md` lines 160-163: \"Run quality gate triad on returned results: lifecycle → spec → evidence\" AND \"Max 3 retry cycles before escalation\" AND \"Monitor delegation results via session-tracker\" — this is gating/looping/monitoring logic embedded in agent instructions.\n- `hm-l1-coordinator.md` lines 67-78 (task section): Step 5 \"Run inline validation on wave 1 results (spec compliance check)\", Step 9 \"Run quality gate checks on consolidated output\" — gating logic embedded.\n- `hm-l1-coordinator.md` line 181: \"Attempt remediation (max 2 retries) before escalating failures to L0\" — retry logic embedded.\n- `hm-l2-conductor.md` lines 109-127: \"Verify → If implementation, delegate to critic for review\" AND \"NEVER report completion without verifying\" — verification loop logic embedded.\n- **Contrast:** The SKILL files `hm-l2-phase-loop/SKILL.md` and `hm-l2-coordinating-loop/SKILL.md` already contain this logic as **programmatic features** — they define loop definitions, termination predicates, wave-based dispatch, edge guardrails, etc.\n- GSD docs (line 12): \"orchestration hierarchy comes from the workflow files, not the agent definitions\" — GSD separates these concerns cleanly.\n- The duplicate placement (in agent profiles AND in skills) creates a maintenance burden: changes to gating logic must be made in both places or they drift.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:**\nDual maintenance (agent profiles + skills) guarantees drift over time. The L0 agent loads 8 skills including loops and gates but ALSO hardcodes the same logic in its instruction body — this is wasteful token consumption and a maintenance trap. When the gating logic needs to change (e.g., retry from 3 to 2), it must change in both the agent .md file AND the skill SKILL.md.\n\n**Impact on Phase Ordering:** MEDIUM. This is a structural cleanup that should happen during agent rationalization phases. It doesn't block P24+ but should be scheduled before the agent count grows further.\n\n**Recommendation:** **MODIFY/REJECT** — Strip ALL looping/gating/hierarchy/delegation/checkpoint logic from agent profiles. Agent profiles should ONLY define: specialist domain, switch/selection logic, artifact naming conventions, task boundary definitions. Move ALL operational logic to workflow files and skills (pattern: GSD's workflow-driven model). This is already partially done (skills exist) but the agent profiles haven't been cleaned up.\n\n---\n\n### Assumption C: .opencode/ Symlinks are Correct for Primitives\n\n**Current Evidence:**\n- `.opencode/agents` → symlink to `../.hivefiver-meta-builder/agents-lab/active/refactoring` (confirmed)\n- `.opencode/skills` → symlink to `../.hivefiver-meta-builder/skills-lab/active/refactoring` (confirmed)\n- `.opencode/commands` → symlink to `../.hivefiver-meta-builder/commands-lab/active/refactoring` (confirmed)\n- Individual files inside are **NOT** symlinks — they are regular files accessible through the directory-level symlink.\n- 14 total symlinks in `.opencode/`: 4 directory-level symlinks (agents, commands, skills, disabled variants) + 10 `node_modules/.bin` symlinks (npm standard).\n- `BOOT-04` (line 226 of ROADMAP.md): \"Restore `.opencode/` symlinks to `.hivefiver-meta-builder/` source\" — this is explicitly the DESIGN of the current system.\n- `MCM` workstream (lines 269-300): The meta-concept migration workstream exists precisely to handle the transition of these primitives from meta-builder to `.opencode/`.\n- The symlinks work for local development but break during npm distribution: when someone runs `npx hivemind init` on a DIFFERENT project (the intended use case), the `.hivefiver-meta-builder/` directory doesn't exist. BOOT-04's symlink restoration only works because the dev environment has `hivemind-plugin-private/.hivefiver-meta-builder/`.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:**\nThe current symlink approach ONLY works in the dev environment. For the harness to work as a distributable npm package (`hivemind`), primitives must either be:\n1. Copy-included in the npm package and extracted during `postinstall`/`init`\n2. Generated from schemas at install time\n3. Source-of-truthed in the npm package itself\n\nIf we ship the symlink approach, downstream users get broken `.opencode/` directories after init.\n\n**Impact on Phase Ordering:** CRITICAL. This is a fundamental distribution model issue. MCM (Meta-Concept Migration) workstream is the correct place to address this, but its phases are ⬜ BLOCKED BY PHASE 0. Phase 0 must complete to unblock MCM, which fixes the symlink distribution problem.\n\n**Recommendation:** **MODIFY** — Keep symlinks for local development only. For npm distribution, copy primitives into the package and extract during `init`/`postinstall`. The `.opencode/` directory structure should be:\n- Shipped primitives (hm-*, hf-*, gate-*, stack-*) → copied from package\n- User custom primitives → created by user or meta-concept workflows\n- Never symlinks to non-existent external directories\n\nPhase MCM-03/MCM-04 should handle this transition.\n\n---\n\n### Assumption D: Current Phase Ordering (24.x → 25 → 26 → 26.x → 27...) is Optimal\n\n**Current Evidence:**\n- ROADMAP.md lines 6-7: \"Dependency order: Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience\"\n- Current state: CA-04 (Bootstrap + State Ownership) is 🔴 IN PROGRESS, BOOT-09 is 🟡 IN PROGRESS (2/3 plans complete)\n- CP-DT-01 (Delegate-Task Ecosystem) is RE-OPENED / RUNTIME BLOCKED — depends on CP-ST-06 (session-tracker tracking) and CP-PTY-00\n- MCM (Meta-Concept Migration) is ⬜ BLOCKED BY PHASE 0\n- The roadmap shows 6+ parallel workstreams with complex cross-dependencies\n- The user's specific question about \"24.x → 25 → 26 → 26.x → 27\" refers to phases that appear to be different granularities (24.3.1 is a sub-phase, while 25/26/27 are major phases)\n\n**Key dependency chain issues:**\n1. BOOT (Bootstrap CLI) must complete before MCM can proceed\n2. Session tracker deep fixes (CP-ST-04, CP-ST-05) must complete before CP-DT-01 can proceed\n3. CP-PTY-01 must complete before CP-PTY-02/03/04\n4. Phase 0 governance gate blocks MCM continuation\n5. CA-04 blocks routing workflow foundation (f-04)\n\n**Confidence Level:** Likely\n\n**Risk if Wrong:**\nIf the phase ordering doesn't respect these dependencies, we get blocked phases, wasted effort, and integration failures. For example, working on MCM before BOOT completes means the symlink/distribution model isn't finalized. Working on routing before CA-04 state ownership means persistence paths aren't stabilized.\n\n**Impact on Phase Ordering:** DIRECT — this IS about phase ordering.\n\n**Recommendation:** **MODIFY** — Re-prioritize to:\n1. **COMPLETE BOOT-09** (2/3 plans done, 1 pending) — unblocks downstream\n2. **COMPLETE Phase 0 governance gate** — unblocks MCM\n3. **Session tracker deep fixes** (CP-ST-04, CP-ST-05 are ✅ COMPLETE) → proceed to CP-ST-06\n4. **CP-DT-01 runtime gap closure** (Plan 06) — blocked on CP-ST-06\n5. **MCM** — blocked on Phase 0 + BOOT, but critical for distribution model\n6. **Then** P25-P26-P27-P28-P29-P30-P31-P32-P33-P34-P35-P36-P37 per original sequence\n\nThe current ordering is NOT optimal because too many phases are blocked by upstream dependencies. Focus on completing blocking phases before starting new workstreams.\n\n---\n\n### Assumption E: GSD Research Documents from Phase 23 are Still Valid\n\n**Current Evidence:**\n- All GSD docs dated **2026-05-23** (2 days ago) — very fresh.\n- Source: `github.com/open-gsd/get-shit-done-redux` — the user mentions original repo was abandoned.\n- These were produced from Repomix snapshot `5875fd23ec62fc70` — a point-in-time export.\n- Documents exist: `23-GSD-REFERENCE-2026-05-23.md` (208 lines), `23-GSD-agent-architecture-2026-05-23.md` (402 lines), `23-GSD-command-system-2026-05-23.md`, `23-GSD-workflow-pipeline-2026-05-23.md`, `23-GSD-quality-gates-2026-05-23.md`, `23-GSD-sdk-surface-2026-05-23.md`.\n- The architecture patterns described are STABLE concepts (flat agents, workflow-driven orchestration, namespace routing, file-based state) — these don't change between versions.\n- However, the GSD repo URL `github.com/open-gsd/get-shit-done-redux` replacing the original `github.com/gsd-build/get-shit-done` means the fork may have diverged.\n\n**Confidence Level:** Likely (for architecture patterns), Unclear (for specific implementation details)\n\n**Risk if Wrong:**\nIf GSD has changed its implementation patterns since the snapshot, we might adopt patterns that are no longer current-best-practice. However, the architectural concepts (flat agents, workflow-driven orchestration, namespace routing) are stable design principles, not version-specific implementation details.\n\n**Impact on Phase Ordering:** LOW. The GSD docs inform design decisions but don't block any phase. They are reference material.\n\n**Recommendation:** **KEEP** (as architecture reference) but **RE-VALIDATE** specific claims against the current repo before implementation. The architecture patterns (flat agents, workflow-driven orchestration, namespace routing) are sound regardless of fork status. However, any specific implementation pattern (API shapes, hook signatures, etc.) should be re-validated against the actual `open-gsd/get-shit-done-redux` repo.\n\n---\n\n### Assumption F: Phase 24.3.1 (Governance Session Prototype) is SUFFICIENT Foundation\n\n**Current Evidence:**\n- `24.3.1-00-SUMMARY.md`: Session naming service COMPLETE — `src/shared/session-naming.ts`, 14 tests pass, typecheck clean.\n- `24.3.1-07-SUMMARY.md`: Metadata propagation chain COMPLETE — 5 files modified, 14 new tests + 2519 existing pass.\n- **BUT** `24.3.1-VALIDATION.md`: ALL 22 validation statuses are **\"⬜ pending\"** — not a single task has been validated.\n- `24.3.1-LIVE-UAT.md`: **DRAFT status** — the live UAT test plan exists but has not been executed.\n- SPEC.md section 47: \"All tests pass\" → L2 evidence expected. But L1 runtime proof (live demo) is not claimed.\n- ROADMAP.md: Does NOT list 24.3.1 as a standalone phase entry — it appears to be a sub-phase under a larger phase.\n- The phase was implemented piece by piece (plans 00-07b) with each plan verified at L2 (typecheck + unit tests), but NO L1 (live runtime) verification.\n\n**Confidence Level:** Confident (that L2 evidence exists), Unclear (that L1 runtime readiness is proven)\n\n**Risk if Wrong:**\nIf we assume 24.3.1 is production-ready for routing and it hasn't been validated in a live environment, real-world routing will fail silently or with confusing errors. The gap between \"tests pass\" and \"works in production\" is especially large for SDK-dependent features like `create-governance-session` which uses `sdk.session.create()` and `sdk.tui.showToast()` — mocks may not reflect real SDK behavior accurately.\n\n**Impact on Phase Ordering:** MEDIUM. If 24.3.1 is not production-ready, downstream phases that depend on governance session features (P24.4-P24.6, coordination dispatch, routing) will be building on an unstable foundation.\n\n**Recommendation:** **MODIFY** — Do NOT upgrade from \"sufficient foundation\" to \"production-ready\" until:\n1. Execute the UAT test plan (`24.3.1-LIVE-UAT.md`)\n2. Mark all 22 validation tasks as PASS/FAIL in `24.3.1-VALIDATION.md`\n3. Prove L1 runtime evidence: the `create-governance-session` tool actually creates a named child session, injects context, commits state, and shows TUI notification\n\nUntil then, treat 24.3.1 as L2-complete but L1-unproven. Build downstream features with test doubles and production hardening deferred.\n\n---\n\n## Needs External Research\n\n1. **OpenCode SDK compatibility**: The `create-governance-session` tool uses `sdk.session.create()`, `sdk.session.prompt()`, `sdk.tui.showToast()` — these API signatures should be validated against the actual `@opencode-ai/plugin` SDK version in `package.json` (currently v1.14.44-era). The unit tests use mocks that may not reflect real SDK behavior.\n2. **GSD fork divergence**: The current GSD repo at `github.com/open-gsd/get-shit-done-redux` should be validated against the Repomix snapshot `5875fd23ec62fc70` to check for any significant architectural changes.\n3. **Symlink + npm distribution model**: Whether npm supports directory-level symlinks in published packages, and whether `postinstall` scripts can reliably recreate `.opencode/` structure on target machines.\n4. **OpenCode's canonical primitives distribution method**: How plugins SHOULD distribute agents, skills, and commands — via npm package extraction, schema generation at runtime, or other mechanisms.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "gsd-assumptions-analyzer",
+      "content": "I have now gathered sufficient evidence across all 6 assumptions. Here is the complete structured analysis.\n\n---\n\n## Assumptions Analysis Report\n\n### Assumption A: L0→L1→L2→L3 Agent Hierarchy is Correct\n\n**Current Evidence:**\n- `.opencode/agents/` is a directory symlink → `../.hivefiver-meta-builder/agents-lab/active/refactoring/` (confirmed via `ls -la`). All 90 files inside are **regular files**, not individual symlinks. The hierarchy exists as directory structure, not file-level links.\n- `hm-l0-orchestrator.md` (50,206 bytes, 806 lines) — contains landscape-first doctrine, three-path delegation model, quality gate triad enforcement, session tracking, retry logic (max 3), artifact verification — all baked into the agent profile itself.\n- `hm-l1-coordinator.md` (17,016 bytes, 364 lines) — contains wave decomposition, parallel dispatch, inline validation between waves, gate verdicts, result consolidation, max-2 retry logic, escalation protocols.\n- `hm-l2-conductor.md` (5,549 bytes, 138 lines) — leaner; contains intent classification, delegation protocol, wisdom system, verify-before-complete rules.\n- GSD docs (`23-GSD-agent-architecture-2026-05-23.md` line 12): \"GSD ships **33 agents**... with **no hierarchical depth** — there is no L0/L1/L2 taxonomy. Every agent is a peer. The orchestration hierarchy comes from the workflow files, not the agent definitions.\"\n- GSD comparison table (line 17-18): `GSD: Workflow (orchestrator) → Agent (specialist) → Agent (specialist)` vs `Hivemind: L0 Orchestrator → L1 Coordinator → L2 Specialist → L3 Skill`\n- The L0 agent loads **8 skills** (line 109-117 of hm-l0-orchestrator.md), including `hm-l2-coordinating-loop`, `hm-l2-completion-looping`, `hm-l2-phase-loop`, plus all 3 gate-* skills. This is massive context overhead for a \"routing only\" agent.\n- L0 agent file is 50KB — this IS context bloat.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:** \nThe L0 agent at 806 lines / 50KB is carrying the weight of what should be workflow/skill logic. The L1 coordinator adds another 364 lines / 17KB. Together, ~67KB of agent instruction text is loaded every time any high-level task starts. This directly impacts token budget and response latency. GSD proves that flat hierarchy + workflow-driven orchestration works without this overhead.\n\n**Impact on Phase Ordering:** HIGH. If hierarchy is flattened, it affects ALL phases from P24 onward that depend on L0→L1→L2 dispatch patterns. The coordination, delegation, and session-tracker modules all assume this hierarchy exists.\n\n**Recommendation:** **MODIFY** — Remove L1 entirely. Convert L0 to a thin front-facing router (max 150 lines, no looping/gating logic built-in). Move all looping/gating logic to **skills + workflow files** (GSD pattern). L2/L3 remain as specialist agents. This aligns with GSD's proven model where \"orchestration hierarchy comes from the workflow files, not the agent definitions.\"\n\n---\n\n### Assumption B: Agent Profiles Should Enforce Looping/Gating/Hierarchy/Checkpoints\n\n**Current Evidence:**\n- `hm-l0-orchestrator.md` lines 160-163: \"Run quality gate triad on returned results: lifecycle → spec → evidence\" AND \"Max 3 retry cycles before escalation\" AND \"Monitor delegation results via session-tracker\" — this is gating/looping/monitoring logic embedded in agent instructions.\n- `hm-l1-coordinator.md` lines 67-78 (task section): Step 5 \"Run inline validation on wave 1 results (spec compliance check)\", Step 9 \"Run quality gate checks on consolidated output\" — gating logic embedded.\n- `hm-l1-coordinator.md` line 181: \"Attempt remediation (max 2 retries) before escalating failures to L0\" — retry logic embedded.\n- `hm-l2-conductor.md` lines 109-127: \"Verify → If implementation, delegate to critic for review\" AND \"NEVER report completion without verifying\" — verification loop logic embedded.\n- **Contrast:** The SKILL files `hm-l2-phase-loop/SKILL.md` and `hm-l2-coordinating-loop/SKILL.md` already contain this logic as **programmatic features** — they define loop definitions, termination predicates, wave-based dispatch, edge guardrails, etc.\n- GSD docs (line 12): \"orchestration hierarchy comes from the workflow files, not the agent definitions\" — GSD separates these concerns cleanly.\n- The duplicate placement (in agent profiles AND in skills) creates a maintenance burden: changes to gating logic must be made in both places or they drift.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:**\nDual maintenance (agent profiles + skills) guarantees drift over time. The L0 agent loads 8 skills including loops and gates but ALSO hardcodes the same logic in its instruction body — this is wasteful token consumption and a maintenance trap. When the gating logic needs to change (e.g., retry from 3 to 2), it must change in both the agent .md file AND the skill SKILL.md.\n\n**Impact on Phase Ordering:** MEDIUM. This is a structural cleanup that should happen during agent rationalization phases. It doesn't block P24+ but should be scheduled before the agent count grows further.\n\n**Recommendation:** **MODIFY/REJECT** — Strip ALL looping/gating/hierarchy/delegation/checkpoint logic from agent profiles. Agent profiles should ONLY define: specialist domain, switch/selection logic, artifact naming conventions, task boundary definitions. Move ALL operational logic to workflow files and skills (pattern: GSD's workflow-driven model). This is already partially done (skills exist) but the agent profiles haven't been cleaned up.\n\n---\n\n### Assumption C: .opencode/ Symlinks are Correct for Primitives\n\n**Current Evidence:**\n- `.opencode/agents` → symlink to `../.hivefiver-meta-builder/agents-lab/active/refactoring` (confirmed)\n- `.opencode/skills` → symlink to `../.hivefiver-meta-builder/skills-lab/active/refactoring` (confirmed)\n- `.opencode/commands` → symlink to `../.hivefiver-meta-builder/commands-lab/active/refactoring` (confirmed)\n- Individual files inside are **NOT** symlinks — they are regular files accessible through the directory-level symlink.\n- 14 total symlinks in `.opencode/`: 4 directory-level symlinks (agents, commands, skills, disabled variants) + 10 `node_modules/.bin` symlinks (npm standard).\n- `BOOT-04` (line 226 of ROADMAP.md): \"Restore `.opencode/` symlinks to `.hivefiver-meta-builder/` source\" — this is explicitly the DESIGN of the current system.\n- `MCM` workstream (lines 269-300): The meta-concept migration workstream exists precisely to handle the transition of these primitives from meta-builder to `.opencode/`.\n- The symlinks work for local development but break during npm distribution: when someone runs `npx hivemind init` on a DIFFERENT project (the intended use case), the `.hivefiver-meta-builder/` directory doesn't exist. BOOT-04's symlink restoration only works because the dev environment has `hivemind-plugin-private/.hivefiver-meta-builder/`.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:**\nThe current symlink approach ONLY works in the dev environment. For the harness to work as a distributable npm package (`hivemind`), primitives must either be:\n1. Copy-included in the npm package and extracted during `postinstall`/`init`\n2. Generated from schemas at install time\n3. Source-of-truthed in the npm package itself\n\nIf we ship the symlink approach, downstream users get broken `.opencode/` directories after init.\n\n**Impact on Phase Ordering:** CRITICAL. This is a fundamental distribution model issue. MCM (Meta-Concept Migration) workstream is the correct place to address this, but its phases are ⬜ BLOCKED BY PHASE 0. Phase 0 must complete to unblock MCM, which fixes the symlink distribution problem.\n\n**Recommendation:** **MODIFY** — Keep symlinks for local development only. For npm distribution, copy primitives into the package and extract during `init`/`postinstall`. The `.opencode/` directory structure should be:\n- Shipped primitives (hm-*, hf-*, gate-*, stack-*) → copied from package\n- User custom primitives → created by user or meta-concept workflows\n- Never symlinks to non-existent external directories\n\nPhase MCM-03/MCM-04 should handle this transition.\n\n---\n\n### Assumption D: Current Phase Ordering (24.x → 25 → 26 → 26.x → 27...) is Optimal\n\n**Current Evidence:**\n- ROADMAP.md lines 6-7: \"Dependency order: Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience\"\n- Current state: CA-04 (Bootstrap + State Ownership) is 🔴 IN PROGRESS, BOOT-09 is 🟡 IN PROGRESS (2/3 plans complete)\n- CP-DT-01 (Delegate-Task Ecosystem) is RE-OPENED / RUNTIME BLOCKED — depends on CP-ST-06 (session-tracker tracking) and CP-PTY-00\n- MCM (Meta-Concept Migration) is ⬜ BLOCKED BY PHASE 0\n- The roadmap shows 6+ parallel workstreams with complex cross-dependencies\n- The user's specific question about \"24.x → 25 → 26 → 26.x → 27\" refers to phases that appear to be different granularities (24.3.1 is a sub-phase, while 25/26/27 are major phases)\n\n**Key dependency chain issues:**\n1. BOOT (Bootstrap CLI) must complete before MCM can proceed\n2. Session tracker deep fixes (CP-ST-04, CP-ST-05) must complete before CP-DT-01 can proceed\n3. CP-PTY-01 must complete before CP-PTY-02/03/04\n4. Phase 0 governance gate blocks MCM continuation\n5. CA-04 blocks routing workflow foundation (f-04)\n\n**Confidence Level:** Likely\n\n**Risk if Wrong:**\nIf the phase ordering doesn't respect these dependencies, we get blocked phases, wasted effort, and integration failures. For example, working on MCM before BOOT completes means the symlink/distribution model isn't finalized. Working on routing before CA-04 state ownership means persistence paths aren't stabilized.\n\n**Impact on Phase Ordering:** DIRECT — this IS about phase ordering.\n\n**Recommendation:** **MODIFY** — Re-prioritize to:\n1. **COMPLETE BOOT-09** (2/3 plans done, 1 pending) — unblocks downstream\n2. **COMPLETE Phase 0 governance gate** — unblocks MCM\n3. **Session tracker deep fixes** (CP-ST-04, CP-ST-05 are ✅ COMPLETE) → proceed to CP-ST-06\n4. **CP-DT-01 runtime gap closure** (Plan 06) — blocked on CP-ST-06\n5. **MCM** — blocked on Phase 0 + BOOT, but critical for distribution model\n6. **Then** P25-P26-P27-P28-P29-P30-P31-P32-P33-P34-P35-P36-P37 per original sequence\n\nThe current ordering is NOT optimal because too many phases are blocked by upstream dependencies. Focus on completing blocking phases before starting new workstreams.\n\n---\n\n### Assumption E: GSD Research Documents from Phase 23 are Still Valid\n\n**Current Evidence:**\n- All GSD docs dated **2026-05-23** (2 days ago) — very fresh.\n- Source: `github.com/open-gsd/get-shit-done-redux` — the user mentions original repo was abandoned.\n- These were produced from Repomix snapshot `5875fd23ec62fc70` — a point-in-time export.\n- Documents exist: `23-GSD-REFERENCE-2026-05-23.md` (208 lines), `23-GSD-agent-architecture-2026-05-23.md` (402 lines), `23-GSD-command-system-2026-05-23.md`, `23-GSD-workflow-pipeline-2026-05-23.md`, `23-GSD-quality-gates-2026-05-23.md`, `23-GSD-sdk-surface-2026-05-23.md`.\n- The architecture patterns described are STABLE concepts (flat agents, workflow-driven orchestration, namespace routing, file-based state) — these don't change between versions.\n- However, the GSD repo URL `github.com/open-gsd/get-shit-done-redux` replacing the original `github.com/gsd-build/get-shit-done` means the fork may have diverged.\n\n**Confidence Level:** Likely (for architecture patterns), Unclear (for specific implementation details)\n\n**Risk if Wrong:**\nIf GSD has changed its implementation patterns since the snapshot, we might adopt patterns that are no longer current-best-practice. However, the architectural concepts (flat agents, workflow-driven orchestration, namespace routing) are stable design principles, not version-specific implementation details.\n\n**Impact on Phase Ordering:** LOW. The GSD docs inform design decisions but don't block any phase. They are reference material.\n\n**Recommendation:** **KEEP** (as architecture reference) but **RE-VALIDATE** specific claims against the current repo before implementation. The architecture patterns (flat agents, workflow-driven orchestration, namespace routing) are sound regardless of fork status. However, any specific implementation pattern (API shapes, hook signatures, etc.) should be re-validated against the actual `open-gsd/get-shit-done-redux` repo.\n\n---\n\n### Assumption F: Phase 24.3.1 (Governance Session Prototype) is SUFFICIENT Foundation\n\n**Current Evidence:**\n- `24.3.1-00-SUMMARY.md`: Session naming service COMPLETE — `src/shared/session-naming.ts`, 14 tests pass, typecheck clean.\n- `24.3.1-07-SUMMARY.md`: Metadata propagation chain COMPLETE — 5 files modified, 14 new tests + 2519 existing pass.\n- **BUT** `24.3.1-VALIDATION.md`: ALL 22 validation statuses are **\"⬜ pending\"** — not a single task has been validated.\n- `24.3.1-LIVE-UAT.md`: **DRAFT status** — the live UAT test plan exists but has not been executed.\n- SPEC.md section 47: \"All tests pass\" → L2 evidence expected. But L1 runtime proof (live demo) is not claimed.\n- ROADMAP.md: Does NOT list 24.3.1 as a standalone phase entry — it appears to be a sub-phase under a larger phase.\n- The phase was implemented piece by piece (plans 00-07b) with each plan verified at L2 (typecheck + unit tests), but NO L1 (live runtime) verification.\n\n**Confidence Level:** Confident (that L2 evidence exists), Unclear (that L1 runtime readiness is proven)\n\n**Risk if Wrong:**\nIf we assume 24.3.1 is production-ready for routing and it hasn't been validated in a live environment, real-world routing will fail silently or with confusing errors. The gap between \"tests pass\" and \"works in production\" is especially large for SDK-dependent features like `create-governance-session` which uses `sdk.session.create()` and `sdk.tui.showToast()` — mocks may not reflect real SDK behavior accurately.\n\n**Impact on Phase Ordering:** MEDIUM. If 24.3.1 is not production-ready, downstream phases that depend on governance session features (P24.4-P24.6, coordination dispatch, routing) will be building on an unstable foundation.\n\n**Recommendation:** **MODIFY** — Do NOT upgrade from \"sufficient foundation\" to \"production-ready\" until:\n1. Execute the UAT test plan (`24.3.1-LIVE-UAT.md`)\n2. Mark all 22 validation tasks as PASS/FAIL in `24.3.1-VALIDATION.md`\n3. Prove L1 runtime evidence: the `create-governance-session` tool actually creates a named child session, injects context, commits state, and shows TUI notification\n\nUntil then, treat 24.3.1 as L2-complete but L1-unproven. Build downstream features with test doubles and production hardening deferred.\n\n---\n\n## Needs External Research\n\n1. **OpenCode SDK compatibility**: The `create-governance-session` tool uses `sdk.session.create()`, `sdk.session.prompt()`, `sdk.tui.showToast()` — these API signatures should be validated against the actual `@opencode-ai/plugin` SDK version in `package.json` (currently v1.14.44-era). The unit tests use mocks that may not reflect real SDK behavior.\n2. **GSD fork divergence**: The current GSD repo at `github.com/open-gsd/get-shit-done-redux` should be validated against the Repomix snapshot `5875fd23ec62fc70` to check for any significant architectural changes.\n3. **Symlink + npm distribution model**: Whether npm supports directory-level symlinks in published packages, and whether `postinstall` scripts can reliably recreate `.opencode/` structure on target machines.\n4. **OpenCode's canonical primitives distribution method**: How plugins SHOULD distribute agents, skills, and commands — via npm package extraction, schema generation at runtime, or other mechanisms.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-25T16:24:23.789Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_uafY0CuXa9tfiTVVv6BI9684",
+        "input": {
+          "name": "gsd-list-phase-assumptions"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:28.470Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_bOoF9dyjcjlRtgwLeFjE6748",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/agents/hm-l0-orchestrator.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:28.824Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_xKwJpi8ftTQfZxYSkE4O9141",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/agents/hm-l1-coordinator.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:29.206Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_AgfSRy0sloPeR457zExW7913",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-conductor.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:29.518Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_IOMUQFxTQcV5gAyvqYJ01281",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-phase-loop/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:29.880Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_EH2NQh1koAtBFIKj0mvD4599",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-coordinating-loop/SKILL.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:35.717Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_gtwuYaSFEKqqQfO6u0Pb7358",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/agents/hm-l0-orchestrator.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:36.089Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_3u1AWSb5TSU2JzmOIUZe6313",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:36.377Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_cQUfE44T4ts7XEghhOZs8559",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:36.589Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_IgKvAzeKp1nMiNgo0fL77235",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:42.207Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_QfaBriel3Rp4G5Ov2d1m9094",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:42.411Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_rExrfSeLn1vJp2AQjN7c5117",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:42.625Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_j4p3UmDE6YhA9YuUAgWQ2530",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:43.091Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_pEzfxsTzobTXyWhzDyCN4637",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.1-governance-session-prototype/24.3.1-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:48.208Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Q5tA8ZxYPnhTK3pFZLzI6569",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/agents"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:48.636Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_GEzRIiaoGr2nYcqERNtC2793",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.1-governance-session-prototype/24.3.1-00-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:48.924Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_CFVSh8UPfg7FXzuPcdnr9785",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:54.926Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_rBCP2Fyjfml5XawbRTU72381",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:55.203Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_cOKrrVRDxjkjKU5FM0ap1117",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.1-governance-session-prototype/24.3.1-VALIDATION.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:24:55.693Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_RiJrBvpmrQxlhuNF4wRU4623",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-GSD-agent-architecture-2026-05-23.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:01.621Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_YRTTQK64SKWnaXxHrLcN3064",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:02.017Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_ImpBX3v0tT0gc2BJTFz84320",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.1-governance-session-prototype/24.3.1-LIVE-UAT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:02.485Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_O7MxhIOzy2FYm9AoZnft0095",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.1-governance-session-prototype/24.3.1-07-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:09.102Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_CBp8T1p2c1DcUL8XU9wO0245",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/23-notification-fix-and-tool-surface-docs/23-GSD-REFERENCE-2026-05-23.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:10.452Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_W4pdPouuY5Eu2Joaauw83599",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:10.890Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_dHULGfpeKyW6wkueJJVB2254",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/agents/hm-l1-coordinator.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:17.031Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_cqx9VXSgMO5Pjp5BNYac0016",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:17.277Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_mFn7UOHoli1VAc6Ajt4C3981",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:23.737Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ntvGo23Fn7g9Bw0UEi070769",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:24.177Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_aSavRie9YKeciGXSHpHp7337",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/agents/hm-l2-conductor.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:25:39.802Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_0NEi7BDCERgHoC5kZA1A5996",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-25T16:26:29.938Z",
+      "type": "assistant_message",
+      "content": "I have now gathered sufficient evidence across all 6 assumptions. Here is the complete structured analysis.\n\n---\n\n## Assumptions Analysis Report\n\n### Assumption A: L0→L1→L2→L3 Agent Hierarchy is Correct\n\n**Current Evidence:**\n- `.opencode/agents/` is a directory symlink → `../.hivefiver-meta-builder/agents-lab/active/refactoring/` (confirmed via `ls -la`). All 90 files inside are **regular files**, not individual symlinks. The hierarchy exists as directory structure, not file-level links.\n- `hm-l0-orchestrator.md` (50,206 bytes, 806 lines) — contains landscape-first doctrine, three-path delegation model, quality gate triad enforcement, session tracking, retry logic (max 3), artifact verification — all baked into the agent profile itself.\n- `hm-l1-coordinator.md` (17,016 bytes, 364 lines) — contains wave decomposition, parallel dispatch, inline validation between waves, gate verdicts, result consolidation, max-2 retry logic, escalation protocols.\n- `hm-l2-conductor.md` (5,549 bytes, 138 lines) — leaner; contains intent classification, delegation protocol, wisdom system, verify-before-complete rules.\n- GSD docs (`23-GSD-agent-architecture-2026-05-23.md` line 12): \"GSD ships **33 agents**... with **no hierarchical depth** — there is no L0/L1/L2 taxonomy. Every agent is a peer. The orchestration hierarchy comes from the workflow files, not the agent definitions.\"\n- GSD comparison table (line 17-18): `GSD: Workflow (orchestrator) → Agent (specialist) → Agent (specialist)` vs `Hivemind: L0 Orchestrator → L1 Coordinator → L2 Specialist → L3 Skill`\n- The L0 agent loads **8 skills** (line 109-117 of hm-l0-orchestrator.md), including `hm-l2-coordinating-loop`, `hm-l2-completion-looping`, `hm-l2-phase-loop`, plus all 3 gate-* skills. This is massive context overhead for a \"routing only\" agent.\n- L0 agent file is 50KB — this IS context bloat.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:** \nThe L0 agent at 806 lines / 50KB is carrying the weight of what should be workflow/skill logic. The L1 coordinator adds another 364 lines / 17KB. Together, ~67KB of agent instruction text is loaded every time any high-level task starts. This directly impacts token budget and response latency. GSD proves that flat hierarchy + workflow-driven orchestration works without this overhead.\n\n**Impact on Phase Ordering:** HIGH. If hierarchy is flattened, it affects ALL phases from P24 onward that depend on L0→L1→L2 dispatch patterns. The coordination, delegation, and session-tracker modules all assume this hierarchy exists.\n\n**Recommendation:** **MODIFY** — Remove L1 entirely. Convert L0 to a thin front-facing router (max 150 lines, no looping/gating logic built-in). Move all looping/gating logic to **skills + workflow files** (GSD pattern). L2/L3 remain as specialist agents. This aligns with GSD's proven model where \"orchestration hierarchy comes from the workflow files, not the agent definitions.\"\n\n---\n\n### Assumption B: Agent Profiles Should Enforce Looping/Gating/Hierarchy/Checkpoints\n\n**Current Evidence:**\n- `hm-l0-orchestrator.md` lines 160-163: \"Run quality gate triad on returned results: lifecycle → spec → evidence\" AND \"Max 3 retry cycles before escalation\" AND \"Monitor delegation results via session-tracker\" — this is gating/looping/monitoring logic embedded in agent instructions.\n- `hm-l1-coordinator.md` lines 67-78 (task section): Step 5 \"Run inline validation on wave 1 results (spec compliance check)\", Step 9 \"Run quality gate checks on consolidated output\" — gating logic embedded.\n- `hm-l1-coordinator.md` line 181: \"Attempt remediation (max 2 retries) before escalating failures to L0\" — retry logic embedded.\n- `hm-l2-conductor.md` lines 109-127: \"Verify → If implementation, delegate to critic for review\" AND \"NEVER report completion without verifying\" — verification loop logic embedded.\n- **Contrast:** The SKILL files `hm-l2-phase-loop/SKILL.md` and `hm-l2-coordinating-loop/SKILL.md` already contain this logic as **programmatic features** — they define loop definitions, termination predicates, wave-based dispatch, edge guardrails, etc.\n- GSD docs (line 12): \"orchestration hierarchy comes from the workflow files, not the agent definitions\" — GSD separates these concerns cleanly.\n- The duplicate placement (in agent profiles AND in skills) creates a maintenance burden: changes to gating logic must be made in both places or they drift.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:**\nDual maintenance (agent profiles + skills) guarantees drift over time. The L0 agent loads 8 skills including loops and gates but ALSO hardcodes the same logic in its instruction body — this is wasteful token consumption and a maintenance trap. When the gating logic needs to change (e.g., retry from 3 to 2), it must change in both the agent .md file AND the skill SKILL.md.\n\n**Impact on Phase Ordering:** MEDIUM. This is a structural cleanup that should happen during agent rationalization phases. It doesn't block P24+ but should be scheduled before the agent count grows further.\n\n**Recommendation:** **MODIFY/REJECT** — Strip ALL looping/gating/hierarchy/delegation/checkpoint logic from agent profiles. Agent profiles should ONLY define: specialist domain, switch/selection logic, artifact naming conventions, task boundary definitions. Move ALL operational logic to workflow files and skills (pattern: GSD's workflow-driven model). This is already partially done (skills exist) but the agent profiles haven't been cleaned up.\n\n---\n\n### Assumption C: .opencode/ Symlinks are Correct for Primitives\n\n**Current Evidence:**\n- `.opencode/agents` → symlink to `../.hivefiver-meta-builder/agents-lab/active/refactoring` (confirmed)\n- `.opencode/skills` → symlink to `../.hivefiver-meta-builder/skills-lab/active/refactoring` (confirmed)\n- `.opencode/commands` → symlink to `../.hivefiver-meta-builder/commands-lab/active/refactoring` (confirmed)\n- Individual files inside are **NOT** symlinks — they are regular files accessible through the directory-level symlink.\n- 14 total symlinks in `.opencode/`: 4 directory-level symlinks (agents, commands, skills, disabled variants) + 10 `node_modules/.bin` symlinks (npm standard).\n- `BOOT-04` (line 226 of ROADMAP.md): \"Restore `.opencode/` symlinks to `.hivefiver-meta-builder/` source\" — this is explicitly the DESIGN of the current system.\n- `MCM` workstream (lines 269-300): The meta-concept migration workstream exists precisely to handle the transition of these primitives from meta-builder to `.opencode/`.\n- The symlinks work for local development but break during npm distribution: when someone runs `npx hivemind init` on a DIFFERENT project (the intended use case), the `.hivefiver-meta-builder/` directory doesn't exist. BOOT-04's symlink restoration only works because the dev environment has `hivemind-plugin-private/.hivefiver-meta-builder/`.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:**\nThe current symlink approach ONLY works in the dev environment. For the harness to work as a distributable npm package (`hivemind`), primitives must either be:\n1. Copy-included in the npm package and extracted during `postinstall`/`init`\n2. Generated from schemas at install time\n3. Source-of-truthed in the npm package itself\n\nIf we ship the symlink approach, downstream users get broken `.opencode/` directories after init.\n\n**Impact on Phase Ordering:** CRITICAL. This is a fundamental distribution model issue. MCM (Meta-Concept Migration) workstream is the correct place to address this, but its phases are ⬜ BLOCKED BY PHASE 0. Phase 0 must complete to unblock MCM, which fixes the symlink distribution problem.\n\n**Recommendation:** **MODIFY** — Keep symlinks for local development only. For npm distribution, copy primitives into the package and extract during `init`/`postinstall`. The `.opencode/` directory structure should be:\n- Shipped primitives (hm-*, hf-*, gate-*, stack-*) → copied from package\n- User custom primitives → created by user or meta-concept workflows\n- Never symlinks to non-existent external directories\n\nPhase MCM-03/MCM-04 should handle this transition.\n\n---\n\n### Assumption D: Current Phase Ordering (24.x → 25 → 26 → 26.x → 27...) is Optimal\n\n**Current Evidence:**\n- ROADMAP.md lines 6-7: \"Dependency order: Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience\"\n- Current state: CA-04 (Bootstrap + State Ownership) is 🔴 IN PROGRESS, BOOT-09 is 🟡 IN PROGRESS (2/3 plans complete)\n- CP-DT-01 (Delegate-Task Ecosystem) is RE-OPENED / RUNTIME BLOCKED — depends on CP-ST-06 (session-tracker tracking) and CP-PTY-00\n- MCM (Meta-Concept Migration) is ⬜ BLOCKED BY PHASE 0\n- The roadmap shows 6+ parallel workstreams with complex cross-dependencies\n- The user's specific question about \"24.x → 25 → 26 → 26.x → 27\" refers to phases that appear to be different granularities (24.3.1 is a sub-phase, while 25/26/27 are major phases)\n\n**Key dependency chain issues:**\n1. BOOT (Bootstrap CLI) must complete before MCM can proceed\n2. Session tracker deep fixes (CP-ST-04, CP-ST-05) must complete before CP-DT-01 can proceed\n3. CP-PTY-01 must complete before CP-PTY-02/03/04\n4. Phase 0 governance gate blocks MCM continuation\n5. CA-04 blocks routing workflow foundation (f-04)\n\n**Confidence Level:** Likely\n\n**Risk if Wrong:**\nIf the phase ordering doesn't respect these dependencies, we get blocked phases, wasted effort, and integration failures. For example, working on MCM before BOOT completes means the symlink/distribution model isn't finalized. Working on routing before CA-04 state ownership means persistence paths aren't stabilized.\n\n**Impact on Phase Ordering:** DIRECT — this IS about phase ordering.\n\n**Recommendation:** **MODIFY** — Re-prioritize to:\n1. **COMPLETE BOOT-09** (2/3 plans done, 1 pending) — unblocks downstream\n2. **COMPLETE Phase 0 governance gate** — unblocks MCM\n3. **Session tracker deep fixes** (CP-ST-04, CP-ST-05 are ✅ COMPLETE) → proceed to CP-ST-06\n4. **CP-DT-01 runtime gap closure** (Plan 06) — blocked on CP-ST-06\n5. **MCM** — blocked on Phase 0 + BOOT, but critical for distribution model\n6. **Then** P25-P26-P27-P28-P29-P30-P31-P32-P33-P34-P35-P36-P37 per original sequence\n\nThe current ordering is NOT optimal because too many phases are blocked by upstream dependencies. Focus on completing blocking phases before starting new workstreams.\n\n---\n\n### Assumption E: GSD Research Documents from Phase 23 are Still Valid\n\n**Current Evidence:**\n- All GSD docs dated **2026-05-23** (2 days ago) — very fresh.\n- Source: `github.com/open-gsd/get-shit-done-redux` — the user mentions original repo was abandoned.\n- These were produced from Repomix snapshot `5875fd23ec62fc70` — a point-in-time export.\n- Documents exist: `23-GSD-REFERENCE-2026-05-23.md` (208 lines), `23-GSD-agent-architecture-2026-05-23.md` (402 lines), `23-GSD-command-system-2026-05-23.md`, `23-GSD-workflow-pipeline-2026-05-23.md`, `23-GSD-quality-gates-2026-05-23.md`, `23-GSD-sdk-surface-2026-05-23.md`.\n- The architecture patterns described are STABLE concepts (flat agents, workflow-driven orchestration, namespace routing, file-based state) — these don't change between versions.\n- However, the GSD repo URL `github.com/open-gsd/get-shit-done-redux` replacing the original `github.com/gsd-build/get-shit-done` means the fork may have diverged.\n\n**Confidence Level:** Likely (for architecture patterns), Unclear (for specific implementation details)\n\n**Risk if Wrong:**\nIf GSD has changed its implementation patterns since the snapshot, we might adopt patterns that are no longer current-best-practice. However, the architectural concepts (flat agents, workflow-driven orchestration, namespace routing) are stable design principles, not version-specific implementation details.\n\n**Impact on Phase Ordering:** LOW. The GSD docs inform design decisions but don't block any phase. They are reference material.\n\n**Recommendation:** **KEEP** (as architecture reference) but **RE-VALIDATE** specific claims against the current repo before implementation. The architecture patterns (flat agents, workflow-driven orchestration, namespace routing) are sound regardless of fork status. However, any specific implementation pattern (API shapes, hook signatures, etc.) should be re-validated against the actual `open-gsd/get-shit-done-redux` repo.\n\n---\n\n### Assumption F: Phase 24.3.1 (Governance Session Prototype) is SUFFICIENT Foundation\n\n**Current Evidence:**\n- `24.3.1-00-SUMMARY.md`: Session naming service COMPLETE — `src/shared/session-naming.ts`, 14 tests pass, typecheck clean.\n- `24.3.1-07-SUMMARY.md`: Metadata propagation chain COMPLETE — 5 files modified, 14 new tests + 2519 existing pass.\n- **BUT** `24.3.1-VALIDATION.md`: ALL 22 validation statuses are **\"⬜ pending\"** — not a single task has been validated.\n- `24.3.1-LIVE-UAT.md`: **DRAFT status** — the live UAT test plan exists but has not been executed.\n- SPEC.md section 47: \"All tests pass\" → L2 evidence expected. But L1 runtime proof (live demo) is not claimed.\n- ROADMAP.md: Does NOT list 24.3.1 as a standalone phase entry — it appears to be a sub-phase under a larger phase.\n- The phase was implemented piece by piece (plans 00-07b) with each plan verified at L2 (typecheck + unit tests), but NO L1 (live runtime) verification.\n\n**Confidence Level:** Confident (that L2 evidence exists), Unclear (that L1 runtime readiness is proven)\n\n**Risk if Wrong:**\nIf we assume 24.3.1 is production-ready for routing and it hasn't been validated in a live environment, real-world routing will fail silently or with confusing errors. The gap between \"tests pass\" and \"works in production\" is especially large for SDK-dependent features like `create-governance-session` which uses `sdk.session.create()` and `sdk.tui.showToast()` — mocks may not reflect real SDK behavior accurately.\n\n**Impact on Phase Ordering:** MEDIUM. If 24.3.1 is not production-ready, downstream phases that depend on governance session features (P24.4-P24.6, coordination dispatch, routing) will be building on an unstable foundation.\n\n**Recommendation:** **MODIFY** — Do NOT upgrade from \"sufficient foundation\" to \"production-ready\" until:\n1. Execute the UAT test plan (`24.3.1-LIVE-UAT.md`)\n2. Mark all 22 validation tasks as PASS/FAIL in `24.3.1-VALIDATION.md`\n3. Prove L1 runtime evidence: the `create-governance-session` tool actually creates a named child session, injects context, commits state, and shows TUI notification\n\nUntil then, treat 24.3.1 as L2-complete but L1-unproven. Build downstream features with test doubles and production hardening deferred.\n\n---\n\n## Needs External Research\n\n1. **OpenCode SDK compatibility**: The `create-governance-session` tool uses `sdk.session.create()`, `sdk.session.prompt()`, `sdk.tui.showToast()` — these API signatures should be validated against the actual `@opencode-ai/plugin` SDK version in `package.json` (currently v1.14.44-era). The unit tests use mocks that may not reflect real SDK behavior.\n2. **GSD fork divergence**: The current GSD repo at `github.com/open-gsd/get-shit-done-redux` should be validated against the Repomix snapshot `5875fd23ec62fc70` to check for any significant architectural changes.\n3. **Symlink + npm distribution model**: Whether npm supports directory-level symlinks in published packages, and whether `postinstall` scripts can reliably recreate `.opencode/` structure on target machines.\n4. **OpenCode's canonical primitives distribution method**: How plugins SHOULD distribute agents, skills, and commands — via npm package extraction, schema generation at runtime, or other mechanisms.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1a00c7b00ffe5YnZqoFUoZCZQk"
+      }
+    }
+  ],
+  "lastMessage": "I have now gathered sufficient evidence across all 6 assumptions. Here is the complete structured analysis.\n\n---\n\n## Assumptions Analysis Report\n\n### Assumption A: L0→L1→L2→L3 Agent Hierarchy is Correct\n\n**Current Evidence:**\n- `.opencode/agents/` is a directory symlink → `../.hivefiver-meta-builder/agents-lab/active/refactoring/` (confirmed via `ls -la`). All 90 files inside are **regular files**, not individual symlinks. The hierarchy exists as directory structure, not file-level links.\n- `hm-l0-orchestrator.md` (50,206 bytes, 806 lines) — contains landscape-first doctrine, three-path delegation model, quality gate triad enforcement, session tracking, retry logic (max 3), artifact verification — all baked into the agent profile itself.\n- `hm-l1-coordinator.md` (17,016 bytes, 364 lines) — contains wave decomposition, parallel dispatch, inline validation between waves, gate verdicts, result consolidation, max-2 retry logic, escalation protocols.\n- `hm-l2-conductor.md` (5,549 bytes, 138 lines) — leaner; contains intent classification, delegation protocol, wisdom system, verify-before-complete rules.\n- GSD docs (`23-GSD-agent-architecture-2026-05-23.md` line 12): \"GSD ships **33 agents**... with **no hierarchical depth** — there is no L0/L1/L2 taxonomy. Every agent is a peer. The orchestration hierarchy comes from the workflow files, not the agent definitions.\"\n- GSD comparison table (line 17-18): `GSD: Workflow (orchestrator) → Agent (specialist) → Agent (specialist)` vs `Hivemind: L0 Orchestrator → L1 Coordinator → L2 Specialist → L3 Skill`\n- The L0 agent loads **8 skills** (line 109-117 of hm-l0-orchestrator.md), including `hm-l2-coordinating-loop`, `hm-l2-completion-looping`, `hm-l2-phase-loop`, plus all 3 gate-* skills. This is massive context overhead for a \"routing only\" agent.\n- L0 agent file is 50KB — this IS context bloat.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:** \nThe L0 agent at 806 lines / 50KB is carrying the weight of what should be workflow/skill logic. The L1 coordinator adds another 364 lines / 17KB. Together, ~67KB of agent instruction text is loaded every time any high-level task starts. This directly impacts token budget and response latency. GSD proves that flat hierarchy + workflow-driven orchestration works without this overhead.\n\n**Impact on Phase Ordering:** HIGH. If hierarchy is flattened, it affects ALL phases from P24 onward that depend on L0→L1→L2 dispatch patterns. The coordination, delegation, and session-tracker modules all assume this hierarchy exists.\n\n**Recommendation:** **MODIFY** — Remove L1 entirely. Convert L0 to a thin front-facing router (max 150 lines, no looping/gating logic built-in). Move all looping/gating logic to **skills + workflow files** (GSD pattern). L2/L3 remain as specialist agents. This aligns with GSD's proven model where \"orchestration hierarchy comes from the workflow files, not the agent definitions.\"\n\n---\n\n### Assumption B: Agent Profiles Should Enforce Looping/Gating/Hierarchy/Checkpoints\n\n**Current Evidence:**\n- `hm-l0-orchestrator.md` lines 160-163: \"Run quality gate triad on returned results: lifecycle → spec → evidence\" AND \"Max 3 retry cycles before escalation\" AND \"Monitor delegation results via session-tracker\" — this is gating/looping/monitoring logic embedded in agent instructions.\n- `hm-l1-coordinator.md` lines 67-78 (task section): Step 5 \"Run inline validation on wave 1 results (spec compliance check)\", Step 9 \"Run quality gate checks on consolidated output\" — gating logic embedded.\n- `hm-l1-coordinator.md` line 181: \"Attempt remediation (max 2 retries) before escalating failures to L0\" — retry logic embedded.\n- `hm-l2-conductor.md` lines 109-127: \"Verify → If implementation, delegate to critic for review\" AND \"NEVER report completion without verifying\" — verification loop logic embedded.\n- **Contrast:** The SKILL files `hm-l2-phase-loop/SKILL.md` and `hm-l2-coordinating-loop/SKILL.md` already contain this logic as **programmatic features** — they define loop definitions, termination predicates, wave-based dispatch, edge guardrails, etc.\n- GSD docs (line 12): \"orchestration hierarchy comes from the workflow files, not the agent definitions\" — GSD separates these concerns cleanly.\n- The duplicate placement (in agent profiles AND in skills) creates a maintenance burden: changes to gating logic must be made in both places or they drift.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:**\nDual maintenance (agent profiles + skills) guarantees drift over time. The L0 agent loads 8 skills including loops and gates but ALSO hardcodes the same logic in its instruction body — this is wasteful token consumption and a maintenance trap. When the gating logic needs to change (e.g., retry from 3 to 2), it must change in both the agent .md file AND the skill SKILL.md.\n\n**Impact on Phase Ordering:** MEDIUM. This is a structural cleanup that should happen during agent rationalization phases. It doesn't block P24+ but should be scheduled before the agent count grows further.\n\n**Recommendation:** **MODIFY/REJECT** — Strip ALL looping/gating/hierarchy/delegation/checkpoint logic from agent profiles. Agent profiles should ONLY define: specialist domain, switch/selection logic, artifact naming conventions, task boundary definitions. Move ALL operational logic to workflow files and skills (pattern: GSD's workflow-driven model). This is already partially done (skills exist) but the agent profiles haven't been cleaned up.\n\n---\n\n### Assumption C: .opencode/ Symlinks are Correct for Primitives\n\n**Current Evidence:**\n- `.opencode/agents` → symlink to `../.hivefiver-meta-builder/agents-lab/active/refactoring` (confirmed)\n- `.opencode/skills` → symlink to `../.hivefiver-meta-builder/skills-lab/active/refactoring` (confirmed)\n- `.opencode/commands` → symlink to `../.hivefiver-meta-builder/commands-lab/active/refactoring` (confirmed)\n- Individual files inside are **NOT** symlinks — they are regular files accessible through the directory-level symlink.\n- 14 total symlinks in `.opencode/`: 4 directory-level symlinks (agents, commands, skills, disabled variants) + 10 `node_modules/.bin` symlinks (npm standard).\n- `BOOT-04` (line 226 of ROADMAP.md): \"Restore `.opencode/` symlinks to `.hivefiver-meta-builder/` source\" — this is explicitly the DESIGN of the current system.\n- `MCM` workstream (lines 269-300): The meta-concept migration workstream exists precisely to handle the transition of these primitives from meta-builder to `.opencode/`.\n- The symlinks work for local development but break during npm distribution: when someone runs `npx hivemind init` on a DIFFERENT project (the intended use case), the `.hivefiver-meta-builder/` directory doesn't exist. BOOT-04's symlink restoration only works because the dev environment has `hivemind-plugin-private/.hivefiver-meta-builder/`.\n\n**Confidence Level:** Confident\n\n**Risk if Wrong:**\nThe current symlink approach ONLY works in the dev environment. For the harness to work as a distributable npm package (`hivemind`), primitives must either be:\n1. Copy-included in the npm package and extracted during `postinstall`/`init`\n2. Generated from schemas at install time\n3. Source-of-truthed in the npm package itself\n\nIf we ship the symlink approach, downstream users get broken `.opencode/` directories after init.\n\n**Impact on Phase Ordering:** CRITICAL. This is a fundamental distribution model issue. MCM (Meta-Concept Migration) workstream is the correct place to address this, but its phases are ⬜ BLOCKED BY PHASE 0. Phase 0 must complete to unblock MCM, which fixes the symlink distribution problem.\n\n**Recommendation:** **MODIFY** — Keep symlinks for local development only. For npm distribution, copy primitives into the package and extract during `init`/`postinstall`. The `.opencode/` directory structure should be:\n- Shipped primitives (hm-*, hf-*, gate-*, stack-*) → copied from package\n- User custom primitives → created by user or meta-concept workflows\n- Never symlinks to non-existent external directories\n\nPhase MCM-03/MCM-04 should handle this transition.\n\n---\n\n### Assumption D: Current Phase Ordering (24.x → 25 → 26 → 26.x → 27...) is Optimal\n\n**Current Evidence:**\n- ROADMAP.md lines 6-7: \"Dependency order: Phase 0 Governance Baseline → Bootstrap/Init CLI → Shell/PTY Control-Plane Runway → Meta-Concept Migration → Routing Foundation → Agent Workflows → User Experience\"\n- Current state: CA-04 (Bootstrap + State Ownership) is 🔴 IN PROGRESS, BOOT-09 is 🟡 IN PROGRESS (2/3 plans complete)\n- CP-DT-01 (Delegate-Task Ecosystem) is RE-OPENED / RUNTIME BLOCKED — depends on CP-ST-06 (session-tracker tracking) and CP-PTY-00\n- MCM (Meta-Concept Migration) is ⬜ BLOCKED BY PHASE 0\n- The roadmap shows 6+ parallel workstreams with complex cross-dependencies\n- The user's specific question about \"24.x → 25 → 26 → 26.x → 27\" refers to phases that appear to be different granularities (24.3.1 is a sub-phase, while 25/26/27 are major phases)\n\n**Key dependency chain issues:**\n1. BOOT (Bootstrap CLI) must complete before MCM can proceed\n2. Session tracker deep fixes (CP-ST-04, CP-ST-05) must complete before CP-DT-01 can proceed\n3. CP-PTY-01 must complete before CP-PTY-02/03/04\n4. Phase 0 governance gate blocks MCM continuation\n5. CA-04 blocks routing workflow foundation (f-04)\n\n**Confidence Level:** Likely\n\n**Risk if Wrong:**\nIf the phase ordering doesn't respect these dependencies, we get blocked phases, wasted effort, and integration failures. For example, working on MCM before BOOT completes means the symlink/distribution model isn't finalized. Working on routing before CA-04 state ownership means persistence paths aren't stabilized.\n\n**Impact on Phase Ordering:** DIRECT — this IS about phase ordering.\n\n**Recommendation:** **MODIFY** — Re-prioritize to:\n1. **COMPLETE BOOT-09** (2/3 plans done, 1 pending) — unblocks downstream\n2. **COMPLETE Phase 0 governance gate** — unblocks MCM\n3. **Session tracker deep fixes** (CP-ST-04, CP-ST-05 are ✅ COMPLETE) → proceed to CP-ST-06\n4. **CP-DT-01 runtime gap closure** (Plan 06) — blocked on CP-ST-06\n5. **MCM** — blocked on Phase 0 + BOOT, but critical for distribution model\n6. **Then** P25-P26-P27-P28-P29-P30-P31-P32-P33-P34-P35-P36-P37 per original sequence\n\nThe current ordering is NOT optimal because too many phases are blocked by upstream dependencies. Focus on completing blocking phases before starting new workstreams.\n\n---\n\n### Assumption E: GSD Research Documents from Phase 23 are Still Valid\n\n**Current Evidence:**\n- All GSD docs dated **2026-05-23** (2 days ago) — very fresh.\n- Source: `github.com/open-gsd/get-shit-done-redux` — the user mentions original repo was abandoned.\n- These were produced from Repomix snapshot `5875fd23ec62fc70` — a point-in-time export.\n- Documents exist: `23-GSD-REFERENCE-2026-05-23.md` (208 lines), `23-GSD-agent-architecture-2026-05-23.md` (402 lines), `23-GSD-command-system-2026-05-23.md`, `23-GSD-workflow-pipeline-2026-05-23.md`, `23-GSD-quality-gates-2026-05-23.md`, `23-GSD-sdk-surface-2026-05-23.md`.\n- The architecture patterns described are STABLE concepts (flat agents, workflow-driven orchestration, namespace routing, file-based state) — these don't change between versions.\n- However, the GSD repo URL `github.com/open-gsd/get-shit-done-redux` replacing the original `github.com/gsd-build/get-shit-done` means the fork may have diverged.\n\n**Confidence Level:** Likely (for architecture patterns), Unclear (for specific implementation details)\n\n**Risk if Wrong:**\nIf GSD has changed its implementation patterns since the snapshot, we might adopt patterns that are no longer current-best-practice. However, the architectural concepts (flat agents, workflow-driven orchestration, namespace routing) are stable design principles, not version-specific implementation details.\n\n**Impact on Phase Ordering:** LOW. The GSD docs inform design decisions but don't block any phase. They are reference material.\n\n**Recommendation:** **KEEP** (as architecture reference) but **RE-VALIDATE** specific claims against the current repo before implementation. The architecture patterns (flat agents, workflow-driven orchestration, namespace routing) are sound regardless of fork status. However, any specific implementation pattern (API shapes, hook signatures, etc.) should be re-validated against the actual `open-gsd/get-shit-done-redux` repo.\n\n---\n\n### Assumption F: Phase 24.3.1 (Governance Session Prototype) is SUFFICIENT Foundation\n\n**Current Evidence:**\n- `24.3.1-00-SUMMARY.md`: Session naming service COMPLETE — `src/shared/session-naming.ts`, 14 tests pass, typecheck clean.\n- `24.3.1-07-SUMMARY.md`: Metadata propagation chain COMPLETE — 5 files modified, 14 new tests + 2519 existing pass.\n- **BUT** `24.3.1-VALIDATION.md`: ALL 22 validation statuses are **\"⬜ pending\"** — not a single task has been validated.\n- `24.3.1-LIVE-UAT.md`: **DRAFT status** — the live UAT test plan exists but has not been executed.\n- SPEC.md section 47: \"All tests pass\" → L2 evidence expected. But L1 runtime proof (live demo) is not claimed.\n- ROADMAP.md: Does NOT list 24.3.1 as a standalone phase entry — it appears to be a sub-phase under a larger phase.\n- The phase was implemented piece by piece (plans 00-07b) with each plan verified at L2 (typecheck + unit tests), but NO L1 (live runtime) verification.\n\n**Confidence Level:** Confident (that L2 evidence exists), Unclear (that L1 runtime readiness is proven)\n\n**Risk if Wrong:**\nIf we assume 24.3.1 is production-ready for routing and it hasn't been validated in a live environment, real-world routing will fail silently or with confusing errors. The gap between \"tests pass\" and \"works in production\" is especially large for SDK-dependent features like `create-governance-session` which uses `sdk.session.create()` and `sdk.tui.showToast()` — mocks may not reflect real SDK behavior accurately.\n\n**Impact on Phase Ordering:** MEDIUM. If 24.3.1 is not production-ready, downstream phases that depend on governance session features (P24.4-P24.6, coordination dispatch, routing) will be building on an unstable foundation.\n\n**Recommendation:** **MODIFY** — Do NOT upgrade from \"sufficient foundation\" to \"production-ready\" until:\n1. Execute the UAT test plan (`24.3.1-LIVE-UAT.md`)\n2. Mark all 22 validation tasks as PASS/FAIL in `24.3.1-VALIDATION.md`\n3. Prove L1 runtime evidence: the `create-governance-session` tool actually creates a named child session, injects context, commits state, and shows TUI notification\n\nUntil then, treat 24.3.1 as L2-complete but L1-unproven. Build downstream features with test doubles and production hardening deferred.\n\n---\n\n## Needs External Research\n\n1. **OpenCode SDK compatibility**: The `create-governance-session` tool uses `sdk.session.create()`, `sdk.session.prompt()`, `sdk.tui.showToast()` — these API signatures should be validated against the actual `@opencode-ai/plugin` SDK version in `package.json` (currently v1.14.44-era). The unit tests use mocks that may not reflect real SDK behavior.\n2. **GSD fork divergence**: The current GSD repo at `github.com/open-gsd/get-shit-done-redux` should be validated against the Repomix snapshot `5875fd23ec62fc70` to check for any significant architectural changes.\n3. **Symlink + npm distribution model**: Whether npm supports directory-level symlinks in published packages, and whether `postinstall` scripts can reliably recreate `.opencode/` structure on target machines.\n4. **OpenCode's canonical primitives distribution method**: How plugins SHOULD distribute agents, skills, and commands — via npm package extraction, schema generation at runtime, or other mechanisms."
+}

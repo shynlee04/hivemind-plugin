@@ -1,0 +1,45 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+  "lastUpdated": "2026-05-25T16:26:45.261Z",
+  "hierarchy": {
+    "root": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+    "children": {
+      "ses_1a00e53a1ffe4nGgPQj1PgYCy4": {
+        "file": "ses_1a00e53a1ffe4nGgPQj1PgYCy4.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-advisor-researcher",
+        "children": {}
+      },
+      "ses_1a00ca218ffeb7ZPbO9sesuKQc": {
+        "file": "ses_1a00ca218ffeb7ZPbO9sesuKQc.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-advisor-researcher",
+        "children": {}
+      },
+      "ses_1a00c7b00ffe5YnZqoFUoZCZQk": {
+        "file": "ses_1a00c7b00ffe5YnZqoFUoZCZQk.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-assumptions-analyzer",
+        "children": {}
+      },
+      "ses_1a00a3196ffeFmkFNSuD2F7GUp": {
+        "file": "ses_1a00a3196ffeFmkFNSuD2F7GUp.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 4,
+  "toolSummary": {
+    "bash": 5,
+    "invalid": 1,
+    "task": 3,
+    "read": 4
+  }
+}

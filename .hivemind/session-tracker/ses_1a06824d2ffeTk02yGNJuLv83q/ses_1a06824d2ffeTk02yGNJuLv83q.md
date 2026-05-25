@@ -19,7 +19,7 @@ children:
     childFile: ses_1a03b0735ffeBrWF32VwiHsVVb.json
 continuityIndex: session-continuity.json
 status: completed
-lastMessage: "Executor commit docs đã revert implementation. Fix ngay:"
+lastMessage: "Test pass. Update UAT test case 9 với API đúng:"
 ---
 
 ## USER (turn 1)
@@ -2988,6 +2988,215 @@ task_id: ses_1a03b0735ffeBrWF32VwiHsVVb
 ```json
 {
   "callID": "call_00_AwGmXpSRQWEncMLVweou7287"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_JwoRyZjaFQuQJ0Sou9oa1509"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_PwLmEQoNdVvxgbbP09Gx7037"
+}
+```
+
+
+## ASSISTANT (turn 11)
+
+## Tổng kết hành trình
+
+**Planner → Checker (FAIL: 3 BLOCKERs) → Fix → Planner lại → Checker (PASS) → Executor**
+
+### Kết quả cuối cùng
+
+| Hạng mục | Trạng thái |
+|----------|-----------|
+| `src/shared/session-naming.ts` | ✅ Mới — `generateSessionTitle()` + `parseSessionTitle()` |
+| `SessionRecord` có `title?: string` | ✅ types.ts updated |
+| `session-writer.ts` ghi title vào frontmatter | ✅ session-writer.ts updated |
+| `session-hooks.ts:302` ko còn `"unknown"` | ✅ Dùng real title từ continuity |
+| `.hivemind/governance/config.json` | ✅ Mới — agents, naming_standards |
+| `config-reader.ts` | ✅ Mới — typed config reader |
+| 3 creation points dùng naming service | ✅ starter, creator, builder |
+| Governance tool root session + coordinator | ✅ No parentID, coordinator.dispatch() |
+| Metadata propagation ko còn "unknown" | ✅ parseSessionTitle() làm nguồn |
+| Typecheck | ✅ 0 errors |
+| Governance engine tests | ✅ 27/27 passed |
+
+### Bug tìm được trong executor
+
+Commit `ce535f9f` (docs SUMMARY) đã revert implementation files. Đã fix và commit `d9e143f1`.
+
+## USER (turn 12)
+
+**source:** real-human
+
+tạo cho tôi live  test case mới để test tất cả những thứ này ở Live OpenCode runtime sau khi tôi rebuild lại 
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/src/shared/session-naming.ts"
+}
+```
+
+
+### Tool: write
+
+**Input:**
+```json
+{
+  "callID": "call_00_IBmjhltFogPeGMUSk49m5959"
+}
+```
+
+
+## ASSISTANT (turn 12)
+
+Đã tạo live UAT test case tại:
+
+**`.planning/phases/24.3.1-governance-session-prototype/24.3.1-LIVE-UAT.md`**
+
+### 9 Test cases:
+
+| # | Test | Lệnh chính |
+|---|------|-----------|
+| 1 | **Naming Service** — generate/parse round-trip | `npx vitest run tests/features/governance-engine/ -t "naming"` |
+| 2 | **Config Plane** — JSON valid + readable | `cat .hivemind/governance/config.json \| python3 -m json.tool` |
+| 3 | **Governance Tool** — root session thật trong `opencode session list` | `create-governance-session` tool → `opencode session list` |
+| 4 | **Session Tracker** — title trong YAML frontmatter | `head -10 ses_*.md` — kiểm tra field `title:` |
+| 5 | **delegate-task** — child session title đúng format | `opencode session list` → tìm `delegate` trong title |
+| 6 | **Metadata** — không còn `"unknown"` | `cat .hivemind/state/delegations.json \| python3 ...` |
+| 7 | **Kernel Packet** — không hardcode `"unknown"` | `grep "title:" src/hooks/lifecycle/session-hooks.ts` |
+| 8 | **Full Regression** — 0 errors | `npx tsc --noEmit && npx vitest run` |
+| 9 | **Config Reader** — resolve agent từ brief | `node -e "new GovernanceConfigReader().resolveAgentForBrief(..."` |
+
+**Rebuild xong** (`npm run build`) → **restart OpenCode** → chạy từng test. Test 3-6 cần OpenCode runtime, test 1,2,7,8,9 chạy CLI.
+
+## USER (turn 13)
+
+**source:** real-human
+
+|------|----------|---------|---------|
+| 1 | Naming service unit tests | ✅ PASS | 27/27 test cases passed |
+| 2 | Governance config plane | ✅ PASS | Config JSON hợp lệ với đầy đủ fields |
+| 3 | create-governance-session | ❌ FAIL | Tool không discoverable - chưa rebuild thành công |
+| 4 | Session tracker title frontmatter | ⬜ SKIP | Chưa kiểm tra do test 3 fail |
+| 5 | delegate-task naming | ⬜ SKIP | Chưa test do test 3 fail |
+| 6 | Hierarchy manifest metadata | ⚠️ PARTIAL | Có delegations nhưng agent: "builder" (không phải "unknown") |
+| 7 | Kernel packet title | ✅ PASS | Line 302: title: continuity?.metadata?.title ?? |
+| 8 | Full regression | ⚠️ PARTIAL | 7 fail | 2529 pass (6 pre-existing failures OK) |
+| 9 | Config reader resolution | ❌ FAIL | GovernanceConfigReader là constructor không phải class | 
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_KQfNjuYTT4epuupmAcTG4608"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_ZZv8ZpEZgu2uboeh0doU0636"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_02_uEZRXFy8ynbdUb9W2IOX2694"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_6FOwtQwALmUW87h1VWfE1790"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_01_15B0ATIADuw2W3txVTT88852"
+}
+```
+
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/delegation-manager.test.ts"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_mJH0sVSAkufONmfFW3N38524"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_Rdou2TqFXI0R2u51aDlA2533"
+}
+```
+
+
+### Tool: edit
+
+**Input:**
+```json
+{
+  "callID": "call_00_wuME961ave84Mcp8W7jg2358"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_00_zwsqoPbWCpkLrcVZrZri6082"
 }
 ```
 

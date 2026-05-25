@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1a0368fb7ffejsLPsdLHV3bNt5",
-  "lastUpdated": "2026-05-25T16:03:42.967Z",
+  "lastUpdated": "2026-05-25T16:11:12.288Z",
   "hierarchy": {
     "root": "ses_1a0368fb7ffejsLPsdLHV3bNt5",
     "children": {
@@ -51,20 +51,20 @@
         "file": "ses_1a01f857dffevwGlvRPsNmm2nw.json",
         "depth": 1,
         "status": "active",
-        "delegatedBy": "gsd-assumptions-analyzer",
+        "delegatedBy": "gsd-codebase-mapper",
         "children": {}
       },
       "ses_1a01f4929ffeKmf2PLf86jnvM8": {
         "file": "ses_1a01f4929ffeKmf2PLf86jnvM8.json",
         "depth": 1,
         "status": "active",
-        "delegatedBy": "gsd-codebase-mapper",
+        "delegatedBy": "gsd-roadmapper",
         "children": {}
       }
     }
   },
   "turnCount": 6,
   "toolSummary": {
-    "task": 4
+    "task": 8
   }
 }

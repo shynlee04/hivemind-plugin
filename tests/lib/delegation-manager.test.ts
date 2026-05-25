@@ -290,7 +290,7 @@ describe("DelegationManager", () => {
 
       expect(client.session.create).toHaveBeenCalledWith(expect.objectContaining({
         body: expect.objectContaining({
-          title: "Delegation: builder",
+          title: expect.stringMatching(/^hm\/delegate\/child\/builder\//),
           parentID: "ses-parent-dispatch",
         }),
       }))

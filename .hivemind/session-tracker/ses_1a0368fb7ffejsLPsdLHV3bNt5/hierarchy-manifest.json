@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "rootMainSessionID": "ses_1a0368fb7ffejsLPsdLHV3bNt5",
-  "lastUpdated": "2026-05-25T16:03:42.996Z",
+  "lastUpdated": "2026-05-25T16:11:12.257Z",
   "children": {
     "ses_1a029e886ffez3qOPK5XwWZOeZ": {
       "sessionID": "ses_1a029e886ffez3qOPK5XwWZOeZ",
@@ -63,8 +63,8 @@
       "delegatedBy": "task",
       "subagentType": "gsd-advisor-researcher",
       "createdAt": "2026-05-25T16:02:30.368Z",
-      "updatedAt": "2026-05-25T16:02:30.368Z",
-      "status": "active",
+      "updatedAt": "2026-05-25T16:11:12.257Z",
+      "status": "completed",
       "turnCount": 0,
       "childFile": "ses_1a02064d9ffetGKnkAomhYDs60.json"
     },
@@ -76,8 +76,8 @@
       "delegatedBy": "task",
       "subagentType": "gsd-assumptions-analyzer",
       "createdAt": "2026-05-25T16:03:09.410Z",
-      "updatedAt": "2026-05-25T16:03:09.410Z",
-      "status": "active",
+      "updatedAt": "2026-05-25T16:09:27.707Z",
+      "status": "completed",
       "turnCount": 0,
       "childFile": "ses_1a01fcc58ffeLY5cXYAWP0q5ER.json"
     },
@@ -89,8 +89,8 @@
       "delegatedBy": "task",
       "subagentType": "gsd-assumptions-analyzer",
       "createdAt": "2026-05-25T16:03:27.541Z",
-      "updatedAt": "2026-05-25T16:03:27.541Z",
-      "status": "active",
+      "updatedAt": "2026-05-25T16:10:26.029Z",
+      "status": "completed",
       "turnCount": 0,
       "childFile": "ses_1a01f857dffevwGlvRPsNmm2nw.json"
     },
@@ -102,8 +102,8 @@
       "delegatedBy": "task",
       "subagentType": "gsd-codebase-mapper",
       "createdAt": "2026-05-25T16:03:42.996Z",
-      "updatedAt": "2026-05-25T16:03:42.996Z",
-      "status": "active",
+      "updatedAt": "2026-05-25T16:09:59.156Z",
+      "status": "completed",
       "turnCount": 0,
       "childFile": "ses_1a01f4929ffeKmf2PLf86jnvM8.json"
     }

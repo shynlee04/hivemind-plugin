@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+  "lastUpdated": "2026-05-25T16:26:45.285Z",
+  "children": {
+    "ses_1a00e53a1ffe4nGgPQj1PgYCy4": {
+      "sessionID": "ses_1a00e53a1ffe4nGgPQj1PgYCy4",
+      "parentSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+      "rootMainSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-advisor-researcher",
+      "createdAt": "2026-05-25T16:22:14.421Z",
+      "updatedAt": "2026-05-25T16:23:01.321Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a00e53a1ffe4nGgPQj1PgYCy4.json"
+    },
+    "ses_1a00ca218ffeb7ZPbO9sesuKQc": {
+      "sessionID": "ses_1a00ca218ffeb7ZPbO9sesuKQc",
+      "parentSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+      "rootMainSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-advisor-researcher",
+      "createdAt": "2026-05-25T16:24:05.412Z",
+      "updatedAt": "2026-05-25T16:26:00.032Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a00ca218ffeb7ZPbO9sesuKQc.json"
+    },
+    "ses_1a00c7b00ffe5YnZqoFUoZCZQk": {
+      "sessionID": "ses_1a00c7b00ffe5YnZqoFUoZCZQk",
+      "parentSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+      "rootMainSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-advisor-researcher",
+      "createdAt": "2026-05-25T16:24:15.428Z",
+      "updatedAt": "2026-05-25T16:26:30.036Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1a00c7b00ffe5YnZqoFUoZCZQk.json"
+    },
+    "ses_1a00a3196ffeFmkFNSuD2F7GUp": {
+      "sessionID": "ses_1a00a3196ffeFmkFNSuD2F7GUp",
+      "parentSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+      "rootMainSessionID": "ses_1a014d8b8ffefTTAhVfD7OnIz4",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-codebase-mapper",
+      "createdAt": "2026-05-25T16:26:45.285Z",
+      "updatedAt": "2026-05-25T16:26:45.285Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_1a00a3196ffeFmkFNSuD2F7GUp.json"
+    }
+  },
+  "totalChildren": 4,
+  "maxDepth": 1
+}
