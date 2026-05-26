@@ -32,8 +32,8 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-pattern-mapper**: Audit Complete. Upgraded with TS config analysis, JSDoc and type safety guidelines, and standard Vitest testing patterns. No new debts.
 
 ### Wave 5: Goal-Backward Planning
-- **hm-planner**: [Pending Wave 5 Audit]
-- **hm-plan-checker**: [Pending Wave 5 Audit]
+- **hm-planner**: Audit Complete. Upgraded by replacing TBD items with programmatic phase state Zod validation. Checked dependency wave calculations.
+- **hm-plan-checker**: Audit Complete. Upgraded by replacing manual check notes with schema-kernel frontmatter validator, Nyquist sampling rate checks, and ASVS controls. No new debts.
 
 ### Wave 6: Roadmapping & Maintenance
 - **hm-roadmapper**: [Pending Wave 6 Audit]
