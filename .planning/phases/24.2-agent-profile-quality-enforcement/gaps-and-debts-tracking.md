@@ -28,8 +28,8 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-architect**: Audit Complete. Upgraded with interface design protocol, security by design ASVS guidelines, and ADR compliance checks. No new debts.
 
 ### Wave 4: Codebase Mapping
-- **hm-codebase-mapper**: [Pending Wave 4 Audit]
-- **hm-pattern-mapper**: [Pending Wave 4 Audit]
+- **hm-codebase-mapper**: Audit Complete. Upgraded with SCAN/READ/DEEP mapping modes, CQRS boundary and 9-surface authority checks, and structured returns.
+- **hm-pattern-mapper**: Audit Complete. Upgraded with TS config analysis, JSDoc and type safety guidelines, and standard Vitest testing patterns. No new debts.
 
 ### Wave 5: Goal-Backward Planning
 - **hm-planner**: [Pending Wave 5 Audit]
