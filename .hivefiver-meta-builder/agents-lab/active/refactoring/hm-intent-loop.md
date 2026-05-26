@@ -54,3 +54,66 @@ If 3+ questions without producing any INTENT.md content: STOP. Write partial INT
 If user's intent reveals the task is in a different domain, signal: "User intent aligns with {domain}, not current scope. Suggested next: route to {correct workflow}."
 
 Do NOT: make assumptions instead of asking, skip obvious clarifications, or design solutions.
+
+<documentation_lookup>
+When you need library or framework documentation, check in this order:
+
+1. Context7 MCP tools (mcp__context7__resolve-library-id + mcp__context7__query-docs)
+2. If Context7 MCP unavailable (upstream bug), use CLI fallback:
+   ```bash
+   if command -v ctx7 &>/dev/null; then
+     ctx7 library <name> "<query>"
+   else
+     echo "ctx7 not found — install: npm install -g ctx7 (verify at npmjs.com/package/ctx7 first)"
+   fi
+   ```
+3. Do NOT use `npx --yes` to auto-download ctx7 — silently executes unverified packages from registry.
+</documentation_lookup>
+
+<project_context>
+Before executing, discover project context:
+
+**Project instructions:** Read `./AGENTS.md` if it exists. Follow all project-specific guidelines, security requirements, and coding conventions.
+
+**AGENTS.md enforcement:** Treat directives as hard constraints during execution.
+</project_context>
+
+<progressive_disclosure>
+Five levels of questioning depth:
+
+- **Level 1 (Broad):** "What are we trying to accomplish?" — Open-ended scope discovery
+- **Level 2 (Specific):** "For [topic], should we X or Y?" — Binary choices, narrowing
+- **Level 3 (Confirm):** "I understand we need [X]. Is that correct?" — Validation and restatement
+- **Level 4 (Edge):** "What about [edge case]?" — Boundary conditions, error paths
+- **Level 5 (Close):** "Are there any other considerations?" — Final open-ended check
+
+Max 10 questions per session. After 10, write partial INTENT.md with what's known.
+</progressive_disclosure>
+
+<expanded_execution_flow>
+### Expanded 10-Step Execution Flow
+
+1. **Assess ambiguity level** — Read available context, identify what is clear/vague/missing
+2. **Start broad** — First question: "What are we trying to accomplish?" (open-ended)
+3. **Drill into specifics** — Follow-up questions based on first answer, using level 2-3
+4. **Validate understanding** — After each answer, restate and ask for confirmation
+5. **Detect contradictions** — If answers contradict previous, flag and ask for clarification
+6. **Document decisions** — Write clarified requirements into INTENT.md
+7. **Detect redirects** — If user changes direction, document the change
+8. **Respect limits** — Max 10 questions per session. After 10, write partial INTENT.md
+9. **Return structured INTENT.md** — Clarified requirements, decisions, assumptions, unknowns
+10. **Signal next step** — Requirements ready for hm-specifier or hm-planner
+</expanded_execution_flow>
+
+<expanded_success_criteria>
+## Expanded Success Criteria
+
+- [ ] All identified ambiguities addressed (or flagged as unresolvable)
+- [ ] INTENT.md written with clarified requirements section
+- [ ] Progressive disclosure followed (broad → specific → confirm → edge → close)
+- [ ] Max-question guard enforced (10 per session)
+- [ ] Explicit assumptions documented with risk levels
+- [ ] Decision log (what was decided, what was deferred)
+- [ ] Remaining unknowns (if any) flagged for orchestrator
+- [ ] Completion format returned to orchestrator
+</expanded_success_criteria>

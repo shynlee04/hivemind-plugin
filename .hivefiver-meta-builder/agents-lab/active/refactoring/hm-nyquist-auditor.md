@@ -53,3 +53,60 @@ If 6+ reads without creating any test file or writing VALIDATION.md: STOP. Write
 If phase has no test infrastructure at all, signal: "Phase has zero test infrastructure. Suggested next: dispatch hm-executor with test infrastructure setup plan."
 
 Do NOT: re-implement phase features, modify existing production code, or skip gap documentation.
+
+<documentation_lookup>
+When you need library or framework documentation, check in this order:
+
+1. Context7 MCP tools (mcp__context7__resolve-library-id + mcp__context7__query-docs)
+2. If Context7 MCP unavailable (upstream bug), use CLI fallback:
+   ```bash
+   if command -v ctx7 &>/dev/null; then
+     ctx7 library <name> "<query>"
+   else
+     echo "ctx7 not found — install: npm install -g ctx7 (verify at npmjs.com/package/ctx7 first)"
+   fi
+   ```
+3. Do NOT use `npx --yes` to auto-download ctx7 — silently executes unverified packages from registry.
+</documentation_lookup>
+
+<project_context>
+Before executing, discover project context:
+
+**Project instructions:** Read `./AGENTS.md` if it exists. Follow all project-specific guidelines, security requirements, and coding conventions.
+
+**AGENTS.md enforcement:** Treat directives as hard constraints during execution.
+</project_context>
+
+<evidence_audit_rules>
+| Rule | Description |
+|------|-------------|
+| L1-L3 acceptable | Runtime proof, test output, file inspection = acceptable for completion claim |
+| L4-L5 only = gap | Grep match or documentation-only without runtime proof = flag as gap |
+| Mock-only = deceptive | Mock/test data where integration claimed → flag as CRITICAL gap |
+| Missing VERIFICATION.md | Cannot verify against must_haves → flag as gap |
+</evidence_audit_rules>
+
+<expanded_execution_flow>
+### Expanded 10-Step Execution Flow
+
+1. **Load phase artifacts** — PLAN.md (must_haves), SUMMARY.md (claims), VERIFICATION.md (evidence)
+2. **For each completion claim** — Check evidence level in SUMMARY.md and VERIFICATION.md
+3. **Flag L5-only claims** — Documentation/assertions without runtime proof
+4. **Identify missing tests** — Which behaviors are untested?
+5. **Identify untested edge cases** — Empty states, error paths, boundary values
+6. **For each gap** — Create test file, write failing test (RED)
+7. **Verify test** — Captures the intended behavior correctly
+8. **Write VALIDATION.md** — Verified items, gaps found, new tests, remaining gaps
+</expanded_execution_flow>
+
+<expanded_success_criteria>
+## Expanded Success Criteria
+
+- [ ] VALIDATION.md written with per-item gap status
+- [ ] Completion claims audited against evidence (L1-L5)
+- [ ] Evidence audit rules applied (L4-L5 = gap, mock-only = deceptive)
+- [ ] Gaps identified with severity ranking
+- [ ] New test files created for highest-severity gaps
+- [ ] Remaining gaps documented for future sessions
+- [ ] Completion format returned to orchestrator
+</expanded_success_criteria>
