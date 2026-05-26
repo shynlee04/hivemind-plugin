@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "timestamp": "2026-05-25T14:16:00.414Z",
+  "timestamp": "2026-05-26T15:11:34.598Z",
   "mode": "full",
   "files": {
     "get-shit-done/VERSION": "7fbd210ebec11f65a97190ef900795c4b8da3805af3f5a1b8d1d272556b292ca",
@@ -312,7 +312,6 @@
     "get-shit-done/workflows/validate-phase.md": "b4ca6ded854392ef0262fc2475dcf104a49c80aac0e5948e43d8ad557baf185c",
     "get-shit-done/workflows/verify-phase.md": "7cfab44bb3450ef4126cab7be3e0fe6365cfbb888175655d6a756a5d114a1f9b",
     "get-shit-done/workflows/verify-work.md": "175a453942609346479c2998a9f74199c409dd4e7a771f3479293008127d7bb1",
-    "commands/gsd/dev-preferences.md": "03da8349fb81f20f5decf4be279724649106fe7b5f52c25709bec3e68dbfc0d1",
     "command/gsd-add-tests.md": "3f8dc08213e071ee144771823dc9863d47dc0b5ee99f9e68041a9c7252ee77bc",
     "command/gsd-ai-integration-phase.md": "5173239ce1f165d3153145dfa169f7d65115a2b50783f2756a70b38deafd459b",
     "command/gsd-audit-fix.md": "29a9fb3535558854f43263315fb978fc06378f52b13b2ea0c646bf688ada3e75",

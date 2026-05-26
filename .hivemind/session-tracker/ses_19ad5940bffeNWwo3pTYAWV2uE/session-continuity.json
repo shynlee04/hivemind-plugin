@@ -1,0 +1,61 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_19ad5940bffeNWwo3pTYAWV2uE",
+  "lastUpdated": "2026-05-26T17:35:31.078Z",
+  "hierarchy": {
+    "root": "ses_19ad5940bffeNWwo3pTYAWV2uE",
+    "children": {
+      "ses_19ad24f79ffeGxHQQD6pVfSAhE": {
+        "file": "ses_19ad24f79ffeGxHQQD6pVfSAhE.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_19acae85fffe2jcidUxMWPYL3B": {
+        "file": "ses_19acae85fffe2jcidUxMWPYL3B.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-pattern-mapper",
+        "children": {}
+      },
+      "ses_19ac69679ffem8r06fkN55l6ct": {
+        "file": "ses_19ac69679ffem8r06fkN55l6ct.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_19ab42eadffeKKIgTSnkNuHHB7": {
+        "file": "ses_19ab42eadffeKKIgTSnkNuHHB7.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_19ab3143bffeI4PGOX9bNTpR2k": {
+        "file": "ses_19ab3143bffeI4PGOX9bNTpR2k.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_19aaf102cffeqYoNjYuDKVjWU7": {
+        "file": "ses_19aaf102cffeqYoNjYuDKVjWU7.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 3,
+  "toolSummary": {
+    "read": 23,
+    "glob": 7,
+    "bash": 2,
+    "skill": 1,
+    "question": 1,
+    "task": 5
+  }
+}

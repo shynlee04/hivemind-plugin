@@ -5,14 +5,14 @@ description: "Generate developer behavioral profile and create Claude-discoverab
 
 
 <objective>
-Generate a developer behavioral profile from session analysis (or questionnaire) and produce artifacts (USER-PROFILE.md, /gsd-dev-preferences, GEMINI.md section) that personalize the agent's responses.
+Generate a developer behavioral profile from session analysis (or questionnaire) and produce artifacts (USER-PROFILE.md, `gsd-dev-preferences` skill config, GEMINI.md section) that personalize the agent's responses.
 
 Routes to the profile-user workflow which orchestrates the full flow: consent gate, session analysis or questionnaire fallback, profile generation, result display, and artifact selection.
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/profile-user.md
-@.agent/get-shit-done/references/ui-brand.md
+@~/.gemini/antigravity/get-shit-done/workflows/profile-user.md
+@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

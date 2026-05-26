@@ -12,7 +12,7 @@ Output: Test files committed with message `test(phase-{N}): add unit and E2E tes
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/add-tests.md
+@~/.gemini/antigravity/get-shit-done/workflows/add-tests.md
 </execution_context>
 
 <context>

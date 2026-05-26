@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_19ac54759ffeXJDoeh54AQsqFZ",
+  "lastUpdated": "2026-05-26T17:18:48.549Z",
+  "hierarchy": {
+    "root": "ses_19ac54759ffeXJDoeh54AQsqFZ",
+    "children": {
+      "ses_19abc24acffejXpp8PXdH7TT8X": {
+        "file": "ses_19abc24acffejXpp8PXdH7TT8X.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 8,
+  "toolSummary": {
+    "read": 4,
+    "task": 1
+  }
+}

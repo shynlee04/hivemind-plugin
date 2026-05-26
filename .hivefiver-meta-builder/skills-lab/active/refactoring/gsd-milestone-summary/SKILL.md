@@ -12,7 +12,7 @@ Output: MILESTONE_SUMMARY written to `.planning/reports/`, presented inline, opt
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/milestone-summary.md
+@~/.gemini/antigravity/get-shit-done/workflows/milestone-summary.md
 </execution_context>
 
 <context>

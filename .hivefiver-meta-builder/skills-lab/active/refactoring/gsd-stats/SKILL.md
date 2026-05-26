@@ -8,7 +8,7 @@ Display comprehensive project statistics including phase progress, plan executio
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/stats.md
+@~/.gemini/antigravity/get-shit-done/workflows/stats.md
 </execution_context>
 
 <process>

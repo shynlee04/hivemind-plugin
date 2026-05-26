@@ -8,11 +8,6 @@ children: []
 continuityIndex: session-continuity.json
 status: completed
 title: New session - 2026-05-26T14:37:12.160Z
-lastMessage: |+
-  
-
-  Now let me read the workflow file and check the project state:
-
 ---
 
 ## USER (turn 1)
@@ -206,58 +201,3 @@ Read and execute `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/w
 - CONTEXT.md captures decisions, not vague vision
 - User knows next steps
 </success_criteria>
-
-### Tool: skill
-
-**Input:**
-```json
-{
-  "name": "gsd-discuss-phase"
-}
-```
-
-**Output:** (pruned)
-```
-# Skill: gsd-discuss-phase
-```
-
-
-### Tool: skill
-
-**Input:**
-```json
-{
-  "name": "session-foundation"
-}
-```
-
-**Output:** (pruned)
-```
-# Skill: session-foundation
-```
-
-
-### Tool: skill
-
-**Input:**
-```json
-{
-  "name": "hm-l2-skill-router"
-}
-```
-
-**Output:** (pruned)
-```
-# Skill: hm-l2-skill-router
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/discuss-phase.md"
-}
-```
-

@@ -1,0 +1,45 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+  "lastUpdated": "2026-05-26T15:54:49.269Z",
+  "hierarchy": {
+    "root": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+    "children": {
+      "ses_19b196f42ffef1wPfPqvs62ccD": {
+        "file": "ses_19b196f42ffef1wPfPqvs62ccD.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_19b151eafffeJ8N44axkXPrQkJ": {
+        "file": "ses_19b151eafffeJ8N44axkXPrQkJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_19b0b6ac1ffef0PWq2AE7P2Hpe": {
+        "file": "ses_19b0b6ac1ffef0PWq2AE7P2Hpe.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      },
+      "ses_19b04ccc3ffep6K4tpjU7tC5Ej": {
+        "file": "ses_19b04ccc3ffep6K4tpjU7tC5Ej.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {
+    "bash": 7,
+    "task": 4,
+    "delegation-status": 1,
+    "session-tracker": 1
+  }
+}

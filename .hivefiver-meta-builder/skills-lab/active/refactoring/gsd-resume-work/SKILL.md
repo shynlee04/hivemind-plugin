@@ -17,7 +17,7 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/resume-project.md
+@~/.gemini/antigravity/get-shit-done/workflows/resume-project.md
 </execution_context>
 
 <process>

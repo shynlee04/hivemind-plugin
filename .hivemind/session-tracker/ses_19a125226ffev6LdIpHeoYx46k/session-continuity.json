@@ -1,0 +1,48 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_19a125226ffev6LdIpHeoYx46k",
+  "lastUpdated": "2026-05-26T20:33:09.208Z",
+  "hierarchy": {
+    "root": "ses_19a125226ffev6LdIpHeoYx46k",
+    "children": {
+      "ses_19a0d650cffeMyoMKGo0J3DkMg": {
+        "file": "ses_19a0d650cffeMyoMKGo0J3DkMg.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_19a0b69a4ffeLJH5GSo7eUek9y": {
+        "file": "ses_19a0b69a4ffeLJH5GSo7eUek9y.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_19a09df0dffeNQcnuehPSQViK8": {
+        "file": "ses_19a09df0dffeNQcnuehPSQViK8.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 3,
+  "toolSummary": {
+    "glob": 11,
+    "session-tracker": 1,
+    "read": 22,
+    "skill": 2,
+    "hivemind-doc": 4,
+    "bash": 9,
+    "hivemind-command-engine": 3,
+    "invalid": 1,
+    "execute-slash-command": 1,
+    "grep": 1,
+    "write": 3,
+    "task": 3,
+    "edit": 9,
+    "todowrite": 1
+  }
+}

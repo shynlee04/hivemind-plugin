@@ -30,7 +30,7 @@ Granular flags are composable: `--discuss --research --validate` gives the same 
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/quick.md
+@~/.gemini/antigravity/get-shit-done/workflows/quick.md
 </execution_context>
 
 <context>

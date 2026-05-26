@@ -12,8 +12,8 @@ Output: {phase_num}-UAT.md tracking all test results. If issues found: diagnosed
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/verify-work.md
-@.agent/get-shit-done/templates/UAT.md
+@~/.gemini/antigravity/get-shit-done/workflows/verify-work.md
+@~/.gemini/antigravity/get-shit-done/templates/UAT.md
 </execution_context>
 
 <context>

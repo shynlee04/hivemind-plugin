@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+  "lastUpdated": "2026-05-26T15:54:11.084Z",
+  "children": {
+    "ses_19b196f42ffef1wPfPqvs62ccD": {
+      "sessionID": "ses_19b196f42ffef1wPfPqvs62ccD",
+      "parentSessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+      "rootMainSessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-codebase-mapper",
+      "createdAt": "2026-05-26T15:28:12.549Z",
+      "updatedAt": "2026-05-26T15:32:23.559Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_19b196f42ffef1wPfPqvs62ccD.json"
+    },
+    "ses_19b151eafffeJ8N44axkXPrQkJ": {
+      "sessionID": "ses_19b151eafffeJ8N44axkXPrQkJ",
+      "parentSessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+      "rootMainSessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-codebase-mapper",
+      "createdAt": "2026-05-26T15:32:55.303Z",
+      "updatedAt": "2026-05-26T15:42:02.217Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_19b151eafffeJ8N44axkXPrQkJ.json"
+    },
+    "ses_19b0b6ac1ffef0PWq2AE7P2Hpe": {
+      "sessionID": "ses_19b0b6ac1ffef0PWq2AE7P2Hpe",
+      "parentSessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+      "rootMainSessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-codebase-mapper",
+      "createdAt": "2026-05-26T15:43:31.202Z",
+      "updatedAt": "2026-05-26T15:49:54.588Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_19b0b6ac1ffef0PWq2AE7P2Hpe.json"
+    },
+    "ses_19b04ccc3ffep6K4tpjU7tC5Ej": {
+      "sessionID": "ses_19b04ccc3ffep6K4tpjU7tC5Ej",
+      "parentSessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+      "rootMainSessionID": "ses_19b1bdef1ffeFJDLk90MhwjC12",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-codebase-mapper",
+      "createdAt": "2026-05-26T15:50:44.861Z",
+      "updatedAt": "2026-05-26T15:54:11.084Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_19b04ccc3ffep6K4tpjU7tC5Ej.json"
+    }
+  },
+  "totalChildren": 4,
+  "maxDepth": 1
+}

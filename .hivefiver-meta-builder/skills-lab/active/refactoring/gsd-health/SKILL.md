@@ -16,7 +16,7 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/health.md
+@~/.gemini/antigravity/get-shit-done/workflows/health.md
 </execution_context>
 
 <process>

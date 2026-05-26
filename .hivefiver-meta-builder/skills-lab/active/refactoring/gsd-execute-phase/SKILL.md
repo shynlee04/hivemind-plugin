@@ -21,8 +21,8 @@ Context budget: ~15% orchestrator, 100% fresh per subagent.
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/execute-phase.md
-@.agent/get-shit-done/references/ui-brand.md
+@~/.gemini/antigravity/get-shit-done/workflows/execute-phase.md
+@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>

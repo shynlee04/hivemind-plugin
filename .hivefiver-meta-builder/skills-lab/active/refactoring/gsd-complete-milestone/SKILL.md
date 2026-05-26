@@ -14,8 +14,8 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 <execution_context>
 **Load these files NOW (before proceeding):**
 
-- @.agent/get-shit-done/workflows/complete-milestone.md (main workflow)
-- @.agent/get-shit-done/templates/milestone-archive.md (archive template)
+- @~/.gemini/antigravity/get-shit-done/workflows/complete-milestone.md (main workflow)
+- @~/.gemini/antigravity/get-shit-done/templates/milestone-archive.md (archive template)
   </execution_context>
 
 <context>
@@ -120,7 +120,7 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 - `.planning/REQUIREMENTS.md` deleted (fresh for next milestone)
 - ROADMAP.md collapsed to one-line entry
 - PROJECT.md updated with current state
-- Git tag v{{version}} created
+- Git tag v{{version}} created (if `git.create_tag` enabled)
 - Commit successful
 - User knows next steps (including need for fresh requirements)
   </success_criteria>

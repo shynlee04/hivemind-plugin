@@ -10,7 +10,7 @@ Use when `.planning/phases/` has accumulated directories from past milestones.
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/cleanup.md
+@~/.gemini/antigravity/get-shit-done/workflows/cleanup.md
 </execution_context>
 
 <process>

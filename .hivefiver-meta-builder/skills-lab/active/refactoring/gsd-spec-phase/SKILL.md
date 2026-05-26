@@ -21,8 +21,8 @@ Clarify phase requirements through structured Socratic questioning with quantita
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/spec-phase.md
-@.agent/get-shit-done/templates/spec.md
+@~/.gemini/antigravity/get-shit-done/workflows/spec-phase.md
+@~/.gemini/antigravity/get-shit-done/templates/spec.md
 </execution_context>
 
 <runtime_note>

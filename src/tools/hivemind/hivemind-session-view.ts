@@ -13,7 +13,7 @@ import { resolve } from "node:path"
 import { SessionViewInputSchema, type SessionViewInput } from "../../schema-kernel/session-view.schema.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
-import { resolveSessionFile } from "./session-resolver.js"
+import { resolveSessionFile } from "../session/session-resolver.js"
 
 type ToolContext = { sessionID?: string }
 

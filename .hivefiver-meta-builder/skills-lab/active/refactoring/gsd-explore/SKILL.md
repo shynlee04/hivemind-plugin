@@ -12,7 +12,7 @@ Accepts an optional topic argument: `/gsd-explore authentication strategy`
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/explore.md
+@~/.gemini/antigravity/get-shit-done/workflows/explore.md
 </execution_context>
 
 <process>

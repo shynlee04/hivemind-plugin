@@ -16,10 +16,10 @@ Replaces gsd-plan-phase's internal gsd-plan-checker with external AI reviewers (
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/plan-review-convergence.md
-@.agent/get-shit-done/references/revision-loop.md
-@.agent/get-shit-done/references/gates.md
-@.agent/get-shit-done/references/agent-contracts.md
+@$HOME/.gemini/antigravity/get-shit-done/workflows/plan-review-convergence.md
+@$HOME/.gemini/antigravity/get-shit-done/references/revision-loop.md
+@$HOME/.gemini/antigravity/get-shit-done/references/gates.md
+@$HOME/.gemini/antigravity/get-shit-done/references/agent-contracts.md
 </execution_context>
 
 <runtime_note>
