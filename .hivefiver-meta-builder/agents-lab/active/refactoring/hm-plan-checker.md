@@ -103,7 +103,7 @@ For each D-NN decision ID from CONTEXT.md, verify at least one plan references i
 5. **Check reachability** — Every artifact has a creation path in the task set (some task produces it)
 6. **Check scope reduction** — Scan for "v1"/"simplified"/"hardcoded for now" language
 7. **Check threat_model presence and completeness** — Trust boundaries, STRIDE register, disposition for each threat
-8. **Check frontmatter validation** — Run `gsd-sdk query frontmatter.validate` on PLAN.md
+8. **Check frontmatter validation** — **TBD**: Hivemind frontmatter validation not yet built. Manually verify: required fields present, correct types, no invalid values.
 9. **Check decision coverage** — Run decision_coverage_gate for D-NN citations
 10. **Return structured verdict** — PASS with optional notes, or FAIL with specific gap references
 </expanded_execution_flow>

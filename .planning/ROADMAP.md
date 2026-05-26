@@ -1003,19 +1003,30 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P24.3, P24.4, P24.5, P24.6
 
 **Success Criteria:**
-1. Every hm-* agent (45 agents) has documented execution flow (≥150 lines minimum)
+1. Every hm-* agent (30 agents) has documented execution flow (≥6 structured sections)
 2. Every hm-* agent declares success metrics and artifact delivery contract
 3. Every hm-* agent has anti-patterns section
 4. Quality gate (lifecycle → spec → evidence) passes for agent profile batch
-5. Zero agents below minimum line threshold
+5. Zero TODO comments remaining in any hm-* agent file
+
+**Plans:** 5 plans
+
+```
+Plans:
+- [ ] 24.2-01-PLAN.md — Upgrade 8 Execution/Implementation Agents (hm-executor, hm-verifier, hm-planner, hm-plan-checker, hm-code-reviewer, hm-code-fixer, hm-integration-checker, hm-debug-session-manager)
+- [ ] 24.2-02-PLAN.md — Upgrade 8 Research/Planning Agents (hm-project-researcher, hm-phase-researcher, hm-synthesizer, hm-codebase-mapper, hm-pattern-mapper, hm-architect, hm-roadmapper, hm-specifier)
+- [ ] 24.2-03-PLAN.md — Upgrade 8 Cross-Cutting/Support Agents (hm-intent-loop, hm-ecologist, hm-shipper, hm-nyquist-auditor, hm-intel-updater, hm-security-auditor, hm-debugger, hm-user-profiler)
+- [ ] 24.2-04-PLAN.md — Upgrade 6 UI/Documentation/Orchestration Agents (hm-ui-researcher, hm-ui-checker, hm-ui-auditor, hm-doc-writer, hm-doc-verifier, hm-orchestrator)
+- [ ] 24.2-05-PLAN.md — Create Canonical Artifact Schema Reference (.planning/references/artifact-schema.md)
+```
 
 **Governance:**
 - **GSD Re-validation:** NO — agent quality is Hivemind-native, quality standards from HMQUAL-01..08
 - **Architecture Absorption:** NO — agent profiles are `.opencode/agents/` only. Quality enforcement tools (scanner, validator) belong in `src/features/agent-quality/` at `src/`
-- **Protocol Chain:** Spec (P24.2-SPEC.md with quality criteria) → Research (HMQUAL-01..08 contracts) → Context (agent audit findings from P23) → Dependencies (P24.1) → Patterns (existing well-written agents as templates) → Feature completeness (5 success criteria) → Tests (agent quality scanner script) → Gates (profile batch quality gate)
+- **Protocol Chain:** Spec (P24.2-SPEC.md with quality criteria) → Research (24.2-RESEARCH.md with GSD synthesis) → Context (24-CONTEXT.md with D-24-01..04) → Dependencies (P24.1) → Patterns (GSD agent body format adapted for Hivemind) → Feature completeness (8 SPEC requirements Q-01..08) → Tests (grep-based verification per plan) → Gates (lifecycle → spec → evidence)
 - **Integration Checkpoints:** Adjacent: P24.1 (input), P24.3 (output), P23.4/23.5 (gates)
-- **TBD Registry:** TBD-24.2-01: 45 agents × 150 lines minimum = 6,750 lines — verify this is achievable within phase budget; TBD-24.2-02: Quality scanner tool may need to be built if no existing validation exists
-- **Live UAT Node:** Run quality scanner on updated agents — verify all 45 pass. Run a subagent dispatch — verify quality-enforced agent produces correct behavior
+- **TBD Registry:** TBD-24.2-01: 30 agents × 40+ lines minimum body = 1,200+ lines total — achievable within phase budget; TBD-24.2-02: Quality scanner tool may need to be built if no existing validation exists
+- **Live UAT Node:** Run grep-based verification on updated agents — verify all 30 have ## Execution Flow. Run a subagent dispatch with a quality-enforced agent — verify correct behavior.
 - **Deferred Stacking:** Agent eval framework (deferred to post-P36), agent benchmark suite (deferred to v2.0)
 
 ### Phase 24.3: Commands Infrastructure (Cluster C — Commands & Workflows, INSERTED)

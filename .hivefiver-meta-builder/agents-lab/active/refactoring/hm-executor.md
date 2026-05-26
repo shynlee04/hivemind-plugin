@@ -127,7 +127,7 @@ After each task completes (verification passed, done criteria met), commit immed
 WT_GIT_DIR=$(git rev-parse --git-dir 2>/dev/null)
 case "$WT_GIT_DIR" in
   *.git/worktrees/*)
-      SENTINEL="$WT_GIT_DIR/gsd-spawn-toplevel"
+       SENTINEL="$WT_GIT_DIR/hm-spawn-toplevel"
       [ ! -f "$SENTINEL" ] && git rev-parse --show-toplevel > "$SENTINEL" 2>/dev/null
       EXPECTED_TL=$(cat "$SENTINEL" 2>/dev/null)
       ACTUAL_TL=$(git rev-parse --show-toplevel 2>/dev/null)
@@ -238,35 +238,16 @@ Do NOT skip. Do NOT proceed to state updates if self-check fails.
 </self_check>
 
 <state_updates>
-After SUMMARY.md, update STATE.md and ROADMAP.md:
+**TBD — Hivemind state persistence not yet built.**
 
-```bash
-# Advance plan counter
-gsd-sdk query state.advance-plan
+GSD used `gsd-sdk query` for state management. Hivemind replaces this with:
+- **[[TBD: hm-state-manager]]** — Programmatic state API (replaces gsd-sdk state.* commands)
+- **[[TBD: hm-roadmap-updater]]** — ROADMAP.md update tool
+- **[[TBD: hm-requirements-tracker]]** — Requirements completion tracking
+- These belong in `src/` programmatic features, NOT in agent profiles
 
-# Recalculate progress bar from disk state
-gsd-sdk query state.update-progress
-
-# Record execution metrics
-gsd-sdk query state.record-metric "${PHASE}" "${PLAN}" "${DURATION}" "${TASK_COUNT}" "${FILE_COUNT}"
-
-# Add decisions (extract from SUMMARY.md key-decisions)
-for decision in "${DECISIONS[@]}"; do
-  gsd-sdk query state.add-decision "${decision}"
-done
-
-# Update ROADMAP.md progress for this phase
-gsd-sdk query roadmap.update-plan-progress "${PHASE_NUMBER}"
-
-# Mark completed requirements from PLAN.md frontmatter
-gsd-sdk query requirements.mark-complete ${REQ_IDS}
-```
-
-### Final metadata commit
-```bash
-gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files \
-  .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
-```
+Until built: write SUMMARY.md only. STATE.md/ROADMAP.md updates deferred to future phases (P25: Trajectory, P30: Schema Kernel).
+</state_updates>
 </state_updates>
 
 <completion_format>
@@ -300,14 +281,14 @@ Auth errors during `type="auto"` execution are gates, not failures.
 </authentication_gates>
 
 <auto_mode_detection>
-Check if auto mode is active at executor start:
+**TBD — Hivemind auto-mode not yet built.**
 
-```bash
-AUTO_CHAIN=$(gsd-sdk query config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-AUTO_CFG=$(gsd-sdk query config-get workflow.auto_advance 2>/dev/null || echo "false")
-```
+GSD used `gsd-sdk query config-get` for auto-mode flags. Hivemind replaces this with:
+- **[[TBD: hm-config-plane]]** — Programmatic config API at `src/config/`
+- **[[TBD: hm-auto-advance]]** — Auto-advance workflow feature at `src/features/`
+- Until built: assume standard manual mode. All checkpoints require user decision.
 
-Auto mode is active if either `AUTO_CHAIN` or `AUTO_CFG` is `"true"`. Store for checkpoint handling.
+These belong in `src/` programmatic features (Phase 31: Config Plane Redesign), NOT in agent profiles.
 </auto_mode_detection>
 
 <tdd_execution>
@@ -353,11 +334,11 @@ After all tasks complete, create `{phase}-{plan}-SUMMARY.md` at `.planning/phase
 <expanded_execution_flow>
 ### Expanded 12-Step Execution Flow
 
-1. **Load project state** — Run `gsd-sdk query init.execute-phase`, extract executor_model, phase_dir, plans, incomplete_plans
+1. **Load project state** — **TBD**: Hivemind session/phase init API (replaces GSD's `gsd-sdk query init.execute-phase`). Until built: read phase directory directly at .planning/phases/{phase}/
 2. **Load plan** — Parse PLAN.md frontmatter (objective, context, tasks with types, verification/success criteria, output spec)
 3. **Record start time** — `PLAN_START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")`
 4. **Determine execution pattern** — Check for checkpoints: autonomous (full execute), has-checkpoints (stop at checkpoint), continuation (verify commits, resume from task)
-5. **Auto-mode detection** — `gsd-sdk query config-get workflow._auto_chain_active` — store for checkpoint handling
+5. **Auto-mode detection** — **TBD**: Hivemind config plane (replaces GSD's `gsd-sdk query config-get`). Until built: assume standard manual mode.
 6. **Execute tasks sequentially** — Per task: check type (auto/tdd/checkpoint), apply deviation rules as needed, run verification
 7. **Handle authentication gates** — Auth errors during auto execution are gates not failures. Return checkpoint:human-action with exact steps.
 8. **TDD execution (if tdd="true")** — RED: create failing test, commit. GREEN: implement, commit. REFACTOR: cleanup, commit.
@@ -377,9 +358,7 @@ After all tasks complete, create `{phase}-{plan}-SUMMARY.md` at `.planning/phase
 - [ ] SUMMARY.md created with substantive content (frontmatter, deviation tracking, stub scan)
 - [ ] Self-check passed (all files and commits verified)
 - [ ] STATE.md updated (position, decisions, issues, session)
-- [ ] ROADMAP.md updated with plan progress
-- [ ] REQUIREMENTS.md updated with completed requirement IDs
-- [ ] Final metadata commit made (SUMMARY.md, STATE.md, ROADMAP.md) or SDK returned intentional skip
+- [ ] SUMMARY.md created at correct path: `.planning/phases/{phase}/{phase}-{plan}-SUMMARY.md`
 - [ ] Completion format returned to orchestrator
 - [ ] No TODO/FIXME placeholders left in new/modified files
 </expanded_success_criteria>

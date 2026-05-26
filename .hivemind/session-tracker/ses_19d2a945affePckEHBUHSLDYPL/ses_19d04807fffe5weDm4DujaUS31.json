@@ -1,0 +1,498 @@
+{
+  "sessionID": "ses_19d04807fffe5weDm4DujaUS31",
+  "parentSessionID": "ses_19d2a945affePckEHBUHSLDYPL",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-executor",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Create remaining 22 hm-* agents",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-05-26T06:31:49.917Z",
+  "updated": "2026-05-26T06:34:45.388Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a subagent: gsd-executor. Create ALL remaining hm-* agent files for Phase 24.1.\n\n## CONTEXT\nAlready created (8 agents) in .hivefiver-meta-builder/agents-lab/active/refactoring/:\n- hm-executor.md, hm-verifier.md, hm-planner.md, hm-plan-checker.md\n- hm-project-researcher.md, hm-phase-researcher.md, hm-synthesizer.md, hm-codebase-mapper.md\n\nRead for reference:\n- /Users/apple/hivemind-plugin-private/.hivefiver-meta-builder/agents-lab/active/refactoring/hm-executor.md (to see format)\n- /Users/apple/hivemind-plugin-private/.planning/phases/24.1-agent-hierarchy-restructure/24-CONTEXT.md\n\n## AGENTS TO CREATE (22 new files in .hivefiver-meta-builder/agents-lab/active/refactoring/)\n\n### Research Domain\n1. hm-architect.md - Technical architecture design, ADRs. Produces ARCHITECTURE.md, ADR-*.md\n2. hm-pattern-mapper.md - Code pattern mapping for new files. Produces PATTERNS.md\n3. hm-roadmapper.md - Phase breakdown, requirement mapping. Produces ROADMAP.md\n\n### Implementation Domain\n4. hm-code-reviewer.md - Adversarial code review, spec compliance. Produces REVIEW.md\n5. hm-code-fixer.md - Apply review fixes atomically. Produces REVIEW-FIX.md\n6. hm-integration-checker.md - Cross-phase integration, E2E flow check. Produces integration report\n7. hm-debug-session-manager.md - Multi-cycle debug session orchestration. Produces debug session, checkpoints\n8. hm-debugger.md - Bug investigation, root cause analysis. Produces DEBUG.md\n9. hm-security-auditor.md - STRIDE threat model verification. Produces SECURITY.md\n\n### Documentation Domain\n10. hm-doc-writer.md - Documentation authoring. Produces project docs\n11. hm-doc-verifier.md - Factual claim verification against code. Produces JSON verification\n\n### Profiling Domain\n12. hm-user-profiler.md - Developer behavioral profiling. Produces PROFILE.md\n\n### Cross-Cutting Domain\n13. hm-intent-loop.md - Intent clarification Q&A. Produces INTENT.md\n14. hm-ecologist.md - Feature dependency mapping. Produces ECOSYSTEM.md\n15. hm-shipper.md - Release coordination. Produces CHANGELOG.md\n16. hm-specifier.md - Spec-driven authoring. Produces SPEC.md\n17. hm-nyquist-auditor.md - Nyquist validation gap filling. Produces VALIDATION.md\n18. hm-intel-updater.md - Codebase intelligence writing. Produces .planning/intel/*.json\n\n### UI Domain (optional)\n19. hm-ui-researcher.md - UI design contract creation. Produces UI-SPEC.md\n20. hm-ui-checker.md - UI design contract validation. Produces BLOCK/FLAG/PASS verdict\n21. hm-ui-auditor.md - 6-pillar visual audit. Produces UI-REVIEW.md\n\n### Core\n22. hm-orchestrator.md - L0 front-facing. Updates mode: all, hidden: true, removes old permissions/tools/steps/color\n\n## CORRECT FORMAT\n```yaml\n---\ndescription: >\n  [One sentence role. One sentence artifact. One sentence spawn condition.]\nmode: all\nhidden: true\n---\n\n[Role: what this agent does]\n[Artifacts: what files it creates/updates]\n[Execution flow: steps to follow]\n[Deviation rules: edge case handling]\n[Success criteria: completion definition]\n```\n\nDO NOT include: name field, tools, permission, temperature, steps, color.\n\n## RULES\n- Create NEW files - do NOT modify existing files in .opencode/agents/\n- Write ALL files to .hivefiver-meta-builder/agents-lab/active/refactoring/\n- Commit after each batch (5-6 agents per commit)\n- FIRST read the existing hm-executor.md for exact format reference",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll start by reading the reference files to understand the exact format and context.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Let me check what already exists in the refactoring directory.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Good. I have the context. I can see the 8 existing hm-* files (non-l2-prefixed) and need to create the remaining 22. Let me create them in 5 batches, committing after each.\n\n**Batch 1: Research Domain (hm-architect, hm-pattern-mapper, hm-roadmapper)**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: write, write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "**Batch 2: Implementation + Debug + Security Domain (6 agents)**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "**Batch 3: Documentation + Profiling Domain (3 agents)**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "**Batch 4: Cross-Cutting Domain (6 agents)**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "**Batch 5: UI Domain + Core (4 agents)**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Let me verify all 22 files were created correctly.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "All 22 hm-* agent files created and committed successfully across 5 atomic batches.\n\n## PLAN COMPLETE\n\n**Plan:** 24.1 - Agent Hierarchy Restructure\n**Tasks:** 22/22\n\n**Commits:**\n- `ffcc09b5` — feat(24.1): create hm-ui-researcher, hm-ui-checker, hm-ui-auditor, hm-orchestrator agents\n- `6b369a8a` — feat(24.1): create hm-intent-loop, hm-ecologist, hm-shipper, hm-specifier, hm-nyquist-auditor, hm-intel-updater agents\n- `fe2b95f9` — feat(24.1): create hm-doc-writer, hm-doc-verifier, hm-user-profiler agents\n- `6f6a5f33` — feat(24.1): create hm-code-reviewer, hm-code-fixer, hm-integration-checker, hm-debug-session-manager, hm-debugger, hm-security-auditor agents\n- `b404d2a0` — feat(24.1): create hm-architect, hm-pattern-mapper, hm-roadmapper agents\n\n**All 22 agents created in** `.hivefiver-meta-builder/agents-lab/active/refactoring/` following the correct format:\n- `description >` with three sentences (role, artifact, spawn condition)\n- `mode: all`\n- `hidden: true`\n- No `name`, `tools`, `permission`, `temperature`, `steps`, or `color` fields\n- Agent body with role description, TODO placeholders for Phase 24.2 profile quality enforcement\n\n**Agent roster by domain:**\n| Domain | Agents |\n|--------|--------|\n| Research | hm-architect, hm-pattern-mapper, hm-roadmapper |\n| Implementation | hm-code-reviewer, hm-code-fixer, hm-integration-checker |\n| Debug | hm-debug-session-manager, hm-debugger |\n| Security | hm-security-auditor |\n| Documentation | hm-doc-writer, hm-doc-verifier |\n| Profiling | hm-user-profiler |\n| Cross-Cutting | hm-intent-loop, hm-ecologist, hm-shipper, hm-specifier, hm-nyquist-auditor, hm-intel-updater |\n| UI | hm-ui-researcher, hm-ui-checker, hm-ui-auditor |\n| Core | hm-orchestrator |",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "gsd-executor",
+      "content": "All 22 hm-* agent files created and committed successfully across 5 atomic batches.\n\n## PLAN COMPLETE\n\n**Plan:** 24.1 - Agent Hierarchy Restructure\n**Tasks:** 22/22\n\n**Commits:**\n- `ffcc09b5` — feat(24.1): create hm-ui-researcher, hm-ui-checker, hm-ui-auditor, hm-orchestrator agents\n- `6b369a8a` — feat(24.1): create hm-intent-loop, hm-ecologist, hm-shipper, hm-specifier, hm-nyquist-auditor, hm-intel-updater agents\n- `fe2b95f9` — feat(24.1): create hm-doc-writer, hm-doc-verifier, hm-user-profiler agents\n- `6f6a5f33` — feat(24.1): create hm-code-reviewer, hm-code-fixer, hm-integration-checker, hm-debug-session-manager, hm-debugger, hm-security-auditor agents\n- `b404d2a0` — feat(24.1): create hm-architect, hm-pattern-mapper, hm-roadmapper agents\n\n**All 22 agents created in** `.hivefiver-meta-builder/agents-lab/active/refactoring/` following the correct format:\n- `description >` with three sentences (role, artifact, spawn condition)\n- `mode: all`\n- `hidden: true`\n- No `name`, `tools`, `permission`, `temperature`, `steps`, or `color` fields\n- Agent body with role description, TODO placeholders for Phase 24.2 profile quality enforcement\n\n**Agent roster by domain:**\n| Domain | Agents |\n|--------|--------|\n| Research | hm-architect, hm-pattern-mapper, hm-roadmapper |\n| Implementation | hm-code-reviewer, hm-code-fixer, hm-integration-checker |\n| Debug | hm-debug-session-manager, hm-debugger |\n| Security | hm-security-auditor |\n| Documentation | hm-doc-writer, hm-doc-verifier |\n| Profiling | hm-user-profiler |\n| Cross-Cutting | hm-intent-loop, hm-ecologist, hm-shipper, hm-specifier, hm-nyquist-auditor, hm-intel-updater |\n| UI | hm-ui-researcher, hm-ui-checker, hm-ui-auditor |\n| Core | hm-orchestrator |",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-26T06:31:56.477Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_TecunnpELaRId7i9gpZZ5149",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.1-agent-hierarchy-restructure/24-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:31:56.483Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Hhl317cZTxrQMVx0UD7A8888",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivefiver-meta-builder/agents-lab/active/refactoring/hm-executor.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:32:03.775Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_09lgw3K3Un9CaZmpKQuv5827",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:32:20.318Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_KRmmEHz1Jo2qVX8cnHim1444",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:32:30.877Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_mmwUj9ghK71WvtGe2BAY8925",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:32:30.881Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_01_B2rLRkwVQFlnoJYPT7Dc9534",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:32:36.990Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_UHmgRoaN7cf2l3Hhxp994413",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:00.704Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_qyaOlx6g4R2U5avcRPKI1454",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:00.710Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_01_TbNHXClXFwwskXmDvTX98721",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:00.716Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_02_HreAGKZ0wgpVIQnUbqSD1870",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:00.721Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_03_L1mHmOEAXRQErHV91b8G2070",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:00.727Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_04_b9HrI0AGCrCPtVHtpyTY9987",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:00.732Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_05_zuSZ5U42foKIvHweTP4U2544",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:08.221Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_KLuqumwMEBonmmZW0I4P1819",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:22.730Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_XMLdM9ZZtPbQiPzdaPxW6689",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:22.736Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_01_yqOofxhXMcPsujkl7lC02298",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:22.741Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_02_CO2QsE5XidR1kXJcsqmW8598",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:29.213Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_wLWnD8DmX6Gi8qT8KdOI5887",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:55.482Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_M516wtdfZAej4Y5rHgOm2097",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:55.488Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_01_yvsAssmyo3izcN0XhWFj0311",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:55.494Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_02_xKyPn35GjrYg6JX6MnmT1228",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:55.500Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_03_eAglHhRrH9ZfiXqdMaDn1800",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:55.506Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_04_0ReBiYXGlYtLlhHbalTx6966",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:33:55.511Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_05_OO5Tz8QsqbrxYLDg9YYC6406",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:34:02.801Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_dxCDKNIU4QMoHdwtdaXm3311",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:34:22.700Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_dr9ly7g4Hi3ZQJ6BWPUP6376",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:34:22.706Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_01_KE578Rq6iklA0mgAuSwa8118",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:34:22.711Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_02_hfNOETXVL3VlT6THpzCg4711",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:34:22.717Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_03_1DP6UhdbGqijlNkFC8rL6825",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:34:28.804Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_QhnGKPZHKJffzowMplsp4002",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:34:35.922Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_h7VrZNipT2rQcxdGKuzM9342",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-26T06:34:45.352Z",
+      "type": "assistant_message",
+      "content": "All 22 hm-* agent files created and committed successfully across 5 atomic batches.\n\n## PLAN COMPLETE\n\n**Plan:** 24.1 - Agent Hierarchy Restructure\n**Tasks:** 22/22\n\n**Commits:**\n- `ffcc09b5` — feat(24.1): create hm-ui-researcher, hm-ui-checker, hm-ui-auditor, hm-orchestrator agents\n- `6b369a8a` — feat(24.1): create hm-intent-loop, hm-ecologist, hm-shipper, hm-specifier, hm-nyquist-auditor, hm-intel-updater agents\n- `fe2b95f9` — feat(24.1): create hm-doc-writer, hm-doc-verifier, hm-user-profiler agents\n- `6f6a5f33` — feat(24.1): create hm-code-reviewer, hm-code-fixer, hm-integration-checker, hm-debug-session-manager, hm-debugger, hm-security-auditor agents\n- `b404d2a0` — feat(24.1): create hm-architect, hm-pattern-mapper, hm-roadmapper agents\n\n**All 22 agents created in** `.hivefiver-meta-builder/agents-lab/active/refactoring/` following the correct format:\n- `description >` with three sentences (role, artifact, spawn condition)\n- `mode: all`\n- `hidden: true`\n- No `name`, `tools`, `permission`, `temperature`, `steps`, or `color` fields\n- Agent body with role description, TODO placeholders for Phase 24.2 profile quality enforcement\n\n**Agent roster by domain:**\n| Domain | Agents |\n|--------|--------|\n| Research | hm-architect, hm-pattern-mapper, hm-roadmapper |\n| Implementation | hm-code-reviewer, hm-code-fixer, hm-integration-checker |\n| Debug | hm-debug-session-manager, hm-debugger |\n| Security | hm-security-auditor |\n| Documentation | hm-doc-writer, hm-doc-verifier |\n| Profiling | hm-user-profiler |\n| Cross-Cutting | hm-intent-loop, hm-ecologist, hm-shipper, hm-specifier, hm-nyquist-auditor, hm-intel-updater |\n| UI | hm-ui-researcher, hm-ui-checker, hm-ui-auditor |\n| Core | hm-orchestrator |",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_19d04807fffe5weDm4DujaUS31"
+      }
+    }
+  ],
+  "lastMessage": "All 22 hm-* agent files created and committed successfully across 5 atomic batches.\n\n## PLAN COMPLETE\n\n**Plan:** 24.1 - Agent Hierarchy Restructure\n**Tasks:** 22/22\n\n**Commits:**\n- `ffcc09b5` — feat(24.1): create hm-ui-researcher, hm-ui-checker, hm-ui-auditor, hm-orchestrator agents\n- `6b369a8a` — feat(24.1): create hm-intent-loop, hm-ecologist, hm-shipper, hm-specifier, hm-nyquist-auditor, hm-intel-updater agents\n- `fe2b95f9` — feat(24.1): create hm-doc-writer, hm-doc-verifier, hm-user-profiler agents\n- `6f6a5f33` — feat(24.1): create hm-code-reviewer, hm-code-fixer, hm-integration-checker, hm-debug-session-manager, hm-debugger, hm-security-auditor agents\n- `b404d2a0` — feat(24.1): create hm-architect, hm-pattern-mapper, hm-roadmapper agents\n\n**All 22 agents created in** `.hivefiver-meta-builder/agents-lab/active/refactoring/` following the correct format:\n- `description >` with three sentences (role, artifact, spawn condition)\n- `mode: all`\n- `hidden: true`\n- No `name`, `tools`, `permission`, `temperature`, `steps`, or `color` fields\n- Agent body with role description, TODO placeholders for Phase 24.2 profile quality enforcement\n\n**Agent roster by domain:**\n| Domain | Agents |\n|--------|--------|\n| Research | hm-architect, hm-pattern-mapper, hm-roadmapper |\n| Implementation | hm-code-reviewer, hm-code-fixer, hm-integration-checker |\n| Debug | hm-debug-session-manager, hm-debugger |\n| Security | hm-security-auditor |\n| Documentation | hm-doc-writer, hm-doc-verifier |\n| Profiling | hm-user-profiler |\n| Cross-Cutting | hm-intent-loop, hm-ecologist, hm-shipper, hm-specifier, hm-nyquist-auditor, hm-intel-updater |\n| UI | hm-ui-researcher, hm-ui-checker, hm-ui-auditor |\n| Core | hm-orchestrator |"
+}

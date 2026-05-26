@@ -1,0 +1,92 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_19d2a945affePckEHBUHSLDYPL",
+  "lastUpdated": "2026-05-26T10:54:57.256Z",
+  "hierarchy": {
+    "root": "ses_19d2a945affePckEHBUHSLDYPL",
+    "children": {
+      "ses_19d10bf17ffeDcbiwumgRoZvkJ": {
+        "file": "ses_19d10bf17ffeDcbiwumgRoZvkJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_19d0d6ae3ffeAvzJN40N1oZWQt": {
+        "file": "ses_19d0d6ae3ffeAvzJN40N1oZWQt.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_19d04807fffe5weDm4DujaUS31": {
+        "file": "ses_19d04807fffe5weDm4DujaUS31.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_19d0137f5ffeBtdVvHuTG22ytL": {
+        "file": "ses_19d0137f5ffeBtdVvHuTG22ytL.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_19cff7a79ffeInH4WvebgOJ5MJ": {
+        "file": "ses_19cff7a79ffeInH4WvebgOJ5MJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_19cf91673ffefs8upMbl3ygmnI": {
+        "file": "ses_19cf91673ffefs8upMbl3ygmnI.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_19cf2282bffemBz7oUI9zy2p3q": {
+        "file": "ses_19cf2282bffemBz7oUI9zy2p3q.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_19ce971d3ffeLEGiipboINgxJM": {
+        "file": "ses_19ce971d3ffeLEGiipboINgxJM.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_19ce3cf50ffeY4h3Kv70Kveiq9": {
+        "file": "ses_19ce3cf50ffeY4h3Kv70Kveiq9.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_19cd3a4cfffe9a1iTSC2QH0CWS": {
+        "file": "ses_19cd3a4cfffe9a1iTSC2QH0CWS.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-integration-checker",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 24,
+  "toolSummary": {
+    "delegation-status": 1,
+    "session-tracker": 1,
+    "glob": 7,
+    "task": 11,
+    "read": 17,
+    "write": 1,
+    "grep": 6,
+    "bash": 5,
+    "edit": 15
+  }
+}

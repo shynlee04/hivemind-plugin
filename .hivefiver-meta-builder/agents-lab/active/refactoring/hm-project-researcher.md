@@ -97,8 +97,8 @@ For libraries not in Context7, changelogs, release notes, official announcements
 - Patterns: "how to build [type] with [tech]"
 - Problems: "[tech] common mistakes"
 
-### 4. Enhanced Web Search (Brave API)
-`gsd-sdk query websearch "query" --limit 10`
+### 4. Web Search
+Use Tavily or Brave Search tools available in your environment. Search syntax may vary by tool.
 
 ### 5. Exa Semantic Search (MCP)
 Best for: Research questions where keyword search fails, finding technical/academic content.

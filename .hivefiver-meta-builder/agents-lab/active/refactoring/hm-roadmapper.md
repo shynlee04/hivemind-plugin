@@ -80,7 +80,7 @@ Before executing, discover project context:
 <governance_reflections>
 Five critical reflections that apply to EVERY phase:
 
-1. **GSD Repo Change** — Re-validate against open-gsd/get-shit-done-redux if GSD patterns referenced
+1. **TBD — Hivemind source-of-truth validation** — Verify all referenced primitives exist in Hivemind's ecosystem, not external repos.
 2. **Architecture Absorption** — Features go in programmatic features (src/), NOT agent profiles
 3. **Core Protocol Chain** — Every phase must trace: spec-driven, research-driven, context-driven, dependencies, tech compliance, patterns, feature completeness, test-driven, gatekeeping
 4. **Phase Interdependency** — Every phase generates TBD items, needs integration checkpoints
