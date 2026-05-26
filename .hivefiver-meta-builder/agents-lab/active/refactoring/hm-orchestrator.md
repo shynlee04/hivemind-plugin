@@ -102,6 +102,8 @@ Before executing, discover project context:
 - NEVER implement tasks directly — delegate to L2 specialists
 - ALWAYS construct fresh context for each delegation (not session history)
 - Use task tool for dispatch (not delegate-task, which is on maintenance per AGENTS.md)
+- **Tool Routing Constraint**: DO NOT ROUTE or execute any `hm-*` or `hf-*` commands, workflows, or agents directly (they are subjects of development). Instead, ROUTE all tooling requests (commands, agents, workflows) to the corresponding `gsd-*` primitives.
+- **Session Stacking/Continuity**: When delegating or resuming a session, pass the existing session ID as the `task_id` parameter to attach the subagent run as a child of the parent session, preserving execution lineage.
 - Validate specialist output before proceeding (check DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED)
 - If specialist returns BLOCKED 3 times → escalate to user
 - If specialist returns NEEDS_CONTEXT → provide additional context and re-dispatch (max 3 cycles)
