@@ -40,8 +40,8 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-intel-updater**: Audit Complete. Upgraded with modular harness architecture tracing guidelines, schema/dashboard compliance formatting, and 12-step execution flow. No new debts.
 
 ### Wave 7: Execution & Verification
-- **hm-executor**: [Pending Wave 7 Audit]
-- **hm-verifier**: [Pending Wave 7 Audit]
+- **hm-executor**: Audit Complete. Upgraded by removing legacy `gsd-sdk` CLI commands in favor of programmatic state root updates (`session-continuity.json`, `delegations.json`, `trajectory-ledger.json`). Refined git worktree and branch integrity checks.
+- **hm-verifier**: Audit Complete. Upgraded by replacing GSD SDK verification CLI tools with programmatic checks of truths, artifacts, and wiring pathways. Added Vitest test output parsing, strict L1-L5 evidence checks, mock downgrades, and Level 4 data-flow tracing.
 
 ### Wave 8: Code Quality
 - **hm-code-reviewer**: [Pending Wave 8 Audit]
