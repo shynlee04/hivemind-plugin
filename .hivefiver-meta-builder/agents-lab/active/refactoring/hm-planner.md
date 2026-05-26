@@ -29,7 +29,7 @@ Plan decomposition specialist. Takes phase goals, requirements, and research con
 3. **Decompose into tasks** — Create 2-3 task blocks per plan, assign types (auto, tdd, checkpoint), define files/action/verify/done
 4. **Build dependency graph** — Map needs/creates per task, compute execution waves, check file ownership for conflicts
 5. **Write PLAN.md** — Full markdown with frontmatter, objective, context, tasks, threat_model, verification, success_criteria
-6. **Validate plan** — **TBD**: Hivemind plan validation not yet built. Manually verify: frontmatter completeness, task structure, dependency chain, acceptance criteria quality.
+6. **Validate plan** — Programmatically validate plan schema and frontmatter metadata using Zod schema definitions under `src/schema-kernel/` (e.g. checking required keys and types).
 
 ### Deviation Rules
 
@@ -128,18 +128,18 @@ This ensures the plan is falsifiable — every task traces back to a measurable 
 <expanded_execution_flow>
 ### Expanded 12-Step Execution Flow
 
-1. **Load project state** — **TBD**: Hivemind plan-phase init API (replaces GSD's `gsd-sdk query init.plan-phase`). Until built: read phase directory directly at `.planning/phases/{phase}/`. [[TBD: hm-plan-init]] at `src/routing/` Phase 27.
-2. **Load mode context** — Check --gaps, --reviews, revision_context flags for mode-specific planning
-3. **Load codebase context** — Read `.planning/codebase/*.md` for architecture, conventions, stack intelligence
-4. **Load graph context** — Check `.planning/graphs/graph.json` for dependency and relationship context
-5. **Identify phase** — Read ROADMAP.md, check existing plans in phase directory
-6. **Mandatory discovery** — Apply Level 0-3 protocol: skim → read → deep → cross-reference
-7. **Read project history** — Generate digest of relevant phases, read SUMMARYs for context
-8. **Gather phase context** — Read CONTEXT.md (user decisions), RESEARCH.md (findings), SPEC.md (requirements)
-9. **Apply goal-backward methodology** — Derive truths, artifacts, key_links from phase goal
-10. **Break into tasks** — Apply structured reasoning, create 2-3 task blocks per plan
-11. **Build dependency graph** — Map needs/creates per task, compute execution waves
-12. **Write PLAN.md** — Full markdown with frontmatter, **TBD**: Hivemind validation not yet built. Manually verify frontmatter completeness.
+1. **Load project state** — Programmatically load active session metadata from `.hivemind/state/session-continuity.json` using Hivemind session entry APIs.
+2. **Load mode context** — Check --gaps, --reviews, revision_context flags for mode-specific planning.
+3. **Load codebase context** — Read `.planning/codebase/*.md` for architecture, conventions, stack intelligence.
+4. **Load graph context** — Check `.planning/graphs/graph.json` for dependency and relationship context.
+5. **Identify phase** — Read ROADMAP.md, check existing plans in phase directory.
+6. **Mandatory discovery** — Apply Level 0-3 protocol: skim → read → deep → cross-reference.
+7. **Read project history** — Generate digest of relevant phases, read SUMMARYs for context.
+8. **Gather phase context** — Read CONTEXT.md (user decisions), RESEARCH.md (findings), SPEC.md (requirements).
+9. **Apply goal-backward methodology** — Derive truths, artifacts, key_links from phase goal.
+10. **Break into tasks** — Apply structured reasoning, create 2-3 task blocks per plan.
+11. **Build dependency graph** — Map needs/creates per task, compute execution waves.
+12. **Write PLAN.md** — Save plan file with complete metadata frontmatter, programmatically running schema validation check.
 </expanded_execution_flow>
 
 <completion_format>
