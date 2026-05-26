@@ -89,32 +89,63 @@ Before executing, discover project context:
 | DEEP | Cross-file analysis, trace import chains | 15-30 min | Relationship mapping, circular dependency detection, 10-20 files |
 </reading_modes>
 
+<cqrs_boundary_checks>
+### CQRS & Layering Checks
+During deep codebase scanning, map modules to the 9-surface architectural authority:
+1. Verify write-side operations (tools) are decoupled from read-side operations (hooks, observers).
+2. Ensure no direct file mutations are performed by hooks or observer surfaces.
+3. Trace any circular dependencies across modules and list them as critical technical debt in `CONCERNS.md`.
+</cqrs_boundary_checks>
+
+<structured_returns>
+### Structured Returns
+
+#### Mapping Complete
+```markdown
+## MAPPING COMPLETE
+
+**Files Generated:**
+- .planning/codebase/STRUCTURE.md
+- .planning/codebase/ARCHITECTURE.md
+- .planning/codebase/CONVENTIONS.md
+- .planning/codebase/STACK.md
+- .planning/codebase/CONCERNS.md
+
+**Codebase Metrics:**
+- Total Files: {count}
+- Circular Dependencies: {count}
+- Open TODOs/FIXMEs: {count}
+```
+</structured_returns>
+
 <expanded_execution_flow>
 ### Expanded 12-Step Execution Flow
 
-1. **Load project root** — Read AGENTS.md, package.json, tsconfig.json for project context
-2. **SCAN mode** — Use Glob to enumerate files by pattern, categorize by function
-3. **READ mode** — Read key source files to understand module relationships
-4. **DEEP mode** — Trace import chains, identify circular dependencies
-5. **Extract architecture patterns** — CQRS boundaries, module relationships
-6. **Document conventions** — Naming, testing, error handling from actual source files
-7. **Identify concerns** — TODOs, FIXMEs, HACKs, error handling gaps
-8. **Write STRUCTURE.md** — File tree, module organization
-9. **Write ARCHITECTURE.md** — CQRS model, dependency rules, surface authority
-10. **Write CONVENTIONS.md** — Code style, patterns
-11. **Write STACK.md** — Technology versions, integration points
-12. **Write CONCERNS.md** — Known issues, technical debt
+1. **Load project root** — Read AGENTS.md, package.json, and tsconfig.json for project context.
+2. **SCAN mode** — Use Glob to enumerate files by pattern, categorize by folder.
+3. **READ mode** — Read key source files (plugin definitions, entrypoints) to identify module boundaries.
+4. **DEEP mode** — Trace import chains and compile circular dependency lists.
+5. **Run CQRS checks** — Verify separation of write-side tools and read-side hooks.
+6. **Extract architecture patterns** — Map current codebase layout to 9-surface authority.
+7. **Document naming conventions** — Map file extensions, folders, class/interface patterns.
+8. **Identify concerns** — Search for TODOs, FIXMEs, error-handling gaps, and security risks.
+9. **Write STRUCTURE.md & STACK.md** — Save directory trees and validated package versions.
+10. **Write ARCHITECTURE.md & CONVENTIONS.md** — Save module boundaries and style guides.
+11. **Write CONCERNS.md** — Save cataloged architectural debts and circular import lists.
+12. **Return structured completion** — MAPPING COMPLETE status with files list and file metrics.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] All 5 intelligence files created (STRUCTURE.md, ARCHITECTURE.md, CONVENTIONS.md, STACK.md, CONCERNS.md)
-- [ ] File tree accurate (verified against `ls`/glob)
-- [ ] Reading mode selected appropriately (SCAN/READ/DEEP)
-- [ ] Architecture patterns documented from actual code (not assumptions)
-- [ ] Conventions extracted from actual source patterns
-- [ ] Concerns/TODOs extracted and categorized
-- [ ] File count per artifact meets expectations
-- [ ] Completion format returned to orchestrator
+- [ ] All 5 intelligence files created and populated under `.planning/codebase/`.
+- [ ] File tree structure matches physical repository directory layout.
+- [ ] CQRS boundaries checked and circular dependencies flagged in CONCERNS.md.
+- [ ] Technology versions in STACK.md verified against package.json and lockfile.
+- [ ] Naming and style patterns in CONVENTIONS.md match actual source examples.
+- [ ] Open codebase TODOs, FIXMEs, and HACKs extracted and logged in CONCERNS.md.
+- [ ] Reading mode selected appropriately (SCAN/READ/DEEP) depending on time budget.
+- [ ] Structured return (MAPPING COMPLETE) returned.
+- [ ] Zero legacy `gsd-sdk` commands referenced.
+- [ ] Verification protocol applied (7 checks).
 </expanded_success_criteria>
