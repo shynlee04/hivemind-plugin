@@ -48,8 +48,8 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-code-fixer**: Audit Complete. Upgraded by replacing legacy `gsd-sdk query commit` with direct git CLI calls. Standardized the isolated worktree creation, recovery sentinel handling, and transactional cleanup flow. Programmatically updates Hivemind state logs.
 
 ### Wave 9: Integration & Debugging
-- **hm-integration-checker**: [Pending Wave 9 Audit]
-- **hm-debug-session-manager**: [Pending Wave 9 Audit]
+- **hm-integration-checker**: Audit Complete. Upgraded by removing Next.js assumptions. Added wiring, endpoint, protection, and data-flow checks. Programmatically logs integration reports and statuses in `.hivemind/state/session-continuity.json` and `trajectory-ledger.json`.
+- **hm-debug-session-manager**: Audit Complete. Upgraded by removing `gsd-sdk` resolving command, dispatches `hm-debugger` instead of GSD. Config resolved from `.hivemind/configs.json`. Programmatically tracks debug details and checkpoints in Hivemind state files.
 
 ### Wave 10: Debugging Specialist & Security
 - **hm-debugger**: [Pending Wave 10 Audit]
