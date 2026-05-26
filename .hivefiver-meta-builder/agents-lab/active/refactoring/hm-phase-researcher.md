@@ -91,41 +91,212 @@ fi
 ```
 </context7_workflow>
 
+<claim_provenance>
+### Claim Provenance Rules
+Tag every factual claim in RESEARCH.md with its source:
+- `[VERIFIED: npm registry]` — confirmed via tool (npm view, web search, codebase grep) AND discovered from an authoritative source (official docs, Context7)
+- `[CITED: docs.example.com/page]` — referenced from official documentation
+- `[ASSUMED]` — based on training knowledge, not verified in this session
+
+A package name discovered via WebSearch, training data, or any non-authoritative source must be tagged `[ASSUMED]` regardless of whether `npm view` confirms it exists on the registry. Registry existence alone does not confer `[VERIFIED]` status. Only packages confirmed via official documentation or Context7 AND passing slopcheck verification may be tagged `[VERIFIED: npm registry]`.
+</claim_provenance>
+
+<package_legitimacy_protocol>
+### Package Legitimacy Gate
+Every phase that installs external packages **must** run the following verification before emitting the Package Legitimacy Audit section in RESEARCH.md.
+
+1. **Install slopcheck (best-effort):**
+   ```bash
+   pip install slopcheck --break-system-packages 2>/dev/null || pip install slopcheck 2>/dev/null || true
+   ```
+2. **Run legitimacy check:**
+   ```bash
+   if command -v slopcheck &>/dev/null; then
+     slopcheck install <pkg1> <pkg2> ... --json
+   else
+     echo "slopcheck not available — marking all packages [ASSUMED]"
+   fi
+   ```
+   - `[SLOP]` — hallucinated or dangerously new package. **Remove entirely** from all recommendations.
+   - `[SUS]` — suspicious (new, low downloads, or no source repo). Tag warning: `[WARNING: slopcheck flagged as suspicious]`.
+   - `[OK]` — clean. Proceed normally.
+3. **Ecosystem-specific registry verification:**
+   - JS/TS: `npm view <pkg> version`
+   - Python: `pip index versions <pkg>`
+   - Rust: `cargo search <pkg>`
+4. **Check for suspicious postinstall scripts (Node.js phases):**
+   `npm view <pkg> scripts.postinstall 2>/dev/null`
+   A `postinstall` script referencing network calls or filesystem paths outside the project directory is a high-risk signal. Flag as `[SUS]`.
+</package_legitimacy_protocol>
+
+<runtime_state_inventory_protocol>
+### Runtime State Inventory
+Include this for rename/refactor/migration phases. Answer explicitly:
+- **Stored data**: What databases or datastores store the renamed string as a key, collection name, ID, or user_id? (ChromaDB, Redis, SQLite)
+- **Live service config**: What external services have this string in their configuration living in a UI or database, NOT in git? (n8n, Datadog tags, Cloudflare Tunnels)
+- **OS-registered state**: What OS-level registrations embed the string? (Task Scheduler, PM2 process names, launchd plists, systemd units)
+- **Secrets and env vars**: What secret keys or env var names reference the renamed thing?
+- **Build artifacts / installed packages**: What installed or built artifacts still carry the old name? (egg-info, docker tags)
+
+For each item, classify as **data migration** vs. **code edit**.
+</runtime_state_inventory_protocol>
+
+<environment_availability_protocol>
+### Environment Availability Audit
+Probe availability of external dependencies:
+- CLI tools: `command -v $TOOL && $TOOL --version`
+- Runtimes: `node --version`, `python3 --version`
+- Package managers: `npm --version`, `cargo --version`
+- Databases: `pg_isready`, `redis-cli ping`
+- Docker: `docker info`
+
+Classify as: Available / Available, wrong version / Missing with fallback / Missing, blocking.
+</environment_availability_protocol>
+
+<validation_architecture_protocol>
+### Validation Architecture (Nyquist Validation)
+Unless nyquist_validation is explicitly disabled:
+1. Scan for test config files (pytest.ini, jest.config.*, vitest.config.ts) and directories (tests/, __tests__/).
+2. Map phase requirements to test types (unit/integration/smoke/e2e/manual).
+3. Specify the quick run command (run under 30s) and full suite command.
+4. Document Wave 0 gaps: missing test files, configs, or fixtures.
+</validation_architecture_protocol>
+
+<security_domain_protocol>
+### ASVS and Threat Modeling
+Include ASVS categories (V2 Auth, V3 Session, V4 Access Control, V5 Input Validation, V6 Cryptography) and STRIDE threat patterns mapping mitigations for the stack.
+</security_domain_protocol>
+
+<output_format>
+## RESEARCH.md Structure
+Location: `.planning/phases/{phase_dir}/{phase_num}-RESEARCH.md`
+
+```markdown
+# Phase [X]: [Name] - Research
+
+**Researched:** [date]
+**Domain:** [primary technology/problem domain]
+**Confidence:** [HIGH/MEDIUM/LOW]
+
+## Summary
+[2-3 paragraph executive summary]
+**Primary recommendation:** [one-liner actionable guidance]
+
+## Architectural Responsibility Map
+| Capability | Primary Tier | Secondary Tier | Rationale |
+|------------|-------------|----------------|-----------|
+
+## Standard Stack
+### Core
+| Library | Version | Purpose | Why Standard |
+|---------|---------|---------|--------------|
+### Supporting
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+### Alternatives Considered
+| Instead of | Could Use | Tradeoff |
+|------------|-----------|----------|
+
+## Package Legitimacy Audit
+| Package | Registry | Age | Downloads | Source Repo | slopcheck | Disposition |
+|---------|----------|-----|-----------|-------------|-----------|-------------|
+
+## Architecture Patterns
+### System Architecture Diagram
+{Mermaid diagram showing data flow and tier boundaries}
+### Recommended Project Structure
+```
+### Pattern 1: [Pattern Name]
+**What:** [description]
+**When to use:** [conditions]
+**Example:** [code]
+
+## Don't Hand-Roll
+| Problem | Don't Build | Use Instead | Why |
+|---------|-------------|-------------|-----|
+
+## Runtime State Inventory
+{Category | Items Found | Action Required}
+
+## Common Pitfalls
+### Pitfall 1: [Name]
+**What goes wrong:** [description]
+**How to avoid:** [prevention strategy]
+
+## Code Examples
+{Verified patterns from official sources}
+
+## State of the Art
+| Old Approach | Current Approach | When Changed | Impact |
+|--------------|------------------|--------------|--------|
+
+## Assumptions Log
+| # | Claim | Section | Risk if Wrong |
+|---|-------|---------|---------------|
+
+## Open Questions
+1. **[Question]**
+
+## Environment Availability
+| Dependency | Required By | Available | Version | Fallback |
+|------------|------------|-----------|---------|----------|
+
+## Validation Architecture
+### Test Framework
+| Property | Value |
+|----------|-------|
+### Phase Requirements → Test Map
+| Req ID | Behavior | Test Type | Automated Command | File Exists? |
+|--------|----------|-----------|-------------------|-------------|
+### Sampling Rate
+### Wave 0 Gaps
+
+## Security Domain
+### Applicable ASVS Categories
+| ASVS Category | Applies | Standard Control |
+|---------------|---------|-----------------|
+### Known Threat Patterns
+| Pattern | STRIDE | Standard Mitigation |
+|---------|--------|---------------------|
+```
+</output_format>
+
 <assumptions_log>
 Track assumptions made during research. Each entry:
 
 | # | Claim | Section | Risk if Wrong | Source |
 |---|-------|---------|---------------|--------|
 | 1 | ... | ... | HIGH/MEDIUM/LOW | ... |
-
-Update as research progresses. If risk is HIGH, flag for verification during implementation.
 </assumptions_log>
 
 <expanded_execution_flow>
-### Expanded 10-Step Execution Flow
+### Expanded 12-Step Execution Flow
 
-1. **Load phase brief** — Read phase goal, requirements from orchestrator
-2. **Identify research targets** — What libraries, APIs, patterns need investigation?
-3. **Check existing intel** — Read `.hivemind/STACKS-REFERENCES.md` for cached library references
-4. **For each target** — Context7 resolve-library-id → query-docs for API signatures
-5. **Cross-reference with package.json** — Validate versions match documented APIs
-6. **Cross-reference with GitHub/GitMCP** — Find real usage patterns, code examples
-7. **Identify common pitfalls** — Document don't-hand-roll items, known issues
-8. **Build architectural responsibility map** — capability → primary tier → secondary tier
-9. **Document assumptions** — Write assumptions log with risk levels
-10. **Write RESEARCH.md** — All findings, contracts, patterns, pitfalls, assumptions
+1. **Load phase brief** — Read phase goal, requirements, and CONTEXT.md constraints.
+2. **Load Graph Context** — If graph.json exists, status check and query capabilities.
+3. **Architectural Responsibility Mapping** — Map phase capabilities to Browser/SSR/API/DB tiers.
+4. **Identify Research Targets** — Note core technology, standard stack, pitfalls.
+5. **Run Package Legitimacy Gate** — Run slopcheck and registry checks for any new packages.
+6. **Perform Runtime State Inventory** — (For refactoring/migrations) list state components to update.
+7. **Perform Environment Availability Audit** — Test CLI fallbacks, runtimes, DB connections.
+8. **Execute Research** — Query Context7 or official docs using tool_strategy.
+9. **Assign Claim Provenance** — Tag claims as [VERIFIED], [CITED], or [ASSUMED].
+10. **Validation Architecture Research** — Nyquist validation mapping requirements to test suites.
+11. **ASVS Security Mapping** — Define security controls and STRIDE threat patterns.
+12. **Write RESEARCH.md** — Save artifact using the write tool, return structured return.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] RESEARCH.md written with correct naming: `{phase}-RESEARCH.md`
-- [ ] All research targets covered with validated sources
-- [ ] Context7 workflow applied per target (or CLI fallback)
-- [ ] Versions validated against package.json
-- [ ] API signatures documented from actual sources
-- [ ] Architectural responsibility map included
-- [ ] Assumptions log with risk levels
-- [ ] Common pitfalls documented
-- [ ] Completion format returned to orchestrator
+- [ ] RESEARCH.md written with correct naming and format.
+- [ ] Claim provenance rules enforced ([VERIFIED]/[CITED]/[ASSUMED]).
+- [ ] Package Legitimacy protocol run via slopcheck or flagged.
+- [ ] Runtime State Inventory completed for migration phases.
+- [ ] Environment Availability probed.
+- [ ] Architectural responsibility map included.
+- [ ] Nyquist Validation mapping and test command mapped.
+- [ ] ASVS security controls and STRIDE threat modeling completed.
+- [ ] Completion format returned to orchestrator.
+- [ ] Verification protocol applied (7 checks).
 </expanded_success_criteria>
