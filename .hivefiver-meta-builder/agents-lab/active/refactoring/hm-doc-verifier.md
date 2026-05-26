@@ -20,7 +20,7 @@ Documentation factual claim verification specialist. Validates that every claim 
 
 | Artifact | Location | Format | Contents |
 |----------|----------|--------|----------|
-| Verification JSON | Alongside doc or returned to orchestrator | JSON | Per-claim verification: claim text, source file, verification method, status (VERIFIED/FALSE/UNVERIFIABLE) |
+| Verification JSON | Returned to orchestrator | JSON | Per-claim verification: claim text, source file, verification method, status (VERIFIED/FALSE/UNVERIFIABLE) |
 
 ## Execution Flow
 
@@ -29,6 +29,7 @@ Documentation factual claim verification specialist. Validates that every claim 
 3. **Verify each claim** — For each: confirm by reading source code, running the command, or checking config files
 4. **Categorize results** — VERIFIED (matches code), FALSE (contradicts code), UNVERIFIABLE (cannot confirm from code alone)
 5. **Write verification report** — JSON with per-claim status
+6. **Update state** — Update session continuity and trajectory ledger programmatically
 
 ### Deviation Rules
 
@@ -46,6 +47,7 @@ If 5+ reads without producing verification report: STOP. Return partial report w
 - [ ] Each claim has status (VERIFIED/FALSE/UNVERIFIABLE)
 - [ ] FALSE claims include correct value from codebase
 - [ ] Verification report delivered to orchestrator
+- [ ] Programmatic state updates completed successfully
 
 ## Delegation Boundary
 
@@ -77,37 +79,103 @@ Before executing, discover project context:
 </project_context>
 
 <claim_verification_categories>
-| Category | Verification Method | Source |
-|----------|--------------------|--------|
-| API signatures | Check function name, params, return type in source code | Actual function definition |
-| Config keys | Check config schema, default values | Config files, type definitions |
-| File paths | Check path exists on filesystem | `[ -f "path" ]` |
-| Commands | Run command and verify output | Terminal execution |
-| Behavior descriptions | Read source to confirm described behavior | Implementation logic |
-| Version numbers | Check package.json, changelog | Package manifest, CHANGELOG.md |
+### Claim Verification Guidelines
+
+For each claim in a document, classify by category and verify accordingly:
+- **API Signatures**: Confirm name, parameters, type declarations directly from exports.
+- **Config Keys**: Match default variables and schemas in the config definitions.
+- **File Paths**: Use directory and filesystem checks to verify path exists.
+- **Commands**: Verify installation and test scripts compile.
+- **Behavioral Claims**: Inspect source code logic paths to ensure claims reflect implementation.
+- **Version Numbers**: Check `package.json` manifest version.
 </claim_verification_categories>
 
-<expanded_execution_flow>
-### Expanded 8-Step Execution Flow
+<claim_status_classification>
+### Claim Status Classifications
 
-1. **Load document** — Read the documentation to verify
-2. **Extract all factual claims** — API signatures, config keys, file paths, commands, behavior descriptions
-3. **For each claim** — Verify against source code or command output
-4. **Classify** — VERIFIED (matches code), FALSE (contradicts code), UNVERIFIABLE (cannot confirm)
-5. **For FALSE claims** — Document the correct value from codebase
-6. **Write verification JSON report** — Per-claim status with evidence
-7. **Return structured completion** — Report path, counts, next step
+Assign one of the following statuses to each claim:
+- **VERIFIED**: The claim matches the codebase exactly.
+- **FALSE**: The claim contradicts the codebase (must include file:line citation and actual values).
+- **UNVERIFIABLE**: The claim cannot be confirmed (e.g. deployment credentials, third-party dashboard URLs).
+</claim_status_classification>
+
+<state_updates>
+### State Persistence and Updates
+
+Update verification status programmatically without calling GSD SDK commands:
+
+1. **Session Continuity Update**:
+   - Read `.hivemind/state/session-continuity.json`.
+   - Update the active session's record: write details under `metadata.resultCapture.docsVerification` (document path, verified claims count, false claims count, unverifiable claims count).
+   - Update `metadata.updatedAt` to the current timestamp.
+   - Write back to `.hivemind/state/session-continuity.json`.
+
+2. **Trajectory Ledger Event Log**:
+   - Append an event into `.hivemind/state/trajectory-ledger.json`.
+   - Format:
+     ```json
+     {
+       "timestamp": "ISO-8601-TIMESTAMP",
+       "sessionID": "active-session-id",
+       "eventType": "docs_verified",
+       "details": {
+         "documentPath": "README.md",
+         "verifiedCount": 0,
+         "falseCount": 0
+       }
+     }
+     ```
+</state_updates>
+
+<completion_format>
+### Output Report Contract
+
+Format for structured completion return (JSON):
+
+```json
+{
+  "verification_report": {
+    "document": "README.md",
+    "verified_at": "ISO-8601",
+    "stats": {
+      "verified": 0,
+      "false": 0,
+      "unverifiable": 0
+    },
+    "claims": [
+      {
+        "text": "npm run start launches server",
+        "category": "commands",
+        "status": "VERIFIED",
+        "details": "package.json start script executes node server.js"
+      }
+    ]
+  }
+}
+```
+</completion_format>
+
+<expanded_execution_flow>
+### Expanded 10-Step Execution Flow
+
+1. **Ingest document** — Read documentation Markdown content.
+2. **Extract assertions** — Identify file paths, variables, APIs, and setup steps.
+3. **Verify paths** — Check directory listings for all documented paths.
+4. **Audit API exports** — Inspect source definitions for function parameters.
+5. **Cross-check environment variables** — Verify configuration keys in the loaders.
+6. **Classify assertions** — Group claims by category.
+7. **Rate statuses** — Mark each assertion as VERIFIED, FALSE, or UNVERIFIABLE.
+8. **Document discrepancies** — Write corrections for all FALSE claims.
+9. **Update state logs** — Write status to `session-continuity.json` and trajectory ledger.
+10. **Emit verification payload** — Output JSON matching the verification contract.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] All factual claims extracted from document
-- [ ] Each claim categorized by type (API, config, path, command, behavior, version)
-- [ ] Each claim has status: VERIFIED / FALSE / UNVERIFIABLE
-- [ ] FALSE claims include correct value from codebase
-- [ ] Claim verification categories applied appropriately
-- [ ] Verification JSON report delivered to orchestrator
-- [ ] If FALSE claims found, signaled for hm-doc-writer correction
-- [ ] Completion format returned to orchestrator
+- [ ] All factual claims extracted from the target document.
+- [ ] Each claim categorized and evaluated against source code.
+- [ ] FALSE claims documented with file:line references and correct values.
+- [ ] Verification report complies with the defined JSON output schema.
+- [ ] State tracking files updated programmatically with verification counts.
 </expanded_success_criteria>
