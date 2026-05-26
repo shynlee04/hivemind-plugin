@@ -66,8 +66,9 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 
 
 ### Wave 13: UI Auditing & Ecosystem
-- **hm-ui-auditor**: [Pending Wave 13 Audit]
-- **hm-nyquist-auditor**: [Pending Wave 13 Audit]
+- **hm-ui-auditor**: Audit Complete. Upgraded by replacing legacy GSD references. Standardized screenshot safety gitignores, Playwright MCP/CLI screenshots, 6-pillar score cards, registry vulnerability scans, and programmatic state persistence in `.hivemind/state/session-continuity.json` and `trajectory-ledger.json`.
+- **hm-nyquist-auditor**: Audit Complete. Upgraded by replacing legacy GSD references. Implemented Nyquist Software Sampling (boundary checks, branching complexity checks), evidence level validation, automated test generation, and programmatic updates to Hivemind state tracking files.
+
 
 ### Wave 14: Documentation Quality
 - **hm-doc-writer**: [Pending Wave 14 Audit]
