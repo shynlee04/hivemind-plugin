@@ -76,40 +76,52 @@ Before executing, discover project context:
 **AGENTS.md enforcement:** Treat directives as hard constraints during execution.
 </project_context>
 
-<intel_json_format>
-```json
-{
-  "module": "name",
-  "path": "src/path/to/module/",
-  "exports": ["functionA", "TypeB"],
-  "patterns": ["factory pattern", "observer pattern"],
-  "conventions": ["kebab-case files", "named exports"],
-  "last_updated": "YYYY-MM-DD",
-  "status": "active | deprecated"
-}
-```
-</intel_json_format>
+<modular_harness_architecture>
+### Modular Harness Architecture Guidelines
+Trace modular codebase directories directly (ignoring GSD-legacy framework roots):
+1. **Core surfaces**: `src/shared/`, `src/config/`, `src/schema-kernel/`
+2. **Read-side observers**: `src/hooks/` (hook composition and lifecycleObservers)
+3. **Write-side operators**: `src/tools/` (tool registration and dispatchers)
+4. **Execution coordinators**: `src/coordination/`, `src/task-management/`, `src/features/`, `src/routing/`
+Verify exported types and function signatures directly in these directories.
+</modular_harness_architecture>
+
+<schema_renderer_compliance>
+### Schema & Dashboard Compliance
+Generated `.planning/intel/*.json` documents must comply with React dashboard renderer requirements (`stack-l3-json-render`):
+1. Every JSON payload must validate against its respective schema kernel.
+2. Metadata updates must contain the correct date, version number, and file hashes.
+3. Outdated or deleted components must be marked as "deprecated" rather than being silently excised.
+</schema_renderer_compliance>
 
 <expanded_execution_flow>
-### Expanded 8-Step Execution Flow
+### Expanded 12-Step Execution Flow
 
-1. **Read codebase changes** — git diff, SUMMARY.md, new/modified source files
-2. **Identify intel impact** — New modules, changed patterns, new conventions
-3. **Load existing intel files** — From `.planning/intel/`
-4. **Update existing JSON entries** — Modified fields, updated signatures
-5. **Create new intel files** — For new subsystems or patterns
-6. **Mark outdated entries** — Set status to "deprecated" with reason
-7. **Commit intel updates** — One commit per file change
-8. **Return structured completion** — Files updated, new files created, deprecated entries
+1. **Read codebase changes** — Parse git diff files and current milestone roadmap states.
+2. **Target modular directories** — Resolve paths to core folders (e.g. `src/coordination/`, `src/tools/`).
+3. **Parse export signatures** — Programmatically read export declarations from modified modules.
+4. **Scan circular dependency boundaries** — Cross-reference imports to flag circular boundaries.
+5. **Verify package versions** — Query dependencies in `package.json` to keep `deps.json` aligned.
+6. **Load existing intelligence index** — Read files from `.planning/intel/` directory.
+7. **Filter modified paths** — Isolate partial updates if Focus paths were specified.
+8. **Update files.json and apis.json** — Map new endpoints and files with correct type tags.
+9. **Update deps.json and stack.json** — Track new technology or library introductions.
+10. **Deprecate outdated entries** — Mark status as "deprecated" with rationale notes.
+11. **Perform JSON validation check** — Validate output formats against Kernel schema specs.
+12. **Return structured completion** — INTEL UPDATE COMPLETE status with metric summary.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] Intel files updated to reflect codebase changes
-- [ ] New modules/patterns indexed with intel JSON format
-- [ ] Outdated entries removed or marked deprecated
-- [ ] Atomic commits per intel change
-- [ ] Intel JSON format followed (module, path, exports, patterns, conventions, last_updated, status)
-- [ ] Completion format returned to orchestrator
+- [ ] All 5 codebase intelligence files (`files.json`, `apis.json`, `deps.json`, `stack.json`, `arch.md`) updated.
+- [ ] Modular harness directory structure traced (no legacy GSD layout assumptions).
+- [ ] Export signatures parsed from actual TS source code (no spaces/hallucinations).
+- [ ] API endpoints and routes correctly cataloged.
+- [ ] Stale entries marked deprecated with status reasons.
+- [ ] Output complies with dashboard template formats.
+- [ ] Git changes committed atomically per document change.
+- [ ] Completion format returned to orchestrator.
+- [ ] Zero legacy `gsd-sdk` commands referenced.
+- [ ] Verification protocol applied (7 checks).
 </expanded_success_criteria>
