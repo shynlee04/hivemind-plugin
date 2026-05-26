@@ -340,4 +340,96 @@ Run with: $ARGUMENTS
     expect(result.metadata).toMatchObject({ error: true, command: "bad-command" })
     expect(result.output).toContain("Network Error")
   })
+
+  it("should match command with fuzzy hyphens/underscores/casing", async () => {
+    const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
+    const client = {
+      session: { prompt: promptMock },
+      tui: {
+        clearPrompt: vi.fn(),
+        appendPrompt: vi.fn(),
+        submitPrompt: vi.fn(),
+      },
+    } as unknown as PluginInput["client"]
+    const projectRoot = await createProjectWithCommand(
+      "my-test-command",
+      `---
+description: "Fuzzy matching test"
+---
+Test body
+`,
+    )
+
+    const tool = createExecuteSlashCommandTool(client)
+    const result = await tool.execute(
+      { command: "MY_TEST_command", agent: "gsd-executor", subtask: false },
+      {
+        sessionID: "ses_fuzzy",
+        agent: "hm-build",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+        abort: new AbortController().signal,
+        ask: vi.fn(),
+        messageID: "msg_fuzzy",
+      } as any,
+    )
+
+    expect(result.metadata).toMatchObject({
+      command: "MY_TEST_command",
+      agent: "gsd-executor",
+      mode: "synthetic-parent-prompt",
+    })
+  })
+
+  it("should track pending dispatches in sessionTracker pendingRegistry", async () => {
+    const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
+    const client = {
+      session: { prompt: promptMock },
+      tui: {
+        clearPrompt: vi.fn(),
+        appendPrompt: vi.fn(),
+        submitPrompt: vi.fn(),
+      },
+    } as unknown as PluginInput["client"]
+    const projectRoot = await createProjectWithCommand(
+      "subtask-cmd-track",
+      `---
+description: "Subtask tracking test"
+agent: hm-l1-coordinator
+subtask: true
+---
+Track body
+`,
+    )
+
+    const addMock = vi.fn()
+    const mockSessionTracker = {
+      pendingRegistry: {
+        add: addMock,
+      },
+    }
+
+    const tool = createExecuteSlashCommandTool(client, mockSessionTracker)
+    await tool.execute(
+      { command: "subtask-cmd-track" },
+      {
+        sessionID: "ses_track",
+        agent: "hm-build",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+        abort: new AbortController().signal,
+        ask: vi.fn(),
+        messageID: "msg_track",
+      } as any,
+    )
+
+    expect(addMock).toHaveBeenCalledOnce()
+    expect(addMock).toHaveBeenCalledWith(expect.objectContaining({
+      parentSessionID: "ses_track",
+      subagentType: "hm-l1-coordinator",
+      tool: "execute-slash-command",
+    }))
+  })
 })

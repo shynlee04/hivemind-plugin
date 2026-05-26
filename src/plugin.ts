@@ -464,7 +464,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       "prompt-skim": createPromptSkimTool(projectDirectory),
       "prompt-analyze": createPromptAnalyzeTool(projectDirectory),
       "session-patch": createSessionPatchTool(projectDirectory),
-      "execute-slash-command": createExecuteSlashCommandTool(client),
+      "execute-slash-command": createExecuteSlashCommandTool(client, sessionTracker),
       "session-journal-export": createSessionJournalExportTool(),
       "hivemind-doc": createHivemindDocTool(projectDirectory),
       "hivemind-trajectory": createHivemindTrajectoryTool(projectDirectory),

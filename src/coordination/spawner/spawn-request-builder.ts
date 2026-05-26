@@ -85,20 +85,32 @@ export function resolveDelegationPermissionProfile(
 }
 
 function toolsFromAgentMetadata(agent: ValidatedAgent): readonly string[] | undefined {
+  let allowed: string[] = []
+
   if (agent.tools) {
-    const allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => agent.tools?.[toolName] === true)
-    return allowed.length > 0 ? allowed : READ_ONLY_TOOLS
+    allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => agent.tools?.[toolName] === true)
+  } else if (agent.permission) {
+    allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => {
+      const value = agent.permission?.[toolName]
+      if (value === undefined && (toolName === "read" || toolName === "glob" || toolName === "grep")) {
+        return true
+      }
+      return isPermissionAllowed(value)
+    })
+  } else {
+    return undefined
   }
-  if (!agent.permission) return undefined
-  const allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => {
-    const value = agent.permission?.[toolName]
-    if (value === undefined && (toolName === "read" || toolName === "glob" || toolName === "grep")) {
-      return true
+
+  const denied = new Set<string>()
+  WRITE_CAPABLE_TOOLS.forEach((toolName) => {
+    if (agent.tools?.[toolName] === false || isPermissionDenied(agent.permission?.[toolName])) {
+      denied.add(toolName)
     }
-    return isPermissionAllowed(value)
   })
-  const denied = new Set(WRITE_CAPABLE_TOOLS.filter((toolName) => isPermissionDenied(agent.permission?.[toolName])))
-  addPromptToolDenialsForPrimitivePolicy(agent.permission, denied)
+  if (agent.permission) {
+    addPromptToolDenialsForPrimitivePolicy(agent.permission, denied)
+  }
+
   const result = allowed.filter((toolName) => !denied.has(toolName))
   return result.length > 0 ? result : READ_ONLY_TOOLS
 }

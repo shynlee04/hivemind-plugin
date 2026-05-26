@@ -46,9 +46,10 @@ const DEFERRED_SUBTASK_DISPATCH_DELAY_MS = 50
  * @see src/routing/command-engine/index.ts — command engine core
  *
  * @param client - The OpenCode SDK client instance (injected from plugin composition root).
+ * @param sessionTracker - Optional session tracker instance for tracking in-flight commands.
  * @returns ToolDefinition for the execute-slash-command tool.
  */
-export const createExecuteSlashCommandTool = (client: PluginInput["client"]): ToolDefinition => {
+export const createExecuteSlashCommandTool = (client: PluginInput["client"], sessionTracker?: any): ToolDefinition => {
   return tool({
     description:
       "Executes an OpenCode slash command on the active session. " +
@@ -159,6 +160,16 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
                 command: args.command,
               },
             }
+          }
+
+          if (sessionTracker?.pendingRegistry) {
+            sessionTracker.pendingRegistry.add({
+              parentSessionID: ctx.sessionID,
+              callID: ctx.messageID || `cmd-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              subagentType: subtaskAgent,
+              tool: "execute-slash-command",
+              timestamp: Date.now(),
+            })
           }
 
           const promptText = expandCommandArguments(commandBundle.body, args.arguments ?? "")
@@ -303,10 +314,45 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"]): To
   })
 }
 
+interface CachedDiscovery {
+  commands: CommandBundle[]
+  timestamp: number
+}
+
+const discoveryCache = new Map<string, CachedDiscovery>()
+const CACHE_TTL_MS = 5000
+
 async function findCommandBundle(projectRoot: string, commandName: string): Promise<CommandBundle | undefined> {
   if (!projectRoot) return undefined
-  const discovery = await discoverCommandBundles({ projectRoot })
-  return discovery.commands.find((command) => command.name === commandName)
+  const now = Date.now()
+  const cached = discoveryCache.get(projectRoot)
+  let commands: CommandBundle[]
+  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
+    commands = cached.commands
+  } else {
+    const discovery = await discoverCommandBundles({ projectRoot })
+    commands = discovery.commands
+    discoveryCache.set(projectRoot, { commands, timestamp: now })
+  }
+
+  // Exact match first
+  const exact = commands.find((command) => command.name === commandName)
+  if (exact) return exact
+
+  // Case-insensitive, hyphen/underscore normalized comparison
+  const normalizedSearch = commandName.toLowerCase().replace(/[-_]/g, "")
+  const fuzzy = commands.find((command) => {
+    const normalizedCandidate = command.name.toLowerCase().replace(/[-_]/g, "")
+    return normalizedCandidate === normalizedSearch
+  })
+  if (fuzzy) return fuzzy
+
+  // Try substring prefix/suffix matching if still not found
+  return commands.find((command) => {
+    const candidate = command.name.toLowerCase()
+    const search = commandName.toLowerCase()
+    return candidate.includes(search) || search.includes(candidate)
+  })
 }
 
 function expandCommandArguments(commandBody: string, commandArguments: string): string {

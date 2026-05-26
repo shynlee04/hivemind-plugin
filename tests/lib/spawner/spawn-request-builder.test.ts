@@ -86,4 +86,45 @@ describe("buildSdkSpawnRequest", () => {
       tools: ["read", "edit", "bash", "glob", "grep"],
     })
   })
+
+  it("merges tools map and explicit permission denials, prioritizing denials", () => {
+    const profile = resolveDelegationPermissionProfile(
+      { ...baseParams, agent: "builder", prompt: "Run build" },
+      {
+        name: "builder",
+        tools: {
+          read: true,
+          edit: true,
+          write: true,
+        },
+        permission: {
+          write: false,
+        },
+      },
+    )
+
+    expect(profile).toEqual({
+      mode: "write-capable",
+      tools: ["read", "edit", "glob", "grep"],
+    })
+  })
+
+  it("denies tools explicitly marked false in tools map", () => {
+    const profile = resolveDelegationPermissionProfile(
+      { ...baseParams, agent: "builder", prompt: "Run build" },
+      {
+        name: "builder",
+        tools: {
+          read: true,
+          edit: true,
+          write: false,
+        },
+      },
+    )
+
+    expect(profile).toEqual({
+      mode: "write-capable",
+      tools: ["read", "edit", "glob", "grep"],
+    })
+  })
 })
