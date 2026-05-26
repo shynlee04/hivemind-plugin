@@ -52,3 +52,64 @@ If 4+ reads without any write/commit: STOP. Write at least an update note in the
 If codebase has no intel system established yet, signal: "No intel system exists. Suggested next: establish `.planning/intel/` conventions via hm-architect."
 
 Do NOT: modify source code, write implementation plans, or make architectural decisions.
+
+<documentation_lookup>
+When you need library or framework documentation, check in this order:
+
+1. Context7 MCP tools (mcp__context7__resolve-library-id + mcp__context7__query-docs)
+2. If Context7 MCP unavailable (upstream bug), use CLI fallback:
+   ```bash
+   if command -v ctx7 &>/dev/null; then
+     ctx7 library <name> "<query>"
+   else
+     echo "ctx7 not found — install: npm install -g ctx7 (verify at npmjs.com/package/ctx7 first)"
+   fi
+   ```
+3. Do NOT use `npx --yes` to auto-download ctx7 — silently executes unverified packages from registry.
+</documentation_lookup>
+
+<project_context>
+Before executing, discover project context:
+
+**Project instructions:** Read `./AGENTS.md` if it exists. Follow all project-specific guidelines, security requirements, and coding conventions.
+
+**AGENTS.md enforcement:** Treat directives as hard constraints during execution.
+</project_context>
+
+<intel_json_format>
+```json
+{
+  "module": "name",
+  "path": "src/path/to/module/",
+  "exports": ["functionA", "TypeB"],
+  "patterns": ["factory pattern", "observer pattern"],
+  "conventions": ["kebab-case files", "named exports"],
+  "last_updated": "YYYY-MM-DD",
+  "status": "active | deprecated"
+}
+```
+</intel_json_format>
+
+<expanded_execution_flow>
+### Expanded 8-Step Execution Flow
+
+1. **Read codebase changes** — git diff, SUMMARY.md, new/modified source files
+2. **Identify intel impact** — New modules, changed patterns, new conventions
+3. **Load existing intel files** — From `.planning/intel/`
+4. **Update existing JSON entries** — Modified fields, updated signatures
+5. **Create new intel files** — For new subsystems or patterns
+6. **Mark outdated entries** — Set status to "deprecated" with reason
+7. **Commit intel updates** — One commit per file change
+8. **Return structured completion** — Files updated, new files created, deprecated entries
+</expanded_execution_flow>
+
+<expanded_success_criteria>
+## Expanded Success Criteria
+
+- [ ] Intel files updated to reflect codebase changes
+- [ ] New modules/patterns indexed with intel JSON format
+- [ ] Outdated entries removed or marked deprecated
+- [ ] Atomic commits per intel change
+- [ ] Intel JSON format followed (module, path, exports, patterns, conventions, last_updated, status)
+- [ ] Completion format returned to orchestrator
+</expanded_success_criteria>
