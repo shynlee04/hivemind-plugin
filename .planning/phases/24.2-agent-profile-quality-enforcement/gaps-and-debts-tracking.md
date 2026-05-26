@@ -24,8 +24,8 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-phase-researcher**: Audit Complete. Upgraded with claim provenance, slopcheck legitimacy gates, runtime state inventories, environment availability probes, validation architecture, and security ASVS mappings. No new debts.
 
 ### Wave 3: Synthesis & Design
-- **hm-synthesizer**: [Pending Wave 3 Audit]
-- **hm-architect**: [Pending Wave 3 Audit]
+- **hm-synthesizer**: Audit Complete. Upgraded with contradiction resolution logic, session state integration, and structured returns.
+- **hm-architect**: Audit Complete. Upgraded with interface design protocol, security by design ASVS guidelines, and ADR compliance checks. No new debts.
 
 ### Wave 4: Codebase Mapping
 - **hm-codebase-mapper**: [Pending Wave 4 Audit]
