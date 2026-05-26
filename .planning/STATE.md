@@ -6,10 +6,10 @@ status: planned
 last_updated: "2026-05-26T13:58:00.000Z"
 progress:
   total_phases: 43
-  completed_phases: 14
+  completed_phases: 15
   total_plans: 71
-  completed_plans: 65
-  percent: 92
+  completed_plans: 70
+  percent: 99
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -47,7 +47,7 @@ progress:
 **P23.10 (GAP-08):** 📋 PENDING — Pre-Structural-Cleanup Readiness Gate — final design freeze before Group 4. Depends: P23.7, P23.8, P23.9. Blocks: P33.
 **Phase 24:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (Cluster D, Depends: P23.3).
 **Phase 24.1:** ✅ COMPLETE — All 3 plans executed (2026-05-26). 8 hm-* agent files created in .opencode/agents/, 4 hm-* commands in .opencode/command/, 2 workflow files + directory in .opencode/workflows/. All files use minimal frontmatter per D-24-02.
-**Phase 24.2:** 📋 PENDING — Agent Profile Quality Enforcement (Cluster A — Agent Quality, Depends: P24.1).
+**Phase 24.2:** ✅ COMPLETE — All 5 plans executed (2026-05-26). 30 hm-* agent profiles upgraded from TODO stubs to production-grade bodies (execution/implementation, research/planning, cross-cutting/support, UI/Doc/Orchestration). Canonical Artifact Registry created at `.planning/references/artifact-schema.md`. 5 atomic commits.
 **Phase 24.3:** 📋 PENDING — Commands Infrastructure (Cluster C — Commands & Workflows, INSERTED, Depends: P24.2).
 **Phase 24.3.1:** ✅ COMPLETE — Governance Session Prototype (Cluster C — Commands & Workflows, Depends: P24, Blocks: P24.3, P24.4, P24.5, P24.6).
 **   Plan 01:** ✅ COMPLETE — Governance engine feature directory + createGovernanceSessionTool (Zod schema, SDK session creation, prompt injection, TUI toast, best-effort git commit). Typecheck clean. 3 atomic commits (0287eb10, 6f28296f, 98ea6b80).
