@@ -88,7 +88,13 @@ function toolsFromAgentMetadata(agent: ValidatedAgent): readonly string[] | unde
   let allowed: string[] = []
 
   if (agent.tools) {
-    allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => agent.tools?.[toolName] === true)
+    allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => {
+      const value = agent.tools?.[toolName]
+      if (value === undefined && (toolName === "read" || toolName === "glob" || toolName === "grep")) {
+        return true
+      }
+      return value === true
+    })
   } else if (agent.permission) {
     allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => {
       const value = agent.permission?.[toolName]
