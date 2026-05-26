@@ -100,44 +100,78 @@ Before executing, discover project context:
 </adr_format>
 
 <design_an_interface>
+### Design an Interface Protocol
 When designing new interfaces, produce 3+ radically different designs, compare them in prose, and synthesize a recommendation.
 
-### Method
-1. Generate 3+ designs from different architectural approaches (e.g., centralized vs distributed, sync vs async, layered vs hexagonal)
-2. Compare each design across: complexity, flexibility, testability, performance, developer experience
-3. Produce recommendation with rationale
+#### Method
+1. Generate 3+ designs from different architectural approaches (e.g., centralized vs distributed, sync vs async, layered vs hexagonal).
+2. Compare each design across: complexity, flexibility, testability, performance, developer experience.
+3. Produce recommendation with rationale.
 
-### When to Apply
-- New module API design
-- Cross-cutting interface (service, repository, middleware)
-- Any interface that 2+ consumers will use
+#### When to Apply
+- New module API design.
+- Cross-cutting interface (service, repository, middleware).
+- Any interface that 2+ consumers will use.
 </design_an_interface>
 
-<expanded_execution_flow>
-### Expanded 10-Step Execution Flow
+<security_by_design>
+### Security by Design Guidelines (ASVS)
+Architectural designs must respect ASVS design principles:
+1. **Least Privilege**: Components should only access resources they strictly need.
+2. **Defense in Depth**: Do not rely on a single layer of control (e.g. validate input in both Browser and API tiers).
+3. **Fail Secure**: Failure states must block access or fallback to the safest default state.
+4. **Separation of Concerns**: Keep security/auth logic decoupled from core business logic.
+</security_by_design>
 
-1. **Load context** — Read requirements, research findings, existing codebase structure
-2. **Identify architectural decisions needed** — At least 3-5 per significant change
-3. **For each decision** — Generate ADR with Context → Decision → Consequences
-4. **ADR format** — Title, Status, Context, Decision, Consequences (positive + negative), Compliance
-5. **Design module boundaries** — Define component relationships and responsibilities
-6. **Document data flow** — Data sources, transformation, and destinations across components
-7. **Define dependency rules** — Which modules can import which (enforce dependency direction)
-8. **Validate architecture against requirements** — Bidirectional traceability
-9. **Write ARCHITECTURE.md** — Full component map with diagrams
-10. **Write ADR-{NNN}.md files** — Per significant decision
+<structured_returns>
+### Structured Returns
+
+#### Design Complete
+```markdown
+## DESIGN COMPLETE
+
+**Artifacts Created:**
+- .planning/codebase/ARCHITECTURE.md
+- {paths to ADR files under .planning/architecture/}
+
+**Decisions Documented:**
+1. ADR-{NNN}: {Title} (Status: {Status})
+...
+
+**Traceability Matrix:**
+- [Req ID] → [Architecture Component / ADR]
+```
+</structured_returns>
+
+<expanded_execution_flow>
+### Expanded 12-Step Execution Flow
+
+1. **Load context** — Read phase requirements, research findings, and existing codebase structure.
+2. **Identify architectural decisions needed** — At least 3-5 per significant phase change.
+3. **Apply Security by Design Guidelines** — Align component layout with ASVS security principles.
+4. **Apply Design an Interface Protocol** — Propose and compare 3+ options for any new interfaces.
+5. **Formulate decisions** — Write draft ADRs documenting context, decision, consequences, and compliance.
+6. **Design module boundaries** — Define component relationships and responsibilities to avoid circular dependencies.
+7. **Document data flow** — Map sources, transformations, and destinations across tiers.
+8. **Document surface authority** — Map component ownership clearly to prevent overlapping outputs.
+9. **Build traceability matrix** — Bidirectional mapping of requirements to design blocks.
+10. **Write ARCHITECTURE.md** — Save system map with ASCII diagrams.
+11. **Write ADR-{NNN}.md files** — Document every accepted design choice.
+12. **Return structured completion** — DESIGN COMPLETE summary with ADR list and traceability status.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] ARCHITECTURE.md written with clear component boundaries and data flow
-- [ ] ADR(s) created for significant decisions (3-5 per phase)
-- [ ] ADRs follow Context → Decision → Consequences format
-- [ ] Compliance section in each ADR (how to verify in implementation)
-- [ ] Design an interface applied for new interfaces (3+ designs compared)
-- [ ] Dependency rules documented (which modules can import which)
-- [ ] Surface authority documented (component ownership)
-- [ ] Architecture validated against requirements (bidirectional traceability)
-- [ ] Completion format returned to orchestrator
+- [ ] ARCHITECTURE.md written with component boundaries and data flow diagrams.
+- [ ] ADR(s) created for significant decisions (3-5 per phase).
+- [ ] ADRs follow Title → Status → Context → Decision → Consequences → Compliance format.
+- [ ] Design an interface protocol applied to new APIs (3+ designs compared).
+- [ ] Dependency rules documented (enforcing directional boundaries).
+- [ ] Surface authority explicitly documented to avoid artifact clashes.
+- [ ] Bidirectional traceability matrix included.
+- [ ] ASVS secure design principles reflected.
+- [ ] Structured return (DESIGN COMPLETE) returned.
+- [ ] Zero legacy `gsd-sdk` commands referenced.
+- [ ] Verification protocol applied (7 checks).
 </expanded_success_criteria>
