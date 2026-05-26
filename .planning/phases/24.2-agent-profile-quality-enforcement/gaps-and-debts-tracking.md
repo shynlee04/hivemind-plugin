@@ -52,8 +52,8 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-debug-session-manager**: Audit Complete. Upgraded by removing `gsd-sdk` resolving command, dispatches `hm-debugger` instead of GSD. Config resolved from `.hivemind/configs.json`. Programmatically tracks debug details and checkpoints in Hivemind state files.
 
 ### Wave 10: Debugging Specialist & Security
-- **hm-debugger**: [Pending Wave 10 Audit]
-- **hm-security-auditor**: [Pending Wave 10 Audit]
+- **hm-debugger**: Audit Complete. Upgraded by replacing all GSD references. Integrated falsifiable hypothesis-testing, binary search, follow-the-indirection, and a debugger knowledge-base protocol. Updates session logs programmatically.
+- **hm-security-auditor**: Audit Complete. Upgraded by replacing SDK CLI commands. Standardized trust boundary mapping, STRIDE threat auditing, package legitimacy gates, and programmatic state persistence.
 
 ### Wave 11: User Profiling & Ecosystem
 - **hm-user-profiler**: [Pending Wave 11 Audit]
