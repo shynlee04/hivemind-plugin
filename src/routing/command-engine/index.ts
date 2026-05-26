@@ -77,8 +77,8 @@ export function analyzeCommandContract(command: CommandBundle): CommandContractA
  * @param input - Command name, context payload, and bounds.
  * @returns Bounded context rendering result.
  */
-export function renderCommandContext(input: CommandContextRenderInput): CommandContextRenderResult {
-  const maxCharacters = normalizeContextLimit(input.maxCharacters)
+export function renderCommandContext(input: CommandContextRenderInput, band?: string): CommandContextRenderResult {
+  const maxCharacters = normalizeContextLimit(input.maxCharacters, band)
   const rawRendered = JSON.stringify({ commandName: input.commandName, context: input.context ?? {} }, null, 2)
   const truncated = rawRendered.length > maxCharacters
   return {
@@ -114,7 +114,7 @@ export async function routeCommandPreview(input: CommandRoutePreviewInput): Prom
   const discovery = await discoverCommandBundles({ projectRoot: input.projectRoot })
   const command = discovery.commands.find((candidate) => candidate.name === input.commandName)
   const pressure = detectRuntimePressure({ score: input.score, tier: input.tier, toolName: "hivemind-command-engine" })
-  const context = renderCommandContext(input)
+  const context = renderCommandContext(input, pressure.band)
   const transform = transformCommandMessages(input)
   const routeStatus = resolveRouteStatus(Boolean(command), pressure.outcome)
 
@@ -153,12 +153,14 @@ export async function executeCommandEngineAction(
       const command = await requireCommand(projectRoot, input.commandName)
       return analyzeCommandContract(command)
     }
-    case "render_context":
+    case "render_context": {
+      const pressure = detectRuntimePressure({ score: input.score, tier: input.tier, toolName: "hivemind-command-engine" })
       return renderCommandContext({
         commandName: input.commandName ?? "unknown-command",
         context: input.context,
         maxCharacters: input.maxCharacters,
-      })
+      }, pressure.band)
+    }
     case "transform_messages":
       return transformCommandMessages({
         commandName: input.commandName ?? "unknown-command",
@@ -214,9 +216,22 @@ async function requireCommand(projectRoot: string, commandName?: string): Promis
  * @param requestedLimit - Untrusted requested character limit.
  * @returns Safe character limit.
  */
-function normalizeContextLimit(requestedLimit?: number): number {
-  if (requestedLimit === undefined || !Number.isFinite(requestedLimit)) return DEFAULT_CONTEXT_LIMIT
-  return Math.max(1, Math.min(MAX_CONTEXT_LIMIT, Math.trunc(requestedLimit)))
+function normalizeContextLimit(requestedLimit?: number, band?: string): number {
+  let baseLimit = DEFAULT_CONTEXT_LIMIT
+  if (requestedLimit !== undefined && Number.isFinite(requestedLimit)) {
+    baseLimit = requestedLimit
+  }
+
+  let maxLimit = MAX_CONTEXT_LIMIT
+  if (band === "advisory") {
+    maxLimit = 8_000
+  } else if (band === "gated") {
+    maxLimit = 4_000
+  } else if (band === "blocking") {
+    maxLimit = 2_000
+  }
+
+  return Math.max(1, Math.min(maxLimit, Math.trunc(baseLimit)))
 }
 
 /**

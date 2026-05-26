@@ -87,4 +87,34 @@ describe("command engine", () => {
     expect(preview.route.action).toBe("preview_only")
     expect(preview.pressure.outcome).toBe("allow")
   })
+
+  it("scales context limit dynamically based on pressure band", () => {
+    const steady = renderCommandContext({
+      commandName: "phase59",
+      context: { val: "x".repeat(20000) },
+      maxCharacters: 18000,
+    }, "steady")
+    expect(steady.maxCharacters).toBe(16000)
+
+    const advisory = renderCommandContext({
+      commandName: "phase59",
+      context: { val: "x".repeat(20000) },
+      maxCharacters: 10000,
+    }, "advisory")
+    expect(advisory.maxCharacters).toBe(8000)
+
+    const gated = renderCommandContext({
+      commandName: "phase59",
+      context: { val: "x".repeat(20000) },
+      maxCharacters: 5000,
+    }, "gated")
+    expect(gated.maxCharacters).toBe(4000)
+
+    const blocking = renderCommandContext({
+      commandName: "phase59",
+      context: { val: "x".repeat(20000) },
+      maxCharacters: 3000,
+    }, "blocking")
+    expect(blocking.maxCharacters).toBe(2000)
+  })
 })
