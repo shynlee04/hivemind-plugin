@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-25T20:00:00.000Z"
+last_updated: "2026-05-26T13:58:00.000Z"
 progress:
-  total_phases: 51
+  total_phases: 43
   completed_phases: 14
-  total_plans: 62
-  completed_plans: 58
-  percent: 94
+  total_plans: 71
+  completed_plans: 65
+  percent: 92
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -46,7 +46,7 @@ progress:
 **P23.9 (GAP-07):** 📋 PENDING — Schema+Config Parallel Track Integration — verify P30+P31 produce consistent schemas/configs. Depends: P30, P31. Blocks: P33-P35.
 **P23.10 (GAP-08):** 📋 PENDING — Pre-Structural-Cleanup Readiness Gate — final design freeze before Group 4. Depends: P23.7, P23.8, P23.9. Blocks: P33.
 **Phase 24:** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (Cluster D, Depends: P23.3).
-**Phase 24.1:** 📋 PENDING — Agent Hierarchy Restructure (Cluster A — Agent Quality, Depends: P24).
+**Phase 24.1:** ✅ COMPLETE — All 3 plans executed (2026-05-26). 8 hm-* agent files created in .opencode/agents/, 4 hm-* commands in .opencode/command/, 2 workflow files + directory in .opencode/workflows/. All files use minimal frontmatter per D-24-02.
 **Phase 24.2:** 📋 PENDING — Agent Profile Quality Enforcement (Cluster A — Agent Quality, Depends: P24.1).
 **Phase 24.3:** 📋 PENDING — Commands Infrastructure (Cluster C — Commands & Workflows, INSERTED, Depends: P24.2).
 **Phase 24.3.1:** ✅ COMPLETE — Governance Session Prototype (Cluster C — Commands & Workflows, Depends: P24, Blocks: P24.3, P24.4, P24.5, P24.6).
@@ -353,13 +353,16 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 8. **P23.10 (GAP-08)** 📋 PENDING — Pre-Structural-Cleanup Readiness Gate. Depends: P23.7, P23.8, P23.9.
 
 ### Cluster D — Coordination
+
 9. **Phase 24** 📋 PENDING — Coordination Dispatch + Delegate-Task Fix (Depends: P23.3).
 
 ### Cluster A — Agent Quality
+
 10. **Phase 24.1** 📋 PENDING — Agent Hierarchy Restructure (Depends: P24).
 11. **Phase 24.2** 📋 PENDING — Agent Profile Quality Enforcement (Depends: P24.1).
 
 ### Cluster C — Commands & Workflows
+
 12. **Phase 24.3** 📋 PENDING — Commands Infrastructure (Depends: P23.4, P24.2).
 13. **Phase 24.3.1** 🟡 PLANNED — Governance Session Prototype (Depends: P24, Blocks: P24.3-P24.6).
 14. **Phase 24.4** 📋 PENDING — References & Templates System (Depends: P24.3, P24.3.1).
@@ -367,43 +370,54 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 16. **Phase 24.6** 📋 PENDING — Build HM-* Commands (Depends: P24.5).
 
 ### Trajectory + Pressure
+
 17. **Phase 25** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Depends: P23.5, P24-P24.6).
 18. **Phase 26** 📋 PENDING — Pressure + Notification Redesign (Depends: P23.5, P25).
 
 ### Cluster B — Documents
+
 19. **Phase 26.1** 📋 PENDING — Artifact Naming & Pathing Convention (Depends: P26).
 20. **Phase 26.2** 📋 PENDING — Artifact Dependency & Gatekeeping (Depends: P26.1).
 
 ### Cluster E — Primitives Distribution
+
 21. **Phase 24.7** 📋 PENDING — Primitives Asset Schema (Depends: P23.6, P26).
 22. **Phase 24.8** 📋 PENDING — Primitives Install-Time Extraction (Depends: P24.7).
 
 ### Cluster F — Bootstrap & Init
+
 23. **Phase 24.9** 📋 PENDING — Bootstrap Init Flow Expansion (Depends: P24.8).
 
 ### Cluster G — Routing
+
 24. **Phase 27** 📋 PENDING — Routing + Intent Loop Foundation (Depends: P23.6, P24.7-P24.9, P21-P26.2).
 
 ### Cluster H — Hooks
+
 25. **Phase 28** 📋 PENDING — Hook Injection Plane Redesign (Depends: P23.7, P27).
 
 ### Cluster I — Auto-looping + PTY
+
 26. **Phase 29** 📋 PENDING — Auto-Looping + PTY + Background Command Revamp (Depends: P28).
 
 ### Cluster J — Schema + Config (Parallel Track)
+
 27. **Phase 30** 📋 PENDING — Schema Kernel Cleanup (Depends: nothing — leaf module, parallel to Groups 1-2).
 28. **Phase 31** 📋 PENDING — Config Plane Redesign (Depends: P30).
 29. **Phase 32** 📋 PENDING — Shipped Primitives + Governance Wire (Depends: P31).
 
 ### Cluster K — Cleanup
+
 30. **Phase 33** 📋 PENDING — Plugin.ts Decomposition (Depends: P23.8, P23.9, P23.10, P21-P32).
 31. **Phase 34** 📋 PENDING — Async I/O Conversion + Typed Errors (Depends: P33).
 32. **Phase 35** 📋 PENDING — Module Splits + Legacy Inventory (Depends: P34).
 
 ### Cluster L — Verification
+
 33. **Phase 36** 📋 PENDING — Integration Verification (Depends: P35).
 
 ### Deferred
+
 34. **Phase 37** 📋 deferred — Fix sync-oss.yml workflow (Depends: P36).
 35. **Phase 38** 📋 deferred — Package .opencode/ primitives (Depends: P37).
 
