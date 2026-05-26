@@ -77,6 +77,10 @@ Every phase must explicitly trace through these protocols:
 - [ ] **P24.3 (Cluster C): Commands Infrastructure** — Namespace routers, workflow separation [GSD-reval: YES - GSD research on 67+88 pattern needs re-validation] [Arch-src: YES - tools/ + routing/] [UAT: command dispatch E2E]
 - [ ] **P24.3.1 (Cluster C): Governance Session Prototype** — SDK session creation + TUI injection [GSD-reval: NO] [Arch-src: YES - src/tools/governance/] [UAT: live session create]
 - [ ] **P24.3.2 (Cluster C): Execute-Slash-Command Core Revamp** — Fix 6 critical flaws: commandSource tracking, execution tracking, delegation-aware context, return envelope consistency, Zod schema, typed errors [GSD-reval: YES - deep-analysis-tools-2026-05-21.md] [Arch-src: YES - src/tools/session/execute-slash-command.ts] [UAT: envelope consistency, typecheck clean, 15+ tests pass]
+  - **Plans:** 6 plans in 3 waves
+  - Wave 1 (Foundation): Plan 01 (ToolResponse + Typed Errors + Schema + Tracking), Plan 02 (Command-Engine Extension + Namespace Frontmatter)
+  - Wave 2 (Facade Extraction): Plan 03 (Hybrid Facade + Delegation Context + Namespace Wiring), Plan 04 (Comprehensive Wave 2 Test Coverage)
+  - Wave 3 (Cleanup + Verification): Plan 05 (Session Tools Move + Narrow Import Migration), Plan 06 (Final Verification + Comprehensive Test Suite)
 - [ ] **P24.3.3 (Cluster C): Execute-Slash-Command Advanced Features** — Fix 4 high/medium flaws: natural language intent, fuzzy discovery+cache, dynamic agent/subtask resolver, agent switch+restore, sub session context [GSD-reval: YES - deep-analysis-tools-2026-05-21.md] [Arch-src: YES - src/tools/session/execute-slash-command.ts] [UAT: fuzzy discovery, agent restore, delegation context, 12+ tests pass]
 - [ ] **P23.5 (GAP-03): A→C Integration Gate** — Verify Agents + Commands integration [GSD-reval: YES - command patterns may have changed]
 - [ ] **P24.4 (Cluster C): References & Templates System** — Standardized references/templates [GSD-reval: YES - reference patterns from old GSD] [Arch-src: YES - src/features/ or src/shared/] [UAT: reference lookup test]
