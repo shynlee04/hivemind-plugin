@@ -71,8 +71,9 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 
 
 ### Wave 14: Documentation Quality
-- **hm-doc-writer**: [Pending Wave 14 Audit]
-- **hm-doc-verifier**: [Pending Wave 14 Audit]
+- **hm-doc-writer**: Audit Complete. Upgraded by replacing legacy GSD references. Standardized documentation quality standards (all API claims directly code-backed, path checks, runnable examples), templates for README/API/CONFIG docs, and programmatic state persistence in `.hivemind/state/session-continuity.json` and `trajectory-ledger.json`.
+- **hm-doc-verifier**: Audit Complete. Upgraded by replacing legacy GSD references. Implemented claim status classifications (VERIFIED, FALSE, UNVERIFIABLE), structured verification templates and JSON output schemas, and programmatic updates to Hivemind state files.
+
 
 ### Wave 15: Shipping & Specifying
 - **hm-shipper**: [Pending Wave 15 Audit]
