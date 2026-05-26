@@ -20,8 +20,8 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-intent-loop**: Audit Complete. Upgraded with progressive Q&A levels and context drift boundary abort rules. No major new debts.
 
 ### Wave 2: Research Domain
-- **hm-project-researcher**: [Pending Wave 2 Audit]
-- **hm-phase-researcher**: [Pending Wave 2 Audit]
+- **hm-project-researcher**: Audit Complete. Upgraded with exhaustive output format templates and native search integration guidelines. No major new debts.
+- **hm-phase-researcher**: Audit Complete. Upgraded with claim provenance, slopcheck legitimacy gates, runtime state inventories, environment availability probes, validation architecture, and security ASVS mappings. No new debts.
 
 ### Wave 3: Synthesis & Design
 - **hm-synthesizer**: [Pending Wave 3 Audit]
