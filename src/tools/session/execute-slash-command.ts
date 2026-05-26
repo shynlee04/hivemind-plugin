@@ -1,10 +1,75 @@
-import { tool } from "@opencode-ai/plugin"
-import type { PluginInput, ToolDefinition } from "@opencode-ai/plugin"
+import { tool } from "@opencode-ai/plugin/tool"
+import type { PluginInput } from "@opencode-ai/plugin"
 import { discoverCommandBundles } from "../../routing/command-engine/index.js"
 import type { CommandBundle } from "../../routing/command-engine/types.js"
-import { resolveSessionFile } from "../hivemind/session-resolver.js"
+import { resolveSessionFile } from "./session-resolver.js"
+import { ExecuteSlashCommandSchema } from "../../schema-kernel/commands.schema.js"
+import {
+  CommandNotFoundError,
+  AgentNotFoundError,
+  DelegationTimeoutError,
+  InvalidCommandError,
+  DelegationContextError,
+} from "../../shared/errors/commands.js"
+import { describeError } from "../../shared/helpers.js"
+import { randomUUID } from "node:crypto"
+import { getAppAgents } from "../../shared/app-api.js"
+import { isValidSessionID } from "../../features/session-tracker/types.js"
 
 const DEFERRED_SUBTASK_DISPATCH_DELAY_MS = 50
+
+function getErrorType(err: unknown): string {
+  if (err instanceof CommandNotFoundError || (err && (err as any).name === "CommandNotFoundError")) {
+    return "not_found"
+  }
+  if (err instanceof AgentNotFoundError || (err && (err as any).name === "AgentNotFoundError")) {
+    return "not_found"
+  }
+  if (err instanceof InvalidCommandError || (err && (err as any).name === "InvalidCommandError")) {
+    return "missing_arg"
+  }
+  if (err instanceof DelegationContextError || (err && (err as any).name === "DelegationContextError")) {
+    return "dispatch_failed"
+  }
+  if (err instanceof DelegationTimeoutError || (err && (err as any).name === "DelegationTimeoutError")) {
+    return "dispatch_failed"
+  }
+  if (err instanceof Error) {
+    if (err.message.includes("build") || err.message.includes("compile")) {
+      return "build_failed"
+    }
+    if (err.message.includes("dispatch")) {
+      return "dispatch_failed"
+    }
+    return "runtime"
+  }
+  return "unexpected"
+}
+
+function buildSuccessMetadata(
+  args: any,
+  validated: any,
+  mode: string,
+  parentSessionID: string,
+  startTime: Date,
+  extra: Record<string, any> = {}
+) {
+  const endTime = new Date()
+  return {
+    commandSource: validated.commandSource,
+    id: randomUUID(),
+    commandStart: startTime.toISOString(),
+    commandEnd: endTime.toISOString(),
+    commandDuration: endTime.getTime() - startTime.getTime(),
+    trackExecution: validated.trackExecution,
+    command: args.command,
+    agent: validated.agent || undefined,
+    model: validated.model || undefined,
+    mode,
+    parentSessionID,
+    ...extra,
+  }
+}
 
 /**
  * Creates the execute-slash-command tool.
@@ -49,7 +114,7 @@ const DEFERRED_SUBTASK_DISPATCH_DELAY_MS = 50
  * @param sessionTracker - Optional session tracker instance for tracking in-flight commands.
  * @returns ToolDefinition for the execute-slash-command tool.
  */
-export const createExecuteSlashCommandTool = (client: PluginInput["client"], sessionTracker?: any): ToolDefinition => {
+export const createExecuteSlashCommandTool = (client: PluginInput["client"], sessionTracker?: any): ReturnType<typeof tool> => {
   return tool({
     description:
       "Executes an OpenCode slash command on the active session. " +
@@ -58,26 +123,8 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
       "(3) no overrides → TUI appendPrompt/submitPrompt for basic command execution. " +
       "When agent is provided without subtask, defaults to subtask:false (parent session dispatch). " +
       "Use `hivemind-command-engine` with action `discover` or `list_commands` to find available commands first.",
-    args: {
-      command: tool.schema.string().describe(
-        "The command name without the leading slash (e.g., 'gsd-stats', 'hf-create', 'plan')",
-      ),
-      arguments: tool.schema.string().optional().describe(
-        "Arguments string to pass to the command (e.g., 'my-new-skill'). Defaults to empty string.",
-      ),
-      agent: tool.schema.string().optional().describe(
-        "Optional agent context override. With subtask:true, dispatches a SubtaskPartInput to this agent. " +
-        "With subtask:false, dispatches the expanded command body as a deferred synthetic parent prompt for this agent.",
-      ),
-      model: tool.schema.string().optional().describe(
-        "Optional model override in 'providerID/modelID' format (e.g., 'anthropic/claude-sonnet-4-20250514'). " +
-        "When set, prepended as a model tag in the prompt text.",
-      ),
-      subtask: tool.schema.boolean().optional().describe(
-        "Optional one-shot subtask override. When true, dispatches the command body as a SubtaskPartInput using the resolved or overridden agent.",
-      ),
-    },
-    async execute(args, ctx) {
+    args: ExecuteSlashCommandSchema.shape as any,
+    async execute(args: any, ctx) {
       const cmdDisplay = `/${args.command}${args.arguments ? ` ${args.arguments}` : ""}`
       ctx.metadata({
         title: `Executing ${cmdDisplay}`,
@@ -88,24 +135,97 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         },
       })
 
+      const startTime = new Date()
+
       try {
+        // Normalize command name for schema validation compatibility
+        const inputCommand = typeof args.command === "string" ? args.command.toLowerCase().replace(/_/g, "-") : args.command
+        const normalizedArgs = { ...args, command: inputCommand }
+
+        // Validate inputs using safeParse
+        const parsed = ExecuteSlashCommandSchema.safeParse(normalizedArgs)
+        if (!parsed.success) {
+          const firstIssue = parsed.error.issues[0]
+          return {
+            output: describeError(new InvalidCommandError(parsed.error.message)),
+            metadata: {
+              error: true,
+              errorType: "missing_arg",
+              field: firstIssue ? String(firstIssue.path[0] || "command") : "command",
+              cause: parsed.error.issues,
+              command: args.command,
+            },
+            error: true,
+          } as any
+        }
+        const validated = parsed.data
+
         const projectRoot = ctx.directory ?? ""
-        const commandBundle = await findCommandBundle(projectRoot, args.command)
-        const resolvedSubtask = args.subtask ?? (args.agent ? false : undefined)
-        const syntheticPromptAgent = resolvedSubtask === false ? args.agent || commandBundle?.agent : undefined
+        const commandBundle = await findCommandBundle(projectRoot, validated.command)
+
+        // Check if subtask was explicitly passed in args
+        const hasExplicitSubtask = "subtask" in args
+        const subtaskParam = hasExplicitSubtask ? validated.subtask : undefined
+
+        const resolvedSubtask = subtaskParam ?? (validated.agent ? false : undefined)
+        const syntheticPromptAgent = resolvedSubtask === false ? validated.agent || commandBundle?.agent : undefined
+
+        // Determine parentSessionID
+        const resolvedParentSessionID = validated.parentSessionID || ctx.sessionID || ""
+
+        // Validate agent format & existence if agent is used
+        const resolvedAgent = validated.agent || commandBundle?.agent
+        if (resolvedAgent) {
+          if (!/^[a-z][a-z0-9-]*$/.test(resolvedAgent)) {
+            return {
+              output: describeError(new InvalidCommandError(`Invalid agent name format: ${resolvedAgent}`)),
+              metadata: {
+                error: true,
+                errorType: "missing_arg",
+                field: "agent",
+                command: args.command,
+              },
+              error: true,
+            } as any
+          }
+
+          // Safety validation against app agents registry if available
+          if (client && (client as any).app && typeof (client as any).app.agents === "function") {
+            try {
+              const appAgents = await getAppAgents(client)
+              const agentNames = appAgents.map((a: any) => typeof a === "string" ? a : (a && typeof a.id === "string" ? a.id : ""))
+              if (!agentNames.includes(resolvedAgent)) {
+                return {
+                  output: describeError(new AgentNotFoundError(`Agent not found: ${resolvedAgent}`)),
+                  metadata: {
+                    error: true,
+                    errorType: "not_found",
+                    agent: resolvedAgent,
+                    command: args.command,
+                  },
+                  error: true,
+                } as any
+              }
+            } catch (err) {
+              // Safety fallback: ignore errors from app.agents() if it fails
+            }
+          }
+        }
+
         if (syntheticPromptAgent) {
           if (!commandBundle) {
             return {
-              output: `✗ Failed to dispatch ${cmdDisplay}: command not found for synthetic parent prompt dispatch`,
+              output: describeError(new CommandNotFoundError(`Command not found: ${validated.command}`)),
               metadata: {
                 error: true,
                 errorType: "not_found",
                 command: args.command,
               },
-            }
+              error: true,
+            } as any
           }
 
-          const promptText = expandCommandArguments(commandBundle.body, args.arguments ?? "")
+          const promptText = expandCommandArguments(commandBundle.body, validated.arguments ?? "")
           dispatchPromptAfterToolReturn(client, {
             path: { id: ctx.sessionID },
             body: {
@@ -127,44 +247,66 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               `  Description: ${commandBundle.description}`,
               "  Note: synthetic parent prompt creates a ## USER turn in the session body. Agent will be restored after one turn.",
             ].join("\n"),
-            metadata: {
-              command: args.command,
-              agent: syntheticPromptAgent,
-              description: commandBundle.description,
-              mode: "synthetic-parent-prompt",
-              scheduled: true,
-              dispatched: true,
-            },
-          }
+            metadata: buildSuccessMetadata(
+              args,
+              validated,
+              "synthetic-parent-prompt",
+              resolvedParentSessionID,
+              startTime,
+              {
+                agent: syntheticPromptAgent,
+                description: commandBundle.description,
+                scheduled: true,
+                dispatched: true,
+              }
+            ),
+            error: false,
+          } as any
         }
 
-        const shouldDispatchSubtask = args.subtask ?? commandBundle?.subtask === true
+        const shouldDispatchSubtask = subtaskParam ?? commandBundle?.subtask === true
         if (shouldDispatchSubtask) {
           if (!commandBundle) {
             return {
-              output: `✗ Failed to dispatch ${cmdDisplay}: command not found for subtask dispatch`,
+              output: describeError(new CommandNotFoundError(`Command not found: ${validated.command}`)),
               metadata: {
                 error: true,
                 errorType: "not_found",
                 command: args.command,
               },
-            }
+              error: true,
+            } as any
           }
-          const subtaskAgent = args.agent || commandBundle.agent
+          const subtaskAgent = validated.agent || commandBundle.agent
           if (!subtaskAgent) {
             return {
-              output: `✗ Failed to dispatch ${cmdDisplay}: command has subtask: true but no agent was provided or defined in frontmatter`,
+              output: describeError(new InvalidCommandError(`command has subtask: true but no agent was provided or defined in frontmatter`)),
               metadata: {
                 error: true,
                 errorType: "bad_request",
                 command: args.command,
               },
-            }
+              error: true,
+            } as any
           }
 
-          if (sessionTracker?.pendingRegistry) {
+          // Validate parentSessionID for delegation context
+          if (!resolvedParentSessionID || !isValidSessionID(resolvedParentSessionID)) {
+            return {
+              output: describeError(new DelegationContextError("Parent session ID is missing or invalid for delegation context")),
+              metadata: {
+                error: true,
+                errorType: "dispatch_failed",
+                parentSessionID: resolvedParentSessionID,
+                command: args.command,
+              },
+              error: true,
+            } as any
+          }
+
+          if (validated.trackExecution && sessionTracker?.pendingRegistry) {
             sessionTracker.pendingRegistry.add({
-              parentSessionID: ctx.sessionID,
+              parentSessionID: resolvedParentSessionID,
               callID: ctx.messageID || `cmd-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
               subagentType: subtaskAgent,
               tool: "execute-slash-command",
@@ -172,7 +314,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             })
           }
 
-          const promptText = expandCommandArguments(commandBundle.body, args.arguments ?? "")
+          const promptText = expandCommandArguments(commandBundle.body, validated.arguments ?? "")
           dispatchPromptAfterToolReturn(client, {
             path: { id: ctx.sessionID },
             body: {
@@ -183,7 +325,9 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
                   agent: subtaskAgent,
                   description: commandBundle.description,
                   prompt: promptText,
-                },
+                  parentSessionID: resolvedParentSessionID,
+                  commandSource: validated.commandSource,
+                } as any,
               ],
             },
             query: { directory: ctx.directory },
@@ -195,15 +339,21 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               `  Agent: ${subtaskAgent}`,
               `  Description: ${commandBundle.description}`,
             ].join("\n"),
-            metadata: {
-              command: args.command,
-              agent: subtaskAgent,
-              description: commandBundle.description,
-              mode: "subtask",
-              scheduled: true,
-              dispatched: true,
-            },
-          }
+            metadata: buildSuccessMetadata(
+              args,
+              validated,
+              "subtask",
+              resolvedParentSessionID,
+              startTime,
+              {
+                agent: subtaskAgent,
+                description: commandBundle.description,
+                scheduled: true,
+                dispatched: true,
+              }
+            ),
+            error: false,
+          } as any
         }
 
         const resolved = await resolveSessionFile(projectRoot, ctx.sessionID)
@@ -214,16 +364,16 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         const parts: string[] = []
 
         // Prepend agent override if specified
-        if (args.agent) {
-          parts.push(`@${args.agent}`)
+        if (validated.agent) {
+          parts.push(`@${validated.agent}`)
         }
 
         // The command itself
-        parts.push(`/${args.command}`)
+        parts.push(`/${validated.command}`)
 
         // Append arguments if any
-        if (args.arguments) {
-          parts.push(args.arguments)
+        if (validated.arguments) {
+          parts.push(validated.arguments)
         }
 
         const promptText = parts.join(" ")
@@ -248,18 +398,22 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               `✓ Command ${cmdDisplay} dispatched directly to child session ${ctx.sessionID} (bypassed TUI).`,
               `  Prompt text: ${promptText}`,
               `  The command will execute immediately after this tool call returns.`,
-              args.agent ? `  Agent: ${args.agent}` : null,
-              args.model ? `  Model: ${args.model}` : null,
+              validated.agent ? `  Agent: ${validated.agent}` : null,
+              validated.model ? `  Model: ${validated.model}` : null,
             ].filter(Boolean).join("\n"),
-            metadata: {
-              command: args.command,
-              promptText,
-              dispatched: true,
-              mode: "session-prompt",
-              ...(args.agent && { agent: args.agent }),
-              ...(args.model && { model: args.model }),
-            },
-          }
+            metadata: buildSuccessMetadata(
+              args,
+              validated,
+              "session-prompt",
+              resolvedParentSessionID,
+              startTime,
+              {
+                promptText,
+                dispatched: true,
+              }
+            ),
+            error: false,
+          } as any
         }
 
         // Step 1: Clear any existing prompt to avoid stale state
@@ -278,27 +432,25 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             `✓ Command ${cmdDisplay} dispatched to TUI prompt.`,
             `  Prompt text: ${promptText}`,
             `  The command will execute immediately after this tool call returns.`,
-            args.agent ? `  Agent: ${args.agent}` : null,
-            args.model ? `  Model: ${args.model}` : null,
+            validated.agent ? `  Agent: ${validated.agent}` : null,
+            validated.model ? `  Model: ${validated.model}` : null,
           ].filter(Boolean).join("\n"),
-          metadata: {
-            command: args.command,
-            promptText,
-            dispatched: true,
-            ...(args.agent && { agent: args.agent }),
-            ...(args.model && { model: args.model }),
-          },
-        }
-      } catch (error: unknown) {
-        const msg = error instanceof Error ? error.message : String(error)
-
-        // Classify error type for better agent error handling
-        let errorType: "bad_request" | "not_found" | "internal" = "internal"
-        if (error instanceof Error) {
-          const statusMatch = msg.match(/\b(400|422)\b/)
-          if (statusMatch) errorType = "bad_request"
-          else if (msg.includes("404") || msg.includes("not found")) errorType = "not_found"
-        }
+          metadata: buildSuccessMetadata(
+            args,
+            validated,
+            validated.subtask ? "subtask" : "user-session",
+            resolvedParentSessionID,
+            startTime,
+            {
+              promptText,
+              dispatched: true,
+            }
+          ),
+          error: false,
+        } as any
+      } catch (err: unknown) {
+        const msg = describeError(err)
+        const errorType = getErrorType(err)
 
         return {
           output: `✗ Failed to dispatch ${cmdDisplay}: ${msg}`,
@@ -307,8 +459,10 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             errorType,
             command: args.command,
             message: msg,
+            cause: err,
           },
-        }
+          error: true,
+        } as any
       }
     },
   })
@@ -370,3 +524,4 @@ function dispatchPromptAfterToolReturn(
     })
   }, DEFERRED_SUBTASK_DISPATCH_DELAY_MS)
 }
+

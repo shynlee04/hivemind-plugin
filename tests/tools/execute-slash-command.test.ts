@@ -128,6 +128,8 @@ User prompt:
             agent: "hm-l1-coordinator",
             description: "Enhance prompt",
             prompt: expect.stringContaining('User prompt:\n"manual example"'),
+            commandSource: "user",
+            parentSessionID: "ses_test",
           },
         ],
       },
@@ -188,9 +190,12 @@ Run with: $ARGUMENTS
             agent: "hm-l2-researcher",
             description: "Plain command",
             prompt: "Run with: natural language intent",
+            commandSource: "user",
+            parentSessionID: "ses_override",
           },
         ],
       },
+      query: { directory: projectRoot },
     }))
   })
 
@@ -432,4 +437,155 @@ Track body
       tool: "execute-slash-command",
     }))
   })
+
+  it("should return consistent { output, metadata, error } success envelope with execution tracking and commandSource", async () => {
+    const client = {
+      tui: {
+        clearPrompt: vi.fn(),
+        appendPrompt: vi.fn(),
+        submitPrompt: vi.fn(),
+      },
+    } as any
+    const tool = createExecuteSlashCommandTool(client)
+    const result = await tool.execute(
+      { command: "test-echo", arguments: "hello world", commandSource: "agent", trackExecution: true },
+      {
+        sessionID: "ses_abc",
+        agent: "hm-operator",
+        metadata: vi.fn(),
+      } as any,
+    )
+
+    expect(result).toHaveProperty("output")
+    expect(result).toHaveProperty("metadata")
+    expect(result).toHaveProperty("error", false)
+    expect(result.metadata).toMatchObject({
+      commandSource: "agent",
+      trackExecution: true,
+      command: "test-echo",
+      mode: "user-session",
+      parentSessionID: "ses_abc",
+    })
+    expect(result.metadata.id).toBeDefined()
+    expect(typeof result.metadata.id).toBe("string")
+    expect(result.metadata.commandStart).toBeDefined()
+    expect(result.metadata.commandEnd).toBeDefined()
+    expect(typeof result.metadata.commandDuration).toBe("number")
+  })
+
+  it("should return invalid command error envelope when input fails Zod validation", async () => {
+    const client = {} as any
+    const tool = createExecuteSlashCommandTool(client)
+    const result = await tool.execute(
+      { command: "@invalid-cmd", arguments: "hello" },
+      {
+        sessionID: "ses_abc",
+        agent: "hm-operator",
+        metadata: vi.fn(),
+      } as any,
+    )
+
+    expect(result).toHaveProperty("output")
+    expect(result).toHaveProperty("metadata")
+    expect(result).toHaveProperty("error", true)
+    expect(result.metadata).toMatchObject({
+      error: true,
+      errorType: "missing_arg",
+      field: "command",
+      command: "@invalid-cmd",
+    })
+    expect(result.metadata.cause).toBeDefined()
+  })
+
+  it("should return agent_not_found error envelope when requested agent is not found in app registry", async () => {
+    const agentsMock = vi.fn().mockResolvedValue({ data: ["known-agent"] })
+    const client = {
+      app: { agents: agentsMock },
+    } as any
+    const projectRoot = await createProjectWithCommand(
+      "agent-test-cmd",
+      `---
+description: "Agent test command"
+agent: unknown-agent
+subtask: true
+---
+Body
+`,
+    )
+    const tool = createExecuteSlashCommandTool(client)
+    const result = await tool.execute(
+      { command: "agent-test-cmd" },
+      {
+        sessionID: "ses_abc",
+        agent: "hm-operator",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+      } as any,
+    )
+
+    expect(result).toHaveProperty("error", true)
+    expect(result.metadata).toMatchObject({
+      error: true,
+      errorType: "not_found",
+      agent: "unknown-agent",
+      command: "agent-test-cmd",
+    })
+  })
+
+  it("should return CommandNotFoundError when command file is not found for subtask dispatch", async () => {
+    const client = {} as any
+    const tool = createExecuteSlashCommandTool(client)
+    const result = await tool.execute(
+      { command: "non-existent-cmd", agent: "hm-l2-agent", subtask: true },
+      {
+        sessionID: "ses_abc",
+        agent: "hm-operator",
+        metadata: vi.fn(),
+        directory: "/tmp",
+        worktree: "/tmp",
+      } as any,
+    )
+
+    expect(result).toHaveProperty("error", true)
+    expect(result.metadata).toMatchObject({
+      error: true,
+      errorType: "not_found",
+      command: "non-existent-cmd",
+    })
+  })
+
+  it("should return DelegationContextError when parentSessionID is missing or invalid in subtask mode", async () => {
+    const projectRoot = await createProjectWithCommand(
+      "subtask-no-context",
+      `---
+description: "Subtask no context"
+agent: hm-l1-coordinator
+subtask: true
+---
+Body
+`,
+    )
+    const client = {} as any
+    const tool = createExecuteSlashCommandTool(client)
+    const result = await tool.execute(
+      { command: "subtask-no-context", parentSessionID: "INVALID_SESSION" },
+      {
+        sessionID: "INVALID_SESSION",
+        agent: "hm-operator",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+      } as any,
+    )
+
+    expect(result).toHaveProperty("error", true)
+    expect(result.metadata).toMatchObject({
+      error: true,
+      errorType: "dispatch_failed",
+      parentSessionID: "INVALID_SESSION",
+      command: "subtask-no-context",
+    })
+  })
 })
+
