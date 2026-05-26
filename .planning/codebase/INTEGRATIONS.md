@@ -1,168 +1,259 @@
----
-mapped_date: 2026-05-20
-last_mapped_commit: 906b21a055352fdeca3b7a1209c7c7be3f529cf7
----
-
 # External Integrations
 
-**Analysis Date:** 2026-05-20
+**Analysis Date:** 2026-05-26
 
-## APIs & External Services
+## Overview
 
-**OpenCode Runtime:**
-- OpenCode Plugin SDK — `@opencode-ai/plugin` `^1.15.5` is the host integration for `src/plugin.ts` and tool factories in `src/tools/**`.
-  - SDK/client package: `@opencode-ai/plugin`.
-  - Auth: inherited from the OpenCode host runtime; Hivemind does not implement a separate login or token flow.
-- OpenCode Client SDK — `@opencode-ai/sdk` `^1.15.5` is wrapped in `src/shared/session-api.ts` and `src/shared/app-api.ts`.
-  - Used for session create/get/messages/prompt/promptAsync/abort/status, TUI append/toast, and app agent registry reads.
-  - Provider/model inheritance is handled in delegation coordination code under `src/coordination/delegation/`.
+Hivemind is a **runtime composition engine** for the OpenCode platform. It does not integrate with traditional web services, databases, or external APIs in the conventional sense. Instead, it provides an **agent orchestration framework** that communicates primarily through:
 
-**OpenAI-Compatible Provider Configuration:**
-- `opencode.json` defines a CrofAI provider using npm package `@ai-sdk/openai-compatible`.
-  - Base URL: configured in `opencode.json` as a provider option.
-  - Auth: environment variable reference `CROFAI_API_KEY` in `opencode.json`; only the env var name is documented here, not any secret value.
-  - Models: CrofAI model IDs are configured in `opencode.json` for OpenCode runtime use.
+1. **OpenCode SDK** — Plugin SDK for tool/hook/agent operations
+2. **Model Context Protocol (MCP)** — Standard protocol for AI context sharing
+3. **AI SDK** — LLM provider integration for AI capabilities
+4. **File System** — JSON/YAML/Markdown persistence for state and artifacts
 
-**Model Context Protocol:**
-- MCP configuration schema is implemented in `src/schema-kernel/mcp-server.schema.ts`.
-  - Local servers: `{ type: "local", command, environment?, enabled?, timeout? }`.
-  - Remote servers: `{ type: "remote", url, headers?, oauth?, enabled?, timeout? }`.
-  - Registry shape: `opencode.json` `mcp` object, loaded by `src/features/bootstrap/primitive-loader.ts`.
-- Dependency: `@modelcontextprotocol/sdk` `^1.29.0` in `package.json`.
+This is a **library/plugin** architecture designed to work within the OpenCode environment, not a standalone web service.
 
-**OpenCode Primitive Loading:**
-- Project primitive surface: `.opencode/` for agents, commands, skills, rules, permissions, and plugin loader configuration.
-- Bootstrap loader: `src/features/bootstrap/primitive-loader.ts` scans `.opencode/` and reads `opencode.json`.
-- Global OpenCode config target: `OPENCODE_CONFIG_DIR` or `~/.config/opencode` through `src/tools/config/configure-primitive-paths.ts`, `src/tools/config/bootstrap-init.ts`, `src/tools/config/bootstrap-recover.ts`, and `src/config/compiler.ts`.
+## Databases
 
-## Data Storage
+### No Traditional Database
 
-**Databases:**
-- Not detected. There is no SQL/NoSQL database dependency in `package.json`.
+Hivemind does **not** use traditional databases (SQL, NoSQL, document stores). Instead, it uses **file-based persistence**:
 
-**Durable Local State:**
-- `.hivemind/state/` — canonical internal runtime state root used by session/delegation/trajectory/policy surfaces.
-- `.hivemind/configs.json` — runtime configuration file read by `src/schema-kernel/hivemind-configs.schema.ts` and cached by `src/config/subscriber.ts`.
-- `.hivemind/state/hivemind.runtime-policy.json` — optional runtime policy read by `src/shared/workspace-runtime-policy.ts`.
-- `.hivemind/configs.schema.json` — generated schema shipped by package files and produced during `npm run build`.
-- `.hivemind/session-tracker/` — session tracker persistence root referenced by `src/features/session-tracker/persistence/atomic-write.ts`.
+**State Storage:**
+- `.hivemind/state/` — JSON file-based state management
+  - `session-continuity.json` — Session persistence and recovery
+  - `delegations.json` — Delegation records
+  - `task-status.json` — Task state tracking
 
-**Soft Meta-Concept Storage:**
-- `.opencode/` — OpenCode configurable primitives only; not an internal runtime state store.
-- `.hivefiver-meta-builder/` — source-of-truth authoring area for generated/reflected primitives according to project guidance.
+**Artifacts:**
+- `.hivemind/journal/` — Session journals (append-only event timeline)
+- `.hivemind/lineage/` — Execution lineage tracking
+- `.hivemind/artifacts/` — Phase artifacts and outputs
+- `.planning/` — Planning and governance artifacts (Markdown files)
 
-**Caching:**
-- No external cache service detected.
-- Runtime uses in-memory Maps and module-level caches, including `src/config/subscriber.ts` for config caching and `src/shared/state.ts` for task/session state.
+**Data Format:**
+- JSON — Primary format for state and delegation records
+- Markdown — Documentation and planning artifacts
+- YAML — Configuration files
+
+## External APIs
+
+### SDK Integrations (Primary Integration Points)
+
+#### OpenCode SDK (@opencode-ai/sdk)
+- **Purpose:** Core plugin SDK for interacting with OpenCode runtime
+- **Usage:** Tool definitions, hook registration, agent dispatch
+- **Documentation:** https://github.com/opencode-ai/plugin
+- **Files:** `src/shared/session-api.ts`, `src/tools/**/*.ts`
+
+#### Model Context Protocol (MCP) SDK (@modelcontextprotocol/sdk)
+- **Purpose:** Standard protocol for AI model context sharing and tool registration
+- **Usage:** MCP server/client communication, tool discovery
+- **Documentation:** https://modelcontextprotocol.io
+- **Files:** `src/tools/hivemind/**/*.ts`
+
+#### AI SDK (@ai-sdk/openai-compatible)
+- **Purpose:** AI provider integration for LLM interactions
+- **Usage:** LLM inference via OpenAI-compatible endpoints
+- **Documentation:** https://sdk.vercel.ai/providers/ai-sdk-providers
+- **Files:** `src/features/**/*.ts` (AI-related features)
+
+### Web APIs (None)
+
+Hivemind does **not** make HTTP requests to external web APIs for:
+- Data fetching
+- Authentication
+- Webhook subscriptions
+- CDN content delivery
+
+All persistent state is managed locally via file system.
 
 ## Authentication & Identity
 
-**Auth Provider:**
-- No standalone auth provider detected.
-- OpenCode host runtime owns authentication/identity for SDK/plugin execution.
-- Provider secrets are passed through OpenCode config environment references such as `CROFAI_API_KEY` in `opencode.json`.
+### No External Auth Provider
 
-**Secret Handling:**
-- `.env` exists at repository root; contents were not read or copied.
-- Redaction utilities live in `src/shared/security/redaction.ts`.
-- Redaction detects field names matching API keys, tokens, passwords, secrets, authorization, and credentials.
-- Safe placeholders include `[REDACTED:API_KEY]`, `[REDACTED:TOKEN]`, `[REDACTED:PASSWORD]`, and `[REDACTED:SECRET]`.
+Hivemind does **not** implement traditional authentication providers (OAuth, JWT, API keys for external services).
+
+**Security Model:**
+- **Plugin-based** — Runs within OpenCode environment with inherited permissions
+- **File-based secrets** — Environment variables in `.env` (not documented here per security policy)
+- **Local state** — No remote auth state management
+
+**Environment Variables (Present):**
+- `.env` file exists with environment configuration
+- **Contents not exposed** — Per security policy, secrets files are never quoted
+
+## Webhooks & Event Sources
+
+### No Webhook System
+
+Hivemind does **not** implement webhook receivers or event subscription systems.
+
+**Event-Driven Pattern:**
+- **Internal events** — Session journal captures all runtime events (append-only)
+- **Tool hooks** — OpenCode hooks provide lifecycle events
+- **No external event sources** — All events are internal to the OpenCode environment
+
+## File Storage
+
+### Local File System Only
+
+Hivemind uses **only** the local file system for storage:
+
+**Primary Storage Locations:**
+
+| Location | Purpose | Committed |
+|----------|---------|-----------|
+| `.hivemind/state/` | Runtime state (JSON) | No (gitignored) |
+| `.hivemind/journal/` | Session journals (Markdown) | No (gitignored) |
+| `.hivemind/artifacts/` | Phase artifacts | No (gitignored) |
+| `.hivemind/planning/` | Planning documents | No (gitignored) |
+| `.planning/` | Planning artifacts | Yes (committed) |
+| `src/` | Source code | Yes (committed) |
+| `dist/` | Build output | No (gitignored) |
+| `node_modules/` | Dependencies | No (gitignored) |
+
+**File Types:**
+- `.json` — State, configuration, delegation records
+- `.md` — Session journals, planning documents, artifacts
+- `.yaml` — Configuration schemas
+- `.ts` — TypeScript source files
 
 ## Monitoring & Observability
 
-**Error Tracking:**
-- No external error tracking service detected in `package.json`.
+### No External Monitoring Services
 
-**Logs:**
-- OpenCode app logging is used through `client.app?.log?.()` in `src/plugin.ts` and SDK wrappers.
-- Startup diagnostic logs from `src/plugin.ts` identify service `hivemind` and use `[Harness]` messages.
-- Tool/runtime services such as session tracker, migration, trajectory, pressure, SDK supervisor, and command engine log through OpenCode app surfaces.
+Hivemind does **not** integrate with external monitoring services:
 
-**Runtime Diagnostics:**
-- SDK supervisor tool: `src/tools/hivemind/hivemind-sdk-supervisor.ts`.
-- Pressure tool/model: `src/tools/hivemind/hivemind-pressure.ts` and `src/features/runtime-pressure/`.
-- Session and lineage exports: `src/tools/hivemind/session-tracker.ts`, `src/tools/hivemind/session-hierarchy.ts`, `src/tools/hivemind/session-context.ts`, and `src/tools/session/session-journal-export.ts`.
+**No Integration With:**
+- Sentry — Error tracking
+- Datadog — Monitoring
+- New Relic — APM
+- Prometheus — Metrics
+- Grafana — Dashboards
+
+**Internal Observability:**
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| Session Tracker | `.hivemind/session-tracker/` | Real-time session event tracking |
+| Journal | `.hivemind/journal/` | Append-only event timeline |
+| Lineage | `.hivemind/lineage/` | Execution lineage and provenance |
+| Logs | `.hivemind/logs/` | Runtime logs |
+
+**Observability Approach:**
+- **File-based persistence** — All observability data written to `.hivemind/`
+- **Append-only journal** — Event timeline for session recovery
+- **No remote shipping** — All data stays local unless manually exported
 
 ## CI/CD & Deployment
 
-**Hosting / Distribution:**
-- npm package name: `hivemind` in `package.json`.
-- Repository metadata: GitHub repository URL in `package.json` points to `shynlee04/hivemind-plugin`.
+### No CI/CD Integration
 
-**CI Pipeline:**
-- `.github/workflows/ci.yml` runs install, typecheck, build, tests, and coverage.
-- Node matrix: 20 and 22.
-- Branches: `oss-dev` and `main` for push and pull request triggers.
+Hivemind does **not** integrate with CI/CD platforms:
+- GitHub Actions — No workflow files
+- GitLab CI — No .gitlab-ci.yml
+- CircleCI — No config files
 
-**Additional GitHub Workflows:**
-- `.github/workflows/opencode.yml` — OpenCode workflow integration.
-- `.github/workflows/qwen-dispatch.yml`, `.github/workflows/qwen-invoke.yml`, `.github/workflows/qwen-triage.yml`, `.github/workflows/qwen-scheduled-triage.yml` — Qwen-related automation.
-- `.github/workflows/sync-oss.yml` — OSS sync automation.
+**Build Pipeline:**
+```bash
+npm run build          # Clean + compile TypeScript
+npm run typecheck      # Type-checking
+npm test              # Run tests
+npm run test:coverage # Coverage report
+```
+
+**Package Distribution:**
+- `npm publish` — Publish to npm registry
+- GitHub repository: https://github.com/shynlee04/hivemind-plugin
 
 ## Environment Configuration
 
-**Required env vars:**
-- None required for local build/test according to `package.json` scripts.
+### Required Environment Variables
 
-**Runtime/env vars used by code or config:**
-- `CROFAI_API_KEY` — referenced by `opencode.json` provider config for CrofAI.
-- `OPENCODE_HARNESS_CONCURRENCY_LIMIT` — optional lifecycle concurrency override in `src/task-management/lifecycle/index.ts`.
-- `OPENCODE_CONFIG_DIR` — optional global OpenCode config root used by config/bootstrap/compiler modules.
-- `HOME` — fallback base for `~/.config/opencode` resolution in config/bootstrap modules.
-- `CI` — non-interactive CLI mode detection in `src/cli/commands/init.ts`.
-- `NODE_ENV` — test-only session ID allowance in `src/shared/session-api.ts`.
+Based on `package.json` and `.env` presence:
 
-**Secrets location:**
-- `.env` file present; existence only noted.
-- OpenCode provider config uses environment variable interpolation rather than checked-in secret values.
-- Do not copy values from `.env`, `.opencode/state/`, or any credential-bearing files into planning docs.
+**Critical Variables (Not Listed):**
+- Environment-specific configuration
+- Authentication tokens (if any)
+- API keys for external services (none detected)
+
+**Location:**
+- `.env` file at project root
+- **Contents not documented** — Per security policy
+
+### Secrets Management
+
+**No secrets management integration:**
+- No AWS Secrets Manager
+- No Azure Key Vault
+- No HashiCorp Vault
+- No 1Password integration
+
+**Secrets Approach:**
+- Local `.env` file
+- Environment variables in shell
+- **Never committed** to git
 
 ## Webhooks & Callbacks
 
-**Incoming:**
-- No HTTP webhook receiver detected.
-- Runtime entry is OpenCode plugin/hook/tool lifecycle through `src/plugin.ts`.
+### No Webhook Endpoints
 
-**Outgoing:**
-- No outbound webhook callback system detected.
-- Outbound calls are OpenCode SDK calls through `src/shared/session-api.ts` and OpenCode app/TUI calls through SDK client surfaces.
+Hivemind does **not** expose webhook endpoints:
+- No incoming webhooks
+- No outgoing webhooks
+- No event subscription system
 
-## PTY / Process Management Integrations
+**Internal Events Only:**
+- Session lifecycle events
+- Delegation completion events
+- Tool execution events
+- All captured in `.hivemind/journal/`
 
-**Bun PTY:**
-- `src/features/background-command/pty/pty-manager.ts` imports `bun-pty` and checks `globalThis.Bun` in `isSupported()`.
-- `src/features/background-command/pty/pty-runtime.ts` safely returns `null` if PTY support cannot be loaded.
+## External Service Summary
 
-**Headless Process Fallback:**
-- `src/coordination/command-delegation/handler.ts` imports `node:child_process` and dispatches headless commands when PTY is unavailable or fails.
-- Headless output is bounded by `MAX_HEADLESS_OUTPUT_CHARS` in `src/coordination/command-delegation/handler.ts`.
+| Category | Integration | Status |
+|----------|-------------|--------|
+| Database | None | N/A |
+| External API | OpenCode SDK | Active |
+| External API | MCP SDK | Active |
+| External API | AI SDK | Active |
+| Auth Provider | None | N/A |
+| Webhooks | None | N/A |
+| File Storage | Local filesystem only | Active |
+| Monitoring | None | N/A |
+| CI/CD | None | N/A |
 
-**Background Command Tool:**
-- Tool entrypoint: `src/tools/hivemind/run-background-command.ts`.
-- Feature storage is in memory for active processes; terminal delegation records are persisted through delegation/continuity callbacks, not directly by command delegation.
+## Integration Architecture
 
-## Sidecar Dashboard Integration
-
-**Read-Only Dashboard:**
-- Sidecar app path: `sidecar/`.
-- Next.js config: `sidecar/next.config.ts` with `reactStrictMode: true`.
-- Read-only enforcement surface: `src/sidecar/readonly-state.ts`.
-- Constraint: sidecar must not bundle harness write paths.
-
-## Configuration Contracts
-
-**Hivemind Config:**
-- Schema version: `HIVEMIND_CONFIGS_SCHEMA_VERSION = "2.0.0"` in `src/schema-kernel/hivemind-configs.schema.ts`.
-- Default mode: `expert-advisor`.
-- Delegation toggles: `native_task`, `delegate_task`, and `background_delegation` in `src/schema-kernel/hivemind-configs.schema.ts`.
-- Config reader is lenient: missing or invalid `.hivemind/configs.json` falls back to defaults in `readConfigs()`.
-
-**OpenCode Config:**
-- Root config file: `opencode.json`.
-- Plugin path: `./dist/plugin.js`.
-- Instructions path: `.opencode/rules/universal-rules.md`.
-- Compaction settings are declared in `opencode.json`.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     OpenCode Runtime                         │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────┐  │
+│  │   User Input    │  │  Tool Execution │  │   Session   │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Hivemind Plugin                           │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────┐  │
+│  │   Tools         │  │   Hooks         │  │    Agents   │  │
+│  │   (src/tools/)  │  │   (src/hooks/)  │  │   (src/)    │  │
+│  └────────┬────────┘  └────────┬────────┘  └──────┬──────┘  │
+└───────────┼────────────────────┼──────────────────┼──────────┘
+            │                   │                  │
+            ▼                   ▼                  ▼
+┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+│   @opencode-ai  │   │   @modelcontext│   │   File System    │
+│   /plugin       │   │   /sdk         │   │   (.hivemind/)  │
+│                 │   │                 │   │                 │
+│   - tool()      │   │   - MCP tools   │   │   - JSON state  │
+│   - hook()      │   │   - context     │   │   - Markdown    │
+│   - agent()     │   │   - events      │   │   - YAML config │
+└─────────────────┘   └─────────────────┘   └─────────────────┘
+```
 
 ---
 
-*Integration audit: 2026-05-20*
+*Integration audit: 2026-05-26*

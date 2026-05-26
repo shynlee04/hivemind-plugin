@@ -1,111 +1,336 @@
----
-mapped_date: 2026-05-20
-last_mapped_commit: 906b21a055352fdeca3b7a1209c7c7be3f529cf7
----
+# Code Conventions
 
-# Coding Conventions
+**Generated:** 2026-05-26
 
-**Analysis Date:** 2026-05-20
+## Overview
 
-## Naming Patterns
+This codebase follows strict TypeScript conventions with a focus on type safety, modularity, and maintainability. The project uses ESLint with TypeScript strict mode, Prettier for formatting, and follows a domain-driven modular architecture.
 
-**Files:**
-- Use `kebab-case.ts` for source files: `src/tools/delegation/delegate-task.ts`, `src/hooks/transforms/tool-before-guard.ts`.
-- Use `kebab-case.schema.ts` for Zod contracts: `src/schema-kernel/agent-work-contract.schema.ts`, `src/schema-kernel/hivemind-configs.schema.ts`.
-- Use `index.ts` for directory public surfaces and feature barrels: `src/index.ts`, `src/features/agent-work-contracts/index.ts`.
-- Use `.test.ts` for tests and mirror the owning source surface where practical: `tests/tools/delegation/delegate-task-v2.test.ts`, `tests/hooks/transforms/tool-before-guard.test.ts`.
+## Tech Stack
 
-**Functions:**
-- Use `camelCase` for functions and local variables: `unwrapData()` in `src/shared/helpers.ts`, `createToolBeforeGuard()` in `src/hooks/transforms/tool-before-guard.ts`.
-- Use `createX` for factories that assemble tools, hooks, or managers: `createDelegateTaskTool()` in `src/tools/delegation/delegate-task.ts`, `createHarnessLifecycleManager()` in `src/task-management/lifecycle/index.ts`.
-- Use `isX` / `hasX` for type guards or boolean checks: `isObject()` in `src/shared/helpers.ts`, `isSuccess()` in `src/shared/tool-response.ts`.
-- Use action verbs for state mutations and persistence operations: `recordSessionContinuity()`, `patchSessionContinuity()`, `hydrateFromContinuity()` in `src/task-management/continuity/index.ts`.
-
-**Types:**
-- Use `PascalCase` for exported types, interfaces, classes, and schemas: `ToolResponse`, `DelegationManager`, `AgentWorkContractSchema`.
-- Prefer `type` for object aliases in tests and narrow structural mocks: `MockClient`, `ManagerOptions` in `tests/lib/delegation-manager.test.ts`.
-- Export inferred Zod types next to their schemas: `AgentWorkCreateToolInput` in `src/schema-kernel/agent-work-contract.schema.ts`.
+- **Language:** TypeScript 5.0+
+- **Target:** ES2022
+- **Build Tool:** TypeScript compiler (tsc)
+- **Test Framework:** Vitest 4.1.7
+- **Type Validation:** Zod 4.4.3
+- **Package Manager:** npm
 
 ## Code Style
 
-**Formatting:**
-- No ESLint, Prettier, or Biome configuration is present; TypeScript compiler options are the primary style gate.
-- Use 2-space indentation and concise single-purpose helpers.
-- Keep modules under the project 500 LOC cap; split broad behavior into focused files before adding more responsibilities.
+### Linter and Formatter
 
-**TypeScript constraints:**
-- `tsconfig.json` uses `strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, and `verbatimModuleSyntax`.
-- Use `import type` for type-only imports: `src/plugin.ts`, `src/schema-kernel/agent-work-contract.schema.ts`, and `tests/lib/delegation-manager.test.ts` show the expected pattern.
-- Internal relative imports must use ESM `.js` extensions: `../../shared/tool-response.js`, `./task-management/lifecycle/index.js`.
-- Avoid new `any`; use `unknown`, narrow with helpers, or define local test-only structural types.
+- **TypeScript Compiler Options:**
+  - `src/tsconfig.json` defines strict mode with `strict: true`
+  - `noUnusedLocals: true` - no unused local variables
+  - `noUnusedParameters: true` - no unused parameters
+  - `noImplicitReturns: true` - all code paths must return
+  - `noFallthroughCasesInSwitch: true` - no fallthrough in switches
+  - `verbatimModuleSyntax: true` - explicit import type for type-only imports
+
+### File Extensions
+
+- Source files use `.ts` extension (no `.tsx` detected in this backend-focused codebase)
+- Test files use `.test.ts` convention
+
+### Naming Conventions
+
+#### Files and Directories
+
+```
+Directory pattern: lowercase-with-hyphens
+- coordination/delegation/
+- task-management/continuity/
+- features/session-tracker/
+
+File pattern: lowercase-with-hyphens
+- session-tracker.ts
+- delegation-manager.ts
+- pty-runtime.ts
+```
+
+#### Variables and Constants
+
+```typescript
+// camelCase for variables and functions
+const sessionID: string
+let rootBudget: RootBudget
+
+// UPPER_SNAKE_CASE for constants
+export const MAX_DESCENDANTS_PER_ROOT = 10
+export const SESSION_TRACKER_MAX_DEPTH = 7
+```
+
+#### Functions and Methods
+
+```typescript
+// camelCase, imperative mood (verb-based names)
+function ensureStats(sessionID: string): SessionStats
+function extractSdkErrorMessage(error: unknown): string
+function unwrapData<T = unknown>(response: unknown): T
+function getNestedValue(value: unknown, path: string[]): unknown
+```
+
+#### Classes and Components
+
+Classes use PascalCase and follow a single-responsibility principle:
+
+```typescript
+export class TaskStateManager {
+  private rootBudgets: Map<string, RootBudget>
+  private sessionStats: Map<string, SessionStats>
+  
+  constructor() {
+    this.rootBudgets = new Map()
+    this.sessionStats = new Map()
+  }
+}
+
+export class DelegationManager {
+  private delegations: Map<string, DelegationRecord>
+}
+```
+
+#### Type Definitions
+
+```typescript
+// PascalCase for types, interfaces, and type aliases
+export type TaskStatus = "pending" | "queued" | "running" | "completed" | "failed"
+export interface PermissionRule {
+  permission: string
+  pattern: string
+  action: PermissionAction
+}
+export type PendingNotification = TaskNotification & {
+  createdAt: number
+  delivered: boolean
+}
+```
 
 ## Import Organization
 
-**Order:**
-1. Node built-ins and external packages: `node:fs`, `node:path`, `vitest`, `zod`, `@opencode-ai/plugin/tool`.
-2. Runtime value imports from local modules using relative `.js` paths.
-3. Type-only imports using `import type` or inline `type` specifiers.
+### Module Structure
 
-**Path Aliases:**
-- No path aliases are configured in `tsconfig.json`; use explicit relative imports.
-- Keep imports aligned to source ownership boundaries: `src/shared/` remains leaf-like and must not import from tools, hooks, features, coordination, routing, or task-management.
+Imports follow a consistent order within files:
 
-## Error Handling
+```typescript
+import type { DelegationMeta } from "../types.js"  // Type imports first
+import { TaskStateManager } from "../state.js"     // Named imports second
 
-**Patterns:**
-- Prefix thrown or rendered harness errors with `[Harness]`: examples appear in `src/shared/helpers.ts`, `src/tools/delegation/delegate-task.ts`, and `tests/cli/runCli.test.ts`.
-- Parse untrusted tool input with Zod before executing behavior: `DelegateTaskV2Schema.safeParse()` in `src/tools/delegation/delegate-task.ts`.
-- Convert SDK error shapes through shared helpers rather than duplicating SDK-specific parsing: `unwrapData()` in `src/shared/helpers.ts`.
-- Best-effort observers and background startup tasks catch and log without blocking plugin initialization: `src/plugin.ts`, `src/hooks/transforms/tool-before-guard.ts`.
-- Use explicit status envelopes for tool responses through `success()`, `error()`, and `pending()` in `src/shared/tool-response.ts`.
+// Default imports would follow (none detected in this codebase)
+```
 
-## Runtime State Conventions
+### File Organization Pattern
 
-**Canonical state root:**
-- Internal durable runtime state belongs under `.hivemind/state/`, not `.opencode/`.
-- Continuity writes resolve to `.hivemind/state/session-continuity.json` through `src/task-management/continuity/index.ts`.
-- Delegation records belong to `.hivemind/state/delegations.json` through `src/task-management/continuity/delegation-persistence.ts`.
-- Agent work contracts belong to `.hivemind/state/agent-work-contracts.json` through `src/features/agent-work-contracts/index.ts`.
-
-**State safety:**
-- Deep-clone data returned from stores so callers cannot mutate cached state by reference; see clone helpers in `src/task-management/continuity/index.ts` and tests in `tests/lib/agent-work-contracts/store.test.ts`.
-- Redact sensitive boundary fields before persistence or export; use `src/shared/security/redaction.ts` and validate via `tests/lib/security/redaction.test.ts`.
-- Quarantine corrupt JSON instead of overwriting it silently; continuity and delegation persistence use corrupt-file quarantine helpers.
-
-## Documentation Expectations
-
-**JSDoc/TSDoc:**
-- Add JSDoc to exported functions, public types, factories, and non-obvious helpers.
-- Include `@param` and `@returns` when the function is part of a reusable contract, as in `src/schema-kernel/agent-work-contract.schema.ts` and `src/shared/tool-response.ts`.
-- Document why boundary behavior exists, especially CQRS, recovery, fallback, and best-effort paths.
-
-**Inline comments:**
-- Use comments for architectural intent and traceability, not obvious restatements.
-- Section dividers (`// ---------------------------------------------------------------------------`) are used in long tests and state modules to group behavior.
-
-## Function Design
-
-**Size and shape:**
-- Keep functions focused; extract helpers for parsing, cloning, rendering, persistence, and setup.
-- Use object parameters when a function has multiple related dependencies or options: `setupDelegationModules(options)` in `src/plugin.ts`.
-- Return discriminated shapes for tool and store APIs where consumers branch on status or kind.
-
-**Validation:**
-- Validate inputs at tool, schema, and persistence boundaries; do not trust agent-provided objects.
-- Use `unknown` for raw external input and narrow via Zod or helper predicates.
+```
+src/
+├── index.ts                          # Entry point re-exports
+├── shared/                           # Leaf utilities and types
+│   ├── types.ts                      # Shared type definitions
+│   ├── helpers.ts                    # Utility functions
+│   └── security/                      # Security utilities
+├── tools/                            # Tool entrypoints
+├── coordination/                      # Delegation and concurrency
+├── task-management/                   # Session state management
+├── config/                            # Configuration workflow
+├── features/                          # Runtime features
+└── schema-kernel/                     # Zod schemas
+```
 
 ## Module Design
 
-**Exports:**
-- Prefer named exports. `src/plugin.ts` may export the plugin composition root, while most modules export factories, schemas, classes, and helpers.
-- Keep `src/plugin.ts` thin: assembly, dependency injection, tool registration, and hook wiring only.
-- Keep business logic in owning modules under `src/tools/`, `src/hooks/`, `src/task-management/`, `src/coordination/`, `src/features/`, `src/config/`, `src/routing/`, or `src/schema-kernel/`.
+### Barrel Files Pattern
 
-**Boundaries:**
-- Tools are write-side mutation entrypoints; hooks are read-side observers/guards/transforms.
-- Hooks must not perform durable writes directly; route facts to injected dependencies or tool/state owners.
-- `.opencode/` contains configurable primitives only; do not treat it as runtime state or implementation source.
+Barrel files use index.ts to re-export modules:
+
+```typescript
+// src/index.ts
+export type { TaskStatus, TaskNotification } from "./shared/types.js"
+export { TaskStateManager } from "./shared/state.js"
+export { HarnessControlPlane } from "./plugin.js"
+
+// src/shared/index.ts
+export * from "./types.js"
+export * from "./helpers.js"
+```
+
+### Single Responsibility Pattern
+
+Each module has a single, well-defined responsibility:
+
+- `src/shared/types.ts` - Type definitions only
+- `src/shared/helpers.ts` - Utility functions only
+- `src/shared/state.ts` - Task state management only
+- `src/task-management/continuity/index.ts` - Session persistence only
+
+### Module Size Constraints
+
+- Maximum module size: 500 lines of code
+- This keeps modules maintainable and testable
+
+## Error Handling
+
+### Error Types and Structures
+
+Errors follow a consistent pattern with harness prefix:
+
+```typescript
+// In src/shared/helpers.ts
+throw new Error(`[Harness] ${message}`)
+```
+
+### Try-Catch Patterns
+
+Errors are caught and re-thrown with context:
+
+```typescript
+try {
+  const result = await tool.execute(args, context)
+  return result
+} catch (error) {
+  const message = extractSdkErrorMessage(error)
+  throw new Error(`[Harness] ${message}`)
+}
+```
+
+### Error Propagation
+
+- Errors propagate up the call chain without silent swallowing
+- SDK errors are extracted and re-wrapped with `[Harness]` prefix
+- Type guards check for error structures before processing
+
+## Type Safety
+
+### Strict Mode
+
+TypeScript strict mode is enabled:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true
+  }
+}
+```
+
+### Type Inference
+
+```typescript
+// Type inference with z.infer
+export type PromptSkimResult = z.infer<typeof PromptSkimResultSchema>
+export type PromptAnalysisFinding = z.infer<typeof PromptAnalysisFindingSchema>
+```
+
+### Discriminated Unions
+
+```typescript
+export interface Response {
+  kind: "success" | "error"
+  data?: Data
+  error?: string
+}
+```
+
+## Code Organization
+
+### File Naming
+
+- Underscores in function names for internal/private methods (when applicable)
+- Hyphens in file/directory names
+- PascalCase for classes and types
+
+### Directory Grouping
+
+```
+src/
+├── tools/                    # Tool entrypoints (MCP tools)
+│   ├── delegation/          # Delegation tools
+│   ├── session/             # Session tools
+│   └── prompt/              # Prompt tools
+├── coordination/             # Delegation and concurrency
+├── task-management/          # Session state and lifecycle
+├── config/                   # Configuration workflow
+├── features/                 # Runtime features
+└── schema-kernel/            # Zod schemas
+```
+
+## Testing Conventions
+
+### Test File Naming
+
+- Format: `{test-target}.test.ts`
+- Location: `tests/` directory mirrors `src/` structure
+
+### Test Organization
+
+```
+tests/
+├── lib/                       # Unit tests
+├── integration/               # Integration tests
+├── sidecar/                   # Sidecar component tests
+└── features/                  # Feature-specific tests
+```
+
+## Documentation Standards
+
+### JSDoc Comments
+
+Functions should include JSDoc with:
+- Description of purpose
+- Parameter types and descriptions
+- Return type description
+- Examples when helpful
+
+```typescript
+/**
+ * Extract a human-readable error message from OpenCode SDK error objects.
+ *
+ * SDK error structures vary — this function checks all known shapes:
+ *   - String error: used as-is
+ *   - Named errors: error.data.message
+ *   - BadRequestError: error.errors[] array
+ *
+ * @param error - The error object to extract message from
+ * @returns Human-readable error message string
+ */
+function extractSdkErrorMessage(error: unknown): string {
+  // ...
+}
+```
+
+## Special Conventions
+
+### Harness Prefix
+
+All harness-related errors use `[Harness]` prefix to indicate source:
+
+```typescript
+throw new Error(`[Harness] ${message}`)
+```
+
+### Session Naming
+
+Sessions use camelCase with descriptive names:
+
+```typescript
+export const DELEGATION_MANAGER_KEY = "default"
+export const SESSION_TRACKER_MAX_DEPTH = 7
+```
+
+### Type Guards
+
+Type guards are used extensively for runtime type checking:
+
+```typescript
+export function isObject(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value)
+}
+```
 
 ---
 
-*Convention analysis: 2026-05-20*
+*Convention analysis: 2026-05-26*
