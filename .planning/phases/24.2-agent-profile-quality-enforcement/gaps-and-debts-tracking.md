@@ -76,8 +76,9 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 
 
 ### Wave 15: Shipping & Specifying
-- **hm-shipper**: [Pending Wave 15 Audit]
-- **hm-specifier**: [Pending Wave 15 Audit]
+- **hm-shipper**: Audit Complete. Upgraded by replacing legacy GSD references. Standardized 10 pre-release verification checks, SemVer changelog categories, rollback strategy guidelines, and programmatic state updates to `.hivemind/state/session-continuity.json` and `trajectory-ledger.json`.
+- **hm-specifier**: Audit Complete. Upgraded by replacing legacy GSD references. Implemented EARS (Easy Approach to Requirements Syntax) syntax, ambiguity scoring rubric (1-5 scale), acceptance criteria templates, and programmatic updates to Hivemind state tracking files.
+
 
 ---
 
