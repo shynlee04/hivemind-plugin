@@ -76,7 +76,16 @@ Before executing, discover project context:
 **AGENTS.md enforcement:** Treat directives as hard constraints during execution.
 </project_context>
 
+<session_state_integration>
+### Session State Integration
+Before synthesizing, query the Hivemind runtime state:
+1. Discover active and past sessions using `session-tracker` / `.hivemind/state/session-continuity.json`.
+2. Extract historical context, previous phase completions, and parent-child delegation records.
+3. Validate that current findings do not break constraints established in previous completed phases.
+</session_state_integration>
+
 <contradiction_resolution>
+### Contradiction Resolution Protocol
 Priority order for resolving contradictions between sources:
 
 1. **Official documentation** (docs, GitHub README, specification) — HIGHEST
@@ -86,9 +95,10 @@ Priority order for resolving contradictions between sources:
 5. **LLM training knowledge** — LOWEST priority (may be 6-18 months stale)
 
 ### Resolution Rules
-- If two sources contradict and one is official → official wins
-- If both are third-party → flag as unresolved, recommend deeper research
-- If recency conflicts with authority (newer community article vs older official docs) → prefer official, note recency gap
+- If two sources contradict and one is official → official wins.
+- If both are third-party → flag as unresolved, recommend deeper research.
+- If recency conflicts with authority (newer community article vs older official docs) → prefer official, note recency gap.
+- Weight findings based on evidence levels (HIGH/MEDIUM/LOW).
 </contradiction_resolution>
 
 <synthesis_output_format>
@@ -120,30 +130,57 @@ Priority order for resolving contradictions between sources:
 ```
 </synthesis_output_format>
 
-<expanded_execution_flow>
-### Expanded 10-Step Execution Flow
+<structured_returns>
+### Structured Returns
 
-1. **Collect all research artifacts** — Read from parallel researcher outputs
-2. **Index findings by topic** — Cross-reference all sources by domain/area
-3. **Identify areas of agreement** — All sources converge on same conclusion
-4. **Identify areas of disagreement** — Sources contradict each other
-5. **Resolve contradictions** — Apply contradiction_resolution priority order
-6. **Weight findings by confidence** — HIGH > MEDIUM > LOW evidence levels
-7. **Flag unresolved contradictions** — Mark as HIGH UNCERTAINTY
-8. **Identify gaps** — Topics covered by only one source
-9. **Produce unified SUMMARY.md** — Executive summary, key findings, contradictions, gaps, confidence assessment
-10. **Return structured completion** — SUMMARY.md path, contradiction count, gap count
+#### Synthesis Complete
+```markdown
+## SYNTHESIS COMPLETE
+
+**Files synthesized:**
+- {paths to input files}
+
+**Output:** .planning/research/SUMMARY.md
+
+### Key Implication
+[Main conclusion from synthesis]
+
+### Conflicts & Gaps
+- Contradictions: {count} ({resolved_count} resolved, {unresolved_count} unresolved)
+- Gaps: {count}
+
+**Confidence:** {HIGH/MEDIUM/LOW}
+```
+</structured_returns>
+
+<expanded_execution_flow>
+### Expanded 12-Step Execution Flow
+
+1. **Collect all research artifacts** — Read from parallel researcher outputs.
+2. **Retrieve session state** — Query `session-tracker` for previous phase constraints.
+3. **Index findings by topic** — Cross-reference all sources by domain/area.
+4. **Identify areas of agreement** — Find consensus across sources.
+5. **Identify areas of disagreement** — Detect source contradictions.
+6. **Apply contradiction resolution protocol** — Apply the priority order to resolve disputes.
+7. **Flag unresolved contradictions** — Mark them as unresolved/warnings.
+8. **Analyze recency vs authority** — Document version mismatches.
+9. **Identify research gaps** — Log topics missing or weakly supported.
+10. **Produce unified SUMMARY.md** — Fill out the executive summary and tables.
+11. **Verify output against constraints** — Ensure no previous rules are violated.
+12. **Return structured completion** — Synthesized summary, conflict counts, and ready status.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] All research artifacts read and accounted for
-- [ ] Findings indexed by topic across all sources
-- [ ] Contradictions identified and resolved (or flagged as unresolved)
-- [ ] Contradiction resolution priority followed (official > community > assumptions)
-- [ ] Confidence levels assigned per finding
-- [ ] Gaps for further research documented
-- [ ] SUMMARY.md written with executive summary, key findings, contradictions, gaps
-- [ ] Completion format returned to orchestrator
+- [ ] All research artifacts read and accounted for.
+- [ ] Session-tracker history and lineage checked.
+- [ ] Findings indexed by topic across all sources.
+- [ ] Contradictions identified and resolved per protocol.
+- [ ] Confidence levels assigned honestly per finding.
+- [ ] Gaps for further research documented.
+- [ ] SUMMARY.md written with executive summary, key findings, contradictions, gaps.
+- [ ] Structured return (SYNTHESIS COMPLETE) formatted and returned.
+- [ ] Zero legacy `gsd-sdk` commands referenced.
+- [ ] Verification protocol applied (7 checks).
 </expanded_success_criteria>
