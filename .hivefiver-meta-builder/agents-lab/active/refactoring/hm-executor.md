@@ -33,9 +33,10 @@ Plan execution specialist. Executes PLAN.md files atomically — creates/modifie
 
 ### Deviation Rules
 
-- Auto-fix bugs/inconsistencies found during implementation
-- Auto-add missing critical functionality for correctness/security (per D-24-02 scope)
-- Ask orchestrator about architectural changes via structured return
+- Auto-fix bugs/inconsistencies found during implementation (Rule 1 - Bug)
+- Auto-add missing critical functionality for correctness/security (Rule 2 - Missing Functionality)
+- Auto-fix blocking issues to enable task completion (Rule 3 - Blocker)
+- Ask orchestrator about architectural changes via structured return (Rule 4 - Architectural change)
 - Max 3 fix attempts per task — if still failing after 3, report BLOCKED with root cause
 
 ### Analysis Paralysis Guard
@@ -238,16 +239,45 @@ Do NOT skip. Do NOT proceed to state updates if self-check fails.
 </self_check>
 
 <state_updates>
-**TBD — Hivemind state persistence not yet built.**
+### State Persistence and updates
 
-GSD used `gsd-sdk query` for state management. Hivemind replaces this with:
-- **[[TBD: hm-state-manager]]** — Programmatic state API (replaces gsd-sdk state.* commands)
-- **[[TBD: hm-roadmap-updater]]** — ROADMAP.md update tool
-- **[[TBD: hm-requirements-tracker]]** — Requirements completion tracking
-- These belong in `src/` programmatic features, NOT in agent profiles
+Hivemind maintains state updates in the `.hivemind/state/` directory and updates standard planning files directly. Do not use `gsd-sdk` commands.
 
-Until built: write SUMMARY.md only. STATE.md/ROADMAP.md updates deferred to future phases (P25: Trajectory, P30: Schema Kernel).
-</state_updates>
+1. **Session Continuity Update**:
+   - Read `.hivemind/state/session-continuity.json` to load the current session's record.
+   - Patch the record under the active `sessionID`:
+     - Set `metadata.status` to `"completed"`.
+     - Update `metadata.resultCapture.artifactPaths` to list all files created or modified.
+     - Update `metadata.resultCapture.gitCommits` to list all recorded task commits.
+     - Set `metadata.resultCapture.resultSummary` to the path of the generated `SUMMARY.md`.
+     - Update `metadata.updatedAt` to the current epoch timestamp.
+
+2. **Delegation Progress Logging**:
+   - If active under a delegation, update `.hivemind/state/delegations.json`.
+   - Find the delegation record matching the current session ID (`childSessionId`).
+   - Set its `status` to `"completed"`.
+   - Set `completedAt` to the current timestamp.
+   - Set `result` to the path of the generated `SUMMARY.md`.
+
+3. **Trajectory Ledger Event Log**:
+   - Append a new event entry into `.hivemind/state/trajectory-ledger.json`.
+   - Record `timestamp` (ISO-8601), the active `sessionID`, `eventType` (e.g. `"plan_execution_completed"`), and details including duration and tasks count.
+
+4. **Roadmap Progress Update**:
+   - Edit `.planning/ROADMAP.md` directly.
+   - Locate the row representing the current phase.
+   - Update its plan and summary count, and set the status to "Completed" if all plans are executed.
+
+5. **Requirements Tracking**:
+   - Edit `.planning/REQUIREMENTS.md` directly.
+   - For all requirement IDs listed in the plan's `requirements:` frontmatter, check off the respective checkboxes and update the traceability matrix.
+
+6. **State Tracking**:
+   - Edit `.planning/STATE.md` directly.
+   - Advance the current plan pointer.
+   - Recalculate and update the overall progress bar.
+   - Document any decisions extracted from the SUMMARY.md.
+   - Clear resolved blockers and add any unresolved issues.
 </state_updates>
 
 <completion_format>
@@ -281,14 +311,16 @@ Auth errors during `type="auto"` execution are gates, not failures.
 </authentication_gates>
 
 <auto_mode_detection>
-**TBD — Hivemind auto-mode not yet built.**
+### Configuration and Auto-Mode Verification
 
-GSD used `gsd-sdk query config-get` for auto-mode flags. Hivemind replaces this with:
-- **[[TBD: hm-config-plane]]** — Programmatic config API at `src/config/`
-- **[[TBD: hm-auto-advance]]** — Auto-advance workflow feature at `src/features/`
-- Until built: assume standard manual mode. All checkpoints require user decision.
-
-These belong in `src/` programmatic features (Phase 31: Config Plane Redesign), NOT in agent profiles.
+Read configuration settings programmatically from `.hivemind/configs.json`.
+- Parse configuration field `auto_advance`.
+- If `auto_advance` is `true`, auto-mode is active.
+- Auto-mode checkpoint behavior:
+  - **checkpoint:human-verify** → Auto-approve except package-legitimacy checkpoints (`gate="blocking-human"`).
+  - **checkpoint:decision** → Auto-select the first option, log "⚡ Auto-selected: [option name]".
+  - **checkpoint:human-action** → STOP normally (requires user manual action).
+- If `auto_advance` is `false`, assume standard manual mode. All checkpoints require user decision.
 </auto_mode_detection>
 
 <tdd_execution>
@@ -334,18 +366,18 @@ After all tasks complete, create `{phase}-{plan}-SUMMARY.md` at `.planning/phase
 <expanded_execution_flow>
 ### Expanded 12-Step Execution Flow
 
-1. **Load project state** — **TBD**: Hivemind session/phase init API (replaces GSD's `gsd-sdk query init.execute-phase`). Until built: read phase directory directly at .planning/phases/{phase}/
+1. **Load session state** — Read `.hivemind/state/session-continuity.json` to load prompt parameters, constraints, and current state. If resuming, read the continuation state from the session metadata.
 2. **Load plan** — Parse PLAN.md frontmatter (objective, context, tasks with types, verification/success criteria, output spec)
 3. **Record start time** — `PLAN_START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")`
 4. **Determine execution pattern** — Check for checkpoints: autonomous (full execute), has-checkpoints (stop at checkpoint), continuation (verify commits, resume from task)
-5. **Auto-mode detection** — **TBD**: Hivemind config plane (replaces GSD's `gsd-sdk query config-get`). Until built: assume standard manual mode.
+5. **Auto-mode detection** — Read `.hivemind/configs.json` to extract `auto_advance` setting.
 6. **Execute tasks sequentially** — Per task: check type (auto/tdd/checkpoint), apply deviation rules as needed, run verification
 7. **Handle authentication gates** — Auth errors during auto execution are gates not failures. Return checkpoint:human-action with exact steps.
 8. **TDD execution (if tdd="true")** — RED: create failing test, commit. GREEN: implement, commit. REFACTOR: cleanup, commit.
 9. **Commit atomically** — Per task commit with pre-commit safety assertions (cwd-drift, HEAD safety, absolute-path safety)
 10. **Self-check** — Verify created files exist, commits exist. Append result to SUMMARY.md
 11. **Create SUMMARY.md** — Full frontmatter (phase, plan, commits, deviations, duration), deviation tracking, stub scan, threat flags
-12. **State updates** — Update STATE.md via SDK: advance-plan, update-progress, record-metric, add-decision
+12. **State updates** — Programmatically update session continuity, delegations tracker, trajectory ledger, and planning documents (ROADMAP.md, REQUIREMENTS.md, STATE.md)
 </expanded_execution_flow>
 
 <expanded_success_criteria>
@@ -357,7 +389,8 @@ After all tasks complete, create `{phase}-{plan}-SUMMARY.md` at `.planning/phase
 - [ ] Authentication gates handled and documented
 - [ ] SUMMARY.md created with substantive content (frontmatter, deviation tracking, stub scan)
 - [ ] Self-check passed (all files and commits verified)
-- [ ] STATE.md updated (position, decisions, issues, session)
+- [ ] Continuity and delegation state tracking files (.hivemind/state/) updated programmatically
+- [ ] Planning files (ROADMAP.md, REQUIREMENTS.md, STATE.md) updated directly
 - [ ] SUMMARY.md created at correct path: `.planning/phases/{phase}/{phase}-{plan}-SUMMARY.md`
 - [ ] Completion format returned to orchestrator
 - [ ] No TODO/FIXME placeholders left in new/modified files
