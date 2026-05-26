@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs"
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 
@@ -9,12 +9,6 @@ import { bootstrapRecover } from "../../src/tools/config/bootstrap-recover.js"
 
 function createTempProject(): string {
   const projectRoot = mkdtempSync(join(tmpdir(), "hivemind-bootstrap-recover-"))
-  mkdirSync(join(projectRoot, ".hivefiver-meta-builder", "skills-lab", "active", "refactoring", "hm-skill"), { recursive: true })
-  mkdirSync(join(projectRoot, ".hivefiver-meta-builder", "agents-lab", "active", "refactoring"), { recursive: true })
-  mkdirSync(join(projectRoot, ".hivefiver-meta-builder", "commands-lab", "active", "refactoring"), { recursive: true })
-  writeFileSync(join(projectRoot, ".hivefiver-meta-builder", "skills-lab", "active", "refactoring", "hm-skill", "SKILL.md"), "# skill\n", "utf8")
-  writeFileSync(join(projectRoot, ".hivefiver-meta-builder", "agents-lab", "active", "refactoring", "hm-agent.md"), "---\nname: hm-agent\n---\n", "utf8")
-  writeFileSync(join(projectRoot, ".hivefiver-meta-builder", "commands-lab", "active", "refactoring", "hm-command.md"), "---\ndescription: cmd\n---\n", "utf8")
   return projectRoot
 }
 
@@ -23,9 +17,9 @@ describe("bootstrapRecover", () => {
     const projectRoot = createTempProject()
     try {
       await bootstrapInit({ projectRoot, scope: "project", nonInteractive: true, config: {} })
-      unlinkSync(join(projectRoot, ".opencode", "skills", "hm-skill"))
-      unlinkSync(join(projectRoot, ".opencode", "agents", "hm-agent.md"))
-      unlinkSync(join(projectRoot, ".opencode", "commands", "hm-command.md"))
+      rmSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on"), { recursive: true, force: true })
+      rmSync(join(projectRoot, ".opencode", "agents", "hm-orchestrator.md"), { force: true })
+      rmSync(join(projectRoot, ".opencode", "commands", "start-work.md"), { force: true })
 
       const result = await bootstrapRecover({ projectRoot, scope: "project" })
       expect(result.counts.skills.repaired).toBe(1)
@@ -41,9 +35,9 @@ describe("bootstrapRecover", () => {
     const globalRoot = mkdtempSync(join(tmpdir(), "hivemind-bootstrap-recover-global-"))
     try {
       await bootstrapInit({ projectRoot, scope: "global", globalConfigDir: globalRoot, nonInteractive: true, config: {} })
-      unlinkSync(join(globalRoot, "skills", "hm-skill"))
-      unlinkSync(join(globalRoot, "agents", "hm-agent.md"))
-      unlinkSync(join(globalRoot, "commands", "hm-command.md"))
+      rmSync(join(globalRoot, "skills", "hivemind-power-on"), { recursive: true, force: true })
+      rmSync(join(globalRoot, "agents", "hm-orchestrator.md"), { force: true })
+      rmSync(join(globalRoot, "commands", "start-work.md"), { force: true })
 
       const result = await bootstrapRecover({ projectRoot, scope: "global", globalConfigDir: globalRoot })
       expect(result.effectiveScope).toBe("global")
@@ -60,13 +54,14 @@ describe("bootstrapRecover", () => {
     const projectRoot = createTempProject()
     try {
       await bootstrapInit({ projectRoot, scope: "project", nonInteractive: true, config: {} })
-      unlinkSync(join(projectRoot, ".opencode", "skills", "hm-skill"))
-      writeFileSync(join(projectRoot, ".opencode", "skills", "hm-skill"), "keep-me", "utf8")
+      rmSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on"), { recursive: true, force: true })
+      mkdirSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on"), { recursive: true })
+      writeFileSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on", "SKILL.md"), "keep-me", "utf8")
 
       const result = await bootstrapRecover({ projectRoot, scope: "project" })
-      expect(result.counts.skills.file).toBe(1)
+      expect(result.counts.skills.ok).toBeGreaterThanOrEqual(1)
       expect(result.counts.skills.repaired).toBe(0)
-      expect(readFileSync(join(projectRoot, ".opencode", "skills", "hm-skill"), "utf8")).toBe("keep-me")
+      expect(readFileSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on", "SKILL.md"), "utf8")).toBe("keep-me")
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
@@ -76,8 +71,8 @@ describe("bootstrapRecover", () => {
     const projectRoot = createTempProject()
     try {
       await bootstrapInit({ projectRoot, scope: "project", nonInteractive: true, config: {} })
-      unlinkSync(join(projectRoot, ".opencode", "skills", "hm-skill"))
-      symlinkSync("../wrong-target", join(projectRoot, ".opencode", "skills", "hm-skill"))
+      rmSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on"), { recursive: true, force: true })
+      symlinkSync("../wrong-target", join(projectRoot, ".opencode", "skills", "hivemind-power-on"))
 
       const result = await bootstrapRecover({ projectRoot, scope: "project" })
       expect(result.counts.skills.broken).toBe(1)

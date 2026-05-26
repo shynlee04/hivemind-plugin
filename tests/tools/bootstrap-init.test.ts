@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from "node:fs"
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 
@@ -29,12 +29,6 @@ const CANONICAL_HIVEMIND_DIRECTORIES = [
 
 function createTempProject(): string {
   const projectRoot = mkdtempSync(join(tmpdir(), "hivemind-bootstrap-init-"))
-  mkdirSync(join(projectRoot, ".hivefiver-meta-builder", "skills-lab", "active", "refactoring", "hm-skill"), { recursive: true })
-  mkdirSync(join(projectRoot, ".hivefiver-meta-builder", "agents-lab", "active", "refactoring"), { recursive: true })
-  mkdirSync(join(projectRoot, ".hivefiver-meta-builder", "commands-lab", "active", "refactoring"), { recursive: true })
-  writeFileSync(join(projectRoot, ".hivefiver-meta-builder", "skills-lab", "active", "refactoring", "hm-skill", "SKILL.md"), "# skill\n", "utf8")
-  writeFileSync(join(projectRoot, ".hivefiver-meta-builder", "agents-lab", "active", "refactoring", "hm-agent.md"), "---\nname: hm-agent\n---\n", "utf8")
-  writeFileSync(join(projectRoot, ".hivefiver-meta-builder", "commands-lab", "active", "refactoring", "hm-command.md"), "---\ndescription: cmd\n---\n", "utf8")
   return projectRoot
 }
 
@@ -54,9 +48,10 @@ describe("bootstrapInit", () => {
       for (const directory of CANONICAL_HIVEMIND_DIRECTORIES) {
         expect(existsSync(join(projectRoot, ".hivemind", directory, ".gitkeep")), directory).toBe(true)
       }
-      expect(readlinkSync(join(projectRoot, ".opencode", "skills", "hm-skill"))).toContain(".hivefiver-meta-builder")
-      expect(readlinkSync(join(projectRoot, ".opencode", "agents", "hm-agent.md"))).toContain(".hivefiver-meta-builder")
-      expect(readlinkSync(join(projectRoot, ".opencode", "commands", "hm-command.md"))).toContain(".hivefiver-meta-builder")
+      expect(existsSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on", "SKILL.md"))).toBe(true)
+      expect(existsSync(join(projectRoot, ".opencode", "agents", "hm-orchestrator.md"))).toBe(true)
+      expect(existsSync(join(projectRoot, ".opencode", "commands", "start-work.md"))).toBe(true)
+      expect(lstatSync(join(projectRoot, ".opencode", "agents", "hm-orchestrator.md")).isSymbolicLink()).toBe(false)
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
@@ -77,7 +72,8 @@ describe("bootstrapInit", () => {
       expect(result.effectiveScope).toBe("global")
       expect(result.primitiveTargetRoot).toBe(globalRoot)
       expect(readFileSync(join(projectRoot, ".hivemind", "configs.json"), "utf8")).toContain("$schema")
-      expect(readlinkSync(join(globalRoot, "skills", "hm-skill"))).toContain(".hivefiver-meta-builder")
+      expect(existsSync(join(globalRoot, "skills", "hivemind-power-on", "SKILL.md"))).toBe(true)
+      expect(lstatSync(join(globalRoot, "skills", "hivemind-power-on", "SKILL.md")).isSymbolicLink()).toBe(false)
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
       rmSync(globalRoot, { recursive: true, force: true })
@@ -101,7 +97,7 @@ describe("bootstrapInit", () => {
       expect(result.fallbackApplied).toBe(true)
       expect(result.fallbackReason).toContain("falling back")
       expect(readFileSync(join(projectRoot, ".hivemind", "configs.json"), "utf8")).toContain("$schema")
-      expect(readlinkSync(join(projectRoot, ".opencode", "skills", "hm-skill"))).toContain(".hivefiver-meta-builder")
+      expect(existsSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on", "SKILL.md"))).toBe(true)
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
@@ -134,9 +130,8 @@ describe("bootstrapInit", () => {
     const projectRoot = createTempProject()
     try {
       mkdirSync(join(projectRoot, ".hivemind", "state"), { recursive: true })
-      mkdirSync(join(projectRoot, ".opencode", "skills"), { recursive: true })
-      const sourceSkillPath = join(projectRoot, ".hivefiver-meta-builder", "skills-lab", "active", "refactoring", "hm-skill")
-      symlinkSync(sourceSkillPath, join(projectRoot, ".opencode", "skills", "hm-skill"))
+      mkdirSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on"), { recursive: true })
+      writeFileSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on", "SKILL.md"), "old skill contents", "utf8")
       writeFileSync(join(projectRoot, ".hivemind", "state", "version.json"), '{"version":"0.0.1"}\n', "utf8")
 
       const result = await bootstrapInit({

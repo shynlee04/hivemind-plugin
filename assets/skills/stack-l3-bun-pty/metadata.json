@@ -1,0 +1,41 @@
+{
+  "name": "stack-bun-pty",
+  "version": "0.4.8",
+  "description": "bun-pty pseudo-terminal integration API, patterns, and harness conventions",
+  "category": "stack",
+  "createdAt": "2026-04-28",
+  "source": {
+    "npm": "bun-pty",
+    "github": "sursaone/bun-pty",
+    "libraries": "@zenyr/bun-pty"
+  },
+  "triggers": [
+    "bun-pty",
+    "pty integration",
+    "pseudo terminal",
+    "terminal integration",
+    "background command",
+    "pty spawn",
+    "pty manager",
+    "IPty",
+    "IPtyForkOptions",
+    "IExitEvent",
+    "IDisposable",
+    "pty session",
+    "terminal session",
+    "pty buffer"
+  ],
+  "files": {
+    "SKILL.md": "Entry point with quick reference and navigation",
+    "TOC.md": "Full table of contents",
+    "metadata.json": "This file — skill metadata",
+    "references/api/pty-api.md": "Core PTY API: spawn, IPty, events, options",
+    "references/patterns/lazy-loading.md": "Lazy import + graceful fallback pattern",
+    "references/patterns/harness-integration.md": "How harness uses PTY in run-background-command",
+    "references/roles/architect.md": "Architecture decisions for PTY usage",
+    "references/roles/test-developer.md": "Testing PTY integration",
+    "references/roles/production-manager.md": "Production deployment concerns",
+    "references/roles/gatekeeper.md": "Quality gates for PTY code",
+    "scripts/update.sh": "Refresh script"
+  }
+}

@@ -281,11 +281,11 @@ describe("read action", () => {
     const result = parseResult(await tool.execute({
       action: "read",
       primitive: "agent",
-      name: "hm-l2-build",
+      name: "hm-orchestrator",
       scope: "project",
     }, mockCtx))
     expect(result.kind).toBe("success")
-    expect(result.data.name).toBe("hm-l2-build")
+    expect(result.data.name).toBe("hm-orchestrator")
     expect(result.data.type).toBe("agent")
     expect(result.data.frontmatter).toBeDefined()
     expect(result.data.body).toBeDefined()
@@ -367,11 +367,11 @@ describe("inspect action", () => {
     const result = parseResult(await tool.execute({
       action: "inspect",
       primitive: "agent",
-      name: "hm-l2-build",
+      name: "hm-orchestrator",
       scope: "project",
     }, mockCtx))
     expect(result.kind).toBe("success")
-    expect(result.data.name).toBe("hm-l2-build")
+    expect(result.data.name).toBe("hm-orchestrator")
     expect(result.data.crossRefStatus).toBeDefined()
     expect(result.data.frontmatter).toBeDefined()
   })

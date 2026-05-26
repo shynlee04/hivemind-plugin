@@ -1,8 +1,8 @@
 import { spawnSync } from "node:child_process"
-import { existsSync, lstatSync, readFileSync, readdirSync, readlinkSync } from "node:fs"
+import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs"
 import { dirname, resolve, join } from "node:path"
 
-import { DOCTOR_CHECKS, GITKEEP_FILE, PRIMITIVE_TYPES, resolveHiveMindRoot, resolveMetaBuilderRoot, resolveOpenCodeRoot, TIER_1_DIRECTORIES } from "../../features/bootstrap/structure.js"
+import { DOCTOR_CHECKS, GITKEEP_FILE, PRIMITIVE_TYPES, resolveHiveMindRoot, resolvePackageAssetsRoot, resolveOpenCodeRoot, TIER_1_DIRECTORIES } from "../../features/bootstrap/structure.js"
 import { validateConfigsFile } from "../../schema-kernel/hivemind-configs.schema.js"
 import { generateHivemindConfigsJsonSchema } from "../../schema-kernel/generate-config-json-schema.js"
 import type { BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"
@@ -48,7 +48,7 @@ export function createDoctorCommand(deps: Partial<DoctorCommandDeps> = {}): CliC
 
   return {
     name: "doctor",
-    summary: "Run BOOT-02 health checks for structure, symlinks, config, and SDK.",
+    summary: "Run BOOT-02 health checks for structure, primitives, config, and SDK.",
     handler: async (ctx) => handleDoctor(ctx, resolvedDeps),
   }
 }
@@ -105,8 +105,8 @@ function runDoctorCheck(
   switch (check) {
     case "structure":
       return runStructureCheck(projectRoot)
-    case "symlinks":
-      return runSymlinkCheck(projectRoot, scope)
+    case "primitives":
+      return runPrimitivesCheck(projectRoot, scope)
     case "config":
       return runConfigCheck(projectRoot)
     case "sdk":
@@ -130,37 +130,37 @@ function runStructureCheck(projectRoot: string): DoctorRow {
     : { check: "structure", status: "FAIL", details: `Missing: ${missing.join(", ")}` }
 }
 
-function runSymlinkCheck(projectRoot: string, scope: BootstrapScope): DoctorRow {
+function runPrimitivesCheck(projectRoot: string, scope: BootstrapScope): DoctorRow {
   const primitiveTargetRoot = scope === "global"
     ? resolve(process.env.OPENCODE_CONFIG_DIR ?? `${process.env.HOME || "/tmp"}/.config/opencode`)
     : resolveOpenCodeRoot(projectRoot)
-  const metaBuilderRoot = resolveMetaBuilderRoot(projectRoot)
+  const assetsRoot = resolvePackageAssetsRoot()
   const missing: string[] = []
   const broken: string[] = []
-  const realFiles: string[] = []
+
+  const singularMap: Record<string, string> = {
+    agents: "agent",
+    skills: "skill",
+    commands: "command",
+  }
 
   for (const kind of PRIMITIVE_TYPES) {
-    const rootCandidates = {
-      agents: [join(metaBuilderRoot, "agents"), join(metaBuilderRoot, "agents-lab", "active", "refactoring")],
-      skills: [join(metaBuilderRoot, "skills"), join(metaBuilderRoot, "skills-lab", "active", "refactoring")],
-      commands: [join(metaBuilderRoot, "commands"), join(metaBuilderRoot, "commands-lab", "active", "refactoring")],
-    }[kind]
-    const sourceRoot = rootCandidates.find((candidate) => existsSync(candidate))
-    if (!sourceRoot) continue
+    const sourceRoot = join(assetsRoot, kind)
+    if (!existsSync(sourceRoot)) continue
     for (const entry of readdirSync(sourceRoot)) {
       const sourcePath = join(sourceRoot, entry)
       if (kind === "skills" && !existsSync(join(sourcePath, "SKILL.md"))) continue
       if (kind !== "skills" && (!entry.endsWith(".md") || !lstatSync(sourcePath).isFile())) continue
 
-      const targetPath = join(primitiveTargetRoot, kind, entry)
+      const singular = singularMap[kind]
+      let targetPath = join(primitiveTargetRoot, kind, entry)
+      if (singular && existsSync(join(primitiveTargetRoot, singular))) {
+        targetPath = join(primitiveTargetRoot, singular, entry)
+      }
+
       try {
         const stat = lstatSync(targetPath)
-        if (!stat.isSymbolicLink()) {
-          realFiles.push(targetPath)
-          continue
-        }
-        const linkedPath = resolve(dirname(targetPath), readlinkSync(targetPath))
-        if (linkedPath !== sourcePath || !existsSync(linkedPath)) {
+        if (stat.isSymbolicLink()) {
           broken.push(targetPath)
         }
       } catch {
@@ -169,21 +169,16 @@ function runSymlinkCheck(projectRoot: string, scope: BootstrapScope): DoctorRow 
     }
   }
 
-  if (missing.length === 0 && broken.length === 0 && realFiles.length === 0) {
-    return { check: "symlinks", status: "PASS", details: `All expected ${scope} primitive symlinks resolve correctly.` }
-  }
-
   if (missing.length === 0 && broken.length === 0) {
-    return { check: "symlinks", status: "WARN", details: `Real files preserved by recovery policy: ${realFiles.join(", ")}` }
+    return { check: "primitives", status: "PASS", details: `All expected ${scope} primitive files are present.` }
   }
 
   const details = [
     missing.length > 0 ? `Missing: ${missing.join(", ")}` : null,
     broken.length > 0 ? `Broken: ${broken.join(", ")}` : null,
-    realFiles.length > 0 ? `Real files: ${realFiles.join(", ")}` : null,
   ].filter(Boolean).join(" | ")
 
-  return { check: "symlinks", status: "FAIL", details }
+  return { check: "primitives", status: "FAIL", details }
 }
 
 function runConfigCheck(projectRoot: string): DoctorRow {
@@ -297,7 +292,7 @@ function renderDoctorOutput(rows: DoctorRow[], projectRoot: string, scope: Boots
 
 function renderDoctorHelp(): string {
   return [
-    "Usage: hivemind doctor [--root=<path>] [--scope=project|global] [--check=structure|symlinks|config|sdk|typecheck|tests|modules]",
+    "Usage: hivemind doctor [--root=<path>] [--scope=project|global] [--check=structure|primitives|config|sdk|typecheck|tests|modules]",
     "",
     "Doctor is read-only. It validates local structure/config, the selected primitive scope, SDK availability, typecheck, tests, and module inventory.",
   ].join("\n")

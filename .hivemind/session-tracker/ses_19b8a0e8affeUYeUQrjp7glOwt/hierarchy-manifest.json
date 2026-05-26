@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+  "lastUpdated": "2026-05-26T14:10:51.837Z",
+  "children": {
+    "ses_19ba48fd2ffeg6YeVM616W0hYr": {
+      "sessionID": "ses_19ba48fd2ffeg6YeVM616W0hYr",
+      "parentSessionID": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+      "rootMainSessionID": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-roadmapper",
+      "subagentType": "gsd-roadmapper",
+      "createdAt": "2026-05-26T13:29:51.283Z",
+      "updatedAt": "2026-05-26T13:29:51.283Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_19ba48fd2ffeg6YeVM616W0hYr.json"
+    },
+    "ses_19b85ca86ffeUGRHJq7mEup8N2": {
+      "sessionID": "ses_19b85ca86ffeUGRHJq7mEup8N2",
+      "parentSessionID": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+      "rootMainSessionID": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-roadmapper",
+      "createdAt": "2026-05-26T13:29:51.284Z",
+      "updatedAt": "2026-05-26T13:33:10.235Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_19b85ca86ffeUGRHJq7mEup8N2.json"
+    },
+    "ses_19b821d8effevpLz5P1q2n6FmG": {
+      "sessionID": "ses_19b821d8effevpLz5P1q2n6FmG",
+      "parentSessionID": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+      "rootMainSessionID": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-roadmapper",
+      "createdAt": "2026-05-26T13:33:52.183Z",
+      "updatedAt": "2026-05-26T13:34:07.941Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_19b821d8effevpLz5P1q2n6FmG.json"
+    },
+    "ses_19b884ce8ffeQS4T5JDQ6uqC5K": {
+      "sessionID": "ses_19b884ce8ffeQS4T5JDQ6uqC5K",
+      "parentSessionID": "ses_19ba48fd2ffeg6YeVM616W0hYr",
+      "rootMainSessionID": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+      "delegationDepth": 2,
+      "delegatedBy": "gsd-roadmapper",
+      "subagentType": "gsd-roadmapper",
+      "createdAt": "2026-05-26T14:10:51.837Z",
+      "updatedAt": "2026-05-26T14:10:51.837Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_19b884ce8ffeQS4T5JDQ6uqC5K.json"
+    }
+  },
+  "totalChildren": 4,
+  "maxDepth": 2
+}

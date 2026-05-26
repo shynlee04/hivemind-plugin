@@ -16,7 +16,7 @@ describe("init command", () => {
       effectiveScope: "project",
       fallbackApplied: false,
       primitiveTargetRoot: "/repo/.opencode",
-      created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveSymlinks: 3, configsJson: true, configSchemaJson: true, versionFile: true },
+      created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveFiles: 3, configsJson: true, configSchemaJson: true, versionFile: true },
       existing: { hiveMindDirectories: 0, primitiveEntries: 0, configsJson: false, configSchemaJson: false },
     }))
 
@@ -47,7 +47,7 @@ describe("init command", () => {
       effectiveScope: "global",
       fallbackApplied: false,
       primitiveTargetRoot: "/global/.opencode",
-      created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveSymlinks: 3, configsJson: true, configSchemaJson: true, versionFile: true },
+      created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveFiles: 3, configsJson: true, configSchemaJson: true, versionFile: true },
       existing: { hiveMindDirectories: 0, primitiveEntries: 0, configsJson: false, configSchemaJson: false },
     }))
 
@@ -79,7 +79,7 @@ describe("init command", () => {
         effectiveScope: "project",
         fallbackApplied: false,
         primitiveTargetRoot: "/repo/.opencode",
-        created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveSymlinks: 3, configsJson: true, configSchemaJson: true, versionFile: true },
+        created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveFiles: 3, configsJson: true, configSchemaJson: true, versionFile: true },
         existing: { hiveMindDirectories: 0, primitiveEntries: 0, configsJson: false, configSchemaJson: false },
       })),
       resolveProjectRoot: () => "/repo",
@@ -112,7 +112,7 @@ describe("init command", () => {
       effectiveScope: "global",
       fallbackApplied: false,
       primitiveTargetRoot: "/global/opencode",
-      created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveSymlinks: 3, configsJson: true, configSchemaJson: true, versionFile: true },
+      created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveFiles: 3, configsJson: true, configSchemaJson: true, versionFile: true },
       existing: { hiveMindDirectories: 0, primitiveEntries: 0, configsJson: false, configSchemaJson: false },
     }))
     const command = createInitCommand({
@@ -153,7 +153,7 @@ describe("init command", () => {
         fallbackApplied: true,
         fallbackReason: "Global OpenCode config path is unavailable or not writable; falling back to project scope.",
         primitiveTargetRoot: "/repo/.opencode",
-        created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveSymlinks: 3, configsJson: true, configSchemaJson: true, versionFile: true },
+        created: { hiveMindDirectories: 3, gitkeepFiles: 3, primitiveFiles: 3, configsJson: true, configSchemaJson: true, versionFile: true },
         existing: { hiveMindDirectories: 0, primitiveEntries: 0, configsJson: false, configSchemaJson: false },
       })),
       resolveProjectRoot: () => "/repo",

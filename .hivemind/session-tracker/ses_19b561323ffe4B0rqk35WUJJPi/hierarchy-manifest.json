@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_19b561323ffe4B0rqk35WUJJPi",
+  "lastUpdated": "2026-05-26T14:28:03.330Z",
+  "children": {
+    "ses_19b54dac1ffecJRGpRskXRGGTM": {
+      "sessionID": "ses_19b54dac1ffecJRGpRskXRGGTM",
+      "parentSessionID": "ses_19b561323ffe4B0rqk35WUJJPi",
+      "rootMainSessionID": "ses_19b561323ffe4B0rqk35WUJJPi",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-roadmapper",
+      "createdAt": "2026-05-26T14:23:18.430Z",
+      "updatedAt": "2026-05-26T14:27:31.502Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_19b54dac1ffecJRGpRskXRGGTM.json"
+    },
+    "ses_19b54daeaffeB4ATvpBIzsBHC8": {
+      "sessionID": "ses_19b54daeaffeB4ATvpBIzsBHC8",
+      "parentSessionID": "ses_19b561323ffe4B0rqk35WUJJPi",
+      "rootMainSessionID": "ses_19b561323ffe4B0rqk35WUJJPi",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-roadmapper",
+      "subagentType": "gsd-roadmapper",
+      "createdAt": "2026-05-26T14:23:18.430Z",
+      "updatedAt": "2026-05-26T14:28:03.330Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_19b54daeaffeB4ATvpBIzsBHC8.json"
+    }
+  },
+  "totalChildren": 2,
+  "maxDepth": 1
+}

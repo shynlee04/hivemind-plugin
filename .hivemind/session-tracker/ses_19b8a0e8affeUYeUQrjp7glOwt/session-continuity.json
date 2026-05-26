@@ -1,0 +1,45 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+  "lastUpdated": "2026-05-26T14:10:51.837Z",
+  "hierarchy": {
+    "root": "ses_19b8a0e8affeUYeUQrjp7glOwt",
+    "children": {
+      "ses_19ba48fd2ffeg6YeVM616W0hYr": {
+        "file": "ses_19ba48fd2ffeg6YeVM616W0hYr.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-roadmapper",
+        "children": {
+          "ses_19b884ce8ffeQS4T5JDQ6uqC5K": {
+            "file": "ses_19b884ce8ffeQS4T5JDQ6uqC5K.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "gsd-roadmapper",
+            "children": {}
+          }
+        }
+      },
+      "ses_19b85ca86ffeUGRHJq7mEup8N2": {
+        "file": "ses_19b85ca86ffeUGRHJq7mEup8N2.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-roadmapper",
+        "children": {}
+      },
+      "ses_19b821d8effevpLz5P1q2n6FmG": {
+        "file": "ses_19b821d8effevpLz5P1q2n6FmG.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-roadmapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 3,
+  "toolSummary": {
+    "task": 3,
+    "delegation-status": 2,
+    "read": 2
+  }
+}

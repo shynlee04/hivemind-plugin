@@ -1,3 +1,6 @@
+import { fileURLToPath } from "node:url"
+import { dirname, join } from "node:path"
+
 /**
  * @module bootstrap-structure
  *
@@ -92,14 +95,14 @@ export const PRIMITIVE_TYPES = ["agents", "skills", "commands"] as const
  * Scoped to P0 checks only for the initial BOOT-02 implementation.
  *
  * - `structure` — validates `.hivemind/` directory tree exists
- * - `symlinks` — verifies `.hivefiver-meta-builder` symlink integrity
+ * - `primitives` — verifies OpenCode primitive files presence and integrity
  * - `config` — checks config/schema presence and validation
  * - `sdk` — confirms `@opencode-ai/plugin` peer dependency is resolvable
  * - `typecheck` — runs the package typecheck script
  * - `tests` — runs the package test script
  * - `modules` — reports TypeScript source module count
  */
-export const DOCTOR_CHECKS = ["structure", "symlinks", "config", "sdk", "typecheck", "tests", "modules"] as const
+export const DOCTOR_CHECKS = ["structure", "primitives", "config", "sdk", "typecheck", "tests", "modules"] as const
 
 // ---------------------------------------------------------------------------
 // Default config content
@@ -143,4 +146,14 @@ export function resolveOpenCodeRoot(projectRoot: string): string {
  */
 export function resolveMetaBuilderRoot(projectRoot: string): string {
   return `${projectRoot}/${META_BUILDER_DIR}`
+}
+
+/**
+ * Resolve the package's local `assets/` directory.
+ *
+ * @returns Absolute path to the package's `assets/` directory
+ */
+export function resolvePackageAssetsRoot(): string {
+  const currentDir = dirname(fileURLToPath(import.meta.url))
+  return join(currentDir, "../../../assets")
 }

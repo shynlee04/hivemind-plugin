@@ -74,7 +74,7 @@ export const BootstrapInitResultSchema = z.object({
   created: z.object({
     hiveMindDirectories: z.number().int().nonnegative(),
     gitkeepFiles: z.number().int().nonnegative(),
-    primitiveSymlinks: z.number().int().nonnegative(),
+    primitiveFiles: z.number().int().nonnegative(),
     configsJson: z.boolean(),
     configSchemaJson: z.boolean(),
     versionFile: z.boolean(),

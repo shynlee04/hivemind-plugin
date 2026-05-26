@@ -4,27 +4,17 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 
 import { createDoctorCommand } from "../../../src/cli/commands/doctor.js"
-import { TIER_1_DIRECTORIES } from "../../../src/features/bootstrap/structure.js"
-import { generateHivemindConfigsJsonSchema } from "../../../src/schema-kernel/generate-config-json-schema.js"
+import { bootstrapInit } from "../../../src/tools/config/bootstrap-init.js"
 
-function createHealthyProject(): string {
+async function createHealthyProject(): Promise<string> {
   const projectRoot = mkdtempSync(join(tmpdir(), "hivemind-doctor-"))
-  for (const directory of TIER_1_DIRECTORIES) {
-    mkdirSync(join(projectRoot, ".hivemind", directory), { recursive: true })
-    writeFileSync(join(projectRoot, ".hivemind", directory, ".gitkeep"), "", "utf8")
-  }
-  writeFileSync(join(projectRoot, ".hivemind", "configs.json"), '{"$schema":"./configs.schema.json"}\n', "utf8")
-  writeFileSync(
-    join(projectRoot, ".hivemind", "configs.schema.json"),
-    `${JSON.stringify(generateHivemindConfigsJsonSchema(), null, 2)}\n`,
-    "utf8",
-  )
+  await bootstrapInit({ projectRoot, scope: "project", nonInteractive: true })
   return projectRoot
 }
 
 describe("doctor command", () => {
   it("reports PASS rows and ALL CHECKS PASS on a healthy project", async () => {
-    const projectRoot = createHealthyProject()
+    const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({
         resolveProjectRoot: () => projectRoot,
@@ -47,7 +37,7 @@ describe("doctor command", () => {
   })
 
   it("fails when typecheck or test health commands fail", async () => {
-    const projectRoot = createHealthyProject()
+    const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({
         resolveProjectRoot: () => projectRoot,
@@ -68,7 +58,7 @@ describe("doctor command", () => {
   })
 
   it("uses the default ESM-safe SDK resolver when no resolver override is provided", async () => {
-    const projectRoot = createHealthyProject()
+    const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot })
       const result = await command.handler({ flags: { check: "sdk" }, positionals: [], argv: ["doctor", "--check=sdk"] })
@@ -81,7 +71,7 @@ describe("doctor command", () => {
   })
 
   it("supports explicit global-scope doctor checks while keeping local structure/config rooted in project", async () => {
-    const projectRoot = createHealthyProject()
+    const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({
         resolveProjectRoot: () => projectRoot,
@@ -96,13 +86,9 @@ describe("doctor command", () => {
     }
   })
 
-  it("warns instead of failing when primitive targets are real files", async () => {
-    const projectRoot = createHealthyProject()
+  it("passes when primitive targets are real files", async () => {
+    const projectRoot = await createHealthyProject()
     try {
-      mkdirSync(join(projectRoot, ".hivefiver-meta-builder", "agents-lab", "active", "refactoring"), { recursive: true })
-      mkdirSync(join(projectRoot, ".opencode", "agents"), { recursive: true })
-      writeFileSync(join(projectRoot, ".hivefiver-meta-builder", "agents-lab", "active", "refactoring", "hm-agent.md"), "---\nname: hm-agent\n---\n", "utf8")
-      writeFileSync(join(projectRoot, ".opencode", "agents", "hm-agent.md"), "real file", "utf8")
       const command = createDoctorCommand({
         resolveProjectRoot: () => projectRoot,
         resolveSdk: () => "/sdk/path",
@@ -110,18 +96,17 @@ describe("doctor command", () => {
         countSourceModules: () => 42,
       })
 
-      const result = await command.handler({ flags: { check: "symlinks" }, positionals: [], argv: ["doctor", "--check=symlinks"] })
+      const result = await command.handler({ flags: { check: "primitives" }, positionals: [], argv: ["doctor", "--check=primitives"] })
 
       expect(result.exitCode).toBe(0)
-      expect(result.output).toContain("WARN")
-      expect(result.output).toContain("Real files")
+      expect(result.output).toContain("PASS")
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
   })
 
   it("returns exit code 1 when structure check fails", async () => {
-    const projectRoot = createHealthyProject()
+    const projectRoot = await createHealthyProject()
     try {
       rmSync(join(projectRoot, ".hivemind", "state", ".gitkeep"))
       const command = createDoctorCommand({
@@ -140,7 +125,7 @@ describe("doctor command", () => {
   })
 
   it("returns exit code 64 for invalid --check values", async () => {
-    const projectRoot = createHealthyProject()
+    const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot, resolveSdk: () => "/sdk/path" })
       const result = await command.handler({ flags: { check: "bogus" }, positionals: [], argv: ["doctor", "--check=bogus"] })
@@ -151,7 +136,7 @@ describe("doctor command", () => {
   })
 
   it("remains read-only and never calls write APIs", async () => {
-    const projectRoot = createHealthyProject()
+    const projectRoot = await createHealthyProject()
     const writeSpy = vi.spyOn(process.stdout, "write")
     try {
       const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot, resolveSdk: () => "/sdk/path" })
@@ -164,7 +149,7 @@ describe("doctor command", () => {
   })
 
   it("fails config check when configs.json contains schema-invalid runtime values", async () => {
-    const projectRoot = createHealthyProject()
+    const projectRoot = await createHealthyProject()
     try {
       writeFileSync(
         join(projectRoot, ".hivemind", "configs.json"),
@@ -182,7 +167,7 @@ describe("doctor command", () => {
   })
 
   it("fails config check when configs.schema.json drifts from the canonical generated contract", async () => {
-    const projectRoot = createHealthyProject()
+    const projectRoot = await createHealthyProject()
     try {
       writeFileSync(join(projectRoot, ".hivemind", "configs.schema.json"), '{"type":"object","properties":{}}\n', "utf8")
       const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot, resolveSdk: () => "/sdk/path" })

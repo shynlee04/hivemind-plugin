@@ -1,9 +1,9 @@
-import { accessSync, constants, existsSync, lstatSync, mkdirSync, readlinkSync, readdirSync, symlinkSync, unlinkSync } from "node:fs"
-import { dirname, join, relative, resolve } from "node:path"
+import { accessSync, constants, cpSync, existsSync, lstatSync, mkdirSync, readdirSync, rmSync } from "node:fs"
+import { dirname, join, resolve } from "node:path"
 
 import { tool } from "@opencode-ai/plugin"
 
-import { PRIMITIVE_TYPES, resolveMetaBuilderRoot, resolveOpenCodeRoot } from "../../features/bootstrap/structure.js"
+import { PRIMITIVE_TYPES, resolvePackageAssetsRoot, resolveOpenCodeRoot } from "../../features/bootstrap/structure.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
 import { BootstrapRecoverInputSchema, type BootstrapRecoverInput, type BootstrapRecoverResult, type BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"
@@ -89,13 +89,13 @@ export async function bootstrapRecover(input: BootstrapRecoverInput): Promise<Bo
     commands: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
   }
 
-  for (const primitive of listPrimitiveSources(projectRoot)) {
+  for (const primitive of listPrimitiveSources()) {
     const targetPath = resolvePrimitiveTargetPath(scope.primitiveTargetRoot, primitive)
-    const status = classifyPrimitiveTarget(targetPath, primitive.sourcePath)
+    const status = classifyPrimitiveTarget(targetPath)
     counts[primitive.kind][status] += 1
 
     if (status === "missing" || status === "broken") {
-      repairPrimitiveSymlink(targetPath, primitive.sourcePath)
+      repairPrimitiveFile(targetPath, primitive.sourcePath)
       counts[primitive.kind].repaired += 1
       continue
     }
@@ -152,19 +152,13 @@ function resolveBootstrapScope(
   }
 }
 
-function listPrimitiveSources(projectRoot: string): PrimitiveSource[] {
-  const metaBuilderRoot = resolveMetaBuilderRoot(projectRoot)
+function listPrimitiveSources(): PrimitiveSource[] {
+  const assetsRoot = resolvePackageAssetsRoot()
   const sources: PrimitiveSource[] = []
 
-  const roots: Record<PrimitiveKind, string[]> = {
-    agents: [join(metaBuilderRoot, "agents"), join(metaBuilderRoot, "agents-lab", "active", "refactoring")],
-    skills: [join(metaBuilderRoot, "skills"), join(metaBuilderRoot, "skills-lab", "active", "refactoring")],
-    commands: [join(metaBuilderRoot, "commands"), join(metaBuilderRoot, "commands-lab", "active", "refactoring")],
-  }
-
   for (const kind of PRIMITIVE_TYPES) {
-    const sourceRoot = roots[kind].find((candidate) => existsSync(candidate))
-    if (!sourceRoot) continue
+    const sourceRoot = join(assetsRoot, kind)
+    if (!existsSync(sourceRoot)) continue
     for (const entry of readdirSync(sourceRoot)) {
       const sourcePath = join(sourceRoot, entry)
       if (kind === "skills") {
@@ -184,10 +178,22 @@ function listPrimitiveSources(projectRoot: string): PrimitiveSource[] {
 }
 
 function resolvePrimitiveTargetPath(primitiveTargetRoot: string, primitive: PrimitiveSource): string {
+  const singularMap: Record<string, string> = {
+    agents: "agent",
+    skills: "skill",
+    commands: "command",
+  }
+  const singular = singularMap[primitive.kind]
+  if (singular) {
+    const singularDir = join(primitiveTargetRoot, singular)
+    if (existsSync(singularDir)) {
+      return join(singularDir, primitive.name)
+    }
+  }
   return join(primitiveTargetRoot, primitive.kind, primitive.name)
 }
 
-function classifyPrimitiveTarget(targetPath: string, expectedSourcePath: string): RecoverStatus {
+function classifyPrimitiveTarget(targetPath: string): RecoverStatus {
   let stat: ReturnType<typeof lstatSync>
   try {
     stat = lstatSync(targetPath)
@@ -195,25 +201,15 @@ function classifyPrimitiveTarget(targetPath: string, expectedSourcePath: string)
     return "missing"
   }
 
-  if (!stat.isSymbolicLink()) {
-    return "file"
-  }
-
-  const resolvedLink = resolve(dirname(targetPath), readlinkSync(targetPath))
-  if (resolvedLink !== expectedSourcePath || !existsSync(resolvedLink)) {
+  if (stat.isSymbolicLink()) {
     return "broken"
   }
 
   return "ok"
 }
 
-function repairPrimitiveSymlink(targetPath: string, sourcePath: string): void {
+function repairPrimitiveFile(targetPath: string, sourcePath: string): void {
   mkdirSync(dirname(targetPath), { recursive: true })
-  try {
-    lstatSync(targetPath)
-    unlinkSync(targetPath)
-  } catch {
-    // Missing target is fine — recover will create it.
-  }
-  symlinkSync(relative(dirname(targetPath), sourcePath), targetPath)
+  rmSync(targetPath, { recursive: true, force: true })
+  cpSync(sourcePath, targetPath, { recursive: true })
 }

@@ -1,9 +1,9 @@
-import { accessSync, constants, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs"
-import { dirname, join, relative, resolve } from "node:path"
+import { accessSync, constants, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs"
+import { dirname, join, resolve } from "node:path"
 
 import { tool } from "@opencode-ai/plugin"
 
-import { DEFAULT_CONFIG_JSON, GITKEEP_FILE, PRIMITIVE_TYPES, TIER_1_DIRECTORIES, resolveHiveMindRoot, resolveMetaBuilderRoot, resolveOpenCodeRoot } from "../../features/bootstrap/structure.js"
+import { DEFAULT_CONFIG_JSON, GITKEEP_FILE, PRIMITIVE_TYPES, TIER_1_DIRECTORIES, resolveHiveMindRoot, resolvePackageAssetsRoot, resolveOpenCodeRoot } from "../../features/bootstrap/structure.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
 import { generateHivemindConfigsJsonSchema, writeConfigJsonSchema } from "../../schema-kernel/generate-config-json-schema.js"
@@ -91,14 +91,14 @@ export async function bootstrapInit(input: BootstrapInitInput): Promise<Bootstra
   const configsPath = join(hiveMindRoot, "configs.json")
   const schemaPath = join(hiveMindRoot, "configs.schema.json")
   const scope = resolveBootstrapScope(projectRoot, input.scope, input.globalConfigDir)
-  const sources = listPrimitiveSources(projectRoot)
+  const sources = listPrimitiveSources()
   const currentVersion = readInstalledPackageVersion()
   const previousVersion = readTrackedVersion(versionFilePath)
 
   const created = {
     hiveMindDirectories: 0,
     gitkeepFiles: 0,
-    primitiveSymlinks: 0,
+    primitiveFiles: 0,
     configsJson: false,
     configSchemaJson: false,
     versionFile: false,
@@ -149,9 +149,10 @@ export async function bootstrapInit(input: BootstrapInitInput): Promise<Bootstra
 
   for (const primitive of sources) {
     const targetPath = resolvePrimitiveTargetPath(scope.primitiveTargetRoot, primitive)
-    ensurePrimitiveSymlink(targetPath, primitive.sourcePath)
-    if (existsSync(targetPath) && lstatSync(targetPath).isSymbolicLink()) {
-      created.primitiveSymlinks += 1
+    const isNew = !existsSync(targetPath)
+    copyPrimitive(targetPath, primitive.sourcePath)
+    if (isNew) {
+      created.primitiveFiles += 1
     } else {
       existing.primitiveEntries += 1
     }
@@ -253,19 +254,13 @@ function backupPrimitiveTarget(primitiveTargetRoot: string): string | undefined 
   return backupPath
 }
 
-function listPrimitiveSources(projectRoot: string): PrimitiveSource[] {
-  const metaBuilderRoot = resolveMetaBuilderRoot(projectRoot)
+function listPrimitiveSources(): PrimitiveSource[] {
+  const assetsRoot = resolvePackageAssetsRoot()
   const sources: PrimitiveSource[] = []
 
-  const roots: Record<PrimitiveKind, string[]> = {
-    agents: [join(metaBuilderRoot, "agents"), join(metaBuilderRoot, "agents-lab", "active", "refactoring")],
-    skills: [join(metaBuilderRoot, "skills"), join(metaBuilderRoot, "skills-lab", "active", "refactoring")],
-    commands: [join(metaBuilderRoot, "commands"), join(metaBuilderRoot, "commands-lab", "active", "refactoring")],
-  }
-
   for (const kind of PRIMITIVE_TYPES) {
-    const sourceRoot = roots[kind].find((candidate) => existsSync(candidate))
-    if (!sourceRoot) continue
+    const sourceRoot = join(assetsRoot, kind)
+    if (!existsSync(sourceRoot)) continue
     for (const entry of readdirSync(sourceRoot)) {
       const sourcePath = join(sourceRoot, entry)
       if (kind === "skills") {
@@ -285,25 +280,23 @@ function listPrimitiveSources(projectRoot: string): PrimitiveSource[] {
 }
 
 function resolvePrimitiveTargetPath(primitiveTargetRoot: string, primitive: PrimitiveSource): string {
+  const singularMap: Record<string, string> = {
+    agents: "agent",
+    skills: "skill",
+    commands: "command",
+  }
+  const singular = singularMap[primitive.kind]
+  if (singular) {
+    const singularDir = join(primitiveTargetRoot, singular)
+    if (existsSync(singularDir)) {
+      return join(singularDir, primitive.name)
+    }
+  }
   return join(primitiveTargetRoot, primitive.kind, primitive.name)
 }
 
-function ensurePrimitiveSymlink(targetPath: string, sourcePath: string): void {
+function copyPrimitive(targetPath: string, sourcePath: string): void {
   mkdirSync(dirname(targetPath), { recursive: true })
-  if (existsSync(targetPath)) {
-    const stat = lstatSync(targetPath)
-    if (!stat.isSymbolicLink()) {
-      return
-    }
-
-    const linkedPath = resolve(dirname(targetPath), readlinkSync(targetPath))
-    if (linkedPath === sourcePath) {
-      return
-    }
-
-    unlinkSync(targetPath)
-  }
-
-  const relativeTarget = relative(dirname(targetPath), sourcePath)
-  symlinkSync(relativeTarget, targetPath)
+  rmSync(targetPath, { recursive: true, force: true })
+  cpSync(sourcePath, targetPath, { recursive: true })
 }
