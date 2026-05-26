@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-26T13:58:00.000Z"
+last_updated: "2026-05-26T16:25:00.000Z"
 progress:
   total_phases: 43
   completed_phases: 15
@@ -53,6 +53,7 @@ progress:
 **   Plan 01:** ✅ COMPLETE — Governance engine feature directory + createGovernanceSessionTool (Zod schema, SDK session creation, prompt injection, TUI toast, best-effort git commit). Typecheck clean. 3 atomic commits (0287eb10, 6f28296f, 98ea6b80).
 **   Plan 02:** ✅ COMPLETE — Plugin registration + unit tests. Tool registered in plugin.ts (REQ-01), 14 unit tests covering REQ-02 through REQ-07, typecheck clean, no regressions. 2 atomic commits (b0f1b087, f4057c82).
 **   Plan 03:** ✅ COMPLETE — Full verification pass. All 9 REQs verified with L2 evidence (grep + source read + typecheck + test suite). Typecheck clean, 14/14 governance engine tests pass, tool discoverable in plugin.ts. 6 pre-existing session-tracker failures documented. 1 atomic commit.
+**Phase 24.3.2:** 🗣️ DISCUSSED — Execute-Slash-Command Core Revamp (Cluster C — Commands & Workflows, Depends: P24.3.1). Context written with 6 gray area decisions via GSD advisor mode. Decisions: Frontmatter-Driven Namespace (GA-1), Inline YAML Extension (GA-2), Hybrid Facade (GA-3), Extend Command-Engine (GA-4), Contract-Based Validation (GA-5), Optional Namespace + Legacy Fallback (GA-6).
 **Phase 24.4:** 📋 PENDING — References & Templates System (Cluster C — Commands & Workflows, INSERTED, Depends: P24.3, P24.3.1).
 **Phase 24.5:** 📋 PENDING — Workflow Files Architecture (Cluster C — Commands & Workflows, INSERTED, Depends: P24.4).
 **Phase 24.6:** 📋 PENDING — Build HM-* Commands (Cluster C — Commands & Workflows, INSERTED, Depends: P24.5).
