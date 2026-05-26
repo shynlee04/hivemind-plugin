@@ -81,37 +81,69 @@ Before executing, discover project context:
 Five critical reflections that apply to EVERY phase:
 
 1. **TBD — Hivemind source-of-truth validation** — Verify all referenced primitives exist in Hivemind's ecosystem, not external repos.
-2. **Architecture Absorption** — Features go in programmatic features (src/), NOT agent profiles
-3. **Core Protocol Chain** — Every phase must trace: spec-driven, research-driven, context-driven, dependencies, tech compliance, patterns, feature completeness, test-driven, gatekeeping
-4. **Phase Interdependency** — Every phase generates TBD items, needs integration checkpoints
-5. **Knowledge Sources Validation** — Tag research paths as NEEDS RE-VALIDATION until verified
+2. **Architecture Absorption** — Features go in programmatic features (src/), NOT agent profiles.
+3. **Core Protocol Chain** — Every phase must trace: spec-driven, research-driven, context-driven, dependencies, tech compliance, patterns, feature completeness, test-driven, gatekeeping.
+4. **Phase Interdependency** — Every phase generates TBD items, needs integration checkpoints.
+5. **Knowledge Sources Validation** — Tag research paths as NEEDS RE-VALIDATION until verified.
 </governance_reflections>
 
-<expanded_execution_flow>
-### Expanded 10-Step Execution Flow
+<roadmapping_methodology>
+### Roadmapping & Sequence Methodology
+1. **Integer vs Decimal Phase Rules**: Integer phases (1, 2, 3) are planned milestones. Decimal phases (1.1, 1.2) are urgent insertions made mid-milestone.
+2. **Granularity Setting**: Adjust phase division based on `.planning/config.json` setting:
+   - Coarse: 3-5 phases (critical path only)
+   - Standard: 5-8 phases (balanced)
+   - Fine: 8-12 phases (natural boundaries stand)
+3. **UI Hinting**: Scan phase descriptors for front-facing keywords (UI, layout, component, CSS, styling, React). If matched, add `**UI hint**: yes` to the phase detail.
+</roadmapping_methodology>
 
-1. **Load project context** — Read PROJECT.md (goals), STACK.md (tech), FEATURES.md (features)
-2. **Decompose into phases** — Based on dependency analysis and priority
-3. **For each phase** — Define goal, requirements (REQ-IDs), success criteria, depends-on, blocks
-4. **Identify MVP minimum path** — Which phases are essential for a usable product
-5. **Add governance reflections** — Per template: 5 critical reflections per phase
-6. **Map phase interdependencies** — Explicit dependency links between phases
-7. **Detect dependency cycles** — Check for A→B→C→A patterns between phases
-8. **Add TBD registry** — Items deferred to later phases, with expected resolution phase
-9. **Write ROADMAP.md** — Complete with all governance sections and dependency graph
-10. **Validate against project goals** — Confirm roadmap delivers all stated goals
+<structured_returns>
+### Structured Returns
+
+#### Roadmap Created
+```markdown
+## ROADMAP CREATED
+
+**Files Created:**
+- .planning/ROADMAP.md
+- .planning/STATE.md
+
+**Milestone Details:**
+- Total Phases: {count}
+- Requirements Mapped: {mapped_count}/{total_count} (100% Coverage)
+- UI Hinted Phases: {list of phase IDs}
+```
+</structured_returns>
+
+<expanded_execution_flow>
+### Expanded 12-Step Execution Flow
+
+1. **Load project context** — Read PROJECT.md (goals), STACK.md (tech), and FEATURES.md (features).
+2. **Load session history** — Scan `.hivemind/state/session-continuity.json` to discover preceding phase completion states.
+3. **Extract v1 requirements** — Count total requirements and group them by functional category.
+4. **Load research summary** — Read suggested phases from `research/SUMMARY.md` if available.
+5. **Calibrate granularity** — Set compression goals based on config.json granularity rules.
+6. **Identify phases** — Group requirements into sequential phases based on technical dependency.
+7. **Derive phase success criteria** — Formulate 2-5 observable user behaviors per phase goal (goal-backward).
+8. **Add UI Hinting** — Annotate phases that contain frontend/UI delivery goals.
+9. **Apply Governance Reflections** — Document the 5 critical reflections for each phase.
+10. **Run Coverage Check** — Verify that 100% of v1 requirements map to exactly one phase.
+11. **Write ROADMAP.md & STATE.md** — Save files using the write tool, updating REQUIREMENTS.md traceability.
+12. **Return structured completion** — ROADMAP CREATED status with phase summary and ready state.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] ROADMAP.md written with all phases defined
-- [ ] Each phase has goal, requirements, success criteria, dependencies
-- [ ] Governance reflections section present with all 5 reflections
-- [ ] Dependency graph clear (no cycles, no orphan phases)
-- [ ] MVP minimum path identified (essential phases for usable product)
-- [ ] Dependency cycles detected and resolved (or flagged)
-- [ ] Phase interdependencies explicitly mapped (depends-on/blocks)
-- [ ] TBD registry present for deferred items
-- [ ] Completion format returned to orchestrator
+- [ ] ROADMAP.md written with all phases defined.
+- [ ] STATE.md written with initial project memory states.
+- [ ] Each phase has goal, depends-on, requirements, and success criteria.
+- [ ] Governance reflections (all 5) present in each phase detail.
+- [ ] Granularity calibration applied (matching config setting).
+- [ ] UI Hinting added to phases containing frontend work.
+- [ ] 100% requirement coverage validated (zero orphans/duplicates).
+- [ ] Dependency cycles checked and resolved.
+- [ ] Structured return (ROADMAP CREATED) formatted and returned.
+- [ ] Zero legacy `gsd-sdk` commands referenced.
+- [ ] Verification protocol applied (7 checks).
 </expanded_success_criteria>
