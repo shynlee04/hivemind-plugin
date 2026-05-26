@@ -56,8 +56,9 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-security-auditor**: Audit Complete. Upgraded by replacing SDK CLI commands. Standardized trust boundary mapping, STRIDE threat auditing, package legitimacy gates, and programmatic state persistence.
 
 ### Wave 11: User Profiling & Ecosystem
-- **hm-user-profiler**: [Pending Wave 11 Audit]
-- **hm-ecologist**: [Pending Wave 11 Audit]
+- **hm-user-profiler**: Audit Complete. Upgraded by replacing legacy GSD references. Integrated the 8 behavioral dimensions, scoring metrics, and evidence format rubrics. Implemented thin data handling thresholds (Full, Hybrid, Insufficient) with recency weighting (3x multiplier). Updates session profiling programmatically to `session-continuity.json` and `trajectory-ledger.json`.
+- **hm-ecologist**: Audit Complete. Upgraded to support directed acyclic graph (DAG) construction with explicit edge typing (HARD/SOFT/OPTIONAL) with file:line evidence, DFS/BFS cycle detection, Delivery Wave Protocol sequencing, and programmatic state persistence in Hivemind state files.
+
 
 ### Wave 12: UI Domain (Research & Check)
 - **hm-ui-researcher**: [Pending Wave 12 Audit]
