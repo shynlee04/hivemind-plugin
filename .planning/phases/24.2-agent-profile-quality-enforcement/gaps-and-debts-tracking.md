@@ -36,8 +36,8 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-plan-checker**: Audit Complete. Upgraded by replacing manual check notes with schema-kernel frontmatter validator, Nyquist sampling rate checks, and ASVS controls. No new debts.
 
 ### Wave 6: Roadmapping & Maintenance
-- **hm-roadmapper**: [Pending Wave 6 Audit]
-- **hm-intel-updater**: [Pending Wave 6 Audit]
+- **hm-roadmapper**: Audit Complete. Upgraded with integer vs decimal phase rules, granularity calibration, UI Hinting, and 5 Critical Governance Reflections.
+- **hm-intel-updater**: Audit Complete. Upgraded with modular harness architecture tracing guidelines, schema/dashboard compliance formatting, and 12-step execution flow. No new debts.
 
 ### Wave 7: Execution & Verification
 - **hm-executor**: [Pending Wave 7 Audit]
