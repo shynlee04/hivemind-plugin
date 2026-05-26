@@ -83,28 +83,60 @@ Before executing, discover project context:
 - Anti-patterns: document what was done wrong and why it should be avoided
 </pattern_extraction_guidelines>
 
-<expanded_execution_flow>
-### Expanded 8-Step Execution Flow
+<jsdoc_standards>
+### JSDoc & Type Documentation Standards
+All extracted patterns must document their compliance with JSDoc rules:
+1. Every class, function, interface, and public method template must include a JSDoc block.
+2. JSDoc blocks must declare: description, `@param` (with types and descriptions), `@returns` (with types and descriptions), and `@example`.
+3. Verify that TS syntax patterns enforce strict type safety without `any` overrides.
+</jsdoc_standards>
 
-1. **Identify target pattern types** — Models, routes, components, test patterns, error handling
-2. **Find 2-3 real examples** — From actual codebase, not assumptions
-3. **Extract type signatures and import paths** — Document exact module paths
-4. **Document naming conventions** — File names, exports, variable naming
-5. **Document error handling patterns** — How errors are caught, logged, displayed
-6. **Document test patterns** — describe/it structure, fixtures, mocks, assertions
-7. **Identify anti-patterns** — From existing code issues, common mistakes
-8. **Write PATTERNS.md** — Code examples per pattern with file references
+<structured_returns>
+### Structured Returns
+
+#### Patterns Complete
+```markdown
+## PATTERNS COMPLETE
+
+**Artifact Created:**
+- .planning/codebase/PATTERNS.md
+
+**Mapped Patterns:**
+- Models: {count}
+- Controllers/Services: {count}
+- Error Handling Style: {standard description}
+- Testing Style: {standard description}
+```
+</structured_returns>
+
+<expanded_execution_flow>
+### Expanded 12-Step Execution Flow
+
+1. **Identify target pattern types** — Models, routes, tools, hooks, and observers.
+2. **Find 2-3 real examples** — Select source files containing production implementations.
+3. **Analyze TS configuration** — Check tsconfig.json for strict compiler constraints.
+4. **Extract JSDoc templates** — Verify all examined modules document parameters and returns.
+5. **Extract import conventions** — Document relative vs absolute path usage rules.
+6. **Extract type signatures** — Map public class methods and exported interfaces.
+7. **Document naming conventions** — Map file extensions (e.g. `*.ts` vs `*.test.ts`) and export names.
+8. **Document error handling patterns** — Map try-catch blocks and standard error prefix logging.
+9. **Document test patterns** — Map describe-it structures and Vitest mock usages.
+10. **Analyze codebase anti-patterns** — Trace historical git commits for refactored errors.
+11. **Write PATTERNS.md** — Save structured reference with copy-pasteable snippets.
+12. **Return structured completion** — PATTERNS COMPLETE status with counts and formatting details.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] PATTERNS.md written with per-pattern documentation
-- [ ] Each pattern has code example from actual codebase
-- [ ] Import and naming conventions documented (file names, exports, variables)
-- [ ] Error handling patterns documented
-- [ ] Test patterns documented (if test files exist)
-- [ ] Anti-patterns identified from existing code issues
-- [ ] Pattern extraction guidelines followed (real code, not assumptions)
-- [ ] Completion format returned to orchestrator
+- [ ] PATTERNS.md written with per-pattern JSDoc compliant code blocks.
+- [ ] Every documented pattern includes a real codebase example file reference.
+- [ ] Import paths and naming conventions documented clearly.
+- [ ] TS type configurations and JSDoc rules enforced.
+- [ ] Standard error handling patterns documented.
+- [ ] Testing patterns (Vitest style) documented.
+- [ ] Anti-patterns and what to avoid cataloged.
+- [ ] Structured return (PATTERNS COMPLETE) returned.
+- [ ] Zero legacy `gsd-sdk` commands referenced.
+- [ ] Verification protocol applied (7 checks).
 </expanded_success_criteria>
