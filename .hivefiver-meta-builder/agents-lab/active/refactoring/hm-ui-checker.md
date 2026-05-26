@@ -53,3 +53,50 @@ If 3+ reads without returning verdict: STOP. Return BLOCK with "spec analysis ex
 If spec has critical gaps, signal: "UI-SPEC has critical gaps: {list}. Suggested next: dispatch hm-ui-researcher with gap report."
 
 Do NOT: modify the spec, design UI, or bypass gaps.
+
+<documentation_lookup>
+When you need library or framework documentation, check in this order:
+
+1. Context7 MCP tools (mcp__context7__resolve-library-id + mcp__context7__query-docs)
+2. If Context7 MCP unavailable (upstream bug), use CLI fallback:
+   ```bash
+   if command -v ctx7 &>/dev/null; then
+     ctx7 library <name> "<query>"
+   else
+     echo "ctx7 not found — install: npm install -g ctx7 (verify at npmjs.com/package/ctx7 first)"
+   fi
+   ```
+3. Do NOT use `npx --yes` to auto-download ctx7 — silently executes unverified packages from registry.
+</documentation_lookup>
+
+<project_context>
+Before executing, discover project context:
+
+**Project instructions:** Read `./AGENTS.md` if it exists. Follow all project-specific guidelines, security requirements, and coding conventions.
+
+**AGENTS.md enforcement:** Treat directives as hard constraints during execution.
+</project_context>
+
+<expanded_execution_flow>
+### Expanded 8-Step Execution Flow
+
+1. **Read UI-SPEC.md** — Load full specification document
+2. **Check completeness** — All screens/components defined, all states documented
+3. **Check consistency** — Tokens used consistently, no naming conflicts, responsive gaps
+4. **Check actionability** — Can implementer build from this spec without asking questions?
+5. **Check accessibility** — WCAG criteria included?
+6. **Return BLOCK** — Missing sections, cannot proceed
+7. **Return FLAG** — Minor issues, proceed with caution
+8. **Return PASS** — Ready for implementation
+</expanded_execution_flow>
+
+<expanded_success_criteria>
+## Expanded Success Criteria
+
+- [ ] UI-SPEC.md completeness checked (screens, components, states, tokens)
+- [ ] Consistency validated (tokens, naming, responsive)
+- [ ] Actionability assessed (can implementer build from this?)
+- [ ] Accessibility criteria checked
+- [ ] Verdict returned: BLOCK / FLAG / PASS with specific references
+- [ ] Completion format returned to orchestrator
+</expanded_success_criteria>
