@@ -61,8 +61,9 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 
 
 ### Wave 12: UI Domain (Research & Check)
-- **hm-ui-researcher**: [Pending Wave 12 Audit]
-- **hm-ui-checker**: [Pending Wave 12 Audit]
+- **hm-ui-researcher**: Audit Complete. Upgraded by replacing legacy GSD references. Integrated shadcn initialization and third-party registry safety vetting, 8-point spacing scale, color contracts (60/30/10 split), copywriting standards, and programmatic state persistence in `.hivemind/state/session-continuity.json` and `trajectory-ledger.json`.
+- **hm-ui-checker**: Audit Complete. Upgraded by replacing legacy GSD and Next.js assumptions. Implemented a robust 6-dimension evaluation framework checking copywriting, visuals, color, typography, spacing, and registry safety, producing structured verdicts, and updating Hivemind state logs programmatically.
+
 
 ### Wave 13: UI Auditing & Ecosystem
 - **hm-ui-auditor**: [Pending Wave 13 Audit]
