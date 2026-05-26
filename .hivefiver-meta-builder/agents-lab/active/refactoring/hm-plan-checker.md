@@ -94,30 +94,35 @@ For each D-NN decision ID from CONTEXT.md, verify at least one plan references i
 </decision_coverage_gate>
 
 <expanded_execution_flow>
-### Expanded 10-Step Execution Flow
+### Expanded 12-Step Execution Flow
 
-1. **Read PLAN.md frontmatter** — Extract requirements, must_haves, depends_on, phase metadata
-2. **Check requirement coverage** — Every REQ ID must appear in at least one plan's requirements field
-3. **Check goal-backward completeness** — must_haves.truths map to tasks, must_haves.artifacts have paths
-4. **Check task quality** — Each task has files (specific paths), action (no vagueness), verify (automated command), done (measurable criteria)
-5. **Check reachability** — Every artifact has a creation path in the task set (some task produces it)
-6. **Check scope reduction** — Scan for "v1"/"simplified"/"hardcoded for now" language
-7. **Check threat_model presence and completeness** — Trust boundaries, STRIDE register, disposition for each threat
-8. **Check frontmatter validation** — **TBD**: Hivemind frontmatter validation not yet built. Manually verify: required fields present, correct types, no invalid values.
-9. **Check decision coverage** — Run decision_coverage_gate for D-NN citations
-10. **Return structured verdict** — PASS with optional notes, or FAIL with specific gap references
+1. **Read PLAN.md frontmatter** — Extract requirements, must_haves, depends_on, phase metadata.
+2. **Check requirement coverage** — Every REQ ID must appear in at least one plan's requirements field.
+3. **Check goal-backward completeness** — must_haves.truths map to tasks, must_haves.artifacts have paths.
+4. **Check task quality** — Each task has files (specific paths), action (no vagueness), verify (automated command), done (measurable criteria).
+5. **Check reachability** — Every artifact has a creation path in the task set (some task produces it).
+6. **Check scope reduction** — Scan for "v1"/"simplified"/"hardcoded for now" language.
+7. **Check threat_model presence and completeness** — Trust boundaries, STRIDE register, disposition for each threat.
+8. **Check frontmatter validation** — Programmatically validate plan yaml frontmatter schema using the shared Zod schema kernel definitions under `src/schema-kernel/` (rejecting invalid types or missing parameters).
+9. **Check decision coverage** — Run decision_coverage_gate for D-NN citations.
+10. **Analyze Nyquist validation rate** — Map Vitest testing assertions to the plan's sampling rate.
+11. **Verify ASVS security controls** — Validate that plan tasks implement secure defaults.
+12. **Return structured verdict** — PASS with optional notes, or FAIL with specific gap references.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] All requirements traced to plan coverage (every REQ ID covered)
-- [ ] Task quality validated (no vague actions, all have verify/done)
-- [ ] Reachability check completed (every artifact has creation path)
-- [ ] Scope reduction check passed (no "v1"/"simplified" language)
-- [ ] Threat_model present with trust boundaries and STRIDE register
-- [ ] Decision coverage gate passed (all D-NN decisions cited)
-- [ ] Frontmatter validation passed
-- [ ] Verdict delivered with specific references to plan sections
-- [ ] Completion format returned to orchestrator
+- [ ] All requirements traced to plan coverage (every REQ ID covered).
+- [ ] Task quality validated (no vague actions, all have verify/done).
+- [ ] Reachability check completed (every artifact has creation path).
+- [ ] Scope reduction check passed (no "v1"/"simplified" language).
+- [ ] Threat_model present with trust boundaries and STRIDE register.
+- [ ] Decision coverage gate passed (all D-NN decisions cited).
+- [ ] Frontmatter validation passes using Zod schema check.
+- [ ] Verdict delivered with specific references to plan sections.
+- [ ] ASVS security compliance and Nyquist sampling rate mapped.
+- [ ] Structured return (PASS/FAIL verdict) formatted and returned.
+- [ ] Zero legacy `gsd-sdk` commands referenced.
+- [ ] Verification protocol applied (7 checks).
 </expanded_success_criteria>
