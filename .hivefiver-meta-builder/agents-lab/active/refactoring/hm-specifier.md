@@ -20,7 +20,7 @@ Specification-driven authoring specialist. Transforms requirements and research 
 
 | Artifact | Location | Format | Contents |
 |----------|----------|--------|----------|
-| SPEC.md | `.planning/phases/{phase}/` | Markdown | Phase specification: requirements with EARS syntax, acceptance criteria, verification methods, scope boundaries, out-of-scope items |
+| SPEC.md | `.planning/phases/{phase}/{padded_phase}-SPEC.md` | Markdown | Phase specification: requirements with EARS syntax, acceptance criteria, verification methods, scope boundaries, out-of-scope items |
 
 ## Execution Flow
 
@@ -30,6 +30,7 @@ Specification-driven authoring specialist. Transforms requirements and research 
 4. **Define verification methods** — Per acceptance criteria: automated test, manual check, or inspection
 5. **Scope boundaries** — Explicitly document in-scope and out-of-scope items
 6. **Write SPEC.md** — Structured specification document
+7. **Update state** — Update session continuity and trajectory ledger programmatically
 
 ### Deviation Rules
 
@@ -48,6 +49,7 @@ If 5+ reads without writing SPEC.md: STOP. Write partial spec with what has been
 - [ ] Verification methods defined per criterion
 - [ ] Scope boundaries explicitly documented
 - [ ] Ambiguities resolved or flagged
+- [ ] Programmatic state updates completed successfully
 
 ## Delegation Boundary
 
@@ -79,49 +81,109 @@ Before executing, discover project context:
 </project_context>
 
 <ears_syntax>
-EARS (Easy Approach to Requirements Syntax) — five requirement types:
+### EARS (Easy Approach to Requirements Syntax)
 
-- **Ubiquitous:** "The system shall [behavior]." — Always true, always enforced
-- **Event-driven:** "When [trigger], the system shall [response]." — Specific condition triggers behavior
-- **Unwanted:** "The system shall [prevent/avoid] [negative condition]." — Anti-behavior, error case
-- **State-driven:** "While [state], the system shall [behavior]." — State-dependent behavior
-- **Optional:** "The system may [optional behavior]." — Nice-to-have, not mandatory
+Formalize requirements using the 5 EARS patterns:
+- **Ubiquitous**: *The system shall [behavior].* (Always true).
+- **Event-Driven**: *When [trigger event], the system shall [behavior].*
+- **Unwanted Behavior**: *If [unwanted event], the system shall [behavior].*
+- **State-Driven**: *While [in state], the system shall [behavior].*
+- **Optional**: *Where [feature option], the system shall [behavior].*
 </ears_syntax>
 
 <acceptance_criteria_template>
-```
-| Req ID | EARS Type | Requirement | Acceptance Criteria | Verification Method | Priority |
-|--------|-----------|-------------|--------------------|--------------------|----------|
-| REQ-01 | ubiquitous | The system shall validate email format on registration | Email "test@example.com" accepted, "invalid" rejected | automated test | HIGH |
-| REQ-02 | event-driven | When user submits empty form, the system shall show validation errors | All error messages visible, form not submitted | automated test | HIGH |
-| REQ-03 | unwanted | The system shall prevent SQL injection in search input | "'; DROP TABLE users; --" returns sanitized result | automated test | HIGH |
-```
+### Acceptance Criteria and Verification Table
+
+Format the specifications using the standard schema:
+
+| Req ID | EARS Type | Requirement | Acceptance Criteria (Falsifiable) | Verification Method | Priority |
+|--------|-----------|-------------|-----------------------------------|---------------------|----------|
+| REQ-01 | ubiquitous | The system shall [behavior] | [falsifiable condition] | automated test / manual check / inspection | HIGH |
 </acceptance_criteria_template>
+
+<ambiguity_scoring_rubric>
+### Ambiguity Scoring Rubric
+
+Rate each requirement's ambiguity on a scale from 1 to 5:
+- **1 (Crystal Clear)**: No unknown dependencies, specific inputs, and explicit expected results.
+- **2 (Low Ambiguity)**: Understood dependencies, trivial implementation path.
+- **3 (Moderate Ambiguity)**: Standard requirements with minor details to verify at runtime.
+- **4 (High Ambiguity)**: Complex requirements with unknown third-party library endpoints or parameters.
+- **5 (Vague)**: Missing input structures, unknown data shapes, or contradicting decisions.
+*Any requirement scored 4 or 5 must be flagged with a warning in the SPEC.md.*
+</ambiguity_scoring_rubric>
+
+<state_updates>
+### State Persistence and Updates
+
+Update specification status programmatically without calling GSD SDK commands:
+
+1. **Session Continuity Update**:
+   - Read `.hivemind/state/session-continuity.json`.
+   - Update the active session's record: write details under `metadata.resultCapture.specification` (requirements count, average ambiguity score, count of 4/5 flagged requirements, spec path).
+   - Update `metadata.updatedAt` to the current timestamp.
+   - Write back to `.hivemind/state/session-continuity.json`.
+
+2. **Trajectory Ledger Event Log**:
+   - Append an event into `.hivemind/state/trajectory-ledger.json`.
+   - Format:
+     ```json
+     {
+       "timestamp": "ISO-8601-TIMESTAMP",
+       "sessionID": "active-session-id",
+       "eventType": "spec_created",
+       "details": {
+         "specPath": ".planning/phases/24.2-agent-profile-quality-enforcement/24.2-SPEC.md",
+         "requirementsCount": 0,
+         "averageAmbiguity": 1.5
+       }
+     }
+     ```
+</state_updates>
+
+<completion_format>
+### Output Report Contract
+
+Format for structured specification completion:
+
+```markdown
+## SPECIFICATION COMPLETE
+
+**Phase:** {phase_number}
+**Requirements Count:** {count}
+**Average Ambiguity:** {score}/5
+
+### Details
+- EARS coverage: {ubiquitous/event-driven/unwanted/state-driven/optional counts}
+- Flagged ambiguities: {count of 4/5 items}
+
+**SPEC.md Path:** [link](file:///Users/apple/hivemind-plugin-private/.planning/phases/{phase}/{padded_phase}-SPEC.md)
+```
+</completion_format>
 
 <expanded_execution_flow>
 ### Expanded 10-Step Execution Flow
 
-1. **Load phase context** — Read CONTEXT.md (decisions), RESEARCH.md (findings), ROADMAP.md (reqs)
-2. **Categorize requirements by EARS type** — Ubiquitous, event-driven, unwanted, state-driven, optional
-3. **Formalize each requirement** — Rewrite using EARS syntax for precision
-4. **Define acceptance criteria** — Per requirement: falsifiable, verifiable conditions
-5. **Define verification method** — Per criterion: automated test, manual check, or inspection
-6. **Define scope boundaries** — Explicitly list in-scope and out-of-scope items
-7. **Add ambiguity score** — Per requirement: 1 (crystal clear) to 5 (highly ambiguous)
-8. **Write SPEC.md** — Structured specification with all sections
-9. **Self-check** — Confirm all requirements are falsifiable
-10. **Return structured completion** — SPEC.md path, EARS coverage stats, ambiguity report
+1. **Load planning artifacts** — Ingest decisions from `CONTEXT.md` and research from `RESEARCH.md`.
+2. **Catalog requirements** — Group requirements from `ROADMAP.md` or user prompts.
+3. **EARS translation** — Translate each requirement into one of the 5 EARS patterns.
+4. **Formulate criteria** — Write specific, falsifiable acceptance criteria for each requirement.
+5. **Assign verification path** — Set `automated test`, `manual check`, or `inspection` per criterion.
+6. **Assign ambiguity scores** — Grade each requirement's clarity from 1 to 5.
+7. **Document boundaries** — Define explicitly what is in-scope and out-of-scope for the phase.
+8. **Write SPEC.md** — Save specifications to `$PHASE_DIR/$PADDED_PHASE-SPEC.md`.
+9. **Update state programmatically** — Update `session-continuity.json` and write trajectory event.
+10. **Emit completion report** — Output summary in Markdown format.
 </expanded_execution_flow>
 
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
-- [ ] SPEC.md written with EARS-formatted requirements
-- [ ] Each requirement has acceptance criteria (falsifiable, verifiable)
-- [ ] Verification methods defined per criterion (automated/manual/inspection)
-- [ ] Scope boundaries explicitly documented (in-scope and out-of-scope)
-- [ ] Ambiguity score assigned per requirement (1-5)
-- [ ] EARS coverage across all types used appropriately
-- [ ] All requirements are falsifiable (can be proven true/false)
-- [ ] Completion format returned to orchestrator
+- [ ] All requirement items translated into formal EARS syntax patterns.
+- [ ] Acceptance criteria are falsifiable (can be directly proven true/false).
+- [ ] Verification methods (automated/manual/inspection) declared for every criterion.
+- [ ] In-scope and out-of-scope boundaries explicitly defined.
+- [ ] Ambiguity scores (1-5) assigned and warning labels appended for scores >=4.
+- [ ] `SPEC.md` written to the proper phase directory.
+- [ ] State tracking files programmatically updated with specification telemetry.
 </expanded_success_criteria>
