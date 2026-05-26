@@ -88,20 +88,40 @@ Before executing, discover project context:
 | DATA | Corruption, race condition, incorrect persistence | Concurrent writes overwrite each other, missing transaction, stale cache |
 </bug_classification>
 
-<expanded_execution_flow>
-### Expanded 10-Step Execution Flow
+<config_resolution>
+### Config Resolution Protocol
 
-1. **Receive debug request** — Load bug report from orchestrator: symptoms, reproduction steps, expected vs actual behavior
-2. **Initialize debug session** — Create `.planning/debug/{timestamp}-debug-{id}.md` with session metadata
-3. **Classify bug type** — Determine category: LOGIC, RUNTIME, REGRESSION, ENVIRONMENT, or DATA
-4. **Form initial hypotheses** — Generate 2-4 competing hypotheses based on symptoms and code analysis
-5. **Spawn hm-debugger** — Dispatch with structured context: symptoms, reproduction, expected behavior, hypotheses
-6. **Review hm-debugger findings** — Verify evidence, confirm or reject root cause
-7. **If root cause confirmed** — Document fix recommendation, close session with resolution summary
-8. **If not confirmed** — Refine hypotheses based on findings, respawn hm-debugger (max 3 cycles)
-9. **If exhausted after 3 cycles** — Write escalation report: hypotheses tested, evidence collected, suggested escalation path
-10. **Return structured completion** — Session log path, resolution status, recommended next step
-</expanded_execution_flow>
+Query agent and model configuration programmatically from `.hivemind/configs.json`.
+- Extract model settings for `hm-debugger` (replaces legacy `gsd-sdk resolve-model` CLI commands).
+- Avoid execution of external shell commands for tool/model resolution configurations.
+</config_resolution>
+
+<session_parameters>
+Parameters received from spawning orchestrator:
+- `slug` — unique session identifier.
+- `debug_file_path` — path to the debug session file (`.planning/debug/{slug}.md`).
+- `symptoms_prefilled` — boolean; true if symptoms are already written.
+- `tdd_mode` — boolean; true if TDD gate is active.
+- `goal` — `"find_root_cause_only"` or `"find_and_fix"`.
+- `specialist_dispatch_enabled` — boolean; true if specialist skill review is active.
+</session_parameters>
+
+<state_updates>
+### State Persistence and Updates
+
+Update state programmatically. Do not use legacy GSD SDK commands.
+
+1. **Session Continuity Update**:
+   - Read `.hivemind/state/session-continuity.json` to load the current session's record.
+   - Patch the record under the active `sessionID`:
+     - Record debug telemetry, hypotheses, and cycle counters under `metadata.resultCapture`.
+     - Set `metadata.resultCapture.resultSummary` to the path of the generated debug log.
+     - Update `metadata.updatedAt` to the current epoch timestamp.
+
+2. **Trajectory Ledger Event Log**:
+   - Append a new event entry into `.hivemind/state/trajectory-ledger.json`.
+   - Record `timestamp` (ISO-8601), the active `sessionID`, `eventType` (e.g. `"debug_session_iteration"`), and details including cycles count, status (RESOLVED / ESCALATED / INCONCLUSIVE), and bug classification.
+</state_updates>
 
 <completion_format>
 ```markdown
@@ -117,6 +137,21 @@ Before executing, discover project context:
 ```
 </completion_format>
 
+<expanded_execution_flow>
+### Expanded 10-Step Execution Flow
+
+1. **Receive debug request** — Load bug report from orchestrator: symptoms, reproduction steps, expected vs actual behavior
+2. **Initialize debug session** — Create `.planning/debug/{timestamp}-debug-{id}.md` with session metadata
+3. **Classify bug type** — Determine category: LOGIC, RUNTIME, REGRESSION, ENVIRONMENT, or DATA
+4. **Form initial hypotheses** — Generate 2-4 competing hypotheses based on symptoms and code analysis
+5. **Spawn hm-debugger** — Dispatch with structured context: symptoms, reproduction, expected behavior, hypotheses
+6. **Review hm-debugger findings** — Verify evidence, confirm or reject root cause
+7. **If root cause confirmed** — Document fix recommendation, close session with resolution summary
+8. **If not confirmed** — Refine hypotheses based on findings, respawn hm-debugger (max 3 cycles)
+9. **If exhausted after 3 cycles** — Write escalation report: hypotheses tested, evidence collected, suggested escalation path
+10. **Update state** — Programmatically update session continuity and trajectory ledger
+</expanded_execution_flow>
+
 <expanded_success_criteria>
 ## Expanded Success Criteria
 
@@ -126,6 +161,7 @@ Before executing, discover project context:
 - [ ] Hypothesis tracking maintained across cycles
 - [ ] Root cause found and documented, or escalation decision made at cycle 3
 - [ ] Session closed with resolution summary or escalation report
+- [ ] State files updated programmatically (.hivemind/state/)
 - [ ] Completion format returned to orchestrator
 - [ ] If resolved, fix recommendation specific and actionable
 </expanded_success_criteria>
