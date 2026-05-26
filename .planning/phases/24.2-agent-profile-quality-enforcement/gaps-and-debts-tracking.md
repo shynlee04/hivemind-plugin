@@ -44,8 +44,8 @@ This file tracks all shortcomings, structural debts, legacy `gsd-sdk` references
 - **hm-verifier**: Audit Complete. Upgraded by replacing GSD SDK verification CLI tools with programmatic checks of truths, artifacts, and wiring pathways. Added Vitest test output parsing, strict L1-L5 evidence checks, mock downgrades, and Level 4 data-flow tracing.
 
 ### Wave 8: Code Quality
-- **hm-code-reviewer**: [Pending Wave 8 Audit]
-- **hm-code-fixer**: [Pending Wave 8 Audit]
+- **hm-code-reviewer**: Audit Complete. Upgraded by removing legacy GSD and skill folders lookup instructions. Added Unified findings classifications, PASS/FAIL verdict reporting, and programmatically updates to `session-continuity.json` and `trajectory-ledger.json`.
+- **hm-code-fixer**: Audit Complete. Upgraded by replacing legacy `gsd-sdk query commit` with direct git CLI calls. Standardized the isolated worktree creation, recovery sentinel handling, and transactional cleanup flow. Programmatically updates Hivemind state logs.
 
 ### Wave 9: Integration & Debugging
 - **hm-integration-checker**: [Pending Wave 9 Audit]
