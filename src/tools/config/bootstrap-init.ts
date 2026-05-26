@@ -1,7 +1,7 @@
 import { accessSync, constants, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 
-import { tool } from "@opencode-ai/plugin"
+import { tool } from "@opencode-ai/plugin/tool"
 
 import { DEFAULT_CONFIG_JSON, GITKEEP_FILE, PRIMITIVE_TYPES, TIER_1_DIRECTORIES, resolveHiveMindRoot, resolvePackageAssetsRoot, resolveOpenCodeRoot } from "../../features/bootstrap/structure.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
