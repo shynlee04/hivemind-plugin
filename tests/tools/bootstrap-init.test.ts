@@ -177,4 +177,31 @@ describe("bootstrapInit", () => {
       rmSync(projectRoot, { recursive: true, force: true })
     }
   })
+
+  it("backs up user-defined files with .backup suffix instead of directly overwriting them", async () => {
+    const projectRoot = createTempProject()
+    try {
+      await bootstrapInit({
+        projectRoot,
+        scope: "project",
+        nonInteractive: true,
+        config: {},
+      })
+
+      const orchestratorPath = join(projectRoot, ".opencode", "agents", "hm-orchestrator.md")
+      writeFileSync(orchestratorPath, "custom user agent content", "utf8")
+
+      await bootstrapInit({
+        projectRoot,
+        scope: "project",
+        nonInteractive: true,
+        config: {},
+      })
+
+      expect(readFileSync(orchestratorPath, "utf8")).not.toContain("custom user agent content")
+      expect(readFileSync(orchestratorPath + ".backup", "utf8")).toBe("custom user agent content")
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
 })

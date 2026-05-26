@@ -1,4 +1,4 @@
-import { accessSync, constants, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs"
+import { accessSync, constants, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 
 import { tool } from "@opencode-ai/plugin"
@@ -297,6 +297,19 @@ function resolvePrimitiveTargetPath(primitiveTargetRoot: string, primitive: Prim
 
 function copyPrimitive(targetPath: string, sourcePath: string): void {
   mkdirSync(dirname(targetPath), { recursive: true })
-  rmSync(targetPath, { recursive: true, force: true })
+  try {
+    const stat = lstatSync(targetPath)
+    if (stat.isSymbolicLink()) {
+      rmSync(targetPath, { recursive: true, force: true })
+    } else {
+      const backupPath = targetPath + ".backup"
+      rmSync(backupPath, { recursive: true, force: true })
+      renameSync(targetPath, backupPath)
+    }
+  } catch (err) {
+    if (err && typeof err === "object" && "code" in err && err.code !== "ENOENT") {
+      rmSync(targetPath, { recursive: true, force: true })
+    }
+  }
   cpSync(sourcePath, targetPath, { recursive: true })
 }

@@ -1,43 +1,31 @@
 {
   "version": "2.0",
   "projectRoot": "/Users/apple/hivemind-plugin-private",
-  "lastUpdated": "2026-05-26T15:03:17.133Z",
+  "lastUpdated": "2026-05-26T15:08:57.965Z",
   "sessions": {
-    "ses_1a511f340ffe58d1SyGOT5UM7F": {
-      "dir": "ses_1a511f340ffe58d1SyGOT5UM7F/",
-      "mainFile": "ses_1a511f340ffe58d1SyGOT5UM7F.md",
-      "continuityIndex": "ses_1a511f340ffe58d1SyGOT5UM7F/session-continuity.json",
-      "created": "2026-05-26T15:03:17.128Z",
-      "updated": "2026-05-26T15:03:17.128Z",
+    "ses_1a02064d9ffetGKnkAomhYDs60": {
+      "dir": "ses_1a0368fb7ffejsLPsdLHV3bNt5/",
+      "mainFile": "ses_1a02064d9ffetGKnkAomhYDs60.json",
+      "continuityIndex": "ses_1a0368fb7ffejsLPsdLHV3bNt5/session-continuity.json",
+      "created": "2026-05-26T15:08:57.958Z",
+      "updated": "2026-05-26T15:08:57.958Z",
       "status": "active",
       "childCount": 0,
       "totalDelegationDepth": 0
     },
-    "ses_1a5d1d658ffeg6bEGMo6d6E7LD": {
-      "dir": "ses_1a5d1d658ffeg6bEGMo6d6E7LD/",
-      "mainFile": "ses_1a5d1d658ffeg6bEGMo6d6E7LD.md",
-      "continuityIndex": "ses_1a5d1d658ffeg6bEGMo6d6E7LD/session-continuity.json",
-      "created": "2026-05-26T15:03:17.130Z",
-      "updated": "2026-05-26T15:03:17.130Z",
-      "status": "active",
-      "childCount": 0,
-      "totalDelegationDepth": 0
-    },
-    "ses_1a4f84115ffe2rfmmznA2MGncp": {
-      "dir": "ses_1a4f84115ffe2rfmmznA2MGncp/",
-      "mainFile": "ses_1a4f84115ffe2rfmmznA2MGncp.md",
-      "continuityIndex": "ses_1a4f84115ffe2rfmmznA2MGncp/session-continuity.json",
-      "created": "2026-05-26T15:03:17.133Z",
-      "updated": "2026-05-26T15:03:17.133Z",
+    "ses_1a48bd28dffetaYADM1pb5hf98": {
+      "dir": "ses_1a48c4519ffeYdYTHreMnJ3ywy/",
+      "mainFile": "ses_1a48bd28dffetaYADM1pb5hf98.json",
+      "continuityIndex": "ses_1a48c4519ffeYdYTHreMnJ3ywy/session-continuity.json",
+      "created": "2026-05-26T15:08:57.960Z",
+      "updated": "2026-05-26T15:08:57.965Z",
       "status": "active",
       "childCount": 0,
       "totalDelegationDepth": 0
     }
   },
   "chronologicalOrder": [
-    "ses_1a511f340ffe58d1SyGOT5UM7F",
-    "ses_1a5d1d658ffeg6bEGMo6d6E7LD",
-    "ses_1a4f84115ffe2rfmmznA2MGncp"
+    "ses_1a02064d9ffetGKnkAomhYDs60",
+    "ses_1a48bd28dffetaYADM1pb5hf98"
   ]
-}
 }
