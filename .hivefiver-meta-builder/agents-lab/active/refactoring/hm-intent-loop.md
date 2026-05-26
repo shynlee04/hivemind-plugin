@@ -35,6 +35,7 @@ Intent clarification specialist. Engages in structured Q&A to surface unstated r
 - User provides contradictory answers → flag inconsistency, ask for clarification on the contradiction specifically
 - User is impatient (short answers) → adapt to yes/no questions, minimize open-ended
 - User rapidly changes direction → document the change, ask if previous direction is abandoned or deferred
+- **Context Drift Boundary**: If the user's answers drift from the original phase scope or intent, abort the Q&A loop immediately and signal the orchestrator to route to the correct workflow (e.g. `gsd-progress` or other `gsd-*` commands).
 - Max 10 questions per session → after 10, write partial INTENT.md with what's known and flag remaining gaps
 
 ### Analysis Paralysis Guard
