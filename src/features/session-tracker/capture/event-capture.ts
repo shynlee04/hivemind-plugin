@@ -25,11 +25,12 @@ import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
 import type { HierarchyManifestWriter } from "../persistence/hierarchy-manifest.js"
-import type { ChildSessionRecord, JourneyEntry, Turn } from "../types.js"
+import type { ChildSessionRecord, JourneyEntry } from "../types.js"
 import { sanitizeSessionID } from "../persistence/atomic-write.js"
 import { isValidSessionID } from "../types.js"
 import { asString, getNestedValue } from "../../../shared/helpers.js"
 import type { LastMessageCapture } from "./last-message-capture.js"
+import { ChildBackfiller } from "./child-backfiller.js"
 
 // ---------------------------------------------------------------------------
 // EventCapture class
@@ -51,6 +52,7 @@ export class EventCapture {
   private pendingRegistry: PendingDispatchRegistry | undefined
   private manifestWriter: HierarchyManifestWriter | undefined
   private lastMessageCapture: LastMessageCapture | undefined
+  private backfiller: ChildBackfiller
 
   /**
    * Per-session assistant turn counters for body writing.
@@ -86,6 +88,7 @@ export class EventCapture {
     this.pendingRegistry = deps.pendingRegistry
     this.manifestWriter = deps.manifestWriter
     this.lastMessageCapture = deps.lastMessageCapture
+    this.backfiller = new ChildBackfiller({ client: deps.client, childWriter: deps.childWriter })
   }
 
   /**
@@ -322,7 +325,7 @@ export class EventCapture {
         if (this.manifestWriter) {
           await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         }
-        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
+        await this.backfiller.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
           void this.client.app?.log?.({
             body: {
               service: "session-tracker",
@@ -361,8 +364,8 @@ export class EventCapture {
           const messages = await getSessionMessages(this.client, sessionID)
           if (messages && messages.length > 0) {
             for (let i = messages.length - 1; i >= 0; i--) {
-              if (this.messageRole(messages[i]) === "assistant") {
-                const text = this.extractTextFromSdkMessage(messages[i], true)
+              if (this.backfiller.messageRole(messages[i]) === "assistant") {
+                const text = this.backfiller.extractTextFromSdkMessage(messages[i], true)
                 if (text && text.trim().length > 0) {
                   lastMessage = text.trim()
                   break
@@ -458,7 +461,7 @@ export class EventCapture {
             },
           })
         })
-        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
+        await this.backfiller.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
           void this.client.app?.log?.({
             body: {
               service: "session-tracker",
@@ -524,7 +527,7 @@ export class EventCapture {
             },
           })
         })
-        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
+        await this.backfiller.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
           void this.client.app?.log?.({
             body: {
               service: "session-tracker",
@@ -901,100 +904,6 @@ export class EventCapture {
   }
 
   /**
-   * Backfills turns and lastMessage from OpenCode SDK messages on child completion.
-   */
-  private async backfillChildTurnsFromSdk(
-    parentID: string,
-    childSessionID: string,
-  ): Promise<void> {
-    try {
-      const messages = await getSessionMessages(this.client, childSessionID)
-      if (!messages || messages.length === 0) return
-
-      // Find the index of the last assistant message
-      let lastAssistantIndex = -1
-      for (let i = messages.length - 1; i >= 0; i--) {
-        if (this.messageRole(messages[i]) === "assistant") {
-          lastAssistantIndex = i
-          break
-        }
-      }
-
-      const turns: Turn[] = []
-      let turnNumber = 1
-      for (let i = 0; i < messages.length; i++) {
-        const message = messages[i]
-        const role = this.messageRole(message)
-        const isLastAssistant = i === lastAssistantIndex
-        const content = this.extractTextFromSdkMessage(message, isLastAssistant)
-        if (!content) continue
-
-        turns.push({
-          turn: turnNumber++,
-          actor: (getNestedValue(message, ["agent"]) as string) || (role === "user" ? "user" : "unknown"),
-          content,
-          tools: [],
-          role,
-        })
-      }
-
-      if (turns.length > 0) {
-        await this.childWriter.backfillChildTurns(parentID, childSessionID, turns)
-      }
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: failed to backfill child turns for "${childSessionID}"`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
-  }
-
-  private messageRole(message: unknown): string | undefined {
-    return asString(getNestedValue(message, ["info", "role"])) ?? asString(getNestedValue(message, ["role"]))
-  }
-
-  private extractTextFromSdkMessage(message: unknown, includeThinking = false): string | undefined {
-    const parts = getNestedValue(message, ["parts"]) as unknown[] | undefined
-    if (!Array.isArray(parts) || parts.length === 0) return undefined
-
-    const textParts = parts
-      .filter((part: unknown) => {
-        const type = getNestedValue(part, ["type"])
-        return type === "text" || (includeThinking && type === "thinking")
-      })
-      .map((part: unknown) => {
-        const type = getNestedValue(part, ["type"])
-        const text = asString(getNestedValue(part, ["text"]))
-        const content = asString(getNestedValue(part, ["content"]))
-        const val = text || content || ""
-        if (type === "thinking" && val.trim().length > 0) {
-          return `<thinking>\n${val.trim()}\n</thinking>`
-        }
-        return val
-      })
-      .filter((text): text is string => typeof text === "string" && text.length > 0)
-
-    if (textParts.length > 0) return textParts.join("\n")
-
-    // Fallback: extract tool names for tool-only messages
-    const toolParts = parts
-      .filter((part: unknown) => getNestedValue(part, ["type"]) === "tool")
-      .map((part: unknown): string => {
-        const toolName = asString(getNestedValue(part, ["tool"])) || asString(getNestedValue(part, ["name"])) || "tool"
-        return toolName
-      })
-      .filter((name): name is string => name.length > 0)
-
-    if (toolParts.length > 0) return "Tools: " + toolParts.join(", ")
-
-    return undefined
-  }
-
-  /**
    * Resolves compaction content from session message history.
    * Fallback when the session.compacted event payload is metadata-only.
    *
@@ -1007,19 +916,19 @@ export class EventCapture {
       if (messages && messages.length > 0) {
         let lastAssistantMsg: unknown
         for (let i = messages.length - 1; i >= 0; i--) {
-          if (this.messageRole(messages[i]) === "assistant") {
+          if (this.backfiller.messageRole(messages[i]) === "assistant") {
             lastAssistantMsg = messages[i]
             break
           }
         }
         if (lastAssistantMsg) {
-          const text = this.extractTextFromSdkMessage(lastAssistantMsg)
+          const text = this.backfiller.extractTextFromSdkMessage(lastAssistantMsg)
           if (text && text.trim().length > 0) {
             return `**compact_summary:**\n\n${text}\n`
           }
         }
         const lastMsg = messages[messages.length - 1]
-        const fallbackText = this.extractTextFromSdkMessage(lastMsg)
+        const fallbackText = this.backfiller.extractTextFromSdkMessage(lastMsg)
         if (fallbackText && fallbackText.trim().length > 0) {
           return `**compact_summary:**\n\n${fallbackText}\n`
         }
