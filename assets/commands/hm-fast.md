@@ -1,7 +1,14 @@
 ---
-description: Execute a trivial task inline — no subagents, no planning overhead
+namespace: hm
+agent: hm-executor
+subtask: true
+description: "Execute a trivial task inline — no subagents, no planning overhead"
 argument-hint: "[task description]"
-requires: [config, quick]
+requires: ["hm-config", "hm-quick"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["fast-task-completed"]
 tools:
   read: true
   write: true
@@ -10,6 +17,7 @@ tools:
   grep: true
   glob: true
 ---
+
 
 <objective>
 Execute a trivial task directly in the current context without spawning subagents

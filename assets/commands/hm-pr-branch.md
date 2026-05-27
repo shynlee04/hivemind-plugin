@@ -1,12 +1,20 @@
 ---
-description: Create a clean PR branch by filtering out .planning/ commits — ready for code review
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Create a clean PR branch by filtering out .planning/ commits — ready for code review"
 argument-hint: "[target branch, default: main]"
-requires: [review]
+requires: ["hm-review"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["branch-created"]
 tools:
   bash: true
   read: true
   question: true
 ---
+
 
 <objective>
 Create a clean branch suitable for pull requests by filtering out .planning/ commits

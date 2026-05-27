@@ -1,7 +1,14 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: "Safe git revert. Roll back phase or plan commits using the phase manifest with dependency checks."
 argument-hint: "--last N | --phase NN | --plan NN-MM"
-requires: [phase]
+requires: ["hm-phase"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   bash: true
@@ -9,6 +16,7 @@ tools:
   grep: true
   question: true
 ---
+
 
 <objective>
 Safe git revert — roll back Hivemind phase or plan commits using the phase manifest, with dependency checks and a confirmation gate before execution.

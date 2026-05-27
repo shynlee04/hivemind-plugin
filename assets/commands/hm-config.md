@@ -1,13 +1,21 @@
 ---
-description: Configure Hivemind settings — workflow toggles, advanced knobs, integrations, and model profile
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Configure Hivemind settings — workflow toggles, advanced knobs, integrations, and model profile"
 argument-hint: "[--advanced | --integrations | --profile <name>]"
-requires: [code-review, review, settings]
+requires: ["hm-code-review", "hm-review", "hm-settings"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
   bash: true
   question: true
 ---
+
 
 <objective>
 Configure Hivemind settings interactively with a single consolidated command.

@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-verifier
-subtask: true
-description: Verify completed phase deliverables against plan must-haves, truths, and links.
+subtask: false
+description: "Verify completed phase deliverables against plan must-haves, truths, and links."
 argument-hint: "<phase-number>"
 requires: ["hm-execute"]
-validation-gates: ["goal-backward-verification"]
+validation-gates: ["evidence-truth-gate"]
 output-templates: ["hm-verification.md"]
 coordination-model: "waiter-model"
-completion-signals: ["verification-complete"]
+completion-signals: ["verification-completed"]
 tools:
   read: true
   write: true
@@ -17,6 +17,7 @@ tools:
   grep: true
   agent: true
 ---
+
 <objective>
 Audit the executed phase outcomes against plan must-haves (truths, artifacts, key links) to verify completion.
 </objective>

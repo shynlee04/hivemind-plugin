@@ -1,0 +1,21 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_195ef2f94ffe9wtnMD7C09XrCg",
+  "lastUpdated": "2026-05-27T19:25:25.123Z",
+  "hierarchy": {
+    "root": "ses_195ef2f94ffe9wtnMD7C09XrCg",
+    "children": {
+      "ses_1951a0037ffeoVVSCotSTel4s1": {
+        "file": "ses_1951a0037ffeoVVSCotSTel4s1.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-debugger",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 7,
+  "toolSummary": {
+    "task": 1
+  }
+}

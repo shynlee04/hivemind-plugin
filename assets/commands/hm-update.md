@@ -1,6 +1,14 @@
 ---
-description: Update Hivemind to latest version with changelog display
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Update Hivemind to latest version with changelog display"
 argument-hint: "[--sync | --reapply]"
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
@@ -10,6 +18,7 @@ tools:
   grep: true
   question: true
 ---
+
 
 <objective>
 Check for Hivemind updates, install if available, and display what changed.

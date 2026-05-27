@@ -1,8 +1,19 @@
 ---
-description: "Activate full autonomous orchestration. Agent explores, plans, and executes until done."
-agent: hm-l2-conductor
+namespace: hm
+agent: hm-orchestrator
 subtask: false
+description: "Activate full autonomous orchestration. Agent explores, plans, and executes until done."
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 You have received a request. Operate as the conductor and use `delegate-task` for every specialist execution phase.
 

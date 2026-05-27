@@ -1,8 +1,19 @@
 ---
-description: "Execute a task plan with full orchestration. Reads plan and runs pending phases through controlled delegation."
-agent: hm-l2-conductor
+namespace: hm
+agent: hm-orchestrator
 subtask: false
+description: "Execute a task plan with full orchestration. Reads plan and runs pending phases through controlled delegation."
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 Read the task_plan.md in the project root. If it doesn't exist, tell the user to create one first with /plan or by describing their work to the conductor agent.
 

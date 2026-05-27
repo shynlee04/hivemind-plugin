@@ -21,6 +21,7 @@ tools:
   hivemind-session-view: true
 ---
 
+
 <objective>
 Manage Hivemind sessions: list active sessions via session-tracker, inspect delegation hierarchy, check status, resume interrupted sessions, or stack new work onto existing sessions.
 </objective>

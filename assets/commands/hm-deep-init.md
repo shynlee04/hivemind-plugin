@@ -1,6 +1,19 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: "Generate hierarchical AGENTS.md files with root + complexity-scored subdirectories. Supports update mode, full regeneration, and depth limiting."
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 Generate hierarchical AGENTS.md files. Root + complexity-scored subdirectories.
 

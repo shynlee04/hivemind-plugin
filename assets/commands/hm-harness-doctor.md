@@ -1,8 +1,19 @@
 ---
+namespace: hm
+agent: hm-nyquist-auditor
+subtask: true
 description: "Run harness diagnostics. Checks configuration, agents, plugin control path, and harness health."
-agent: hm-l2-conductor
-subtask: false
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["audit-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 Run a comprehensive health check on this harness installation:
 

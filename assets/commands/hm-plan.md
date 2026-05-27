@@ -1,8 +1,19 @@
 ---
-description: "Enter strategic planning mode. Agent interviews you to build a detailed plan before any code is written."
-agent: hm-l2-conductor
+namespace: hm
+agent: hm-planner
 subtask: false
+description: "Enter strategic planning mode. Agent interviews you to build a detailed plan before any code is written."
+argument-hint: ""
+requires: []
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-plan.md"]
+coordination-model: "waiter-model"
+completion-signals: ["plan-generated"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 Enter planning mode. Before writing any code:
 

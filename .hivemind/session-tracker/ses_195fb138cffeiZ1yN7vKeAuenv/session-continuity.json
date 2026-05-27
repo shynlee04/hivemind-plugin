@@ -1,0 +1,24 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_195fb138cffeiZ1yN7vKeAuenv",
+  "lastUpdated": "2026-05-27T15:32:14.482Z",
+  "hierarchy": {
+    "root": "ses_195fb138cffeiZ1yN7vKeAuenv",
+    "children": {
+      "ses_19606cc26ffeBdMQDyUL1HubCd": {
+        "file": "ses_19606cc26ffeBdMQDyUL1HubCd.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "general",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 6,
+  "toolSummary": {
+    "task": 1,
+    "delegation-status": 1,
+    "repomix_pack_remote_repository": 1,
+    "repomix_read_repomix_output": 4
+  }
+}

@@ -1,7 +1,14 @@
 ---
-description: Generate UI design contract (UI-SPEC.md) for frontend phases
+namespace: hm
+agent: hm-planner
+subtask: true
+description: "Generate UI design contract (UI-SPEC.md) for frontend phases"
 argument-hint: "[phase]"
-requires: [phase]
+requires: ["hm-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-ui-spec.md"]
+coordination-model: "waiter-model"
+completion-signals: ["ui-spec-defined"]
 tools:
   read: true
   write: true
@@ -13,6 +20,7 @@ tools:
   question: true
   mcp__context7__*: true
 ---
+
 <objective>
 Create a UI design contract (UI-SPEC.md) for a frontend phase.
 Orchestrates hm-ui-researcher and hm-ui-checker.

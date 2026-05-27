@@ -1,8 +1,19 @@
 ---
+namespace: hm
+agent: hm-executor
+subtask: true
 description: "Tests the programmatic execution of slash commands by an agent."
-agent: build
-subtask: false
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate", "evidence-truth-gate"]
+output-templates: ["hm-verification.md"]
+coordination-model: "waiter-model"
+completion-signals: ["execution-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 <objective>
 Verify that you can programmatically dispatch another OpenCode slash command using the `execute-slash-command` tool.

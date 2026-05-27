@@ -1,8 +1,19 @@
 ---
-description: "Audit existing skills, agents, commands, or tools for quality, overlaps, and dead references. Triggers: 'audit skills', 'check agents', 'doctor commands', 'what's wrong with...'"
-agent: hf-l0-orchestrator
+namespace: hm
+agent: hm-nyquist-auditor
 subtask: true
+description: "Audit existing skills, agents, commands, or tools for quality, overlaps, and dead references. Triggers: 'audit skills', 'check agents', 'doctor commands', 'what's wrong with...'"
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["audit-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 <objective>
 Audit existing OpenCode meta-concepts for quality issues, overlaps, dead references, and trigger phrase coverage.

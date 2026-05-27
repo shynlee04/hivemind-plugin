@@ -1,0 +1,153 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_194efc8cfffeq40XT67zWITVDa",
+  "lastUpdated": "2026-05-27T20:40:23.070Z",
+  "hierarchy": {
+    "root": "ses_194efc8cfffeq40XT67zWITVDa",
+    "children": {
+      "ses_194ed7e9affebmBRW112FZKuIv": {
+        "file": "ses_194ed7e9affebmBRW112FZKuIv.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-orchestrator",
+        "children": {}
+      },
+      "ses_194ebfd09ffeH9qJYiH608Unu2": {
+        "file": "ses_194ebfd09ffeH9qJYiH608Unu2.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194eb7938ffeP6Sd4bWKw7DSPY": {
+        "file": "ses_194eb7938ffeP6Sd4bWKw7DSPY.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194eb750fffeAbLZaqR5PVGsd3": {
+        "file": "ses_194eb750fffeAbLZaqR5PVGsd3.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194eb702cffeFR8D2XP5ykIyO9": {
+        "file": "ses_194eb702cffeFR8D2XP5ykIyO9.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194eb696effeubFHGHXqQerea8": {
+        "file": "ses_194eb696effeubFHGHXqQerea8.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194e55a3affeyT5KY3N0pJmwkx": {
+        "file": "ses_194e55a3affeyT5KY3N0pJmwkx.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194e4db5affeJxElCTr7ESzz5W": {
+        "file": "ses_194e4db5affeJxElCTr7ESzz5W.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194e46645ffez6icCvFVvsVOS8": {
+        "file": "ses_194e46645ffez6icCvFVvsVOS8.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {
+          "ses_194e4098affeYC0xjnJE9ACOnD": {
+            "file": "ses_194e4098affeYC0xjnJE9ACOnD.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "hm-codebase-mapper",
+            "children": {}
+          }
+        }
+      },
+      "ses_194e4098affeYC0xjnJE9ACOnD": {
+        "file": "ses_194e4098affeYC0xjnJE9ACOnD.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194e2e6deffel7ibfc3dXXi00i": {
+        "file": "ses_194e2e6deffel7ibfc3dXXi00i.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194e29136ffe3gb9lyZQWLwh31": {
+        "file": "ses_194e29136ffe3gb9lyZQWLwh31.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194de0528ffeKwT8bHCmgd9Za2": {
+        "file": "ses_194de0528ffeKwT8bHCmgd9Za2.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194dcc856ffeiroX0J2EP0mHkO": {
+        "file": "ses_194dcc856ffeiroX0J2EP0mHkO.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194da54beffeD8qfhTnPSDCdkk": {
+        "file": "ses_194da54beffeD8qfhTnPSDCdkk.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_194d58aa4ffeQQdBdY6LyKTKQZ": {
+        "file": "ses_194d58aa4ffeQQdBdY6LyKTKQZ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-codebase-mapper",
+        "children": {
+          "ses_194d54551ffemJYO9u4GsJ3c8O": {
+            "file": "ses_194d54551ffemJYO9u4GsJ3c8O.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "gsd-codebase-mapper",
+            "children": {}
+          }
+        }
+      },
+      "ses_194d54551ffemJYO9u4GsJ3c8O": {
+        "file": "ses_194d54551ffemJYO9u4GsJ3c8O.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 19,
+  "toolSummary": {
+    "glob": 4,
+    "read": 10,
+    "task": 13,
+    "execute-slash-command": 7,
+    "bash": 12
+  }
+}

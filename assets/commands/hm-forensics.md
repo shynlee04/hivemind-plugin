@@ -1,8 +1,14 @@
 ---
-type: prompt
-description: Post-mortem investigation for failed Hivemind workflows — diagnoses what went wrong.
+namespace: hm
+agent: hm-debugger
+subtask: true
+description: "Post-mortem investigation for failed Hivemind workflows — diagnoses what went wrong."
 argument-hint: "[problem description]"
-requires: [phase, progress, update]
+requires: ["hm-phase", "hm-progress", "hm-update"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-debug-reproduction.md"]
+coordination-model: "waiter-model"
+completion-signals: ["forensics-completed"]
 tools:
   read: true
   write: true
@@ -10,6 +16,7 @@ tools:
   grep: true
   glob: true
 ---
+
 
 <objective>
 Investigate what went wrong during a Hivemind workflow execution. Analyzes git history, `.planning/` artifacts, and file system state to detect anomalies and generate a structured diagnostic report.

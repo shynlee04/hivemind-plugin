@@ -1,8 +1,19 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: "Enhance, audit, or repack a prompt through skim, investigation lanes, clarification gating, and structured final assembly. Triggers: 'enhance this prompt', 'audit this prompt', 'repack this prompt'."
-agent: hm-l1-coordinator
-subtask: true
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 Execute the prompt-enhance workflow using `task` tool for invoking subagents pipelines for investigations.
 

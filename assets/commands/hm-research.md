@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-phase-researcher
-subtask: true
-description: Conduct dense stack research and codebase investigation for a roadmap phase.
+subtask: false
+description: "Conduct dense stack research and codebase investigation for a roadmap phase."
 argument-hint: "<phase-number> [--deep]"
 requires: []
-validation-gates: []
+validation-gates: ["spec-compliance-gate"]
 output-templates: ["hm-research.md"]
 coordination-model: "waiter-model"
-completion-signals: ["research-complete"]
+completion-signals: ["research-completed"]
 tools:
   read: true
   write: true
@@ -17,6 +17,7 @@ tools:
   grep: true
   agent: true
 ---
+
 <objective>
 Investigate target technology stack, package.json versions, codebase reuse patterns, and threat vectors for the roadmap phase.
 </objective>

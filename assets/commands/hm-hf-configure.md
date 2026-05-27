@@ -1,8 +1,19 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: "Configure OpenCode primitives (agents, commands, skills) programmatically. Supports --from-file, --scope, --dry-run flags. Triggers: 'configure agent', 'batch configure', 'agent setup', 'configure command'."
-agent: hf-l0-orchestrator
-subtask: true
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 <objective>
 Entry point for programmatic configuration of OpenCode primitives. Routes to hivefiver-orchestrator which loads the opencode-config-workflow skill workflow.

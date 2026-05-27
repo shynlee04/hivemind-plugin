@@ -1,12 +1,21 @@
 ---
-description: CRUD for phases in ROADMAP.md — add, insert, remove, or edit phases
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "CRUD for phases in ROADMAP.md — add, insert, remove, or edit phases"
 argument-hint: "[--insert | --remove | --edit] <phase-name-or-number>"
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
   bash: true
   glob: true
 ---
+
 
 <objective>
 Manage phases in ROADMAP.md with a single consolidated command.

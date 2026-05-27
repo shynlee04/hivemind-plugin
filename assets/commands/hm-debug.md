@@ -2,13 +2,13 @@
 namespace: hm
 agent: hm-debugger
 subtask: true
-description: Start systematic debugging session to diagnose and repair connection, compilation, or logic errors.
+description: "Start systematic debugging session to diagnose and repair connection, compilation, or logic errors."
 argument-hint: "[error-description] [--file <path>] [--test]"
 requires: []
-validation-gates: []
-output-templates: []
+validation-gates: ["debug-verification-gate"]
+output-templates: ["hm-debug-reproduction.md"]
 coordination-model: "waiter-model"
-completion-signals: ["debug-resolved"]
+completion-signals: ["bug-resolved"]
 tools:
   read: true
   write: true
@@ -17,6 +17,7 @@ tools:
   grep: true
   agent: true
 ---
+
 <objective>
 Diagnose test failures, connection drops, or runtime exceptions systematically, establishing reproducer scripts and fixing the root cause.
 </objective>

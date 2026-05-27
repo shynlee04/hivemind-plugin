@@ -1,8 +1,19 @@
 ---
-description: "Sync AGENTS.md files with current codebase state. Detects drift between documentation and actual source code, produces a report, and applies fixes."
-agent: hm-l2-conductor
+namespace: hm
+agent: hm-orchestrator
 subtask: false
+description: "Sync AGENTS.md files with current codebase state. Detects drift between documentation and actual source code, produces a report, and applies fixes."
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 Sync AGENTS.md files to match the current codebase:
 

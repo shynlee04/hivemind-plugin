@@ -1,0 +1,17 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_195009cc2ffe2cLsFGXPu4ftYq",
+  "lastUpdated": "2026-05-27T20:09:58.339Z",
+  "hierarchy": {
+    "root": "ses_195009cc2ffe2cLsFGXPu4ftYq",
+    "children": {}
+  },
+  "turnCount": 3,
+  "toolSummary": {
+    "skill": 2,
+    "hivemind-command-engine": 1,
+    "glob": 6,
+    "question": 1,
+    "todowrite": 1
+  }
+}
