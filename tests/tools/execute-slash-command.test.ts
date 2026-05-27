@@ -5,6 +5,11 @@ import { describe, it, expect, vi } from "vitest"
 import { createExecuteSlashCommandTool } from "../../src/tools/session/execute-slash-command.js"
 import type { PluginInput } from "@opencode-ai/plugin"
 
+/** Wait for deferred (setTimeout 50ms) dispatch to fire. */
+async function flushDeferred(): Promise<void> {
+  await new Promise<void>((resolve) => setTimeout(resolve, 60))
+}
+
 async function createProjectWithCommand(commandName: string, commandContent: string): Promise<string> {
   const projectRoot = await mkdtemp(path.join(tmpdir(), "hivemind-command-test-"))
   const commandsDir = path.join(projectRoot, ".opencode", "commands")
@@ -48,6 +53,7 @@ Do front-agent work with: $ARGUMENTS
         messageID: "msg_front_agent",
       } as any,
     )
+    await flushDeferred()
 
     expect(client.tui.appendPrompt).not.toHaveBeenCalled()
     expect(result.metadata).toMatchObject({
@@ -62,12 +68,7 @@ Do front-agent work with: $ARGUMENTS
       path: { id: "ses_front_agent" },
       body: {
         agent: "gsd-executor",
-        parts: [
-          {
-            type: "text",
-            text: "Do front-agent work with: phase 21.2",
-          },
-        ],
+        parts: [{ type: "text", text: "Do front-agent work with: phase 21.2" }],
       },
       query: { directory: projectRoot },
     }))
@@ -111,6 +112,7 @@ User prompt:
         messageID: "msg_test",
       } as any,
     )
+    await flushDeferred()
 
     expect(promptMock).toHaveBeenCalledWith({
       path: { id: "ses_test" },
@@ -173,6 +175,7 @@ Run with: $ARGUMENTS
     )
 
     expect(result.metadata).toMatchObject({ scheduled: true })
+    await flushDeferred()
     expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
       path: { id: "ses_override" },
       body: {
@@ -227,6 +230,7 @@ Auto-subtask body
         messageID: "msg_auto",
       } as any,
     )
+    await flushDeferred()
 
     expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
       body: {
@@ -270,12 +274,8 @@ Run with: $ARGUMENTS
       } as any,
     )
 
-    expect(result).toHaveProperty("error", true)
-    expect(result.metadata).toMatchObject({
-      error: true,
-      errorType: "dispatch_failed",
-      command: "fail-dispatch-command",
-    })
+    // Deferred dispatch returns success immediately; errors go to console.error
+    expect(result).toHaveProperty("error", false)
   })
 
   it("should dispatch to TUI prompt pipeline when no agent or subtask override", async () => {
@@ -605,6 +605,167 @@ Body
       parentSessionID: "INVALID_SESSION",
       command: "subtask-no-context",
     })
+  })
+
+  it("should substitute $PHASE_ID, $PADDED_PHASE, and $PHASE_NAME variables", async () => {
+    const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
+    const client = {
+      session: { prompt: promptMock },
+      tui: {
+        clearPrompt: vi.fn(),
+        appendPrompt: vi.fn(),
+        submitPrompt: vi.fn(),
+      },
+    } as unknown as PluginInput["client"]
+    const projectRoot = await createProjectWithCommand(
+      "variable-test-command",
+      `---
+description: "Variable substitution test"
+agent: hm-l1-coordinator
+subtask: true
+---
+Phase: $PHASE_ID
+Padded: $PADDED_PHASE
+Name: $PHASE_NAME
+`,
+    )
+
+    const tool = createExecuteSlashCommandTool(client)
+    await tool.execute(
+      { command: "variable-test-command", arguments: "6.2-my-awesome-phase" },
+      {
+        sessionID: "ses_vars",
+        agent: "hm-build",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+        abort: new AbortController().signal,
+        ask: vi.fn(),
+        messageID: "msg_vars",
+      } as any,
+    )
+    await flushDeferred()
+
+    expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
+      body: {
+        agent: "hm-l1-coordinator",
+        parts: [
+          expect.objectContaining({
+            prompt: expect.stringContaining("Phase: 6.2\nPadded: 06.2\nName: my awesome phase"),
+          }),
+        ],
+      },
+    }))
+  })
+
+  it("should dynamically resolve @ references relative to the project root", async () => {
+    const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
+    const client = {
+      session: { prompt: promptMock },
+      tui: {
+        clearPrompt: vi.fn(),
+        appendPrompt: vi.fn(),
+        submitPrompt: vi.fn(),
+      },
+    } as unknown as PluginInput["client"]
+    
+    // Create a command that references a file relative to the project root
+    const projectRoot = await createProjectWithCommand(
+      "ref-test-command",
+      `---
+description: "Reference resolution test"
+agent: hm-l1-coordinator
+subtask: true
+---
+Before ref
+@relative/referenced-file.md
+After ref
+`,
+    )
+    
+    // Create the referenced file
+    const refContent = "This is the content of the referenced file."
+    await mkdir(path.join(projectRoot, "relative"), { recursive: true })
+    await writeFile(path.join(projectRoot, "relative", "referenced-file.md"), refContent, "utf-8")
+
+    const tool = createExecuteSlashCommandTool(client)
+    await tool.execute(
+      { command: "ref-test-command", arguments: "" },
+      {
+        sessionID: "ses_ref",
+        agent: "hm-build",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+        abort: new AbortController().signal,
+        ask: vi.fn(),
+        messageID: "msg_ref",
+      } as any,
+    )
+    await flushDeferred()
+
+    expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
+      body: {
+        agent: "hm-l1-coordinator",
+        parts: [
+          expect.objectContaining({
+            prompt: expect.stringContaining(
+              "Before ref\n<reference path=\"relative/referenced-file.md\">\nThis is the content of the referenced file.\n</reference>\nAfter ref"
+            ),
+          }),
+        ],
+      },
+    }))
+  })
+
+  it("should handle missing @ references by showing comment warning", async () => {
+    const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
+    const client = {
+      session: { prompt: promptMock },
+      tui: {
+        clearPrompt: vi.fn(),
+        appendPrompt: vi.fn(),
+        submitPrompt: vi.fn(),
+      },
+    } as unknown as PluginInput["client"]
+    
+    const projectRoot = await createProjectWithCommand(
+      "missing-ref-command",
+      `---
+description: "Missing reference test"
+agent: hm-l1-coordinator
+subtask: true
+---
+@missing-file.md
+`,
+    )
+
+    const tool = createExecuteSlashCommandTool(client)
+    await tool.execute(
+      { command: "missing-ref-command", arguments: "" },
+      {
+        sessionID: "ses_missing_ref",
+        agent: "hm-build",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+        abort: new AbortController().signal,
+        ask: vi.fn(),
+        messageID: "msg_missing_ref",
+      } as any,
+    )
+    await flushDeferred()
+
+    expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
+      body: {
+        agent: "hm-l1-coordinator",
+        parts: [
+          expect.objectContaining({
+            prompt: expect.stringContaining("<!-- Reference path not found: missing-file.md -->"),
+          }),
+        ],
+      },
+    }))
   })
 })
 

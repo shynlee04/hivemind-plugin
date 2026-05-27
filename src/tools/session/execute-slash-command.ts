@@ -1,5 +1,7 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import type { PluginInput } from "@opencode-ai/plugin"
+import { promises as fs } from "node:fs"
+import path from "node:path"
 import { resolveSessionFile } from "./session-resolver.js"
 import { ExecuteSlashCommandSchema } from "../../schema-kernel/commands.schema.js"
 import {
@@ -157,18 +159,41 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           } as ToolResult
         }
         const validated = parsed.data
-
         const projectRoot = ctx.directory ?? ""
+
+        // Clone validated arguments to allow parsing flags and stripping them
+        const executionArgs = { ...validated }
+        let overrideAgent = executionArgs.agent
+        let overrideSubtask = executionArgs.subtask
+
+        if (executionArgs.arguments) {
+          const agentFlagMatch = executionArgs.arguments.match(/--agent\s+([a-zA-Z0-9-]+)/i)
+          if (agentFlagMatch) {
+            overrideAgent = agentFlagMatch[1]
+            executionArgs.arguments = executionArgs.arguments.replace(/--agent\s+[a-zA-Z0-9-]+/i, "").trim()
+          }
+
+          if (executionArgs.arguments.includes("--subtask")) {
+            overrideSubtask = true
+            executionArgs.arguments = executionArgs.arguments.replace(/--subtask/g, "").trim()
+          } else if (executionArgs.arguments.includes("--no-subtask")) {
+            overrideSubtask = false
+            executionArgs.arguments = executionArgs.arguments.replace(/--no-subtask/g, "").trim()
+          }
+        }
+
+        // Force refresh: always re-discover commands to pick up new/updated primitives
         const resolveResult = await resolveCommand({
-          commandName: validated.command,
+          commandName: executionArgs.command,
           projectRoot,
+          forceRefresh: true,
         })
         if (!resolveResult.success) {
           const suggestionsMsg = resolveResult.suggestions && resolveResult.suggestions.length > 0
             ? `\nSuggestions:\n${resolveResult.suggestions.map(s => `  /${s}`).join("\n")}`
             : ""
           return {
-            output: describeError(new CommandNotFoundError(`Command not found: ${validated.command}${suggestionsMsg}`)),
+            output: describeError(new CommandNotFoundError(`Command not found: ${executionArgs.command}${suggestionsMsg}`)),
             metadata: {
               error: true,
               errorType: "not_found",
@@ -181,31 +206,25 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         const commandBundle = resolveResult.commandBundle!
 
         // Stage 2: Resolve agent from intent if none explicitly provided
-        if (!validated.agent && !commandBundle?.agent && client && typeof client.app?.agents === "function") {
+        // NOTE: selectAgent result is metadata ONLY — does NOT change the dispatch path
+        let suggestedAgent: string | undefined
+        if (!overrideAgent && !commandBundle?.agent && client && typeof client.app?.agents === "function") {
           const rawAgents = await getAppAgents(client)
           const normalizedAgents = rawAgents.map((a) => {
             if (typeof a === "string") return { name: a, description: "" }
             const obj = a as { name?: string; id?: string; description?: string }
             return { name: obj.name || obj.id || "", description: obj.description }
           }).filter((a) => a.name.length > 0)
-          const agentResult = await selectAgent(validated.command, normalizedAgents)
-          if (agentResult.agent) {
-            validated.agent = agentResult.agent
+          const agentResult = await selectAgent(executionArgs.command, normalizedAgents)
+          if (agentResult.agent && !agentResult.fallback) {
+            suggestedAgent = agentResult.agent
           }
         }
 
-        // Check if subtask was explicitly passed in args
-        const hasExplicitSubtask = "subtask" in args
-        const subtaskParam = hasExplicitSubtask ? validated.subtask : undefined
-
-        const resolvedSubtask = subtaskParam ?? (validated.agent ? false : undefined)
-        const syntheticPromptAgent = resolvedSubtask === false ? validated.agent || commandBundle?.agent : undefined
-
-        // Determine parentSessionID
-        const resolvedParentSessionID = validated.parentSessionID || ctx.sessionID || ""
+        // Determine agent for dispatch: explicit > frontmatter > suggested
+        const resolvedAgent = overrideAgent || commandBundle?.agent || suggestedAgent
 
         // Validate agent format & existence if agent is used
-        const resolvedAgent = validated.agent || commandBundle?.agent
         if (resolvedAgent) {
           if (!validateAgentFormat(resolvedAgent)) {
             return {
@@ -237,28 +256,39 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           }
         }
 
+        // Determine parentSessionID
+        const resolvedParentSessionID = executionArgs.parentSessionID || ctx.sessionID || ""
+
+        // Check if subtask was explicitly passed in args
+        const hasExplicitSubtask = overrideSubtask !== undefined
+        const subtaskParam = overrideSubtask
+
+        // Synthetic parent prompt: ONLY for validated.agent (explicit args.agent or parsed flag override).
+        // commandBundle.agent (frontmatter) and suggestedAgent (selectAgent) are
+        // metadata — they do NOT trigger Path 1. Commands with frontmatter agents
+        // route through Path 3 (TUI pipeline), where OpenCode's command processing
+        // reads the frontmatter and switches agent automatically.
+        const syntheticPromptAgent =
+          // Explicit subtask:false with explicit agent → Path 1 synthetic prompt
+          (hasExplicitSubtask && overrideSubtask === false && overrideAgent)
+            ? overrideAgent
+          // No explicit subtask, explicit args.agent provided, no frontmatter subtask
+          : (!hasExplicitSubtask && overrideAgent && commandBundle?.subtask !== true)
+            ? overrideAgent
+          : undefined
+
         if (syntheticPromptAgent) {
-          const promptText = expandCommandArguments(commandBundle.body, validated.arguments ?? "")
-          const dispatchResult = await dispatchCommand({
+          const promptText = await expandCommandTemplate(commandBundle.body, executionArgs.arguments ?? "", projectRoot)
+          dispatchCommand({
             client,
             sessionID: ctx.sessionID,
             agent: syntheticPromptAgent,
+            // Restore to the calling agent after the target agent completes
+            restoreAgent: ctx.agent || undefined,
             promptText,
             subtask: false,
             directory: ctx.directory,
           })
-
-          if (!dispatchResult.success) {
-            return {
-              output: dispatchResult.output ?? `Failed to dispatch ${cmdDisplay}`,
-              metadata: {
-                error: true,
-                errorType: "dispatch_failed",
-                command: args.command,
-              },
-              error: true,
-            } as ToolResult
-          }
 
           return {
             output: [
@@ -286,7 +316,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
 
         const shouldDispatchSubtask = subtaskParam ?? commandBundle?.subtask === true
         if (shouldDispatchSubtask) {
-          const subtaskAgent = validated.agent || commandBundle.agent
+          const subtaskAgent = overrideAgent || commandBundle.agent
           if (!subtaskAgent) {
             return {
               output: describeError(new InvalidCommandError(`command has subtask: true but no agent was provided or defined in frontmatter`)),
@@ -314,7 +344,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           }
 
           const tracker = sessionTracker as { pendingRegistry?: PendingRegistry } | undefined
-          if (validated.trackExecution && tracker?.pendingRegistry) {
+          if (executionArgs.trackExecution && tracker?.pendingRegistry) {
             tracker.pendingRegistry.add({
               parentSessionID: resolvedParentSessionID,
               callID: ctx.messageID || `cmd-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -324,7 +354,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             })
           }
 
-          const promptText = expandCommandArguments(commandBundle.body, validated.arguments ?? "")
+          const promptText = await expandCommandTemplate(commandBundle.body, executionArgs.arguments ?? "", projectRoot)
           const dispatchResult = await dispatchCommand({
             client,
             sessionID: ctx.sessionID,
@@ -332,7 +362,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             promptText,
             subtask: true,
             description: commandBundle.description,
-            commandSource: validated.commandSource,
+            commandSource: executionArgs.commandSource,
             directory: ctx.directory,
           })
 
@@ -374,21 +404,19 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         const resolved = await resolveSessionFile(projectRoot, ctx.sessionID)
         const isChildSession = resolved ? resolved.type === "child" : false
 
-        // Build the slash command text exactly as a user would type it in the TUI
-        // Format: [@agent] [/command] [arguments]
+        // Build the slash command text for TUI pipeline
+        // NOTE: @agent prefix in prompt text does NOT work for agent override
+        // Agent is passed via metadata/context, not prompt text
         const parts: string[] = []
 
-        // Prepend agent override if specified
-        if (validated.agent) {
-          parts.push(`@${validated.agent}`)
-        }
-
-        // The command itself
-        parts.push(`/${validated.command}`)
+        // The command itself — use resolved commandBundle.name, not validated.command
+        // validated.command is the original input (e.g., "stats"), commandBundle.name
+        // is the resolved name after fuzzy/substring matching (e.g., "gsd-stats")
+        parts.push(`/${commandBundle.name}`)
 
         // Append arguments if any
-        if (validated.arguments) {
-          parts.push(validated.arguments)
+        if (executionArgs.arguments) {
+          parts.push(executionArgs.arguments)
         }
 
         const promptText = parts.join(" ")
@@ -438,15 +466,52 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           } as ToolResult
         }
 
-        // Step 1: Clear any existing prompt to avoid stale state
+        // If an agent was resolved (from selectAgent or command frontmatter),
+        // use session.command() with agent override instead of the TUI pipeline.
+        // This ensures the command runs under the correct agent.
+        if (resolvedAgent) {
+          setTimeout(async () => {
+            try {
+              await client.session.command({
+                path: { id: ctx.sessionID },
+                body: {
+                  command: commandBundle.name,
+                  arguments: validated.arguments ?? "",
+                  agent: resolvedAgent,
+                },
+                ...(ctx.directory ? { query: { directory: ctx.directory } } : {}),
+              })
+            } catch (caughtError: unknown) {
+              const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+              console.error(`[Harness] session.command dispatch failed: ${message}`)
+            }
+          }, 50)
+
+          return {
+            output: [
+              `✓ Command ${cmdDisplay} dispatched via SDK command API.`,
+              `  Agent: ${resolvedAgent}`,
+              suggestedAgent ? `  (agent suggested by intent: ${suggestedAgent})` : null,
+            ].filter(Boolean).join("\n"),
+            metadata: buildSuccessMetadata(
+              args,
+              validated,
+              "session-command",
+              resolvedParentSessionID,
+              startTime,
+              {
+                command: commandBundle.name,
+                agent: resolvedAgent,
+                dispatched: true,
+              }
+            ),
+            error: false,
+          } as ToolResult
+        }
+
+        // No agent override — use TUI pipeline for basic command execution
         await client.tui.clearPrompt()
-
-        // Step 2: Append the slash command text to the TUI prompt buffer
-        await client.tui.appendPrompt({
-          body: { text: promptText },
-        })
-
-        // Step 3: Submit the prompt — TUI dispatches as a slash command
+        await client.tui.appendPrompt({ body: { text: promptText } })
         await client.tui.submitPrompt()
 
         return {
@@ -454,13 +519,11 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             `✓ Command ${cmdDisplay} dispatched to TUI prompt.`,
             `  Prompt text: ${promptText}`,
             `  The command will execute immediately after this tool call returns.`,
-            validated.agent ? `  Agent: ${validated.agent}` : null,
-            validated.model ? `  Model: ${validated.model}` : null,
           ].filter(Boolean).join("\n"),
           metadata: buildSuccessMetadata(
             args,
             validated,
-            validated.subtask ? "subtask" : "user-session",
+            "user-session",
             resolvedParentSessionID,
             startTime,
             {
@@ -490,8 +553,77 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
   })
 }
 
-function expandCommandArguments(commandBody: string, commandArguments: string): string {
-  return commandBody.replaceAll("$ARGUMENTS", commandArguments)
+export function resolvePhaseInfo(args: string) {
+  const match = args.match(/\b(\d+)(?:\.(\d+))?(?:\.(\d+))?\b/)
+  if (!match) {
+    return {
+      phaseId: "",
+      paddedPhase: "",
+      phaseName: "",
+    }
+  }
+  const major = match[1]
+  const minor = match[2]
+  const patch = match[3]
+
+  const segments = [major, minor, patch].filter(Boolean)
+  const phaseId = segments.join(".")
+
+  const paddedMajor = major.length === 1 ? `0${major}` : major
+  const paddedSegments = [paddedMajor, minor, patch].filter(Boolean)
+  const paddedPhase = paddedSegments.join(".")
+
+  const cleanArgs = args.replace(/--\S+/g, "").trim()
+  const phaseNameMatch = cleanArgs.match(/(?:phase\s*)?\b\d+(?:\.\d+)*\s*[-:]?\s*(.+)$/i)
+  let phaseName = ""
+  if (phaseNameMatch) {
+    phaseName = phaseNameMatch[1].trim().replace(/[-_]+/g, " ")
+  } else {
+    phaseName = `Phase ${phaseId}`
+  }
+
+  return { phaseId, paddedPhase, phaseName }
 }
+
+async function resolveReferences(body: string, projectRoot: string): Promise<string> {
+  const lines = body.split("\n")
+  const resolvedLines: string[] = []
+
+  for (const line of lines) {
+    const match = line.match(/^\s*@(\S+)/)
+    if (match) {
+      const rawPath = match[1]
+      let resolvedPath = rawPath
+      if (!path.isAbsolute(rawPath)) {
+        resolvedPath = path.resolve(projectRoot, rawPath)
+      }
+      try {
+        const fileContent = await fs.readFile(resolvedPath, "utf-8")
+        resolvedLines.push(`<reference path="${rawPath}">\n${fileContent}\n</reference>`)
+      } catch (err) {
+        resolvedLines.push(`<!-- Reference path not found: ${rawPath} -->`)
+      }
+    } else {
+      resolvedLines.push(line)
+    }
+  }
+
+  return resolvedLines.join("\n")
+}
+
+async function expandCommandTemplate(commandBody: string, commandArguments: string, projectRoot: string): Promise<string> {
+  let expanded = await resolveReferences(commandBody, projectRoot)
+
+  const { phaseId, paddedPhase, phaseName } = resolvePhaseInfo(commandArguments)
+
+  expanded = expanded.replaceAll("$ARGUMENTS", commandArguments)
+  expanded = expanded.replaceAll("$USER_PROMPT", commandArguments)
+  expanded = expanded.replaceAll("$PHASE_ID", phaseId)
+  expanded = expanded.replaceAll("$PADDED_PHASE", paddedPhase)
+  expanded = expanded.replaceAll("$PHASE_NAME", phaseName)
+
+  return expanded
+}
+
 
 
