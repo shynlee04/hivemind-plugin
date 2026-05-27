@@ -8,7 +8,7 @@
   ],
   "compaction": {
     "auto": true,
-    "prune": true,
+    "prune": false,
     "reserved": 5000
   },
   "provider": {
