@@ -1,7 +1,6 @@
 import { getAppAgents } from "../../shared/app-api.js"
 import { InvalidCommandError, AgentNotFoundError } from "../../shared/errors/commands.js"
-
-const DEFERRED_SUBTASK_DISPATCH_DELAY_MS = 50
+import type { OpenCodeClient } from "../../shared/session-api.js"
 
 /**
  * Validates agent name format: lowercase alphanumeric + hyphens.
@@ -13,27 +12,30 @@ export function validateAgentFormat(agent: string): boolean {
 /**
  * Validates agent existence in OpenCode agent registry.
  */
-export async function validateAgentExists(agent: string, client: any): Promise<boolean> {
+export async function validateAgentExists(agent: string, client: OpenCodeClient): Promise<boolean> {
   if (!client || typeof client.app?.agents !== "function") {
     return true // Fallback if SDK app agent discovery is missing or mock
   }
   try {
     const appAgents = await getAppAgents(client)
-    const agentNames = appAgents.map((a: any) =>
-      typeof a === "string" ? a : (a && typeof a.id === "string" ? a.id : (a && typeof a.name === "string" ? a.name : ""))
-    )
+    const agentNames = appAgents.map((a) => {
+      if (typeof a === "string") return a
+      const record = a as { id?: string; name?: string }
+      return record.id ?? record.name ?? ""
+    })
     return agentNames.includes(agent)
-  } catch (err) {
+  } catch {
     return true // Fallback if API fails
   }
 }
 
 /**
- * Dispatches slash command prompt after a 50ms delay.
+ * Dispatches slash command prompt immediately.
  * Performs format and existence validation for optional agent override.
+ * Returns { success: true } on completion, or { success: false, error: true, output } on failure.
  */
 export async function dispatchCommand(context: {
-  client: any
+  client: OpenCodeClient
   sessionID: string
   agent?: string
   promptText: string
@@ -55,7 +57,7 @@ export async function dispatchCommand(context: {
   }
 
   // Build the prompt request parts depending on whether it's subtask or text
-  const parts: any[] = []
+  const parts: Array<Record<string, unknown>> = []
   if (subtask) {
     parts.push({
       type: "subtask",
@@ -72,27 +74,21 @@ export async function dispatchCommand(context: {
     })
   }
 
-  const request: any = {
-    path: { id: sessionID },
-    body: {
-      parts,
-    },
-    query: { directory },
+  const body: Record<string, unknown> = { parts }
+  if (agent) {
+    body.agent = agent
   }
 
-  if (agent && !subtask) {
-    request.body.agent = agent
-  } else if (subtask) {
-    request.body.agent = agent
-  }
-
-  // Deferred dispatch
-  setTimeout(() => {
-    client.session.prompt(request).catch((caughtError: unknown) => {
-      const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-      console.error(`[Harness] Deferred slash command prompt dispatch failed: ${message}`)
+  try {
+    await client.session.prompt({
+      path: { id: sessionID },
+      body,
+      ...(directory ? { query: { directory } } : {}),
     })
-  }, DEFERRED_SUBTASK_DISPATCH_DELAY_MS)
-
-  return { success: true }
+    return { success: true }
+  } catch (caughtError: unknown) {
+    const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+    console.error(`[Harness] Slash command prompt dispatch failed: ${message}`)
+    return { success: false, error: true, output: message }
+  }
 }
