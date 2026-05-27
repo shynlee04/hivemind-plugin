@@ -280,6 +280,11 @@ function listPrimitiveSources(): PrimitiveSource[] {
 }
 
 function resolvePrimitiveTargetPath(primitiveTargetRoot: string, primitive: PrimitiveSource): string {
+  const pluralDir = join(primitiveTargetRoot, primitive.kind)
+  if (existsSync(pluralDir)) {
+    return join(pluralDir, primitive.name)
+  }
+
   const singularMap: Record<string, string> = {
     agents: "agent",
     skills: "skill",

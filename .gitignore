@@ -58,6 +58,8 @@ npm-debug.log*
 *.bak
 *.bak.*
 *.tmp
+*.backup
+*.backup*
 
 .qwen/
 gha-creds-*.json
