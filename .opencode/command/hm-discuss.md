@@ -1,6 +1,14 @@
 ---
+namespace: hm
+agent: hm-intent-loop
+subtask: true
 description: Start phase discussion to clarify intent, lock decisions, and establish boundaries before planning.
 argument-hint: "<phase-number> [--assumptions] [--text]"
+requires: []
+validation-gates: ["intent-clarity-audit"]
+output-templates: ["hm-context.md"]
+coordination-model: "waiter-model"
+completion-signals: ["intent-clarified"]
 tools:
   read: true
   write: true

@@ -27,6 +27,7 @@ Systematically investigate and resolve bugs, maintaining a hypothesis log to tra
 | `decision` | Confirm root cause hypothesis before writing fix |
 | `human-verify` | Verify bug fix against manual execution |
 
-## Output Contract
-- `DEBUG-SESSION.md` log containing hypothesis tracker and resolution details
-- Working regression test code
+## Exit Criteria
+- Reproduction test code written and passing.
+- Bug root cause identified and fixed.
+- `DEBUG-SESSION.md` populated with hypotheses, diagnostic actions, and verification logs.

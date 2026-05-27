@@ -1,6 +1,14 @@
 ---
-description: Run the L3 quality gate triad (lifecycle-integration -> spec-compliance -> evidence-truth) to certify completeness and safety.
-argument-hint: "<phase-number> [--gate lifecycle|spec|evidence]"
+namespace: hm
+agent: hm-nyquist-auditor
+subtask: true
+description: Run L3 quality gate triad (lifecycle, spec compliance, and evidence truth) to authorize stage or phase graduation.
+argument-hint: "<phase-number> [--triad-only]"
+requires: ["hm-verify"]
+validation-gates: ["lifecycle-gate", "spec-compliance-gate", "evidence-truth-gate"]
+output-templates: ["gate-report.md"]
+coordination-model: "waiter-model"
+completion-signals: ["gate-passed"]
 tools:
   read: true
   write: true
@@ -10,7 +18,7 @@ tools:
   agent: true
 ---
 <objective>
-Execute the sequence of L3 quality gates to validate architectural compliance, requirement coverage, and evidence validity.
+Evaluate if the phase satisfies the L3 quality gate triad (lifecycle integration, spec compliance, and evidence truth).
 </objective>
 
 <execution_context>
@@ -24,5 +32,5 @@ Routed Agent: hm-nyquist-auditor
 </context>
 
 <process>
-Execute end-to-end via hm-gate workflow. Produces GATE-REPORT.md.
+Execute end-to-end via hm-gate workflow. Generates GATE-REPORT.md.
 </process>

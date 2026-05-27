@@ -1,18 +1,26 @@
 ---
-description: Systematic debugging with persistent state across sessions, hypothesis testing, and root cause analysis.
-argument-hint: "<description-of-issue> [--phase <phase-number>]"
+namespace: hm
+agent: hm-debugger
+subtask: true
+description: Systematic debugging with persistent state to diagnose and fix failing tests, crashes, or unintended behaviors.
+argument-hint: "<error-context-or-test-file> [--interactive] [--max-iterations N]"
+requires: []
+validation-gates: ["debug-verification-gate"]
+output-templates: ["debug-report.md"]
+coordination-model: "waiter-model"
+completion-signals: ["bug-resolved"]
 tools:
   read: true
   write: true
   edit: true
+  bash: true
   glob: true
   grep: true
-  bash: true
   agent: true
   question: true
 ---
 <objective>
-Investigate bugs, trace root causes, maintain hypothesis registers, and output a debug session report.
+Execute systematic debugging loops with persistent state to identify root cause and apply/verify code corrections.
 </objective>
 
 <execution_context>
@@ -20,11 +28,11 @@ Investigate bugs, trace root causes, maintain hypothesis registers, and output a
 </execution_context>
 
 <context>
-Issue: $ARGUMENTS
+Target: $ARGUMENTS
 Namespace: hm
-Routed Agents: hm-debug-session-manager, hm-debugger
+Routed Agent: hm-debugger
 </context>
 
 <process>
-Execute end-to-end via hm-debug workflow. Creates DEBUG-SESSION.md logs.
+Execute end-to-end via hm-debug workflow. Tracks diagnostic steps and outputs debug summaries.
 </process>

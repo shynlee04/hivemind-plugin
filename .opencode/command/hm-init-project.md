@@ -1,6 +1,14 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: Initialize a new Hivemind-powered project structure with namespaces, directories, and standard config files.
 argument-hint: "[project-name] [--scope global|local] [--force]"
+requires: []
+validation-gates: ["directory-structure-check"]
+output-templates: ["project.md", "roadmap.md"]
+coordination-model: "waiter-model"
+completion-signals: ["orchestrator-complete"]
 tools:
   read: true
   write: true

@@ -1,29 +1,30 @@
 ---
-description: "Discussion workflow: prior context load → gray area detection → interactive discussion → CONTEXT.md generation."
+description: "Start phase discussion to clarify intent, lock decisions, and establish boundaries before planning."
 ---
 
 # hm-discuss
 
 ## Goal
-Clarify ambiguities, locked decisions, and scope boundaries for the target phase.
+Clarify the operator's intent, identify assumptions, establish bounds, and lock decisions to produce `CONTEXT.md`.
 
 ## Agent Routing Table
 | Role | Agent | Responsibility |
 |------|-------|---------------|
-| Discussion | hm-intent-loop | Guides interactive Q&A, parses decisions, writes context |
+| Intent loop | hm-intent-loop | Interact with user to gather phase requirements and decisions |
+| User profiler | hm-user-profiler | Extract user preferences and behavioral context |
 
 ## Execution Phases
-1. **Load Context**: Scout codebase, read `PROJECT.md`, `ROADMAP.md`, `STATE.md`, and any prior phase `CONTEXT.md` files.
-2. **Scout Codebase**: Identify existing structures or libraries matching the phase domain to reuse.
-3. **Gray Area Detection**: Locate unresolved design points or technical ambiguities.
-4. **Interactive Discussion**: Prompt the user to resolve each gray area through targeted multiple-choice or short-answer questions.
-5. **Context Generation**: Output decisions to `.planning/phases/{{phase_id}}/{{padded_phase}}-CONTEXT.md` using the `hm-context` template.
+1. **Discover Requirements**: Probe for phase bounds, target stack, and non-negotiables.
+2. **Resolve Assumptions**: Enumerate architectural constraints.
+3. **Verify Compliance**: Scan for potential conflicts with existing components.
+4. **Emit Context**: Output parsed requirements to `CONTEXT.md` in `.planning/phases/`.
 
 ## Checkpoint Protocol
 | Checkpoint Type | Behavior |
 |-----------------|----------|
-| `decision` | Multi-choice list of design directions |
-| `human-action` | Pauses for user to provide custom spec files or docs |
+| `decision` | Choose whether to proceed to planning or gather more information |
+| `human-verify` | Review `CONTEXT.md` to ensure all decisions are correctly documented |
 
-## Output Contract
-- `{{padded_phase}}-CONTEXT.md` file in the phase directory
+## Exit Criteria
+- `CONTEXT.md` contains scope fences, locked decisions, and assumptions.
+- User explicitly approves the context before planning begins.

@@ -1,6 +1,14 @@
 ---
-description: Perform multi-source research on APIs, dependencies, libraries, and design patterns.
-argument-hint: "<topic-or-phase> [--depth 0|1|2|3] [--force]"
+namespace: hm
+agent: hm-phase-researcher
+subtask: true
+description: Conduct multi-source stack research and code mapping to produce standard RESEARCH.md context documentation.
+argument-hint: "<phase-number> [--force] [--view]"
+requires: []
+validation-gates: ["stack-compatibility-audit"]
+output-templates: ["hm-research.md"]
+coordination-model: "waiter-model"
+completion-signals: ["research-complete"]
 tools:
   read: true
   write: true
@@ -8,10 +16,11 @@ tools:
   glob: true
   grep: true
   agent: true
-  question: true
+  webfetch: true
+  mcp__context7__*: true
 ---
 <objective>
-Conduct deep multi-source technical research on stack libraries, codebase patterns, and API contracts.
+Analyze required technical stack, mapping conventions, stack dependencies, and target implementation files.
 </objective>
 
 <execution_context>
@@ -19,11 +28,11 @@ Conduct deep multi-source technical research on stack libraries, codebase patter
 </execution_context>
 
 <context>
-Topic: $ARGUMENTS
+Phase: $ARGUMENTS
 Namespace: hm
-Routed Agents: hm-project-researcher, hm-synthesizer
+Routed Agent: hm-phase-researcher
 </context>
 
 <process>
-Execute end-to-end via hm-research workflow. Produces RESEARCH.md files.
+Execute end-to-end via hm-research workflow. Produces technical stack summary and generates RESEARCH.md.
 </process>

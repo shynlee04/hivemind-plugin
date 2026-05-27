@@ -25,5 +25,7 @@ Conduct multi-source research on APIs, dependencies, codebase patterns, and tech
 |-----------------|----------|
 | `decision` | Choose between research alternatives |
 
-## Output Contract
-- `RESEARCH.md` report outlining architectural options, dependencies, and threat scenarios
+## Exit Criteria
+- `RESEARCH.md` successfully written and formatted based on templates.
+- Technical feasibility and stack legitimacy verified.
+- Proposed implementation plans checked against existing constraints.

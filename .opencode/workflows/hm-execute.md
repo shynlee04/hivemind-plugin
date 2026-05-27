@@ -5,7 +5,7 @@ description: "Execution workflow: wave detection → parallel execution → veri
 # hm-execute
 
 ## Goal
-Execute all plans in a phase using wave-based parallel execution with atomic commits, deviation handling, and goal-backward verification.
+Execute planned tasks in a phase using wave-based parallelization, atomic commits, deviation handling, and checkpoint recovery.
 
 ## Agent Routing Table
 | Role | Agent | Responsibility |
@@ -26,7 +26,8 @@ Execute all plans in a phase using wave-based parallel execution with atomic com
 | `human-verify` | Verify visual changes, interactive states, or build output |
 | `decision` | Choose remediation path on test/verification failure |
 
-## Output Contract
-- Phase `SUMMARY.md`
-- Code commits (atomic, one per logical task)
-- Verification verdict (PASS/FAIL)
+## Exit Criteria
+- All wave tasks executed and committed.
+- Each logical change is pushed as an atomic commit.
+- Verification checks pass successfully without regressions.
+- `SUMMARY.md` compiled and persisted.

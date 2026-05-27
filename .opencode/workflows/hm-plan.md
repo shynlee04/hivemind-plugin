@@ -31,8 +31,7 @@ Create executable phase plans (`PLAN.md` files) for a roadmap phase with integra
 | `decision` | Choose whether to skip research or replan |
 | `human-verify` | Review generated PLAN.md before proceeding |
 
-## Output Contract
-- PLAN.md files
-- RESEARCH.md
-- PATTERNS.md
-- SPEC.md
+## Exit Criteria
+- `PLAN.md` contains wave structure, file-to-edit maps, and exact verification commands.
+- `SPEC.md` contains Zod schemas, API signatures, and test specs.
+- `RESEARCH.md` contains stack information, package validation, and findings.

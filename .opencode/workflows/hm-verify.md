@@ -25,5 +25,7 @@ Perform a goal-backward verification of all completed tasks in a phase to certif
 |-----------------|----------|
 | `human-verify` | Verify manual/visual checks (e.g. check on browser port) |
 
-## Output Contract
-- `VERIFICATION.md` report with PASS/FAIL status and evidence lines
+## Exit Criteria
+- VERIFICATION.md successfully compiled with explicit evidence and status.
+- Verification status resolves to `passed`.
+- Zero compiler errors or failing unit tests.

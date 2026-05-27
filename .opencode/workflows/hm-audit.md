@@ -25,5 +25,6 @@ Audit workspace state, verify naming/lineage compliance, check configs, and reso
 | `decision` | Choose whether to auto-fix identified audit issues |
 | `human-verify` | Review audit report and drift logs |
 
-## Output Contract
-- `AUDIT-REPORT.md` details containing structural and configuration issues
+## Exit Criteria
+- AUDIT-REPORT.md details all structural, configuration, and lineage compliance issues.
+- All non-compliant files identified and synced/reported.

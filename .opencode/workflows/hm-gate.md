@@ -33,5 +33,6 @@ Enforce standard L3 quality gate triad (lifecycle, spec, evidence) before phase 
 | `decision` | Choose whether to override non-blocking warnings |
 | `human-verify` | Review gate check report |
 
-## Output Contract
-- `GATE-REPORT.md` containing PASS/FAIL for all gates and details
+## Exit Criteria
+- Triad quality gates (lifecycle, spec compliance, evidence truth) all resolve to `passed`.
+- `GATE-REPORT.md` written containing proof.

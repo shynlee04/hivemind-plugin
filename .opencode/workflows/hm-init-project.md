@@ -1,31 +1,35 @@
 ---
-description: "Project initialization workflow: directory check → structure setup → config generation → verification."
+description: "Initialize a new Hivemind-powered project structure with namespaces, directories, and standard config files."
 ---
 
 # hm-init-project
 
 ## Goal
-Establish a structured project directory format with namespace rules, gitkeep trackers, and config templates.
+Establish a new Hivemind-powered project workspace containing standard directories, templates, references, and default composition configuration.
 
 ## Agent Routing Table
 | Role | Agent | Responsibility |
 |------|-------|---------------|
-| Setup | hm-orchestrator | Reads arguments, creates directories, generates defaults |
+| Composition Root | hm-orchestrator | Coordinate folder structure initialization and default state validation |
 
 ## Execution Phases
-1. **Initialize**: Check if `.opencode/`, `.hivemind/`, and `.planning/` directories exist.
-2. **Directory Creation**: Generate required subdirectories:
-   - `.hivemind/state/`, `.hivemind/templates/`, `.hivemind/references/`
-   - `.planning/phases/`, `.planning/codebase/`, `.planning/specs/`
-3. **Tracking Setup**: Create `.gitkeep` files in every newly created directory to ensure git tracks them.
-4. **Config Boilerplate**: Copy default `opencode.json` and `.hivemind/governance/config.json` config if missing.
+1. **Directory Structure**: Create target directories if they do not exist:
+   - `.opencode/command/`
+   - `.opencode/workflows/`
+   - `.opencode/skills/`
+   - `.hivemind/templates/`
+   - `.hivemind/references/`
+   - `.planning/`
+2. **Gitkeep Persistence**: Write `.gitkeep` to all subfolders to preserve git tracking.
+3. **Configuration**: Generate standard `opencode.json` and `.hivemind/state/config-workflows.json`.
+4. **Validation**: Run checklist to verify all folders are tracked.
 
 ## Checkpoint Protocol
 | Checkpoint Type | Behavior |
 |-----------------|----------|
-| `human-verify` | Verify directory listing and files on disk |
+| `human-verify` | Verify directory listing matches target workspace structure |
 
-## Output Contract
-- Directory structure registered
-- `.gitkeep` trackers present
-- Default configurations initialized
+## Exit Criteria
+- Directory structure fully established.
+- `.gitkeep` files written and staged.
+- Standard configuration files compiled successfully.

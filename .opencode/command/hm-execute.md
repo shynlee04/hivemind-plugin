@@ -1,6 +1,14 @@
 ---
+namespace: hm
+agent: hm-executor
+subtask: true
 description: Execute planned tasks in a phase using wave-based parallelization, atomic commits, deviation handling, and checkpoint recovery.
 argument-hint: "<phase-number> [--wave N] [--gaps-only] [--tdd]"
+requires: ["hm-plan"]
+validation-gates: ["atomic-commit-gate", "regression-check"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["executor-complete"]
 tools:
   read: true
   write: true
@@ -23,7 +31,7 @@ Execute all plans in a phase using wave-based parallel execution with atomic com
 <context>
 Phase: $ARGUMENTS
 Namespace: hm
-Routed Agents: hm-executor, hm-verifier
+Routed Agent: hm-executor
 </context>
 
 <process>
