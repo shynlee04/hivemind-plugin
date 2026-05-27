@@ -1,125 +1,181 @@
 # Technology Stack
 
-**Analysis Date:** 2026-05-28
+**Analysis Date:** 2026-05-26
+
+## Overview
+
+Hivemind is a runtime composition engine for OpenCode, built as a TypeScript npm package that provides tools, hooks, and a plugin for multi-agent orchestration, session continuity, delegation management, and concurrent task execution. The project follows a plugin architecture pattern and integrates with the OpenCode AI coding platform.
 
 ## Languages
 
 **Primary:**
-- TypeScript 5.x — All source code in `src/`, strict mode enabled
-- Node.js >= 20.0.0 — Runtime requirement (per `package.json` engines)
+- TypeScript — Core language for all source code in `src/` directory. Enforced via `tsconfig.json` with strict mode and `verbatimModuleSyntax: true`.
 
 **Secondary:**
-- JavaScript (CommonJS) — CLI entry point `bin/hivemind.cjs`
-- Shell (Bash) — Validation scripts in `bin/`
+- JavaScript (ES2022) — Runtime environment via Node.js >= 20.0.0. Some CLI scripts may use `.cjs` extensions.
 
 ## Runtime
 
 **Environment:**
-- Node.js >= 20.0.0 (enforced via `engines.node` in `package.json`)
-- ES2022 target (per `tsconfig.json` target field)
-- ESM modules (`"type": "module"` in `package.json`)
+- Node.js >= 20.0.0 — Primary runtime for the plugin
+- Bun — Optional runtime support via `bun-pty` dependency (lazy-loaded, gracefully falls back to Node's `child_process` on environments without Bun)
 
 **Package Manager:**
-- npm (lockfile: `package-lock.json` expected)
-- No yarn/pnpm/bun lockfiles detected
-
-**Module Resolution:**
-- NodeNext (per `tsconfig.json` module + moduleResolution)
-- `verbatimModuleSyntax: true` — enforces `import type` for type-only imports
+- npm — Version control and dependency management
+- Lockfile: `package-lock.json` (present, 58 lines)
 
 ## Frameworks
 
 **Core:**
-- `@opencode-ai/plugin` >= 1.15.10 — OpenCode plugin SDK (peer dependency)
-- `@opencode-ai/sdk` ^1.15.10 — OpenCode client SDK for session/tool/hook operations
+- OpenCode Plugin SDK (@opencode-ai/plugin v1.15.10) — Plugin composition framework providing tools, hooks, agent orchestration, and delegation capabilities. Entry point: `src/plugin.ts`, `src/index.ts`.
 
-**Testing:**
-- Vitest 4.1.7 — Test runner with globals enabled
-- `@vitest/coverage-v8` 4.1.7 — Code coverage via V8 provider
+**SDK/Integration:**
+- @opencode-ai/sdk (@opencode-ai/sdk v1.15.10) — Low-level SDK for client operations, used in `src/shared/session-api.ts` for creating OpencodeClient instances.
+
+**AI/LLM Integration:**
+- @ai-sdk/openai-compatible (v2.0.47) — AI SDK provider for OpenAI-compatible endpoints, used for LLM interactions.
+
+**MCP Integration:**
+- @modelcontextprotocol/sdk (v1.29.0) — Model Context Protocol SDK for MCP server/tool integrations.
+
+**Schema Validation:**
+- Zod (v4.4.3) — TypeScript-first schema validation library. Used throughout `src/schema-kernel/` for config schema validation.
+
+**Data Serialization:**
+- gray-matter (v4.0.3) — Markdown frontmatter parsing for session artifacts and documentation.
+- yaml (v2.9.0) — YAML parsing/generation for configuration files.
 
 **Build/Dev:**
-- TypeScript 5.x — Compiler with declarations + source maps
-- Custom `scripts/sync-assets.js` — Asset synchronization pre-build
+- Vitest (v4.1.7) — Testing framework with built-in coverage support. Config: `vitest.config.ts`.
+- TypeScript Compiler (v5.0.0) — Build-time compilation.
+- tsc — Type checking via `npm run typecheck`.
 
 ## Key Dependencies
 
-**Critical:**
-- `zod` ^4.4.3 — Schema validation for all config types, tool args, and runtime contracts
-- `@modelcontextprotocol/sdk` ^1.29.0 — MCP server integration for local/remote tool surfaces
-- `@ai-sdk/openai-compatible` ^2.0.47 — AI SDK provider adapter for OpenAI-compatible endpoints
-- `@opencode-ai/sdk` ^1.15.10 — OpenCode SDK for session management, tool dispatch, TUI integration
+### Core Runtime Dependencies
 
-**Infrastructure:**
-- `yaml` ^2.9.0 — YAML serialization for config compiler and frontmatter generation
-- `gray-matter` ^4.0.3 — Markdown frontmatter parsing for agent/command/skill primitives
-- `bun-pty` ^0.4.8 — Optional PTY integration for background command execution (Bun-only)
-- `bun-types` ^1.3.14 — TypeScript types for Bun runtime features
+| Package | Version | Purpose |
+|---------|---------|---------|
+| @opencode-ai/plugin | ^1.15.10 | Plugin SDK providing tool/hook/agent infrastructure |
+| @opencode-ai/sdk | ^1.15.10 | Low-level SDK client for OpenCode operations |
+| zod | ^4.4.3 | Schema validation for configs and inputs |
+| bun-pty | ^0.4.8 | Bun pseudo-terminal integration (optional, fallback to Node child_process) |
+| bun-types | ^1.3.14 | Type definitions for Bun runtime |
 
-**Optional (Sidecar Dashboard):**
-- `@json-render/core` ^0.18.0 — JSON render engine for GUI sidecar
-- `@json-render/ink` ^0.18.0 — Ink renderer for terminal UI
-- `@json-render/next` ^0.18.0 — Next.js adapter for sidecar
-- `@json-render/react` ^0.18.0 — React renderer for sidecar dashboard
-- `@json-render/react-pdf` ^0.18.0 — PDF export for sidecar
-- `react` ^19.2.6 — React runtime for JSON render components
+### AI & LLM Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| @ai-sdk/openai-compatible | ^2.0.47 | AI provider for OpenAI-compatible endpoints |
+| @modelcontextprotocol/sdk | ^1.29.0 | MCP SDK for context protocol integration |
+
+### Data & Configuration
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| yaml | ^2.9.0 | YAML parsing for config files |
+| gray-matter | ^4.0.3 | Markdown frontmatter processing |
+
+### Optional Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| @json-render/react | ^0.18.0 | UI rendering for dashboard (sidecar) |
+| @json-render/ink | ^0.18.0 | Terminal UI rendering |
+| @json-render/next | ^0.18.0 | Next.js integration |
+| @json-render/react-pdf | ^0.18.0 | PDF rendering capabilities |
+| react | ^19.2.6 | React for UI components |
+
+### Development Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| @opencode-ai/plugin | ^1.15.10 | Peer dependency for plugin development |
+| @types/bun | ^1.3.8 | Bun type definitions |
+| @types/node | ^20.0.0 | Node.js type definitions |
+| @vitest/coverage-v8 | ^4.1.7 | Vitest coverage reporter |
+| typescript | ^5.0.0 | TypeScript compiler |
+| vitest | ^4.1.7 | Testing framework |
 
 ## Configuration
 
-**TypeScript:**
-- `tsconfig.json` — Strict mode with additional checks:
-  - `noUnusedLocals: true`
-  - `noUnusedParameters: true`
-  - `noImplicitReturns: true`
-  - `noFallthroughCasesInSwitch: true`
-  - `skipLibCheck: true`
-  - Declaration maps + source maps enabled
+### Environment
+- `.env` file present — Contains environment variables (contents not exposed in documentation)
+- No `.env` contents quoted in documents per security policy
 
-**Build:**
-- `npm run build` — Clean → sync-assets → tsc → generate JSON schema
-- `npm run typecheck` — Type-check without emitting (`tsc --noEmit`)
-- `npm run prepack` — Runs build before `npm pack`/`npm publish`
+### Build Configuration
+- `tsconfig.json` — TypeScript compiler configuration:
+  - Target: ES2022
+  - Module: NodeNext
+  - ModuleResolution: NodeNext
+  - Strict mode: enabled
+  - verbatimModuleSyntax: true
+  - Output: `./dist/`
+  - Root: `./src/`
+- `vitest.config.ts` — Vitest testing configuration:
+  - Test include: `tests/**/*.test.ts`, `eval/**/*.test.ts`
+  - Coverage reporter: text, lcov, json-summary
+  - Coverage thresholds: statements 85%, branches 72%, functions 85%, lines 85%
 
-**Test:**
-- `vitest.config.ts` — Coverage thresholds:
-  - Statements: 85%
-  - Branches: 72%
-  - Functions: 85%
-  - Lines: 85%
-  - Provider: V8
-  - Reporters: text, lcov, json-summary
+### Plugin Configuration
+- `opencode.json` — OpenCode plugin configuration
+- `src/schema-kernel/generate-config-json-schema.js` — Generates JSON schema for configs
+- `.hivemind/configs.schema.json` — Generated configuration schema
 
-## Package Exports
+### CLI Configuration
+- `bin/hivemind.cjs` — CLI entry point
+- `src/cli/commands/` — CLI command implementations
 
-```json
-{
-  ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
-  "./plugin": { "import": "./dist/plugin.js", "types": "./dist/plugin.d.ts" },
-  "./cli": { "import": "./dist/cli/index.js", "types": "./dist/cli/index.d.ts" }
-}
+## Platform Requirements
+
+### Development
+
+**Required:**
+- Node.js >= 20.0.0
+- npm >= 9.0.0
+- TypeScript >= 5.0.0
+
+**Optional:**
+- Bun runtime (for PTY features)
+- Visual Studio Code with TypeScript extensions
+
+**Build Commands:**
+```bash
+npm run build          # Clean + compile TypeScript to dist/
+npm run typecheck      # Type-check without emitting
+npm test               # Run all tests (vitest)
+npm run test:coverage  # Coverage report
 ```
 
-**Binary:**
-- `bin/hivemind.cjs` — CLI entry point (CommonJS wrapper)
-- `bin/validate-agent-config.sh` — Agent config validation script
-- `bin/validate-load-order.sh` — Load order validation script
-- `bin/validate-runtime-paths.sh` — Runtime path validation script
+### Production
 
-## Published Files
+**Deployment Target:**
+- Node.js >= 20.0.0 runtime environments
+- npm package distribution via `npm publish`
+- Plugin installation via OpenCode plugin system
 
-```json
-{
-  "files": ["dist", "bin", "assets", ".hivemind/configs.schema.json"]
-}
-```
+**Package Structure:**
+- `dist/` — Compiled TypeScript output
+- `bin/` — CLI executable
+- `assets/` — Plugin assets
+- `./dist/index.js` — Main package entry
+- `./dist/plugin.js` — Plugin export
+- `./dist/cli/index.js` — CLI export
 
-## Code Style
+## Architecture Summary
 
-- Strict TypeScript — no `any` types on new code
-- `[Harness]` prefix on all thrown errors (error naming convention)
-- Max module size target: 500 LOC per module
-- ES2022 target with NodeNext module resolution
-- `import type` enforced for all type-only imports
+This is a **runtime plugin** architecture, not a web application. Key architectural patterns:
+
+- **CQRS Model** — Command/Query separation for state management
+- **9-Surface Authority** — Distinct surfaces for code, docs, planning, runtime, etc.
+- **CQRS + Event-Driven** — Session journal as append-only event timeline
+- **Plugin Composition** — Thin wrapper re-exporting from `dist/`
+- **Delegation System** — WaiterModel dispatch with dual-signal completion
+
+**No database layer** — Uses JSON file persistence in `.hivemind/state/` for state management.
+
+**No traditional API layer** — Plugin hooks and tools provide the interface.
 
 ---
 
-*Stack analysis: 2026-05-28*
+*Stack analysis: 2026-05-26*

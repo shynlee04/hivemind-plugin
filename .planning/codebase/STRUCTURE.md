@@ -1,228 +1,546 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-05-28
+**Analysis Date:** 2026-05-26
+
+## Overview
+
+Hivemind is organized as a TypeScript npm package following a plugin architecture pattern. The codebase is split into:
+
+- **`src/`** — Runtime implementation (npm package deliverables)
+- **`.opencode/`** — OpenCode primitives (skills, agents, commands) — configuration only, no business logic
+- **`.hivemind/`** — Internal state (journals, lineage, runtime state) — deep module persistence
+- **`.planning/`** — Governance artifacts (requirements, roadmaps, architecture maps)
+- **`dist/`** — Compiled TypeScript output (build artifact)
+- **`bin/`** — CLI substrate (entry points for command-line usage)
 
 ## Directory Layout
 
 ```
-hivemind-plugin-private/
-├── src/                          # Source code (TypeScript)
-│   ├── plugin.ts                 # Composition root (554 LOC)
-│   ├── index.ts                  # Public API re-exports (30 LOC)
-│   ├── shared/                   # Leaf utilities, types, SDK wrappers
-│   ├── coordination/             # Delegation, completion, concurrency
-│   ├── task-management/          # Continuity, journal, lifecycle, trajectory
-│   ├── features/                 # Standalone runtime features
-│   ├── hooks/                    # Lifecycle, guards, observers, transforms
-│   ├── tools/                    # Tool implementations (23 tools)
-│   ├── config/                   # Config subscriber/compiler/workflow
-│   ├── routing/                  # Session entry, behavioral profile, command engine
-│   ├── schema-kernel/            # Zod schemas and config schema support
-│   ├── cli/                      # CLI substrate (bin scripts)
-│   └── sidecar/                  # Sidecar dashboard (Next.js)
-├── tests/                        # Test files
-│   ├── lib/                      # Unit tests for src/ modules
-│   └── tools/                    # Tool-focused tests
-├── .opencode/                    # OpenCode primitives (agents, skills, commands)
-│   ├── agents/                   # Agent definitions
-│   ├── skills/                   # Skill packages
-│   ├── commands/                 # Command files
-│   └── plugins/                  # Plugin loader wrappers
-├── .hivemind/                    # Internal runtime state
-│   └── state/                    # Continuity store, session data
-├── .planning/                    # Planning documents and governance
-│   ├── codebase/                 # Codebase analysis (this document)
-│   ├── architecture/             # Architecture decision records
-│   └── research/                 # Research artifacts
-├── .hivefiver-meta-builder/      # Source-of-truth for primitives
-│   ├── agents-lab/               # Agent definitions (source)
-│   ├── skills-lab/               # Skill definitions (source)
-│   └── commands-lab/             # Command definitions (source)
-├── dist/                         # Compiled output (TypeScript declarations + JS)
-├── bin/                          # CLI scripts
-├── scripts/                      # Build and sync scripts
-├── docs/                         # Documentation
-├── assets/                       # Static assets
-├── package.json                  # npm package manifest
-├── tsconfig.json                 # TypeScript configuration
-├── vitest.config.ts              # Test configuration
-├── opencode.json                 # OpenCode configuration
-└── AGENTS.md                     # Agent instructions
+/Users/apple/hivemind-plugin-private/
+├── .git/                              # Git repository metadata
+├── .opencode/                         # OpenCode primitives (soft meta-concepts ONLY)
+│   ├── agents/                        # Agent definitions (75 agents total)
+│   ├── command/                       # Slash commands (19 commands)
+│   ├── hooks/                         # Hook definitions
+│   ├── skills/                        # Skills packages (34 skills total)
+│   ├── rules/                         # Permission rules
+│   └── state/                         # State configuration (NOT runtime state)
+├── .hivemind/                         # Internal deep module state
+│   ├── state/                         # Runtime state (session-continuity.json, delegations.json)
+│   ├── journal/                       # Session journals (append-only event timeline)
+│   ├── lineage/                       # Execution lineage tracking
+│   ├── artifacts/                     # Phase artifacts and outputs
+│   ├── planning/                      # Planning documentation
+│   ├── session-tracker/               # Real-time session event tracking
+│   └── runtime/                       # Runtime state
+├── .planning/                         # Governance sector (NOT runtime)
+│   ├── codebase/                      # Codebase analysis docs (ARCHITECTURE.md, STRUCTURE.md, etc.)
+│   ├── architecture/                  # Architecture documentation
+│   ├── research/                      # Research artifacts
+│   └── requirements/                  # Requirements documents
+├── src/                               # Runtime implementation (npm package)
+│   ├── cli/                           # CLI implementation
+│   ├── config/                        # Config subscriber and workflow
+│   ├── coordination/                  # Delegation orchestration
+│   ├── features/                      # Standalone runtime capabilities
+│   ├── hooks/                         # Lifecycle hooks
+│   ├── schema-kernel/                 # Zod schemas for validation
+│   ├── shared/                        # Shared utilities and contracts
+│   ├── task-management/               # Session continuity and state
+│   ├── tools/                         # Tool entry points
+│   └── routing/                       # Session entry and behavioral profile
+├── bin/                               # CLI substrate
+│   └── hivemind.cjs                   # CLI entry point
+├── dist/                              # Compiled TypeScript output
+│   ├── index.js                       # Main plugin entry
+│   ├── plugin.js                      # Plugin composition root
+│   └── cli/                           # CLI module
+├── tests/                             # Test suite (Vitest)
+│   ├── lib/                           # Unit tests for runtime modules
+│   └── tools/                         # Unit tests for tools
+├── assets/                            # Source-of-truth asset files
+├── scripts/                           # Build and sync scripts
+├── state/                             # Legacy state (migration target: .hivemind/state/)
+├── package.json                       # Npm package manifest
+├── tsconfig.json                      # TypeScript configuration
+├── vitest.config.ts                   # Vitest testing configuration
+└── README.md                          # Project documentation
 ```
 
 ## Directory Purposes
 
-**`src/shared/`:**
-- Purpose: Leaf utilities, types, SDK wrappers, runtime policy
-- Contains: Type definitions, state manager, helpers, session API
-- Key files: `types.ts`, `state.ts`, `helpers.ts`, `session-api.ts`, `runtime-policy.ts`
+### src/ (Runtime Implementation)
 
-**`src/coordination/`:**
-- Purpose: Delegation dispatch, completion detection, concurrency control
-- Contains: Delegation modules, completion detector, concurrency queue
-- Key files: `delegation/manager.ts`, `completion/detector.ts`, `concurrency/queue.ts`
+**Purpose:** Core npm package deliverables that ship to users
 
-**`src/task-management/`:**
-- Purpose: Session lifecycle, continuity persistence, journaling, trajectory
-- Contains: Lifecycle manager, continuity store, journal, trajectory
-- Key files: `continuity/index.ts`, `lifecycle/index.ts`, `journal/index.ts`
+**Contains:**
+- Plugin composition root (`src/plugin.ts`)
+- Tool implementations (delegation, config, session, hivemind)
+- Hook factories (lifecycle, guards, observers, transforms)
+- Task management (continuity, journal, trajectory, lifecycle)
+- Coordination (delegation, completion, concurrency, spawner)
+- Features (session-tracker, auto-loop, background-command, doc-intelligence)
+- Shared utilities and type contracts
+- Schema kernel (Zod validation schemas)
 
-**`src/features/`:**
-- Purpose: Standalone runtime features
-- Contains: Session tracker, PTY manager, governance engine, doc intelligence
-- Key files: `session-tracker/index.ts`, `background-command/pty/pty-runtime.ts`
+**Key Files:**
+- `src/plugin.ts` — Composition root (~29KB, largest module)
+- `src/index.ts` — Public API re-exports
+- `src/shared/session-api.ts` — OpenCode SDK client wrapper
+- `src/coordination/delegation/manager.ts` — WaiterModel delegation manager
 
-**`src/hooks/`:**
-- Purpose: Lifecycle hooks for tool execution, session events, guards
-- Contains: Core hooks, session hooks, tool guards, event observers
-- Key files: `lifecycle/core-hooks.ts`, `guards/tool-guard-hooks.ts`
+### .opencode/ (OpenCode Primitives)
 
-**`src/tools/`:**
-- Purpose: Tool implementations (23 tools)
-- Contains: Delegation tools, session tools, config tools, hivemind tools
-- Key files: `delegation/delegate-task.ts`, `session/execute-slash-command.ts`
+**Purpose:** Soft meta-concepts that configure runtime behavior from outside the npm package
 
-**`src/config/`:**
-- Purpose: Config subscriber/compiler/workflow
-- Contains: Config loading, caching, invalidation
-- Key files: `subscriber.ts`, `workflow/`
+**Contains:**
+- **`agents/`** — Agent definitions (75 agents: 33 gsd-* specialist agents, 31 hm-* harness agents, 11 hf-* meta-builder agents)
+- **`command/`** — Slash commands (19 commands: 7 core, 7 extended, 1 sync, 4 test)
+- **`skills/`** — Skill packages (34 skills: 13 hf-l2-*, 3 gate-l3-*, 6 stack-l3-*, 1 hivemind-*, 11 unprefixed)
+- **`rules/`** — Permission rules (universal-rules.md, etc.)
+- **`hooks/`** — Hook definitions (NOT runtime hooks, these are configuration templates)
 
-**`src/routing/`:**
-- Purpose: Session entry, behavioral profile, command engine
-- Contains: Session entry gate, behavioral profile resolver, command engine
-- Key files: `session-entry/intake-gate.ts`, `behavioral-profile/resolve-behavioral-profile.ts`
+**IMPORTANT:** No business logic lives here. No runtime state is stored here. No build artifacts belong here.
 
-**`src/schema-kernel/`:**
-- Purpose: Zod schemas for configuration and runtime types
-- Contains: Schema definitions, validation logic
-- Key files: `hivemind-configs.schema.ts`, `index.ts`
+### .hivemind/ (Internal State)
+
+**Purpose:** Deep module persistence for Hivemind runtime state
+
+**Contains:**
+- **`state/`** — Runtime state files:
+  - `session-continuity.json` — Session persistence and recovery
+  - `delegations.json` — Delegation records
+  - `task-status.json` — Task state tracking
+- **`journal/`** — Append-only event timeline (session journals)
+- **`lineage/`** — Execution lineage tracking
+- **`artifacts/`** — Phase artifacts and outputs
+- **`session-tracker/`** — Real-time session event tracking (44 directories)
+- **`planning/`** — Planning documentation (governance artifacts)
+
+**IMPORTANT:** This is internal state, NOT user configuration. Do NOT commit secrets or credentials here.
+
+### .planning/ (Governance Sector)
+
+**Purpose:** Planning and governance artifacts (NOT runtime code)
+
+**Contains:**
+- **`codebase/`** — Codebase analysis documents:
+  - `ARCHITECTURE.md` — Architecture pattern and layers
+  - `STRUCTURE.md` — Directory layout and conventions
+  - `STACK.md` — Technology stack
+  - `INTEGRATIONS.md` — External integrations
+  - `CONVENTIONS.md` — Coding conventions
+  - `TESTING.md` — Testing patterns
+  - `CONCERNS.md` — Technical debt and issues
+- **`architecture/`** — Architecture documentation:
+  - `hivemind-source-plane-architecture-2026-05-07.md` — Surface ownership model
+  - `hivemind-runtime-identity-taxonomy-2026-05-07.md` — Naming contract
+- **`research/`** — Research artifacts (30+ research files)
+- **`requirements/`** — Requirements documents
+
+### tests/ (Test Suite)
+
+**Purpose:** Unit and integration tests for runtime modules
+
+**Contains:**
+- **`lib/`** — Unit tests for runtime modules (mirrors `src/` structure)
+- **`tools/`** — Unit tests for tools (mirrors `src/tools/` structure)
+
+**Test Framework:** Vitest (v4.1.7)
+
+**Run Commands:**
+```bash
+npm test                    # Run all tests
+npm run test:watch          # Watch mode
+npm run test:coverage       # Coverage report
+```
+
+### bin/ (CLI Substrate)
+
+**Purpose:** CLI entry points for command-line usage
+
+**Contains:**
+- `bin/hivemind.cjs` — CLI entry point
+
+**Usage:**
+```bash
+npx hivemind <command>
+```
+
+### dist/ (Compiled Output)
+
+**Purpose:** Compiled TypeScript output (build artifact)
+
+**Contains:**
+- `dist/index.js` — Main plugin entry point
+- `dist/plugin.js` — Plugin composition root
+- `dist/cli/index.js` — CLI module
+- `dist/**/*.d.ts` — TypeScript declaration files
+- `dist/**/*.js.map` — Source maps
+
+**Build Command:** `npm run build`
 
 ## Key File Locations
 
-**Entry Points:**
-- `src/plugin.ts`: Plugin composition root (loaded by OpenCode)
-- `src/index.ts`: Public API re-exports for npm package
+### Entry Points
 
-**Configuration:**
-- `src/config/subscriber.ts`: Config loading and caching
-- `src/schema-kernel/hivemind-configs.schema.ts`: Config schema definition
-- `tsconfig.json`: TypeScript configuration
-- `vitest.config.ts`: Test configuration
+**Plugin Composition Root:**
+- `src/plugin.ts` — Main plugin initialization and registration (~29KB)
 
-**Core Logic:**
-- `src/coordination/delegation/manager.ts`: Delegation facade
-- `src/coordination/delegation/coordinator.ts`: Delegation coordinator
-- `src/task-management/continuity/index.ts`: Continuity store
-- `src/task-management/lifecycle/index.ts`: Lifecycle manager
+**Public API:**
+- `src/index.ts` — Re-exports for public consumption
 
-**Testing:**
-- `tests/lib/`: Unit tests mirroring `src/` structure
-- `tests/tools/`: Tool-focused tests
+**CLI Entry Point:**
+- `bin/hivemind.cjs` — Command-line interface
+
+### Configuration Files
+
+**Package Manifest:**
+- `package.json` — Npm package configuration, dependencies, scripts
+
+**TypeScript Config:**
+- `tsconfig.json` — TypeScript compiler options (strict mode, ES2022 target)
+
+**Test Config:**
+- `vitest.config.ts` — Vitest testing framework configuration
+
+**OpenCode Config:**
+- `.opencode/opencode.json` — OpenCode plugin configuration
+
+### Core Logic
+
+**Shared Utilities:**
+- `src/shared/session-api.ts` — OpenCode SDK client wrapper
+- `src/shared/helpers.ts` — Utility functions (asString, getNestedValue)
+- `src/shared/state.ts` — In-memory state management
+- `src/shared/types.ts` — Shared TypeScript types
+
+**Delegation Manager:**
+- `src/coordination/delegation/manager.ts` — WaiterModel dispatch and completion detection
+
+**Task Management:**
+- `src/task-management/continuity/index.ts` — Session persistence I/O
+- `src/task-management/journal/index.ts` — Event append operations
+- `src/task-management/lifecycle/index.ts` — Lifecycle manager
+
+### Testing
+
+**Test Files:**
+- `tests/lib/**/*.test.ts` — Unit tests for runtime modules
+- `tests/tools/**/*.test.ts` — Unit tests for tools
+
+**Coverage Config:**
+- `vitest.config.ts` — Coverage configuration (excludes `src/index.ts`)
 
 ## Naming Conventions
 
-**Files:**
-- `kebab-case.ts` for module files (e.g., `delegation-manager.ts`)
-- `index.ts` for barrel exports (e.g., `src/shared/index.ts`)
-- `*.test.ts` or `*.spec.ts` for test files (e.g., `detector.test.ts`)
+### Files
 
-**Directories:**
-- `kebab-case` for module directories (e.g., `task-management/`)
-- `lifecycle/` for lifecycle-related code
-- `continuity/` for persistence-related code
+**Source Files:**
+- TypeScript files: `.ts` extension (e.g., `src/plugin.ts`, `src/coordination/delegation/manager.ts`)
+- CLI scripts: `.cjs` extension (e.g., `bin/hivemind.cjs`)
+- Test files: `.test.ts` extension (e.g., `tests/lib/helpers.test.ts`)
+- Config files: `.json`, `.jsonc`, `.ts` as appropriate
 
-**Types:**
-- `PascalCase` for interfaces and types (e.g., `DelegationStatus`, `TaskStatus`)
-- `UPPER_SNAKE_CASE` for constants (e.g., `MAX_DELEGATION_DEPTH`)
+**Directory Names:**
+- Lowercase with hyphens (e.g., `task-management`, `coordination/delegation`)
+- No underscores (except in file names like `session-continuity.json`)
 
-**Functions:**
-- `camelCase` for functions (e.g., `getSessionContinuity`, `createHarnessLifecycleManager`)
-- Factory functions prefixed with `create` (e.g., `createHarnessLifecycleManager`)
+### Directories
 
-**Classes:**
-- `PascalCase` for classes (e.g., `DelegationManager`, `CompletionDetector`)
-- Manager/Suffix pattern for class names (e.g., `SlotManager`, `NotificationRouter`)
+**Pattern:**
+- `src/` — Runtime implementation
+- `.opencode/` — OpenCode primitives (configuration only)
+- `.hivemind/` — Internal state (deep module persistence)
+- `.planning/` — Governance artifacts
+- `dist/` — Compiled output
+- `tests/` — Test suite
+- `bin/` — CLI substrate
+- `scripts/` — Build and sync scripts
+- `assets/` — Source-of-truth asset files
 
-## Where to Add New Code
+### Variable Naming
 
-**New Tool:**
-- Implementation: `src/tools/{category}/{tool-name}.ts`
-- Registration: `src/plugin.ts` (add to `tool:` object)
-- Tests: `tests/tools/{category}/{tool-name}.test.ts`
+**TypeScript Conventions:**
+- Variables: camelCase (e.g., `sessionId`, `delegationId`)
+- Constants: UPPER_SNAKE_CASE (e.g., `WATCH_TIMEOUT_MS`)
+- Types: PascalCase (e.g., `Delegation`, `RuntimePolicy`)
+- Functions: camelCase (e.g., `createHarnessLifecycleManager`)
+- Classes: PascalCase (e.g., `DelegationManager`, `CompletionDetector`)
 
-**New Hook:**
-- Implementation: `src/hooks/{type}/{hook-name}.ts`
-- Registration: `src/plugin.ts` (add to hook composition)
-- Tests: `tests/lib/hooks/{type}/{hook-name}.test.ts`
+**File Paths:**
+- Use backticks for code references: `src/plugin.ts`, `src/coordination/delegation/manager.ts`
+- Relative paths: `./src/shared/session-api.ts`
 
-**New Feature:**
-- Implementation: `src/features/{feature-name}/index.ts`
-- Registration: `src/plugin.ts` (import and wire)
-- Tests: `tests/lib/features/{feature-name}/`
+### Function Naming
 
-**New Coordination Module:**
-- Implementation: `src/coordination/{module-name}/index.ts`
-- Tests: `tests/lib/coordination/{module-name}/`
+**Pattern:**
+- Verbs for functions (e.g., `createHarnessLifecycleManager`, `runAutoLoop`)
+- Nouns for classes (e.g., `DelegationManager`, `SessionTracker`)
+- Prefixes for factory functions (e.g., `createDelegateTaskTool`, `createSessionHooks`)
 
-**New Schema:**
-- Implementation: `src/schema-kernel/{schema-name}.schema.ts`
-- Registration: `src/schema-kernel/index.ts` (export)
+**Examples:**
+- `createHarnessLifecycleManager()` — Factory function
+- `DelegationManager` — Class
+- `runAutoLoop()` — Function
+- `getSessionContinuity()` — Function
 
-## Special Directories
+## File Organization Patterns
 
-**`dist/`:**
-- Purpose: Compiled TypeScript output
-- Generated: Yes (by `npm run build`)
-- Committed: No (in `.gitignore`)
+### Layer-Based Organization
 
-**`node_modules/`:**
-- Purpose: npm dependencies
-- Generated: Yes (by `npm install`)
-- Committed: No (in `.gitignore`)
-
-**`.hivemind/state/`:**
-- Purpose: Runtime state persistence (continuity store, session data)
-- Generated: Yes (by runtime)
-- Committed: No (in `.gitignore`)
-
-**`.opencode/`:**
-- Purpose: OpenCode primitives (agents, skills, commands)
-- Generated: Yes (by sync from `.hivefiver-meta-builder/`)
-- Committed: Yes (configuration)
-
-**`.planning/`:**
-- Purpose: Planning documents, governance, architecture
-- Generated: No (manual)
-- Committed: Yes
-
-## Module Organization Pattern
+**Core → Tools → Hooks → Features → Shared**
 
 ```
 src/
-├── {module}/
-│   ├── index.ts          # Barrel exports
-│   ├── types.ts          # Type definitions (if needed)
-│   ├── {class-name}.ts   # Main implementation
-│   └── {helper}.ts       # Helper functions (if needed)
+├── plugin.ts                  # Composition root (core)
+├── tools/                     # Tool entry points
+├── hooks/                     # Hook factories
+├── features/                  # Runtime capabilities
+├── shared/                    # Utilities and contracts
+└── schema-kernel/             # Validation schemas
 ```
 
-## Dependency Rules
+### Feature-Based Organization
 
-- **Leaf Layer:** `src/shared/` imports nothing from other `src/` modules
-- **Schema Kernel:** Imports nothing from other `src/` modules
-- **Coordination:** May import from `src/shared/` and `src/task-management/`
-- **Task Management:** May import from `src/shared/` and `src/config/`
-- **Features:** May import from `src/shared/` and `src/task-management/`
-- **Hooks:** May import from `src/shared/`, `src/task-management/`, `src/coordination/`
-- **Tools:** May import from `src/shared/`, `src/coordination/`, `src/features/`
-- **Composition Root:** May import from all modules
+**Features layer groups related capabilities:**
 
-## File Size Guidelines
+```
+src/features/
+├── session-tracker/           # Session event tracking
+├── auto-loop/                 # Automatic task loop
+├── ralph-loop/                # Ralph loop with escalation
+├── background-command/        # Background PTY execution
+├── doc-intelligence/          # Document querying
+├── governance-engine/         # Governance sessions
+└── prompt-packet/             # Prompt handling
+```
 
-- **Max module size:** 500 LOC
-- **Recommended:** 100-300 LOC per module
-- **Current largest:** `src/plugin.ts` (554 LOC) — borderline acceptable
+### Coordination Sub-Layers
+
+**Delegation coordination split by concern:**
+
+```
+src/coordination/
+├── delegation/                # DelegationManager and lifecycle
+├── completion/                # Dual-signal completion detection
+├── concurrency/               # Task queue management
+├── command-delegation/        # Slash command delegation
+└── sdk-delegation/            # SDK child session spawning
+```
+
+### Task Management Sub-Layers
+
+**State management split by data type:**
+
+```
+src/task-management/
+├── continuity/                # Session persistence (JSON)
+├── journal/                   # Event timeline (append-only)
+├── trajectory/                # Lineage tracking
+└── lifecycle/                 # State machine (task status)
+```
+
+### Tool Organization by Domain
+
+**Tools grouped by functionality:**
+
+```
+src/tools/
+├── delegation/                # Agent delegation tools
+├── config/                    # Configuration tools
+├── session/                   # Session management tools
+├── hivemind/                  # Hivemind-specific tools
+├── prompt/                    # Prompt analysis tools
+└── hivemind-run-background-command/  # Background task tools
+```
+
+## Where to Add New Code
+
+### New Tool
+
+**Location:** `src/tools/<domain>/index.ts`
+
+**Steps:**
+1. Create tool module in `src/tools/<domain>/`
+2. Use `tool()` function from OpenCode SDK
+3. Define Zod schema for input validation
+4. Export from `src/tools/<domain>/index.ts`
+5. Register in `src/plugin.ts`
+
+**Example:**
+```typescript
+// src/tools/my-tool/index.ts
+import { tool } from '@opencode-ai/plugin'
+import { z } from 'zod'
+
+export const createMyTool = tool({
+  name: 'my-tool',
+  description: 'Does something cool',
+  schema: z.object({
+    input: z.string()
+  }),
+  async execute(context) {
+    // Implementation
+  }
+})
+```
+
+### New Hook
+
+**Location:** `src/hooks/<category>/<name>.ts`
+
+**Steps:**
+1. Create hook factory in `src/hooks/<category>/`
+2. Use `hook()` function from OpenCode SDK
+3. Define lifecycle event type
+4. Export from `src/hooks/<category>/index.ts`
+5. Register in `src/plugin.ts`
+
+**Example:**
+```typescript
+// src/hooks/my-hook/index.ts
+import { hook } from '@opencode-ai/plugin'
+
+export const createMyHook = hook('lifecycle', 'before-tool', async (context) => {
+  // Pre-tool logic
+})
+```
+
+### New Feature
+
+**Location:** `src/features/<name>/index.ts`
+
+**Steps:**
+1. Create feature module in `src/features/<name>/`
+2. Implement feature logic
+3. Export from `src/features/<name>/index.ts`
+4. Initialize in `src/plugin.ts`
+
+**Example:**
+```typescript
+// src/features/my-feature/index.ts
+export const createMyFeature = () => {
+  // Feature logic
+}
+```
+
+### New Agent
+
+**Location:** `.opencode/agents/<name>.md`
+
+**Steps:**
+1. Create agent file in `.opencode/agents/`
+2. Use Agent Development skill for XML markup
+3. Define agent description, tools, and constraints
+4. Register in `.opencode/agents/AGENTS.md`
+
+**IMPORTANT:** Agents are configuration only. No business logic.
+
+### New Skill
+
+**Location:** `.opencode/skills/<name>/SKILL.md`
+
+**Steps:**
+1. Create skill directory in `.opencode/skills/<name>/`
+2. Write `SKILL.md` with metadata and instructions
+3. Create `references/` with supporting documentation
+4. Register in `.opencode/skills/SKILLS.md`
+
+**IMPORTANT:** Skills are configuration only. No business logic.
+
+### New Test
+
+**Location:** `tests/<module>.test.ts`
+
+**Steps:**
+1. Create test file in `tests/` matching source structure
+2. Use Vitest test framework
+3. Add tests for unit, integration, and E2E scenarios
+4. Run `npm test` to verify
+
+**Example:**
+```typescript
+// tests/my-module.test.ts
+import { describe, it, expect } from 'vitest'
+import { myFunction } from '../../src/my-module'
+
+describe('myFunction', () => {
+  it('should do something', () => {
+    expect(myFunction('input')).toBe('expected')
+  })
+})
+```
+
+## Special Directories
+
+### .opencode/
+
+**Purpose:** OpenCode primitives (configuration only, NO business logic)
+
+**Generated:** No — manually authored
+
+**Committed:** Yes — git-tracked configuration
+
+**Contents:**
+- `agents/` — Agent definitions (75 agents)
+- `skills/` — Skill packages (34 skills)
+- `command/` — Slash commands (19 commands)
+- `rules/` — Permission rules
+
+**IMPORTANT:** This is "soft meta-concepts" — configuration that composes runtime behavior from outside the npm package. No `src/` code, no build artifacts, no runtime state.
+
+### .hivemind/
+
+**Purpose:** Internal deep module persistence
+
+**Generated:** Partially — journals and lineage are append-only
+  - `journal/` — Auto-appended session events
+  - `lineage/` — Auto-tracked execution lineage
+
+**Committed:** No — `.gitignore` excludes `.hivemind/`
+
+**Contents:**
+- `state/` — Runtime state files
+- `journal/` — Session journals
+- `lineage/` — Execution lineage
+- `artifacts/` — Phase outputs
+- `session-tracker/` — Real-time tracking
+
+**IMPORTANT:** This is internal state, NOT user configuration. Do NOT commit secrets or credentials here.
+
+### .planning/
+
+**Purpose:** Governance artifacts
+
+**Generated:** Partially — codebase docs are auto-generated
+  - `codebase/` — Auto-generated analysis documents
+
+**Committed:** Yes — git-tracked governance artifacts
+
+**Contents:**
+- `codebase/` — Codebase analysis (ARCHITECTURE.md, STRUCTURE.md, etc.)
+- `architecture/` — Architecture documentation
+- `research/` — Research artifacts
+- `requirements/` — Requirements documents
+
+**IMPORTANT:** This is governance sector, NOT runtime code. Planning decisions, not implementation.
+
+### dist/
+
+**Purpose:** Compiled TypeScript output
+
+**Generated:** Yes — build artifact from `npm run build`
+
+**Committed:** No — `.gitignore` excludes `dist/`
+
+**Contents:**
+- `dist/**/*.js` — Compiled JavaScript
+- `dist/**/*.d.ts` — TypeScript declarations
+- `dist/**/*.js.map` — Source maps
+
+**IMPORTANT:** Never edit files in `dist/` manually. Always rebuild with `npm run build`.
 
 ---
 
-*Structure analysis: 2026-05-28*
+*Structure analysis: 2026-05-26*
