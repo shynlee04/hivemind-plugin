@@ -9,7 +9,9 @@ export const ExecuteSlashCommandSchema = z.object({
   commandSource: z.enum(["user", "agent", "system"]).optional().default("user"),
   trackExecution: z.boolean().optional().default(true),
   parentSessionID: z.string().optional(),
+  stackOnSessionId: z.string().optional().describe("Session ID to stack onto (overrides parentSessionID). PREFERRED for retrying or continuing work on an existing session."),
   namespace: z.string().optional().describe("Namespace override"),
 })
 
 export type ExecuteSlashCommandInput = z.infer<typeof ExecuteSlashCommandSchema>
+

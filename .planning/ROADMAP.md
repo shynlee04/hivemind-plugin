@@ -1,4 +1,5 @@
 <!-- generated-by: gsd-doc-writer -->
+
 # Hivemind — Roadmap
 
 **Created:** 2017-05-07  
@@ -16,20 +17,25 @@
 These 5 reflections apply to EVERY phase. They are not optional — each must be traced in every phase entry below.
 
 ### Reflection 1: GSD Repo Change — Research Invalidation
+
 - **Original GSD repo abandoned** (owner allegedly scammed). New maintainer: https://github.com/open-gsd/get-shit-done-redux
 - All 6 GSD research documents from Phase 23 (`23-GSD-agent-architecture`, `23-GSD-command-system`, `23-GSD-workflow-pipeline`, `23-GSD-quality-gates`, `23-GSD-sdk-surface`, `23-GSD-REFERENCE`) are based on the **OLD repo**
 - **Every phase that references GSD patterns must include:** "Re-validate against open-gsd/get-shit-done-redux"
 - Add a research validation gate BEFORE any phase that depends on GSD architecture patterns
 
 ### Reflection 2: Architecture Absorption — Features NOT Agent Profiles
+
 GSD features like session-tracker, delegation-status, coordination, agent-work-contract, injection, trajectory exist in the Hivemind codebase. Their looping/gating/hierarchy/delegation/checkpoint MECHANISMS must be:
+
 - **ABSORBED into programmatic features** (tools, commands, skills) at `src/`
 - **NOT** placed in agent profiles (`.opencode/agents/`)
 - The L0 orchestrator's coordination logic must use programmatic tools, not agent instruction bloat
 - Each phase must explicitly say: "This logic goes into [tools/commands/skills at src/] NOT into agent profiles"
 
 ### Reflection 3: Core Protocol Chain — Every Phase Must Respect
+
 Every phase must explicitly trace through these protocols:
+
 1. **Spec-driven**: What spec artifact does this phase produce?
 2. **Research-driven**: What needs research before implementation?
 3. **Context-driven**: What context artifacts feed into this phase?
@@ -41,6 +47,7 @@ Every phase must explicitly trace through these protocols:
 9. **Gatekeeping**: Quality/validation/verification gates required
 
 ### Reflection 4: Phase Interdependency — No Phase is Independent
+
 - Every phase WILL generate TBD items that must be tracked
 - Every phase WILL need integration checkpoints with adjacent phases
 - Every phase WILL generate deferred items for gradual stacking in later phases
@@ -48,8 +55,10 @@ Every phase must explicitly trace through these protocols:
 - Every phase WILL need a live UAT node on real OpenCode environment
 
 ### Reflection 5: Knowledge Sources Need Validation
+
 - The paths listed below contain research that may now be inaccurate due to GSD repo change
 - They should be tagged as `⚠️ NEEDS RE-VALIDATION` until verified against open-gsd/get-shit-done-redux
+
 ```
 .hivemind/registries
 .planning/phases/23-notification-fix-and-tool-surface-docs/23-W4-SYNTHESIS.md
@@ -242,22 +251,26 @@ The session tracker replaces the broken event-tracker (`src/task-management/jour
 | CP-ST-05 | Session Data Loss Prevention — Classification + Quarantine + Refactor | ✅ COMPLETE | CP-ST-04 (COMPLETE) | 3/3 waves, 12 commits — Gate 0 classification, journey recording, quarantine protocol, monolith refactor (982→807 LOC), 362/364 tests |
 
 **Plans (CP-ST-04):** 3 plans in 3 waves
+
 - [x] CP-ST-04-01-PLAN.md — Fix PendingDispatchRegistry + handleChatMessage Classification Order (Wave 1) — requirements: D-01, D-04, D-05
 - [x] CP-ST-04-02-PLAN.md — Directory Architecture Fix — Root-Only Dirs + HierarchyIndex Root Tracking (Wave 2) — requirements: D-02, D-03, D-05, D-08
 - [x] CP-ST-04-03-PLAN.md — Hierarchy Manifest + Immediate I/O + Cleanup (Wave 3) — requirements: D-06, D-07, D-08 ✅
 
 **Plans (CP-ST-03):** 3 plans in 3 waves
+
 - [x] CP-ST-03-01-PLAN.md — Event-Tracker Excision + Documentation Sync (Wave 1) — requirements: AC-01..AC-13
 - [x] CP-ST-03-02-PLAN.md — Plugin.ts Composition Purification (Wave 2) — requirements: AC-14..AC-29
 - [ ] CP-ST-03-03-PLAN.md — Verification + Migration Cleanup (Wave 3)
 
 **Plans (CP-ST-01):**
+
 - [x] CP-ST-01-01-PLAN.md — Module Foundation + Types (Wave 1)
 - [x] CP-ST-01-02-PLAN.md — Capture Handlers + Index Writers (Wave 2)
 - [x] CP-ST-01-03-PLAN.md — Integration + Recovery + Tool (Wave 3)
 - [x] CP-ST-01-04-PLAN.md — Hardening + Verification (Wave 4)
 
 **Plans (CP-ST-02):** 3 plans in 3 waves
+
 - [x] CP-ST-02-01-PLAN.md — PendingDispatchRegistry + Three-Gate Classification (Wave 1) — requirements: AC-02, AC-05 ✅
 - [x] CP-ST-02-02-PLAN.md — PreToolUse Hook + Server API Polling (Wave 2) — requirements: AC-10 ✅
 - [x] CP-ST-02-03-PLAN.md — Delegator Attribution + Cleanup (Wave 3) — requirements: AC-01, AC-03, AC-06, AC-08, AC-09 ✅
@@ -273,6 +286,7 @@ Toàn diện refactor và revamp delegate-task ecosystem. Phase này cover TẤT
 | CP-DT-01 | **Delegate-Task Ecosystem Revamp** | RE-OPENED / RUNTIME BLOCKED — forensic report `report-20260517-105705.md` disproved the `context.task` runtime seam; Plans 01-05 remain historical implementation artifacts requiring gap remediation | CP-ST-06 (session-tracker tracking knowledge), CP-PTY-00 (shell/PTY context) | L5: SPEC + CONTEXT + RESEARCH + PATTERN exist; L2-L3 tests exist but mock/injected native Task evidence is not L1 proof; L1 smoke UAT is blocking before completion |
 
 **Plans:**
+
 - [x] CP-DT-01-01-PLAN.md — Wave 1: Foundation modules (dispatcher, slot-manager, agent-resolver, monitor, escalation-timer, notification-router, lifecycle, retry-handler) ✅ executed; summary `CP-DT-01-01-SUMMARY.md`; tests 22/22 pass; typecheck clean
 - [x] CP-DT-01-02-PLAN.md — Wave 2: Coordinator wiring + CompletionDetector v2 dual-signal ✅ executed; summary `CP-DT-01-02-SUMMARY.md`; focused tests 13/13 pass; completion regression 36/36 pass; typecheck clean
 - [x] CP-DT-01-03-PLAN.md — Wave 3: Tool layer rewrite (delegate-task v2 + delegation-status v2 + Zod schemas) ✅ executed; summary `CP-DT-01-03-SUMMARY.md`; v2 tool tests 20/20 pass; legacy tool regression 51/51 pass; typecheck clean
@@ -427,11 +441,13 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 ## Planned Workstreams (Blocked on Core Architecture)
 
 ### Agent Workflows (WS-AW)
+
 - WS-4: Auto-commands + Workflow Router (f-04) — **HIGHEST GAP**, blocked by Phase 0 + BOOT + MCM
 - WS-5: Delegation Revamp (f-06 lanes/hierarchy)
 - WS-6: Trajectory + Task-Plus (f-07)
 
 ### User Experience (WS-UX)
+
 - WS-2: Bootstrap CLI + Onboarding
 - WS-7: Context/Compaction Engine
 - WS-8: Sidecar + UI (DEFERRED)
@@ -522,6 +538,7 @@ src/
 **Plans:** 4/4 plans complete
 
 Plans:
+
 - [x] 17-01-PLAN.md — Audit shared/, config/, routing/ (smallest modules) — Wave 1 ✅ COMPLETE (2026-05-20)
 - [x] 17-02-PLAN.md — Audit schema-kernel/, tools/, hooks/ — Wave 2 ✅ COMPLETE (2026-05-20)
 - [x] 17-03-PLAN.md — Audit coordination/, task-management/ — Wave 3 ✅ COMPLETE (2026-05-20)
@@ -535,6 +552,7 @@ Plans:
 **Plans:** 4/4 complete ✅
 
 Plans:
+
 - [x] 18-01-PLAN.md — Dead Code Deletion: 3 module-batched commits (toggle-gates, steering-engine+runtime-detection, recovery/) — Wave 1 ✅
 - [x] 18-02-PLAN.md — Context-Rot: storeCache extraction (store-cache.ts with get/set/reset, TDD RED/GREEN/REFACTOR) — Wave 1 ✅
 - [x] 18-03-PLAN.md — Barrel Narrowing: replace export * with explicit named exports for command-engine — Wave 1 ✅
@@ -544,6 +562,7 @@ Plans:
 
 **Goal:** Non-destructive cleanup of dead/wrapper code across schema-kernel, session-tracker, prompt-packet, delegation concurrency, hooks, tests, and stale package output. Zero logic changes to active runtime paths.
 **Total scope:**
+
 - Delete 2 dead schema files: `permission.schema.ts` (168 LOC) and `tool-definition.schema.ts` (74 LOC). `skill-metadata.schema.ts` was preserved because it has active consumers.
 - Record `permission.schema.ts` as historical REGISTRY-02 gap/debt instead of fixing the deleted prototype enum bug.
 - Delete unwired prompt-packet compiler shell (`delegation-packet.ts`, barrel, local AGENTS.md, tests) while preserving active `compaction-preservation.ts` and `kernel-packet.ts` consumers.
@@ -554,11 +573,13 @@ Plans:
 - Remove `messages.transform` no-op hook from `core-hooks.ts`; keep `system.transform` as backward-compatible test-facing alias for `experimental.chat.system.transform`.
 - Rebuild `dist/` — eliminates stale compiled artifacts from Phase 17-19 deletions
 - Delete empty dirs: `src/kernel/`, `src/harness/`
+
 **Requirements:** TBD
 **Depends on:** Phase 18
 **Plans:** 4 plans
 
 Plans:
+
 - [x] 19-01-PLAN.md — Schema barrel cleanup (delete 3 dead schemas, migrate tool-definition) — COMPLETE, 1 correction: skill-metadata preserved (has consumers)
 - [x] 19-02-PLAN.md — Dead module deletions (session-classification, schema-normalizer, prompt-packet partial) — COMPLETE
 - [x] 19-03-PLAN.md — Code inlines and hook cleanup (concurrency-key, deprecated profile, no-op hooks) — COMPLETE
@@ -568,16 +589,19 @@ Plans:
 
 **Goal:** Clean up package.json dependencies. Remove 11 unused runtime deps, consolidate duplicate YAML libraries, bump 6 minor versions, move @json-render/* + react to optional.
 **Actions:**
+
 - Remove: commander, diff, fast-glob, fast-xml-parser, ink, js-yaml, jsonc-parser, node-pty, tree-sitter-javascript, vscode-jsonrpc, web-tree-sitter
 - Consolidate: `yaml` + `js-yaml` → use one (keep `yaml` which has 3 importers)
 - Bump minors: @clack/prompts ^1.3.0→^1.4.0, bun-types ^1.3.13→^1.3.14, yaml ^2.8.3→^2.9.0, zod ^4.3.6→^4.4.3, vitest ^4.1.5→^4.1.7
 - Move to optional: @json-render/core, @json-render/ink, @json-render/next, @json-render/react, @json-render/react-pdf, react
 - Verify: `npm run typecheck` → clean, `npm test` → 2382 passed (baseline)
+
 **Requirements:** TBD
 **Depends on:** Phase 19
 **Plans:** 1 direct execution record
 
 Plans:
+
 - [x] Phase 20 direct execution — dependency cleanup completed in `38e0bd8f`; progress/state manifests updated in `b3875fd6`. Evidence: `package.json`/`package-lock.json` dependency cleanup, `.planning/STATE.md` focus advanced to Phase 21, `AGENTS.md` current phase context updated.
 
 ---
@@ -594,6 +618,7 @@ These phase records are preserved from the previous iteration and are fully comp
 **Plans:** 6/6 plans complete
 
 Plans:
+
 - [x] 13-01-PLAN.md — Fix Session Initialization (F-01, F-02) — Wave 1 (BLOCKING)
 - [x] 13-02-PLAN.md — Wire Turn Counting (F-03) — Wave 2 (BLOCKING)
 - [x] 13-03-PLAN.md — Fix Data Flow + Pinned Reqs (F-04..F-06, P-01/P-03/P-04) — Wave 3 (CRITICAL)
@@ -609,6 +634,7 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
+
 - [ ] CP-ST-06-01-PLAN.md — Test Audit + RED Root-Cause Coverage (Wave 1) — requirements: RC-1..RC-6, GA-1, GA-2, GA-3, GA-5
 - [ ] CP-ST-06-02-PLAN.md — Router Extraction + Default-to-Sub Authority + index.ts LOC Gate (Wave 2) — requirements: RC-3, RC-6, GA-3, GA-4
 - [ ] CP-ST-06-03-PLAN.md — Hierarchy Root + Nested Status Persistence (Wave 2) — requirements: RC-1, RC-2, GA-2
@@ -623,6 +649,7 @@ Plans:
 **Plans:** 3/4 plans executed
 
 Plans:
+
 - [ ] TBD (run /gsd-plan-phase 14 to break down)
 
 ### Phase 15: Phase 15: Delegate-Task Gap Remediation — Resume, Delivery, Rich Notifications
@@ -634,6 +661,7 @@ Plans:
 **Plans:** 5 plans in 3 waves
 
 Plans:
+
 - [ ] 15-01-PLAN.md — manager.ts: restructure controlDelegation for resume/chain/adjust-prompt/change-agent (R1, R4, R5)
 - [ ] 15-02-PLAN.md — coordinator.ts chain-append + delegation-status.ts schema extension (R4, R5)
 - [ ] 15-03-PLAN.md — notification-formatter.ts + notification-router.ts rich notification fields (R3)
@@ -648,6 +676,7 @@ Plans:
 **Plans:** 2/7 plans executed
 
 Plans:
+
 - [x] 16-01-PLAN.md (Wave 0) — Schema-kernel extensions: filter-sessions, aggregate, get-manifest, new session-view schema
 - [x] 16-02-PLAN.md (Wave 1) — session-tracker.ts: search child .json + filter-sessions action
 - [ ] 16-03-PLAN.md (Wave 1) — session-context.ts: aggregate action
@@ -672,10 +701,12 @@ Plans:
 
 **Goal:** Delete remaining dead code, rebuild dist/, remove 2 legacy hooks — purely additive-safe changes before Group 1.
 **Scope:**
+
 - Delete 3 dead schema files (permission.schema.ts, tool-definition.schema.ts, skill-metadata.schema.ts — ~350 LOC)
 - Rebuild dist/ to eliminate 38 stale artifacts
 - Remove legacy hooks system.transform + messages.transform from plugin.ts return
 - Verify npm test regression baseline
+
 **Entry gate:** Phase 20 COMPLETE
 **Exit gate:** dist/ clean, zero dead code, 3,000+ tests passing, typecheck clean
 **Depends on:** Phase 20
@@ -690,6 +721,7 @@ Plans:
 **Plans:** 6/6 plans complete
 
 Plans:
+
 - [x] 21-01-PLAN.md — F-01 Temp Fix + Cross-Volume Guardrail (Wave 2) — REQ-21-01, REQ-21-02
 - [x] 21-02-PLAN.md — Manifest Derivative Cache + childCount Computation (Wave 1 — prerequisite) — REQ-21-03, REQ-21-04, REQ-21-10, REQ-21-11
 - [x] 21-03-PLAN.md — F-18 Anonymous Children Metadata Capture (Wave 2) — REQ-21-08, REQ-21-09
@@ -705,6 +737,7 @@ Plans:
 **Plans:** 3/3 implementation/test waves revised; live front-agent switching moved to Phase 21.2 research
 
 Plans:
+
 - [x] 21.1-01-PLAN.md — CommandBundle type extension + frontmatter enrichment (Wave 1) — REQ-03, REQ-04
 - [x] 21.1-02-SUMMARY.md — Deferred command dispatch rewrite after live SDK-await failure — REQ-01 through REQ-07
 - [x] 21.1-03-SUMMARY.md — Regression tests for one-shot subtask overrides and no-hang deferred scheduling — REQ-01 through REQ-07
@@ -718,6 +751,7 @@ Plans:
 **Plans:** 2 plans in 2 waves
 
 Artifacts:
+
 - [x] `21.2-context-2026-05-22.md` — user intent, current state, phase boundary
 - [x] `21.2-research-2026-05-22.md` — live OpenCode source evidence and feasibility options
 - [x] `21.2-spec-2026-05-22.md` — prototype-gated requirements and acceptance criteria
@@ -728,6 +762,7 @@ Artifacts:
 - [x] `21.2-SPEC.md` — standard-named spec artifact
 
 Plans:
+
 - [ ] `21.2-01-PLAN.md` — Live UAT verification (synthetic parent prompt, baseline subtask, TUI control) — Wave 1
 - [ ] `21.2-02-PLAN.md` — Final verdict documentation + governance artifacts update — Wave 2
 
@@ -739,6 +774,7 @@ Plans:
 **Plans:** 3/3 plans complete
 
 Plans:
+
 - [x] `22-01-PLAN.md` — Types + mapping (DelegationErrorCode, DelegationError, createDelegationError, delegationStatusToHarnessStatus) — Wave 1
 - [x] `22-02-PLAN.md` — Notification routing (retry counter, TTL expiry, PendingNotificationRecord schema, replayPending cleanup) — Wave 2
 - [x] `22-03-PLAN.md` — Shared schema + integration (PendingNotification schema update, TERMINAL_EVENTS verification, phase gate) — Wave 3
@@ -750,6 +786,7 @@ Plans:
 **Why this exists:** Phase 22 notification routing has a CRITICAL flaw — `sendPrompt()` without `synthetic: true` stores delegation notifications as user-role messages, conflating system notifications with actual user input. Additionally, ALL hm-* orchestration skills contain aspirational patterns (non-existent scripts, ralph-loops, imaginary gate tools) that must be corrected before agents can use them reliably.
 
 **7 requirements (+3 SYNTHESIS):**
+
 - P23-01: Fix `notification-handler.ts` — add `synthetic: true` to all notification text parts
 - P23-02: Stream reactivation after notification delivery to idle sessions
 - P23-03: Create `hm-l3-tool-surface-documentation` — definitive reference for ALL 14+ Hivemind custom tools with differentiation matrix (task vs delegate-task vs execute-slash-command)
@@ -757,7 +794,9 @@ Plans:
 - P23-05: Rewrite `hivemind-power-on` skill — tool-based session governance using actual capabilities
 - P23-06: Structured assessment of trajectory/pressure/agent-work-contract — redesign or deprecation plan
 - P23-07: Create `hm-l3-injection-delivery-patterns` — silent vs required, body vs append, TUI vs direct patterns
+
 **SYNTHESIS (expanded scope — documentation only, defer to later phases):**
+
 - P23-S01: GSD deep research — 6 synthesis documents (command-system, agent-architecture, workflow-pipeline, quality-gates, sdk-surface, reference) ingested from github.com/gsd-build/get-shit-done/docs (113 files, 425K tokens). 9-dimension comparison: GSD vs Hivemind per domain. See `23-GSD-{TYPE}-2026-05-23.md`.
 - P23-S02: Debt registry — 25 findings (5 CRITICAL, 5 HIGH, 12 MEDIUM, 3 LOW) across hm-*/hf-* agents, commands, skills. **Phase 23 does NOT fix these debts** — each is deferred to its owning phase. See `23-DEBTS-REGISTER-2026-05-23.md`.
 - P23-S03: Document governance debt C-5 identified — artifact naming/pathing collapse systemic, deferred to Phase 31 as P31-01 through P31-07 requirements.
@@ -777,6 +816,7 @@ Plans:
 | `23-06-PLAN.md` | 4 (assessment) | P23-06 | Structured assessment of trajectory/pressure/work-contract tools |
 
 Plan list:
+
 - [x] `23-01-PLAN.md` — Notification fix: synthetic:true + two-mechanism + stream reactivation (Wave 1)
 - [x] `23-02-PLAN.md` — Tool surface documentation skill (Wave 2)
 - [x] `23-03-PLAN.md` — Injection delivery patterns skill (Wave 2)
@@ -791,6 +831,7 @@ Plan list:
 **Why this exists:** Phase 23 notification fixes đã thử nghiệm 4 rounds live UAT. U4 (session-tracker miss children) và U5 (hierarchy broken) vẫn FAIL qua tất cả rounds. Root cause chưa được xác nhận: SDK `session.created` event có fire cho sessions tạo từ custom tools (`client.session.create()`) hay không. Cần investigate chuyên sâu OpenCode SDK event system.
 
 **Requirements:**
+
 - P23.1-01: Research OpenCode SDK v1.15.5 — `session.created` event behavior for sessions created via `client.session.create()` inside custom tool dispatch
 - P23.1-02: Trace delegate-task dispatch path — identify all session creation points (coordinator.ts, manager-runtime.ts, session-creator.ts)
 - P23.1-03: Determine if missing event registration is architectural (cannot observe SDK sessions) or implementation gap (can fix with hook wiring)
@@ -801,6 +842,7 @@ Plan list:
 **Blocks:** Phase 25 (session-tracker/CP-ST phases)
 
 **Risks:**
+
 - HIGH: If OpenCode SDK v1.15.5 does NOT fire `session.created` events for sessions created from custom tool code → architectural limit, need alternative approach
 - MEDIUM: Session-tracker fix may require changes across 3+ modules (tool-before-guard, event-capture, coordinator, plugin.ts)
 
@@ -815,6 +857,7 @@ Plan list:
 **Requirements:** REQ-23.2-01 (assistant text extraction), REQ-23.2-02 (compaction summary), REQ-23.2-03 (tool attribution race), REQ-23.2-04 (hierarchy manifest), REQ-23.2-05 (actor field)
 
 **Plans:** 4/4 plans complete
+
 - [x] 23.2-01-PLAN.md — BUG#4 + BUG#5: manifestWriter.addChild() in tool-delegation.ts + subagentType dual-key extraction
 - [x] 23.2-02-PLAN.md — BUG#1: extractTextContent multi-field support in message-capture.ts
 - [x] 23.2-03-PLAN.md — BUG#3 + BUG#4: Tool attribution race fix + manifestWriter.addChild() in event-capture.ts
@@ -839,6 +882,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P24 (Coordination Dispatch requires verified notification delivery)
 
 **Success Criteria:**
+
 1. All 5 P23.2 bugs verified with live UAT (L1 evidence in fresh OpenCode session)
 2. Notification delivery logs show correct `synthetic: true` text parts in live session
 3. Session-tracker correctly captures child sessions from both `task` and `delegate-task` dispatch
@@ -855,6 +899,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P24.3 (Commands Infrastructure)
 
 **Success Criteria:**
+
 1. Coordination dispatch (P24) produces correct agent selection for restructured hierarchy (P24.1)
 2. Agent profiles (P24.2) enforce ≤3 skill declarations correctly when dispatched via Coordination
 3. End-to-end test: dispatch subagent → agent with quality profile → verify contract enforcement
@@ -871,6 +916,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P25 (Trajectory + Agent-Work-Contract Redesign)
 
 **Success Criteria:**
+
 1. Agents from restructured hierarchy can dispatch commands through namespace routers
 2. Workflow separation patterns produce correct command routing decisions
 3. YAML frontmatter schema validates agent-driven command definitions
@@ -887,6 +933,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P24.7 (Primitives Asset Schema), P24.8 (Primitives Install-Time Extraction), P24.9 (Bootstrap Init Flow Expansion)
 
 **Success Criteria:**
+
 1. Trajectory state transitions (P25) produce artifacts matching P26.1 naming conventions
 2. Pressure redesign (P26) produces correct scoring output when consuming P25 trajectory data
 3. Artifact gatekeeping (P26.2) validates P25/P26 output artifacts
@@ -903,6 +950,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P28 (Hook Injection Plane Redesign)
 
 **Success Criteria:**
+
 1. Primitives extracted in P24.8 are discoverable by P27 routing
 2. Bootstrap init (P24.9) correctly configures routing governance plane
 3. Intent classification reads primitive metadata from extracted files
@@ -919,6 +967,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P30 (Schema Kernel Cleanup - parallel track), P31 (Config Plane Redesign - parallel track), P33 (Plugin.ts Decomposition)
 
 **Success Criteria:**
+
 1. Intent classification → routing → hook injection → auto-looping path executes end-to-end
 2. Hook injection plane (P28) correctly enforces CQRS boundaries during auto-looping dispatch
 3. Auto-looping (P29) correctly terminates when hook-injected completion criteria met
@@ -935,6 +984,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P33 (Plugin.ts Decomposition), P34 (Async I/O), P35 (Module Splits)
 
 **Success Criteria:**
+
 1. Every Zod schema in P30 has a corresponding P31 config consumer (or explicit deferral)
 2. Every P31 config field validates against its P30 schema definition
 3. Schema-compiler.ts (410 LOC) split into manageable modules
@@ -951,6 +1001,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P33 (Plugin.ts Decomposition)
 
 **Success Criteria:**
+
 1. All Groups 1-3 phases complete with PASS quality gates
 2. No pending design changes for plugin.ts, delegation, session-tracker, notifications
 3. Full regression test suite runs at baseline (current pass count documented)
@@ -969,6 +1020,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Debts inherited from Phase 23:** C-1 (delegate-task proxy war), M-1 (L0 max skills), M-8 (start-work routing) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 **Governance:**
+
 - **GSD Re-validation:** NO — coordination dispatch is Hivemind-native, not sourced from GSD
 - **Architecture Absorption:** YES — DelegationManager decomposition belongs in `src/coordination/delegation/` and `src/tools/delegation/`, NOT in agent profiles
 - **Protocol Chain:** Spec (SPEC.md) → Research (CP-DT-01 research) → Context (CP-DT-01 CONTEXT.md) → Dependencies (P23.3) → Tech compliance (package.json SDK version) → Patterns (existing manager.ts patterns) → Feature completeness (CP-DT-01 REQs) → Tests (unit + integration) → Gates (lifecycle → spec → evidence)
@@ -987,6 +1039,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P24.2, P24.3, P24.4, P24.5, P24.6
 
 **Success Criteria:**
+
 1. L1 agent directory removed or migrated — L0 is sole front-facing orchestrator
 2. L2/L3 agents restructured by domain (Coordination, Routing, Schema, Structural)
 3. C-1 resolved: `task` tool standardized as preferred delegation method across all agents
@@ -994,6 +1047,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 5. M-1 resolved: every agent declares ≤3 skills
 
 **Governance:**
+
 - **GSD Re-validation:** NO — agent hierarchy is Hivemind-native design, not GSD-sourced
 - **Architecture Absorption:** NO — agent profiles live in `.opencode/agents/` (soft meta-concepts). Hierarchy restructure modifies agent files only, NOT `src/`
 - **Protocol Chain:** Spec (P24.1-SPEC.md) → Research (DEBTS-REGISTER audit) → Context (C-1/C-3/H-2/M-1/L-2/L-3 debt descriptions) → Dependencies (P24) → Feature completeness (5 success criteria) → Tests (agent validation script) → Gates (lifecycle → spec → evidence)
@@ -1012,6 +1066,7 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 **Blocks:** P24.3, P24.4, P24.5, P24.6
 
 **Success Criteria:**
+
 1. Every hm-* agent (30 agents) has documented execution flow (≥6 structured sections)
 2. Every hm-* agent declares success metrics and artifact delivery contract
 3. Every hm-* agent has anti-patterns section
@@ -1022,14 +1077,17 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 
 ```
 Plans:
+
 - [ ] 24.2-01-PLAN.md — Upgrade 8 Execution/Implementation Agents (hm-executor, hm-verifier, hm-planner, hm-plan-checker, hm-code-reviewer, hm-code-fixer, hm-integration-checker, hm-debug-session-manager)
 - [ ] 24.2-02-PLAN.md — Upgrade 8 Research/Planning Agents (hm-project-researcher, hm-phase-researcher, hm-synthesizer, hm-codebase-mapper, hm-pattern-mapper, hm-architect, hm-roadmapper, hm-specifier)
 - [ ] 24.2-03-PLAN.md — Upgrade 8 Cross-Cutting/Support Agents (hm-intent-loop, hm-ecologist, hm-shipper, hm-nyquist-auditor, hm-intel-updater, hm-security-auditor, hm-debugger, hm-user-profiler)
 - [ ] 24.2-04-PLAN.md — Upgrade 6 UI/Documentation/Orchestration Agents (hm-ui-researcher, hm-ui-checker, hm-ui-auditor, hm-doc-writer, hm-doc-verifier, hm-orchestrator)
 - [ ] 24.2-05-PLAN.md — Create Canonical Artifact Schema Reference (.planning/references/artifact-schema.md)
+
 ```
 
 **Governance:**
+
 - **GSD Re-validation:** NO — agent quality is Hivemind-native, quality standards from HMQUAL-01..08
 - **Architecture Absorption:** NO — agent profiles are `.opencode/agents/` only. Quality enforcement tools (scanner, validator) belong in `src/features/agent-quality/` at `src/`
 - **Protocol Chain:** Spec (P24.2-SPEC.md with quality criteria) → Research (24.2-RESEARCH.md with GSD synthesis) → Context (24-CONTEXT.md with D-24-01..04) → Dependencies (P24.1) → Patterns (GSD agent body format adapted for Hivemind) → Feature completeness (8 SPEC requirements Q-01..08) → Tests (grep-based verification per plan) → Gates (lifecycle → spec → evidence)
@@ -1048,6 +1106,7 @@ Plans:
 **Blocks:** P24.4, P24.5, P24.6
 
 **Success Criteria:**
+
 1. Namespace router design documented — command groups by domain (hm-*, gsd-*, hf-*)
 2. Workflow separation pattern established: discussion vs planning vs execution vs verification vs shipping
 3. YAML frontmatter schema defined for all command `.md` files
@@ -1055,6 +1114,7 @@ Plans:
 5. Backward compatibility with existing `.opencode/commands/` preserved
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — 67+88 commands/workflows pattern sourced from OLD GSD repo. Must re-validate against open-gsd/get-shit-done-redux. The namespace router and workflow separation patterns may differ in the new repo.
 - **Architecture Absorption:** YES — namespace routers go in `src/routing/command-engine/`, YAML schema in `src/schema-kernel/`, routing integration in `src/routing/`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P24.3-SPEC.md) → Research (GSD re-validation + existing execute-slash-command code) → Context (P23-S01 synthesis documents, P24.3.1 prototype findings) → Dependencies (P24.2, P24.3.1) → Tech compliance (validate against OpenCode SDK command schema) → Patterns (existing `.opencode/commands/` files) → Feature completeness (5 success criteria) → Tests (command dispatch unit + integration) → Gates (lifecycle → spec → evidence)
@@ -1070,6 +1130,7 @@ Plans:
 **Why this exists:** OpenCode SDK provides `sdk.session.create()`, `sdk.session.prompt()`, `sdk.tui.appendPrompt()`, `sdk.tui.showToast()` — but these APIs have not been tested in Hivemind's context. This prototype verifies: (1) Session auto-naming works with explicit title + parentID, (2) TUI injection displays correctly in OpenCode message stream, (3) Git commit flow before handoff is feasible. Without this validation, P24.3 risks building infrastructure on unverified SDK assumptions.
 
 **Plans:** 7 plans in 5 waves — 3 original (✅ COMPLETE) + 4 gap closure
+
 - [x] 24.3.1-01-PLAN.md — Wave 1: Create governance engine directory + tool implementation (Zod schema, SDK session creation, prompt injection, TUI toast, git commit) ✅ `0287eb10`, `6f28296f`, `98ea6b80`
 - [x] 24.3.1-02-PLAN.md — Wave 2: Register tool in plugin.ts + unit tests with mocked SDK calls ✅ `b0f1b087`, `f4057c82`
 - [x] 24.3.1-03-PLAN.md — Wave 3: Full verification — typecheck, test suite, regression check, grep evidence ✅ `56228b96`
@@ -1079,6 +1140,7 @@ Plans:
 - [ ] 24.3.1-07-PLAN.md — Wave 3: Delegation Metadata Propagation — fix delegatedBy.agentName, mainAgent.name, subagentType from "unknown" to real values
 
 **Scope:**
+
 1. Create custom tool `create-governance-session` that:
    - Creates a new OpenCode session via `sdk.session.create()` with explicit title naming
    - Injects TUI notification via `sdk.tui.showToast()` + `sdk.tui.appendPrompt()`
@@ -1090,6 +1152,7 @@ Plans:
 4. **Gap closure (04-07):** Fix 5 CRITICAL runtime UAT failures — phantom session, missing agent dispatch, missing config plane, missing title capture, "unknown" delegation metadata
 
 **Governance:**
+
 - **GSD Re-validation:** NO — governance session is a Hivemind-native prototype, not GSD-sourced
 - **Architecture Absorption:** YES — the tool itself lives at `src/tools/governance/create-governance-session.ts` (already exists). Config plane logic in `src/config/governance/`. NOT in agent profiles.
 - **Protocol Chain:** Spec (24.3.1-SPEC.md) → Research (OpenCode SDK session.create() API) → Context (existing prototype, 5 gap items) → Dependencies (P24) → Tech compliance (validate against @opencode-ai/plugin SDK version) → Patterns (existing tool registration pattern) → Feature completeness (7 plans × success criteria) → Tests (14 unit tests exist, gap closure tests needed) → Gates (lifecycle → spec → evidence)
@@ -1102,6 +1165,7 @@ Plans:
 **Blocks:** P24.3 (validates technical feasibility of Command Infrastructure SDK path), P24.4, P24.5, P24.6
 
 **Success Criteria:**
+
 1. `create-governance-session` tool registers in plugin.ts without conflicts
 2. Tool creates OpenCode session with formatted name `hm-governance:<workflow>-<context>` and parentID linkage
 3. TUI notification (`showToast` + `appendPrompt`) displays in main session message stream
@@ -1119,6 +1183,7 @@ Plans:
 **Blocks:** P24.5, P24.6
 
 **Success Criteria:**
+
 1. Standardized reference format defined — YAML frontmatter + markdown body per reference type
 2. Template engine designed — parameterized templates with variable substitution
 3. @-reference mechanism documented — `@agent:name`, `@skill:name`, `@command:name` resolution
@@ -1126,6 +1191,7 @@ Plans:
 5. `.hivemind/templates/` directory created with command and workflow templates
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — reference/template patterns may reference GSD ADR conventions from old repo. Must verify against open-gsd/get-shit-done-redux reference architecture.
 - **Architecture Absorption:** YES — template engine implementation goes in `src/features/templates/` or `src/shared/template-engine.ts`. Reference format schema in `src/schema-kernel/reference.schema.ts`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P24.4-SPEC.md) → Research (existing `.hivemind/` structure patterns + GSD reference conventions re-validated) → Context (P24.3 command infrastructure output) → Dependencies (P24.3, P24.3.1) → Patterns (existing `.hivemind/registries` structure) → Feature completeness (5 success criteria) → Tests (template engine unit tests + reference format validation) → Gates (lifecycle → spec → evidence)
@@ -1144,6 +1210,7 @@ Plans:
 **Blocks:** P24.6
 
 **Success Criteria:**
+
 1. Workflow size budget tiers defined and documented (XL/LARGE/DEFAULT/STRICT)
 2. Workflow decomposition into phases/phases/ templates established
 3. Pipeline stages documented: discuss → plan → execute → verify → ship
@@ -1151,6 +1218,7 @@ Plans:
 5. Size enforcement mechanism designed (gate at creation time)
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — size budget tiers and mode system are sourced directly from old GSD workflow patterns. Re-validate against open-gsd/get-shit-done-redux to verify tier values, mode definitions, and pipeline stages.
 - **Architecture Absorption:** YES — size enforcement gate in `src/routing/workflow-validator.ts` or `src/features/workflow/`. Pipeline orchestration in `src/features/workflow/pipeline.ts`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P24.5-SPEC.md) → Research (GSD workflow architecture re-validated + existing Hivemind workflow patterns) → Context (P24.4 references/templates output) → Dependencies (P24.4) → Tech compliance (validate size budget implementation against real workflow files) → Patterns (existing `.planning/phases/` structure) → Feature completeness (5 success criteria) → Tests (size budget validation tests + pipeline stage transition tests) → Gates (lifecycle → spec → evidence)
@@ -1169,6 +1237,7 @@ Plans:
 **Blocks:** P25
 
 **Success Criteria:**
+
 1. `hm-init-project` command creates new Hivemind project structure
 2. `hm-discuss` command starts phase discussion cycle
 3. `hm-plan` command creates phase plans from discussion output
@@ -1181,6 +1250,7 @@ Plans:
 10. All commands use `.hivemind/references/` and `.hivemind/templates/` from P24.4
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — HM-* command patterns (discuss → plan → execute → verify → ship) are derived from GSD workflow patterns. Each command's behavior must be re-validated against open-gsd/get-shit-done-redux. The 9-command list itself is Hivemind-native.
 - **Architecture Absorption:** YES — command implementations go in `src/cli/commands/hm-*` or as `.opencode/commands/hm-*` definitions. Core logic (discussion, planning, execution) belongs in `src/features/workflow/` NOT in agent profiles.
 - **Protocol Chain:** Spec (P24.6-SPEC.md per command) → Research (GSD re-validation + Hivemind workflow patterns) → Context (P24.3 infrastructure, P24.4 references, P24.5 workflows) → Dependencies (P24.5) → Patterns (existing GSD commands as reference, but must be transformed) → Feature completeness (10 success criteria) → Tests (each command unit test + E2E test) → Gates (lifecycle → spec → evidence per command)
@@ -1196,6 +1266,7 @@ Plans:
 **Debts inherited from Phase 23:** M-4 (legacy .harness/ path) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 **Governance:**
+
 - **GSD Re-validation:** NO — trajectory is Hivemind-native (session-tracker lineage), not GSD-sourced
 - **Architecture Absorption:** YES — trajectory logic in `src/task-management/trajectory/`, agent-work-contract in `src/features/work-contract/`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P25-SPEC.md including P23-06 assessment) → Research (existing trajectory code + P23-06 structured assessment) → Context (P23-06 findings, trajectory debts) → Dependencies (P23-P24.6 chain) → Tech compliance (validate against session-tracker types) → Patterns (existing trajectory.ts patterns) → Feature completeness (trajectory tests exist + correct state transitions) → Tests (TDD: RED tests for trajectory first) → Gates (lifecycle → spec → evidence)
@@ -1210,6 +1281,7 @@ Plans:
 **Depends on:** Phase 23, 24, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6, 25
 
 **Governance:**
+
 - **GSD Re-validation:** NO — pressure scoring and notification delivery are Hivemind-native
 - **Architecture Absorption:** YES — pressure scoring in `src/features/pressure/`, notification delivery in `src/features/notification/`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P26-SPEC.md) → Research (existing pressure.ts 625 LOC + P23-07 injection patterns) → Context (P23-07 patterns, notification debts) → Dependencies (P25 trajectory as input) → Tech compliance (validate against existing notification schema) → Patterns (existing notification-handler patterns) → Feature completeness (pressure tests + notification TTL/retry working) → Tests (TDD for pressure scoring + notification delivery) → Gates (lifecycle → spec → evidence)
@@ -1227,6 +1299,7 @@ Plans:
 **Depends on:** Phase 26
 
 **Success Criteria:**
+
 1. Canonical naming convention defined: `{PHASE}-{TYPE}[-{SUBTYPE}][-{DATE}].md` with TYPE = uppercase
 2. Artifact classification schema established: research/, specs/, plans/, syntheses/, audits/ per phase
 3. YAML frontmatter template defined for all artifacts
@@ -1234,6 +1307,7 @@ Plans:
 5. Existing artifacts batch-renamed to match convention (non-destructive — symlinks/aliases preserved)
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — artifact naming conventions reference GSD ADR-0006 (Planning Path Projection Module). Must re-validate against open-gsd/get-shit-done-redux ADR conventions.
 - **Architecture Absorption:** YES — naming convention validation goes in `src/features/governance/artifact-validator.ts` or `src/routing/artifact-governance/`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P26.1-SPEC.md) → Research (existing artifact patterns audit + GSD ADR re-validation) → Context (C-5 debt description, existing naming chaos) → Dependencies (P26) → Patterns (`.planning/architecture/` existing conventions) → Feature completeness (5 success criteria) → Tests (naming validation tests + batch rename dry-run) → Gates (lifecycle → spec → evidence)
@@ -1251,6 +1325,7 @@ Plans:
 **Depends on:** Phase 26.1
 
 **Success Criteria:**
+
 1. Gatekeeping loop validates each artifact on creation (naming, location, format, YAML frontmatter)
 2. Cross-session validation checks existing artifacts before creating new ones (prevent overlap)
 3. Dependency chain between artifacts is documented and enforceable
@@ -1258,6 +1333,7 @@ Plans:
 5. Cross-reference validation detects dead/broken artifact links
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — gatekeeping loops and dependency chains reference GSD quality gate patterns. Must re-validate against open-gsd/get-shit-done-redux gate architecture.
 - **Architecture Absorption:** YES — cross-reference validator in `src/features/governance/cross-ref-validator.ts`, gatekeeping loop in `src/features/governance/artifact-gate.ts`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P26.2-SPEC.md) → Research (existing gate skills + GSD gate patterns re-validated) → Context (P26.1 naming output) → Dependencies (P26.1) → Patterns (gate-l3-* skill patterns) → Feature completeness (5 success criteria) → Tests (gate loop unit tests + cross-ref integrity tests) → Gates (lifecycle → spec → evidence)
@@ -1276,6 +1352,7 @@ Plans:
 **Blocks:** P24.8
 
 **Success Criteria:**
+
 1. Primitive type schema defined for each: agent, command, skill, tool, workflow
 2. Zod schema for each primitive type with validation rules
 3. Code-gen pipeline: schema → TypeScript types → `src/assets/` module
@@ -1283,6 +1360,7 @@ Plans:
 5. Legacy `.hivefiver-meta-builder/` symlink pattern documented as dev-only
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — primitive schema patterns may reference GSD primitive conventions. Verify against open-gsd/get-shit-done-redux.
 - **Architecture Absorption:** YES — schemas in `src/schema-kernel/primitive-*.schema.ts`, code-gen in `src/shared/codegen/`, runtime validation in `src/shared/primitive-validator.ts`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P24.7-SPEC.md) → Research (existing primitive formats + GSD conventions re-validated) → Context (P26 artifact conventions, existing `.hivefiver-meta-builder/` structure) → Dependencies (P26) → Tech compliance (validate against @opencode-ai/plugin primitive format) → Patterns (existing Zod schema patterns) → Feature completeness (5 success criteria) → Tests (schema validation + code-gen output tests) → Gates (lifecycle → spec → evidence)
@@ -1301,6 +1379,7 @@ Plans:
 **Blocks:** P24.9
 
 **Success Criteria:**
+
 1. `npx hivemind init` extracts primitives from `assets/` to `.opencode/` as real files
 2. Global install extracts to global `.opencode/` directory
 3. Project install extracts to project `.opencode/` directory
@@ -1310,6 +1389,7 @@ Plans:
 7. Legacy `bootstrap-recover` tool updated to use extraction (not symlinks)
 
 **Governance:**
+
 - **GSD Re-validation:** NO — primitive extraction is Hivemind-native (extends existing BOOT workstream)
 - **Architecture Absorption:** YES — extraction logic in `src/tools/bootstrap-extract.ts` or `src/cli/commands/init.ts`. Permissions resolution in `src/shared/permissions/`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P24.8-SPEC.md) → Research (existing BOOT-02..BOOT-07 patterns + npm install hooks) → Context (P24.7 schema output) → Dependencies (P24.7) → Tech compliance (validate against OpenCode's `.opencode/` primitive discovery) → Patterns (BOOT-04 symlink restoration as baseline) → Feature completeness (7 success criteria) → Tests (extraction unit tests + atomic rollback tests + E2E init test) → Gates (lifecycle → spec → evidence)
@@ -1328,6 +1408,7 @@ Plans:
 **Blocks:** P27
 
 **Success Criteria:**
+
 1. `npx hivemind init` creates complete `.hivemind/` directory tree
 2. `npx hivemind init` extracts shipped primitives to `.opencode/` as real files
 3. Routing governance plane initialized with default configuration
@@ -1337,6 +1418,7 @@ Plans:
 7. End-to-end clean temp project proof: init → doctor → verify primitives exist
 
 **Governance:**
+
 - **GSD Re-validation:** NO — bootstrap is Hivemind-native (BOOT-02..BOOT-07 already delivered)
 - **Architecture Absorption:** YES — full init orchestration in `src/cli/commands/init.ts`, framework conflict detection in `src/features/governance/framework-detector.ts`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P24.9-SPEC.md) → Research (existing BOOT workstream patterns) → Context (P24.8 extraction output, existing BOOT artifacts) → Dependencies (P24.8) → Patterns (BOOT-07 E2E proof pattern) → Feature completeness (7 success criteria) → Tests (E2E init test + conflict detection test) → Gates (lifecycle → spec → evidence)
@@ -1355,6 +1437,7 @@ Plans:
 **Debts inherited from Phase 23:** M-3 (conductor domain mismatch), M-7 (context-mapper underspecified) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — two-stage routing (namespace meta-skills) and workflow separation pattern are sourced from old GSD research. Must re-validate against open-gsd/get-shit-done-redux to verify these patterns still apply.
 - **Architecture Absorption:** YES — routing engine in `src/routing/`, intent classifier in `src/routing/intent-classifier/`, namespace meta-skills in `src/routing/namespace-router/`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P27-SPEC.md with expanded scope) → Research (GSD routing patterns re-validated + existing intent-classifier analysis) → Context (M-3, M-7 debts, P23-S01 synthesis) → Dependencies (P21-P26.2 chain, P24.7-P24.9) → Tech compliance (validate against existing routing code) → Patterns (existing routing/ module patterns) → Feature completeness (fragile substring fixed + two-stage routing + workflow separation) → Tests (1,200 LOC of untested code covered + new routing tests) → Gates (lifecycle → spec → evidence)
@@ -1371,6 +1454,7 @@ Plans:
 **Depends on:** Phase 27
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — workflow size budget enforcement and command inventory drift-guard are sourced from old GSD patterns. Re-validate against open-gsd/get-shit-done-redux.
 - **Architecture Absorption:** YES — hook injection in `src/hooks/`, CQRS enforcement in `src/hooks/guards/`, drift-guard in `src/routing/command-engine/drift-guard.ts`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P28-SPEC.md with expanded scope) → Research (existing hook code + GSD patterns re-validated + P23-07 delivery patterns) → Context (P27 routing output) → Dependencies (P27) → Tech compliance (validate hook signatures against @opencode-ai/plugin SDK) → Patterns (existing hook module patterns) → Feature completeness (CQRS fix + typed signatures + silent/required classification + size budgets + drift-guard) → Tests (hook type tests + CQRS violation tests + drift detection tests) → Gates (lifecycle → spec → evidence)
@@ -1386,6 +1470,7 @@ Plans:
 **Debts inherited from Phase 23:** H-5 (external scripts), M-11 (gate dependencies) — see `23-DEBTS-REGISTER-2026-05-23.md`
 
 **Governance:**
+
 - **GSD Re-validation:** ⚠️ YES — auto-looping patterns and verification patterns are sourced from old GSD ralph-loop research. Re-validate against open-gsd/get-shit-done-redux.
 - **Architecture Absorption:** YES — auto-loop engine in `src/features/auto-loop/`, PTY integration in `src/features/pty/`, background commands in `src/features/background-command/`. NOT in agent profiles.
 - **Protocol Chain:** Spec (P29-SPEC.md) → Research (existing auto-loop code + GSD loop patterns re-validated + PTY CP-PTY-00 research) → Context (P23-04 rewritten skills, P28 hook output) → Dependencies (P28) → Tech compliance (validate PTY against bun-pty version in package.json) → Patterns (existing auto-loop module patterns) → Feature completeness (session-tracker dependency fixed + ralph-loop replaced + routing pipeline wired + prompt-packet deleted) → Tests (auto-loop unit + PTY integration) → Gates (lifecycle → spec → evidence)
@@ -1404,6 +1489,7 @@ Plans:
 
 **Goal:** Fix config subscriber singleton. Fix decompileAgent bug. Fix validateWithFallback locale check. Split compiler.ts (410 LOC). Establish planning-path projection and document/artifact naming/pathing governance (inspired by GSD ADR-0006 Planning Path Projection Module + STATE.md Document Module).
 **Requirements:**
+
 - P31-01: Standardize artifact naming convention: `{PHASE}-{TYPE}[-{SUBTYPE}][-{DATE}].md` với TYPE = uppercase
 - P31-02: Standardize phase artifact structure: SPEC.md, RESEARCH.md, PLAN.md, PLAN-N.md, SUMMARY.md, SYNTHESIS.md, DEBTS-REGISTER.md
 - P31-03: Classify artifacts by category: research/, specs/, plans/, syntheses/, audits/ per phase
@@ -1411,6 +1497,7 @@ Plans:
 - P31-05: Cross-session validation: check existing artifacts before creating new ones
 - P31-06: Planning-path projection module (centralized path resolution à la GSD ADR-0006)
 - P31-07: Debt tracking: integrate `.hivemind/tracking/` (or phase-level `DEBTS-REGISTER.md`) into workflow commands
+
 **Depends on:** Phase 30
 
 ### Phase 32: Shipped Primitives + Governance Wire (Group 3 — was Phase 31)
@@ -1468,11 +1555,23 @@ These 8 phases address code quality, type safety, performance, and architectural
 - [ ] **C7 (Concerns): Test Coverage** — Fix: untested hooks modules (10+ files with 0 coverage); ~80-100 source files without direct test coverage; missing integration tests for session tracker race conditions [Arch-src: YES - src/hooks/**/*.ts, src/features/**/*.ts, src/task-management/**/*.ts] [UAT: hooks modules ≥50% line coverage, session-tracker race condition integration tests exist and pass, overall test coverage increases by ≥10%]
 - [ ] **C8 (Concerns): Dependency Cleanup** — Fix: bun-pty in dependencies (should be optionalDependencies); bun-types in dependencies (should be devDependencies); Zod v4 pinned with caret range (pin to specific minor); no runtime SDK version validation [Arch-src: YES - package.json, src/shared/sdk-version.ts (new)] [UAT: bun-pty in optionalDependencies, bun-types in devDependencies, Zod pinned to exact minor, runtime SDK version validation check exists and runs on plugin load]
 
+### Phase 39: C1 Critical Type Safety & Error Handling
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 38
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 39 to break down)
+
 ---
 
 ## Managed Autonomous Loop — Cycle 3: Cluster-Based Restructuring (Post-Gap Refinement)
 
 **Current authorized cycle: Cycle 3 — Cluster-Based Restructuring** (Phases 21-38 + GAPs P23.3-P23.10)
+
 - Entry gate: Phase 20 COMPLETE (2026-05-21)
 - Cluster ordering (critical path): D (Coordination) → A (Agent Quality) + C (Commands & Workflows) → P25 (Trajectory) → P26 (Pressure) → B (Documents) → E (Primitives) + F (Bootstrap) → G (Routing) → H (Hooks) → I (Auto-loop/PTY) → J (Schema/Config, parallel) → K (Cleanup) → L (Verification)
 - 8 integration gate phases (P23.3-P23.10) added to verify cross-cluster compatibility before downstream consumption
@@ -1481,10 +1580,12 @@ These 8 phases address code quality, type safety, performance, and architectural
 - Non-destructive foundation sweep (P00.5) precedes Group 1
 
 **Previous cycles:**
+
 - **Cycle 1 — Lifecycle Alignment:** ✅ COMPLETE (O3 docs + sector AGENTS.md + config cleanup)
 - **Cycle 2 — Bootstrap Recovery:** ✅ COMPLETE (BOOT-02 through BOOT-07, Phase 15-20 delivered)
 
 **Completed phases summary (11-23.2):**
+
 - Phase 11: Governance reconciliation
 - Phase 12: CP-ST-01 remediation
 - Phase 13: Session-tracker defects (6/6 plans)
@@ -1503,6 +1604,7 @@ These 8 phases address code quality, type safety, performance, and architectural
 - **Phase 23.2: Session-Tracker Bugfix — Unified task/delegate-task (4/4 plans)** ✅
 
 **Gap phases inserted (P23.3-P23.10):**
+
 - P23.3: Notification Delivery L1 UAT Verification (GAP-01)
 - P23.4: D→A Cross-Cluster Integration Gate (GAP-02)
 - P23.5: A→C Cross-Cluster Integration Gate (GAP-03)
@@ -1513,6 +1615,7 @@ These 8 phases address code quality, type safety, performance, and architectural
 - P23.10: Pre-Structural-Cleanup Readiness Gate (GAP-08)
 
 **Concern-remediation phases inserted (C1-C8):**
+
 - C1: Critical Type Safety & Error Handling (P0)
 - C2: Type Safety & Security Hardening (P1)
 - C3: Module Decomposition & Promise Patterns (P1)

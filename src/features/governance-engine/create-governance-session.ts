@@ -113,7 +113,7 @@ export function createGovernanceSessionTool(
         const cwd = context.directory ?? context.worktree ?? process.cwd()
         execSync(
           `git add -A && git commit -m "phase(24.3.1): pre-governance handoff - ${sessionTitle}" --no-verify`,
-          { cwd, env: { ...process.env } },
+          { cwd, env: { ...process.env, GIT_AUTHOR_NAME: "HiveMind", GIT_AUTHOR_EMAIL: "hivemind@local", GIT_COMMITTER_NAME: "HiveMind", GIT_COMMITTER_EMAIL: "hivemind@local" } },
         )
       } catch {
         // Best-effort: git failure must never propagate to the caller

@@ -86,6 +86,7 @@ interface ExecuteInput {
   commandSource?: string
   trackExecution?: boolean
   parentSessionID?: string
+  stackOnSessionId?: string
   [key: string]: unknown
 }
 
@@ -122,6 +123,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
       "(agent runs one turn, then restored), (2) subtask:true + agent → subtask delegation via session.prompt(), " +
       "(3) no overrides → TUI appendPrompt/submitPrompt for basic command execution. " +
       "When agent is provided without subtask, defaults to subtask:false (parent session dispatch). " +
+      "Use `stackOnSessionId` to attach command execution onto an existing session (PREFERRED for retrying or continuing work). " +
       "Use `hivemind-command-engine` with action `discover` or `list_commands` to find available commands first.",
     args: ExecuteSlashCommandSchema.shape as unknown as Parameters<typeof tool>[0]["args"],
     async execute(args: ExecuteInput, ctx) {
@@ -256,8 +258,8 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           }
         }
 
-        // Determine parentSessionID
-        const resolvedParentSessionID = executionArgs.parentSessionID || ctx.sessionID || ""
+        // Determine parentSessionID — stackOnSessionId takes precedence
+        const resolvedParentSessionID = executionArgs.stackOnSessionId || executionArgs.parentSessionID || ctx.sessionID || ""
 
         // Check if subtask was explicitly passed in args
         const hasExplicitSubtask = overrideSubtask !== undefined

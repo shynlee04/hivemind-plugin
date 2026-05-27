@@ -64,14 +64,28 @@
 
 <!-- NOTE: explore agent is MISSING from the filesystem -->
 
-- For effective session-resume delegation (when user disconnected and there were previous aborted delegation tasks). Do not start new delegation, start the same start with **THE EXACT SESSION ID** to resume.
+- **DELEGATION STACKING — MANDATORY PROTOCOL (STACK-ON OVER NEW):** ALL agents MUST prefer stacking onto existing sessions over creating new ones. This is the DEFAULT behavior, not an edge case. The SDK supports stacking via `task_id` / `stackOnSessionId` for ANY valid session ID — completed, failed, aborted, cancelled, or even active sessions. This works both within the current delegation tree AND across independent sessions.
 
-- **DELEGATION STACKING — attach work onto ANY existing session:** Both `task` and `delegate-task` support attaching new work as a child of a completed main session — NOT just resuming aborted tasks. Pattern: pass the existing session ID directly.
-  - **`task` tool:** set `task_id` parameter to any existing session ID (not just a previous task_id from task tool). The new subagent attaches as a child of that session.
-  - **`delegate-task` tool:** pass `context` as JSON: `{"parentSessionId": "<session-id>"}`. The new delegation attaches as a child of that session.
-  - Do NOT inject the session ID into the prompt text — that creates a new independent session. The correct approach is passing it as a parameter so OpenCode's hierarchy tracking properly chains the sessions.
-  - **Prompt stays simple** — context from the target session is preserved through the session chain. No need to re-describe old work in the prompt. This is the same principle as `subagent_type`/`agent` parameter: you specify the agent name to select the handler, you specify `task_id`/`parentSessionId` to select the session to attach to.
-  - This pattern covers BOTH use cases: **resume** (incomplete session) and **stack-on** (completed session to add new work as a child).
+  **BEFORE dispatching a new delegation, agents MUST:**
+  1. Call `delegation-status({ action: "find-stackable" })` to discover available sessions
+  2. If stackable sessions exist for the target agent, USE THEM via `stackOnSessionId`
+  3. Only create a new session if NO stackable sessions are found
+
+  **When a delegation fails, agents MUST:**
+  - Stack retry onto the FAILED session to preserve context — NEVER create a new session
+  - The delegation-status tool provides `retryCommand` and `retryGuidance` for failed delegations
+
+  **Tool patterns:**
+  - **`task` tool:** `task({ subagent_type: "agent-name", task_id: "<existing-session-id>", prompt: "..." })` — attaches as child
+  - **`delegate-task` tool:** `delegate-task({ agent: "agent-name", prompt: "...", stackOnSessionId: "<existing-session-id>" })` — first-class parameter
+  - **`delegate-task` legacy:** `delegate-task({ agent: "agent-name", prompt: "...", context: '{"parentSessionId": "<session-id>"}' })` — backward compatible but prefer `stackOnSessionId`
+  - **`execute-slash-command`:** `execute-slash-command({ command: "cmd", stackOnSessionId: "<existing-session-id>" })` — stacks command execution
+
+  **Anti-patterns (VIOLATIONS):**
+  - ❌ Creating a new delegation after a previous one failed for the same agent/task — MUST stack on
+  - ❌ Dispatching without checking `find-stackable` first — MUST check
+  - ❌ Injecting session ID into the prompt text — that creates a NEW session, does NOT stack
+  - ❌ Ignoring `retryCommand` in delegation-status output — MUST use it for retries
 
 - The front facing agents must keep track, monitor, make sure not a single validation, verification, review steps are skips, planning , audit and verification must following format of the participated framework with honest verification and prevention of regressions. 
 
@@ -229,6 +243,7 @@ tests/tools/                   # Tool-focused unit tests
 | Persist delegation records | `src/task-management/continuity/delegation-persistence.ts` — `persistDelegations()`, `readPersistedDelegations()` |
 | Change tool response envelope | `src/shared/tool-response.ts` — standard response wrapper |
 | Change prompt-enhance schemas | `src/schema-kernel/prompt-enhance.schema.ts` — Zod schemas for skim/analyze/patch |
+| Change session stacking intelligence | `src/coordination/delegation/session-intelligence.ts` — proactive stacking recommendations |
 
 ---
 

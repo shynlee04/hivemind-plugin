@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_194efc8cfffeq40XT67zWITVDa",
-  "lastUpdated": "2026-05-27T20:40:23.070Z",
+  "lastUpdated": "2026-05-27T20:49:06.728Z",
   "hierarchy": {
     "root": "ses_194efc8cfffeq40XT67zWITVDa",
     "children": {
@@ -122,16 +122,8 @@
         "file": "ses_194d58aa4ffeQQdBdY6LyKTKQZ.json",
         "depth": 1,
         "status": "active",
-        "delegatedBy": "gsd-codebase-mapper",
-        "children": {
-          "ses_194d54551ffemJYO9u4GsJ3c8O": {
-            "file": "ses_194d54551ffemJYO9u4GsJ3c8O.json",
-            "depth": 2,
-            "status": "active",
-            "delegatedBy": "gsd-codebase-mapper",
-            "children": {}
-          }
-        }
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
       },
       "ses_194d54551ffemJYO9u4GsJ3c8O": {
         "file": "ses_194d54551ffemJYO9u4GsJ3c8O.json",
@@ -146,8 +138,8 @@
   "toolSummary": {
     "glob": 4,
     "read": 10,
-    "task": 13,
+    "task": 14,
     "execute-slash-command": 7,
-    "bash": 12
+    "bash": 13
   }
 }

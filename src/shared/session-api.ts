@@ -231,8 +231,7 @@ export async function showTuiToast(
 ): Promise<unknown> {
   return unwrapData(await client.tui.showToast({
     body: { message, ...(variant ? { variant } : {}) },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any))
+  } as Parameters<typeof client.tui.showToast>[0]))
 }
 
 export function getSessionID(session: unknown): string | undefined {

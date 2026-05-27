@@ -43,6 +43,7 @@ import { resolve } from "node:path"
 import { ToolDelegation } from "./tool-delegation.js"
 import { ProjectContinuityChecker } from "./project-continuity.js"
 import { FLUSH_INTERVAL_MS } from "./persistence/retry-queue.js"
+import { isValidSessionID } from "./types.js"
 
 /**
  * Central session tracker class.
@@ -130,6 +131,7 @@ export class SessionTracker {
    */
   private async hasMainSessionFile(sessionID: string): Promise<boolean> {
     try {
+      if (!isValidSessionID(sessionID)) return false
       const filePath = resolve(sessionTrackerRoot(this.projectRoot), sessionID, `${sessionID}.md`)
       await readFile(filePath, "utf-8")
       return true

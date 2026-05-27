@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs"
+import { readFile } from "node:fs/promises"
 import { isAbsolute, relative, resolve } from "node:path"
 
 /**
@@ -91,6 +92,24 @@ export function readCanonicalState(absolutePath: string, opts: ReadOnlyStateOpti
     )
   }
   return readFileSync(absolutePath, "utf8")
+}
+
+/**
+ * Async version of {@link readCanonicalState} for use in async contexts
+ * (e.g., Next.js route handlers). Avoids blocking the event loop on large files.
+ *
+ * @param absolutePath - Absolute path to read.
+ * @param opts - Read-only state options including the project root.
+ * @returns File contents as a string.
+ * @throws Always throws a `[Harness]` SIDECAR-03 error if the path is not canonical.
+ */
+export async function readCanonicalStateAsync(absolutePath: string, opts: ReadOnlyStateOptions): Promise<string> {
+  if (!isCanonicalStatePath(absolutePath, opts)) {
+    throw new Error(
+      `[Harness] sidecar SIDECAR-03: read denied for non-canonical path: ${absolutePath}`,
+    )
+  }
+  return readFile(absolutePath, "utf8")
 }
 
 /**

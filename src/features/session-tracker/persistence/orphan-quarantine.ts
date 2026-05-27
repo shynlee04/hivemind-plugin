@@ -11,6 +11,7 @@
 import { readdir, rename, rm, access, readFile } from "node:fs/promises"
 import { join, dirname } from "node:path"
 import { mkdir } from "node:fs/promises"
+import { isValidSessionID } from "../types.js"
 
 /**
  * Manages quarantine of orphan session directories.
@@ -44,6 +45,7 @@ export class OrphanQuarantine {
    * @returns Promise that resolves when the move is complete.
    */
   async quarantineOrphan(sessionID: string): Promise<void> {
+    if (!isValidSessionID(sessionID)) return
     const sourcePath = join(this.trackerRoot, sessionID)
 
     // Verify source exists before attempting move

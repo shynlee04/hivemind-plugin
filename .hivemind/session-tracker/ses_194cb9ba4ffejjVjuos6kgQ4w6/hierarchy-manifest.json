@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
+  "lastUpdated": "2026-05-27T21:32:43.997Z",
+  "children": {
+    "ses_194cae4b2ffeJ2cNYbc9zuwdDW": {
+      "sessionID": "ses_194cae4b2ffeJ2cNYbc9zuwdDW",
+      "parentSessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
+      "rootMainSessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-codebase-mapper",
+      "createdAt": "2026-05-27T20:51:43.121Z",
+      "updatedAt": "2026-05-27T20:56:34.030Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_194cae4b2ffeJ2cNYbc9zuwdDW.json"
+    },
+    "ses_194c27351ffer4b1ONh4wyghLd": {
+      "sessionID": "ses_194c27351ffer4b1ONh4wyghLd",
+      "parentSessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
+      "rootMainSessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-roadmapper",
+      "createdAt": "2026-05-27T21:00:56.424Z",
+      "updatedAt": "2026-05-27T21:02:35.649Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_194c27351ffer4b1ONh4wyghLd.json"
+    },
+    "ses_194bc8fc4ffe0YnmC50A1FXX7u": {
+      "sessionID": "ses_194bc8fc4ffe0YnmC50A1FXX7u",
+      "parentSessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
+      "rootMainSessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-ai-researcher",
+      "createdAt": "2026-05-27T21:07:22.342Z",
+      "updatedAt": "2026-05-27T21:10:45.164Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_194bc8fc4ffe0YnmC50A1FXX7u.json"
+    },
+    "ses_194b88d79ffe4u9HS6d4RR6dTo": {
+      "sessionID": "ses_194b88d79ffe4u9HS6d4RR6dTo",
+      "parentSessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
+      "rootMainSessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-ai-researcher",
+      "createdAt": "2026-05-27T21:11:45.090Z",
+      "updatedAt": "2026-05-27T21:32:43.997Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_194b88d79ffe4u9HS6d4RR6dTo.json"
+    }
+  },
+  "totalChildren": 4,
+  "maxDepth": 1
+}
