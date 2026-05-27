@@ -18,6 +18,7 @@ describe("dispatch-command", () => {
     },
     session: {
       prompt: vi.fn().mockResolvedValue({}),
+      command: vi.fn().mockResolvedValue({}),
     },
   }
 
@@ -33,7 +34,7 @@ describe("dispatch-command", () => {
     expect(await validateAgentExists("fake-agent", mockClient)).toBe(false)
   })
 
-  it("dispatches synthetic prompt successfully", async () => {
+  it("dispatches synthetic prompt with agent override via session.prompt()", async () => {
     const result = await dispatchCommand({
       client: mockClient,
       sessionID: "ses-123",
@@ -41,6 +42,8 @@ describe("dispatch-command", () => {
       promptText: "run gsd-stats",
     })
     expect(result.success).toBe(true)
+    // Wait for deferred setTimeout(fn, 50) dispatch to fire
+    await new Promise<void>((resolve) => setTimeout(resolve, 60))
     expect(mockClient.session.prompt).toHaveBeenCalledWith(
       expect.objectContaining({
         path: { id: "ses-123" },
@@ -52,20 +55,24 @@ describe("dispatch-command", () => {
     )
   })
 
-  it("returns error envelope when prompt dispatch fails", async () => {
+  it("defers dispatch and returns success immediately", async () => {
     const errorClient = {
       app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
-      session: { prompt: vi.fn().mockRejectedValue(new Error("Network error")) },
+      session: {
+        prompt: vi.fn().mockRejectedValue(new Error("Network error")),
+        command: vi.fn().mockRejectedValue(new Error("Network error")),
+      },
     }
     const result = await dispatchCommand({
       client: errorClient,
       sessionID: "ses-123",
       agent: "gsd-executor",
-      promptText: "run gsd-stats",
+      commandName: "gsd-stats",
+      promptText: "gsd-stats body",
     })
-    expect(result.success).toBe(false)
-    expect(result.error).toBe(true)
-    expect(result.output).toContain("Network error")
+    // Deferred dispatch: tool returns before session.command() fires
+    expect(result.success).toBe(true)
+    expect(result.error).toBeUndefined()
   })
 
   it("throws InvalidCommandError for invalid agent format in dispatch", async () => {

@@ -38,13 +38,14 @@ export async function dispatchCommand(context: {
   client: OpenCodeClient
   sessionID: string
   agent?: string
+  restoreAgent?: string
   promptText: string
   subtask?: boolean
   description?: string
   commandSource?: string
   directory?: string
 }): Promise<{ success: boolean; output?: string; error?: boolean }> {
-  const { client, sessionID, agent, promptText, subtask, description, commandSource, directory } = context
+  const { client, sessionID, agent, restoreAgent, promptText, subtask, description, commandSource, directory } = context
 
   if (agent) {
     if (!validateAgentFormat(agent)) {
@@ -56,39 +57,61 @@ export async function dispatchCommand(context: {
     }
   }
 
-  // Build the prompt request parts depending on whether it's subtask or text
-  const parts: Array<Record<string, unknown>> = []
-  if (subtask) {
-    parts.push({
-      type: "subtask",
-      agent,
-      description: description || "",
-      prompt: promptText,
-      parentSessionID: sessionID,
-      commandSource: commandSource || "user",
-    })
-  } else {
-    parts.push({
-      type: "text",
-      text: promptText,
-    })
-  }
+  // Deferred dispatch: schedule on next macrotask (setTimeout) so the tool
+  // returns before session.prompt() fires on the same session — prevents
+  // reentrant deadlock. The tool's execute() handler must return before the
+  // session can process new input.
+  setTimeout(async () => {
+    try {
+      if (subtask) {
+        // Subtask: session.prompt() with subtask part + agent
+        const parts = [{
+          type: "subtask",
+          agent,
+          description: description || "",
+          prompt: promptText,
+          parentSessionID: sessionID,
+          commandSource: commandSource || "user",
+        }]
+        const body: Record<string, unknown> = { parts }
+        if (agent) body.agent = agent
+        await client.session.prompt({
+          path: { id: sessionID },
+          body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
+          ...(directory ? { query: { directory } } : {}),
+        })
+      } else {
+        // Synthetic prompt: session.prompt() with text part + agent override
+        // This sends the expanded command body to the specified agent,
+        // which processes it as a user message. agent in body.agent tells
+        // the session to route to that agent.
+        const parts = [{ type: "text", text: promptText }]
+        const body: Record<string, unknown> = { parts }
+        if (agent) body.agent = agent
+        await client.session.prompt({
+          path: { id: sessionID },
+          body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
+          ...(directory ? { query: { directory } } : {}),
+        })
 
-  const body: { parts: Array<Record<string, unknown>>; agent?: string } = { parts }
-  if (agent) {
-    body.agent = agent
-  }
+        // After the target agent finishes processing, restore the original agent
+        // so the session doesn't permanently stay on the overridden agent.
+        if (restoreAgent && restoreAgent !== agent) {
+          await client.session.prompt({
+            path: { id: sessionID },
+            body: {
+              parts: [{ type: "text", text: "Continue." }],
+              agent: restoreAgent,
+            } as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
+            ...(directory ? { query: { directory } } : {}),
+          })
+        }
+      }
+    } catch (caughtError: unknown) {
+      const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+      console.error(`[Harness] Slash command dispatch failed: ${message}`)
+    }
+  }, 50)
 
-  try {
-    await client.session.prompt({
-      path: { id: sessionID },
-      body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
-      ...(directory ? { query: { directory } } : {}),
-    })
-    return { success: true }
-  } catch (caughtError: unknown) {
-    const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-    console.error(`[Harness] Slash command prompt dispatch failed: ${message}`)
-    return { success: false, error: true, output: message }
-  }
+  return { success: true }
 }

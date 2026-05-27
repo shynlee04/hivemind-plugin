@@ -35,6 +35,9 @@ export const CommandFrontmatterSchema = z
     agent: z.string().min(1).optional(),
     model: z.string().min(1).optional(),
     subtask: z.boolean().optional(),
+    namespace: z.string().min(1).optional(),
+    requires: z.array(z.string()).optional(),
+    tools: z.record(z.string(), z.any()).optional(),
   })
   .strict()
 

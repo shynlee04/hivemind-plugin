@@ -1,5 +1,3 @@
-import { createTuiPrompt } from "../../cli/ui/prompts.js"
-
 export interface AgentMatchResult {
   agent: string | null
   score: number
@@ -33,42 +31,40 @@ export async function selectAgent(
     return { agent: null, score: 0, fallback: true, userSpecified: false }
   }
 
-  // Extract keywords from intent
+  // Extract keywords from intent — split on whitespace AND hyphens
   const keywords = extractKeywords(intent)
 
-  // Filter agents by keyword in name/description
+  // Determine command prefix (lineage) for targeted agent matching
+  const commandPrefix = intent.startsWith("gsd-") ? "gsd" :
+    intent.startsWith("hm-") ? "hm" :
+    intent.startsWith("hf-") ? "hf" : null
+
+  // Filter agents by keyword + prefix/lineage matching
   const matches = normalizedAgents.filter((agent) => {
-    const nameMatch = keywords.some((keyword) =>
-      agent.name.toLowerCase().includes(keyword)
-    )
-    const descMatch = keywords.some((keyword) =>
-      agent.description?.toLowerCase().includes(keyword)
-    )
-    return nameMatch || descMatch
+    const nameLower = agent.name.toLowerCase()
+    const keywordMatch = keywords.some((keyword) => nameLower.includes(keyword))
+    const prefixMatch = commandPrefix ? nameLower.startsWith(commandPrefix) : true
+    return keywordMatch && prefixMatch
   })
 
-  // If no matches → ask user to specify exact name (per D-26)
-  if (matches.length === 0) {
-    const agentNames = normalizedAgents.map((a) => a.name).join(", ")
-    const userChoice = await createTuiPrompt({
-      type: "text",
-      message: "No matching agent found. Please specify exact agent name:",
-      hint: `Available agents: ${agentNames}`,
-    })
+  // If still no matches, try keyword-only (broader search)
+  const broadMatches = matches.length === 0 ? normalizedAgents.filter((agent) => {
+    const nameLower = agent.name.toLowerCase()
+    return keywords.some((keyword) => nameLower.includes(keyword))
+  }) : matches
 
-    if (userChoice) {
-      const specifiedAgent = normalizedAgents.find(
-        (a) => a.name.toLowerCase() === userChoice.trim().toLowerCase()
-      )
-      if (specifiedAgent) {
-        return { agent: specifiedAgent.name, score: 1.0, fallback: false, userSpecified: true }
-      }
-    }
+  const finalMatches = broadMatches.length > 0 ? broadMatches : normalizedAgents.filter((agent) => {
+    const descLower = agent.description?.toLowerCase() ?? ""
+    return keywords.some((keyword) => descLower.includes(keyword))
+  })
+
+  // No matches → return clean fallback, no interactive prompt
+  if (finalMatches.length === 0) {
     return { agent: null, score: 0, fallback: true, userSpecified: false }
   }
 
   // Sort by similarity score (fuzzy matching)
-  const matchesWithScores = matches.map((agent) => ({
+  const matchesWithScores = finalMatches.map((agent) => ({
     agent,
     score: calculateSimilarityScore(keywords, agent),
   }))
@@ -83,12 +79,17 @@ export async function selectAgent(
   }
 }
 
+const STOP_WORDS = new Set([
+  "the", "a", "an", "for", "to", "in", "on", "of", "with", "by", "at", "from", "command"
+])
+
 function extractKeywords(text: string): string[] {
   return text
     .toLowerCase()
     .split(/\s+/)
-    .map((word) => word.replace(/[^a-z0-9-]/g, ""))
-    .filter((word) => word.length > 0)
+    .flatMap((word) => word.split("-"))
+    .map((word) => word.replace(/[^a-z0-9]/g, ""))
+    .filter((word) => word.length > 0 && !STOP_WORDS.has(word))
 }
 
 function calculateSimilarityScore(keywords: string[], agent: Agent): number {

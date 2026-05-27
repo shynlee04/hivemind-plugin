@@ -18,6 +18,12 @@ export type CommandBundle = {
   subtask?: boolean
   /** Raw command body. */
   body: string
+  /** Optional namespace from frontmatter. */
+  namespace?: string
+  /** Optional required steps/pre-requisites from frontmatter. */
+  requires?: string[]
+  /** Optional required tools/permissions from frontmatter. */
+  tools?: Record<string, any>
 }
 
 /** Result of discovering command bundles. */
