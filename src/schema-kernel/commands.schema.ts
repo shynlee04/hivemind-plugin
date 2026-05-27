@@ -9,6 +9,7 @@ export const ExecuteSlashCommandSchema = z.object({
   commandSource: z.enum(["user", "agent", "system"]).optional().default("user"),
   trackExecution: z.boolean().optional().default(true),
   parentSessionID: z.string().optional(),
+  namespace: z.string().optional().describe("Namespace override"),
 })
 
 export type ExecuteSlashCommandInput = z.infer<typeof ExecuteSlashCommandSchema>

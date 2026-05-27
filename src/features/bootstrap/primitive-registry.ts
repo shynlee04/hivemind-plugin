@@ -9,6 +9,7 @@
 
 import path from "node:path"
 import { scanAgents, scanCommands, scanSkills } from "./primitive-scanners.js"
+import type { ValidationResult } from "../../shared/types.js"
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -60,17 +61,7 @@ export interface RegistrySnapshot {
   timestamp: Date
 }
 
-/**
- * Validation result from validateRegistry.
- */
-export interface ValidationResult {
-  /** Whether the registry is free of errors. */
-  valid: boolean
-  /** Blocking error descriptions. */
-  errors: string[]
-  /** Non-blocking warning descriptions. */
-  warnings: string[]
-}
+
 
 // ---------------------------------------------------------------------------
 // buildRegistry — scan and catalog all primitives

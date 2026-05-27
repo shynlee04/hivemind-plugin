@@ -298,6 +298,14 @@ Run with: $ARGUMENTS
         submitPrompt: submitPromptMock,
       },
     } as unknown as PluginInput["client"]
+    const projectRoot = await createProjectWithCommand(
+      "test-echo",
+      `---
+description: "Echo test"
+---
+Echo body
+`
+    )
 
     const tool = createExecuteSlashCommandTool(client)
     const result = await tool.execute(
@@ -306,8 +314,8 @@ Run with: $ARGUMENTS
         sessionID: "ses_abc",
         agent: "hm-operator",
         metadata: vi.fn(),
-        directory: "/fake/dir",
-        worktree: "/fake/worktree",
+        directory: projectRoot,
+        worktree: projectRoot,
         abort: new AbortController().signal,
         ask: vi.fn(),
         messageID: "msg_abc",
@@ -331,6 +339,14 @@ Run with: $ARGUMENTS
         submitPrompt: submitPromptMock,
       },
     } as unknown as PluginInput["client"]
+    const projectRoot = await createProjectWithCommand(
+      "bad-command",
+      `---
+description: "Bad command test"
+---
+Bad body
+`
+    )
 
     const tool = createExecuteSlashCommandTool(client)
     const result = await tool.execute(
@@ -339,6 +355,8 @@ Run with: $ARGUMENTS
         sessionID: "ses_abc",
         agent: "hm-operator",
         metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
       } as any,
     )
 
@@ -446,6 +464,14 @@ Track body
         submitPrompt: vi.fn(),
       },
     } as any
+    const projectRoot = await createProjectWithCommand(
+      "test-echo",
+      `---
+description: "Echo test"
+---
+Echo body
+`
+    )
     const tool = createExecuteSlashCommandTool(client)
     const result = await tool.execute(
       { command: "test-echo", arguments: "hello world", commandSource: "agent", trackExecution: true },
@@ -453,6 +479,8 @@ Track body
         sessionID: "ses_abc",
         agent: "hm-operator",
         metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
       } as any,
     )
 

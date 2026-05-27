@@ -411,3 +411,10 @@ export type {
 } from "../config/workflow/workflow-types.js"
 
 export { WORKFLOW_TURNS } from "../config/workflow/workflow-types.js"
+
+export interface ValidationResult {
+  valid: boolean
+  errors: string[]
+  warnings?: string[]
+}
+
