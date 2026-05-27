@@ -14,21 +14,33 @@ import { randomUUID } from "node:crypto"
 import { isValidSessionID } from "../../features/session-tracker/types.js"
 import { resolveCommand } from "./resolve-command.js"
 import { dispatchCommand, validateAgentFormat, validateAgentExists } from "./dispatch-command.js"
+import { getAppAgents } from "../../shared/app-api.js"
+import { selectAgent } from "./semantic-agent-selector.js"
+
+function getErrorName(err: unknown): string {
+  if (err instanceof Error) return err.name
+  if (err && typeof err === "object") {
+    const maybeError = err as { name?: unknown }
+    return typeof maybeError.name === "string" ? maybeError.name : ""
+  }
+  return ""
+}
 
 function getErrorType(err: unknown): string {
-  if (err instanceof CommandNotFoundError || (err && (err as any).name === "CommandNotFoundError")) {
+  const errName = getErrorName(err)
+  if (err instanceof CommandNotFoundError || errName === "CommandNotFoundError") {
     return "not_found"
   }
-  if (err instanceof AgentNotFoundError || (err && (err as any).name === "AgentNotFoundError")) {
+  if (err instanceof AgentNotFoundError || errName === "AgentNotFoundError") {
     return "not_found"
   }
-  if (err instanceof InvalidCommandError || (err && (err as any).name === "InvalidCommandError")) {
+  if (err instanceof InvalidCommandError || errName === "InvalidCommandError") {
     return "missing_arg"
   }
-  if (err instanceof DelegationContextError || (err && (err as any).name === "DelegationContextError")) {
+  if (err instanceof DelegationContextError || errName === "DelegationContextError") {
     return "dispatch_failed"
   }
-  if (err instanceof DelegationTimeoutError || (err && (err as any).name === "DelegationTimeoutError")) {
+  if (err instanceof DelegationTimeoutError || errName === "DelegationTimeoutError") {
     return "dispatch_failed"
   }
   if (err instanceof Error) {
@@ -40,17 +52,51 @@ function getErrorType(err: unknown): string {
     }
     return "runtime"
   }
+  const errMessage = err && typeof err === "object"
+    ? String((err as Record<string, unknown>).message ?? "")
+    : ""
+  if (errMessage.includes("build") || errMessage.includes("compile")) {
+    return "build_failed"
+  }
+  if (errMessage.includes("dispatch")) {
+    return "dispatch_failed"
+  }
   return "unexpected"
 }
 
+type ToolResult = {
+  output: string
+  metadata?: Record<string, unknown>
+  error?: boolean
+}
+
+type SessionTrackerHandle = {
+  pendingRegistry?: {
+    add: (entry: Record<string, unknown>) => void
+  }
+}
+
+/** Shape of raw tool input args before Zod validation. */
+interface ExecuteInput {
+  command: string
+  arguments?: string
+  agent?: string
+  model?: string
+  subtask?: boolean
+  commandSource?: string
+  trackExecution?: boolean
+  parentSessionID?: string
+  [key: string]: unknown
+}
+
 function buildSuccessMetadata(
-  args: any,
-  validated: any,
+  args: Record<string, unknown>,
+  validated: Record<string, unknown>,
   mode: string,
   parentSessionID: string,
   startTime: Date,
-  extra: Record<string, any> = {}
-) {
+  extra: Record<string, unknown> = {}
+): Record<string, unknown> {
   const endTime = new Date()
   return {
     commandSource: validated.commandSource,
@@ -68,7 +114,7 @@ function buildSuccessMetadata(
   }
 }
 
-export const createExecuteSlashCommandTool = (client: PluginInput["client"], sessionTracker?: any): ReturnType<typeof tool> => {
+export const createExecuteSlashCommandTool = (client: PluginInput["client"], sessionTracker?: SessionTrackerHandle): ReturnType<typeof tool> => {
   return tool({
     description:
       "Executes an OpenCode slash command on the active session. " +
@@ -77,8 +123,8 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
       "(3) no overrides → TUI appendPrompt/submitPrompt for basic command execution. " +
       "When agent is provided without subtask, defaults to subtask:false (parent session dispatch). " +
       "Use `hivemind-command-engine` with action `discover` or `list_commands` to find available commands first.",
-    args: ExecuteSlashCommandSchema.shape as any,
-    async execute(args: any, ctx) {
+    args: ExecuteSlashCommandSchema.shape as Record<string, unknown>,
+    async execute(args: ExecuteInput, ctx) {
       const cmdDisplay = `/${args.command}${args.arguments ? ` ${args.arguments}` : ""}`
       ctx.metadata({
         title: `Executing ${cmdDisplay}`,
@@ -94,7 +140,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
       try {
         // Normalize command name for schema validation compatibility
         const inputCommand = typeof args.command === "string" ? args.command.toLowerCase().replace(/_/g, "-") : args.command
-        const normalizedArgs = { ...args, command: inputCommand }
+        const normalizedArgs: Record<string, unknown> = { ...args, command: inputCommand }
 
         // Validate inputs using safeParse
         const parsed = ExecuteSlashCommandSchema.safeParse(normalizedArgs)
@@ -110,7 +156,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               command: args.command,
             },
             error: true,
-          } as any
+          } as ToolResult
         }
         const validated = parsed.data
 
@@ -132,9 +178,23 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               suggestions: resolveResult.suggestions,
             },
             error: true,
-          } as any
+          } as ToolResult
         }
         const commandBundle = resolveResult.commandBundle!
+
+        // Stage 2: Resolve agent from intent if none explicitly provided
+        if (!validated.agent && !commandBundle?.agent && client) {
+          const rawAgents = await getAppAgents(client)
+          const normalizedAgents = rawAgents.map((a) => {
+            if (typeof a === "string") return { name: a, description: "" }
+            const obj = a as { name?: string; id?: string; description?: string }
+            return { name: obj.name || obj.id || "", description: obj.description }
+          }).filter((a) => a.name.length > 0)
+          const agentResult = await selectAgent(validated.command, normalizedAgents)
+          if (agentResult.agent) {
+            validated.agent = agentResult.agent
+          }
+        }
 
         // Check if subtask was explicitly passed in args
         const hasExplicitSubtask = "subtask" in args
@@ -159,7 +219,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
                 command: args.command,
               },
               error: true,
-            } as any
+            } as ToolResult
           }
 
           if (client) {
@@ -174,14 +234,14 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
                   command: args.command,
                 },
                 error: true,
-              } as any
+              } as ToolResult
             }
           }
         }
 
         if (syntheticPromptAgent) {
           const promptText = expandCommandArguments(commandBundle.body, validated.arguments ?? "")
-          await dispatchCommand({
+          const dispatchResult = await dispatchCommand({
             client,
             sessionID: ctx.sessionID,
             agent: syntheticPromptAgent,
@@ -189,6 +249,18 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             subtask: false,
             directory: ctx.directory,
           })
+
+          if (!dispatchResult.success) {
+            return {
+              output: dispatchResult.output ?? `Failed to dispatch ${cmdDisplay}`,
+              metadata: {
+                error: true,
+                errorType: "dispatch_failed",
+                command: args.command,
+              },
+              error: true,
+            } as ToolResult
+          }
 
           return {
             output: [
@@ -211,7 +283,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               }
             ),
             error: false,
-          } as any
+          } as ToolResult
         }
 
         const shouldDispatchSubtask = subtaskParam ?? commandBundle?.subtask === true
@@ -226,7 +298,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
                 command: args.command,
               },
               error: true,
-            } as any
+            } as ToolResult
           }
 
           // Validate parentSessionID for delegation context
@@ -240,7 +312,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
                 command: args.command,
               },
               error: true,
-            } as any
+            } as ToolResult
           }
 
           if (validated.trackExecution && sessionTracker?.pendingRegistry) {
@@ -254,7 +326,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           }
 
           const promptText = expandCommandArguments(commandBundle.body, validated.arguments ?? "")
-          await dispatchCommand({
+          const dispatchResult = await dispatchCommand({
             client,
             sessionID: ctx.sessionID,
             agent: subtaskAgent,
@@ -264,6 +336,18 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             commandSource: validated.commandSource,
             directory: ctx.directory,
           })
+
+          if (!dispatchResult.success) {
+            return {
+              output: dispatchResult.output ?? `Failed to dispatch ${cmdDisplay}`,
+              metadata: {
+                error: true,
+                errorType: "dispatch_failed",
+                command: args.command,
+              },
+              error: true,
+            } as ToolResult
+          }
 
           return {
             output: [
@@ -285,7 +369,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               }
             ),
             error: false,
-          } as any
+          } as ToolResult
         }
 
         const resolved = await resolveSessionFile(projectRoot, ctx.sessionID)
@@ -312,13 +396,25 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
 
         if (isChildSession) {
           // Bypassing TUI pipeline for child sessions to avoid global prompt clearing and workspace interference
-          await dispatchCommand({
+          const childDispatchResult = await dispatchCommand({
             client,
             sessionID: ctx.sessionID,
             promptText,
             subtask: false,
             directory: ctx.directory,
           })
+
+          if (!childDispatchResult.success) {
+            return {
+              output: childDispatchResult.output ?? `Failed to dispatch ${cmdDisplay}`,
+              metadata: {
+                error: true,
+                errorType: "dispatch_failed",
+                command: args.command,
+              },
+              error: true,
+            } as ToolResult
+          }
 
           return {
             output: [
@@ -340,7 +436,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               }
             ),
             error: false,
-          } as any
+          } as ToolResult
         }
 
         // Step 1: Clear any existing prompt to avoid stale state
@@ -374,7 +470,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             }
           ),
           error: false,
-        } as any
+        } as ToolResult
       } catch (err: unknown) {
         const msg = describeError(err)
         const errorType = getErrorType(err)
@@ -389,7 +485,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             cause: err,
           },
           error: true,
-        } as any
+        } as ToolResult
       }
     },
   })
