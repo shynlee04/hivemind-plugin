@@ -13,10 +13,6 @@ async function createProjectWithCommand(commandName: string, commandContent: str
   return projectRoot
 }
 
-async function waitForDeferredDispatch(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 75))
-}
-
 describe("execute-slash-command tool", () => {
   it("should dispatch synthetic parent prompt for subtask:false + agent", async () => {
     const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
@@ -61,7 +57,6 @@ Do front-agent work with: $ARGUMENTS
       scheduled: true,
       dispatched: true,
     })
-    await waitForDeferredDispatch()
 
     expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
       path: { id: "ses_front_agent" },
@@ -117,7 +112,6 @@ User prompt:
       } as any,
     )
 
-    await waitForDeferredDispatch()
     expect(promptMock).toHaveBeenCalledWith({
       path: { id: "ses_test" },
       body: {
@@ -179,7 +173,6 @@ Run with: $ARGUMENTS
     )
 
     expect(result.metadata).toMatchObject({ scheduled: true })
-    await waitForDeferredDispatch()
     expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
       path: { id: "ses_override" },
       body: {
@@ -235,7 +228,6 @@ Auto-subtask body
       } as any,
     )
 
-    await waitForDeferredDispatch()
     expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
       body: {
         agent: "hm-l1-coordinator",
@@ -244,8 +236,8 @@ Auto-subtask body
     }))
   })
 
-  it("should return immediately even when deferred subtask prompt never resolves", async () => {
-    const promptMock = vi.fn(() => new Promise(() => undefined))
+  it("returns error envelope when subtask prompt dispatch fails", async () => {
+    const promptMock = vi.fn().mockRejectedValue(new Error("Dispatch rejected by SDK"))
     const client = {
       session: { prompt: promptMock },
       tui: {
@@ -255,9 +247,9 @@ Auto-subtask body
       },
     } as unknown as PluginInput["client"]
     const projectRoot = await createProjectWithCommand(
-      "never-resolve-command",
+      "fail-dispatch-command",
       `---
-description: "Never resolve command"
+description: "Fail dispatch command"
 ---
 Run with: $ARGUMENTS
 `,
@@ -265,25 +257,24 @@ Run with: $ARGUMENTS
 
     const tool = createExecuteSlashCommandTool(client)
     const result = await tool.execute(
-      { command: "never-resolve-command", arguments: "no hang", agent: "hm-l2-general", subtask: true },
+      { command: "fail-dispatch-command", arguments: "no hang", agent: "hm-l2-general", subtask: true },
       {
-        sessionID: "ses_never",
+        sessionID: "ses_fail",
         agent: "hm-build",
         metadata: vi.fn(),
         directory: projectRoot,
         worktree: projectRoot,
         abort: new AbortController().signal,
         ask: vi.fn(),
-        messageID: "msg_never",
+        messageID: "msg_fail",
       } as any,
     )
 
+    expect(result).toHaveProperty("error", true)
     expect(result.metadata).toMatchObject({
-      command: "never-resolve-command",
-      agent: "hm-l2-general",
-      mode: "subtask",
-      scheduled: true,
-      dispatched: true,
+      error: true,
+      errorType: "dispatch_failed",
+      command: "fail-dispatch-command",
     })
   })
 

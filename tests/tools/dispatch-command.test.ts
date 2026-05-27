@@ -34,7 +34,6 @@ describe("dispatch-command", () => {
   })
 
   it("dispatches synthetic prompt successfully", async () => {
-    vi.useFakeTimers()
     const result = await dispatchCommand({
       client: mockClient,
       sessionID: "ses-123",
@@ -42,8 +41,6 @@ describe("dispatch-command", () => {
       promptText: "run gsd-stats",
     })
     expect(result.success).toBe(true)
-
-    vi.advanceTimersByTime(50)
     expect(mockClient.session.prompt).toHaveBeenCalledWith(
       expect.objectContaining({
         path: { id: "ses-123" },
@@ -53,7 +50,22 @@ describe("dispatch-command", () => {
         }),
       })
     )
-    vi.useRealTimers()
+  })
+
+  it("returns error envelope when prompt dispatch fails", async () => {
+    const errorClient = {
+      app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
+      session: { prompt: vi.fn().mockRejectedValue(new Error("Network error")) },
+    }
+    const result = await dispatchCommand({
+      client: errorClient,
+      sessionID: "ses-123",
+      agent: "gsd-executor",
+      promptText: "run gsd-stats",
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toBe(true)
+    expect(result.output).toContain("Network error")
   })
 
   it("throws InvalidCommandError for invalid agent format in dispatch", async () => {
