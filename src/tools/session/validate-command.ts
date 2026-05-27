@@ -5,7 +5,7 @@ import type { ValidationResult } from "../../shared/types.js"
  * SDK-driven fields (agent, subtask, model, tools) are NOT validated here
  * as they inherit from runtime context.
  */
-export function validateCommandContract(args: any): ValidationResult {
+export function validateCommandContract(args: Record<string, unknown>): ValidationResult {
   const errors: string[] = []
   
   if (!args) {

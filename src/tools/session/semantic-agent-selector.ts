@@ -19,18 +19,15 @@ interface Agent {
  */
 export async function selectAgent(
   intent: string,
-  agents: any[] = []
+  agents: Array<{ name: string; id?: string; description?: string }> = []
 ): Promise<AgentMatchResult> {
   // Normalize agents to Agent object
-  const normalizedAgents: Agent[] = agents.map((a) => {
-    if (typeof a === "string") {
-      return { name: a, description: "" }
-    }
-    return {
+  const normalizedAgents: Agent[] = agents
+    .map((a) => ({
       name: a.name || a.id || "",
       description: a.description || "",
-    }
-  }).filter((a) => a.name.length > 0)
+    }))
+    .filter((a) => a.name.length > 0)
 
   if (normalizedAgents.length === 0) {
     return { agent: null, score: 0, fallback: true, userSpecified: false }
