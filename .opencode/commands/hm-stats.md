@@ -10,7 +10,7 @@ Display comprehensive project statistics including phase progress, plan executio
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/stats.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/stats.md
 </execution_context>
 
 <process>

@@ -14,20 +14,20 @@ Valid Hivemind subagent types (use exact names — do not fall back to 'general-
 Load docs-update context:
 
 ```bash
-# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
-Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
-if [ -f "$Hivemind_TOOLS" ]; then
-  Hivemind_SDK="node $Hivemind_TOOLS"
-elif command -v hm-sdk >/dev/null 2>&1; then
-  Hivemind_SDK="hm-sdk"
+# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
+HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
+if [ -f "$HIVEMIND_TOOLS" ]; then
+  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
+elif command -v hivemind >/dev/null 2>&1; then
+  HIVEMIND_SDK="hivemind"
 else
-  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($Hivemind_SDK query docs-init)
+INIT=$($HIVEMIND_SDK query docs-init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS=$($Hivemind_SDK query agent-skills hm-doc-writer)
+AGENT_SKILLS=$($HIVEMIND_SDK query agent-skills hm-doc-writer)
 ```
 
 Extract from init JSON:
@@ -1071,7 +1071,7 @@ Only run this step if `commit_docs` is `true` from the init JSON. If `commit_doc
 Assemble the list of files that were actually generated (do not include files that failed or were skipped):
 
 ```bash
-$Hivemind_SDK query commit "docs: generate project documentation" \
+$HIVEMIND_SDK query commit "docs: generate project documentation" \
   --files README.md docs/ARCHITECTURE.md docs/CONFIGURATION.md docs/GETTING-STARTED.md docs/DEVELOPMENT.md docs/TESTING.md
 # Append any conditional docs that were generated:
 # --files ... docs/API.md docs/DEPLOYMENT.md CONTRIBUTING.md

@@ -28,8 +28,8 @@ Clarify phase requirements through structured Socratic questioning with quantita
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/spec-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/spec.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/spec-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/spec.md
 </execution_context>
 
 <runtime_note>

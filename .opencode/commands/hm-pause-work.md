@@ -20,7 +20,7 @@ Routes to the pause-work workflow which handles:
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/pause-work.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/pause-work.md
 </execution_context>
 
 <context>
@@ -29,7 +29,7 @@ State and phase progress are gathered in-workflow with targeted reads.
 
 <process>
 If `--report` is in $ARGUMENTS:
-Read and execute `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/session-report.md` end-to-end.
+Read and execute `/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/session-report.md` end-to-end.
 
 **Follow the pause-work workflow**.
 

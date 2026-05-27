@@ -21,7 +21,7 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/resume-project.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/resume-project.md
 </execution_context>
 
 <process>

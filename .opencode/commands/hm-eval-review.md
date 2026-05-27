@@ -18,8 +18,8 @@ Produces EVAL-REVIEW.md with score, verdict, gaps, and remediation plan.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/eval-review.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ai-evals.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/eval-review.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ai-evals.md
 </execution_context>
 
 <context>

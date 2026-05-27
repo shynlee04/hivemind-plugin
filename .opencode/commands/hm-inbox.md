@@ -20,7 +20,7 @@ and optionally applies labels or closes non-compliant submissions.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/inbox.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/inbox.md
 </execution_context>
 
 <context>

@@ -1,5 +1,5 @@
 ---
-description: Configure GSD workflow toggles and model profile
+description: Configure Hivemind workflow toggles and model profile
 requires: [quick]
 tools:
   read: true
@@ -9,7 +9,7 @@ tools:
 ---
 
 <objective>
-Interactive configuration of GSD workflow agents and model profile via multi-question prompt.
+Interactive configuration of Hivemind workflow agents and model profile via multi-question prompt.
 
 Routes to the settings workflow which handles:
 - Config existence ensuring
@@ -20,7 +20,7 @@ Routes to the settings workflow which handles:
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/settings.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/settings.md
 </execution_context>
 
 <process>

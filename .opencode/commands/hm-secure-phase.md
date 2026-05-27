@@ -22,7 +22,7 @@ Output: updated SECURITY.md.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/secure-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/secure-phase.md
 </execution_context>
 
 <context>

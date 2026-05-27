@@ -34,30 +34,30 @@ If no subcommand given, default to `list`.
 ## Step 2: Execute Operation
 
 ### list
-Run: `hm-sdk query workstream.list --raw --cwd "$CWD"`
+Run: `hivemind query workstream.list --raw --cwd "$CWD"`
 Display the workstreams in a table format showing name, status, current phase, and progress.
 
 ### create
-Run: `hm-sdk query workstream.create <name> --raw --cwd "$CWD"`
+Run: `hivemind query workstream.create <name> --raw --cwd "$CWD"`
 After creation, display the new workstream path and suggest next steps:
 - `/hm-new-milestone --ws <name>` to set up the milestone
 
 ### status
-Run: `hm-sdk query workstream.status <name> --raw --cwd "$CWD"`
+Run: `hivemind query workstream.status <name> --raw --cwd "$CWD"`
 Display detailed phase breakdown and state information.
 
 ### switch
-Run: `hm-sdk query workstream.set <name> --raw --cwd "$CWD"`
-Also set `GSD_WORKSTREAM` for the current session when the runtime supports it.
-If the runtime exposes a session identifier, GSD also stores the active workstream
+Run: `hivemind query workstream.set <name> --raw --cwd "$CWD"`
+Also set `Hivemind_WORKSTREAM` for the current session when the runtime supports it.
+If the runtime exposes a session identifier, Hivemind also stores the active workstream
 session-locally so concurrent sessions do not overwrite each other.
 
 ### progress
-Run: `hm-sdk query workstream.progress --raw --cwd "$CWD"`
+Run: `hivemind query workstream.progress --raw --cwd "$CWD"`
 Display a progress overview across all workstreams.
 
 ### complete
-Run: `hm-sdk query workstream.complete <name> --raw --cwd "$CWD"`
+Run: `hivemind query workstream.complete <name> --raw --cwd "$CWD"`
 Archive the workstream to milestones/.
 
 ### resume
@@ -65,5 +65,5 @@ Set the workstream as active and suggest `/hm-resume-work --ws <name>`.
 
 ## Step 3: Display Results
 
-Format the JSON output from hm-sdk query into a human-readable display.
-Include the `${GSD_WS}` flag in any routing suggestions.
+Format the JSON output from hivemind query into a human-readable display.
+Include the `${Hivemind_WS}` flag in any routing suggestions.

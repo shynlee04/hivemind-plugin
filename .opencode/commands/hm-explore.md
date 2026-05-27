@@ -11,14 +11,14 @@ tools:
 ---
 <objective>
 Open-ended Socratic ideation session. Guides the developer through exploring an idea via
-probing questions, optionally spawns research, then routes outputs to the appropriate GSD
+probing questions, optionally spawns research, then routes outputs to the appropriate Hivemind
 artifacts (notes, todos, seeds, research questions, requirements, or new phases).
 
 Accepts an optional topic argument: `/hm-explore authentication strategy`
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/explore.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/explore.md
 </execution_context>
 
 <process>

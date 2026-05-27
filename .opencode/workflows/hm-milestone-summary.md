@@ -53,18 +53,18 @@ Read all files that exist. Missing files are fine — the summary adapts to what
 Find all phase directories:
 
 ```bash
-# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
-Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
-if [ -f "$Hivemind_TOOLS" ]; then
-  Hivemind_SDK="node $Hivemind_TOOLS"
-elif command -v hm-sdk >/dev/null 2>&1; then
-  Hivemind_SDK="hm-sdk"
+# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
+HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
+if [ -f "$HIVEMIND_TOOLS" ]; then
+  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
+elif command -v hivemind >/dev/null 2>&1; then
+  HIVEMIND_SDK="hivemind"
 else
-  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-$Hivemind_SDK query init.progress
+$HIVEMIND_SDK query init.progress
 ```
 
 This returns phase metadata. For each phase in the milestone scope:
@@ -200,7 +200,7 @@ mkdir -p .planning/reports
 
 Write the summary, then commit:
 ```bash
-$Hivemind_SDK query commit "docs(v${VERSION}): generate milestone summary for onboarding" --files \
+$HIVEMIND_SDK query commit "docs(v${VERSION}): generate milestone summary for onboarding" --files \
   ".planning/reports/MILESTONE_SUMMARY-v${VERSION}.md"
 ```
 
@@ -228,7 +228,7 @@ If the user is done:
 ## Step 9: Update STATE.md
 
 ```bash
-$Hivemind_SDK query state.record-session "" \
+$HIVEMIND_SDK query state.record-session "" \
   "Milestone v${VERSION} summary generated" \
   ".planning/reports/MILESTONE_SUMMARY-v${VERSION}.md"
 ```

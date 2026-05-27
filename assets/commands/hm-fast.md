@@ -22,7 +22,7 @@ you could describe in one sentence and execute in under 2 minutes.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/fast.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/fast.md
 </execution_context>
 
 <process>

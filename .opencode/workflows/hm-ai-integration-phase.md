@@ -20,18 +20,18 @@ This prevents the two most common AI development failures: choosing the wrong fr
 ## 1. Initialize
 
 ```bash
-# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
-Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
-if [ -f "$Hivemind_TOOLS" ]; then
-  Hivemind_SDK="node $Hivemind_TOOLS"
-elif command -v hm-sdk >/dev/null 2>&1; then
-  Hivemind_SDK="hm-sdk"
+# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
+HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
+if [ -f "$HIVEMIND_TOOLS" ]; then
+  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
+elif command -v hivemind >/dev/null 2>&1; then
+  HIVEMIND_SDK="hivemind"
 else
-  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($Hivemind_SDK query init.plan-phase "$PHASE")
+INIT=$($HIVEMIND_SDK query init.plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -41,15 +41,15 @@ Parse JSON for: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded
 
 Resolve agent models:
 ```bash
-SELECTOR_MODEL=$($Hivemind_SDK query resolve-model hm-framework-selector 2>/dev/null | jq -r '.model' 2>/dev/null || true)
-RESEARCHER_MODEL=$($Hivemind_SDK query resolve-model hm-ai-researcher 2>/dev/null | jq -r '.model' 2>/dev/null || true)
-DOMAIN_MODEL=$($Hivemind_SDK query resolve-model hm-domain-researcher 2>/dev/null | jq -r '.model' 2>/dev/null || true)
-PLANNER_MODEL=$($Hivemind_SDK query resolve-model hm-eval-planner 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+SELECTOR_MODEL=$($HIVEMIND_SDK query resolve-model hm-framework-selector 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+RESEARCHER_MODEL=$($HIVEMIND_SDK query resolve-model hm-ai-researcher 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+DOMAIN_MODEL=$($HIVEMIND_SDK query resolve-model hm-domain-researcher 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+PLANNER_MODEL=$($HIVEMIND_SDK query resolve-model hm-eval-planner 2>/dev/null | jq -r '.model' 2>/dev/null || true)
 ```
 
 Check config:
 ```bash
-AI_PHASE_ENABLED=$($Hivemind_SDK query config-get workflow.ai_integration_phase 2>/dev/null || echo "true")
+AI_PHASE_ENABLED=$($HIVEMIND_SDK query config-get workflow.ai_integration_phase 2>/dev/null || echo "true")
 ```
 
 **If `AI_PHASE_ENABLED` is `false`:**
@@ -65,7 +65,7 @@ Exit workflow.
 Extract phase number from $ARGUMENTS. If not provided, detect next unplanned phase.
 
 ```bash
-PHASE_INFO=$($Hivemind_SDK query roadmap.get-phase "${PHASE}")
+PHASE_INFO=$($HIVEMIND_SDK query roadmap.get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases.

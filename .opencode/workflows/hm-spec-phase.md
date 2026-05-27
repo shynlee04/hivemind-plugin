@@ -56,7 +56,7 @@ Rotate through these perspectives — each naturally surfaces different blindspo
 ## Step 1: Initialize
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs" init phase-op "${PHASE}")
+INIT=$(node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" init phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 

@@ -18,7 +18,7 @@ tools:
 <objective>
 Spike an idea through experiential exploration — build focused experiments to feel the pieces
 of a future app, validate feasibility, and produce verified knowledge for the real build.
-Spikes live in `.planning/spikes/` and integrate with GSD commit patterns, state tracking,
+Spikes live in `.planning/spikes/` and integrate with Hivemind commit patterns, state tracking,
 and handoff workflows.
 
 Two modes:
@@ -29,9 +29,9 @@ Does not require prior new-project setup — auto-creates `.planning/spikes/` if
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/spike.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/spike-wrap-up.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/spike.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/spike-wrap-up.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
 </execution_context>
 
 <runtime_note>

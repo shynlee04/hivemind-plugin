@@ -16,27 +16,27 @@ Valid Hivemind subagent types (use exact names — do not fall back to 'general-
 ## 0. Initialize
 
 ```bash
-# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
-Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
-if [ -f "$Hivemind_TOOLS" ]; then
-  Hivemind_SDK="node $Hivemind_TOOLS"
-elif command -v hm-sdk >/dev/null 2>&1; then
-  Hivemind_SDK="hm-sdk"
+# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
+HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
+if [ -f "$HIVEMIND_TOOLS" ]; then
+  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
+elif command -v hivemind >/dev/null 2>&1; then
+  HIVEMIND_SDK="hivemind"
 else
-  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($Hivemind_SDK query init.phase-op "${PHASE_ARG}")
+INIT=$($HIVEMIND_SDK query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$($Hivemind_SDK query agent-skills hm-security-auditor)
+AGENT_SKILLS_AUDITOR=$($HIVEMIND_SDK query agent-skills hm-security-auditor)
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
 
 ```bash
-AUDITOR_MODEL=$($Hivemind_SDK query resolve-model hm-security-auditor --raw)
-SECURITY_CFG=$($Hivemind_SDK query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+AUDITOR_MODEL=$($HIVEMIND_SDK query resolve-model hm-security-auditor --raw)
+SECURITY_CFG=$($HIVEMIND_SDK query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 ```
 
 If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /hm-settings."
@@ -157,7 +157,7 @@ Do NOT emit next-phase routing. Stop here.
 ## 7. Commit
 
 ```bash
-$Hivemind_SDK query commit "docs(phase-${PHASE}): add/update security threat verification"
+$HIVEMIND_SDK query commit "docs(phase-${PHASE}): add/update security threat verification"
 ```
 
 ## 8. Results + Routing

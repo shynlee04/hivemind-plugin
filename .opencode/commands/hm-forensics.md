@@ -1,6 +1,6 @@
 ---
 type: prompt
-description: Post-mortem investigation for failed GSD workflows — diagnoses what went wrong.
+description: Post-mortem investigation for failed Hivemind workflows — diagnoses what went wrong.
 argument-hint: "[problem description]"
 requires: [phase, progress, update]
 tools:
@@ -12,14 +12,14 @@ tools:
 ---
 
 <objective>
-Investigate what went wrong during a GSD workflow execution. Analyzes git history, `.planning/` artifacts, and file system state to detect anomalies and generate a structured diagnostic report.
+Investigate what went wrong during a Hivemind workflow execution. Analyzes git history, `.planning/` artifacts, and file system state to detect anomalies and generate a structured diagnostic report.
 
 Purpose: Diagnose failed or stuck workflows so the user can understand root cause and take corrective action.
 Output: Forensic report saved to `.planning/forensics/`, presented inline, with optional issue creation.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/forensics.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/forensics.md
 </execution_context>
 
 <context>

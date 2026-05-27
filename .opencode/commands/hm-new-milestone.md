@@ -25,11 +25,11 @@ Brownfield equivalent of new-project. Project exists, PROJECT.md has history. Ga
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/new-milestone.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/questioning.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/project.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/requirements.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/new-milestone.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/questioning.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/project.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/requirements.md
 </execution_context>
 
 <context>

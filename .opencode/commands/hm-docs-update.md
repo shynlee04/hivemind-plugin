@@ -19,20 +19,20 @@ Flag handling rule:
 - The optional flags documented below are available behaviors, not implied active behaviors
 - A flag is active only when its literal token appears in `$ARGUMENTS`
 - If a documented flag is absent from `$ARGUMENTS`, treat it as inactive
-- `--force`: skip preservation prompts, regenerate all docs regardless of existing content or GSD markers
+- `--force`: skip preservation prompts, regenerate all docs regardless of existing content or Hivemind markers
 - `--verify-only`: check existing docs for accuracy against codebase, no generation (full verification requires Phase 4 verifier)
 - If `--force` and `--verify-only` both appear in `$ARGUMENTS`, `--force` takes precedence
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/docs-update.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/docs-update.md
 </execution_context>
 
 <context>
 Arguments: $ARGUMENTS
 
 **Available optional flags (documentation only — not automatically active):**
-- `--force` — Regenerate all docs. Overwrites hand-written and GSD docs alike. No preservation prompts.
+- `--force` — Regenerate all docs. Overwrites hand-written and Hivemind docs alike. No preservation prompts.
 - `--verify-only` — Check existing docs for accuracy against the codebase. No files are written. Reports VERIFY marker count. Full codebase fact-checking requires the hm-doc-verifier agent (Phase 4).
 
 **Active flags must be derived from `$ARGUMENTS`:**

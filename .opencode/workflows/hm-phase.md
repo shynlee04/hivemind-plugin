@@ -34,18 +34,18 @@ Exit.
 Load phase operation context:
 
 ```bash
-# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
-Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
-if [ -f "$Hivemind_TOOLS" ]; then
-  Hivemind_SDK="node $Hivemind_TOOLS"
-elif command -v hm-sdk >/dev/null 2>&1; then
-  Hivemind_SDK="hm-sdk"
+# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
+HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
+if [ -f "$HIVEMIND_TOOLS" ]; then
+  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
+elif command -v hivemind >/dev/null 2>&1; then
+  HIVEMIND_SDK="hivemind"
 else
-  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($Hivemind_SDK query init.phase-op "${target}")
+INIT=$($HIVEMIND_SDK query init.phase-op "${target}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -61,7 +61,7 @@ Exit.
 Read the current phase section from ROADMAP.md:
 
 ```bash
-PHASE_DATA=$($Hivemind_SDK query roadmap get-phase "${target}")
+PHASE_DATA=$($HIVEMIND_SDK query roadmap get-phase "${target}")
 ```
 
 Parse the JSON result. If `found` is false:
@@ -89,7 +89,7 @@ Also parse the full section text to extract additional fields not in the SDK res
 Determine the phase status from disk. Compare against STATE.md current phase:
 
 ```bash
-ANALYZE=$($Hivemind_SDK query roadmap analyze)
+ANALYZE=$($HIVEMIND_SDK query roadmap analyze)
 ```
 
 Find the phase entry in the `phases` array. Extract `disk_status`.
@@ -191,7 +191,7 @@ Wait for user input. Use the clarified intent to rewrite all fields:
 If `depends_on` is being updated (or preserved as non-empty), validate that every referenced phase number exists in ROADMAP.md:
 
 ```bash
-ALL_PHASES=$($Hivemind_SDK query roadmap analyze)
+ALL_PHASES=$($HIVEMIND_SDK query roadmap analyze)
 ```
 
 Parse the `phases` array to get all valid phase numbers.
@@ -250,7 +250,7 @@ Read the full ROADMAP.md content, locate the phase section by its header (`## Ph
 After writing ROADMAP.md, update STATE.md Roadmap Evolution:
 
 ```bash
-$Hivemind_SDK query state.add-roadmap-evolution \
+$HIVEMIND_SDK query state.add-roadmap-evolution \
   --phase {target} \
   --action edited \
   --note "edited fields: {changed_field_list}"

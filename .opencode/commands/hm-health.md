@@ -11,7 +11,7 @@ tools:
 <objective>
 Validate `.planning/` directory integrity and report actionable issues. Checks for missing files, invalid configurations, inconsistent state, and orphaned plans.
 
-`--context` runs an orthogonal check: the running session's context utilization. The workflow asks for the model's tokensUsed + contextWindow, calls `hm-sdk query validate.context`, and renders one of three states:
+`--context` runs an orthogonal check: the running session's context utilization. The workflow asks for the model's tokensUsed + contextWindow, calls `hivemind query validate.context`, and renders one of three states:
 
 | Utilization | State    | Action                                                |
 |-------------|----------|-------------------------------------------------------|
@@ -21,7 +21,7 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/health.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/health.md
 </execution_context>
 
 <process>

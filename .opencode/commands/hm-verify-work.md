@@ -20,8 +20,8 @@ Output: {phase_num}-UAT.md tracking all test results. If issues found: diagnosed
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/verify-work.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/templates/UAT.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/verify-work.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/UAT.md
 </execution_context>
 
 <context>

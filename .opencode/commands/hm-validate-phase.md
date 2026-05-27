@@ -22,7 +22,7 @@ Output: updated VALIDATION.md + generated test files.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/validate-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/validate-phase.md
 </execution_context>
 
 <context>

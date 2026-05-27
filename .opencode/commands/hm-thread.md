@@ -15,7 +15,7 @@ doesn't belong to any specific phase.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/thread.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/thread.md
 </execution_context>
 
 <process>

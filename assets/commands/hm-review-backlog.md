@@ -34,7 +34,7 @@ milestone sequence or remove stale entries.
    - Find the next sequential phase number in the active milestone
    - Rename the directory from `999.x-slug` to `{new_num}-slug`:
      ```bash
-     NEW_NUM=$(hm-sdk query phase.add "${DESCRIPTION}" --raw)
+     NEW_NUM=$(hivemind query phase.add "${DESCRIPTION}" --raw)
      ```
    - Move accumulated artifacts to the new phase directory
    - Update ROADMAP.md: move the entry from `## Backlog` section to the active phase list
@@ -47,7 +47,7 @@ milestone sequence or remove stale entries.
 
 6. **Commit changes:**
    ```bash
-   hm-sdk query commit "docs: review backlog — promoted N, removed M" --files .planning/ROADMAP.md
+   hivemind query commit "docs: review backlog — promoted N, removed M" --files .planning/ROADMAP.md
    ```
 
 7. **Report summary:**

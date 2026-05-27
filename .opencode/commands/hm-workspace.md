@@ -1,5 +1,5 @@
 ---
-description: Manage GSD workspaces — create, list, or remove isolated workspace environments
+description: Manage Hivemind workspaces — create, list, or remove isolated workspace environments
 argument-hint: "[--new | --list | --remove] [name]"
 tools:
   read: true
@@ -9,12 +9,12 @@ tools:
 ---
 
 <objective>
-Manage GSD workspaces with a single consolidated command.
+Manage Hivemind workspaces with a single consolidated command.
 
 Mode routing:
 - **--new**: Create an isolated workspace with repo copies and independent .planning/ → new-workspace workflow
-- **--list**: List active GSD workspaces and their status → list-workspaces workflow
-- **--remove**: Remove a GSD workspace and clean up worktrees → remove-workspace workflow
+- **--list**: List active Hivemind workspaces and their status → list-workspaces workflow
+- **--remove**: Remove a Hivemind workspace and clean up worktrees → remove-workspace workflow
 </objective>
 
 <routing>
@@ -28,10 +28,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/new-workspace.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/list-workspaces.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/remove-workspace.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/new-workspace.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/list-workspaces.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/remove-workspace.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
 </execution_context>
 
 <context>

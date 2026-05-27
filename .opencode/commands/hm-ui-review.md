@@ -18,8 +18,8 @@ Output: {phase_num}-UI-REVIEW.md
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/ui-review.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/ui-review.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
 </execution_context>
 
 <context>

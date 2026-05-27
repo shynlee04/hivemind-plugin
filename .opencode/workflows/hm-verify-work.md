@@ -34,21 +34,21 @@ Hivemind_WS=""
 echo "$ARGUMENTS" | grep -qE -- '--ws[[:space:]]+[^[:space:]]+' && Hivemind_WS=$(echo "$ARGUMENTS" | grep -oE -- '--ws[[:space:]]+[^[:space:]]+')
 PHASE_ARG=$(echo "$ARGUMENTS" | sed -E 's/--ws[[:space:]]+[^[:space:]]+//g' | xargs)
 
-# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
-Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
-if [ -f "$Hivemind_TOOLS" ]; then
-  Hivemind_SDK="node $Hivemind_TOOLS"
-elif command -v hm-sdk >/dev/null 2>&1; then
-  Hivemind_SDK="hm-sdk"
+# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
+HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
+if [ -f "$HIVEMIND_TOOLS" ]; then
+  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
+elif command -v hivemind >/dev/null 2>&1; then
+  HIVEMIND_SDK="hivemind"
 else
-  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($Hivemind_SDK query init.verify-work "${PHASE_ARG}" ${Hivemind_WS})
+INIT=$($HIVEMIND_SDK query init.verify-work "${PHASE_ARG}" ${Hivemind_WS})
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_PLANNER=$($Hivemind_SDK query agent-skills hm-planner)
-AGENT_SKILLS_CHECKER=$($Hivemind_SDK query agent-skills hm-plan-checker)
+AGENT_SKILLS_PLANNER=$($HIVEMIND_SDK query agent-skills hm-planner)
+AGENT_SKILLS_CHECKER=$($HIVEMIND_SDK query agent-skills hm-plan-checker)
 ```
 
 Parse JSON for: `planner_model`, `checker_model`, `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `has_verification`, `uat_path`.
@@ -57,7 +57,7 @@ Parse JSON for: `planner_model`, `checker_model`, `commit_docs`, `phase_found`, 
 # MVP mode detection via the centralized phase.mvp-mode resolver.
 # verify-work has no --mvp CLI flag (mode is inherited from the planned phase),
 # so we omit --cli-flag — the verb falls through roadmap → config → false.
-MVP_MODE=$($Hivemind_SDK query phase.mvp-mode "${phase_number}" ${Hivemind_WS} --pick active)
+MVP_MODE=$($HIVEMIND_SDK query phase.mvp-mode "${phase_number}" ${Hivemind_WS} --pick active)
 ```
 </step>
 
@@ -115,7 +115,7 @@ Before running manual UAT, check whether this phase has a UI component and wheth
 `mcp__playwright__*` or `mcp__puppeteer__*` tools are available in the current session.
 
 ```bash
-UI_PHASE_FLAG=$($Hivemind_SDK query config-get workflow.ui_phase --raw 2>/dev/null || echo "true")
+UI_PHASE_FLAG=$($HIVEMIND_SDK query config-get workflow.ui_phase --raw 2>/dev/null || echo "true")
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 ```
 
@@ -169,8 +169,8 @@ When `MVP_MODE=false` (mode is null, absent, or the phase has no `**Mode:**` lin
 **User-story format guard.** When `MVP_MODE=true`, also verify the phase's goal is in User Story format via the centralized validator:
 
 ```bash
-PHASE_GOAL=$($Hivemind_SDK query roadmap.get-phase "${phase_number}" ${Hivemind_WS} --pick goal)
-USER_STORY_VALID=$($Hivemind_SDK query user-story.validate --story "$PHASE_GOAL" --pick valid)
+PHASE_GOAL=$($HIVEMIND_SDK query roadmap.get-phase "${phase_number}" ${Hivemind_WS} --pick goal)
+USER_STORY_VALID=$($HIVEMIND_SDK query user-story.validate --story "$PHASE_GOAL" --pick valid)
 if [ "$USER_STORY_VALID" != "true" ]; then
   echo "Phase ${phase_number} has '**Mode:** mvp' in ROADMAP.md but the **Goal:** is not in user-story format."
   echo "Run /hm mvp-phase ${phase_number} to set a user-story goal before verifying."
@@ -278,7 +278,7 @@ Proceed to `present_test`.
 Render the checkpoint from the structured UAT file instead of composing it freehand:
 
 ```bash
-CHECKPOINT=$($Hivemind_SDK query uat.render-checkpoint --file "$uat_path" --raw)
+CHECKPOINT=$($HIVEMIND_SDK query uat.render-checkpoint --file "$uat_path" --raw)
 if [[ "$CHECKPOINT" == @file:* ]]; then CHECKPOINT=$(cat "${CHECKPOINT#@file:}"); fi
 ```
 
@@ -436,7 +436,7 @@ Clear Current Test section:
 
 Commit the UAT file:
 ```bash
-$Hivemind_SDK query commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
+$HIVEMIND_SDK query commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
 ```
 
 Present summary:
@@ -460,7 +460,7 @@ Present summary:
 **If issues == 0:**
 
 ```bash
-SECURITY_CFG=$($Hivemind_SDK query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+SECURITY_CFG=$($HIVEMIND_SDK query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 SECURITY_FILE=$(ls "${PHASE_DIR}"/*-SECURITY.md 2>/dev/null | head -1)
 ```
 
@@ -506,10 +506,10 @@ All tests passed. Phase {phase} marked complete.
 <step name="scan_phase_artifacts">
 Run phase artifact scan to surface any open items before marking phase verified:
 
-`audit-open` is CJS-only until registered on `hm-sdk query`:
+`audit-open` is CJS-only until registered on `hivemind query`:
 
 ```bash
-$Hivemind_SDK query audit-open --json
+$HIVEMIND_SDK query audit-open --json
 ```
 
 Parse the JSON output. For the CURRENT PHASE ONLY, surface:

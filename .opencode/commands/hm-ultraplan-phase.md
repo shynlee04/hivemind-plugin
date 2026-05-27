@@ -10,7 +10,7 @@ tools:
 ---
 
 <objective>
-Offload GSD's plan phase to Claude Code's ultraplan cloud infrastructure.
+Offload Hivemind's plan phase to Claude Code's ultraplan cloud infrastructure.
 
 Ultraplan drafts the plan in a remote cloud session while your terminal stays free.
 Review and comment on the plan in your browser, then import it back via /hm-import --from.
@@ -20,8 +20,8 @@ Requirements: Claude Code v2.1.91+, claude.ai account, GitHub repository.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/ultraplan-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/ultraplan-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
 </execution_context>
 
 <context>

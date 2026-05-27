@@ -25,7 +25,7 @@ Flags:
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/audit-fix.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/audit-fix.md
 </execution_context>
 
 <process>

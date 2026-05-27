@@ -20,8 +20,8 @@ Flow: Validate → Research UI → Verify UI-SPEC → Done
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/ui-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/ui-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
 </execution_context>
 
 <context>

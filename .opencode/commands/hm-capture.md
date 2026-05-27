@@ -12,7 +12,7 @@ tools:
 ---
 
 <objective>
-Capture ideas, tasks, notes, and seeds to their appropriate destination in the GSD system.
+Capture ideas, tasks, notes, and seeds to their appropriate destination in the Hivemind system.
 
 Mode routing:
 - **default** (no flag): Capture as a structured todo for later work → add-todo workflow
@@ -35,12 +35,12 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/add-todo.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/note.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/add-backlog.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/plant-seed.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/check-todos.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/add-todo.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/note.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/add-backlog.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/plant-seed.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/check-todos.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
 </execution_context>
 
 <context>

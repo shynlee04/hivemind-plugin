@@ -16,7 +16,7 @@ Extract structured learnings from completed phase artifacts (PLAN.md, SUMMARY.md
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/extract-learnings.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/extract-learnings.md
 </execution_context>
 
-Execute the extract-learnings workflow from @/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/extract-learnings.md end-to-end.
+Execute the extract-learnings workflow from @/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/extract-learnings.md end-to-end.

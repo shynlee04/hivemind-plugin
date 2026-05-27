@@ -18,7 +18,7 @@ tools:
 <objective>
 Explore design directions through throwaway HTML mockups before committing to implementation.
 Each sketch produces 2-3 variants for comparison. Sketches live in `.planning/sketches/` and
-integrate with GSD commit patterns, state tracking, and handoff workflows. Loads spike
+integrate with Hivemind commit patterns, state tracking, and handoff workflows. Loads spike
 findings to ground mockups in real data shapes and validated interaction patterns.
 
 Two modes:
@@ -29,13 +29,13 @@ Does not require prior new-project setup — auto-creates `.planning/sketches/` 
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/sketch.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/sketch-wrap-up.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/ui-brand.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-theme-system.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-interactivity.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-tooling.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/sketch-variant-patterns.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/sketch.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/sketch-wrap-up.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-theme-system.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-interactivity.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-tooling.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-variant-patterns.md
 </execution_context>
 
 <runtime_note>

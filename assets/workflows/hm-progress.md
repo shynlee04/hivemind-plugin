@@ -12,25 +12,25 @@ Read all files referenced by the invoking prompt's execution_context before star
 **Load progress context (paths only):**
 
 ```bash
-# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
-Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
-if [ -f "$Hivemind_TOOLS" ]; then
-  Hivemind_SDK="node $Hivemind_TOOLS"
-elif command -v hm-sdk >/dev/null 2>&1; then
-  Hivemind_SDK="hm-sdk"
+# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
+HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
+if [ -f "$HIVEMIND_TOOLS" ]; then
+  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
+elif command -v hivemind >/dev/null 2>&1; then
+  HIVEMIND_SDK="hivemind"
 else
-  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($Hivemind_SDK query init.progress)
+INIT=$($HIVEMIND_SDK query init.progress)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Extract from init JSON: `project_exists`, `roadmap_exists`, `state_exists`, `phases`, `current_phase`, `next_phase`, `milestone_version`, `completed_count`, `phase_count`, `paused_at`, `state_path`, `roadmap_path`, `project_path`, `config_path`.
 
 ```bash
-DISCUSS_MODE=$($Hivemind_SDK query config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
+DISCUSS_MODE=$($HIVEMIND_SDK query config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
 ```
 
 If `project_exists` is false (no `.planning/` directory):
@@ -53,11 +53,11 @@ If missing both ROADMAP.md and PROJECT.md: suggest `/hm-new-project`.
 </step>
 
 <step name="load">
-**Use structured extraction from `hm-sdk query` (or legacy hm-tools.cjs):**
+**Use structured extraction from `hivemind query` (or legacy hivemind.cjs):**
 
 Instead of reading full files, use targeted tools to get only the data needed for the report:
-- `ROADMAP=$(hm-sdk query roadmap.analyze)`
-- `STATE=$(hm-sdk query state-snapshot)`
+- `ROADMAP=$(hivemind query roadmap.analyze)`
+- `STATE=$(hivemind query state-snapshot)`
 
 This minimizes orchestrator context usage.
 </step>
@@ -66,7 +66,7 @@ This minimizes orchestrator context usage.
 **Get comprehensive roadmap analysis (replaces manual parsing):**
 
 ```bash
-ROADMAP=$($Hivemind_SDK query roadmap.analyze)
+ROADMAP=$($HIVEMIND_SDK query roadmap.analyze)
 ```
 
 This returns structured JSON with:
@@ -85,7 +85,7 @@ Use this instead of manually reading/parsing ROADMAP.md.
 - Find the 2-3 most recent SUMMARY.md files
 - Use `summary-extract` for efficient parsing:
   ```bash
-  $Hivemind_SDK query summary-extract <path> --fields one_liner
+  $HIVEMIND_SDK query summary-extract <path> --fields one_liner
   ```
 - This shows "what we've been working on"
   </step>
@@ -105,11 +105,11 @@ Use this instead of manually reading/parsing ROADMAP.md.
 > blocks are a secondary config aid that may be significantly stale — do NOT use the
 > AGENTS.md project description as a source for any progress report field.
 
-**Generate progress bar from `hm-sdk query progress` / `progress.json`, then present rich status report:**
+**Generate progress bar from `hivemind query progress` / `progress.json`, then present rich status report:**
 
 ```bash
 # Get formatted progress bar
-PROGRESS_BAR=$($Hivemind_SDK query progress.bar --raw)
+PROGRESS_BAR=$($HIVEMIND_SDK query progress.bar --raw)
 ```
 
 Present:
@@ -157,7 +157,7 @@ CONTEXT: [✓ if has_context | - if not]
 Resolve `MVP_MODE` per phase via the centralized resolver. progress has no `--mvp` CLI flag (mode is inherited from the planned phase), so we omit `--cli-flag`:
 
 ```bash
-MVP_MODE=$($Hivemind_SDK query phase.mvp-mode "${PHASE_NUMBER}" --pick active)
+MVP_MODE=$($HIVEMIND_SDK query phase.mvp-mode "${PHASE_NUMBER}" --pick active)
 ```
 
 When `MVP_MODE=true`, the per-phase progress block adds a **user-flow status** sub-block sourced from the phase's PLAN.md task names. Each task whose name reads like a user-visible capability (e.g., "Register flow", "Login flow", "Password reset") is rendered as a status line:
@@ -209,7 +209,7 @@ Track:
 Scan ALL phases in the current milestone for outstanding verification debt using the CLI (which respects milestone boundaries via `getMilestonePhaseFilter`):
 
 ```bash
-DEBT=$($Hivemind_SDK query audit-uat --raw 2>/dev/null)
+DEBT=$($HIVEMIND_SDK query audit-uat --raw 2>/dev/null)
 ```
 
 Parse JSON for `summary.total_items` and `summary.total_files`.
@@ -272,7 +272,7 @@ Check if `{phase_num}-CONTEXT.md` exists in phase directory.
 Check if current phase has UI indicators:
 
 ```bash
-PHASE_SECTION=$($Hivemind_SDK query roadmap.get-phase "${CURRENT_PHASE}" 2>/dev/null)
+PHASE_SECTION=$($HIVEMIND_SDK query roadmap.get-phase "${CURRENT_PHASE}" 2>/dev/null)
 PHASE_HAS_UI=$(echo "$PHASE_SECTION" | grep -qi "UI hint.*yes" && echo "true" || echo "false")
 ```
 
@@ -418,7 +418,7 @@ Read ROADMAP.md to get the next phase's name and goal.
 Check if next phase has UI indicators:
 
 ```bash
-NEXT_PHASE_SECTION=$($Hivemind_SDK query roadmap.get-phase "$((Z+1))" 2>/dev/null)
+NEXT_PHASE_SECTION=$($HIVEMIND_SDK query roadmap.get-phase "$((Z+1))" 2>/dev/null)
 NEXT_HAS_UI=$(echo "$NEXT_PHASE_SECTION" | grep -qi "UI hint.*yes" && echo "true" || echo "false")
 ```
 

@@ -9,7 +9,7 @@ All meta-concept names are strictly governed to avoid conflicts:
 |---------------------|-----------------|-------------|
 | `hm-*` | `.opencode/command/` or `agents/` | Hivemind-native product primitives |
 | `hf-*` | `.opencode/command/` or `agents/` | Meta-authoring framework tools |
-| `gsd-*` | `.opencode/command/` or `agents/` | GSD framework development tools |
+| `hm-*` | `.opencode/command/` or `agents/` | Hivemind framework development tools |
 | `gate-*` | `.opencode/skills/` | Project quality gates (lifecycle, spec, evidence) |
 | `stack-*` | `.opencode/skills/` | Tech-stack API references (nextjs, zod, vitest) |
 
@@ -21,7 +21,7 @@ When an agent needs to invoke another workflow or subagent, it must select the c
 |------|---------|-----------------|
 | `task` | Standard synchronous subagent call | Blocks execution until subagent completes. Preserves parent-child context lineage. |
 | `delegate-task` | Asynchronous background delegation | Launches a child session that runs in the background. Tracks status via `delegation-status`. |
-| `execute-slash-command` | Execute an OpenCode slash command | Resolves commands across namespaces (`gsd`, `hm`, `hf`) and handles agent overrides. |
+| `execute-slash-command` | Execute an OpenCode slash command | Resolves commands across namespaces (`hm`, `hm`, `hf`) and handles agent overrides. |
 
 ## Event Logging & Trajectory
 

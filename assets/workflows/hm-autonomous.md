@@ -48,18 +48,18 @@ When `--interactive` is set, discuss runs inline with questions (not auto-answer
 Bootstrap via milestone-level init:
 
 ```bash
-# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
-Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
-if [ -f "$Hivemind_TOOLS" ]; then
-  Hivemind_SDK="node $Hivemind_TOOLS"
-elif command -v hm-sdk >/dev/null 2>&1; then
-  Hivemind_SDK="hm-sdk"
+# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
+HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
+if [ -f "$HIVEMIND_TOOLS" ]; then
+  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
+elif command -v hivemind >/dev/null 2>&1; then
+  HIVEMIND_SDK="hivemind"
 else
-  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($Hivemind_SDK query init.milestone-op)
+INIT=$($HIVEMIND_SDK query init.milestone-op)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -93,7 +93,7 @@ If `INTERACTIVE` is set, display: `Mode: Interactive (discuss inline, plan+execu
 Run phase discovery:
 
 ```bash
-ROADMAP=$($Hivemind_SDK query roadmap.analyze)
+ROADMAP=$($HIVEMIND_SDK query roadmap.analyze)
 ```
 
 Parse the JSON `phases` array.
@@ -152,7 +152,7 @@ Exit cleanly.
 **Fetch details for each phase:**
 
 ```bash
-DETAIL=$($Hivemind_SDK query roadmap.get-phase ${PHASE_NUM})
+DETAIL=$($HIVEMIND_SDK query roadmap.get-phase ${PHASE_NUM})
 ```
 
 Extract `phase_name`, `goal`, `success_criteria` from each. Store for use in execute_phase and transition messages.
@@ -180,7 +180,7 @@ Where N = current phase number (from the ROADMAP, e.g., 63), T = total milestone
 Check if CONTEXT.md already exists for this phase:
 
 ```bash
-PHASE_STATE=$($Hivemind_SDK query init.phase-op ${PHASE_NUM})
+PHASE_STATE=$($HIVEMIND_SDK query init.phase-op ${PHASE_NUM})
 ```
 
 Parse `has_context` from JSON.
@@ -196,7 +196,7 @@ Proceed to 3b.
 **If has_context is false:** Check if discuss is disabled via settings:
 
 ```bash
-SKIP_DISCUSS=$($Hivemind_SDK query config-get workflow.skip_discuss 2>/dev/null || echo "false")
+SKIP_DISCUSS=$($HIVEMIND_SDK query config-get workflow.skip_discuss 2>/dev/null || echo "false")
 ```
 
 **If SKIP_DISCUSS is `true`:** Skip discuss entirely — the ROADMAP phase description is the spec. Display:
@@ -208,7 +208,7 @@ Phase ${PHASE_NUM}: Discuss skipped (workflow.skip_discuss=true) — using ROADM
 Write a minimal CONTEXT.md so downstream plan-phase has valid input. Get phase details:
 
 ```bash
-DETAIL=$($Hivemind_SDK query roadmap.get-phase ${PHASE_NUM})
+DETAIL=$($HIVEMIND_SDK query roadmap.get-phase ${PHASE_NUM})
 ```
 
 Extract `goal` and `requirements` from JSON. Write `${phase_dir}/${padded_phase}-CONTEXT.md` with:
@@ -260,7 +260,7 @@ None — discuss phase skipped.
 Commit the minimal context:
 
 ```bash
-$Hivemind_SDK query commit "docs(${PADDED_PHASE}): auto-generated context (discuss skipped)" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
+$HIVEMIND_SDK query commit "docs(${PADDED_PHASE}): auto-generated context (discuss skipped)" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
 
 Proceed to 3b.
@@ -281,7 +281,7 @@ Skill(skill="hm-discuss-phase", args="${PHASE_NUM}")
 After discuss completes (either mode), verify context was written:
 
 ```bash
-PHASE_STATE=$($Hivemind_SDK query init.phase-op ${PHASE_NUM})
+PHASE_STATE=$($HIVEMIND_SDK query init.phase-op ${PHASE_NUM})
 ```
 
 Check `has_context`. If false → go to handle_blocker: "Discuss for phase ${PHASE_NUM} did not produce CONTEXT.md."
@@ -291,7 +291,7 @@ Check `has_context`. If false → go to handle_blocker: "Discuss for phase ${PHA
 Check if this phase has frontend indicators and whether a UI-SPEC already exists:
 
 ```bash
-PHASE_SECTION=$($Hivemind_SDK query roadmap.get-phase ${PHASE_NUM} 2>/dev/null)
+PHASE_SECTION=$($HIVEMIND_SDK query roadmap.get-phase ${PHASE_NUM} 2>/dev/null)
 # Shell-free word-boundary gate (#3718): Node.js helper — no locale env-var dependency.
 # Reads via stdin to avoid OS ARG_MAX limits on large phase text.
 # Path anchored to repo root; falls back to CWD if git is unavailable
@@ -305,7 +305,7 @@ UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 Check if UI phase workflow is enabled:
 
 ```bash
-UI_PHASE_CFG=$($Hivemind_SDK query config-get workflow.ui_phase 2>/dev/null || echo "true")
+UI_PHASE_CFG=$($HIVEMIND_SDK query config-get workflow.ui_phase 2>/dev/null || echo "true")
 ```
 
 **If `HAS_UI` is 0 (frontend indicators found) AND `UI_SPEC_FILE` is empty (no UI-SPEC exists) AND `UI_PHASE_CFG` is not `false`:**
@@ -378,7 +378,7 @@ Auto-invoke code review and fix chain. Autonomous mode chains both review and fi
 
 **Config gate:**
 ```bash
-CODE_REVIEW_ENABLED=$($Hivemind_SDK query config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$($HIVEMIND_SDK query config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 If `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to 3d.
 
@@ -406,7 +406,7 @@ VERIFY_STATUS=$(grep "^status:" "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | h
 Where `PHASE_DIR` comes from the `init phase-op` call already made in step 3a. If the variable is not in scope, re-fetch:
 
 ```bash
-PHASE_STATE=$($Hivemind_SDK query init.phase-op ${PHASE_NUM})
+PHASE_STATE=$($HIVEMIND_SDK query init.phase-op ${PHASE_NUM})
 ```
 
 Parse `phase_dir` from the JSON.
@@ -502,7 +502,7 @@ UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 Check if UI review is enabled:
 
 ```bash
-UI_REVIEW_CFG=$($Hivemind_SDK query config-get workflow.ui_review 2>/dev/null || echo "true")
+UI_REVIEW_CFG=$($HIVEMIND_SDK query config-get workflow.ui_review 2>/dev/null || echo "true")
 ```
 
 **If `UI_SPEC_FILE` is not empty AND `UI_REVIEW_CFG` is not `false`:**
@@ -561,7 +561,7 @@ Proceed directly to lifecycle step (which handles partial completion — skips a
 **Otherwise:** After each phase completes, re-read ROADMAP.md to catch phases inserted mid-execution (decimal phases like 5.1):
 
 ```bash
-ROADMAP=$($Hivemind_SDK query roadmap.analyze)
+ROADMAP=$($HIVEMIND_SDK query roadmap.analyze)
 ```
 
 Re-filter incomplete phases using the same logic as discover_phases:

@@ -11,7 +11,7 @@ tools:
 <objective>
 Manage the runtime skill surface without reinstall. Reads/writes `/Users/apple/hivemind-plugin-private/.opencode/.hm-surface.json`
 (sibling to `/Users/apple/hivemind-plugin-private/.opencode/.hm-profile`) and re-stages the active skills directory in place.
-Skill dirs live at `/Users/apple/hivemind-plugin-private/.opencode/skills/gsd-*/`.
+Skill dirs live at `/Users/apple/hivemind-plugin-private/.opencode/skills/hm-*/`.
 
 Sub-commands: list · status · profile · disable · enable · reset
 </objective>
@@ -36,7 +36,7 @@ Parse the first token of $ARGUMENTS:
 ## list / status
 
 Call `listSurface(runtimeConfigDir, manifest, CLUSTERS)` from
-`get-shit-done/bin/lib/surface.cjs`. Display:
+`hivemind/bin/lib/surface.cjs`. Display:
 
 ```
 Enabled (N skills, ~T tokens):
@@ -119,7 +119,7 @@ The `runtimeConfigDir` for `applySurface` is the **base the agent config directo
 
 This matches `installRuntimeArtifacts` and `uninstallRuntimeArtifacts`, which also
 receive `~/.config/opencode` as `configDir`. The skill dirs themselves live at
-`/Users/apple/hivemind-plugin-private/.opencode/skills/gsd-*/` because the `claude global` layout has `destSubpath =
+`/Users/apple/hivemind-plugin-private/.opencode/skills/hm-*/` because the `claude global` layout has `destSubpath =
 'skills'` — they are derived from `configDir`, not the root for it.
 
 ```bash
@@ -143,12 +143,12 @@ All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
 
 - Unknown cluster name → list valid cluster names, exit without writing.
 - Unknown profile name → list known profiles (`core`, `standard`, `full`), exit.
-- Missing `surface.cjs` → prompt: "Run `npm i -g get-shit-done` to reinstall GSD."
+- Missing `surface.cjs` → prompt: "Run `npm i -g hivemind` to reinstall Hivemind."
 
 <execution_context>
 Surface state file: `/Users/apple/hivemind-plugin-private/.opencode/.hm-surface.json`
 Install profile marker: `/Users/apple/hivemind-plugin-private/.opencode/.hm-profile`
-Skill dirs: `/Users/apple/hivemind-plugin-private/.opencode/skills/gsd-*/`
-Engine module: `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/lib/surface.cjs`
-Cluster definitions: `/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/lib/clusters.cjs`
+Skill dirs: `/Users/apple/hivemind-plugin-private/.opencode/skills/hm-*/`
+Engine module: `/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/lib/surface.cjs`
+Cluster definitions: `/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/lib/clusters.cjs`
 </execution_context>

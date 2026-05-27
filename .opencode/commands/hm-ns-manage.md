@@ -13,16 +13,16 @@ Route to the appropriate management skill based on the user's intent.
 
 | User wants | Invoke |
 |---|---|
-| Configure GSD settings (basic / advanced / integrations / profile) | hm-config |
+| Configure Hivemind settings (basic / advanced / integrations / profile) | hm-config |
 | Manage workspaces (create / list / remove) | hm-workspace |
 | Manage parallel workstreams | hm-workstreams |
 | Continue work in a fresh context thread | hm-thread |
 | Pause current work | hm-pause-work |
 | Resume paused work | hm-resume-work |
-| Update the GSD installation | hm-update |
+| Update the Hivemind installation | hm-update |
 | Ship completed work | hm-ship |
 | Process inbox items | hm-inbox |
 | Create a clean PR branch | hm-pr-branch |
-| Undo the last GSD action | hm-undo |
+| Undo the last Hivemind action | hm-undo |
 
 Invoke the matched skill directly using the Skill tool.

@@ -17,7 +17,7 @@ Verify milestone achieved its definition of done. Check requirements coverage, c
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/audit-milestone.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/audit-milestone.md
 </execution_context>
 
 <context>

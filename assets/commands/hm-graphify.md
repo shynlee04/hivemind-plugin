@@ -9,14 +9,14 @@ tools:
 
 **STOP -- DO NOT READ THIS FILE. You are already reading it. This prompt was injected into your context by Claude Code's command system. Using the Read tool on this file wastes tokens. Begin executing Step 0 immediately.**
 
-**CJS-only (graphify):** `graphify` subcommands are not registered on `hm-sdk query`. Use `node /Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/hm-tools.cjs graphify …` as documented in this command and in `docs/CLI-TOOLS.md`. Other tooling may still use `hm-sdk query` where a handler exists.
+**CJS-only (graphify):** `graphify` subcommands are not registered on `hivemind query`. Use `node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs graphify …` as documented in this command and in `docs/CLI-TOOLS.md`. Other tooling may still use `hivemind query` where a handler exists.
 
 ## Step 0 -- Banner
 
 **Before ANY tool calls**, display this banner:
 
 ```
-GSD > GRAPHIFY
+Hivemind > GRAPHIFY
 ```
 
 Then proceed to Step 1.
@@ -36,11 +36,11 @@ Check if graphify is enabled by reading `.planning/config.json` directly using t
 **Disabled message:**
 
 ```
-GSD > GRAPHIFY
+Hivemind > GRAPHIFY
 
 Knowledge graph is disabled. To activate:
 
-  node /Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/hm-tools.cjs config-set graphify.enabled true
+  node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs config-set graphify.enabled true
 
 Then run /hm-graphify build to create the initial graph.
 ```
@@ -62,7 +62,7 @@ Parse `$ARGUMENTS` to determine the operation mode:
 **Usage message** (shown when no argument or unrecognized argument):
 
 ```
-GSD > GRAPHIFY
+Hivemind > GRAPHIFY
 
 Usage: /hm-graphify <mode>
 
@@ -78,7 +78,7 @@ Modes:
 Run:
 
 ```bash
-node /Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/hm-tools.cjs graphify query <term>
+node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs graphify query <term>
 ```
 
 Parse the JSON output and display results:
@@ -94,7 +94,7 @@ Parse the JSON output and display results:
 Run:
 
 ```bash
-node /Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/hm-tools.cjs graphify status
+node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs graphify status
 ```
 
 Parse the JSON output and display:
@@ -118,7 +118,7 @@ Surface both so the agent can choose.
 Run:
 
 ```bash
-node /Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/hm-tools.cjs graphify diff
+node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs graphify diff
 ```
 
 Parse the JSON output and display:
@@ -136,7 +136,7 @@ If no snapshot exists, suggest running `build` twice (first to create, second to
 Run the pre-flight check first:
 
 ```bash
-node "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/hm-tools.cjs" graphify build
+node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" graphify build
 ```
 
 Parse the JSON output:
@@ -149,7 +149,7 @@ Parse the JSON output:
 Display:
 
 ```text
-GSD > Building knowledge graph...
+Hivemind > Building knowledge graph...
 ```
 
 Run the build, copy artifacts, write the diff snapshot, and report the summary in a single foreground Bash call so the whole pipeline survives to completion. Use a `timeout` of `600000` ms (10 minutes), which covers the `graphify.build_timeout` ceiling (default 300 s) with margin:
@@ -159,8 +159,8 @@ graphify update . \
   && cp graphify-out/graph.json .planning/graphs/graph.json \
   && cp graphify-out/graph.html .planning/graphs/graph.html \
   && cp graphify-out/GRAPH_REPORT.md .planning/graphs/GRAPH_REPORT.md \
-  && node "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/hm-tools.cjs" graphify build snapshot \
-  && node "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/bin/hm-tools.cjs" graphify status
+  && node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" graphify build snapshot \
+  && node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" graphify status
 ```
 
 Do NOT pass `run_in_background: true`. Typical builds complete in 15-60 seconds and the entire chain must run foreground.
@@ -178,7 +178,7 @@ If the chain succeeds:
 
 ## MVP-Mode Node Rendering
 
-**MVP-mode rendering.** When a phase has `**Mode:** mvp` in ROADMAP.md (resolved via `hm-sdk query roadmap.get-phase --pick mode`), render its graph node with two distinct visual signals:
+**MVP-mode rendering.** When a phase has `**Mode:** mvp` in ROADMAP.md (resolved via `hivemind query roadmap.get-phase --pick mode`), render its graph node with two distinct visual signals:
 
 1. **Distinct fill color.** Use `#22c55e` (green) for MVP-mode phase nodes. Standard phases keep the default fill color. Two-channel signaling (color + label) handles color-blind and grayscale renders.
 2. **`MVP` label suffix.** Append ` (MVP)` to the node's label text. Example: a phase originally labeled `Phase 1: User Auth` renders as `Phase 1: User Auth (MVP)`.

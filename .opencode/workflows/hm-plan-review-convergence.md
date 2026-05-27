@@ -43,18 +43,18 @@ echo "$ARGUMENTS" | grep -qE '\-\-ws\s+\S+' && Hivemind_WS=$(echo "$ARGUMENTS" |
 ## 1.5. Config Gate (feature disabled by default)
 
 ```bash
-# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
-Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
-if [ -f "$Hivemind_TOOLS" ]; then
-  Hivemind_SDK="node $Hivemind_TOOLS"
-elif command -v hm-sdk >/dev/null 2>&1; then
-  Hivemind_SDK="hm-sdk"
+# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
+HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
+if [ -f "$HIVEMIND_TOOLS" ]; then
+  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
+elif command -v hivemind >/dev/null 2>&1; then
+  HIVEMIND_SDK="hivemind"
 else
-  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-CONVERGENCE_ENABLED=$($Hivemind_SDK query config-get workflow.plan_review_convergence 2>/dev/null || echo "false")
+CONVERGENCE_ENABLED=$($HIVEMIND_SDK query config-get workflow.plan_review_convergence 2>/dev/null || echo "false")
 ```
 
 **If `CONVERGENCE_ENABLED` is not `"true"`:** Display and exit:
@@ -73,7 +73,7 @@ Then re-run: /hm-plan-review-convergence {PHASE}
 ## 2. Initialize
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs" init plan-phase "$PHASE")
+INIT=$(node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" init plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -86,7 +86,7 @@ Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from in
 ## 3. Validate Phase + Pre-flight Gate
 
 ```bash
-PHASE_INFO=$(node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" roadmap get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases. Exit.
@@ -224,7 +224,7 @@ fi
 **If HIGH_COUNT == 0 (converged):**
 
 ```bash
-node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs" state planned-phase --phase "${PHASE}" --name "${phase_name}" --plans "${PLAN_COUNT}"
+node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" state planned-phase --phase "${PHASE}" --name "${phase_name}" --plans "${PLAN_COUNT}"
 ```
 
 Display:

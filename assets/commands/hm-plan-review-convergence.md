@@ -24,10 +24,10 @@ Replaces hm-plan-phase's internal hm-plan-checker with external AI reviewers (co
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/plan-review-convergence.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/revision-loop.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/gates.md
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/agent-contracts.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/plan-review-convergence.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/revision-loop.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/gates.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/agent-contracts.md
 </execution_context>
 
 <runtime_note>
@@ -49,7 +49,7 @@ Phase number: extracted from $ARGUMENTS (required)
 - `--max-cycles N` — Maximum replan→review cycles (default: 3)
 
 **Feature gate:** This command requires `workflow.plan_review_convergence=true`. Enable with:
-`gsd config-set workflow.plan_review_convergence true`
+`hm config-set workflow.plan_review_convergence true`
 </context>
 
 <process>

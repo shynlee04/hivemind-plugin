@@ -14,7 +14,7 @@ Use when `.planning/phases/` has accumulated directories from past milestones.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/cleanup.md
+@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/cleanup.md
 </execution_context>
 
 <process>
