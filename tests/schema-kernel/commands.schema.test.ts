@@ -109,7 +109,7 @@ describe("ExecuteSlashCommandSchema", () => {
     expect(result.success).toBe(true)
     if (result.success) {
       expect(result.data.arguments).toBe("")
-      expect(result.data.subtask).toBe(false)
+      expect(result.data.subtask).toBeUndefined()
       expect(result.data.commandSource).toBe("user")
       expect(result.data.trackExecution).toBe(true)
     }
