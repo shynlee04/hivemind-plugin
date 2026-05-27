@@ -76,9 +76,9 @@ progress:
 **Phase 36:** 📋 PENDING — Integration Verification (Group 4, was P35).
 **Phase 37:** 📋 deferred — Fix sync-oss.yml workflow (was P36).
 **Phase 38:** 📋 deferred — Package .opencode/ primitives for distribution (was P37).
-**C1 (Concerns):** 📋 PENDING — Critical Type Safety & Error Handling (P0, no dependencies).
-**C2 (Concerns):** 📋 PENDING — Type Safety & Security Hardening (P1, Depends: C1).
-**C3 (Concerns):** 📋 PENDING — Module Decomposition & Promise Patterns (P1, Depends: C2).
+**C1 (Concerns):** ✅ COMPLETE — Critical Type Safety & Error Handling (P0). Fixed: duplicate PermissionAction union, ClientLike=any erasure, 6 silent .catch(() => {}) with structured logging. 5 files, 90 insertions.
+**C2 (Concerns):** ✅ COMPLETE — Type Safety & Security Hardening (P1). Fixed: 12 `as any` casts with typed interfaces, ESLint suppressions removed, session ID validation, sidecar async read, env scope hardening. 6 files, 145 insertions.
+**C3 (Concerns):** ✅ COMPLETE — Module Decomposition & Promise Patterns (P1). Extracted ChildBackfiller (149 LOC) from event-capture.ts (1098→1007 LOC). ChildWriter queue verified safe for parallel children (per-child key). 2 files, 161 insertions.
 **C4 (Concerns):** 📋 PENDING — Performance Optimization (P2, Depends: C3).
 **C5 (Concerns):** 📋 PENDING — Error Handling & Code Quality (P2, Depends: C4).
 **C6 (Concerns):** 📋 PENDING — Architectural Refactoring (P2, Depends: C5).
