@@ -74,7 +74,7 @@ export async function dispatchCommand(context: {
     })
   }
 
-  const body: Record<string, unknown> = { parts }
+  const body: { parts: Array<Record<string, unknown>>; agent?: string } = { parts }
   if (agent) {
     body.agent = agent
   }
@@ -82,7 +82,7 @@ export async function dispatchCommand(context: {
   try {
     await client.session.prompt({
       path: { id: sessionID },
-      body,
+      body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
       ...(directory ? { query: { directory } } : {}),
     })
     return { success: true }

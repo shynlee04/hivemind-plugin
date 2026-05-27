@@ -70,10 +70,8 @@ type ToolResult = {
   error?: boolean
 }
 
-type SessionTrackerHandle = {
-  pendingRegistry?: {
-    add: (entry: Record<string, unknown>) => void
-  }
+interface PendingRegistry {
+  add: (entry: Record<string, unknown>) => void
 }
 
 /** Shape of raw tool input args before Zod validation. */
@@ -114,7 +112,7 @@ function buildSuccessMetadata(
   }
 }
 
-export const createExecuteSlashCommandTool = (client: PluginInput["client"], sessionTracker?: SessionTrackerHandle): ReturnType<typeof tool> => {
+export const createExecuteSlashCommandTool = (client: PluginInput["client"], sessionTracker?: unknown): ReturnType<typeof tool> => {
   return tool({
     description:
       "Executes an OpenCode slash command on the active session. " +
@@ -123,7 +121,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
       "(3) no overrides → TUI appendPrompt/submitPrompt for basic command execution. " +
       "When agent is provided without subtask, defaults to subtask:false (parent session dispatch). " +
       "Use `hivemind-command-engine` with action `discover` or `list_commands` to find available commands first.",
-    args: ExecuteSlashCommandSchema.shape as Record<string, unknown>,
+    args: ExecuteSlashCommandSchema.shape as unknown as Parameters<typeof tool>[0]["args"],
     async execute(args: ExecuteInput, ctx) {
       const cmdDisplay = `/${args.command}${args.arguments ? ` ${args.arguments}` : ""}`
       ctx.metadata({
@@ -183,7 +181,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         const commandBundle = resolveResult.commandBundle!
 
         // Stage 2: Resolve agent from intent if none explicitly provided
-        if (!validated.agent && !commandBundle?.agent && client) {
+        if (!validated.agent && !commandBundle?.agent && client && typeof client.app?.agents === "function") {
           const rawAgents = await getAppAgents(client)
           const normalizedAgents = rawAgents.map((a) => {
             if (typeof a === "string") return { name: a, description: "" }
@@ -315,8 +313,9 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             } as ToolResult
           }
 
-          if (validated.trackExecution && sessionTracker?.pendingRegistry) {
-            sessionTracker.pendingRegistry.add({
+          const tracker = sessionTracker as { pendingRegistry?: PendingRegistry } | undefined
+          if (validated.trackExecution && tracker?.pendingRegistry) {
+            tracker.pendingRegistry.add({
               parentSessionID: resolvedParentSessionID,
               callID: ctx.messageID || `cmd-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
               subagentType: subtaskAgent,
