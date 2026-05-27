@@ -57,22 +57,22 @@ The document should describe what you want to build.
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($HIVEMIND_SDK query init.new-project)
+INIT=$($Hivemind_SDK query init.new-project)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$($HIVEMIND_SDK query agent-skills hm-project-researcher)
-AGENT_SKILLS_SYNTHESIZER=$($HIVEMIND_SDK query agent-skills hm-research-synthesizer)
-AGENT_SKILLS_ROADMAPPER=$($HIVEMIND_SDK query agent-skills hm-roadmapper)
+AGENT_SKILLS_RESEARCHER=$($Hivemind_SDK query agent-skills hm-project-researcher)
+AGENT_SKILLS_SYNTHESIZER=$($Hivemind_SDK query agent-skills hm-research-synthesizer)
+AGENT_SKILLS_ROADMAPPER=$($Hivemind_SDK query agent-skills hm-roadmapper)
 ```
 
 Parse JSON for: `researcher_model`, `synthesizer_model`, `roadmapper_model`, `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `git_worktree_root`, `in_nested_subdir`, `project_path`, `agents_installed`, `missing_agents`, `agent_runtime`, `agents_dir`, `required_agents`, `required_agents_installed`, `missing_required_agents`, `agent_skill_payloads_available`, `agent_skill_payload_agents`.
@@ -97,7 +97,7 @@ definitions to be installed for this runtime.
 Subagent spawns (hm-project-researcher, hm-research-synthesizer, hm-roadmapper) will fail
 with "agent type not found" if `required_agents_installed` is false. Run the installer with --global to make agents available:
 
-  npx @openhm/hivemind-redux@latest --global
+  npx @opengsd/hivemind-redux@latest --global
 
 Proceeding without research subagents — roadmap will be generated inline.
 ```
@@ -274,7 +274,7 @@ Create `.planning/config.json` with all settings (CLI fills in remaining default
 
 ```bash
 mkdir -p .planning
-$HIVEMIND_SDK query config-new-project '{"mode":"yolo","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":true|false,"auto_advance":true},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
+$Hivemind_SDK query config-new-project '{"mode":"yolo","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":true|false,"auto_advance":true},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
 ```
 
 **If commit_docs = No:** Add `.planning/` to `.gitignore`.
@@ -283,13 +283,13 @@ $HIVEMIND_SDK query config-new-project '{"mode":"yolo","granularity":"[selected]
 
 ```bash
 mkdir -p .planning
-$HIVEMIND_SDK query commit "chore: add project config" --files .planning/config.json
+$Hivemind_SDK query commit "chore: add project config" --files .planning/config.json
 ```
 
 **Persist auto-advance chain flag to config (survives context compaction):**
 
 ```bash
-$HIVEMIND_SDK query config-set workflow._auto_chain_active true
+$Hivemind_SDK query config-set workflow._auto_chain_active true
 ```
 
 Proceed to Step 4 (skip Steps 3 and 5).
@@ -494,7 +494,7 @@ Do not compress. Capture everything gathered.
 
 ```bash
 mkdir -p .planning
-$HIVEMIND_SDK query commit "docs: initialize project" --files .planning/PROJECT.md
+$Hivemind_SDK query commit "docs: initialize project" --files .planning/PROJECT.md
 ```
 
 ## 5. Workflow Preferences
@@ -705,7 +705,7 @@ Create `.planning/config.json` with all settings (CLI fills in remaining default
 
 ```bash
 mkdir -p .planning
-$HIVEMIND_SDK query config-new-project '{"mode":"[yolo|interactive]","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":[false if granularity=coarse, true otherwise]},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
+$Hivemind_SDK query config-new-project '{"mode":"[yolo|interactive]","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":[false if granularity=coarse, true otherwise]},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
 ```
 
 **Note:** Run `/hm-settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
@@ -722,7 +722,7 @@ $HIVEMIND_SDK query config-new-project '{"mode":"[yolo|interactive]","granularit
 **Commit config.json:**
 
 ```bash
-$HIVEMIND_SDK query commit "chore: add project config" --files .planning/config.json
+$Hivemind_SDK query commit "chore: add project config" --files .planning/config.json
 ```
 
 ## 5.1. Sub-Repo Detection
@@ -847,7 +847,7 @@ Your STACK.md feeds into roadmap creation. Be prescriptive:
 
 <output>
 Write to: .planning/research/STACK.md
-Use template: /Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/research-project/STACK.md
+Use template: /Users/apple/hivemind-plugin-private/.opencode/templates/hm-research-project/STACK.md
 </output>
 ", subagent_type="hm-project-researcher", model="{researcher_model}", description="Stack research")
 
@@ -887,7 +887,7 @@ Your FEATURES.md feeds into requirements definition. Categorize clearly:
 
 <output>
 Write to: .planning/research/FEATURES.md
-Use template: /Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/research-project/FEATURES.md
+Use template: /Users/apple/hivemind-plugin-private/.opencode/templates/hm-research-project/FEATURES.md
 </output>
 ", subagent_type="hm-project-researcher", model="{researcher_model}", description="Features research")
 
@@ -927,7 +927,7 @@ Your ARCHITECTURE.md informs phase structure in roadmap. Include:
 
 <output>
 Write to: .planning/research/ARCHITECTURE.md
-Use template: /Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/research-project/ARCHITECTURE.md
+Use template: /Users/apple/hivemind-plugin-private/.opencode/templates/hm-research-project/ARCHITECTURE.md
 </output>
 ", subagent_type="hm-project-researcher", model="{researcher_model}", description="Architecture research")
 
@@ -967,7 +967,7 @@ Your PITFALLS.md prevents mistakes in roadmap/planning. For each pitfall:
 
 <output>
 Write to: .planning/research/PITFALLS.md
-Use template: /Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/research-project/PITFALLS.md
+Use template: /Users/apple/hivemind-plugin-private/.opencode/templates/hm-research-project/PITFALLS.md
 </output>
 ", subagent_type="hm-project-researcher", model="{researcher_model}", description="Pitfalls research")
 ```
@@ -993,7 +993,7 @@ ${AGENT_SKILLS_SYNTHESIZER}
 
 <output>
 Write to: .planning/research/SUMMARY.md
-Use template: /Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/research-project/SUMMARY.md
+Use template: /Users/apple/hivemind-plugin-private/.opencode/templates/hm-research-project/SUMMARY.md
 Commit after writing.
 </output>
 ", subagent_type="hm-research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
@@ -1170,7 +1170,7 @@ If "adjust": Return to scoping.
 **Commit requirements:**
 
 ```bash
-$HIVEMIND_SDK query commit "docs: define v1 requirements" --files .planning/REQUIREMENTS.md
+$Hivemind_SDK query commit "docs: define v1 requirements" --files .planning/REQUIREMENTS.md
 ```
 
 ## 7.5. Project Structure Mode
@@ -1346,7 +1346,7 @@ Use question:
 **Generate or refresh project instruction file before final commit:**
 
 ```bash
-$HIVEMIND_SDK query generate-claude-md --output "$INSTRUCTION_FILE"
+$Hivemind_SDK query generate-claude-md --output "$INSTRUCTION_FILE"
 ```
 
 This ensures new projects get the default Hivemind workflow-enforcement guidance and current project context in `$INSTRUCTION_FILE`.
@@ -1354,7 +1354,7 @@ This ensures new projects get the default Hivemind workflow-enforcement guidance
 **Commit roadmap (after approval or auto mode):**
 
 ```bash
-$HIVEMIND_SDK query commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md "$INSTRUCTION_FILE"
+$Hivemind_SDK query commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md "$INSTRUCTION_FILE"
 ```
 
 ## 9. Done
@@ -1395,7 +1395,7 @@ Exit skill and invoke skill("/hm-discuss-phase 1 --auto")
 Check if Phase 1 has UI indicators (look for `**UI hint**: yes` in Phase 1 detail section of ROADMAP.md):
 
 ```bash
-PHASE1_SECTION=$($HIVEMIND_SDK query roadmap.get-phase 1 2>/dev/null)
+PHASE1_SECTION=$($Hivemind_SDK query roadmap.get-phase 1 2>/dev/null)
 PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" || echo "false")
 ```
 

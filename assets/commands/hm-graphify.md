@@ -1,23 +1,15 @@
 ---
-namespace: hm
-agent: hm-codebase-mapper
-subtask: true
 description: "Build, query, and inspect the project knowledge graph in .planning/graphs/"
 argument-hint: "[build|query <term>|status|diff]"
-requires: ["hm-config", "hm-fast", "hm-phase", "hm-update"]
-validation-gates: ["lifecycle-gate"]
-output-templates: ["hm-research.md"]
-coordination-model: "waiter-model"
-completion-signals: ["graph-built"]
+requires: [config, fast, phase, update]
 tools:
   read: true
   bash: true
 ---
 
-
 **STOP -- DO NOT READ THIS FILE. You are already reading it. This prompt was injected into your context by Claude Code's command system. Using the Read tool on this file wastes tokens. Begin executing Step 0 immediately.**
 
-**CJS-only (graphify):** `graphify` subcommands are not registered on `hivemind query`. Use `node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs graphify …` as documented in this command and in `docs/CLI-TOOLS.md`. Other tooling may still use `hivemind query` where a handler exists.
+**CJS-only (graphify):** `graphify` subcommands are not registered on `hm-sdk query`. Use `node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs graphify …` as documented in this command and in `docs/CLI-TOOLS.md`. Other tooling may still use `hm-sdk query` where a handler exists.
 
 ## Step 0 -- Banner
 
@@ -48,7 +40,7 @@ Hivemind > GRAPHIFY
 
 Knowledge graph is disabled. To activate:
 
-  node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs config-set graphify.enabled true
+  node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs config-set graphify.enabled true
 
 Then run /hm-graphify build to create the initial graph.
 ```
@@ -86,7 +78,7 @@ Modes:
 Run:
 
 ```bash
-node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs graphify query <term>
+node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs graphify query <term>
 ```
 
 Parse the JSON output and display results:
@@ -102,7 +94,7 @@ Parse the JSON output and display results:
 Run:
 
 ```bash
-node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs graphify status
+node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs graphify status
 ```
 
 Parse the JSON output and display:
@@ -126,7 +118,7 @@ Surface both so the agent can choose.
 Run:
 
 ```bash
-node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs graphify diff
+node /Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs graphify diff
 ```
 
 Parse the JSON output and display:
@@ -144,7 +136,7 @@ If no snapshot exists, suggest running `build` twice (first to create, second to
 Run the pre-flight check first:
 
 ```bash
-node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" graphify build
+node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs" graphify build
 ```
 
 Parse the JSON output:
@@ -167,8 +159,8 @@ graphify update . \
   && cp graphify-out/graph.json .planning/graphs/graph.json \
   && cp graphify-out/graph.html .planning/graphs/graph.html \
   && cp graphify-out/GRAPH_REPORT.md .planning/graphs/GRAPH_REPORT.md \
-  && node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" graphify build snapshot \
-  && node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" graphify status
+  && node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs" graphify build snapshot \
+  && node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs" graphify status
 ```
 
 Do NOT pass `run_in_background: true`. Typical builds complete in 15-60 seconds and the entire chain must run foreground.
@@ -186,7 +178,7 @@ If the chain succeeds:
 
 ## MVP-Mode Node Rendering
 
-**MVP-mode rendering.** When a phase has `**Mode:** mvp` in ROADMAP.md (resolved via `hivemind query roadmap.get-phase --pick mode`), render its graph node with two distinct visual signals:
+**MVP-mode rendering.** When a phase has `**Mode:** mvp` in ROADMAP.md (resolved via `hm-sdk query roadmap.get-phase --pick mode`), render its graph node with two distinct visual signals:
 
 1. **Distinct fill color.** Use `#22c55e` (green) for MVP-mode phase nodes. Standard phases keep the default fill color. Two-channel signaling (color + label) handles color-blind and grayscale renders.
 2. **`MVP` label suffix.** Append ` (MVP)` to the node's label text. Example: a phase originally labeled `Phase 1: User Auth` renders as `Phase 1: User Auth (MVP)`.

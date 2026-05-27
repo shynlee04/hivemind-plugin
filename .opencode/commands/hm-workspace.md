@@ -1,21 +1,12 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Manage Hivemind workspaces — create, list, or remove isolated workspace environments"
+description: Manage Hivemind workspaces — create, list, or remove isolated workspace environments
 argument-hint: "[--new | --list | --remove] [name]"
-requires: []
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["workspace-managed"]
 tools:
   read: true
   write: true
   bash: true
   question: true
 ---
-
 
 <objective>
 Manage Hivemind workspaces with a single consolidated command.
@@ -37,10 +28,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/new-workspace.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/list-workspaces.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/remove-workspace.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-new-workspace.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-list-workspaces.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-remove-workspace.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </execution_context>
 
 <context>

@@ -1,20 +1,12 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Create context handoff when pausing work mid-phase"
+description: Create context handoff when pausing work mid-phase
 argument-hint: "[--report]"
-requires: ["hm-phase", "hm-progress"]
-validation-gates: ["lifecycle-gate"]
-output-templates: ["hm-continue-here.md"]
-coordination-model: "waiter-model"
-completion-signals: ["work-paused"]
+requires: [phase, progress]
 tools:
   read: true
   write: true
   bash: true
 ---
-
 
 <objective>
 Create `.continue-here.md` handoff file to preserve complete work state across sessions.
@@ -28,7 +20,7 @@ Routes to the pause-work workflow which handles:
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/pause-work.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-pause-work.md
 </execution_context>
 
 <context>
@@ -37,7 +29,7 @@ State and phase progress are gathered in-workflow with targeted reads.
 
 <process>
 If `--report` is in $ARGUMENTS:
-Read and execute `/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/session-report.md` end-to-end.
+Read and execute `/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-session-report.md` end-to-end.
 
 **Follow the pause-work workflow**.
 

@@ -3,7 +3,7 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -16,27 +16,27 @@ Valid Hivemind subagent types (use exact names — do not fall back to 'general-
 ## 0. Initialize
 
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($HIVEMIND_SDK query init.phase-op "${PHASE_ARG}")
+INIT=$($Hivemind_SDK query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$($HIVEMIND_SDK query agent-skills hm-nyquist-auditor)
+AGENT_SKILLS_AUDITOR=$($Hivemind_SDK query agent-skills hm-nyquist-auditor)
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
 
 ```bash
-AUDITOR_MODEL=$($HIVEMIND_SDK query resolve-model hm-nyquist-auditor --raw)
-NYQUIST_CFG=$($HIVEMIND_SDK query config-get workflow.nyquist_validation --raw)
+AUDITOR_MODEL=$($Hivemind_SDK query resolve-model hm-nyquist-auditor --raw)
+NYQUIST_CFG=$($Hivemind_SDK query config-get workflow.nyquist_validation --raw)
 ```
 
 If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /hm-settings."
@@ -127,7 +127,7 @@ Handle return:
 ## 6. Generate/Update VALIDATION.md
 
 **State B (create):**
-1. Read template from `/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/VALIDATION.md`
+1. Read template from `/Users/apple/hivemind-plugin-private/.opencode/templates/hm-VALIDATION.md`
 2. Fill: frontmatter, Test Infrastructure, Per-Task Map, Manual-Only, Sign-Off
 3. Write to `${PHASE_DIR}/${PADDED_PHASE}-VALIDATION.md`
 
@@ -150,7 +150,7 @@ Handle return:
 git add {test_files}
 git commit -m "test(phase-${PHASE}): add Nyquist validation tests"
 
-$HIVEMIND_SDK query commit "docs(phase-${PHASE}): add/update validation strategy"
+$Hivemind_SDK query commit "docs(phase-${PHASE}): add/update validation strategy"
 ```
 
 ## 8. Results + Routing

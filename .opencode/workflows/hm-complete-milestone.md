@@ -41,18 +41,18 @@ When a milestone completes:
 Before proceeding with milestone close, run the comprehensive open artifact audit.
 
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-$HIVEMIND_SDK query audit-open
+$Hivemind_SDK query audit-open
 ```
 
 If the output contains open items (any section with count > 0):
@@ -68,7 +68,7 @@ These items are open. Choose an action:
 ```
 
 If user chooses [A] (Acknowledge):
-1. Re-run `hivemind query audit-open --json` to get structured data
+1. Re-run `hm-sdk query audit-open --json` to get structured data
 2. Write acknowledged items to STATE.md under `## Deferred Items` section:
    ```markdown
    ## Deferred Items
@@ -87,7 +87,7 @@ If user chooses [A] (Acknowledge):
 
 If output shows all clear (no open items): print `All artifact types clear.` and proceed.
 
-SECURITY: Audit JSON output is structured data from the `audit-open` query handler (same JSON contract as legacy `hivemind.cjs audit-open`) — validated and sanitized at source. When writing to STATE.md, item slugs and descriptions are sanitized via `sanitizeForDisplay()` before inclusion. Never inject raw user-supplied content into STATE.md without sanitization.
+SECURITY: Audit JSON output is structured data from the `audit-open` query handler (same JSON contract as legacy `hm-tools.cjs audit-open`) — validated and sanitized at source. When writing to STATE.md, item slugs and descriptions are sanitized via `sanitizeForDisplay()` before inclusion. Never inject raw user-supplied content into STATE.md without sanitization.
 </step>
 
 <step name="verify_readiness">
@@ -95,7 +95,7 @@ SECURITY: Audit JSON output is structured data from the `audit-open` query handl
 **Use `roadmap analyze` for comprehensive readiness check:**
 
 ```bash
-ROADMAP=$($HIVEMIND_SDK query roadmap.analyze)
+ROADMAP=$($Hivemind_SDK query roadmap.analyze)
 ```
 
 This returns all phases with plan/summary counts and disk status. Use this to verify:
@@ -210,7 +210,7 @@ Extract one-liners from SUMMARY.md files using summary-extract:
 # For each phase in milestone, extract one-liner
 for summary in .planning/phases/*-*/*-SUMMARY.md; do
   [ -e "$summary" ] || continue
-  $HIVEMIND_SDK query summary-extract "$summary" --fields one_liner --pick one_liner
+  $Hivemind_SDK query summary-extract "$summary" --fields one_liner --pick one_liner
 done
 ```
 
@@ -229,7 +229,7 @@ Key accomplishments for this milestone:
 
 <step name="create_milestone_entry">
 
-**Note:** MILESTONES.md entry is now created automatically by `hivemind query milestone.complete` in the archive_milestone step. The entry includes version, date, phase/plan/task counts, and accomplishments extracted from SUMMARY.md files.
+**Note:** MILESTONES.md entry is now created automatically by `hm-sdk query milestone.complete` in the archive_milestone step. The entry includes version, date, phase/plan/task counts, and accomplishments extracted from SUMMARY.md files.
 
 If additional details are needed (e.g., user-provided "Delivered" summary, git range, LOC stats), add them manually after the CLI creates the base entry.
 
@@ -420,10 +420,10 @@ Update `.planning/ROADMAP.md` — group completed milestone phases:
 
 <step name="archive_milestone">
 
-**Delegate archival to `hivemind query milestone.complete`:**
+**Delegate archival to `hm-sdk query milestone.complete`:**
 
 ```bash
-ARCHIVE=$($HIVEMIND_SDK query milestone.complete "v[X.Y]" --name "[Milestone Name]")
+ARCHIVE=$($Hivemind_SDK query milestone.complete "v[X.Y]" --name "[Milestone Name]")
 ```
 
 The CLI handles:
@@ -505,7 +505,7 @@ Append the extracted Backlog content verbatim to the end of the newly written RO
 **Safety commit — commit archive files BEFORE deleting any originals:**
 
 ```bash
-$HIVEMIND_SDK query commit "chore: archive v[X.Y] milestone files" --files .planning/milestones/v[X.Y]-ROADMAP.md .planning/milestones/v[X.Y]-REQUIREMENTS.md .planning/milestones/v[X.Y]-MILESTONE-AUDIT.md .planning/MILESTONES.md .planning/PROJECT.md .planning/STATE.md .planning/ROADMAP.md
+$Hivemind_SDK query commit "chore: archive v[X.Y] milestone files" --files .planning/milestones/v[X.Y]-ROADMAP.md .planning/milestones/v[X.Y]-REQUIREMENTS.md .planning/milestones/v[X.Y]-MILESTONE-AUDIT.md .planning/MILESTONES.md .planning/PROJECT.md .planning/STATE.md .planning/ROADMAP.md
 ```
 
 This creates a durable checkpoint in git history. If anything fails after this point, the working tree can be reconstructed from git.
@@ -529,7 +529,7 @@ ls .planning/RETROSPECTIVE.md 2>/dev/null || true
 
 **If exists:** Read the file, append new milestone section before the "## Cross-Milestone Trends" section.
 
-**If doesn't exist:** Create from template at `/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/retrospective.md`.
+**If doesn't exist:** Create from template at `/Users/apple/hivemind-plugin-private/.opencode/templates/hm-retrospective.md`.
 
 **Gather retrospective data:**
 
@@ -574,7 +574,7 @@ If the "## Cross-Milestone Trends" section exists, update the tables with new da
 
 **Commit:**
 ```bash
-$HIVEMIND_SDK query commit "docs: update retrospective for v${VERSION}" --files .planning/RETROSPECTIVE.md
+$Hivemind_SDK query commit "docs: update retrospective for v${VERSION}" --files .planning/RETROSPECTIVE.md
 ```
 
 </step>
@@ -608,7 +608,7 @@ Check branching strategy and offer merge options.
 Use `init milestone-op` for context, or load config directly:
 
 ```bash
-INIT=$($HIVEMIND_SDK query init.execute-phase "1")
+INIT=$($Hivemind_SDK query init.execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -616,7 +616,7 @@ Extract `branching_strategy`, `phase_branch_template`, `milestone_branch_templat
 
 Detect base branch:
 ```bash
-BASE_BRANCH=$($HIVEMIND_SDK query config-get git.base_branch 2>/dev/null || echo "")
+BASE_BRANCH=$($Hivemind_SDK query config-get git.base_branch 2>/dev/null || echo "")
 if [ -z "$BASE_BRANCH" ] || [ "$BASE_BRANCH" = "null" ]; then
   BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
   BASE_BRANCH="${BASE_BRANCH:-main}"
@@ -736,7 +736,7 @@ fi
 <step name="git_tag">
 
 <config-check>
-Read `git.create_tag` via `hivemind query config-get git.create_tag 2>/dev/null || echo "true"`.
+Read `git.create_tag` via `hm-sdk query config-get git.create_tag 2>/dev/null || echo "true"`.
 If the result is `false` → skip this step entirely and proceed to `git_commit_milestone`.
 </config-check>
 

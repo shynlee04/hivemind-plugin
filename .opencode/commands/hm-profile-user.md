@@ -1,14 +1,6 @@
 ---
-namespace: hm
-agent: hm-user-profiler
-subtask: true
-description: "Generate developer behavioral profile and create Claude-discoverable artifacts"
+description: Generate developer behavioral profile and create Claude-discoverable artifacts
 argument-hint: "[--questionnaire] [--refresh]"
-requires: []
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-user-profile.md"]
-coordination-model: "waiter-model"
-completion-signals: ["profile-generated"]
 tools:
   read: true
   write: true
@@ -19,7 +11,6 @@ tools:
   agent: true
 ---
 
-
 <objective>
 Generate a developer behavioral profile from session analysis (or questionnaire) and produce artifacts (USER-PROFILE.md, `hm-dev-preferences` skill config, AGENTS.md section) that personalize the agent's responses.
 
@@ -27,8 +18,8 @@ Routes to the profile-user workflow which orchestrates the full flow: consent ga
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/profile-user.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-profile-user.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </execution_context>
 
 <context>

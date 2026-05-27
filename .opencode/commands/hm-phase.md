@@ -1,21 +1,12 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "CRUD for phases in ROADMAP.md — add, insert, remove, or edit phases"
+description: CRUD for phases in ROADMAP.md — add, insert, remove, or edit phases
 argument-hint: "[--insert | --remove | --edit] <phase-name-or-number>"
-requires: []
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
   bash: true
   glob: true
 ---
-
 
 <objective>
 Manage phases in ROADMAP.md with a single consolidated command.
@@ -39,10 +30,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/add-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/insert-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/remove-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/edit-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-add-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-insert-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-remove-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-edit-phase.md
 </execution_context>
 
 <context>

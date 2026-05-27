@@ -96,18 +96,18 @@ ls -d .planning/spikes/[0-9][0-9][0-9]-* 2>/dev/null | sort | tail -1
 
 Check `commit_docs` config:
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-COMMIT_DOCS=$($HIVEMIND_SDK query config-get commit_docs 2>/dev/null || echo "true")
+COMMIT_DOCS=$($Hivemind_SDK query config-get commit_docs 2>/dev/null || echo "true")
 ```
 </step>
 
@@ -345,7 +345,7 @@ tags: [tag1, tag2]
 
 **i.** Commit (if `COMMIT_DOCS` is true):
 ```bash
-$HIVEMIND_SDK query commit "docs(spike-NNN): [VERDICT] — [key finding]" --files .planning/spikes/NNN-descriptive-name/ .planning/spikes/MANIFEST.md
+$Hivemind_SDK query commit "docs(spike-NNN): [VERDICT] — [key finding]" --files .planning/spikes/NNN-descriptive-name/ .planning/spikes/MANIFEST.md
 ```
 
 **j.** Report:
@@ -399,7 +399,7 @@ Only include patterns that repeated across 2+ spikes or were explicitly chosen b
 
 Commit (if `COMMIT_DOCS` is true):
 ```bash
-$HIVEMIND_SDK query commit "docs(spikes): update conventions" --files .planning/spikes/CONVENTIONS.md
+$Hivemind_SDK query commit "docs(spikes): update conventions" --files .planning/spikes/CONVENTIONS.md
 ```
 </step>
 

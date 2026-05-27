@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-nyquist-auditor
-subtask: false
-description: "Audit project directories, configuration files, active sessions, and lineage continuity for compliance."
-argument-hint: "[--lineage] [--orphans] [--pressure]"
+subtask: true
+description: Run codebase and primitive audit to identify structure drift, orphaned configurations, or type check warnings.
+argument-hint: "[--strict] [--fix]"
 requires: []
-validation-gates: ["lifecycle-gate"]
-output-templates: ["hm-summary.md"]
+validation-gates: []
+output-templates: []
 coordination-model: "waiter-model"
-completion-signals: ["audit-completed"]
+completion-signals: ["audit-complete"]
 tools:
   read: true
   write: true
@@ -17,9 +17,8 @@ tools:
   grep: true
   agent: true
 ---
-
 <objective>
-Scan project workspace for primitive drift, namespace integrity violations, and lifecycle configuration mismatches.
+Audit repository structure, configuration integrity, type checks, and primitive mappings against harness rules.
 </objective>
 
 <execution_context>
@@ -27,11 +26,11 @@ Scan project workspace for primitive drift, namespace integrity violations, and 
 </execution_context>
 
 <context>
-Scope: $ARGUMENTS
+Flags: $ARGUMENTS
 Namespace: hm
 Routed Agent: hm-nyquist-auditor
 </context>
 
 <process>
-Execute end-to-end via hm-audit workflow. Generates AUDIT-REPORT.md summarizing issues and remediation steps.
+Execute end-to-end via hm-audit workflow. Scans codebase and structure, repairs minor warnings automatically if `--fix` is passed.
 </process>

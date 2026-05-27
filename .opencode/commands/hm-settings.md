@@ -1,21 +1,12 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Configure Hivemind workflow toggles and model profile"
-argument-hint: ""
-requires: ["hm-quick"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["settings-saved"]
+description: Configure Hivemind workflow toggles and model profile
+requires: [quick]
 tools:
   read: true
   write: true
   bash: true
   question: true
 ---
-
 
 <objective>
 Interactive configuration of Hivemind workflow agents and model profile via multi-question prompt.
@@ -29,7 +20,7 @@ Routes to the settings workflow which handles:
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/settings.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-settings.md
 </execution_context>
 
 <process>

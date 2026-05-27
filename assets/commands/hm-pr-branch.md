@@ -1,20 +1,12 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Create a clean PR branch by filtering out .planning/ commits — ready for code review"
+description: Create a clean PR branch by filtering out .planning/ commits — ready for code review
 argument-hint: "[target branch, default: main]"
-requires: ["hm-review"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["branch-created"]
+requires: [review]
 tools:
   bash: true
   read: true
   question: true
 ---
-
 
 <objective>
 Create a clean branch suitable for pull requests by filtering out .planning/ commits
@@ -25,7 +17,7 @@ changes that are irrelevant to code review.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/pr-branch.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-pr-branch.md
 </execution_context>
 
 <process>

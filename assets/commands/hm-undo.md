@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
 description: "Safe git revert. Roll back phase or plan commits using the phase manifest with dependency checks."
 argument-hint: "--last N | --phase NN | --plan NN-MM"
-requires: ["hm-phase"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["task-completed"]
+requires: [phase]
 tools:
   read: true
   bash: true
@@ -16,7 +9,6 @@ tools:
   grep: true
   question: true
 ---
-
 
 <objective>
 Safe git revert — roll back Hivemind phase or plan commits using the phase manifest, with dependency checks and a confirmation gate before execution.
@@ -28,9 +20,9 @@ Three modes:
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/undo.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/gate-prompts.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-undo.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-gate-prompts.md
 </execution_context>
 
 <context>

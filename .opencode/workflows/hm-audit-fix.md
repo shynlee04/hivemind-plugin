@@ -32,18 +32,18 @@ Invoke the source audit command and capture output.
 
 For `audit-uat` source:
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($HIVEMIND_SDK query audit-uat 2>/dev/null || echo "{}")
+INIT=$($Hivemind_SDK query audit-uat 2>/dev/null || echo "{}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -116,7 +116,7 @@ Agent(
 
 **b. Run tests:**
 ```bash
-AUDIT_TEST_CMD=$($HIVEMIND_SDK query config-get workflow.test_command --default "" 2>/dev/null || true)
+AUDIT_TEST_CMD=$($Hivemind_SDK query config-get workflow.test_command --default "" 2>/dev/null || true)
 if [ -z "$AUDIT_TEST_CMD" ]; then
   if [ -f "Makefile" ] && grep -q "^test:" Makefile; then
     AUDIT_TEST_CMD="make test"

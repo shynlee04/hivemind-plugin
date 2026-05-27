@@ -1,25 +1,17 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Diagnose planning directory health and optionally repair issues"
+description: Diagnose planning directory health and optionally repair issues
 argument-hint: "[--repair] [--context]"
-requires: ["hm-thread"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["health-checked"]
+requires: [thread]
 tools:
   read: true
   bash: true
   write: true
   question: true
 ---
-
 <objective>
 Validate `.planning/` directory integrity and report actionable issues. Checks for missing files, invalid configurations, inconsistent state, and orphaned plans.
 
-`--context` runs an orthogonal check: the running session's context utilization. The workflow asks for the model's tokensUsed + contextWindow, calls `hivemind query validate.context`, and renders one of three states:
+`--context` runs an orthogonal check: the running session's context utilization. The workflow asks for the model's tokensUsed + contextWindow, calls `hm-sdk query validate.context`, and renders one of three states:
 
 | Utilization | State    | Action                                                |
 |-------------|----------|-------------------------------------------------------|
@@ -29,7 +21,7 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/health.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-health.md
 </execution_context>
 
 <process>

@@ -52,7 +52,7 @@ If `PATH_NOT_FOUND` or `MANIFEST_NOT_FOUND`: display error and exit.
 Run the init query:
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" init ingest-docs)
+INIT=$(node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs" init ingest-docs)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -195,7 +195,7 @@ Agent({
 
     <required_reading>
     - agents/hm-doc-synthesizer.md
-    - hivemind/references/doc-conflict-engine.md
+    - references/hm-doc-conflict-engine.md
     </required_reading>
   "
 })
@@ -295,7 +295,7 @@ Preview the merge diff to the user and gate via approve-revise-abort before writ
 Commit the ingest results:
 
 ```bash
-node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hivemind.cjs" commit \
+node "/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs" commit \
   "docs: ingest {N} docs from {SCAN_PATH} (#2387)" --files \
   .planning/PROJECT.md \
   .planning/REQUIREMENTS.md \

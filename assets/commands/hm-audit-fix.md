@@ -1,14 +1,8 @@
 ---
-namespace: hm
-agent: hm-code-fixer
-subtask: true
-description: "Autonomous audit-to-fix pipeline — find issues, classify, fix, test, commit"
+type: prompt
+description: Autonomous audit-to-fix pipeline — find issues, classify, fix, test, commit
 argument-hint: "--source <audit-uat> [--severity <medium|high|all>] [--max N] [--dry-run]"
-requires: ["hm-audit-uat"]
-validation-gates: ["lifecycle-gate"]
-output-templates: ["hm-summary.md"]
-coordination-model: "waiter-model"
-completion-signals: ["audit-fixed"]
+requires: [audit-uat]
 tools:
   read: true
   write: true
@@ -19,7 +13,6 @@ tools:
   agent: true
   question: true
 ---
-
 <objective>
 Run an audit, classify findings as auto-fixable vs manual-only, then autonomously fix
 auto-fixable issues with test verification and atomic commits.
@@ -32,7 +25,7 @@ Flags:
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/audit-fix.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-audit-fix.md
 </execution_context>
 
 <process>

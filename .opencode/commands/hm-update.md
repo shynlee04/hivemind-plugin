@@ -1,36 +1,47 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Update Hivemind to the latest version: check for updates, display changelog, apply update, and re-sync assets. Use when a new version of Hivemind is available or when you want to refresh the project setup."
-argument-hint: "[check|apply|rollback]"
-requires: []
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["task-completed"]
+description: Update Hivemind to latest version with changelog display
+argument-hint: "[--sync | --reapply]"
 tools:
   read: true
+  write: true
+  edit: true
   bash: true
+  glob: true
+  grep: true
+  question: true
 ---
 
 <objective>
-Check for Hivemind updates, display the changelog, apply the update with pre-update backup, and re-sync all assets from the updated package.
+Check for Hivemind updates, install if available, and display what changed.
+
+Routes to the update workflow which handles:
+- Version detection (local vs global installation)
+- npm version checking
+- Changelog fetching and display
+- User confirmation with clean install warning
+- Update execution and cache clearing
+- Restart reminder
 </objective>
 
 <execution_context>
-Runs npm/npx for package updates; backs up current state before applying.
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-update.md
 </execution_context>
 
-<context>
-Action: $ARGUMENTS
-Namespace: hm
-Package: hivemind
-</context>
+<flags>
+- **--sync**: Sync managed Hivemind skills across runtime roots so multi-runtime users stay aligned after an update. Runs the sync-skills workflow (--from, --to, --dry-run, --apply flags supported).
+- **--reapply**: Reapply local modifications after a Hivemind update. Uses three-way comparison (pristine baseline, user-modified backup, newly installed version) to merge user customizations back. Runs the reapply-patches workflow.
+- **(no flag)**: Standard update — check for new version, show changelog, install.
+</flags>
 
 <process>
-1. Parse $ARGUMENTS: check (default), apply, rollback
-2. check: Run npm outdated hivemind, show current vs latest version with changelog
-3. apply: Backup .opencode/ and .hivemind/ state, run npm update hivemind, re-sync assets
-4. rollback: Restore from pre-update backup if available
+Parse the first token of $ARGUMENTS:
+- If it is `--sync`: strip the flag, execute the sync-skills workflow (passing remaining args for --from/--to/--dry-run/--apply).
+- If it is `--reapply`: strip the flag, execute the reapply-patches workflow.
+- Otherwise: execute the update workflow end-to-end.
+
 </process>
+
+<execution_context_extended>
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-sync-skills.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-reapply-patches.md
+</execution_context_extended>

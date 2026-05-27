@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-phase-researcher
-subtask: true
-description: "Sketch UI/design ideas with throwaway HTML mockups, or propose what to sketch next (frontier mode)"
+description: Sketch UI/design ideas with throwaway HTML mockups, or propose what to sketch next (frontier mode)
 argument-hint: "[design idea to explore] [--quick] [--text] [--wrap-up] or [frontier]"
-requires: ["hm-spike"]
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-ui-spec.md"]
-coordination-model: "waiter-model"
-completion-signals: ["sketch-completed"]
+requires: [spike]
 tools:
   read: true
   write: true
@@ -22,7 +15,6 @@ tools:
   mcp__context7__resolve-library-id: true
   mcp__context7__query-docs: true
 ---
-
 <objective>
 Explore design directions through throwaway HTML mockups before committing to implementation.
 Each sketch produces 2-3 variants for comparison. Sketches live in `.planning/sketches/` and
@@ -37,13 +29,13 @@ Does not require prior new-project setup — auto-creates `.planning/sketches/` 
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/sketch.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/sketch-wrap-up.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-theme-system.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-interactivity.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-tooling.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-variant-patterns.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-sketch.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-sketch-wrap-up.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-sketch-theme-system.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-sketch-interactivity.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-sketch-tooling.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-sketch-variant-patterns.md
 </execution_context>
 
 <runtime_note>

@@ -1,37 +1,27 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Display the Hivemind command registry: list all available hm-* commands grouped by category (routing, workflow, audit, research) with descriptions, target agents, and usage examples. Use when you need to discover available commands or learn what each command does."
-argument-hint: "[--category routing|workflow|audit|research] [--json]"
-requires: []
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["task-completed"]
+description: Show available Hivemind commands and usage guide
+argument-hint: "[--brief | --full | <topic> | --brief <topic>]"
 tools:
   read: true
-  glob: true
 ---
-
 <objective>
-Display a categorized registry of all hm-* commands available in the Hivemind system, showing command names, descriptions, target agents, subtask mode, usage examples, and dependency chains.
+Display Hivemind help at the tier the user asked for: brief (one-line refresher), default (one-page tour), full (complete reference), a single topic section, or a compact scoped lookup of one topic (`--brief <topic>`: signature + one-line summary).
+
+Output ONLY the reference content of the chosen tier. Do NOT add:
+- Project-specific analysis
+- Git status or file context
+- Next-step suggestions
+- Any commentary beyond the reference
 </objective>
 
 <execution_context>
-Reads from .opencode/commands/hm-*.md files; no workflow delegation.
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-help.md
 </execution_context>
 
 <context>
-Filter: $ARGUMENTS
-Namespace: hm
+Arguments: $ARGUMENTS
 </context>
 
 <process>
-1. Read all hm-*.md files from .opencode/commands/
-2. Extract YAML frontmatter: description, agent, subtask, requires, argument-hint
-3. Group by namespace/category inferred from description
-4. Render categorized table with: Command | Description | Agent | Subtask | Requires | Usage
-5. If --category flag provided, filter to that category only
-6. If --json flag provided, output machine-readable JSON
+Follow /Users/apple/hivemind-plugin-private/.opencode/workflows/hm-help.md with $ARGUMENTS.
 </process>

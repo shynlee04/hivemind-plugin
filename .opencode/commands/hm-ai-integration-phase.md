@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-planner
-subtask: true
-description: "Generate an AI-SPEC.md design contract for phases that involve building AI systems."
+description: Generate an AI-SPEC.md design contract for phases that involve building AI systems.
 argument-hint: "[phase number]"
-requires: ["hm-phase"]
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-ai-spec.md"]
-coordination-model: "waiter-model"
-completion-signals: ["ai-spec-defined"]
+requires: [phase]
 tools:
   read: true
   write: true
@@ -21,7 +14,6 @@ tools:
   question: true
   mcp__context7__*: true
 ---
-
 <objective>
 Create an AI design contract (AI-SPEC.md) for a phase involving AI system development.
 Orchestrates hm-framework-selector → hm-ai-researcher → hm-domain-researcher → hm-eval-planner.
@@ -29,9 +21,9 @@ Flow: Select Framework → Research Docs → Research Domain → Design Eval Str
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/ai-integration-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ai-frameworks.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ai-evals.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-ai-integration-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ai-frameworks.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ai-evals.md
 </execution_context>
 
 <context>

@@ -3,9 +3,9 @@ Guide the user through MVP-mode planning for a phase. Prompts for an "As a / I w
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/user-story-template.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/spidr-splitting.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/planner-mvp-mode.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-user-story-template.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-spidr-splitting.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-planner-mvp-mode.md
 </required_reading>
 
 <runtime_note>
@@ -29,30 +29,30 @@ Example: /hm mvp-phase 2.1
 ```
 Exit.
 
-Normalize per `@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/phase-argument-parsing.md` (zero-pad integer phases to two digits).
+Normalize per `@/Users/apple/hivemind-plugin-private/.opencode/references/hm-phase-argument-parsing.md` (zero-pad integer phases to two digits).
 
 ## 2. Validate phase exists and check status
 
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-PHASE_INFO=$($HIVEMIND_SDK query roadmap.get-phase "${PHASE}")
+PHASE_INFO=$($Hivemind_SDK query roadmap.get-phase "${PHASE}")
 PHASE_FOUND=$(echo "$PHASE_INFO" | jq -r '.found')
 PHASE_NAME=$(echo "$PHASE_INFO" | jq -r '.phase_name')
 PHASE_GOAL=$(echo "$PHASE_INFO" | jq -r '.goal')
 PHASE_MODE=$(echo "$PHASE_INFO" | jq -r '.mode // ""')
 PHASE_COMPLETE=$(echo "$PHASE_INFO" | jq -r '.roadmap_complete // false')
 
-ANALYZE=$($HIVEMIND_SDK query roadmap.analyze)
+ANALYZE=$($Hivemind_SDK query roadmap.analyze)
 if [[ "$ANALYZE" == @file:* ]]; then ANALYZE=$(cat "${ANALYZE#@file:}"); fi
 DISK_STATUS=$(echo "$ANALYZE" | jq -r --arg p "$PHASE" '.phases[] | select((.phase_number|tostring)==$p) | .disk_status' | head -1)
 if [[ "$DISK_STATUS" == "complete" || "$PHASE_COMPLETE" == "true" ]]; then
@@ -84,7 +84,7 @@ Use `question` with options [Re-prompt / Abort]. On Abort, exit cleanly. On Re-p
 
 ## 3. User story prompts
 
-Run three sequential `question` calls. Each is free-text. After all three, assemble into the canonical sentence per `@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/user-story-template.md`:
+Run three sequential `question` calls. Each is free-text. After all three, assemble into the canonical sentence per `@/Users/apple/hivemind-plugin-private/.opencode/references/hm-user-story-template.md`:
 
 **Prompt 1 — As a:**
 > "As a [user role]?"
@@ -109,7 +109,7 @@ If any of the three answers is empty or whitespace-only, error and re-prompt tha
 **Validate via the centralized User Story validator.** The verb owns the canonical regex `/^As a .+, I want to .+, so that .+\.$/` and surfaces per-error guidance:
 
 ```bash
-USER_STORY_RESULT=$($HIVEMIND_SDK query user-story.validate --story "$USER_STORY")
+USER_STORY_RESULT=$($Hivemind_SDK query user-story.validate --story "$USER_STORY")
 if [ "$(echo "$USER_STORY_RESULT" | jq -r '.valid')" != "true" ]; then
   echo "$USER_STORY_RESULT" | jq -r '.errors[]' >&2
   # Re-prompt the offending field(s) per surfaced errors, then re-run validation.
@@ -123,7 +123,7 @@ If `RE_PROMPT_USER_STORY=true`, re-run only the offending prompt field(s), rebui
 
 ## 4. SPIDR splitting check
 
-Run the SPIDR rules from `@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/spidr-splitting.md`. Briefly:
+Run the SPIDR rules from `@/Users/apple/hivemind-plugin-private/.opencode/references/hm-spidr-splitting.md`. Briefly:
 
 **Trigger evaluation.** Check the assembled `USER_STORY` against the four size signals from the reference (compound capabilities, multi-actor, length > 120 chars, vague capability). If none fire, **skip SPIDR** entirely — go to step 5.
 
@@ -194,8 +194,8 @@ On Apply, write the updated `ROADMAP.md` atomically (read-edit-write).
 ## 6. Verify the write
 
 ```bash
-NEW_MODE=$($HIVEMIND_SDK query roadmap.get-phase "${PHASE}" --pick mode)
-NEW_GOAL=$($HIVEMIND_SDK query roadmap.get-phase "${PHASE}" --pick goal)
+NEW_MODE=$($Hivemind_SDK query roadmap.get-phase "${PHASE}" --pick mode)
+NEW_GOAL=$($Hivemind_SDK query roadmap.get-phase "${PHASE}" --pick goal)
 ```
 
 Assert:

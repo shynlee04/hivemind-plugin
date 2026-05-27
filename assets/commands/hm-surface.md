@@ -1,20 +1,12 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall"
+description: Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall
 argument-hint: "[list|status|profile <name>|disable <cluster>|enable <cluster>|reset]"
-requires: ["hm-config", "hm-update"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["surface-toggled"]
+requires: [config, update]
 tools:
   read: true
   write: true
   bash: true
 ---
-
 
 <objective>
 Manage the runtime skill surface without reinstall. Reads/writes `/Users/apple/hivemind-plugin-private/.opencode/.hm-surface.json`

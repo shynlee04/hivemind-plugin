@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-executor
-subtask: true
-description: "Execute a trivial task inline — no subagents, no planning overhead"
+description: Execute a trivial task inline — no subagents, no planning overhead
 argument-hint: "[task description]"
-requires: ["hm-config", "hm-quick"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["fast-task-completed"]
+requires: [config, quick]
 tools:
   read: true
   write: true
@@ -17,7 +10,6 @@ tools:
   grep: true
   glob: true
 ---
-
 
 <objective>
 Execute a trivial task directly in the current context without spawning subagents
@@ -30,7 +22,7 @@ you could describe in one sentence and execute in under 2 minutes.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/fast.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-fast.md
 </execution_context>
 
 <process>

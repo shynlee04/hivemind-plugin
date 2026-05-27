@@ -3,8 +3,8 @@ Safe git revert workflow. Rolls back Hivemind phase or plan commits using the ph
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/gate-prompts.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-gate-prompts.md
 </required_reading>
 
 <process>

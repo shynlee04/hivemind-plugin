@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-planner
-subtask: true
-description: "Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase."
+description: Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase.
 argument-hint: "<phase> [--auto] [--text]"
-requires: ["hm-discuss-phase", "hm-execute-phase", "hm-phase", "hm-plan-phase"]
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-spec.md"]
-coordination-model: "waiter-model"
-completion-signals: ["spec-defined"]
+requires: [discuss-phase, execute-phase, phase, plan-phase]
 tools:
   read: true
   write: true
@@ -17,7 +10,6 @@ tools:
   grep: true
   question: true
 ---
-
 
 <objective>
 Clarify phase requirements through structured Socratic questioning with quantitative ambiguity scoring.
@@ -36,8 +28,8 @@ Clarify phase requirements through structured Socratic questioning with quantita
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/spec-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/spec.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-spec-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/templates/hm-spec.md
 </execution_context>
 
 <runtime_note>

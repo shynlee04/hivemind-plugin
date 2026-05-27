@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Check progress, advance workflow, or dispatch freeform intent — the unified Hivemind situational command"
-argument-hint: "[--forensic | --next | --do \\"task description\\"]"
-requires: ["hm-phase"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["progress-checked"]
+description: Check progress, advance workflow, or dispatch freeform intent — the unified Hivemind situational command
+argument-hint: "[--forensic | --next | --do \"task description\"]"
+requires: [phase]
 tools:
   read: true
   bash: true
@@ -17,7 +10,6 @@ tools:
   skill: true
   question: true
 ---
-
 <objective>
 Check project progress, summarize recent work and what's ahead, then intelligently route to the next action.
 
@@ -37,10 +29,10 @@ Three modes:
 </flags>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/progress.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/next.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/do.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-progress.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-next.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-do.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </execution_context>
 
 <process>

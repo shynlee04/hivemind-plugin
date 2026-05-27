@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-verifier
-subtask: true
-description: "Validate built features through conversational UAT"
+description: Validate built features through conversational UAT
 argument-hint: "[phase number, e.g., '4'] [--ws <name>]"
-requires: ["hm-execute-phase", "hm-phase"]
-validation-gates: ["evidence-truth-gate"]
-output-templates: ["hm-verification.md"]
-coordination-model: "waiter-model"
-completion-signals: ["verification-completed"]
+requires: [execute-phase, phase]
 tools:
   read: true
   bash: true
@@ -18,7 +11,6 @@ tools:
   write: true
   agent: true
 ---
-
 <objective>
 Validate built features through conversational testing with persistent state.
 
@@ -28,8 +20,8 @@ Output: {phase_num}-UAT.md tracking all test results. If issues found: diagnosed
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/verify-work.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/UAT.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-verify-work.md
+@/Users/apple/hivemind-plugin-private/.opencode/templates/hm-UAT.md
 </execution_context>
 
 <context>

@@ -1,39 +1,21 @@
 ---
-namespace: hm
-agent: hm-planner
+description: "Enter strategic planning mode. Agent interviews you to build a detailed plan before any code is written."
+agent: hm-l2-conductor
 subtask: false
-description: "Create detailed phase plan (PLAN.md) with integrated research, pattern mapping, spec compliance, and goal-backward verification."
-argument-hint: "<phase-number> [--research] [--skip-research] [--gaps] [--skip-verify]"
-requires: ["hm-discuss"]
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-plan.md"]
-coordination-model: "waiter-model"
-completion-signals: ["plan-generated"]
-tools:
-  read: true
-  write: true
-  edit: true
-  bash: true
-  glob: true
-  grep: true
-  agent: true
-  question: true
 ---
 
-<objective>
-Create executable phase plans (PLAN.md files) for a roadmap phase with integrated research, pattern mapping, spec compliance, and verification.
-</objective>
+Enter planning mode. Before writing any code:
 
-<execution_context>
-@.opencode/workflows/hm-plan.md
-</execution_context>
+1. Ask the user what they want to accomplish
+2. Ask clarifying questions about scope, constraints, and requirements
+3. Research the codebase to understand existing patterns
+4. Create a detailed plan in task_plan.md with numbered phases
+5. Each phase must have clear acceptance criteria
+6. Present the plan for user approval
+7. After approval, tell user to run /start-work to execute the plan through controlled `delegate-task` delegation
 
-<context>
-Phase: $ARGUMENTS
-Namespace: hm
-Routed Agent: hm-planner
-</context>
-
-<process>
-Execute end-to-end via hm-plan workflow. Generates PLAN.md, RESEARCH.md, PATTERNS.md, and SPEC.md.
-</process>
+Key principles:
+- Plan must be specific enough that no implementation decisions are left to the specialist
+- Every phase must reference specific files and patterns in the codebase
+- Acceptance criteria must be verifiable (not subjective)
+- Planning stays separate from execution. Use `/start-work` when it is time to run phases through controlled delegation.

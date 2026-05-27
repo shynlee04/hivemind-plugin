@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Run all remaining phases autonomously — discuss→plan→execute per phase"
+description: Run all remaining phases autonomously — discuss→plan→execute per phase
 argument-hint: "[--from N] [--to N] [--only N] [--interactive]"
-requires: ["hm-cleanup", "hm-phase", "hm-progress"]
-validation-gates: ["lifecycle-gate", "spec-compliance-gate", "evidence-truth-gate"]
-output-templates: ["hm-summary.md"]
-coordination-model: "waiter-model"
-completion-signals: ["milestone-completed"]
+requires: [cleanup, phase, progress]
 tools:
   read: true
   write: true
@@ -18,7 +11,6 @@ tools:
   question: true
   agent: true
 ---
-
 <objective>
 Execute all remaining milestone phases autonomously. For each phase: discuss → plan → execute. Pauses only for user decisions (grey area acceptance, blockers, validation requests).
 
@@ -33,8 +25,8 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/autonomous.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-autonomous.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </execution_context>
 
 <context>
@@ -44,7 +36,7 @@ Optional flags:
 - `--only N` — execute only phase N (single-phase mode).
 - `--interactive` — run discuss inline with questions (not auto-answered), then dispatch plan→execute as background agents. Keeps the main context lean while preserving user input on decisions.
 
-Project context, phase list, and state are resolved inside the workflow using init commands (`hivemind query init.milestone-op`, `hivemind query roadmap.analyze`). No upfront context loading needed.
+Project context, phase list, and state are resolved inside the workflow using init commands (`hm-sdk query init.milestone-op`, `hm-sdk query roadmap.analyze`). No upfront context loading needed.
 </context>
 
 <process>

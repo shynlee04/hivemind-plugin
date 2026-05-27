@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-roadmapper
-subtask: false
-description: "Start a new milestone cycle — update PROJECT.md and route to requirements"
+description: Start a new milestone cycle — update PROJECT.md and route to requirements
 argument-hint: "[milestone name, e.g., 'v1.1 Notifications']"
-requires: ["hm-new-project", "hm-phase", "hm-plan-phase"]
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-milestone.md"]
-coordination-model: "waiter-model"
-completion-signals: ["milestone-created"]
+requires: [new-project, phase, plan-phase]
 tools:
   read: true
   write: true
@@ -16,7 +9,6 @@ tools:
   agent: true
   question: true
 ---
-
 <objective>
 Start a new milestone: questioning → research (optional) → requirements → roadmap.
 
@@ -33,11 +25,11 @@ Brownfield equivalent of new-project. Project exists, PROJECT.md has history. Ga
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/new-milestone.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/questioning.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/project.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/requirements.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-new-milestone.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-questioning.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/templates/hm-project.md
+@/Users/apple/hivemind-plugin-private/.opencode/templates/hm-requirements.md
 </execution_context>
 
 <context>

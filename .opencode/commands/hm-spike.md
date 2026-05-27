@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-phase-researcher
-subtask: true
-description: "Spike an idea through experiential exploration, or propose what to spike next (frontier mode)"
+description: Spike an idea through experiential exploration, or propose what to spike next (frontier mode)
 argument-hint: "[idea to validate] [--quick] [--text] [--wrap-up] or [frontier]"
 requires: []
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-research.md"]
-coordination-model: "waiter-model"
-completion-signals: ["spike-completed"]
 tools:
   read: true
   write: true
@@ -22,7 +15,6 @@ tools:
   mcp__context7__resolve-library-id: true
   mcp__context7__query-docs: true
 ---
-
 <objective>
 Spike an idea through experiential exploration — build focused experiments to feel the pieces
 of a future app, validate feasibility, and produce verified knowledge for the real build.
@@ -37,9 +29,9 @@ Does not require prior new-project setup — auto-creates `.planning/spikes/` if
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/spike.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/spike-wrap-up.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-spike.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-spike-wrap-up.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </execution_context>
 
 <runtime_note>

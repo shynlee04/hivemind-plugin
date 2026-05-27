@@ -5,9 +5,9 @@ You are a thinking partner, not an interviewer. The user is the visionary — yo
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/domain-probes.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/gate-prompts.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/universal-anti-patterns.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-domain-probes.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-gate-prompts.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-universal-anti-patterns.md
 </required_reading>
 
 <progressive_disclosure>
@@ -109,9 +109,9 @@ Phase: "API documentation"       → Structure/navigation, Code examples depth, 
 Phase number from argument (required).
 
 ```bash
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"; [ -f "$HIVEMIND_TOOLS" ] && HIVEMIND_SDK="node $HIVEMIND_TOOLS" || { command -v hivemind >/dev/null 2>&1 && HIVEMIND_SDK=hivemind || { echo "ERROR: hivemind not found. Run: npx hivemind-cc@latest --claude --local" >&2; exit 1; }; }
-INIT=$($HIVEMIND_SDK query init.phase-op "${PHASE}"); [[ "$INIT" == @file:* ]] && INIT=$(cat "${INIT#@file:}")
-AGENT_SKILLS_ADVISOR=$($HIVEMIND_SDK query agent-skills hm-advisor-researcher)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"; [ -f "$Hivemind_TOOLS" ] && Hivemind_SDK="node $Hivemind_TOOLS" || { command -v hm-sdk >/dev/null 2>&1 && Hivemind_SDK=hm-sdk || { echo "ERROR: hm-sdk not found. Run: npx hivemind-cc@latest --claude --local" >&2; exit 1; }; }
+INIT=$($Hivemind_SDK query init.phase-op "${PHASE}"); [[ "$INIT" == @file:* ]] && INIT=$(cat "${INIT#@file:}")
+AGENT_SKILLS_ADVISOR=$($Hivemind_SDK query agent-skills hm-advisor-researcher)
 ```
 
 Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_plans`, `has_verification`, `plan_count`, `roadmap_exists`, `planning_exists`, `response_language`.
@@ -265,7 +265,7 @@ Build internal `<prior_decisions>` with sections for Project-Level (from PROJECT
 Check pending todos for matches with this phase's scope.
 
 ```bash
-TODO_MATCHES=$($HIVEMIND_SDK query todo.match-phase "${PHASE_NUMBER}")
+TODO_MATCHES=$($Hivemind_SDK query todo.match-phase "${PHASE_NUMBER}")
 ```
 
 Parse JSON for: `todo_count`, `matches[]` (each with `file`, `title`, `area`, `score`, `reasons`).
@@ -280,7 +280,7 @@ Parse JSON for: `todo_count`, `matches[]` (each with `file`, `title`, `area`, `s
 <step name="scout_codebase">
 Lightweight scan of existing code to inform gray area identification (~10% context).
 
-Read `@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/scout-codebase.md` — it contains the phase-type→map selection table, single-read rule, no-maps fallback, and `<codebase_context>` output schema. Then execute:
+Read `@/Users/apple/hivemind-plugin-private/.opencode/references/hm-scout-codebase.md` — it contains the phase-type→map selection table, single-read rule, no-maps fallback, and `<codebase_context>` output schema. Then execute:
 1. `ls .planning/codebase/*.md` to find existing maps
 2. Select 2–3 maps via the reference's table; or grep fallback if none exist
 3. Build internal `<codebase_context>` per the reference's output schema
@@ -447,7 +447,7 @@ rm -f "${phase_dir}/${padded_phase}-DISCUSS-CHECKPOINT.json"
 
 Commit phase context and discussion log:
 ```bash
-$HIVEMIND_SDK query commit "docs(${padded_phase}): capture phase context" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
+$Hivemind_SDK query commit "docs(${padded_phase}): capture phase context" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
 ```
 
 Confirm: "Committed: docs(${padded_phase}): capture phase context"
@@ -457,11 +457,11 @@ Confirm: "Committed: docs(${padded_phase}): capture phase context"
 Update STATE.md with session info:
 
 ```bash
-$HIVEMIND_SDK query state.record-session \
+$Hivemind_SDK query state.record-session \
   --stopped-at "Phase ${PHASE} context gathered" \
   --resume-file "${phase_dir}/${padded_phase}-CONTEXT.md"
 
-$HIVEMIND_SDK query commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
+$Hivemind_SDK query commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
 ```
 </step>
 

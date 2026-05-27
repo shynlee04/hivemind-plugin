@@ -1,14 +1,6 @@
 ---
-namespace: hm
-agent: hm-executor
-subtask: true
-description: "Execute all plans in a phase with wave-based parallelization, atomic commits, deviation handling, and checkpoint recovery. Routes through hm-executor and hm-verifier agents."
+description: Execute all plans in a phase with wave-based parallelization, atomic commits, deviation handling, and checkpoint recovery. Routes through hm-executor and hm-verifier agents.
 argument-hint: "<phase-number> [--wave N] [--gaps-only] [--interactive] [--tdd]"
-requires: []
-validation-gates: ["lifecycle-gate", "evidence-truth-gate"]
-output-templates: ["hm-verification.md"]
-coordination-model: "waiter-model"
-completion-signals: ["execution-completed"]
 tools:
   read: true
   write: true
@@ -20,7 +12,6 @@ tools:
   todowrite: true
   question: true
 ---
-
 <objective>
 Execute all plans in a phase using wave-based parallel execution with atomic commits, deviation handling, and goal-backward verification.
 </objective>

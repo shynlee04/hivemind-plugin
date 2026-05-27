@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Triage and review open GitHub issues and PRs against project templates and contribution guidelines."
+description: Triage and review open GitHub issues and PRs against project templates and contribution guidelines.
 argument-hint: "[--issues] [--prs] [--label] [--close-incomplete] [--repo owner/repo]"
-requires: ["hm-review"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["inbox-triaged"]
+requires: [review]
 tools:
   read: true
   bash: true
@@ -17,7 +10,6 @@ tools:
   glob: true
   question: true
 ---
-
 <objective>
 One-command triage of the project's GitHub inbox. Fetches all open issues and PRs,
 reviews each against the corresponding template requirements (feature, enhancement,
@@ -28,7 +20,7 @@ and optionally applies labels or closes non-compliant submissions.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/inbox.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-inbox.md
 </execution_context>
 
 <context>

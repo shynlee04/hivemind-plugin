@@ -11,10 +11,10 @@ Supports two modes:
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-theme-system.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-variant-patterns.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-interactivity.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/sketch-tooling.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-sketch-theme-system.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-sketch-variant-patterns.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-sketch-interactivity.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-sketch-tooling.md
 </required_reading>
 
 <process>
@@ -99,18 +99,18 @@ ls -d .planning/sketches/[0-9][0-9][0-9]-* 2>/dev/null | sort | tail -1
 
 Check `commit_docs` config:
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-COMMIT_DOCS=$($HIVEMIND_SDK query config-get commit_docs 2>/dev/null || echo "true")
+COMMIT_DOCS=$($Hivemind_SDK query config-get commit_docs 2>/dev/null || echo "true")
 ```
 </step>
 
@@ -307,7 +307,7 @@ Iterate until satisfied.
 
 **h.** Commit (if `COMMIT_DOCS` is true):
 ```bash
-$HIVEMIND_SDK query commit "docs(sketch-NNN): [winning direction] — [key visual insight]" --files .planning/sketches/NNN-descriptive-name/ .planning/sketches/MANIFEST.md
+$Hivemind_SDK query commit "docs(sketch-NNN): [winning direction] — [key visual insight]" --files .planning/sketches/NNN-descriptive-name/ .planning/sketches/MANIFEST.md
 ```
 
 **i.** Report:

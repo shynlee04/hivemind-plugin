@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-planner
-subtask: true
-description: "Plan a phase as a vertical MVP slice — user story, SPIDR splitting, then plan-phase"
+description: Plan a phase as a vertical MVP slice — user story, SPIDR splitting, then plan-phase
 argument-hint: "<phase-number>"
-requires: ["hm-new-project", "hm-phase", "hm-plan-phase"]
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-plan.md"]
-coordination-model: "waiter-model"
-completion-signals: ["mvp-plan-defined"]
+requires: [new-project, phase, plan-phase]
 tools:
   read: true
   write: true
@@ -18,7 +11,6 @@ tools:
   agent: true
   question: true
 ---
-
 <objective>
 Guide the user through MVP-mode planning for a phase. The command:
 
@@ -31,9 +23,9 @@ Phase 1 of the vertical-mvp-slice PRD shipped the planner-side machinery; this c
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/mvp-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/spidr-splitting.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/user-story-template.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-mvp-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-spidr-splitting.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-user-story-template.md
 </execution_context>
 
 <runtime_note>
@@ -47,6 +39,6 @@ The phase must already exist in ROADMAP.md (created via `/hm new-project`, `/hm 
 </context>
 
 <process>
-Execute the mvp-phase workflow from @/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/mvp-phase.md end-to-end.
+Execute the mvp-phase workflow from @/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-mvp-phase.md end-to-end.
 Preserve all gates: phase existence, status guard (refuse in_progress/completed), user-story format validation, SPIDR splitting check, ROADMAP write confirmation, plan-phase delegation.
 </process>

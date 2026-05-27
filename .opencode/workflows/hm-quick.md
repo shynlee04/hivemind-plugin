@@ -125,36 +125,36 @@ If `$VALIDATE_MODE` only:
 **Step 2: Initialize**
 
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
-  echo "Run: npx @openhm/hivemind-redux@latest --claude --local" >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
+  echo "Run: npx @opengsd/hivemind-redux@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($HIVEMIND_SDK query init.quick "$DESCRIPTION")
+INIT=$($Hivemind_SDK query init.quick "$DESCRIPTION")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_PLANNER=$($HIVEMIND_SDK query agent-skills hm-planner)
-AGENT_SKILLS_EXECUTOR=$($HIVEMIND_SDK query agent-skills hm-executor)
-AGENT_SKILLS_CHECKER=$($HIVEMIND_SDK query agent-skills hm-plan-checker)
-AGENT_SKILLS_VERIFIER=$($HIVEMIND_SDK query agent-skills hm-verifier)
+AGENT_SKILLS_PLANNER=$($Hivemind_SDK query agent-skills hm-planner)
+AGENT_SKILLS_EXECUTOR=$($Hivemind_SDK query agent-skills hm-executor)
+AGENT_SKILLS_CHECKER=$($Hivemind_SDK query agent-skills hm-plan-checker)
+AGENT_SKILLS_VERIFIER=$($Hivemind_SDK query agent-skills hm-verifier)
 ```
 
 Parse JSON for: `planner_model`, `executor_model`, `checker_model`, `verifier_model`, `commit_docs`, `branch_name`, `quick_id`, `slug`, `date`, `timestamp`, `quick_dir`, `task_dir`, `roadmap_exists`, `planning_exists`.
 
 ```bash
-USE_WORKTREES=$($HIVEMIND_SDK query config-get workflow.use_worktrees 2>/dev/null || echo "true")
+USE_WORKTREES=$($Hivemind_SDK query config-get workflow.use_worktrees 2>/dev/null || echo "true")
 ```
 
 If `USE_WORKTREES` is not `"false"`, run a startup orphan sweep before spawning any executors. This reaps locked worktrees whose lock-owner process is dead, whose branch is merged into the default branch, and whose lock file mtime is older than 5 minutes. Running it at startup prevents accumulation of orphaned worktrees from prior sessions that exited without cleanup (#3707).
 
 ```bash
 if [ "$USE_WORKTREES" != "false" ]; then
-  $HIVEMIND_SDK query worktree.reap-orphans 2>/dev/null || true
+  $Hivemind_SDK query worktree.reap-orphans 2>/dev/null || true
 fi
 ```
 
@@ -640,7 +640,7 @@ Skip this step entirely if `USE_WORKTREES === "false"` (non-worktree mode: PLAN.
 
 ```bash
 if [ "${USE_WORKTREES}" != "false" ]; then
-  COMMIT_DOCS=$($HIVEMIND_SDK query config-get commit_docs 2>/dev/null || echo "true")
+  COMMIT_DOCS=$($Hivemind_SDK query config-get commit_docs 2>/dev/null || echo "true")
   if [ "$COMMIT_DOCS" != "false" ]; then
     git add "${QUICK_DIR}/${quick_id}-PLAN.md"
     # No-op skip if nothing actually staged (idempotent re-runs).
@@ -649,7 +649,7 @@ if [ "${USE_WORKTREES}" != "false" ]; then
     else
       # Run hooks normally (#2924). If a project opts out via
       # workflow.worktree_skip_hooks=true, honor that opt-in only.
-      SKIP_HOOKS=$($HIVEMIND_SDK query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
+      SKIP_HOOKS=$($Hivemind_SDK query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
       if [ "$SKIP_HOOKS" = "true" ]; then
         git commit --no-verify -m "docs(${quick_id}): pre-dispatch plan for ${DESCRIPTION}" -- "${QUICK_DIR}/${quick_id}-PLAN.md" \
           || { echo "ERROR: pre-dispatch PLAN.md commit failed (--no-verify path). Aborting before executor dispatch." >&2; exit 1; }
@@ -789,7 +789,7 @@ After executor returns:
    # base, deletion diffs, merge result, and worktree removal before branch
    # deletion. If it blocks, resolve the reported manifest entry and rerun.
    # Fail closed: SDK refusal (safety guard #3174/#3384) must surface — do not swallow exit 1.
-   $HIVEMIND_SDK query worktree.cleanup-wave --manifest "$QUICK_WORKTREE_MANIFEST" || exit 1
+   $Hivemind_SDK query worktree.cleanup-wave --manifest "$QUICK_WORKTREE_MANIFEST" || exit 1
    ```
    If `workflow.use_worktrees` is `false`, skip this step.
 2. Verify summary exists at `${QUICK_DIR}/${quick_id}-SUMMARY.md`
@@ -810,7 +810,7 @@ Skip this step entirely if `$FULL_MODE` is false.
 
 **Config gate:**
 ```bash
-CODE_REVIEW_ENABLED=$($HIVEMIND_SDK query config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$($Hivemind_SDK query config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 If `"false"`, skip with message "Code review skipped (workflow.code_review=false)".
 
@@ -961,7 +961,7 @@ Use Edit tool to make these changes atomically
 
 **Step 8: Final commit and completion**
 
-Stage and commit quick task artifacts. This step MUST always run — even if the executor already committed some files (e.g. when running without worktree isolation). The `hivemind query commit` command (or legacy `hivemind.cjs` commit) handles already-committed files gracefully.
+Stage and commit quick task artifacts. This step MUST always run — even if the executor already committed some files (e.g. when running without worktree isolation). The `hm-sdk query commit` command (or legacy `hm-tools.cjs` commit) handles already-committed files gracefully.
 
 Build file list:
 - `${QUICK_DIR}/${quick_id}-PLAN.md`
@@ -976,14 +976,14 @@ Build file list:
 # Explicitly stage all artifacts before commit — PLAN.md may be untracked
 # if the executor ran without worktree isolation and committed docs early
 # Filter .planning/ files from staging if commit_docs is disabled (#1783)
-COMMIT_DOCS=$($HIVEMIND_SDK query config-get commit_docs 2>/dev/null || echo "true")
+COMMIT_DOCS=$($Hivemind_SDK query config-get commit_docs 2>/dev/null || echo "true")
 if [ "$COMMIT_DOCS" = "false" ]; then
   file_list_filtered=$(echo "${file_list}" | tr ' ' '\n' | grep -v '^\.planning/' | tr '\n' ' ')
   git add ${file_list_filtered} 2>/dev/null
 else
   git add ${file_list} 2>/dev/null
 fi
-$HIVEMIND_SDK query commit "docs(quick-${quick_id}): ${DESCRIPTION}" --files ${file_list}
+$Hivemind_SDK query commit "docs(quick-${quick_id}): ${DESCRIPTION}" --files ${file_list}
 ```
 
 Get final commit hash:

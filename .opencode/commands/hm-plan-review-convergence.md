@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-planner
-subtask: true
 description: "Cross-AI plan convergence loop — replan with review feedback until no HIGH concerns remain."
 argument-hint: "<phase> [--codex] [--gemini] [--claude] [--opencode] [--ollama] [--lm-studio] [--llama-cpp] [--text] [--ws <name>] [--all] [--max-cycles N]"
-requires: ["hm-phase", "hm-review"]
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-plan.md"]
-coordination-model: "waiter-model"
-completion-signals: ["plan-converged"]
+requires: [phase, review]
 tools:
   read: true
   write: true
@@ -18,7 +11,6 @@ tools:
   agent: true
   question: true
 ---
-
 
 <objective>
 Cross-AI plan convergence loop — an outer revision gate around hm-review and hm-planner.
@@ -32,10 +24,10 @@ Replaces hm-plan-phase's internal hm-plan-checker with external AI reviewers (co
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/plan-review-convergence.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/revision-loop.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/gates.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/agent-contracts.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-plan-review-convergence.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-revision-loop.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-gates.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-agent-contracts.md
 </execution_context>
 
 <runtime_note>

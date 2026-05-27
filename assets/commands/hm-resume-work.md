@@ -1,14 +1,5 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Resume work from previous session with full context restoration"
-argument-hint: ""
-requires: []
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["work-resumed"]
+description: Resume work from previous session with full context restoration
 tools:
   read: true
   bash: true
@@ -16,7 +7,6 @@ tools:
   question: true
   skill: true
 ---
-
 
 <objective>
 Restore complete project context and resume work seamlessly from previous session.
@@ -31,7 +21,7 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/resume-project.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-resume-project.md
 </execution_context>
 
 <process>

@@ -2,13 +2,13 @@
 namespace: hm
 agent: hm-orchestrator
 subtask: false
-description: "Initialize a new Hivemind-powered project structure with namespaces, directories, and standard config files."
+description: Initialize a new Hivemind-powered project structure with namespaces, directories, and standard config files.
 argument-hint: "[project-name] [--scope global|local] [--force]"
 requires: []
-validation-gates: ["lifecycle-gate"]
-output-templates: []
+validation-gates: ["directory-structure-check"]
+output-templates: ["project.md", "roadmap.md"]
 coordination-model: "waiter-model"
-completion-signals: ["task-completed"]
+completion-signals: ["orchestrator-complete"]
 tools:
   read: true
   write: true
@@ -17,7 +17,6 @@ tools:
   glob: true
   agent: true
 ---
-
 <objective>
 Initialize a new Hivemind-powered project structure, establishing the target directories (`.opencode/`, `.hivemind/`, `.planning/`) with required `.gitkeep` and default config files.
 </objective>

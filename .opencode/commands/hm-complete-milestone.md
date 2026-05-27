@@ -1,20 +1,13 @@
 ---
-namespace: hm
-agent: hm-roadmapper
-subtask: false
-description: "Archive completed milestone and prepare for next version"
-argument-hint: "<version>"
-requires: ["hm-audit-milestone", "hm-discuss-phase", "hm-execute-phase", "hm-new-milestone", "hm-phase", "hm-plan-phase", "hm-stats", "hm-update"]
-validation-gates: ["lifecycle-gate", "evidence-truth-gate"]
-output-templates: ["hm-summary.md"]
-coordination-model: "waiter-model"
-completion-signals: ["milestone-archived"]
+type: prompt
+description: Archive completed milestone and prepare for next version
+argument-hint: <version>
+requires: [audit-milestone, discuss-phase, execute-phase, new-milestone, phase, plan-phase, stats, update]
 tools:
   read: true
   write: true
   bash: true
 ---
-
 
 <objective>
 Mark milestone {{version}} complete, archive to milestones/, and update ROADMAP.md and REQUIREMENTS.md.
@@ -26,8 +19,8 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 <execution_context>
 **Load these files NOW (before proceeding):**
 
-- @/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/complete-milestone.md (main workflow)
-- @/Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/milestone-archive.md (archive template)
+- @/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-complete-milestone.md (main workflow)
+- @/Users/apple/hivemind-plugin-private/.opencode/templates/hm-milestone-archive.md (archive template)
   </execution_context>
 
 <context>

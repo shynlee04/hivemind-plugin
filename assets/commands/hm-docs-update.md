@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Generate or update project documentation verified against the codebase"
+description: Generate or update project documentation verified against the codebase
 argument-hint: "[--force] [--verify-only]"
-requires: ["hm-update"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["task-completed"]
+requires: [update]
 tools:
   read: true
   write: true
@@ -19,7 +12,6 @@ tools:
   agent: true
   question: true
 ---
-
 <objective>
 Generate and update up to 9 documentation files for the current project. Each doc type is written by a hm-doc-writer subagent that explores the codebase directly — no hallucinated paths, phantom endpoints, or stale signatures.
 
@@ -33,7 +25,7 @@ Flag handling rule:
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/docs-update.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-docs-update.md
 </execution_context>
 
 <context>

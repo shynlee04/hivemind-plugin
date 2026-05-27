@@ -1,19 +1,11 @@
 ---
-namespace: hm
-agent: hm-code-reviewer
-subtask: true
 description: "quality gates | code review debug audit security eval ui"
 argument-hint: ""
-requires: ["hm-code-review", "hm-audit-uat", "hm-secure-phase", "hm-eval-review", "hm-ui-review", "hm-validate-phase", "hm-debug", "hm-forensics"]
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-summary.md"]
-coordination-model: "waiter-model"
-completion-signals: ["review-completed"]
+requires: [code-review, audit-uat, secure-phase, eval-review, ui-review, validate-phase, debug, forensics]
 tools:
   read: true
   skill: true
 ---
-
 
 Route to the appropriate quality / review skill based on the user's intent.
 `hm-code-review-fix` was absorbed by `hm-code-review --fix` in #2790.

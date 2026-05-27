@@ -1,14 +1,6 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Capture ideas, tasks, notes, and seeds to their destination"
+description: Capture ideas, tasks, notes, and seeds to their destination
 argument-hint: "[--note | --backlog | --seed | --list] [text]"
-requires: []
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
@@ -18,7 +10,6 @@ tools:
   grep: true
   question: true
 ---
-
 
 <objective>
 Capture ideas, tasks, notes, and seeds to their appropriate destination in the Hivemind system.
@@ -44,12 +35,12 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/add-todo.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/note.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/add-backlog.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/plant-seed.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/check-todos.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-add-todo.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-note.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-add-backlog.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-plant-seed.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-check-todos.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </execution_context>
 
 <context>

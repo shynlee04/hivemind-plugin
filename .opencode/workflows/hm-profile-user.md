@@ -1,16 +1,16 @@
 <purpose>
 Orchestrate the full developer profiling flow: consent, session analysis (or questionnaire fallback), profile generation, result display, and artifact creation.
 
-This workflow wires Phase 1 (session pipeline) and Phase 2 (profiling engine) into a cohesive user-facing experience. All heavy lifting is done by existing `hivemind query` handlers (with legacy `hivemind.cjs` parity where needed) and the hm-user-profiler agent -- this workflow orchestrates the sequence, handles branching, and provides the UX.
+This workflow wires Phase 1 (session pipeline) and Phase 2 (profiling engine) into a cohesive user-facing experience. All heavy lifting is done by existing `hm-sdk query` handlers (with legacy `hm-tools.cjs` parity where needed) and the hm-user-profiler agent -- this workflow orchestrates the sequence, handles branching, and provides the UX.
 </purpose>
 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
 Key references:
-- @/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md (display patterns)
+- @/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md (display patterns)
 - @/Users/apple/hivemind-plugin-private/.opencode/agents/hm-user-profiler.md (profiler agent definition)
-- @/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/user-profiling.md (profiling reference doc)
+- @/Users/apple/hivemind-plugin-private/.opencode/references/hm-user-profiling.md (profiling reference doc)
 </required_reading>
 
 <process>
@@ -130,18 +130,18 @@ Display: "◆ Scanning sessions..."
 
 Run session scan:
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-SCAN_RESULT=$($HIVEMIND_SDK query scan-sessions --json 2>/dev/null)
+SCAN_RESULT=$($Hivemind_SDK query scan-sessions --json 2>/dev/null)
 ```
 
 Parse the JSON output to get session count and project count.
@@ -161,7 +161,7 @@ Display: "◆ Sampling messages..."
 
 Run profile sampling:
 ```bash
-SAMPLE_RESULT=$($HIVEMIND_SDK query profile-sample --json 2>/dev/null)
+SAMPLE_RESULT=$($Hivemind_SDK query profile-sample --json 2>/dev/null)
 ```
 
 Parse the JSON output to get the temp directory path and message count.
@@ -174,13 +174,13 @@ Display: "◆ Analyzing patterns..."
 
 Use the Task tool to spawn the `hm-user-profiler` agent. Provide it with:
 - The sampled JSONL file path from profile-sample output
-- The user-profiling reference doc at `/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/user-profiling.md`
+- The user-profiling reference doc at `/Users/apple/hivemind-plugin-private/.opencode/references/hm-user-profiling.md`
 
 The agent prompt should follow this structure:
 ```
 Read the profiling reference document and the sampled session messages, then analyze the developer's behavioral patterns across all 8 dimensions.
 
-Reference: @/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/user-profiling.md
+Reference: @/Users/apple/hivemind-plugin-private/.opencode/references/hm-user-profiling.md
 Session data: @{temp_dir}/profile-sample.jsonl
 
 Analyze these messages and return your analysis in the <analysis> JSON format specified in the reference document.
@@ -212,7 +212,7 @@ Display: "Using questionnaire to build your profile."
 
 **Get questions:**
 ```bash
-QUESTIONS=$($HIVEMIND_SDK query profile-questionnaire --json 2>/dev/null)
+QUESTIONS=$($Hivemind_SDK query profile-questionnaire --json 2>/dev/null)
 ```
 
 Parse the questions JSON. It contains 8 questions, one per dimension.
@@ -235,7 +235,7 @@ Write the answers JSON to `$ANSWERS_PATH`.
 
 **Convert answers to analysis:**
 ```bash
-ANALYSIS_RESULT=$($HIVEMIND_SDK query profile-questionnaire --answers "$ANSWERS_PATH" --json 2>/dev/null)
+ANALYSIS_RESULT=$($Hivemind_SDK query profile-questionnaire --answers "$ANSWERS_PATH" --json 2>/dev/null)
 ```
 
 Parse the analysis JSON from the result.
@@ -282,7 +282,7 @@ Write updated analysis JSON back to `$ANALYSIS_PATH`.
 Display: "◆ Writing profile..."
 
 ```bash
-$HIVEMIND_SDK query write-profile --input "$ANALYSIS_PATH" --json
+$Hivemind_SDK query write-profile --input "$ANALYSIS_PATH" --json
 ```
 
 Display: "✓ Profile written to /Users/apple/hivemind-plugin-private/.opencode/hivemind/USER-PROFILE.md"
@@ -361,7 +361,7 @@ Generate selected artifacts sequentially (file I/O is fast, no benefit from para
 **For /hm-dev-preferences (if selected):**
 
 ```bash
-$HIVEMIND_SDK query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json
+$Hivemind_SDK query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json
 ```
 
 Display: "✓ Generated /hm-dev-preferences at /Users/apple/hivemind-plugin-private/.opencode/skills/hm-dev-preferences/SKILL.md"
@@ -369,7 +369,7 @@ Display: "✓ Generated /hm-dev-preferences at /Users/apple/hivemind-plugin-priv
 **For AGENTS.md profile section (if selected):**
 
 ```bash
-$HIVEMIND_SDK query generate-claude-profile --analysis "$ANALYSIS_PATH" --json
+$Hivemind_SDK query generate-claude-profile --analysis "$ANALYSIS_PATH" --json
 ```
 
 Display: "✓ Added profile section to AGENTS.md"
@@ -377,12 +377,12 @@ Display: "✓ Added profile section to AGENTS.md"
 **For Global AGENTS.md (if selected):**
 
 ```bash
-$HIVEMIND_SDK query generate-claude-profile --analysis "$ANALYSIS_PATH" --global --json
+$Hivemind_SDK query generate-claude-profile --analysis "$ANALYSIS_PATH" --global --json
 ```
 
 Display: "✓ Added profile section to /Users/apple/hivemind-plugin-private/.opencode/AGENTS.md"
 
-**Error handling:** If any `hivemind query` or hivemind.cjs call fails, display the error message and use question to offer "Retry" or "Skip this artifact". On retry, re-run the command. On skip, continue to next artifact.
+**Error handling:** If any `hm-sdk query` or hm-tools.cjs call fails, display the error message and use question to offer "Retry" or "Skip this artifact". On retry, re-run the command. On skip, continue to next artifact.
 
 ---
 
@@ -457,7 +457,7 @@ rm -f "$ANALYSIS_PATH" 2>/dev/null
 - [ ] Profile written to USER-PROFILE.md via write-profile subcommand
 - [ ] Result display shows report card table and highlight reel with evidence
 - [ ] Artifact selection uses multiSelect with all options pre-selected
-- [ ] Artifacts generated sequentially via hivemind query (or hivemind.cjs) subcommands
+- [ ] Artifacts generated sequentially via hm-sdk query (or hm-tools.cjs) subcommands
 - [ ] Refresh diff shows changed dimensions when --refresh was used
 - [ ] Temp files cleaned up on completion
 </success_criteria>

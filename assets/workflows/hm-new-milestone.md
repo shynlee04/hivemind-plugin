@@ -181,18 +181,18 @@ blockers, todos) is preserved across the switch — symmetric with
 `milestone.complete`.
 
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-$HIVEMIND_SDK query state.milestone-switch --milestone "v[X.Y]" --name "[Name]"
+$Hivemind_SDK query state.milestone-switch --milestone "v[X.Y]" --name "[Name]"
 ```
 
 The resulting Current Position section looks like:
@@ -219,21 +219,21 @@ Delete MILESTONE-CONTEXT.md if exists (consumed).
 Clear leftover phase directories from the previous milestone:
 
 ```bash
-$HIVEMIND_SDK query phases.clear --confirm
+$Hivemind_SDK query phases.clear --confirm
 ```
 
 ```bash
-$HIVEMIND_SDK query commit "docs: start milestone v[X.Y] [Name]" --files .planning/PROJECT.md .planning/STATE.md
+$Hivemind_SDK query commit "docs: start milestone v[X.Y] [Name]" --files .planning/PROJECT.md .planning/STATE.md
 ```
 
 ## 7. Load Context and Resolve Models
 
 ```bash
-INIT=$($HIVEMIND_SDK query init.new-milestone)
+INIT=$($Hivemind_SDK query init.new-milestone)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$($HIVEMIND_SDK query agent-skills hm-project-researcher)
-AGENT_SKILLS_SYNTHESIZER=$($HIVEMIND_SDK query agent-skills hm-research-synthesizer)
-AGENT_SKILLS_ROADMAPPER=$($HIVEMIND_SDK query agent-skills hm-roadmapper)
+AGENT_SKILLS_RESEARCHER=$($Hivemind_SDK query agent-skills hm-project-researcher)
+AGENT_SKILLS_SYNTHESIZER=$($Hivemind_SDK query agent-skills hm-research-synthesizer)
+AGENT_SKILLS_ROADMAPPER=$($Hivemind_SDK query agent-skills hm-roadmapper)
 ```
 
 Extract from init JSON: `researcher_model`, `synthesizer_model`, `roadmapper_model`, `commit_docs`, `research_enabled`, `current_milestone`, `project_exists`, `roadmap_exists`, `latest_completed_milestone`, `phase_dir_count`, `phase_archive_path`, `agents_installed`, `missing_agents`.
@@ -246,7 +246,7 @@ Extract from init JSON: `researcher_model`, `synthesizer_model`, `roadmapper_mod
 Subagent spawns (hm-project-researcher, hm-research-synthesizer, hm-roadmapper) will fail
 with "agent type not found". Run the installer with --global to make agents available:
 
-  npx @openhm/hivemind-redux@latest --global
+  npx @opengsd/hivemind-redux@latest --global
 
 Proceeding without research subagents — roadmap will be generated inline.
 ```
@@ -332,7 +332,7 @@ ${AGENT_SKILLS_RESEARCHER}
 
 <output>
 Write to: .planning/research/{FILE}
-Use template: /Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/research-project/{FILE}
+Use template: /Users/apple/hivemind-plugin-private/.opencode/templates/hm-research-project/{FILE}
 </output>
 ", subagent_type="hm-project-researcher", model="{researcher_model}", description="{DIMENSION} research")
 ```
@@ -365,7 +365,7 @@ Synthesize research outputs into SUMMARY.md.
 ${AGENT_SKILLS_SYNTHESIZER}
 
 Write to: .planning/research/SUMMARY.md
-Use template: /Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/research-project/SUMMARY.md
+Use template: /Users/apple/hivemind-plugin-private/.opencode/templates/hm-research-project/SUMMARY.md
 Commit after writing.
 ", subagent_type="hm-research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
 ```
@@ -455,7 +455,7 @@ If "adjust": Return to scoping.
 
 **Commit requirements:**
 ```bash
-$HIVEMIND_SDK query commit "docs: define milestone v[X.Y] requirements" --files .planning/REQUIREMENTS.md
+$Hivemind_SDK query commit "docs: define milestone v[X.Y] requirements" --files .planning/REQUIREMENTS.md
 ```
 
 ## 10. Create Roadmap
@@ -541,7 +541,7 @@ Success criteria:
 
 **Commit roadmap** (after approval):
 ```bash
-$HIVEMIND_SDK query commit "docs: create milestone v[X.Y] roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md
+$Hivemind_SDK query commit "docs: create milestone v[X.Y] roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md
 ```
 
 ## 10.5. Link Pending Todos to Roadmap Phases
@@ -584,7 +584,7 @@ files: [existing]
 
 **If any todos were linked:**
 ```bash
-$HIVEMIND_SDK query commit "docs: tag [count] pending todos with resolves_phase after milestone v[X.Y] roadmap" --files .planning/todos/pending/*.md
+$Hivemind_SDK query commit "docs: tag [count] pending todos with resolves_phase after milestone v[X.Y] roadmap" --files .planning/todos/pending/*.md
 ```
 
 Print a summary:

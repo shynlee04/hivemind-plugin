@@ -1,19 +1,11 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
 description: "config workspace | workstreams thread update ship inbox"
 argument-hint: ""
-requires: ["hm-config", "hm-workspace", "hm-workstreams", "hm-thread", "hm-pause-work", "hm-resume-work", "hm-update", "hm-ship", "hm-inbox", "hm-pr-branch", "hm-undo"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["task-completed"]
+requires: [config, workspace, workstreams, thread, pause-work, resume-work, update, ship, inbox, pr-branch, undo]
 tools:
   read: true
   skill: true
 ---
-
 
 Route to the appropriate management skill based on the user's intent.
 `hm-config` (settings + advanced + integrations + profile) and `hm-workspace`

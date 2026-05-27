@@ -1,21 +1,13 @@
 ---
-namespace: hm
-agent: hm-planner
-subtask: true
 description: "[BETA] Offload plan phase to Claude Code's ultraplan cloud; review in browser and import back."
 argument-hint: "[phase-number]"
-requires: ["hm-import", "hm-phase", "hm-plan-phase"]
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-plan.md"]
-coordination-model: "waiter-model"
-completion-signals: ["plan-generated"]
+requires: [import, phase, plan-phase]
 tools:
   read: true
   bash: true
   glob: true
   grep: true
 ---
-
 
 <objective>
 Offload Hivemind's plan phase to Claude Code's ultraplan cloud infrastructure.
@@ -28,8 +20,8 @@ Requirements: Claude Code v2.1.91+, claude.ai account, GitHub repository.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/ultraplan-phase.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-ultraplan-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </execution_context>
 
 <context>

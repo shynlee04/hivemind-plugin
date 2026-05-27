@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-nyquist-auditor
-subtask: true
-description: "Retroactively audit and fill Nyquist validation gaps for a completed phase"
+description: Retroactively audit and fill Nyquist validation gaps for a completed phase
 argument-hint: "[phase number]"
-requires: ["hm-phase"]
-validation-gates: ["lifecycle-gate"]
-output-templates: ["hm-validation.md"]
-coordination-model: "waiter-model"
-completion-signals: ["phase-validated"]
+requires: [phase]
 tools:
   read: true
   write: true
@@ -19,7 +12,6 @@ tools:
   agent: true
   question: true
 ---
-
 <objective>
 Audit Nyquist validation coverage for a completed phase. Three states:
 - (A) VALIDATION.md exists — audit and fill gaps
@@ -30,7 +22,7 @@ Output: updated VALIDATION.md + generated test files.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/validate-phase.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-validate-phase.md
 </execution_context>
 
 <context>

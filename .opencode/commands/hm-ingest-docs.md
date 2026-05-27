@@ -1,14 +1,6 @@
 ---
-namespace: hm
-agent: hm-project-researcher
-subtask: true
-description: "Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo."
+description: Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo.
 argument-hint: "[path] [--mode new|merge] [--manifest <file>] [--resolve auto|interactive]"
-requires: []
-validation-gates: ["spec-compliance-gate"]
-output-templates: ["hm-research.md"]
-coordination-model: "waiter-model"
-completion-signals: ["docs-ingested"]
 tools:
   read: true
   write: true
@@ -19,7 +11,6 @@ tools:
   question: true
   agent: true
 ---
-
 
 <objective>
 Build the full `.planning/` setup (or merge into an existing one) from multiple pre-existing planning documents — ADRs, PRDs, SPECs, DOCs — in one pass.
@@ -35,10 +26,10 @@ Auto-synthesizes most conflicts using the precedence rule `ADR > SPEC > PRD > DO
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/ingest-docs.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/gate-prompts.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/doc-conflict-engine.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-ingest-docs.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-gate-prompts.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-doc-conflict-engine.md
 </execution_context>
 
 <context>

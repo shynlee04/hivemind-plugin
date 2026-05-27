@@ -5,7 +5,7 @@ UI-SPEC.md locks spacing, typography, color, copywriting, and design system deci
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -19,21 +19,21 @@ Valid Hivemind subagent types (use exact names — do not fall back to 'general-
 ## 1. Initialize
 
 ```bash
-# SDK resolution: prefer local hivemind.cjs, fall back to global hivemind (#3668)
-HIVEMIND_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hivemind.cjs"
-if [ -f "$HIVEMIND_TOOLS" ]; then
-  HIVEMIND_SDK="node $HIVEMIND_TOOLS"
-elif command -v hivemind >/dev/null 2>&1; then
-  HIVEMIND_SDK="hivemind"
+# SDK resolution: prefer local hm-tools.cjs, fall back to global hm-sdk (#3668)
+Hivemind_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/hivemind/bin/hm-tools.cjs"
+if [ -f "$Hivemind_TOOLS" ]; then
+  Hivemind_SDK="node $Hivemind_TOOLS"
+elif command -v hm-sdk >/dev/null 2>&1; then
+  Hivemind_SDK="hm-sdk"
 else
-  echo "ERROR: hivemind not found on PATH and $HIVEMIND_TOOLS does not exist." >&2
+  echo "ERROR: hm-sdk not found on PATH and $Hivemind_TOOLS does not exist." >&2
   echo "Run: npx hivemind-cc@latest --claude --local" >&2
   exit 1
 fi
-INIT=$($HIVEMIND_SDK query init.plan-phase "$PHASE")
+INIT=$($Hivemind_SDK query init.plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_UI=$($HIVEMIND_SDK query agent-skills hm-ui-researcher)
-AGENT_SKILLS_UI_CHECKER=$($HIVEMIND_SDK query agent-skills hm-ui-checker)
+AGENT_SKILLS_UI=$($Hivemind_SDK query agent-skills hm-ui-researcher)
+AGENT_SKILLS_UI_CHECKER=$($Hivemind_SDK query agent-skills hm-ui-checker)
 ```
 
 Parse JSON for: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_context`, `has_research`, `commit_docs`.
@@ -48,14 +48,14 @@ SKETCH_FINDINGS_PATH=$(ls ./.opencode/skills/sketch-findings-*/SKILL.md 2>/dev/n
 Resolve UI agent models:
 
 ```bash
-UI_RESEARCHER_MODEL=$($HIVEMIND_SDK query resolve-model hm-ui-researcher --raw)
-UI_CHECKER_MODEL=$($HIVEMIND_SDK query resolve-model hm-ui-checker --raw)
+UI_RESEARCHER_MODEL=$($Hivemind_SDK query resolve-model hm-ui-researcher --raw)
+UI_CHECKER_MODEL=$($Hivemind_SDK query resolve-model hm-ui-checker --raw)
 ```
 
 Check config:
 
 ```bash
-UI_ENABLED=$($HIVEMIND_SDK query config-get workflow.ui_phase 2>/dev/null || echo "true")
+UI_ENABLED=$($Hivemind_SDK query config-get workflow.ui_phase 2>/dev/null || echo "true")
 ```
 
 **If `UI_ENABLED` is `false`:**
@@ -71,7 +71,7 @@ Exit workflow.
 Extract phase number from $ARGUMENTS. If not provided, detect next unplanned phase.
 
 ```bash
-PHASE_INFO=$($HIVEMIND_SDK query roadmap.get-phase "${PHASE}")
+PHASE_INFO=$($Hivemind_SDK query roadmap.get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases.
@@ -154,7 +154,7 @@ ${AGENT_SKILLS_UI}
 
 <output>
 Write to: {phase_dir}/{padded_phase}-UI-SPEC.md
-Template: /Users/apple/hivemind-plugin-private/.opencode/hivemind/templates/UI-SPEC.md
+Template: /Users/apple/hivemind-plugin-private/.opencode/templates/hm-UI-SPEC.md
 </output>
 
 <config>
@@ -309,13 +309,13 @@ Dimensions: 6/6 passed
 ## 11. Commit (if configured)
 
 ```bash
-$HIVEMIND_SDK query commit "docs(${padded_phase}): UI design contract" --files "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
+$Hivemind_SDK query commit "docs(${padded_phase}): UI design contract" --files "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
 ```
 
 ## 12. Update State
 
 ```bash
-$HIVEMIND_SDK query state.record-session \
+$Hivemind_SDK query state.record-session \
   --stopped-at "Phase ${PHASE} UI-SPEC approved" \
   --resume-file "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
 ```

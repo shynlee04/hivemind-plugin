@@ -1,14 +1,7 @@
 ---
-namespace: hm
-agent: hm-orchestrator
-subtask: false
-description: "Interactive command center for managing multiple phases from one terminal"
+description: Interactive command center for managing multiple phases from one terminal
 argument-hint: "[--analyze-deps]"
-requires: ["hm-phase"]
-validation-gates: ["lifecycle-gate"]
-output-templates: []
-coordination-model: "waiter-model"
-completion-signals: ["management-completed"]
+requires: [phase]
 tools:
   read: true
   write: true
@@ -19,7 +12,6 @@ tools:
   skill: true
   agent: true
 ---
-
 <objective>
 Single-terminal command center for managing a milestone. Shows a dashboard of all phases with visual status indicators, recommends optimal next actions, and dispatches work — discuss runs inline, plan/execute run as background agents.
 
@@ -33,19 +25,19 @@ Designed for power users who want to parallelize work across phases from one ter
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/manager.md
-@/Users/apple/hivemind-plugin-private/.opencode/hivemind/references/ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-manager.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
 </execution_context>
 
 <context>
 No arguments required. Requires an active milestone with ROADMAP.md and STATE.md.
 
-Project context, phase list, dependencies, and recommendations are resolved inside the workflow using `hivemind query init.manager`. No upfront context loading needed.
+Project context, phase list, dependencies, and recommendations are resolved inside the workflow using `hm-sdk query init.manager`. No upfront context loading needed.
 </context>
 
 <process>
 If `--analyze-deps` is in $ARGUMENTS:
-Read and execute `/Users/apple/hivemind-plugin-private/.opencode/hivemind/workflows/analyze-dependencies.md` end-to-end.
+Read and execute `/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-analyze-dependencies.md` end-to-end.
 
 Execute end-to-end.
 Maintain the dashboard refresh loop until the user exits or all phases complete.
