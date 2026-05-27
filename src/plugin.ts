@@ -459,6 +459,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
         getChildMessageCount: (sessionId) => getSessionMessageCount(client, sessionId),
         terminateChild: (sessionId) => abortSession(client, sessionId),
         getEscalationLevel: (delegationId) => monitor.getEscalationLevel(delegationId),
+        projectRoot: projectDirectory,
       }),
       "run-background-command": createRunBackgroundCommandTool({ delegationManager, ptyManager }),
       "prompt-skim": createPromptSkimTool(projectDirectory),
