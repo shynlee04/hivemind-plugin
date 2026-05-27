@@ -1,5 +1,5 @@
 ---
-description: Systematic debugging with persistent state across sessions, hypothesis testing, and root cause analysis. Routes through hm-debug-session-manager (primary) and hm-debugger (secondary).
+description: Systematic debugging with persistent state across sessions, hypothesis testing, and root cause analysis.
 argument-hint: "<description-of-issue> [--phase <phase-number>]"
 tools:
   read: true
@@ -12,7 +12,7 @@ tools:
   question: true
 ---
 <objective>
-Systematic debugging with persistent state across context resets. Investigates bugs, traces root causes, and produces structured debug session artifacts.
+Investigate bugs, trace root causes, maintain hypothesis registers, and output a debug session report.
 </objective>
 
 <execution_context>
@@ -21,9 +21,10 @@ Systematic debugging with persistent state across context resets. Investigates b
 
 <context>
 Issue: $ARGUMENTS
-Routes through hm-debug-session-manager (session orchestration) and hm-debugger (root cause investigation).
+Namespace: hm
+Routed Agents: hm-debug-session-manager, hm-debugger
 </context>
 
 <process>
-Execute end-to-end via hm-debug workflow. Preserve all debug session gates and investigation cycles.
+Execute end-to-end via hm-debug workflow. Creates DEBUG-SESSION.md logs.
 </process>
