@@ -1,7 +1,14 @@
 ---
-description: Request cross-AI peer review of phase plans from external AI CLIs
+namespace: hm
+agent: hm-code-reviewer
+subtask: true
+description: "Request cross-AI peer review of phase plans from external AI CLIs"
 argument-hint: "--phase N [--gemini] [--claude] [--codex] [--opencode] [--qwen] [--cursor] [--all]"
-requires: [config, phase, plan-phase]
+requires: ["hm-config", "hm-phase", "hm-plan-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["review-completed"]
 tools:
   read: true
   write: true
@@ -9,6 +16,7 @@ tools:
   glob: true
   grep: true
 ---
+
 
 <objective>
 Invoke external AI CLIs (Gemini, the agent, Codex, OpenCode, Qwen Code, Cursor) to independently review phase plans.

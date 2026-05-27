@@ -1,7 +1,14 @@
 ---
-description: Validate built features through conversational UAT
+namespace: hm
+agent: hm-verifier
+subtask: true
+description: "Validate built features through conversational UAT"
 argument-hint: "[phase number, e.g., '4'] [--ws <name>]"
-requires: [execute-phase, phase]
+requires: ["hm-execute-phase", "hm-phase"]
+validation-gates: ["evidence-truth-gate"]
+output-templates: ["hm-verification.md"]
+coordination-model: "waiter-model"
+completion-signals: ["verification-completed"]
 tools:
   read: true
   bash: true
@@ -11,6 +18,7 @@ tools:
   write: true
   agent: true
 ---
+
 <objective>
 Validate built features through conversational testing with persistent state.
 

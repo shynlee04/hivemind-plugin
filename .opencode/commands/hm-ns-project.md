@@ -1,10 +1,19 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: "project lifecycle | milestones audits summary"
 argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   skill: true
 ---
+
 
 Route to the appropriate project / milestone skill based on the user's intent.
 `hm-plan-milestone-gaps` was deleted by #2790 — gap planning now happens

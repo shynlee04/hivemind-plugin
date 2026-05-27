@@ -1,6 +1,14 @@
 ---
-description: Generate developer behavioral profile and create Claude-discoverable artifacts
+namespace: hm
+agent: hm-user-profiler
+subtask: true
+description: "Generate developer behavioral profile and create Claude-discoverable artifacts"
 argument-hint: "[--questionnaire] [--refresh]"
+requires: []
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-user-profile.md"]
+coordination-model: "waiter-model"
+completion-signals: ["profile-generated"]
 tools:
   read: true
   write: true
@@ -10,6 +18,7 @@ tools:
   question: true
   agent: true
 ---
+
 
 <objective>
 Generate a developer behavioral profile from session analysis (or questionnaire) and produce artifacts (USER-PROFILE.md, `hm-dev-preferences` skill config, AGENTS.md section) that personalize the agent's responses.

@@ -1,7 +1,14 @@
 ---
-description: Check progress, advance workflow, or dispatch freeform intent — the unified Hivemind situational command
-argument-hint: "[--forensic | --next | --do \"task description\"]"
-requires: [phase]
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Check progress, advance workflow, or dispatch freeform intent — the unified Hivemind situational command"
+argument-hint: "[--forensic | --next | --do \\"task description\\"]"
+requires: ["hm-phase"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["progress-checked"]
 tools:
   read: true
   bash: true
@@ -10,6 +17,7 @@ tools:
   skill: true
   question: true
 ---
+
 <objective>
 Check project progress, summarize recent work and what's ahead, then intelligently route to the next action.
 

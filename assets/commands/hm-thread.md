@@ -1,12 +1,20 @@
 ---
-description: Manage persistent context threads for cross-session work
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Manage persistent context threads for cross-session work"
 argument-hint: "[list [--open | --resolved] | close <slug> | status <slug> | name | description]"
-requires: [phase]
+requires: ["hm-phase"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-continue-here.md"]
+coordination-model: "waiter-model"
+completion-signals: ["thread-updated"]
 tools:
   read: true
   write: true
   bash: true
 ---
+
 
 <objective>
 Create, list, close, or resume persistent context threads. Threads are lightweight

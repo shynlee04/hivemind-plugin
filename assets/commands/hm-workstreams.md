@@ -1,10 +1,19 @@
 ---
-description: Manage parallel workstreams — list, create, switch, status, progress, complete, and resume
-requires: [new-milestone, phase, progress, resume-work]
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Manage parallel workstreams — list, create, switch, status, progress, complete, and resume"
+argument-hint: ""
+requires: ["hm-new-milestone", "hm-phase", "hm-progress", "hm-resume-work"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["workstreams-managed"]
 tools:
   read: true
   bash: true
 ---
+
 
 # /hm-workstreams
 

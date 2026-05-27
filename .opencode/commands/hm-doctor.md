@@ -1,14 +1,14 @@
 ---
 namespace: hm
-agent: hm-executor
+agent: hm-nyquist-auditor
 subtask: true
 description: "Run a comprehensive health check on the Hivemind project: verify directory structure integrity, config file validity, agent and command file consistency, git state, and dependency status. Use when something feels wrong, commands aren't working, or after a large refactor."
 argument-hint: "[--quick] [--fix] [--verbose]"
 requires: []
-validation-gates: []
-output-templates: ["hm-doctor-report.md"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-summary.md"]
 coordination-model: "waiter-model"
-completion-signals: ["doctor-complete"]
+completion-signals: ["audit-completed"]
 tools:
   read: true
   write: true
@@ -16,6 +16,7 @@ tools:
   glob: true
   grep: true
 ---
+
 <objective>
 Run diagnostic checks across the Hivemind project: verify all required directories exist (.opencode/, .hivemind/, .planning/), validate config files parse correctly, check agent/command frontmatter consistency, verify git state is clean, and check dependency integrity.
 </objective>

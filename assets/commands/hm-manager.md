@@ -1,7 +1,14 @@
 ---
-description: Interactive command center for managing multiple phases from one terminal
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Interactive command center for managing multiple phases from one terminal"
 argument-hint: "[--analyze-deps]"
-requires: [phase]
+requires: ["hm-phase"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["management-completed"]
 tools:
   read: true
   write: true
@@ -12,6 +19,7 @@ tools:
   skill: true
   agent: true
 ---
+
 <objective>
 Single-terminal command center for managing a milestone. Shows a dashboard of all phases with visual status indicators, recommends optimal next actions, and dispatches work — discuss runs inline, plan/execute run as background agents.
 

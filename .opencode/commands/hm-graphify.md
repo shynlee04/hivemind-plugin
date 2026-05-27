@@ -1,11 +1,19 @@
 ---
+namespace: hm
+agent: hm-codebase-mapper
+subtask: true
 description: "Build, query, and inspect the project knowledge graph in .planning/graphs/"
 argument-hint: "[build|query <term>|status|diff]"
-requires: [config, fast, phase, update]
+requires: ["hm-config", "hm-fast", "hm-phase", "hm-update"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-research.md"]
+coordination-model: "waiter-model"
+completion-signals: ["graph-built"]
 tools:
   read: true
   bash: true
 ---
+
 
 **STOP -- DO NOT READ THIS FILE. You are already reading it. This prompt was injected into your context by Claude Code's command system. Using the Read tool on this file wastes tokens. Begin executing Step 0 immediately.**
 

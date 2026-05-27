@@ -1,7 +1,14 @@
 ---
-description: Audit milestone completion against original intent before archiving
+namespace: hm
+agent: hm-nyquist-auditor
+subtask: true
+description: "Audit milestone completion against original intent before archiving"
 argument-hint: "[version]"
-requires: [execute-phase]
+requires: ["hm-execute-phase"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["audit-completed"]
 tools:
   read: true
   glob: true
@@ -10,6 +17,7 @@ tools:
   agent: true
   write: true
 ---
+
 <objective>
 Verify milestone achieved its definition of done. Check requirements coverage, cross-phase integration, and end-to-end flows.
 

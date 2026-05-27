@@ -1,7 +1,14 @@
 ---
-description: Sketch UI/design ideas with throwaway HTML mockups, or propose what to sketch next (frontier mode)
+namespace: hm
+agent: hm-phase-researcher
+subtask: true
+description: "Sketch UI/design ideas with throwaway HTML mockups, or propose what to sketch next (frontier mode)"
 argument-hint: "[design idea to explore] [--quick] [--text] [--wrap-up] or [frontier]"
-requires: [spike]
+requires: ["hm-spike"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-ui-spec.md"]
+coordination-model: "waiter-model"
+completion-signals: ["sketch-completed"]
 tools:
   read: true
   write: true
@@ -15,6 +22,7 @@ tools:
   mcp__context7__resolve-library-id: true
   mcp__context7__query-docs: true
 ---
+
 <objective>
 Explore design directions through throwaway HTML mockups before committing to implementation.
 Each sketch produces 2-3 variants for comparison. Sketches live in `.planning/sketches/` and

@@ -1,14 +1,14 @@
 ---
 namespace: hm
-agent: hm-roadmapper
-subtask: true
+agent: hm-orchestrator
+subtask: false
 description: "Roadmap management: view current roadmap, analyze phase dependencies, add/remove phases, check for gaps, or export roadmap report. Use when you need to plan, inspect, or update the project delivery timeline."
 argument-hint: "[view|analyze|add <phase>|remove <phase>|gaps|export]"
 requires: []
-validation-gates: ["dependency-consistency-check"]
-output-templates: ["hm-roadmap-report.md"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
 coordination-model: "waiter-model"
-completion-signals: ["roadmap-updated"]
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
@@ -17,6 +17,7 @@ tools:
   glob: true
   grep: true
 ---
+
 <objective>
 Manage the project roadmap: display current roadmap with phase status, analyze dependency chains for circular or missing dependencies, add or remove phases with renumbering, detect phase gaps, and export roadmap reports.
 </objective>

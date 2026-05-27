@@ -1,11 +1,19 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: "workflow | discuss plan execute verify phase progress"
 argument-hint: ""
-requires: [discuss-phase, spec-phase, plan-phase, execute-phase, verify-work, phase, progress, ultraplan-phase, plan-review-convergence]
+requires: ["hm-discuss-phase", "hm-spec-phase", "hm-plan-phase", "hm-execute-phase", "hm-verify-work", "hm-phase", "hm-progress", "hm-ultraplan-phase", "hm-plan-review-convergence"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   skill: true
 ---
+
 
 Route to the appropriate phase-pipeline skill based on the user's intent.
 Sub-skill names below are post-#2790 consolidated targets — `hm-phase`

@@ -1,7 +1,14 @@
 ---
-description: Execute a quick task with Hivemind guarantees (atomic commits, state tracking) but skip optional agents
+namespace: hm
+agent: hm-executor
+subtask: true
+description: "Execute a quick task with Hivemind guarantees (atomic commits, state tracking) but skip optional agents"
 argument-hint: "[list | status <slug> | resume <slug> | --full] [--validate] [--discuss] [--research] [task description]"
-requires: [phase]
+requires: ["hm-phase"]
+validation-gates: ["lifecycle-gate", "evidence-truth-gate"]
+output-templates: ["hm-verification.md"]
+coordination-model: "waiter-model"
+completion-signals: ["quick-task-completed"]
 tools:
   read: true
   write: true
@@ -12,6 +19,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Execute small, ad-hoc tasks with Hivemind guarantees (atomic commits, STATE.md tracking).
 

@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-planner
-subtask: true
-description: Create detailed phase plan (PLAN.md) with integrated research, pattern mapping, spec compliance, and goal-backward verification.
+subtask: false
+description: "Create detailed phase plan (PLAN.md) with integrated research, pattern mapping, spec compliance, and goal-backward verification."
 argument-hint: "<phase-number> [--research] [--skip-research] [--gaps] [--skip-verify]"
 requires: ["hm-discuss"]
-validation-gates: ["spec-compliance-gate", "threat-modeling-check"]
+validation-gates: ["spec-compliance-gate"]
 output-templates: ["hm-plan.md"]
 coordination-model: "waiter-model"
-completion-signals: ["plan-created", "verifier-passed"]
+completion-signals: ["plan-generated"]
 tools:
   read: true
   write: true
@@ -19,6 +19,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Create executable phase plans (PLAN.md files) for a roadmap phase with integrated research, pattern mapping, spec compliance, and verification.
 </objective>

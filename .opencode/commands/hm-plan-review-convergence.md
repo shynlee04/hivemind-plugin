@@ -1,7 +1,14 @@
 ---
+namespace: hm
+agent: hm-planner
+subtask: true
 description: "Cross-AI plan convergence loop — replan with review feedback until no HIGH concerns remain."
 argument-hint: "<phase> [--codex] [--gemini] [--claude] [--opencode] [--ollama] [--lm-studio] [--llama-cpp] [--text] [--ws <name>] [--all] [--max-cycles N]"
-requires: [phase, review]
+requires: ["hm-phase", "hm-review"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-plan.md"]
+coordination-model: "waiter-model"
+completion-signals: ["plan-converged"]
 tools:
   read: true
   write: true
@@ -11,6 +18,7 @@ tools:
   agent: true
   question: true
 ---
+
 
 <objective>
 Cross-AI plan convergence loop — an outer revision gate around hm-review and hm-planner.

@@ -1,7 +1,14 @@
 ---
-description: Run all remaining phases autonomously — discuss→plan→execute per phase
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Run all remaining phases autonomously — discuss→plan→execute per phase"
 argument-hint: "[--from N] [--to N] [--only N] [--interactive]"
-requires: [cleanup, phase, progress]
+requires: ["hm-cleanup", "hm-phase", "hm-progress"]
+validation-gates: ["lifecycle-gate", "spec-compliance-gate", "evidence-truth-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["milestone-completed"]
 tools:
   read: true
   write: true
@@ -11,6 +18,7 @@ tools:
   question: true
   agent: true
 ---
+
 <objective>
 Execute all remaining milestone phases autonomously. For each phase: discuss → plan → execute. Pauses only for user decisions (grey area acceptance, blockers, validation requests).
 

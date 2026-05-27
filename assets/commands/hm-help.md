@@ -1,18 +1,19 @@
 ---
 namespace: hm
-agent: hm-l0-orchestrator
+agent: hm-orchestrator
 subtask: false
 description: "Display the Hivemind command registry: list all available hm-* commands grouped by category (routing, workflow, audit, research) with descriptions, target agents, and usage examples. Use when you need to discover available commands or learn what each command does."
 argument-hint: "[--category routing|workflow|audit|research] [--json]"
 requires: []
-validation-gates: []
+validation-gates: ["lifecycle-gate"]
 output-templates: []
-coordination-model: "direct"
-completion-signals: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   glob: true
 ---
+
 <objective>
 Display a categorized registry of all hm-* commands available in the Hivemind system, showing command names, descriptions, target agents, subtask mode, usage examples, and dependency chains.
 </objective>

@@ -1,6 +1,14 @@
 ---
-description: Ingest external plans with conflict detection against project decisions before writing anything.
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Ingest external plans with conflict detection against project decisions before writing anything."
 argument-hint: "--from <filepath> | --from-gsd2"
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
@@ -11,6 +19,7 @@ tools:
   question: true
   agent: true
 ---
+
 
 <objective>
 Import external plan files into the Hivemind planning system with conflict detection against PROJECT.md decisions.

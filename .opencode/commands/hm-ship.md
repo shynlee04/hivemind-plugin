@@ -1,14 +1,14 @@
 ---
 namespace: hm
-agent: hm-shipper
-subtask: true
+agent: hm-orchestrator
+subtask: false
 description: "Create pull request, run code review gates, generate CHANGELOG.md, bump version, and prepare for merge. Completes the delivery pipeline for a milestone or phase. Use when implementation is complete and ready for integration."
 argument-hint: "[<phase-number>] [--dry-run] [--skip-review] [--version <semver>]"
 requires: ["hm-verify"]
-validation-gates: ["code-review-gate", "spec-compliance-gate", "evidence-truth-gate"]
-output-templates: ["CHANGELOG.md", "RELEASE.md"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
 coordination-model: "waiter-model"
-completion-signals: ["pr-created", "release-ready"]
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
@@ -20,6 +20,7 @@ tools:
   todowrite: true
   question: true
 ---
+
 <objective>
 Create a pull request with comprehensive review, generate CHANGELOG.md, bump version according to semver, run all quality gates (code review → spec compliance → evidence truth), and prepare the release manifest.
 </objective>

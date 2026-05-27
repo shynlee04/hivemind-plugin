@@ -1,13 +1,21 @@
 ---
+namespace: hm
+agent: hm-planner
+subtask: true
 description: "[BETA] Offload plan phase to Claude Code's ultraplan cloud; review in browser and import back."
 argument-hint: "[phase-number]"
-requires: [import, phase, plan-phase]
+requires: ["hm-import", "hm-phase", "hm-plan-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-plan.md"]
+coordination-model: "waiter-model"
+completion-signals: ["plan-generated"]
 tools:
   read: true
   bash: true
   glob: true
   grep: true
 ---
+
 
 <objective>
 Offload Hivemind's plan phase to Claude Code's ultraplan cloud infrastructure.

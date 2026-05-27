@@ -1,12 +1,21 @@
 ---
-description: Configure Hivemind workflow toggles and model profile
-requires: [quick]
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Configure Hivemind workflow toggles and model profile"
+argument-hint: ""
+requires: ["hm-quick"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["settings-saved"]
 tools:
   read: true
   write: true
   bash: true
   question: true
 ---
+
 
 <objective>
 Interactive configuration of Hivemind workflow agents and model profile via multi-question prompt.

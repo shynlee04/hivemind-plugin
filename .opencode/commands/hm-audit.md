@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-nyquist-auditor
-subtask: true
-description: Audit project directories, configuration files, active sessions, and lineage continuity for compliance.
+subtask: false
+description: "Audit project directories, configuration files, active sessions, and lineage continuity for compliance."
 argument-hint: "[--lineage] [--orphans] [--pressure]"
 requires: []
-validation-gates: ["lineage-continuity-audit", "workspace-health-check"]
-output-templates: ["audit-report.md"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-summary.md"]
 coordination-model: "waiter-model"
-completion-signals: ["audit-complete"]
+completion-signals: ["audit-completed"]
 tools:
   read: true
   write: true
@@ -17,6 +17,7 @@ tools:
   grep: true
   agent: true
 ---
+
 <objective>
 Scan project workspace for primitive drift, namespace integrity violations, and lifecycle configuration mismatches.
 </objective>

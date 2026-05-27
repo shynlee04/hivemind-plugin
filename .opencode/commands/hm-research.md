@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-phase-researcher
-subtask: true
-description: Conduct multi-source stack research and code mapping to produce standard RESEARCH.md context documentation.
+subtask: false
+description: "Conduct multi-source stack research and code mapping to produce standard RESEARCH.md context documentation."
 argument-hint: "<phase-number> [--force] [--view]"
 requires: []
-validation-gates: ["stack-compatibility-audit"]
+validation-gates: ["spec-compliance-gate"]
 output-templates: ["hm-research.md"]
 coordination-model: "waiter-model"
-completion-signals: ["research-complete"]
+completion-signals: ["research-completed"]
 tools:
   read: true
   write: true
@@ -19,6 +19,7 @@ tools:
   webfetch: true
   mcp__context7__*: true
 ---
+
 <objective>
 Analyze required technical stack, mapping conventions, stack dependencies, and target implementation files.
 </objective>

@@ -1,7 +1,14 @@
 ---
-description: Plan a phase as a vertical MVP slice — user story, SPIDR splitting, then plan-phase
+namespace: hm
+agent: hm-planner
+subtask: true
+description: "Plan a phase as a vertical MVP slice — user story, SPIDR splitting, then plan-phase"
 argument-hint: "<phase-number>"
-requires: [new-project, phase, plan-phase]
+requires: ["hm-new-project", "hm-phase", "hm-plan-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-plan.md"]
+coordination-model: "waiter-model"
+completion-signals: ["mvp-plan-defined"]
 tools:
   read: true
   write: true
@@ -11,6 +18,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Guide the user through MVP-mode planning for a phase. The command:
 

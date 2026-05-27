@@ -1,5 +1,14 @@
 ---
-description: Socratic ideation and idea routing — think through ideas before committing to plans
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Socratic ideation and idea routing — think through ideas before committing to plans"
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
@@ -9,6 +18,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Open-ended Socratic ideation session. Guides the developer through exploring an idea via
 probing questions, optionally spawns research, then routes outputs to the appropriate Hivemind

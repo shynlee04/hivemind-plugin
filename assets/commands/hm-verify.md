@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-verifier
-subtask: true
-description: Verify that implemented features meet the roadmap and phase objectives using goal-backward verification of truths, artifacts, and key links.
+subtask: false
+description: "Verify that implemented features meet the roadmap and phase objectives using goal-backward verification of truths, artifacts, and key links."
 argument-hint: "<phase-number> [--quick] [--interactive]"
 requires: ["hm-execute"]
-validation-gates: ["goal-backward-verification", "artifact-integrity-check"]
+validation-gates: ["evidence-truth-gate"]
 output-templates: ["hm-verification.md"]
 coordination-model: "waiter-model"
-completion-signals: ["verification-passed"]
+completion-signals: ["verification-completed"]
 tools:
   read: true
   write: true
@@ -18,6 +18,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Perform goal-backward validation of truths, artifacts, and key links for the target phase to ensure zero regressions.
 </objective>

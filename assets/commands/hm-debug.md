@@ -2,11 +2,11 @@
 namespace: hm
 agent: hm-debugger
 subtask: true
-description: Systematic debugging with persistent state to diagnose and fix failing tests, crashes, or unintended behaviors.
+description: "Systematic debugging with persistent state to diagnose and fix failing tests, crashes, or unintended behaviors."
 argument-hint: "<error-context-or-test-file> [--interactive] [--max-iterations N]"
 requires: []
 validation-gates: ["debug-verification-gate"]
-output-templates: ["debug-report.md"]
+output-templates: ["hm-debug-reproduction.md"]
 coordination-model: "waiter-model"
 completion-signals: ["bug-resolved"]
 tools:
@@ -19,6 +19,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Execute systematic debugging loops with persistent state to identify root cause and apply/verify code corrections.
 </objective>

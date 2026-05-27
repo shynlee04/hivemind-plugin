@@ -1,7 +1,14 @@
 ---
-type: prompt
-description: Generate a comprehensive project summary from milestone artifacts for team onboarding and review
+namespace: hm
+agent: hm-roadmapper
+subtask: true
+description: "Generate a comprehensive project summary from milestone artifacts for team onboarding and review"
 argument-hint: "[version]"
+requires: []
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["summary-generated"]
 tools:
   read: true
   write: true
@@ -9,6 +16,7 @@ tools:
   grep: true
   glob: true
 ---
+
 
 <objective>
 Generate a structured milestone summary for team onboarding and project review. Reads completed milestone artifacts (ROADMAP, REQUIREMENTS, CONTEXT, SUMMARY, VERIFICATION files) and produces a human-friendly overview of what was built, how, and why.

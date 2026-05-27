@@ -1,18 +1,19 @@
 ---
 namespace: hm
-agent: hm-l0-orchestrator
+agent: hm-orchestrator
 subtask: false
 description: "Update Hivemind to the latest version: check for updates, display changelog, apply update, and re-sync assets. Use when a new version of Hivemind is available or when you want to refresh the project setup."
 argument-hint: "[check|apply|rollback]"
 requires: []
-validation-gates: ["backup-gate"]
+validation-gates: ["lifecycle-gate"]
 output-templates: []
-coordination-model: "direct"
-completion-signals: ["update-complete"]
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   bash: true
 ---
+
 <objective>
 Check for Hivemind updates, display the changelog, apply the update with pre-update backup, and re-sync all assets from the updated package.
 </objective>

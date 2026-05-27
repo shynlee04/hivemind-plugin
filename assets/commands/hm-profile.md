@@ -1,19 +1,20 @@
 ---
 namespace: hm
-agent: hm-l0-orchestrator
+agent: hm-orchestrator
 subtask: false
 description: "View or switch the behavioral profile for Hivemind agents. Supports profiles: quality (thorough, multi-gate), balanced (default), budget (fast, minimal gates), inherit (follow parent session). Use when you need to tune agent behavior for the current task."
 argument-hint: "[view|set <quality|balanced|budget|inherit>]"
 requires: []
-validation-gates: []
+validation-gates: ["lifecycle-gate"]
 output-templates: []
-coordination-model: "direct"
-completion-signals: ["profile-updated"]
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
   bash: true
 ---
+
 <objective>
 View current Hivemind agent profile or switch to a different behavioral profile, persisting the change to .hivemind/config.json for all subsequent agent dispatches.
 </objective>

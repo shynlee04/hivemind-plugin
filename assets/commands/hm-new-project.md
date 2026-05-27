@@ -1,7 +1,14 @@
 ---
-description: Initialize a new project with deep context gathering and PROJECT.md
+namespace: hm
+agent: hm-roadmapper
+subtask: false
+description: "Initialize a new project with deep context gathering and PROJECT.md"
 argument-hint: "[--auto]"
-requires: [config, phase, plan-phase]
+requires: ["hm-config", "hm-phase", "hm-plan-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-project.md"]
+coordination-model: "waiter-model"
+completion-signals: ["project-initialized"]
 tools:
   read: true
   bash: true
@@ -9,6 +16,7 @@ tools:
   agent: true
   question: true
 ---
+
 <runtime_note>
 **Copilot (VS Code):** Use `vscode_askquestions` wherever this workflow calls `question`. They are equivalent — `vscode_askquestions` is the VS Code Copilot implementation of the same interactive question API.
 </runtime_note>

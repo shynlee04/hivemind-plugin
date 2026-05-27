@@ -1,12 +1,21 @@
 ---
-description: Review and promote backlog items to active milestone
-requires: [phase, review]
+namespace: hm
+agent: hm-code-reviewer
+subtask: true
+description: "Review and promote backlog items to active milestone"
+argument-hint: ""
+requires: ["hm-phase", "hm-review"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["review-completed"]
 tools:
   read: true
   write: true
   bash: true
   question: true
 ---
+
 
 <objective>
 Review all 999.x backlog items and optionally promote them into the active

@@ -1,7 +1,14 @@
 ---
-description: Gather phase context through adaptive questioning before planning.
+namespace: hm
+agent: hm-intent-loop
+subtask: true
+description: "Gather phase context through adaptive questioning before planning."
 argument-hint: "<phase> [--all] [--auto] [--chain] [--batch] [--analyze] [--text] [--power] [--assumptions]"
-requires: [config, phase]
+requires: ["hm-config", "hm-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-context.md"]
+coordination-model: "waiter-model"
+completion-signals: ["context-gathered"]
 tools:
   read: true
   write: true
@@ -13,6 +20,7 @@ tools:
   mcp__context7__resolve-library-id: true
   mcp__context7__query-docs: true
 ---
+
 
 <objective>
 Extract implementation decisions that downstream agents need — researcher and planner will use CONTEXT.md to know what to investigate and what choices are locked.

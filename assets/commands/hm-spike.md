@@ -1,7 +1,14 @@
 ---
-description: Spike an idea through experiential exploration, or propose what to spike next (frontier mode)
+namespace: hm
+agent: hm-phase-researcher
+subtask: true
+description: "Spike an idea through experiential exploration, or propose what to spike next (frontier mode)"
 argument-hint: "[idea to validate] [--quick] [--text] [--wrap-up] or [frontier]"
 requires: []
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-research.md"]
+coordination-model: "waiter-model"
+completion-signals: ["spike-completed"]
 tools:
   read: true
   write: true
@@ -15,6 +22,7 @@ tools:
   mcp__context7__resolve-library-id: true
   mcp__context7__query-docs: true
 ---
+
 <objective>
 Spike an idea through experiential exploration — build focused experiments to feel the pieces
 of a future app, validate feasibility, and produce verified knowledge for the real build.

@@ -1,5 +1,14 @@
 ---
-description: Resume work from previous session with full context restoration
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Resume work from previous session with full context restoration"
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["work-resumed"]
 tools:
   read: true
   bash: true
@@ -7,6 +16,7 @@ tools:
   question: true
   skill: true
 ---
+
 
 <objective>
 Restore complete project context and resume work seamlessly from previous session.

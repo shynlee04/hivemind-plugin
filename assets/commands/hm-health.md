@@ -1,13 +1,21 @@
 ---
-description: Diagnose planning directory health and optionally repair issues
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Diagnose planning directory health and optionally repair issues"
 argument-hint: "[--repair] [--context]"
-requires: [thread]
+requires: ["hm-thread"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["health-checked"]
 tools:
   read: true
   bash: true
   write: true
   question: true
 ---
+
 <objective>
 Validate `.planning/` directory integrity and report actionable issues. Checks for missing files, invalid configurations, inconsistent state, and orphaned plans.
 

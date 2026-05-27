@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-orchestrator
-subtask: true
+subtask: false
 description: "Session management: list active sessions, resume an interrupted session, stack new work onto an existing session, check session status, or view session hierarchy. Use when you need to manage multi-session workflows or recover from disconnection."
 argument-hint: "[list|status <session-id>|resume <session-id>|stack <session-id> <task>|hierarchy <session-id>]"
 requires: []
-validation-gates: []
-output-templates: ["session-report.md"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
 coordination-model: "waiter-model"
-completion-signals: ["session-report-complete"]
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
@@ -20,6 +20,7 @@ tools:
   session-hierarchy: true
   hivemind-session-view: true
 ---
+
 <objective>
 Manage Hivemind sessions: list active sessions via session-tracker, inspect delegation hierarchy, check status, resume interrupted sessions, or stack new work onto existing sessions.
 </objective>

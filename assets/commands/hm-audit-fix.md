@@ -1,8 +1,14 @@
 ---
-type: prompt
-description: Autonomous audit-to-fix pipeline — find issues, classify, fix, test, commit
+namespace: hm
+agent: hm-code-fixer
+subtask: true
+description: "Autonomous audit-to-fix pipeline — find issues, classify, fix, test, commit"
 argument-hint: "--source <audit-uat> [--severity <medium|high|all>] [--max N] [--dry-run]"
-requires: [audit-uat]
+requires: ["hm-audit-uat"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["audit-fixed"]
 tools:
   read: true
   write: true
@@ -13,6 +19,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Run an audit, classify findings as auto-fixable vs manual-only, then autonomously fix
 auto-fixable issues with test verification and atomic commits.

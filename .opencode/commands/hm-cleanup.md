@@ -1,12 +1,21 @@
 ---
-description: Archive accumulated phase directories from completed milestones
-requires: [phase]
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Archive accumulated phase directories from completed milestones"
+argument-hint: ""
+requires: ["hm-phase"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
   bash: true
   question: true
 ---
+
 <objective>
 Archive phase directories from completed milestones into `.planning/milestones/v{X.Y}-phases/`.
 

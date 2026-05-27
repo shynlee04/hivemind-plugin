@@ -1,20 +1,21 @@
 ---
 namespace: hm
-agent: hm-planner
-subtask: true
+agent: hm-orchestrator
+subtask: false
 description: "View project state and progress: current phase status, completed phases, pending work, blockers, and next recommended action. Use when you need a quick status check or to determine what to work on next."
 argument-hint: "[--detailed] [--json]"
 requires: []
-validation-gates: []
-output-templates: ["hm-state-report.md"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
 coordination-model: "waiter-model"
-completion-signals: ["state-report-complete"]
+completion-signals: ["task-completed"]
 tools:
   read: true
   bash: true
   glob: true
   grep: true
 ---
+
 <objective>
 Aggregate project state from .planning/STATE.md, .hivemind/state/, and git log to produce a concise state report showing current phase, completion percentage, blockers, and next recommended action.
 </objective>

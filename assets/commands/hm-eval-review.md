@@ -1,7 +1,14 @@
 ---
-description: Audit an executed AI phase's evaluation coverage and produce an EVAL-REVIEW.md remediation plan.
+namespace: hm
+agent: hm-code-reviewer
+subtask: true
+description: "Audit an executed AI phase's evaluation coverage and produce an EVAL-REVIEW.md remediation plan."
 argument-hint: "[phase number]"
-requires: [phase]
+requires: ["hm-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["review-completed"]
 tools:
   read: true
   write: true
@@ -11,6 +18,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Conduct a retroactive evaluation coverage audit of a completed AI phase.
 Checks whether the evaluation strategy from AI-SPEC.md was implemented.
