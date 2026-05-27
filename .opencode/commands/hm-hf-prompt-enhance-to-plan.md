@@ -1,8 +1,19 @@
 ---
+namespace: hm
+agent: hm-planner
+subtask: true
 description: "Enhance, improve, and export as plan repack a prompt through selection of suitable template and references: using question tool to ask for clarification, do few shot research, loading skill to make a fully well prepared plan."
-agent: hf-l2-prompter
-subtask: false
+argument-hint: ""
+requires: []
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-plan.md"]
+coordination-model: "waiter-model"
+completion-signals: ["plan-generated"]
+tools:
+  read: true
+  bash: true
 ---
+
 ## Gaining the overview context
 
 1. If the session has not been compact 

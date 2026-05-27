@@ -17,6 +17,7 @@ tools:
   grep: true
 ---
 
+
 <objective>
 Run diagnostic checks across the Hivemind project: verify all required directories exist (.opencode/, .hivemind/, .planning/), validate config files parse correctly, check agent/command frontmatter consistency, verify git state is clean, and check dependency integrity.
 </objective>

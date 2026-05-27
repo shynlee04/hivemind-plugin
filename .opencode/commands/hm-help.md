@@ -1,9 +1,18 @@
 ---
-description: Show available Hivemind commands and usage guide
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Show available Hivemind commands and usage guide"
 argument-hint: "[--brief | --full | <topic> | --brief <topic>]"
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
 ---
+
 <objective>
 Display Hivemind help at the tier the user asked for: brief (one-line refresher), default (one-page tour), full (complete reference), a single topic section, or a compact scoped lookup of one topic (`--brief <topic>`: signature + one-line summary).
 

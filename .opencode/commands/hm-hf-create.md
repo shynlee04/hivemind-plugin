@@ -1,8 +1,19 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: "Create a new skill, agent, command, or tool. Routes to the right specialist. Triggers: 'create a skill', 'add an agent', 'build a command', 'make a tool'."
-agent: hf-l0-orchestrator
-subtask: true
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 <objective>
 Create a new OpenCode meta-concept (skill, agent, command, or tool) by routing to the appropriate Hivefiver specialist agent.

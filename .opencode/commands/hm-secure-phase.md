@@ -1,7 +1,14 @@
 ---
-description: Retroactively verify threat mitigations for a completed phase
+namespace: hm
+agent: hm-nyquist-auditor
+subtask: true
+description: "Retroactively verify threat mitigations for a completed phase"
 argument-hint: "[phase number]"
-requires: [phase]
+requires: ["hm-phase"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["security-audited"]
 tools:
   read: true
   write: true
@@ -12,6 +19,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Verify threat mitigations for a completed phase. Three states:
 - (A) SECURITY.md exists — audit and verify mitigations

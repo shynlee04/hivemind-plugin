@@ -1,9 +1,19 @@
 ---
-description: "Reference document: Advanced Repomix + OpenCode orchestration cheat sheet. NOT an executable command — serves as knowledge base for deep research patterns."
-agent: hm-l2-researcher
+namespace: hm
+agent: hm-phase-researcher
 subtask: true
-type: reference
+description: "Reference document: Advanced Repomix + OpenCode orchestration cheat sheet. NOT an executable command — serves as knowledge base for deep research patterns."
+argument-hint: ""
+requires: []
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-research.md"]
+coordination-model: "waiter-model"
+completion-signals: ["research-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 # Advanced Repomix + Opencode Orchestration: Deep Research & Cross-Dependency Cheat Sheet
 

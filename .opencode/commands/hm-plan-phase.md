@@ -1,6 +1,14 @@
 ---
-description: Create detailed phase plan (PLAN.md) with research, task breakdown, dependency analysis, and goal-backward validation. Routes through hm-phase-researcher, hm-planner, hm-pattern-mapper, hm-plan-checker, hm-intent-loop, and hm-specifier agents.
+namespace: hm
+agent: hm-planner
+subtask: true
+description: "Create detailed phase plan (PLAN.md) with research, task breakdown, dependency analysis, and goal-backward validation. Routes through hm-phase-researcher, hm-planner, hm-pattern-mapper, hm-plan-checker, hm-intent-loop, and hm-specifier agents."
 argument-hint: "<phase-number> [--research] [--skip-research] [--gaps] [--skip-verify] [--mvp]"
+requires: []
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-plan.md"]
+coordination-model: "waiter-model"
+completion-signals: ["plan-generated"]
 tools:
   read: true
   write: true
@@ -10,6 +18,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Create executable phase plans (PLAN.md files) for a roadmap phase with integrated research, pattern mapping, spec authoring, and verification.
 

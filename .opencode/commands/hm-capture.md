@@ -1,6 +1,14 @@
 ---
-description: Capture ideas, tasks, notes, and seeds to their destination
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Capture ideas, tasks, notes, and seeds to their destination"
 argument-hint: "[--note | --backlog | --seed | --list] [text]"
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
@@ -10,6 +18,7 @@ tools:
   grep: true
   question: true
 ---
+
 
 <objective>
 Capture ideas, tasks, notes, and seeds to their appropriate destination in the Hivemind system.

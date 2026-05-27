@@ -1,7 +1,14 @@
 ---
-description: Start a new milestone cycle — update PROJECT.md and route to requirements
+namespace: hm
+agent: hm-roadmapper
+subtask: false
+description: "Start a new milestone cycle — update PROJECT.md and route to requirements"
 argument-hint: "[milestone name, e.g., 'v1.1 Notifications']"
-requires: [new-project, phase, plan-phase]
+requires: ["hm-new-project", "hm-phase", "hm-plan-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-milestone.md"]
+coordination-model: "waiter-model"
+completion-signals: ["milestone-created"]
 tools:
   read: true
   write: true
@@ -9,6 +16,7 @@ tools:
   agent: true
   question: true
 ---
+
 <objective>
 Start a new milestone: questioning → research (optional) → requirements → roadmap.
 

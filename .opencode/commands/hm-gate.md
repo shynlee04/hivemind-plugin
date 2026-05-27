@@ -1,14 +1,14 @@
 ---
 namespace: hm
-agent: hm-nyquist-auditor
-subtask: true
-description: Run the L3 quality gate triad (lifecycle, spec compliance, evidence truth) for the target phase.
+agent: hm-orchestrator
+subtask: false
+description: "Run the L3 quality gate triad (lifecycle, spec compliance, evidence truth) for the target phase."
 argument-hint: "<phase-number>"
 requires: ["hm-verify"]
-validation-gates: ["lifecycle-gate", "spec-gate", "evidence-gate"]
+validation-gates: ["lifecycle-gate"]
 output-templates: []
 coordination-model: "waiter-model"
-completion-signals: ["gate-cleared"]
+completion-signals: ["task-completed"]
 tools:
   read: true
   write: true
@@ -17,6 +17,7 @@ tools:
   grep: true
   agent: true
 ---
+
 <objective>
 Evaluate the target phase against the Lifecycle, Spec Compliance, and Evidence Truth L3 gates.
 </objective>

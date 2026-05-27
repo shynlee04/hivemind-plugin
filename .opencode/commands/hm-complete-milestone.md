@@ -1,13 +1,20 @@
 ---
-type: prompt
-description: Archive completed milestone and prepare for next version
-argument-hint: <version>
-requires: [audit-milestone, discuss-phase, execute-phase, new-milestone, phase, plan-phase, stats, update]
+namespace: hm
+agent: hm-roadmapper
+subtask: false
+description: "Archive completed milestone and prepare for next version"
+argument-hint: "<version>"
+requires: ["hm-audit-milestone", "hm-discuss-phase", "hm-execute-phase", "hm-new-milestone", "hm-phase", "hm-plan-phase", "hm-stats", "hm-update"]
+validation-gates: ["lifecycle-gate", "evidence-truth-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["milestone-archived"]
 tools:
   read: true
   write: true
   bash: true
 ---
+
 
 <objective>
 Mark milestone {{version}} complete, archive to milestones/, and update ROADMAP.md and REQUIREMENTS.md.

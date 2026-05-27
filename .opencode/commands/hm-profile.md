@@ -15,6 +15,7 @@ tools:
   bash: true
 ---
 
+
 <objective>
 View current Hivemind agent profile or switch to a different behavioral profile, persisting the change to .hivemind/config.json for all subsequent agent dispatches.
 </objective>

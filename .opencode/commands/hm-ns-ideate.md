@@ -1,11 +1,19 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: "exploration capture | explore sketch spike spec capture"
 argument-hint: ""
-requires: [capture, explore, sketch, spike, spec-phase]
+requires: ["hm-capture", "hm-explore", "hm-sketch", "hm-spike", "hm-spec-phase"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
 tools:
   read: true
   skill: true
 ---
+
 
 Route to the appropriate exploration / capture skill based on the user's intent.
 `hm-note`, `hm-add-todo`, `hm-add-backlog`, and `hm-plant-seed` were folded

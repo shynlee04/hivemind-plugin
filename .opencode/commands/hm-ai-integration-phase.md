@@ -1,7 +1,14 @@
 ---
-description: Generate an AI-SPEC.md design contract for phases that involve building AI systems.
+namespace: hm
+agent: hm-planner
+subtask: true
+description: "Generate an AI-SPEC.md design contract for phases that involve building AI systems."
 argument-hint: "[phase number]"
-requires: [phase]
+requires: ["hm-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-ai-spec.md"]
+coordination-model: "waiter-model"
+completion-signals: ["ai-spec-defined"]
 tools:
   read: true
   write: true
@@ -14,6 +21,7 @@ tools:
   question: true
   mcp__context7__*: true
 ---
+
 <objective>
 Create an AI design contract (AI-SPEC.md) for a phase involving AI system development.
 Orchestrates hm-framework-selector → hm-ai-researcher → hm-domain-researcher → hm-eval-planner.

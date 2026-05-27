@@ -1,8 +1,19 @@
 ---
-description: "Absorb dense context (links, text, files, stories, events, actors) into persistent session context through multi-wave swarm processing. Use when you have a packed prompt with URLs, file references, multi-layered narratives, or complex metadata that needs interpretation and persistent storage for ongoing planning."
-agent: hf-l0-orchestrator
+namespace: hm
+agent: hm-orchestrator
 subtask: false
+description: "Absorb dense context (links, text, files, stories, events, actors) into persistent session context through multi-wave swarm processing. Use when you have a packed prompt with URLs, file references, multi-layered narratives, or complex metadata that needs interpretation and persistent storage for ongoing planning."
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 ## Raw Input
 

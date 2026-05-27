@@ -19,6 +19,7 @@ tools:
   agent: true
 ---
 
+
 <objective>
 Combine outputs from parallel research agents into a single consolidated SUMMARY.md document. Cross-reference findings, assign confidence levels, identify contradictions, and produce a gap analysis with recommended next steps.
 </objective>

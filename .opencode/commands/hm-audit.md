@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-nyquist-auditor
-subtask: true
-description: Run codebase and primitive audit to identify structure drift, orphaned configurations, or type check warnings.
+subtask: false
+description: "Run codebase and primitive audit to identify structure drift, orphaned configurations, or type check warnings."
 argument-hint: "[--strict] [--fix]"
 requires: []
-validation-gates: []
-output-templates: []
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-summary.md"]
 coordination-model: "waiter-model"
-completion-signals: ["audit-complete"]
+completion-signals: ["audit-completed"]
 tools:
   read: true
   write: true
@@ -17,6 +17,7 @@ tools:
   grep: true
   agent: true
 ---
+
 <objective>
 Audit repository structure, configuration integrity, type checks, and primitive mappings against harness rules.
 </objective>

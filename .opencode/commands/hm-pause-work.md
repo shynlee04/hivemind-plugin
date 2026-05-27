@@ -1,12 +1,20 @@
 ---
-description: Create context handoff when pausing work mid-phase
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Create context handoff when pausing work mid-phase"
 argument-hint: "[--report]"
-requires: [phase, progress]
+requires: ["hm-phase", "hm-progress"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-continue-here.md"]
+coordination-model: "waiter-model"
+completion-signals: ["work-paused"]
 tools:
   read: true
   write: true
   bash: true
 ---
+
 
 <objective>
 Create `.continue-here.md` handoff file to preserve complete work state across sessions.

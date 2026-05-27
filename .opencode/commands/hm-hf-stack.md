@@ -1,8 +1,19 @@
 ---
+namespace: hm
+agent: hm-orchestrator
+subtask: false
 description: "Stack multiple skills together for a specific workflow. Triggers: 'stack skills', 'combine skills', 'chain skills for...'"
-agent: hf-l0-orchestrator
-subtask: true
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["task-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 <objective>
 Stack 2-3 skills together for a specific workflow. Validates compatibility, sets loading order, produces stacked skill config.

@@ -1,7 +1,14 @@
 ---
-description: Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase.
+namespace: hm
+agent: hm-planner
+subtask: true
+description: "Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase."
 argument-hint: "<phase> [--auto] [--text]"
-requires: [discuss-phase, execute-phase, phase, plan-phase]
+requires: ["hm-discuss-phase", "hm-execute-phase", "hm-phase", "hm-plan-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-spec.md"]
+coordination-model: "waiter-model"
+completion-signals: ["spec-defined"]
 tools:
   read: true
   write: true
@@ -10,6 +17,7 @@ tools:
   grep: true
   question: true
 ---
+
 
 <objective>
 Clarify phase requirements through structured Socratic questioning with quantitative ambiguity scoring.

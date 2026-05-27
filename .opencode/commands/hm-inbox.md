@@ -1,7 +1,14 @@
 ---
-description: Triage and review open GitHub issues and PRs against project templates and contribution guidelines.
+namespace: hm
+agent: hm-orchestrator
+subtask: false
+description: "Triage and review open GitHub issues and PRs against project templates and contribution guidelines."
 argument-hint: "[--issues] [--prs] [--label] [--close-incomplete] [--repo owner/repo]"
-requires: [review]
+requires: ["hm-review"]
+validation-gates: ["lifecycle-gate"]
+output-templates: []
+coordination-model: "waiter-model"
+completion-signals: ["inbox-triaged"]
 tools:
   read: true
   bash: true
@@ -10,6 +17,7 @@ tools:
   glob: true
   question: true
 ---
+
 <objective>
 One-command triage of the project's GitHub inbox. Fetches all open issues and PRs,
 reviews each against the corresponding template requirements (feature, enhancement,

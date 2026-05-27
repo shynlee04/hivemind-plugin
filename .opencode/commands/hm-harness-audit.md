@@ -1,8 +1,19 @@
 ---
-description: "Comprehensive harness audit: boundary integrity, claim-vs-reality, governance, context poisoning, cross-platform compatibility. Triggers: 'audit harness', 'check boundaries', 'verify architecture', 'audit skills', 'cross-platform audit'."
-agent: hf-l0-orchestrator
+namespace: hm
+agent: hm-nyquist-auditor
 subtask: true
+description: "Comprehensive harness audit: boundary integrity, claim-vs-reality, governance, context poisoning, cross-platform compatibility. Triggers: 'audit harness', 'check boundaries', 'verify architecture', 'audit skills', 'cross-platform audit'."
+argument-hint: ""
+requires: []
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-summary.md"]
+coordination-model: "waiter-model"
+completion-signals: ["audit-completed"]
+tools:
+  read: true
+  bash: true
 ---
+
 
 <objective>
 Orchestrate a multi-phase audit of the HiveMind V3 harness project. You are the coordinator — you MUST NOT perform audit work yourself. Dispatch parallel subagents for each audit phase, collect their reports, and synthesize findings.

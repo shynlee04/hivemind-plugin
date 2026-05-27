@@ -1,14 +1,14 @@
 ---
 namespace: hm
 agent: hm-executor
-subtask: true
-description: Execute a created phase plan using TDD, atomic commits, and regression checks.
+subtask: false
+description: "Execute a created phase plan using TDD, atomic commits, and regression checks."
 argument-hint: "<phase-number> [--only-wave <wave>] [--dry-run]"
 requires: ["hm-plan"]
-validation-gates: ["pre-execution-gate"]
-output-templates: ["hm-summary.md"]
+validation-gates: ["lifecycle-gate", "evidence-truth-gate"]
+output-templates: ["hm-verification.md"]
 coordination-model: "waiter-model"
-completion-signals: ["plan-executed"]
+completion-signals: ["execution-completed"]
 tools:
   read: true
   write: true
@@ -17,6 +17,7 @@ tools:
   grep: true
   agent: true
 ---
+
 <objective>
 Execute implementation waves defined in PLAN.md sequentially, running automated tests and committing atomicity.
 </objective>

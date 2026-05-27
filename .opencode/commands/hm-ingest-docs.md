@@ -1,6 +1,14 @@
 ---
-description: Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo.
+namespace: hm
+agent: hm-project-researcher
+subtask: true
+description: "Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo."
 argument-hint: "[path] [--mode new|merge] [--manifest <file>] [--resolve auto|interactive]"
+requires: []
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-research.md"]
+coordination-model: "waiter-model"
+completion-signals: ["docs-ingested"]
 tools:
   read: true
   write: true
@@ -11,6 +19,7 @@ tools:
   question: true
   agent: true
 ---
+
 
 <objective>
 Build the full `.planning/` setup (or merge into an existing one) from multiple pre-existing planning documents — ADRs, PRDs, SPECs, DOCs — in one pass.

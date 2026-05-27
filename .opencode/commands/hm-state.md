@@ -16,6 +16,7 @@ tools:
   grep: true
 ---
 
+
 <objective>
 Aggregate project state from .planning/STATE.md, .hivemind/state/, and git log to produce a concise state report showing current phase, completion percentage, blockers, and next recommended action.
 </objective>

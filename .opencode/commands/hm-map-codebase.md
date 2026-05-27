@@ -1,7 +1,14 @@
 ---
-description: Analyze codebase with parallel mapper agents to produce .planning/codebase/ documents
+namespace: hm
+agent: hm-codebase-mapper
+subtask: true
+description: "Analyze codebase with parallel mapper agents to produce .planning/codebase/ documents"
 argument-hint: "[--fast [--focus tech|arch|quality|concerns]] [--query <term>|status|diff|refresh] [area]"
-requires: [config, new-project, plan-phase]
+requires: ["hm-config", "hm-new-project", "hm-plan-phase"]
+validation-gates: ["lifecycle-gate"]
+output-templates: ["hm-research.md"]
+coordination-model: "waiter-model"
+completion-signals: ["codebase-mapped"]
 tools:
   read: true
   bash: true
@@ -10,6 +17,7 @@ tools:
   write: true
   agent: true
 ---
+
 
 <objective>
 Analyze existing codebase using parallel hm-codebase-mapper agents to produce structured codebase documents.
