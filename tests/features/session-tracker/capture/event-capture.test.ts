@@ -162,6 +162,35 @@ describe("EventCapture", () => {
       )
     })
 
+    it("should backfill lastMessage with thinking blocks from SDK fallback", async () => {
+      mockGetSession.mockResolvedValue({
+        id: "ses_test_fallback_thinking",
+        parentID: null,
+        title: "Test Session",
+        time: { created: "2026-01-01T00:00:00Z", updated: "2026-01-01T00:00:00Z" },
+      })
+      mockGetSessionMessages.mockResolvedValue([
+        {
+          info: { role: "assistant" },
+          parts: [
+            { type: "thinking", text: "Reasoning step" },
+            { type: "text", text: "Actual output" },
+          ],
+        },
+      ])
+
+      await eventCapture.handleSessionEvent({
+        eventType: "session.idle",
+        sessionID: "ses_test_fallback_thinking",
+        event: {},
+      })
+
+      expect(mockUpdateFrontmatter).toHaveBeenCalledWith(
+        "ses_test_fallback_thinking",
+        { status: "completed", lastMessage: "<thinking>\nReasoning step\n</thinking>\nActual output" },
+      )
+    })
+
     it("should handle SDK message fetch failure gracefully", async () => {
       mockGetSession.mockResolvedValue({
         id: "ses_test_fallback_fail_xyz",

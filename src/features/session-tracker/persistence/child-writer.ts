@@ -575,6 +575,13 @@ export class ChildWriter {
         if (turns.length > record.turns.length) {
           record.turns = turns
           updated = true
+        } else if (turns.length === record.turns.length) {
+          for (let i = 0; i < turns.length; i++) {
+            if (turns[i].content !== record.turns[i].content) {
+              record.turns[i].content = turns[i].content
+              updated = true
+            }
+          }
         }
 
         const lastAssistant = [...record.turns].reverse().find(

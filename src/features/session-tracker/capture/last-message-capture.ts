@@ -24,6 +24,8 @@ interface LastMessageEntry {
   sessionID: string
   /** The latest captured assistant text for this message. */
   lastText: string
+  /** The latest captured thinking block text for this message. */
+  lastThinking: string
 }
 
 // ---------------------------------------------------------------------------
@@ -125,7 +127,7 @@ export class LastMessageCapture {
       this.insertionOrder.push(messageID)
     }
 
-    this.messages.set(messageID, { sessionID, lastText: "" })
+    this.messages.set(messageID, { sessionID, lastText: "", lastThinking: "" })
   }
 
   /**
@@ -146,7 +148,7 @@ export class LastMessageCapture {
     if (!part) return
 
     const partType = asString(part.type)
-    if (partType !== "text") return
+    if (partType !== "text" && partType !== "thinking") return
 
     const messageID = asString(part.messageID)
     if (!messageID) return
@@ -158,11 +160,24 @@ export class LastMessageCapture {
     const text = asString(part.text) ?? ""
     if (!text) return
 
-    entry.lastText = text
+    if (partType === "text") {
+      entry.lastText = text
+    } else if (partType === "thinking") {
+      entry.lastThinking = text
+    }
 
-    // Invoke callback if the accumulated text is non-empty
-    if (text.trim().length > 0) {
-      this.onLastMessageUpdate?.(entry.sessionID, text)
+    // Invoke callback if the combined text is non-empty
+    let combinedText = ""
+    if (entry.lastThinking && entry.lastThinking.trim().length > 0) {
+      combinedText += `<thinking>\n${entry.lastThinking.trim()}\n</thinking>\n`
+    }
+    if (entry.lastText && entry.lastText.trim().length > 0) {
+      combinedText += entry.lastText.trim()
+    }
+    combinedText = combinedText.trim()
+
+    if (combinedText.length > 0) {
+      this.onLastMessageUpdate?.(entry.sessionID, combinedText)
     }
   }
 
@@ -170,8 +185,8 @@ export class LastMessageCapture {
    * Retrieves the latest tracked assistant text for a given session.
    *
    * Iterates through tracked entries in insertion order (most recent last)
-   * and returns the first matching non-empty `lastText`. Returns `undefined`
-   * if no assistant text has been tracked for this session.
+   * and returns the first matching non-empty combined text (including formatted thinking).
+   * Returns `undefined` if no assistant text has been tracked for this session.
    *
    * @param sessionID - The session identifier to look up.
    * @returns The latest assistant text, or `undefined` if not found.
@@ -181,8 +196,18 @@ export class LastMessageCapture {
     for (let i = this.insertionOrder.length - 1; i >= 0; i--) {
       const messageID = this.insertionOrder[i]
       const entry = this.messages.get(messageID)
-      if (entry && entry.sessionID === sessionID && entry.lastText.trim().length > 0) {
-        return entry.lastText
+      if (entry && entry.sessionID === sessionID) {
+        let combinedText = ""
+        if (entry.lastThinking && entry.lastThinking.trim().length > 0) {
+          combinedText += `<thinking>\n${entry.lastThinking.trim()}\n</thinking>\n`
+        }
+        if (entry.lastText && entry.lastText.trim().length > 0) {
+          combinedText += entry.lastText.trim()
+        }
+        combinedText = combinedText.trim()
+        if (combinedText.length > 0) {
+          return combinedText
+        }
       }
     }
     return undefined

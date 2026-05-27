@@ -353,7 +353,7 @@ export class EventCapture {
           if (messages && messages.length > 0) {
             for (let i = messages.length - 1; i >= 0; i--) {
               if (this.messageRole(messages[i]) === "assistant") {
-                const text = this.extractTextFromSdkMessage(messages[i])
+                const text = this.extractTextFromSdkMessage(messages[i], true)
                 if (text && text.trim().length > 0) {
                   lastMessage = text.trim()
                   break
@@ -875,11 +875,22 @@ export class EventCapture {
       const messages = await getSessionMessages(this.client, childSessionID)
       if (!messages || messages.length === 0) return
 
+      // Find the index of the last assistant message
+      let lastAssistantIndex = -1
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (this.messageRole(messages[i]) === "assistant") {
+          lastAssistantIndex = i
+          break
+        }
+      }
+
       const turns: Turn[] = []
       let turnNumber = 1
-      for (const message of messages) {
+      for (let i = 0; i < messages.length; i++) {
+        const message = messages[i]
         const role = this.messageRole(message)
-        const content = this.extractTextFromSdkMessage(message)
+        const isLastAssistant = i === lastAssistantIndex
+        const content = this.extractTextFromSdkMessage(message, isLastAssistant)
         if (!content) continue
 
         turns.push({
@@ -910,13 +921,25 @@ export class EventCapture {
     return asString(getNestedValue(message, ["info", "role"])) ?? asString(getNestedValue(message, ["role"]))
   }
 
-  private extractTextFromSdkMessage(message: unknown): string | undefined {
+  private extractTextFromSdkMessage(message: unknown, includeThinking = false): string | undefined {
     const parts = getNestedValue(message, ["parts"]) as unknown[] | undefined
     if (!Array.isArray(parts) || parts.length === 0) return undefined
 
     const textParts = parts
-      .filter((part: unknown) => getNestedValue(part, ["type"]) === "text")
-      .map((part: unknown) => asString(getNestedValue(part, ["text"])))
+      .filter((part: unknown) => {
+        const type = getNestedValue(part, ["type"])
+        return type === "text" || (includeThinking && type === "thinking")
+      })
+      .map((part: unknown) => {
+        const type = getNestedValue(part, ["type"])
+        const text = asString(getNestedValue(part, ["text"]))
+        const content = asString(getNestedValue(part, ["content"]))
+        const val = text || content || ""
+        if (type === "thinking" && val.trim().length > 0) {
+          return `<thinking>\n${val.trim()}\n</thinking>`
+        }
+        return val
+      })
       .filter((text): text is string => typeof text === "string" && text.length > 0)
 
     if (textParts.length > 0) return textParts.join("\n")
