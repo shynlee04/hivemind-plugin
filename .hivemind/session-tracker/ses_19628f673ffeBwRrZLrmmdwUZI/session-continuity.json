@@ -1,0 +1,43 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_19628f673ffeBwRrZLrmmdwUZI",
+  "lastUpdated": "2026-05-27T14:38:21.070Z",
+  "hierarchy": {
+    "root": "ses_19628f673ffeBwRrZLrmmdwUZI",
+    "children": {
+      "ses_19628450dffeHQIgsWlTdf2jb1": {
+        "file": "ses_19628450dffeHQIgsWlTdf2jb1.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-research-synthesizer",
+        "children": {}
+      },
+      "ses_1962594f8ffeLXIFFN06b0WWQu": {
+        "file": "ses_1962594f8ffeLXIFFN06b0WWQu.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1962594d6ffejbybpwJLhMjwKy": {
+        "file": "ses_1962594d6ffejbybpwJLhMjwKy.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {
+    "skill": 5,
+    "read": 19,
+    "glob": 7,
+    "task": 3,
+    "question": 1,
+    "todowrite": 4,
+    "bash": 5,
+    "edit": 1,
+    "write": 16
+  }
+}

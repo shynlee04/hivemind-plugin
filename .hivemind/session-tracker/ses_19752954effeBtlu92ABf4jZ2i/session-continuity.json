@@ -1,0 +1,55 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_19752954effeBtlu92ABf4jZ2i",
+  "lastUpdated": "2026-05-27T14:22:15.676Z",
+  "hierarchy": {
+    "root": "ses_19752954effeBtlu92ABf4jZ2i",
+    "children": {
+      "ses_1974d3d40ffelogV5f6u8rqnJD": {
+        "file": "ses_1974d3d40ffelogV5f6u8rqnJD.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
+      },
+      "ses_19748de11ffeE93o7yOWGH0mlU": {
+        "file": "ses_19748de11ffeE93o7yOWGH0mlU.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
+      },
+      "ses_196e43f94ffeVmWPXdlDShpwUF": {
+        "file": "ses_196e43f94ffeVmWPXdlDShpwUF.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_196be1e9effekGfFMl7rf8yskw": {
+        "file": "ses_196be1e9effekGfFMl7rf8yskw.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "general",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 47,
+  "toolSummary": {
+    "read": 77,
+    "bash": 110,
+    "skill": 11,
+    "write": 3,
+    "task": 8,
+    "brave-search_brave_web_search": 1,
+    "edit": 49,
+    "glob": 8,
+    "sequential-thinking_sequentialthinking": 1,
+    "grep": 5,
+    "todowrite": 3,
+    "fetcher_fetch_url": 5,
+    "execute-slash-command": 1,
+    "fetcher_fetch_urls": 1
+  }
+}

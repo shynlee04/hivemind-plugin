@@ -1,0 +1,322 @@
+{
+  "sessionID": "ses_197152f93ffeTkRUywAnUnFhyI",
+  "parentSessionID": "ses_19718a84bffeChPUp8MSZoWK46",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-domain-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Execute-slash-command gap audit",
+    "subagentType": "gsd-domain-researcher"
+  },
+  "created": "2026-05-27T10:11:19.807Z",
+  "updated": "2026-05-27T10:12:33.447Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-domain-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a subagent performing a gap analysis for Hivemind's command routing system.\n\n## Context\nHivemind is an OpenCode plugin harness. The `execute-slash-command` tool (CQRS write-side) and `command-engine` (CQRS read-side) form the command routing system. The goal is to merge Phase 24.3 (Commands Infrastructure) and Phase 24.4 (References & Templates System) into a single rigid workflow.\n\n## Your Task\nAudit the gap between CURRENT state and TARGET state for the merged Phase 24.3+24.4.\n\n### Current Implementation Files (read all of these):\n1. `src/tools/session/execute-slash-command.ts` — 497 LOC dispatch tool\n2. `src/tools/session/resolve-command.ts` — command resolution (175 LOC)\n3. `src/tools/session/dispatch-command.ts` — dispatch module (94 LOC)\n4. `src/tools/session/semantic-agent-selector.ts` — agent selection (112 LOC)\n5. `src/tools/session/validate-command.ts` — contract validation (47 LOC)\n6. `src/tools/session/workflow-parser.ts` — workflow parsing (79 LOC, stub with WARNING)\n7. `src/routing/command-engine/index.ts` — read-side (251 LOC, 6 actions)\n8. `src/routing/command-engine/types.ts` — types (179 LOC, NO namespace field)\n\n### Reference Documents (read these for target requirements):\n1. `.planning/phases/24.3.2-revamp-execute-slash-command/24.3.2-SPEC.md` — 12 REQs\n2. `.planning/phases/24.3.2-revamp-execute-slash-command/CONTEXT.md` — 6 GA decisions\n3. `.planning/phases/24.3.3-namespace-routing-advanced-features/24.3.3-SPEC.md` — 8 REQs\n4. `.planning/phases/24.3.3-namespace-routing-advanced-features/24.3.3-CONTEXT.md` — decisions\n5. `.planning/STATE.md` — current phase states\n\n### Analysis Required\nFor each of these dimensions, report: What's IMPLEMENTED vs What's MISSING:\n\n1. **Module Extraction** — resolve-command.ts, dispatch-command.ts exist? \n2. **Namespace Routing** — namespace field in CommandBundle? namespace resolution?\n3. **Contract Validation** — validateCommandContract() proper?\n4. **Two-Stage Routing** — command resolution → agent selection pipeline?\n5. **Semantic Agent Selection** — keyword/fuzzy matching exist?\n6. **Workflow Execution** — workflow-parser.ts functional?\n7. **Natural Language Auto-Append** — can agents auto-discover and append commands?\n8. **Dynamic Primitive Loading** — command discovery ordering?\n9. **Subtask vs Main Session Intelligence** — agent confusion after TUI append?\n10. **References & Templates System** — anything in .hivemind/references/ or .hivemind/templates/?\n\n### Output Format\nReturn a structured Markdown report with:\n1. **Gap Matrix** — table of 10 dimensions: status (✅/⚠️/❌), evidence file:line, what's missing\n2. **Critical Flaws Validation** — confirm or reject each of the user's listed flaws (quote code evidence)\n3. **Dependency Chain** — what blocks what for the merger\n4. **Recommendation** — minimum scope for Phase 24.3+24.4 merger wave 1",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read, read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Now let me read the reference documents for target requirements.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Let me check the References & Templates system and the schema-kernel/commands.schema.ts file.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Now I have all the data. Let me synthesize the comprehensive gap analysis report.\n\n---\n\n# Gap Analysis: Phase 24.3+24.4 Merger — Command Routing System\n\n## 1. Gap Matrix\n\n| # | Dimension | Status | Evidence (file:line) | What's Missing |\n|---|-----------|--------|---------------------|----------------|\n| 1 | **Module Extraction** | ✅ | `resolve-command.ts:1-175`, `dispatch-command.ts:1-94` | No `src/tools/session/index.ts` barrel file. `execute-slash-command.ts` is 497 LOC — under 500 but tight. |\n| 2 | **Namespace Routing** | ⚠️ | `commands.schema.ts:12` (schema field exists); `types.ts:4-21` (NO namespace field) | Schema has `namespace?: string` but `CommandBundle` type has NO namespace field. No `resolveCommandNamespace()` method. No namespace-scoped routing in `resolve-command.ts`. Per 24.3.3-SPEC: routing logic deferred — only field placeholder required. **Partial pass.** |\n| 3 | **Contract Validation** | ⚠️ | `validate-command.ts:8-47` (module exists) | `validateCommandContract()` is a **dead module** — zero callers. Not imported or invoked anywhere in `execute-slash-command.ts`, `resolve-command.ts`, or `dispatch-command.ts`. Validates structural fields correctly (name, description, triggers) per spec. |\n| 4 | **Two-Stage Routing** | ✅ | `execute-slash-command.ts:162-195` | Stage 1: `resolveCommand()` (lines 162-181). Stage 2: `selectAgent()` (lines 184-195). Pipeline is sequential and matches spec. |\n| 5 | **Semantic Agent Selection** | ✅ | `semantic-agent-selector.ts:20-83` | Keyword + fuzzy matching. No LLM fallback. User prompt fallback when no match. Integrated into `execute-slash-command.ts:191`. |\n| 6 | **Workflow Execution** | ❌ | `workflow-parser.ts:22-38` (stub only) | `parseWorkflowFile()` reads YAML and validates structure. **NOT imported** by any consumer. WARNING comment says \"deferred to later phase (P24.3.3.2)\". No step execution engine. No workflow dispatch. |\n| 7 | **Natural Language Auto-Append** | ❌ | `resolve-command.ts:51-60,139-165` | `extractEntities()` + keyword scoring exists for command resolution, but no \"auto-append\" mechanism. No NL→command pipeline that auto-discovers and appends commands. Per 24.3.3-SPEC: officially out of scope. |\n| 8 | **Dynamic Primitive Loading** | ✅ | `command-engine/index.ts:29-48` | `discoverCommandBundles()` uses `loadPrimitives()`. 5s TTL cache in `resolve-command.ts:13`. Alphabetical sort. No namespace-scoped discovery. |\n| 9 | **Subtask vs Main Session Intelligence** | ⚠️ | `execute-slash-command.ts:197-201,374-375` | 3 dispatch paths implemented. `commandSource` tracking (user/agent/system). `isChildSession` check bypasses TUI. **Missing:** no detection/recovery mechanism for \"agent confusion after TUI append\" — when agent appends `/command` to its own prompt buffer, it sees its own command as a user turn, which can cause hallucination. |\n| 10 | **References & Templates System** | ❌ | (no files exist) | `.hivemind/references/` does NOT exist. `.hivemind/templates/` does NOT exist. Zero reference resolution mechanism. Zero template engine. This is the entirety of Phase **24.4** — completely unimplemented. |\n\n**Summary: 3 ✅ / 3 ⚠️ / 4 ❌**\n\n---\n\n## 2. Critical Flaws Validation\n\nBelow I confirm or reject each of the 6 critical flaws identified in the deep-analysis report, with code evidence.\n\n### Flaw 1: No return envelope consistency\n**Status: ✅ FIXED** — The 24.3.2 spec addressed this. Evidence:\n- All return paths in `execute-slash-command.ts` return `{ output, metadata, error }` shape (lines 147-157, 170-179, 211-220, 251-284, 291-299, 339-371, 405-438, 452-472, 477-487).\n- No inconsistency between paths. All include `error: boolean` field.\n- Note: SPEC acknowledges `renderToolResult()` does NOT exist in codebase. The raw `{ output, metadata, error }` pattern matches all 23 other tools.\n\n### Flaw 2: No Zod schema\n**Status: ✅ FIXED** — Evidence:\n- `src/schema-kernel/commands.schema.ts` exists with `ExecuteSlashCommandSchema` (15 lines).\n- Schema validates: command format (`^[a-z][a-z0-9-]*$`), arguments length (max 10000), agent format, model format (provider/model), commandSource enum, namespace (optional string).\n- `execute-slash-command.ts:144` uses `ExecuteSlashCommandSchema.safeParse(normalizedArgs)`.\n\n### Flaw 3: No commandSource tracking\n**Status: ✅ FIXED** — Evidence:\n- Schema line 9: `commandSource: z.enum([\"user\", \"agent\", \"system\"]).optional().default(\"user\")`.\n- Metadata includes `commandSource` in `buildSuccessMetadata()` (line 100).\n- Delegation packets in `dispatch-command.ts:68` include `commandSource`.\n\n### Flaw 4: No execution tracking\n**Status: ✅ FIXED** — Evidence:\n- Schema line 10: `trackExecution: z.boolean().optional().default(true)`.\n- When enabled, writes to `sessionTracker.pendingRegistry` (lines 317-325).\n- Metadata includes `trackExecution` in `buildSuccessMetadata()` (line 105).\n\n### Flaw 5: No delegation-aware context\n**Status: ✅ FIXED** — Evidence:\n- `parentSessionID` in schema (line 11): `parentSessionID: z.string().optional()`.\n- Resolved at line 205: `const resolvedParentSessionID = validated.parentSessionID || ctx.sessionID || \"\"`.\n- Attached to delegation packets in subtask mode (lines 302-314 validate parent session ID).\n- Included in metadata via `buildSuccessMetadata()` (line 110).\n\n### Flaw 6: No typed errors\n**Status: ✅ FIXED** — Evidence:\n- `src/shared/errors/commands.ts` exists with 5 typed error classes: `CommandNotFoundError`, `AgentNotFoundError`, `DelegationTimeoutError`, `InvalidCommandError`, `DelegationContextError`.\n- All extend `Error` with `name` property.\n- Used in `execute-slash-command.ts` (lines 6-11 imports, lines 20-65 `getErrorType()` classifies by instanceof).\n\n**All 6 critical flaws from 24.3.2 are FIXED.** The remaining gaps are the 10 dimensions above, not the original 6 flaws.\n\n---\n\n## 3. Dependency Chain for Merger\n\n```\nPhase 24.3 scope (Commands Infrastructure)\n└── Module extraction (resolve-command.ts, dispatch-command.ts)          ← DONE\n├── Namespace routing (schema field + CommandBundle type)                ← PARTIAL (schema ✅, type ❌)\n├── Two-stage routing pipeline                                           ← DONE\n├── Semantic agent selection                                             ← DONE\n├── Contract validation                                                  ← DEAD (module exists, zero callers)\n└── Workflow parsing (stub only)                                         ← STUB\n\nPhase 24.3.2 scope (Core revamp — 6 flaws)                              ← DONE ✅\n├── Return envelope consistency                                          ← DONE\n├── Zod schema                                                           ← DONE\n├── CommandSource tracking                                               ← DONE\n├── Execution tracking                                                   ← DONE\n├── Delegation-aware context                                             ← DONE\n└── Typed errors                                                         ← DONE\n\nPhase 24.3.3 scope (Advanced features)\n├── Namespace routing logic                                               ← NOT STARTED\n├── Shell command integration                                             ← NOT STARTED\n├── Workflow execution                                                    ← STUB ONLY\n└── Natural language auto-append                                          ← NOT STARTED\n\nPhase 24.4 scope (References & Templates)                               ← NOT STARTED\n├── .hivemind/references/                                                 ← MISSING\n├── .hivemind/templates/                                                  ← MISSING\n├── Reference resolution mechanism                                        ← MISSING\n└── Template engine                                                       ← MISSING\n```\n\n**Blocking dependencies for merger:**\n1. **Contract validation** is a dead module — must be wired into the two-stage pipeline (after Stage 1 resolution, before Stage 2 agent selection) or the gap remains.\n2. **CommandBundle type** missing `namespace` field blocks any future namespace routing — but this doesn't block merger since routing is deferred.\n3. **Phase 24.4** (.hivemind/references/ + .hivemind/templates/) is completely empty — no code dependency from 24.3 to 24.4 exists, but the CONTEXT.md says 24.4 \"Depends on: P24.3, P24.3.1\". This dependency is organizational (ordering), not a code-level block.\n\n---\n\n## 4. Recommendation — Minimum Scope for Phase 24.3+24.4 Merger Wave 1\n\nGiven the current state (6 critical flaws ✅ FIXED, 3 ⚠️ partial, 4 ❌ missing), here is the minimum-scope recommendation:\n\n### Must-Fix (blocks merger credibility)\n1. **Wire contract validation** — Add `validateCommandContract(commandBundle)` call after successful command resolution (after line 181 in `execute-slash-command.ts`). This takes ~3 LOC and converts a dead module into operational guardrail.\n2. **Add `namespace` field to `CommandBundle` type** — One field addition to `types.ts`. Though routing is deferred, the type should match the schema.\n\n### Should-Fix (prevents downstream pain)\n3. **Create `src/tools/session/index.ts`** — Barrel re-export for the 7 files in this directory. Matches the \"feature-module pattern\" from SR-D-02 (colocated index.ts barrel).\n4. **Document the TUI append confusion gap** — Add a comment/note in `execute-slash-command.ts` at the TUI dispatch path (line 441-450) noting that agent-appended commands appear as user turns and may cause hallucination. No code fix needed yet — just an awareness annotation.\n\n### Deferred (true 24.4 territory)\n5. `.hivemind/references/` + `.hivemind/templates/` — Keep as separate Phase 24.4 work. No code dependency from 24.3 exists.\n6. Workflow execution engine — Keep deferred per 24.3.3-SPEC.\n7. Natural language auto-append — Keep deferred per 24.3.3-SPEC.\n\n### Merged Phase Name Recommendation\n**Phase 24.3: Commands Infrastructure & Tooling**\n- Merges original 24.3 (Commands Infrastructure) + 24.4 (References & Templates defer-only) + 24.3.2 (revamp) + foundational 24.3.3 (module extraction, validation, types).\n- Excludes: namespace routing logic, workflow execution, shell integration, NL auto-append, references/templates system (all deferred to Phase 24.4+).\n\n**Wave 1 scope:** Wire contract validation → add namespace type → create barrel file → document TUI append gap = 4 changes, ~40 LOC.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "gsd-domain-researcher",
+      "content": "Now I have all the data. Let me synthesize the comprehensive gap analysis report.\n\n---\n\n# Gap Analysis: Phase 24.3+24.4 Merger — Command Routing System\n\n## 1. Gap Matrix\n\n| # | Dimension | Status | Evidence (file:line) | What's Missing |\n|---|-----------|--------|---------------------|----------------|\n| 1 | **Module Extraction** | ✅ | `resolve-command.ts:1-175`, `dispatch-command.ts:1-94` | No `src/tools/session/index.ts` barrel file. `execute-slash-command.ts` is 497 LOC — under 500 but tight. |\n| 2 | **Namespace Routing** | ⚠️ | `commands.schema.ts:12` (schema field exists); `types.ts:4-21` (NO namespace field) | Schema has `namespace?: string` but `CommandBundle` type has NO namespace field. No `resolveCommandNamespace()` method. No namespace-scoped routing in `resolve-command.ts`. Per 24.3.3-SPEC: routing logic deferred — only field placeholder required. **Partial pass.** |\n| 3 | **Contract Validation** | ⚠️ | `validate-command.ts:8-47` (module exists) | `validateCommandContract()` is a **dead module** — zero callers. Not imported or invoked anywhere in `execute-slash-command.ts`, `resolve-command.ts`, or `dispatch-command.ts`. Validates structural fields correctly (name, description, triggers) per spec. |\n| 4 | **Two-Stage Routing** | ✅ | `execute-slash-command.ts:162-195` | Stage 1: `resolveCommand()` (lines 162-181). Stage 2: `selectAgent()` (lines 184-195). Pipeline is sequential and matches spec. |\n| 5 | **Semantic Agent Selection** | ✅ | `semantic-agent-selector.ts:20-83` | Keyword + fuzzy matching. No LLM fallback. User prompt fallback when no match. Integrated into `execute-slash-command.ts:191`. |\n| 6 | **Workflow Execution** | ❌ | `workflow-parser.ts:22-38` (stub only) | `parseWorkflowFile()` reads YAML and validates structure. **NOT imported** by any consumer. WARNING comment says \"deferred to later phase (P24.3.3.2)\". No step execution engine. No workflow dispatch. |\n| 7 | **Natural Language Auto-Append** | ❌ | `resolve-command.ts:51-60,139-165` | `extractEntities()` + keyword scoring exists for command resolution, but no \"auto-append\" mechanism. No NL→command pipeline that auto-discovers and appends commands. Per 24.3.3-SPEC: officially out of scope. |\n| 8 | **Dynamic Primitive Loading** | ✅ | `command-engine/index.ts:29-48` | `discoverCommandBundles()` uses `loadPrimitives()`. 5s TTL cache in `resolve-command.ts:13`. Alphabetical sort. No namespace-scoped discovery. |\n| 9 | **Subtask vs Main Session Intelligence** | ⚠️ | `execute-slash-command.ts:197-201,374-375` | 3 dispatch paths implemented. `commandSource` tracking (user/agent/system). `isChildSession` check bypasses TUI. **Missing:** no detection/recovery mechanism for \"agent confusion after TUI append\" — when agent appends `/command` to its own prompt buffer, it sees its own command as a user turn, which can cause hallucination. |\n| 10 | **References & Templates System** | ❌ | (no files exist) | `.hivemind/references/` does NOT exist. `.hivemind/templates/` does NOT exist. Zero reference resolution mechanism. Zero template engine. This is the entirety of Phase **24.4** — completely unimplemented. |\n\n**Summary: 3 ✅ / 3 ⚠️ / 4 ❌**\n\n---\n\n## 2. Critical Flaws Validation\n\nBelow I confirm or reject each of the 6 critical flaws identified in the deep-analysis report, with code evidence.\n\n### Flaw 1: No return envelope consistency\n**Status: ✅ FIXED** — The 24.3.2 spec addressed this. Evidence:\n- All return paths in `execute-slash-command.ts` return `{ output, metadata, error }` shape (lines 147-157, 170-179, 211-220, 251-284, 291-299, 339-371, 405-438, 452-472, 477-487).\n- No inconsistency between paths. All include `error: boolean` field.\n- Note: SPEC acknowledges `renderToolResult()` does NOT exist in codebase. The raw `{ output, metadata, error }` pattern matches all 23 other tools.\n\n### Flaw 2: No Zod schema\n**Status: ✅ FIXED** — Evidence:\n- `src/schema-kernel/commands.schema.ts` exists with `ExecuteSlashCommandSchema` (15 lines).\n- Schema validates: command format (`^[a-z][a-z0-9-]*$`), arguments length (max 10000), agent format, model format (provider/model), commandSource enum, namespace (optional string).\n- `execute-slash-command.ts:144` uses `ExecuteSlashCommandSchema.safeParse(normalizedArgs)`.\n\n### Flaw 3: No commandSource tracking\n**Status: ✅ FIXED** — Evidence:\n- Schema line 9: `commandSource: z.enum([\"user\", \"agent\", \"system\"]).optional().default(\"user\")`.\n- Metadata includes `commandSource` in `buildSuccessMetadata()` (line 100).\n- Delegation packets in `dispatch-command.ts:68` include `commandSource`.\n\n### Flaw 4: No execution tracking\n**Status: ✅ FIXED** — Evidence:\n- Schema line 10: `trackExecution: z.boolean().optional().default(true)`.\n- When enabled, writes to `sessionTracker.pendingRegistry` (lines 317-325).\n- Metadata includes `trackExecution` in `buildSuccessMetadata()` (line 105).\n\n### Flaw 5: No delegation-aware context\n**Status: ✅ FIXED** — Evidence:\n- `parentSessionID` in schema (line 11): `parentSessionID: z.string().optional()`.\n- Resolved at line 205: `const resolvedParentSessionID = validated.parentSessionID || ctx.sessionID || \"\"`.\n- Attached to delegation packets in subtask mode (lines 302-314 validate parent session ID).\n- Included in metadata via `buildSuccessMetadata()` (line 110).\n\n### Flaw 6: No typed errors\n**Status: ✅ FIXED** — Evidence:\n- `src/shared/errors/commands.ts` exists with 5 typed error classes: `CommandNotFoundError`, `AgentNotFoundError`, `DelegationTimeoutError`, `InvalidCommandError`, `DelegationContextError`.\n- All extend `Error` with `name` property.\n- Used in `execute-slash-command.ts` (lines 6-11 imports, lines 20-65 `getErrorType()` classifies by instanceof).\n\n**All 6 critical flaws from 24.3.2 are FIXED.** The remaining gaps are the 10 dimensions above, not the original 6 flaws.\n\n---\n\n## 3. Dependency Chain for Merger\n\n```\nPhase 24.3 scope (Commands Infrastructure)\n└── Module extraction (resolve-command.ts, dispatch-command.ts)          ← DONE\n├── Namespace routing (schema field + CommandBundle type)                ← PARTIAL (schema ✅, type ❌)\n├── Two-stage routing pipeline                                           ← DONE\n├── Semantic agent selection                                             ← DONE\n├── Contract validation                                                  ← DEAD (module exists, zero callers)\n└── Workflow parsing (stub only)                                         ← STUB\n\nPhase 24.3.2 scope (Core revamp — 6 flaws)                              ← DONE ✅\n├── Return envelope consistency                                          ← DONE\n├── Zod schema                                                           ← DONE\n├── CommandSource tracking                                               ← DONE\n├── Execution tracking                                                   ← DONE\n├── Delegation-aware context                                             ← DONE\n└── Typed errors                                                         ← DONE\n\nPhase 24.3.3 scope (Advanced features)\n├── Namespace routing logic                                               ← NOT STARTED\n├── Shell command integration                                             ← NOT STARTED\n├── Workflow execution                                                    ← STUB ONLY\n└── Natural language auto-append                                          ← NOT STARTED\n\nPhase 24.4 scope (References & Templates)                               ← NOT STARTED\n├── .hivemind/references/                                                 ← MISSING\n├── .hivemind/templates/                                                  ← MISSING\n├── Reference resolution mechanism                                        ← MISSING\n└── Template engine                                                       ← MISSING\n```\n\n**Blocking dependencies for merger:**\n1. **Contract validation** is a dead module — must be wired into the two-stage pipeline (after Stage 1 resolution, before Stage 2 agent selection) or the gap remains.\n2. **CommandBundle type** missing `namespace` field blocks any future namespace routing — but this doesn't block merger since routing is deferred.\n3. **Phase 24.4** (.hivemind/references/ + .hivemind/templates/) is completely empty — no code dependency from 24.3 to 24.4 exists, but the CONTEXT.md says 24.4 \"Depends on: P24.3, P24.3.1\". This dependency is organizational (ordering), not a code-level block.\n\n---\n\n## 4. Recommendation — Minimum Scope for Phase 24.3+24.4 Merger Wave 1\n\nGiven the current state (6 critical flaws ✅ FIXED, 3 ⚠️ partial, 4 ❌ missing), here is the minimum-scope recommendation:\n\n### Must-Fix (blocks merger credibility)\n1. **Wire contract validation** — Add `validateCommandContract(commandBundle)` call after successful command resolution (after line 181 in `execute-slash-command.ts`). This takes ~3 LOC and converts a dead module into operational guardrail.\n2. **Add `namespace` field to `CommandBundle` type** — One field addition to `types.ts`. Though routing is deferred, the type should match the schema.\n\n### Should-Fix (prevents downstream pain)\n3. **Create `src/tools/session/index.ts`** — Barrel re-export for the 7 files in this directory. Matches the \"feature-module pattern\" from SR-D-02 (colocated index.ts barrel).\n4. **Document the TUI append confusion gap** — Add a comment/note in `execute-slash-command.ts` at the TUI dispatch path (line 441-450) noting that agent-appended commands appear as user turns and may cause hallucination. No code fix needed yet — just an awareness annotation.\n\n### Deferred (true 24.4 territory)\n5. `.hivemind/references/` + `.hivemind/templates/` — Keep as separate Phase 24.4 work. No code dependency from 24.3 exists.\n6. Workflow execution engine — Keep deferred per 24.3.3-SPEC.\n7. Natural language auto-append — Keep deferred per 24.3.3-SPEC.\n\n### Merged Phase Name Recommendation\n**Phase 24.3: Commands Infrastructure & Tooling**\n- Merges original 24.3 (Commands Infrastructure) + 24.4 (References & Templates defer-only) + 24.3.2 (revamp) + foundational 24.3.3 (module extraction, validation, types).\n- Excludes: namespace routing logic, workflow execution, shell integration, NL auto-append, references/templates system (all deferred to Phase 24.4+).\n\n**Wave 1 scope:** Wire contract validation → add namespace type → create barrel file → document TUI append gap = 4 changes, ~40 LOC.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-27T10:11:29.947Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_YCNTHPMNPfCbph3Zuudb4469",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:29.952Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_JOCSkdHRV4IlSLwdFxUC5532",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/resolve-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:29.957Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_r7xhr1Js9VnG47DnnMQC2089",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/dispatch-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:29.962Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_nrBe4XAWpM1I1qH1pFXE4570",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/validate-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:29.969Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_uPXEHnswIXb3Yp2UwkWA7599",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/semantic-agent-selector.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:29.973Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_BYz6Sb8Iqm1mrwrXH2XF9772",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/workflow-parser.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:29.979Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_3KCQY4hH1VEbEfY2TKhe3741",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:29.985Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_07_tP24fkgMW9nuTewu3sS94104",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:37.719Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_rM3C8s5nEdlTkaGngBhj5966",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:37.725Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_7kghITp2HZBgXLvnaqnj0385",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.2-revamp-execute-slash-command/CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:37.732Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_zGNoEeGHqHU6sBbDpFUE3621",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.3-namespace-routing-advanced-features/24.3.3-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:37.738Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_ME2rHObNnPEagijmxNtT2886",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.3-namespace-routing-advanced-features/24.3.3-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:37.754Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Y6MJAlA4g4S4iqDZHOpL8583",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/24.3.2-revamp-execute-slash-command/24.3.2-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:44.933Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_P2NYdLUpFmH4uCdjLNYd4403",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:44.939Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_B1BvSNqB3rSjzVFTRvSP0057",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:44.952Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_iOEFI6ZLrkBskBc6ZEoD9352",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:44.962Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_FbKgDR6wNf3lHQPA6cIU9245",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:50.162Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_yveJLUzPdJmJcS3ReIMx1843",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/commands.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:11:50.168Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_fZkuJcvp8nT8sRC6NgCA8827",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/errors/commands.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T10:12:33.411Z",
+      "type": "assistant_message",
+      "content": "Now I have all the data. Let me synthesize the comprehensive gap analysis report.\n\n---\n\n# Gap Analysis: Phase 24.3+24.4 Merger — Command Routing System\n\n## 1. Gap Matrix\n\n| # | Dimension | Status | Evidence (file:line) | What's Missing |\n|---|-----------|--------|---------------------|----------------|\n| 1 | **Module Extraction** | ✅ | `resolve-command.ts:1-175`, `dispatch-command.ts:1-94` | No `src/tools/session/index.ts` barrel file. `execute-slash-command.ts` is 497 LOC — under 500 but tight. |\n| 2 | **Namespace Routing** | ⚠️ | `commands.schema.ts:12` (schema field exists); `types.ts:4-21` (NO namespace field) | Schema has `namespace?: string` but `CommandBundle` type has NO namespace field. No `resolveCommandNamespace()` method. No namespace-scoped routing in `resolve-command.ts`. Per 24.3.3-SPEC: routing logic deferred — only field placeholder required. **Partial pass.** |\n| 3 | **Contract Validation** | ⚠️ | `validate-command.ts:8-47` (module exists) | `validateCommandContract()` is a **dead module** — zero callers. Not imported or invoked anywhere in `execute-slash-command.ts`, `resolve-command.ts`, or `dispatch-command.ts`. Validates structural fields correctly (name, description, triggers) per spec. |\n| 4 | **Two-Stage Routing** | ✅ | `execute-slash-command.ts:162-195` | Stage 1: `resolveCommand()` (lines 162-181). Stage 2: `selectAgent()` (lines 184-195). Pipeline is sequential and matches spec. |\n| 5 | **Semantic Agent Selection** | ✅ | `semantic-agent-selector.ts:20-83` | Keyword + fuzzy matching. No LLM fallback. User prompt fallback when no match. Integrated into `execute-slash-command.ts:191`. |\n| 6 | **Workflow Execution** | ❌ | `workflow-parser.ts:22-38` (stub only) | `parseWorkflowFile()` reads YAML and validates structure. **NOT imported** by any consumer. WARNING comment says \"deferred to later phase (P24.3.3.2)\". No step execution engine. No workflow dispatch. |\n| 7 | **Natural Language Auto-Append** | ❌ | `resolve-command.ts:51-60,139-165` | `extractEntities()` + keyword scoring exists for command resolution, but no \"auto-append\" mechanism. No NL→command pipeline that auto-discovers and appends commands. Per 24.3.3-SPEC: officially out of scope. |\n| 8 | **Dynamic Primitive Loading** | ✅ | `command-engine/index.ts:29-48` | `discoverCommandBundles()` uses `loadPrimitives()`. 5s TTL cache in `resolve-command.ts:13`. Alphabetical sort. No namespace-scoped discovery. |\n| 9 | **Subtask vs Main Session Intelligence** | ⚠️ | `execute-slash-command.ts:197-201,374-375` | 3 dispatch paths implemented. `commandSource` tracking (user/agent/system). `isChildSession` check bypasses TUI. **Missing:** no detection/recovery mechanism for \"agent confusion after TUI append\" — when agent appends `/command` to its own prompt buffer, it sees its own command as a user turn, which can cause hallucination. |\n| 10 | **References & Templates System** | ❌ | (no files exist) | `.hivemind/references/` does NOT exist. `.hivemind/templates/` does NOT exist. Zero reference resolution mechanism. Zero template engine. This is the entirety of Phase **24.4** — completely unimplemented. |\n\n**Summary: 3 ✅ / 3 ⚠️ / 4 ❌**\n\n---\n\n## 2. Critical Flaws Validation\n\nBelow I confirm or reject each of the 6 critical flaws identified in the deep-analysis report, with code evidence.\n\n### Flaw 1: No return envelope consistency\n**Status: ✅ FIXED** — The 24.3.2 spec addressed this. Evidence:\n- All return paths in `execute-slash-command.ts` return `{ output, metadata, error }` shape (lines 147-157, 170-179, 211-220, 251-284, 291-299, 339-371, 405-438, 452-472, 477-487).\n- No inconsistency between paths. All include `error: boolean` field.\n- Note: SPEC acknowledges `renderToolResult()` does NOT exist in codebase. The raw `{ output, metadata, error }` pattern matches all 23 other tools.\n\n### Flaw 2: No Zod schema\n**Status: ✅ FIXED** — Evidence:\n- `src/schema-kernel/commands.schema.ts` exists with `ExecuteSlashCommandSchema` (15 lines).\n- Schema validates: command format (`^[a-z][a-z0-9-]*$`), arguments length (max 10000), agent format, model format (provider/model), commandSource enum, namespace (optional string).\n- `execute-slash-command.ts:144` uses `ExecuteSlashCommandSchema.safeParse(normalizedArgs)`.\n\n### Flaw 3: No commandSource tracking\n**Status: ✅ FIXED** — Evidence:\n- Schema line 9: `commandSource: z.enum([\"user\", \"agent\", \"system\"]).optional().default(\"user\")`.\n- Metadata includes `commandSource` in `buildSuccessMetadata()` (line 100).\n- Delegation packets in `dispatch-command.ts:68` include `commandSource`.\n\n### Flaw 4: No execution tracking\n**Status: ✅ FIXED** — Evidence:\n- Schema line 10: `trackExecution: z.boolean().optional().default(true)`.\n- When enabled, writes to `sessionTracker.pendingRegistry` (lines 317-325).\n- Metadata includes `trackExecution` in `buildSuccessMetadata()` (line 105).\n\n### Flaw 5: No delegation-aware context\n**Status: ✅ FIXED** — Evidence:\n- `parentSessionID` in schema (line 11): `parentSessionID: z.string().optional()`.\n- Resolved at line 205: `const resolvedParentSessionID = validated.parentSessionID || ctx.sessionID || \"\"`.\n- Attached to delegation packets in subtask mode (lines 302-314 validate parent session ID).\n- Included in metadata via `buildSuccessMetadata()` (line 110).\n\n### Flaw 6: No typed errors\n**Status: ✅ FIXED** — Evidence:\n- `src/shared/errors/commands.ts` exists with 5 typed error classes: `CommandNotFoundError`, `AgentNotFoundError`, `DelegationTimeoutError`, `InvalidCommandError`, `DelegationContextError`.\n- All extend `Error` with `name` property.\n- Used in `execute-slash-command.ts` (lines 6-11 imports, lines 20-65 `getErrorType()` classifies by instanceof).\n\n**All 6 critical flaws from 24.3.2 are FIXED.** The remaining gaps are the 10 dimensions above, not the original 6 flaws.\n\n---\n\n## 3. Dependency Chain for Merger\n\n```\nPhase 24.3 scope (Commands Infrastructure)\n└── Module extraction (resolve-command.ts, dispatch-command.ts)          ← DONE\n├── Namespace routing (schema field + CommandBundle type)                ← PARTIAL (schema ✅, type ❌)\n├── Two-stage routing pipeline                                           ← DONE\n├── Semantic agent selection                                             ← DONE\n├── Contract validation                                                  ← DEAD (module exists, zero callers)\n└── Workflow parsing (stub only)                                         ← STUB\n\nPhase 24.3.2 scope (Core revamp — 6 flaws)                              ← DONE ✅\n├── Return envelope consistency                                          ← DONE\n├── Zod schema                                                           ← DONE\n├── CommandSource tracking                                               ← DONE\n├── Execution tracking                                                   ← DONE\n├── Delegation-aware context                                             ← DONE\n└── Typed errors                                                         ← DONE\n\nPhase 24.3.3 scope (Advanced features)\n├── Namespace routing logic                                               ← NOT STARTED\n├── Shell command integration                                             ← NOT STARTED\n├── Workflow execution                                                    ← STUB ONLY\n└── Natural language auto-append                                          ← NOT STARTED\n\nPhase 24.4 scope (References & Templates)                               ← NOT STARTED\n├── .hivemind/references/                                                 ← MISSING\n├── .hivemind/templates/                                                  ← MISSING\n├── Reference resolution mechanism                                        ← MISSING\n└── Template engine                                                       ← MISSING\n```\n\n**Blocking dependencies for merger:**\n1. **Contract validation** is a dead module — must be wired into the two-stage pipeline (after Stage 1 resolution, before Stage 2 agent selection) or the gap remains.\n2. **CommandBundle type** missing `namespace` field blocks any future namespace routing — but this doesn't block merger since routing is deferred.\n3. **Phase 24.4** (.hivemind/references/ + .hivemind/templates/) is completely empty — no code dependency from 24.3 to 24.4 exists, but the CONTEXT.md says 24.4 \"Depends on: P24.3, P24.3.1\". This dependency is organizational (ordering), not a code-level block.\n\n---\n\n## 4. Recommendation — Minimum Scope for Phase 24.3+24.4 Merger Wave 1\n\nGiven the current state (6 critical flaws ✅ FIXED, 3 ⚠️ partial, 4 ❌ missing), here is the minimum-scope recommendation:\n\n### Must-Fix (blocks merger credibility)\n1. **Wire contract validation** — Add `validateCommandContract(commandBundle)` call after successful command resolution (after line 181 in `execute-slash-command.ts`). This takes ~3 LOC and converts a dead module into operational guardrail.\n2. **Add `namespace` field to `CommandBundle` type** — One field addition to `types.ts`. Though routing is deferred, the type should match the schema.\n\n### Should-Fix (prevents downstream pain)\n3. **Create `src/tools/session/index.ts`** — Barrel re-export for the 7 files in this directory. Matches the \"feature-module pattern\" from SR-D-02 (colocated index.ts barrel).\n4. **Document the TUI append confusion gap** — Add a comment/note in `execute-slash-command.ts` at the TUI dispatch path (line 441-450) noting that agent-appended commands appear as user turns and may cause hallucination. No code fix needed yet — just an awareness annotation.\n\n### Deferred (true 24.4 territory)\n5. `.hivemind/references/` + `.hivemind/templates/` — Keep as separate Phase 24.4 work. No code dependency from 24.3 exists.\n6. Workflow execution engine — Keep deferred per 24.3.3-SPEC.\n7. Natural language auto-append — Keep deferred per 24.3.3-SPEC.\n\n### Merged Phase Name Recommendation\n**Phase 24.3: Commands Infrastructure & Tooling**\n- Merges original 24.3 (Commands Infrastructure) + 24.4 (References & Templates defer-only) + 24.3.2 (revamp) + foundational 24.3.3 (module extraction, validation, types).\n- Excludes: namespace routing logic, workflow execution, shell integration, NL auto-append, references/templates system (all deferred to Phase 24.4+).\n\n**Wave 1 scope:** Wire contract validation → add namespace type → create barrel file → document TUI append gap = 4 changes, ~40 LOC.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_197152f93ffeTkRUywAnUnFhyI"
+      }
+    }
+  ],
+  "lastMessage": "Now I have all the data. Let me synthesize the comprehensive gap analysis report.\n\n---\n\n# Gap Analysis: Phase 24.3+24.4 Merger — Command Routing System\n\n## 1. Gap Matrix\n\n| # | Dimension | Status | Evidence (file:line) | What's Missing |\n|---|-----------|--------|---------------------|----------------|\n| 1 | **Module Extraction** | ✅ | `resolve-command.ts:1-175`, `dispatch-command.ts:1-94` | No `src/tools/session/index.ts` barrel file. `execute-slash-command.ts` is 497 LOC — under 500 but tight. |\n| 2 | **Namespace Routing** | ⚠️ | `commands.schema.ts:12` (schema field exists); `types.ts:4-21` (NO namespace field) | Schema has `namespace?: string` but `CommandBundle` type has NO namespace field. No `resolveCommandNamespace()` method. No namespace-scoped routing in `resolve-command.ts`. Per 24.3.3-SPEC: routing logic deferred — only field placeholder required. **Partial pass.** |\n| 3 | **Contract Validation** | ⚠️ | `validate-command.ts:8-47` (module exists) | `validateCommandContract()` is a **dead module** — zero callers. Not imported or invoked anywhere in `execute-slash-command.ts`, `resolve-command.ts`, or `dispatch-command.ts`. Validates structural fields correctly (name, description, triggers) per spec. |\n| 4 | **Two-Stage Routing** | ✅ | `execute-slash-command.ts:162-195` | Stage 1: `resolveCommand()` (lines 162-181). Stage 2: `selectAgent()` (lines 184-195). Pipeline is sequential and matches spec. |\n| 5 | **Semantic Agent Selection** | ✅ | `semantic-agent-selector.ts:20-83` | Keyword + fuzzy matching. No LLM fallback. User prompt fallback when no match. Integrated into `execute-slash-command.ts:191`. |\n| 6 | **Workflow Execution** | ❌ | `workflow-parser.ts:22-38` (stub only) | `parseWorkflowFile()` reads YAML and validates structure. **NOT imported** by any consumer. WARNING comment says \"deferred to later phase (P24.3.3.2)\". No step execution engine. No workflow dispatch. |\n| 7 | **Natural Language Auto-Append** | ❌ | `resolve-command.ts:51-60,139-165` | `extractEntities()` + keyword scoring exists for command resolution, but no \"auto-append\" mechanism. No NL→command pipeline that auto-discovers and appends commands. Per 24.3.3-SPEC: officially out of scope. |\n| 8 | **Dynamic Primitive Loading** | ✅ | `command-engine/index.ts:29-48` | `discoverCommandBundles()` uses `loadPrimitives()`. 5s TTL cache in `resolve-command.ts:13`. Alphabetical sort. No namespace-scoped discovery. |\n| 9 | **Subtask vs Main Session Intelligence** | ⚠️ | `execute-slash-command.ts:197-201,374-375` | 3 dispatch paths implemented. `commandSource` tracking (user/agent/system). `isChildSession` check bypasses TUI. **Missing:** no detection/recovery mechanism for \"agent confusion after TUI append\" — when agent appends `/command` to its own prompt buffer, it sees its own command as a user turn, which can cause hallucination. |\n| 10 | **References & Templates System** | ❌ | (no files exist) | `.hivemind/references/` does NOT exist. `.hivemind/templates/` does NOT exist. Zero reference resolution mechanism. Zero template engine. This is the entirety of Phase **24.4** — completely unimplemented. |\n\n**Summary: 3 ✅ / 3 ⚠️ / 4 ❌**\n\n---\n\n## 2. Critical Flaws Validation\n\nBelow I confirm or reject each of the 6 critical flaws identified in the deep-analysis report, with code evidence.\n\n### Flaw 1: No return envelope consistency\n**Status: ✅ FIXED** — The 24.3.2 spec addressed this. Evidence:\n- All return paths in `execute-slash-command.ts` return `{ output, metadata, error }` shape (lines 147-157, 170-179, 211-220, 251-284, 291-299, 339-371, 405-438, 452-472, 477-487).\n- No inconsistency between paths. All include `error: boolean` field.\n- Note: SPEC acknowledges `renderToolResult()` does NOT exist in codebase. The raw `{ output, metadata, error }` pattern matches all 23 other tools.\n\n### Flaw 2: No Zod schema\n**Status: ✅ FIXED** — Evidence:\n- `src/schema-kernel/commands.schema.ts` exists with `ExecuteSlashCommandSchema` (15 lines).\n- Schema validates: command format (`^[a-z][a-z0-9-]*$`), arguments length (max 10000), agent format, model format (provider/model), commandSource enum, namespace (optional string).\n- `execute-slash-command.ts:144` uses `ExecuteSlashCommandSchema.safeParse(normalizedArgs)`.\n\n### Flaw 3: No commandSource tracking\n**Status: ✅ FIXED** — Evidence:\n- Schema line 9: `commandSource: z.enum([\"user\", \"agent\", \"system\"]).optional().default(\"user\")`.\n- Metadata includes `commandSource` in `buildSuccessMetadata()` (line 100).\n- Delegation packets in `dispatch-command.ts:68` include `commandSource`.\n\n### Flaw 4: No execution tracking\n**Status: ✅ FIXED** — Evidence:\n- Schema line 10: `trackExecution: z.boolean().optional().default(true)`.\n- When enabled, writes to `sessionTracker.pendingRegistry` (lines 317-325).\n- Metadata includes `trackExecution` in `buildSuccessMetadata()` (line 105).\n\n### Flaw 5: No delegation-aware context\n**Status: ✅ FIXED** — Evidence:\n- `parentSessionID` in schema (line 11): `parentSessionID: z.string().optional()`.\n- Resolved at line 205: `const resolvedParentSessionID = validated.parentSessionID || ctx.sessionID || \"\"`.\n- Attached to delegation packets in subtask mode (lines 302-314 validate parent session ID).\n- Included in metadata via `buildSuccessMetadata()` (line 110).\n\n### Flaw 6: No typed errors\n**Status: ✅ FIXED** — Evidence:\n- `src/shared/errors/commands.ts` exists with 5 typed error classes: `CommandNotFoundError`, `AgentNotFoundError`, `DelegationTimeoutError`, `InvalidCommandError`, `DelegationContextError`.\n- All extend `Error` with `name` property.\n- Used in `execute-slash-command.ts` (lines 6-11 imports, lines 20-65 `getErrorType()` classifies by instanceof).\n\n**All 6 critical flaws from 24.3.2 are FIXED.** The remaining gaps are the 10 dimensions above, not the original 6 flaws.\n\n---\n\n## 3. Dependency Chain for Merger\n\n```\nPhase 24.3 scope (Commands Infrastructure)\n└── Module extraction (resolve-command.ts, dispatch-command.ts)          ← DONE\n├── Namespace routing (schema field + CommandBundle type)                ← PARTIAL (schema ✅, type ❌)\n├── Two-stage routing pipeline                                           ← DONE\n├── Semantic agent selection                                             ← DONE\n├── Contract validation                                                  ← DEAD (module exists, zero callers)\n└── Workflow parsing (stub only)                                         ← STUB\n\nPhase 24.3.2 scope (Core revamp — 6 flaws)                              ← DONE ✅\n├── Return envelope consistency                                          ← DONE\n├── Zod schema                                                           ← DONE\n├── CommandSource tracking                                               ← DONE\n├── Execution tracking                                                   ← DONE\n├── Delegation-aware context                                             ← DONE\n└── Typed errors                                                         ← DONE\n\nPhase 24.3.3 scope (Advanced features)\n├── Namespace routing logic                                               ← NOT STARTED\n├── Shell command integration                                             ← NOT STARTED\n├── Workflow execution                                                    ← STUB ONLY\n└── Natural language auto-append                                          ← NOT STARTED\n\nPhase 24.4 scope (References & Templates)                               ← NOT STARTED\n├── .hivemind/references/                                                 ← MISSING\n├── .hivemind/templates/                                                  ← MISSING\n├── Reference resolution mechanism                                        ← MISSING\n└── Template engine                                                       ← MISSING\n```\n\n**Blocking dependencies for merger:**\n1. **Contract validation** is a dead module — must be wired into the two-stage pipeline (after Stage 1 resolution, before Stage 2 agent selection) or the gap remains.\n2. **CommandBundle type** missing `namespace` field blocks any future namespace routing — but this doesn't block merger since routing is deferred.\n3. **Phase 24.4** (.hivemind/references/ + .hivemind/templates/) is completely empty — no code dependency from 24.3 to 24.4 exists, but the CONTEXT.md says 24.4 \"Depends on: P24.3, P24.3.1\". This dependency is organizational (ordering), not a code-level block.\n\n---\n\n## 4. Recommendation — Minimum Scope for Phase 24.3+24.4 Merger Wave 1\n\nGiven the current state (6 critical flaws ✅ FIXED, 3 ⚠️ partial, 4 ❌ missing), here is the minimum-scope recommendation:\n\n### Must-Fix (blocks merger credibility)\n1. **Wire contract validation** — Add `validateCommandContract(commandBundle)` call after successful command resolution (after line 181 in `execute-slash-command.ts`). This takes ~3 LOC and converts a dead module into operational guardrail.\n2. **Add `namespace` field to `CommandBundle` type** — One field addition to `types.ts`. Though routing is deferred, the type should match the schema.\n\n### Should-Fix (prevents downstream pain)\n3. **Create `src/tools/session/index.ts`** — Barrel re-export for the 7 files in this directory. Matches the \"feature-module pattern\" from SR-D-02 (colocated index.ts barrel).\n4. **Document the TUI append confusion gap** — Add a comment/note in `execute-slash-command.ts` at the TUI dispatch path (line 441-450) noting that agent-appended commands appear as user turns and may cause hallucination. No code fix needed yet — just an awareness annotation.\n\n### Deferred (true 24.4 territory)\n5. `.hivemind/references/` + `.hivemind/templates/` — Keep as separate Phase 24.4 work. No code dependency from 24.3 exists.\n6. Workflow execution engine — Keep deferred per 24.3.3-SPEC.\n7. Natural language auto-append — Keep deferred per 24.3.3-SPEC.\n\n### Merged Phase Name Recommendation\n**Phase 24.3: Commands Infrastructure & Tooling**\n- Merges original 24.3 (Commands Infrastructure) + 24.4 (References & Templates defer-only) + 24.3.2 (revamp) + foundational 24.3.3 (module extraction, validation, types).\n- Excludes: namespace routing logic, workflow execution, shell integration, NL auto-append, references/templates system (all deferred to Phase 24.4+).\n\n**Wave 1 scope:** Wire contract validation → add namespace type → create barrel file → document TUI append gap = 4 changes, ~40 LOC."
+}

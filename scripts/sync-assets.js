@@ -7,34 +7,37 @@ const assetsRoot = join(projectRoot, "assets");
 const PRIMITIVE_MAP = {
   agents: join(projectRoot, ".opencode", "agents"),
   skills: join(projectRoot, ".opencode", "skills"),
-  commands: join(projectRoot, ".opencode", "command"),
+  commands: join(projectRoot, ".opencode", "commands"),
   workflows: join(projectRoot, ".opencode", "workflows"),
   references: join(projectRoot, ".hivemind", "references"),
   templates: join(projectRoot, ".hivemind", "templates"),
 };
 
-console.log("[Harness Build] Syncing active primitives to assets/...");
+console.log("[Harness Build] Reflecting primitives from assets/ to runtime locations...");
 
-for (const [kind, sourceDir] of Object.entries(PRIMITIVE_MAP)) {
-  const targetDir = join(assetsRoot, kind);
-  
+for (const [kind, targetDir] of Object.entries(PRIMITIVE_MAP)) {
+  const sourceDir = join(assetsRoot, kind);
+
+  if (!existsSync(sourceDir)) {
+    console.log(`[Harness Build] Skipping ${kind}: no assets/${kind} directory`);
+    continue;
+  }
+
+  // Clean target then recreate
   if (existsSync(targetDir)) {
     rmSync(targetDir, { recursive: true, force: true });
   }
   mkdirSync(targetDir, { recursive: true });
 
-  if (existsSync(sourceDir)) {
-    for (const entry of readdirSync(sourceDir)) {
-      if (entry === ".gitkeep") continue;
-      if (entry.startsWith("gsd-") || entry === "gsd") continue;
-      if (entry.startsWith("hm-l1-") || entry.startsWith("hm-l2-") || entry.startsWith("hm-l3-")) continue;
-      
-      const srcPath = join(sourceDir, entry);
-      const destPath = join(targetDir, entry);
-      
-      cpSync(srcPath, destPath, { recursive: true });
-    }
-    console.log(`[Harness Build] Synced ${kind} from ${sourceDir}`);
+  for (const entry of readdirSync(sourceDir)) {
+    if (entry === ".gitkeep") continue;
+    if (entry.startsWith("gsd-") || entry === "gsd") continue;
+
+    const srcPath = join(sourceDir, entry);
+    const destPath = join(targetDir, entry);
+
+    cpSync(srcPath, destPath, { recursive: true });
   }
+  console.log(`[Harness Build] Reflected ${kind} from assets/${kind} to ${targetDir}`);
 }
-console.log("[Harness Build] Assets sync completed successfully.");
+console.log("[Harness Build] Assets reflection completed successfully.");

@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_1967dd435ffeD370LcZJqZMmi3",
+  "lastUpdated": "2026-05-27T12:59:05.547Z",
+  "children": {
+    "ses_1967bd5f5ffeom4NaEG2LPMX3r": {
+      "sessionID": "ses_1967bd5f5ffeom4NaEG2LPMX3r",
+      "parentSessionID": "ses_1967dd435ffeD370LcZJqZMmi3",
+      "rootMainSessionID": "ses_1967dd435ffeD370LcZJqZMmi3",
+      "delegationDepth": 1,
+      "delegatedBy": "execute-slash-command",
+      "subagentType": "gsd-code-reviewer",
+      "createdAt": "2026-05-27T12:58:49.839Z",
+      "updatedAt": "2026-05-27T12:59:05.547Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1967bd5f5ffeom4NaEG2LPMX3r.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

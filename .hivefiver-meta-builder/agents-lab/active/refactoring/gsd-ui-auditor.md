@@ -1,7 +1,8 @@
 ---
 name: gsd-ui-auditor
 description: Retroactive 6-pillar visual audit of implemented frontend code. Produces scored UI-REVIEW.md. Spawned by /gsd-ui-review orchestrator.
-mode: subagent
+mode: all
+hidden: true
 ---
 
 <role>

@@ -1,0 +1,367 @@
+{
+  "sessionID": "ses_19628450dffeHQIgsWlTdf2jb1",
+  "parentSessionID": "ses_19628f673ffeBwRrZLrmmdwUZI",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-research-synthesizer",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research GSD command routing patterns",
+    "subagentType": "gsd-research-synthesizer"
+  },
+  "created": "2026-05-27T14:30:06.344Z",
+  "updated": "2026-05-27T14:31:47.253Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-research-synthesizer",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a subagent tasked with researching GSD's command routing system to inform Hivemind's hm-* command architecture.\n\nPlease do the following:\n\n1. Read the GSD packed reference file at `/Users/apple/hivemind-plugin-private/.hivemind/research/gsd-repo-packed.xml` - focus on extracting:\n   - How GSD commands are structured (frontmatter, routing)\n   - How GSD routes commands → agents → workflows → references → templates\n   - The command-to-workflow pipeline\n   - The workflow step sequencing patterns\n   - How templates and references are linked from commands\n   - How context absorption works across GSD phases\n\n2. Read the GSD file manifest at `/Users/apple/hivemind-plugin-private/.opencode/gsd-file-manifest.json` to understand what files constitute the GSD system.\n\n3. Also check the current command-related source code in the project:\n   - Look at `src/tools/` for any command-related tools\n   - Check `src/plugin.ts` for command engine registration\n   - Look at the existing `execute-slash-command` tool implementation\n\n4. Read the command anatomy reference at `/Users/apple/hivemind-plugin-private/.opencode/skills/hf-l2-command-dev/references/command-anatomy.md`\n\n5. Check the current ROADMAP and STATE at `.hivemind/planning/` - find the latest ROADMAP.md and STATE.md to understand what phases exist\n\nReturn a structured report covering:\n- GSD command architecture (how they define commands, frontmatter fields, agent routing)\n- GSD workflow system (how workflows chain commands, steps, templates)\n- GSD template/reference system (how they link to context)\n- Current Hivemind state (what exists, what's missing)\n- Key differences Hivemind can leverage\n- Recommended hm-* command architecture that surpasses GSD\n- The list of hm-* commands needed (target: 15-25 commands across routing, workflow, reference, template categories)\n\nBe thorough - this research will inform the entire command architecture phase.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "The packed file is large. Let me continue reading the key sections and also check the source code and planning state.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Let me find the planning files and continue reading key sections from the packed file.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Let me read the remaining key files to understand the full command architecture.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Let me check the existing Hivemind commands and one more piece of the GSD packed file for frontmatter structure.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Bây giờ tôi đã thu thập đủ thông tin để tổng hợp báo cáo đầy đủ. Đây là kết quả nghiên cứu toàn diện về kiến trúc command routing của GSD và các hàm ý cho Hivemind.\n\n---\n\n# GSD Command Routing System — Báo Cáo Nghiên Cứu Kiến Trúc\n\n## 1. Kiến Trúc Command của GSD\n\n### Frontmatter Fields\nGSD commands là các file Markdown với YAML frontmatter chứa:\n```yaml\n---\ndescription: \"[Mô tả chi tiết - hiển thị trong TUI]\"\nagent: [tên agent chạy command - phải khớp với agent đang tồn tại]\nsubtask: [true = sinh subagent, false = chạy trong main session]\n---\n```\n\n**Các field phát hiện từ GSD (OpenCode convention)**:\n| Field | Bắt buộc | Mục đích |\n|-------|----------|----------|\n| `description` | ✅ | Hiển thị trong TUI, routing |\n| `agent` | ❌ | Chỉ định agent nào chạy |\n| `subtask` | ❌ | Dispatch mode (mặc định: false) |\n\n### Cơ Chế Routing\nGSD sử dụng `CommandRoutingHub` — một CJS module tại `get-shit-done/bin/lib/command-routing-hub.cjs`:\n- **Typed discriminated union** cho kết quả (`UnknownCommand`, `InvalidArgs`, `HandlerRefusal`, `HandlerFailure`)\n- **CJS command router adapters** cho từng namespace: `phase-command-router`, `phases-command-router`, `roadmap-command-router`, `state-command-router`, `validate-command-router`, `verify-command-router`, `init-command-router`\n- **Namespace-based routing** — commands được nhóm theo domain (`gsd-*`, workflow categories)\n- **67 commands + 88 workflows** — số lượng rất lớn\n\n### Command → Workflow Pipeline\nGSD có pipeline rõ ràng:\n1. **Discuss phase** (8 modes: advisor, auto, batch, chain, default, power, text, analyze)\n2. **Plan phase** → PLAN.md\n3. **Execute phase** (3 gates: codebase-drift, per-plan-worktree, post-merge)\n4. **Verify phase** → verification gates\n5. **Ship** → PR creation\n\nWorkflows có `modes/` decomposition và `steps/` subdirectories cho multi-step pipelines.\n\n### Template & Reference System\n- **Templates**: Trong `get-shit-done/templates/` — 30+ templates (project.md, roadmap.md, state.md, spec.md, research templates, v.v.)\n- **Research templates**: `research-project/ARCHITECTURE.md`, `FEATURES.md`, `PITFALLS.md`, `STACK.md`, `SUMMARY.md`\n- **References**: Trong `get-shit-done/references/` — 40+ reference files (tdd.md, planner patterns, gates, v.v.)\n- **Context absorption**: File `get-shit-done/contexts/` với dev.md, research.md, review.md\n\n---\n\n## 2. Hiện Trạng Hivemind\n\n### Đã Có (Tooling Layer)\n```\nsrc/tools/session/\n├── execute-slash-command.ts   # 629 LOC — CQRS write-side, 3 dispatch paths\n├── resolve-command.ts          # 235 LOC — 5-stage resolution (exact→fuzzy→substring→semantic→grouped)\n├── dispatch-command.ts         # 117 LOC — SDK dispatch via session.prompt()\n├── semantic-agent-selector.ts  # Intent-based agent suggestion\n├── validate-command.ts         # Frontmatter validation\n├── workflow-parser.ts          # Workflow YAML parsing\n└── index.ts                    # Barrel exports\n\nsrc/tools/hivemind/\n└── hivemind-command-engine.ts  # 67 LOC — CQRS read-side (discover, list_commands, analyze_contract, etc.)\n\nsrc/routing/command-engine/     # Command engine core (discover, list, analyze, render, transform)\n```\n\n### Đã Có (Plugin Registration)\nTrong `plugin.ts` (line 468-474):\n```typescript\n\"execute-slash-command\": createExecuteSlashCommandTool(client, sessionTracker),\n\"hivemind-command-engine\": createHivemindCommandEngineTool(projectDirectory),\n```\n\n3 dispatch paths:\n1. **Path 1** — Synthetic parent prompt (`subtask:false + agent`): gọi `session.prompt()` với agent override, restore agent sau đó\n2. **Path 2** — Subtask delegation (`subtask:true + agent`): gọi `session.prompt()` với subtask part\n3. **Path 3** — TUI pipeline: `clearPrompt()` → `appendPrompt()` → `submitPrompt()`\n\n### Đang Thiếu (Commands Layer)\n- **`.opencode/commands/` — HOÀN TOÀN TRỐNG (0 entries)**\n- Không có file command `.md` nào được tạo\n- Phase 24.6 (Build HM-* Commands) là PENDING\n- Phase 24.3 (Commands Infrastructure) là PENDING\n\n---\n\n## 3. Khác Biệt Chính: GSD vs Hivemind\n\n| Khía cạnh | GSD | Hivemind |\n|-----------|-----|----------|\n| **Số lượng commands** | 67 commands + 88 workflows | 0 commands (tools sẵn sàng) |\n| **Cơ chế routing** | CJS CommandRoutingHub + namespace routers | SDK tool-based (execute-slash-command + command-engine) |\n| **Frontmatter** | `description`, `agent`, `subtask` | Schema `ExecuteSlashCommandSchema` |\n| **Workflow pattern** | Modes/steps decomposition | Chưa có (planning P24.5) |\n| **Templates** | 30+ template files | Có GSD templates (qua symlink) |\n| **References** | 40+ reference files | Còn thiếu (planning P24.4) |\n| **Agent routing** | Via frontmatter `agent:` field | Semantic agent selector + explicit override |\n| **Command discovery** | `command-routing-hub.cjs` | `discoverCommandBundles()` trong command-engine |\n| **Context absorption** | `get-shit-done/contexts/` | Chưa có (session-context tool, nhưng chưa tích hợp) |\n\n---\n\n## 4. Kiến Nghị Kiến Trúc Command hm-* Tối Ưu Hơn GSD\n\n### Nguyên Tắc Thiết Kế\n1. **Không copy GSD** — GSD repo đã đổi chủ (abandoned → open-gsd/get-shit-done-redux). Hivemind cần kiến trúc riêng.\n2. **Tận dụng SDK tooling** — `execute-slash-command` + `command-engine` đã có. Chỉ cần tạo file command `.md` và mở rộng.\n3. **CQRS thuần túy** — `command-engine` = read-side (discover/analyze/preview), `execute-slash-command` = write-side (dispatch)\n4. **Namespace-driven** — `hm-*` prefix cho tất cả Hivemind commands\n5. **Workflow decomposition** — Không monolithic workflow files. Phân tách thành modes/steps giống GSD\n\n### Cấu Trúc File Đề Xuất\n```\n.opencode/commands/hm/\n├── hm-init-project.md\n├── hm-discuss.md\n├── hm-plan.md\n├── hm-execute.md\n├── hm-verify.md\n├── hm-gate.md\n├── hm-debug.md\n├── hm-audit.md\n├── hm-research.md\n├── hm-synthesize.md\n├── hm-roadmap.md\n├── hm-state.md\n├── hm-progress.md\n├── hm-help.md\n├── hm-doctor.md\n├── hm-update.md\n├── hm-ship.md\n├── hm-config.md\n├── hm-profile.md\n├── hm-session.md\n\n.opencode/workflows/hm/\n├── discuss-phase/\n│   ├── modes/\n│   │   ├── default.md\n│   │   ├── auto.md\n│   │   ├── power.md\n│   │   └── chain.md\n│   └── templates/\n│       └── context.md\n├── execute-phase/\n│   ├── steps/\n│   │   ├── preflight-gate.md\n│   │   ├── execution-gate.md\n│   │   └── post-merge-gate.md\n│   └── execute-plan.md\n├── verify-phase/\n│   ├── steps/\n│   │   ├── code-review.md\n│   │   ├── spec-compliance.md\n│   │   └── evidence-check.md\n│   └── verify.md\n└── ship.md\n```\n\n### 20 hm-* Commands Đề Xuất (4 Categories)\n\n**Category 1: Routing & Discovery (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-help` | List available hm-* commands by category | — | false |\n| `hm-config` | Configure Hivemind settings | — | false |\n| `hm-profile` | View/switch behavioral profile | — | false |\n| `hm-session` | Session management (list, resume, stack) | hm-session-manager | true |\n\n**Category 2: Workflow Pipeline (8 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-init-project` | Initialize project with `.hivemind/` + `.opencode/` | hm-executor | true |\n| `hm-discuss` | Interactive phase discussion (modes: auto/power/chain) | hm-planner | false |\n| `hm-plan` | Create phase plan (PLAN.md) | hm-planner | true |\n| `hm-execute` | Execute phase plans with wave-based parallelization | hm-executor | true |\n| `hm-verify` | Verify phase completion against acceptance criteria | hm-verifier | true |\n| `hm-gate` | Run quality gates (lifecycle→spec→evidence) | hm-verifier | true |\n| `hm-ship` | Create PR, run review, prepare for merge | hm-shipper | true |\n| `hm-update` | Update Hivemind to latest version | — | false |\n\n**Category 3: Audit & Quality (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-audit` | Run audit (phase, milestone, codebase) | hm-auditor | true |\n| `hm-debug` | Systematic debugging with persistent state | hm-debugger | true |\n| `hm-doctor` | Health check (structure, config, state integrity) | hm-executor | false |\n| `hm-review` | Code review (bugs, security, quality) | hm-code-reviewer | true |\n\n**Category 4: Research & Knowledge (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-research` | Research phase implementation (stack, features, architecture, pitfalls) | hm-phase-researcher | true |\n| `hm-synthesize` | Synthesize research into SUMMARY.md | hm-research-synthesizer | true |\n| `hm-roadmap` | Roadmap management (view, update, analyze) | hm-roadmapper | true |\n| `hm-state` | State/progress management | hm-planner | false |\n\n---\n\n## 5. Kế Hoạch Triển Khai\n\n### Phase Dependencies (từ ROADMAP.md hiện tại)\n```\nP24.3 (Commands Infra) → P24.4 (References & Templates) → P24.5 (Workflow Arch) → P24.6 (Build HM-* Commands)\n```\n\n### Giai Đoạn Khuyến Nghị\n1. **Phase 24.3.2 trước** — Execute-Slash-Command Core Revamp (đã DISCUSSED, 6 critical flaws cần fix)\n2. **Phase 24.4** — References & Templates: tạo `.hivemind/references/` + `.hivemind/templates/`\n3. **Phase 24.5** — Workflow Files Architecture: size budgets, modes decomposition\n4. **Phase 24.6** — Build HM-* Commands: tạo 20 file command `.md` trong `.opencode/commands/hm/`\n\n### Lưu ý Quan Trọng\n- **GSD research cần re-validation** — Reflection 1 trong ROADMAP.md warns: tất cả 6 GSD research documents dựa trên OLD repo\n- **Cần xác thực với open-gsd/get-shit-done-redux** trước khi áp dụng patterns\n- **Không copy frontmatter fields mù quáng** — cần schema validation tương thích với `ExecuteSlashCommandSchema`\n- **Cần xem xét nâng cấp từ frontmatter YAML đơn giản lên Zod schema** cho validation tốt hơn\n\n---\n\n**Kết luận:** Hivemind đã có SDK tooling layer hoàn chỉnh cho command execution và discovery. Phần còn thiếu là tạo actual command `.md` files (`20 hm-* commands`), workflow files, template files, và reference files. Kiến trúc CQRS hiện tại (command-engine read + execute-slash-command write) là nền tảng vững chắc để xây dựng. Không copy GSD — tận dụng SDK tooling với namespace hm-* riêng.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "gsd-research-synthesizer",
+      "content": "Bây giờ tôi đã thu thập đủ thông tin để tổng hợp báo cáo đầy đủ. Đây là kết quả nghiên cứu toàn diện về kiến trúc command routing của GSD và các hàm ý cho Hivemind.\n\n---\n\n# GSD Command Routing System — Báo Cáo Nghiên Cứu Kiến Trúc\n\n## 1. Kiến Trúc Command của GSD\n\n### Frontmatter Fields\nGSD commands là các file Markdown với YAML frontmatter chứa:\n```yaml\n---\ndescription: \"[Mô tả chi tiết - hiển thị trong TUI]\"\nagent: [tên agent chạy command - phải khớp với agent đang tồn tại]\nsubtask: [true = sinh subagent, false = chạy trong main session]\n---\n```\n\n**Các field phát hiện từ GSD (OpenCode convention)**:\n| Field | Bắt buộc | Mục đích |\n|-------|----------|----------|\n| `description` | ✅ | Hiển thị trong TUI, routing |\n| `agent` | ❌ | Chỉ định agent nào chạy |\n| `subtask` | ❌ | Dispatch mode (mặc định: false) |\n\n### Cơ Chế Routing\nGSD sử dụng `CommandRoutingHub` — một CJS module tại `get-shit-done/bin/lib/command-routing-hub.cjs`:\n- **Typed discriminated union** cho kết quả (`UnknownCommand`, `InvalidArgs`, `HandlerRefusal`, `HandlerFailure`)\n- **CJS command router adapters** cho từng namespace: `phase-command-router`, `phases-command-router`, `roadmap-command-router`, `state-command-router`, `validate-command-router`, `verify-command-router`, `init-command-router`\n- **Namespace-based routing** — commands được nhóm theo domain (`gsd-*`, workflow categories)\n- **67 commands + 88 workflows** — số lượng rất lớn\n\n### Command → Workflow Pipeline\nGSD có pipeline rõ ràng:\n1. **Discuss phase** (8 modes: advisor, auto, batch, chain, default, power, text, analyze)\n2. **Plan phase** → PLAN.md\n3. **Execute phase** (3 gates: codebase-drift, per-plan-worktree, post-merge)\n4. **Verify phase** → verification gates\n5. **Ship** → PR creation\n\nWorkflows có `modes/` decomposition và `steps/` subdirectories cho multi-step pipelines.\n\n### Template & Reference System\n- **Templates**: Trong `get-shit-done/templates/` — 30+ templates (project.md, roadmap.md, state.md, spec.md, research templates, v.v.)\n- **Research templates**: `research-project/ARCHITECTURE.md`, `FEATURES.md`, `PITFALLS.md`, `STACK.md`, `SUMMARY.md`\n- **References**: Trong `get-shit-done/references/` — 40+ reference files (tdd.md, planner patterns, gates, v.v.)\n- **Context absorption**: File `get-shit-done/contexts/` với dev.md, research.md, review.md\n\n---\n\n## 2. Hiện Trạng Hivemind\n\n### Đã Có (Tooling Layer)\n```\nsrc/tools/session/\n├── execute-slash-command.ts   # 629 LOC — CQRS write-side, 3 dispatch paths\n├── resolve-command.ts          # 235 LOC — 5-stage resolution (exact→fuzzy→substring→semantic→grouped)\n├── dispatch-command.ts         # 117 LOC — SDK dispatch via session.prompt()\n├── semantic-agent-selector.ts  # Intent-based agent suggestion\n├── validate-command.ts         # Frontmatter validation\n├── workflow-parser.ts          # Workflow YAML parsing\n└── index.ts                    # Barrel exports\n\nsrc/tools/hivemind/\n└── hivemind-command-engine.ts  # 67 LOC — CQRS read-side (discover, list_commands, analyze_contract, etc.)\n\nsrc/routing/command-engine/     # Command engine core (discover, list, analyze, render, transform)\n```\n\n### Đã Có (Plugin Registration)\nTrong `plugin.ts` (line 468-474):\n```typescript\n\"execute-slash-command\": createExecuteSlashCommandTool(client, sessionTracker),\n\"hivemind-command-engine\": createHivemindCommandEngineTool(projectDirectory),\n```\n\n3 dispatch paths:\n1. **Path 1** — Synthetic parent prompt (`subtask:false + agent`): gọi `session.prompt()` với agent override, restore agent sau đó\n2. **Path 2** — Subtask delegation (`subtask:true + agent`): gọi `session.prompt()` với subtask part\n3. **Path 3** — TUI pipeline: `clearPrompt()` → `appendPrompt()` → `submitPrompt()`\n\n### Đang Thiếu (Commands Layer)\n- **`.opencode/commands/` — HOÀN TOÀN TRỐNG (0 entries)**\n- Không có file command `.md` nào được tạo\n- Phase 24.6 (Build HM-* Commands) là PENDING\n- Phase 24.3 (Commands Infrastructure) là PENDING\n\n---\n\n## 3. Khác Biệt Chính: GSD vs Hivemind\n\n| Khía cạnh | GSD | Hivemind |\n|-----------|-----|----------|\n| **Số lượng commands** | 67 commands + 88 workflows | 0 commands (tools sẵn sàng) |\n| **Cơ chế routing** | CJS CommandRoutingHub + namespace routers | SDK tool-based (execute-slash-command + command-engine) |\n| **Frontmatter** | `description`, `agent`, `subtask` | Schema `ExecuteSlashCommandSchema` |\n| **Workflow pattern** | Modes/steps decomposition | Chưa có (planning P24.5) |\n| **Templates** | 30+ template files | Có GSD templates (qua symlink) |\n| **References** | 40+ reference files | Còn thiếu (planning P24.4) |\n| **Agent routing** | Via frontmatter `agent:` field | Semantic agent selector + explicit override |\n| **Command discovery** | `command-routing-hub.cjs` | `discoverCommandBundles()` trong command-engine |\n| **Context absorption** | `get-shit-done/contexts/` | Chưa có (session-context tool, nhưng chưa tích hợp) |\n\n---\n\n## 4. Kiến Nghị Kiến Trúc Command hm-* Tối Ưu Hơn GSD\n\n### Nguyên Tắc Thiết Kế\n1. **Không copy GSD** — GSD repo đã đổi chủ (abandoned → open-gsd/get-shit-done-redux). Hivemind cần kiến trúc riêng.\n2. **Tận dụng SDK tooling** — `execute-slash-command` + `command-engine` đã có. Chỉ cần tạo file command `.md` và mở rộng.\n3. **CQRS thuần túy** — `command-engine` = read-side (discover/analyze/preview), `execute-slash-command` = write-side (dispatch)\n4. **Namespace-driven** — `hm-*` prefix cho tất cả Hivemind commands\n5. **Workflow decomposition** — Không monolithic workflow files. Phân tách thành modes/steps giống GSD\n\n### Cấu Trúc File Đề Xuất\n```\n.opencode/commands/hm/\n├── hm-init-project.md\n├── hm-discuss.md\n├── hm-plan.md\n├── hm-execute.md\n├── hm-verify.md\n├── hm-gate.md\n├── hm-debug.md\n├── hm-audit.md\n├── hm-research.md\n├── hm-synthesize.md\n├── hm-roadmap.md\n├── hm-state.md\n├── hm-progress.md\n├── hm-help.md\n├── hm-doctor.md\n├── hm-update.md\n├── hm-ship.md\n├── hm-config.md\n├── hm-profile.md\n├── hm-session.md\n\n.opencode/workflows/hm/\n├── discuss-phase/\n│   ├── modes/\n│   │   ├── default.md\n│   │   ├── auto.md\n│   │   ├── power.md\n│   │   └── chain.md\n│   └── templates/\n│       └── context.md\n├── execute-phase/\n│   ├── steps/\n│   │   ├── preflight-gate.md\n│   │   ├── execution-gate.md\n│   │   └── post-merge-gate.md\n│   └── execute-plan.md\n├── verify-phase/\n│   ├── steps/\n│   │   ├── code-review.md\n│   │   ├── spec-compliance.md\n│   │   └── evidence-check.md\n│   └── verify.md\n└── ship.md\n```\n\n### 20 hm-* Commands Đề Xuất (4 Categories)\n\n**Category 1: Routing & Discovery (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-help` | List available hm-* commands by category | — | false |\n| `hm-config` | Configure Hivemind settings | — | false |\n| `hm-profile` | View/switch behavioral profile | — | false |\n| `hm-session` | Session management (list, resume, stack) | hm-session-manager | true |\n\n**Category 2: Workflow Pipeline (8 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-init-project` | Initialize project with `.hivemind/` + `.opencode/` | hm-executor | true |\n| `hm-discuss` | Interactive phase discussion (modes: auto/power/chain) | hm-planner | false |\n| `hm-plan` | Create phase plan (PLAN.md) | hm-planner | true |\n| `hm-execute` | Execute phase plans with wave-based parallelization | hm-executor | true |\n| `hm-verify` | Verify phase completion against acceptance criteria | hm-verifier | true |\n| `hm-gate` | Run quality gates (lifecycle→spec→evidence) | hm-verifier | true |\n| `hm-ship` | Create PR, run review, prepare for merge | hm-shipper | true |\n| `hm-update` | Update Hivemind to latest version | — | false |\n\n**Category 3: Audit & Quality (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-audit` | Run audit (phase, milestone, codebase) | hm-auditor | true |\n| `hm-debug` | Systematic debugging with persistent state | hm-debugger | true |\n| `hm-doctor` | Health check (structure, config, state integrity) | hm-executor | false |\n| `hm-review` | Code review (bugs, security, quality) | hm-code-reviewer | true |\n\n**Category 4: Research & Knowledge (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-research` | Research phase implementation (stack, features, architecture, pitfalls) | hm-phase-researcher | true |\n| `hm-synthesize` | Synthesize research into SUMMARY.md | hm-research-synthesizer | true |\n| `hm-roadmap` | Roadmap management (view, update, analyze) | hm-roadmapper | true |\n| `hm-state` | State/progress management | hm-planner | false |\n\n---\n\n## 5. Kế Hoạch Triển Khai\n\n### Phase Dependencies (từ ROADMAP.md hiện tại)\n```\nP24.3 (Commands Infra) → P24.4 (References & Templates) → P24.5 (Workflow Arch) → P24.6 (Build HM-* Commands)\n```\n\n### Giai Đoạn Khuyến Nghị\n1. **Phase 24.3.2 trước** — Execute-Slash-Command Core Revamp (đã DISCUSSED, 6 critical flaws cần fix)\n2. **Phase 24.4** — References & Templates: tạo `.hivemind/references/` + `.hivemind/templates/`\n3. **Phase 24.5** — Workflow Files Architecture: size budgets, modes decomposition\n4. **Phase 24.6** — Build HM-* Commands: tạo 20 file command `.md` trong `.opencode/commands/hm/`\n\n### Lưu ý Quan Trọng\n- **GSD research cần re-validation** — Reflection 1 trong ROADMAP.md warns: tất cả 6 GSD research documents dựa trên OLD repo\n- **Cần xác thực với open-gsd/get-shit-done-redux** trước khi áp dụng patterns\n- **Không copy frontmatter fields mù quáng** — cần schema validation tương thích với `ExecuteSlashCommandSchema`\n- **Cần xem xét nâng cấp từ frontmatter YAML đơn giản lên Zod schema** cho validation tốt hơn\n\n---\n\n**Kết luận:** Hivemind đã có SDK tooling layer hoàn chỉnh cho command execution và discovery. Phần còn thiếu là tạo actual command `.md` files (`20 hm-* commands`), workflow files, template files, và reference files. Kiến trúc CQRS hiện tại (command-engine read + execute-slash-command write) là nền tảng vững chắc để xây dựng. Không copy GSD — tận dụng SDK tooling với namespace hm-* riêng.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-27T14:30:14.220Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Z0bFg8w6493VX12xd41h9204",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/gsd-file-manifest.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:14.230Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_FIlpRsGfzjFQ4ljjAzq74631",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/research/gsd-repo-packed.xml"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:14.241Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_fByOHas70zLZ5eUVePaw2299",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/skills/hf-l2-command-dev/references/command-anatomy.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:22.701Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_p1ttGwhdjfYwThoyVVFA7547",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:22.755Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_fcR5YMkAVWxoO2UiKksR2712",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:22.760Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_q8azF1YHoYVy5xJO4kIv3372",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:23.228Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_t1rqgkaWAEAKxuEKqVEG7313",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/research/gsd-repo-packed.xml"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:31.570Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_nwKyoC078Vn4LJ8XIUIr4260",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:31.576Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_Zy01gUTBwAhJiVfmXyWq1390",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:31.592Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_mbMgp8PMwji92x6OiVkC9386",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:31.621Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_GERxVQ0UQUAw2prw5iVG6605",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:39.007Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_bYEkNiEVnG0BeT5CiwVv1866",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:39.012Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_eJh2nwXiQpmxn6fVdMyZ2921",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-command-engine.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:39.017Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_M8zLPDgS7EHbTqyRhb2d1543",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:39.024Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_2oetFAVbV3LrTicXL7p79898",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:48.750Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_loWzQEHcWMUYIHeBvUod3948",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/resolve-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:48.755Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_PBgQgJM7Cd9dE01V0nTL9447",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/dispatch-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:48.799Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_HRrpY2oLD76NthRnfwJM1457",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:49.284Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_GgGq5VgAQVL4X1SsBTu78373",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/research/gsd-repo-packed.xml"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:56.707Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_fHHkdYbhkQc4aAk9NjHJ6205",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/commands"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:56.770Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_6wdTlzmX5Y3I7D0GZEI36071",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:30:56.871Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_02_wq2zITkiyxdBdIZDnemS2493",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-27T14:31:47.209Z",
+      "type": "assistant_message",
+      "content": "Bây giờ tôi đã thu thập đủ thông tin để tổng hợp báo cáo đầy đủ. Đây là kết quả nghiên cứu toàn diện về kiến trúc command routing của GSD và các hàm ý cho Hivemind.\n\n---\n\n# GSD Command Routing System — Báo Cáo Nghiên Cứu Kiến Trúc\n\n## 1. Kiến Trúc Command của GSD\n\n### Frontmatter Fields\nGSD commands là các file Markdown với YAML frontmatter chứa:\n```yaml\n---\ndescription: \"[Mô tả chi tiết - hiển thị trong TUI]\"\nagent: [tên agent chạy command - phải khớp với agent đang tồn tại]\nsubtask: [true = sinh subagent, false = chạy trong main session]\n---\n```\n\n**Các field phát hiện từ GSD (OpenCode convention)**:\n| Field | Bắt buộc | Mục đích |\n|-------|----------|----------|\n| `description` | ✅ | Hiển thị trong TUI, routing |\n| `agent` | ❌ | Chỉ định agent nào chạy |\n| `subtask` | ❌ | Dispatch mode (mặc định: false) |\n\n### Cơ Chế Routing\nGSD sử dụng `CommandRoutingHub` — một CJS module tại `get-shit-done/bin/lib/command-routing-hub.cjs`:\n- **Typed discriminated union** cho kết quả (`UnknownCommand`, `InvalidArgs`, `HandlerRefusal`, `HandlerFailure`)\n- **CJS command router adapters** cho từng namespace: `phase-command-router`, `phases-command-router`, `roadmap-command-router`, `state-command-router`, `validate-command-router`, `verify-command-router`, `init-command-router`\n- **Namespace-based routing** — commands được nhóm theo domain (`gsd-*`, workflow categories)\n- **67 commands + 88 workflows** — số lượng rất lớn\n\n### Command → Workflow Pipeline\nGSD có pipeline rõ ràng:\n1. **Discuss phase** (8 modes: advisor, auto, batch, chain, default, power, text, analyze)\n2. **Plan phase** → PLAN.md\n3. **Execute phase** (3 gates: codebase-drift, per-plan-worktree, post-merge)\n4. **Verify phase** → verification gates\n5. **Ship** → PR creation\n\nWorkflows có `modes/` decomposition và `steps/` subdirectories cho multi-step pipelines.\n\n### Template & Reference System\n- **Templates**: Trong `get-shit-done/templates/` — 30+ templates (project.md, roadmap.md, state.md, spec.md, research templates, v.v.)\n- **Research templates**: `research-project/ARCHITECTURE.md`, `FEATURES.md`, `PITFALLS.md`, `STACK.md`, `SUMMARY.md`\n- **References**: Trong `get-shit-done/references/` — 40+ reference files (tdd.md, planner patterns, gates, v.v.)\n- **Context absorption**: File `get-shit-done/contexts/` với dev.md, research.md, review.md\n\n---\n\n## 2. Hiện Trạng Hivemind\n\n### Đã Có (Tooling Layer)\n```\nsrc/tools/session/\n├── execute-slash-command.ts   # 629 LOC — CQRS write-side, 3 dispatch paths\n├── resolve-command.ts          # 235 LOC — 5-stage resolution (exact→fuzzy→substring→semantic→grouped)\n├── dispatch-command.ts         # 117 LOC — SDK dispatch via session.prompt()\n├── semantic-agent-selector.ts  # Intent-based agent suggestion\n├── validate-command.ts         # Frontmatter validation\n├── workflow-parser.ts          # Workflow YAML parsing\n└── index.ts                    # Barrel exports\n\nsrc/tools/hivemind/\n└── hivemind-command-engine.ts  # 67 LOC — CQRS read-side (discover, list_commands, analyze_contract, etc.)\n\nsrc/routing/command-engine/     # Command engine core (discover, list, analyze, render, transform)\n```\n\n### Đã Có (Plugin Registration)\nTrong `plugin.ts` (line 468-474):\n```typescript\n\"execute-slash-command\": createExecuteSlashCommandTool(client, sessionTracker),\n\"hivemind-command-engine\": createHivemindCommandEngineTool(projectDirectory),\n```\n\n3 dispatch paths:\n1. **Path 1** — Synthetic parent prompt (`subtask:false + agent`): gọi `session.prompt()` với agent override, restore agent sau đó\n2. **Path 2** — Subtask delegation (`subtask:true + agent`): gọi `session.prompt()` với subtask part\n3. **Path 3** — TUI pipeline: `clearPrompt()` → `appendPrompt()` → `submitPrompt()`\n\n### Đang Thiếu (Commands Layer)\n- **`.opencode/commands/` — HOÀN TOÀN TRỐNG (0 entries)**\n- Không có file command `.md` nào được tạo\n- Phase 24.6 (Build HM-* Commands) là PENDING\n- Phase 24.3 (Commands Infrastructure) là PENDING\n\n---\n\n## 3. Khác Biệt Chính: GSD vs Hivemind\n\n| Khía cạnh | GSD | Hivemind |\n|-----------|-----|----------|\n| **Số lượng commands** | 67 commands + 88 workflows | 0 commands (tools sẵn sàng) |\n| **Cơ chế routing** | CJS CommandRoutingHub + namespace routers | SDK tool-based (execute-slash-command + command-engine) |\n| **Frontmatter** | `description`, `agent`, `subtask` | Schema `ExecuteSlashCommandSchema` |\n| **Workflow pattern** | Modes/steps decomposition | Chưa có (planning P24.5) |\n| **Templates** | 30+ template files | Có GSD templates (qua symlink) |\n| **References** | 40+ reference files | Còn thiếu (planning P24.4) |\n| **Agent routing** | Via frontmatter `agent:` field | Semantic agent selector + explicit override |\n| **Command discovery** | `command-routing-hub.cjs` | `discoverCommandBundles()` trong command-engine |\n| **Context absorption** | `get-shit-done/contexts/` | Chưa có (session-context tool, nhưng chưa tích hợp) |\n\n---\n\n## 4. Kiến Nghị Kiến Trúc Command hm-* Tối Ưu Hơn GSD\n\n### Nguyên Tắc Thiết Kế\n1. **Không copy GSD** — GSD repo đã đổi chủ (abandoned → open-gsd/get-shit-done-redux). Hivemind cần kiến trúc riêng.\n2. **Tận dụng SDK tooling** — `execute-slash-command` + `command-engine` đã có. Chỉ cần tạo file command `.md` và mở rộng.\n3. **CQRS thuần túy** — `command-engine` = read-side (discover/analyze/preview), `execute-slash-command` = write-side (dispatch)\n4. **Namespace-driven** — `hm-*` prefix cho tất cả Hivemind commands\n5. **Workflow decomposition** — Không monolithic workflow files. Phân tách thành modes/steps giống GSD\n\n### Cấu Trúc File Đề Xuất\n```\n.opencode/commands/hm/\n├── hm-init-project.md\n├── hm-discuss.md\n├── hm-plan.md\n├── hm-execute.md\n├── hm-verify.md\n├── hm-gate.md\n├── hm-debug.md\n├── hm-audit.md\n├── hm-research.md\n├── hm-synthesize.md\n├── hm-roadmap.md\n├── hm-state.md\n├── hm-progress.md\n├── hm-help.md\n├── hm-doctor.md\n├── hm-update.md\n├── hm-ship.md\n├── hm-config.md\n├── hm-profile.md\n├── hm-session.md\n\n.opencode/workflows/hm/\n├── discuss-phase/\n│   ├── modes/\n│   │   ├── default.md\n│   │   ├── auto.md\n│   │   ├── power.md\n│   │   └── chain.md\n│   └── templates/\n│       └── context.md\n├── execute-phase/\n│   ├── steps/\n│   │   ├── preflight-gate.md\n│   │   ├── execution-gate.md\n│   │   └── post-merge-gate.md\n│   └── execute-plan.md\n├── verify-phase/\n│   ├── steps/\n│   │   ├── code-review.md\n│   │   ├── spec-compliance.md\n│   │   └── evidence-check.md\n│   └── verify.md\n└── ship.md\n```\n\n### 20 hm-* Commands Đề Xuất (4 Categories)\n\n**Category 1: Routing & Discovery (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-help` | List available hm-* commands by category | — | false |\n| `hm-config` | Configure Hivemind settings | — | false |\n| `hm-profile` | View/switch behavioral profile | — | false |\n| `hm-session` | Session management (list, resume, stack) | hm-session-manager | true |\n\n**Category 2: Workflow Pipeline (8 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-init-project` | Initialize project with `.hivemind/` + `.opencode/` | hm-executor | true |\n| `hm-discuss` | Interactive phase discussion (modes: auto/power/chain) | hm-planner | false |\n| `hm-plan` | Create phase plan (PLAN.md) | hm-planner | true |\n| `hm-execute` | Execute phase plans with wave-based parallelization | hm-executor | true |\n| `hm-verify` | Verify phase completion against acceptance criteria | hm-verifier | true |\n| `hm-gate` | Run quality gates (lifecycle→spec→evidence) | hm-verifier | true |\n| `hm-ship` | Create PR, run review, prepare for merge | hm-shipper | true |\n| `hm-update` | Update Hivemind to latest version | — | false |\n\n**Category 3: Audit & Quality (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-audit` | Run audit (phase, milestone, codebase) | hm-auditor | true |\n| `hm-debug` | Systematic debugging with persistent state | hm-debugger | true |\n| `hm-doctor` | Health check (structure, config, state integrity) | hm-executor | false |\n| `hm-review` | Code review (bugs, security, quality) | hm-code-reviewer | true |\n\n**Category 4: Research & Knowledge (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-research` | Research phase implementation (stack, features, architecture, pitfalls) | hm-phase-researcher | true |\n| `hm-synthesize` | Synthesize research into SUMMARY.md | hm-research-synthesizer | true |\n| `hm-roadmap` | Roadmap management (view, update, analyze) | hm-roadmapper | true |\n| `hm-state` | State/progress management | hm-planner | false |\n\n---\n\n## 5. Kế Hoạch Triển Khai\n\n### Phase Dependencies (từ ROADMAP.md hiện tại)\n```\nP24.3 (Commands Infra) → P24.4 (References & Templates) → P24.5 (Workflow Arch) → P24.6 (Build HM-* Commands)\n```\n\n### Giai Đoạn Khuyến Nghị\n1. **Phase 24.3.2 trước** — Execute-Slash-Command Core Revamp (đã DISCUSSED, 6 critical flaws cần fix)\n2. **Phase 24.4** — References & Templates: tạo `.hivemind/references/` + `.hivemind/templates/`\n3. **Phase 24.5** — Workflow Files Architecture: size budgets, modes decomposition\n4. **Phase 24.6** — Build HM-* Commands: tạo 20 file command `.md` trong `.opencode/commands/hm/`\n\n### Lưu ý Quan Trọng\n- **GSD research cần re-validation** — Reflection 1 trong ROADMAP.md warns: tất cả 6 GSD research documents dựa trên OLD repo\n- **Cần xác thực với open-gsd/get-shit-done-redux** trước khi áp dụng patterns\n- **Không copy frontmatter fields mù quáng** — cần schema validation tương thích với `ExecuteSlashCommandSchema`\n- **Cần xem xét nâng cấp từ frontmatter YAML đơn giản lên Zod schema** cho validation tốt hơn\n\n---\n\n**Kết luận:** Hivemind đã có SDK tooling layer hoàn chỉnh cho command execution và discovery. Phần còn thiếu là tạo actual command `.md` files (`20 hm-* commands`), workflow files, template files, và reference files. Kiến trúc CQRS hiện tại (command-engine read + execute-slash-command write) là nền tảng vững chắc để xây dựng. Không copy GSD — tận dụng SDK tooling với namespace hm-* riêng.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_19628450dffeHQIgsWlTdf2jb1"
+      }
+    }
+  ],
+  "lastMessage": "Bây giờ tôi đã thu thập đủ thông tin để tổng hợp báo cáo đầy đủ. Đây là kết quả nghiên cứu toàn diện về kiến trúc command routing của GSD và các hàm ý cho Hivemind.\n\n---\n\n# GSD Command Routing System — Báo Cáo Nghiên Cứu Kiến Trúc\n\n## 1. Kiến Trúc Command của GSD\n\n### Frontmatter Fields\nGSD commands là các file Markdown với YAML frontmatter chứa:\n```yaml\n---\ndescription: \"[Mô tả chi tiết - hiển thị trong TUI]\"\nagent: [tên agent chạy command - phải khớp với agent đang tồn tại]\nsubtask: [true = sinh subagent, false = chạy trong main session]\n---\n```\n\n**Các field phát hiện từ GSD (OpenCode convention)**:\n| Field | Bắt buộc | Mục đích |\n|-------|----------|----------|\n| `description` | ✅ | Hiển thị trong TUI, routing |\n| `agent` | ❌ | Chỉ định agent nào chạy |\n| `subtask` | ❌ | Dispatch mode (mặc định: false) |\n\n### Cơ Chế Routing\nGSD sử dụng `CommandRoutingHub` — một CJS module tại `get-shit-done/bin/lib/command-routing-hub.cjs`:\n- **Typed discriminated union** cho kết quả (`UnknownCommand`, `InvalidArgs`, `HandlerRefusal`, `HandlerFailure`)\n- **CJS command router adapters** cho từng namespace: `phase-command-router`, `phases-command-router`, `roadmap-command-router`, `state-command-router`, `validate-command-router`, `verify-command-router`, `init-command-router`\n- **Namespace-based routing** — commands được nhóm theo domain (`gsd-*`, workflow categories)\n- **67 commands + 88 workflows** — số lượng rất lớn\n\n### Command → Workflow Pipeline\nGSD có pipeline rõ ràng:\n1. **Discuss phase** (8 modes: advisor, auto, batch, chain, default, power, text, analyze)\n2. **Plan phase** → PLAN.md\n3. **Execute phase** (3 gates: codebase-drift, per-plan-worktree, post-merge)\n4. **Verify phase** → verification gates\n5. **Ship** → PR creation\n\nWorkflows có `modes/` decomposition và `steps/` subdirectories cho multi-step pipelines.\n\n### Template & Reference System\n- **Templates**: Trong `get-shit-done/templates/` — 30+ templates (project.md, roadmap.md, state.md, spec.md, research templates, v.v.)\n- **Research templates**: `research-project/ARCHITECTURE.md`, `FEATURES.md`, `PITFALLS.md`, `STACK.md`, `SUMMARY.md`\n- **References**: Trong `get-shit-done/references/` — 40+ reference files (tdd.md, planner patterns, gates, v.v.)\n- **Context absorption**: File `get-shit-done/contexts/` với dev.md, research.md, review.md\n\n---\n\n## 2. Hiện Trạng Hivemind\n\n### Đã Có (Tooling Layer)\n```\nsrc/tools/session/\n├── execute-slash-command.ts   # 629 LOC — CQRS write-side, 3 dispatch paths\n├── resolve-command.ts          # 235 LOC — 5-stage resolution (exact→fuzzy→substring→semantic→grouped)\n├── dispatch-command.ts         # 117 LOC — SDK dispatch via session.prompt()\n├── semantic-agent-selector.ts  # Intent-based agent suggestion\n├── validate-command.ts         # Frontmatter validation\n├── workflow-parser.ts          # Workflow YAML parsing\n└── index.ts                    # Barrel exports\n\nsrc/tools/hivemind/\n└── hivemind-command-engine.ts  # 67 LOC — CQRS read-side (discover, list_commands, analyze_contract, etc.)\n\nsrc/routing/command-engine/     # Command engine core (discover, list, analyze, render, transform)\n```\n\n### Đã Có (Plugin Registration)\nTrong `plugin.ts` (line 468-474):\n```typescript\n\"execute-slash-command\": createExecuteSlashCommandTool(client, sessionTracker),\n\"hivemind-command-engine\": createHivemindCommandEngineTool(projectDirectory),\n```\n\n3 dispatch paths:\n1. **Path 1** — Synthetic parent prompt (`subtask:false + agent`): gọi `session.prompt()` với agent override, restore agent sau đó\n2. **Path 2** — Subtask delegation (`subtask:true + agent`): gọi `session.prompt()` với subtask part\n3. **Path 3** — TUI pipeline: `clearPrompt()` → `appendPrompt()` → `submitPrompt()`\n\n### Đang Thiếu (Commands Layer)\n- **`.opencode/commands/` — HOÀN TOÀN TRỐNG (0 entries)**\n- Không có file command `.md` nào được tạo\n- Phase 24.6 (Build HM-* Commands) là PENDING\n- Phase 24.3 (Commands Infrastructure) là PENDING\n\n---\n\n## 3. Khác Biệt Chính: GSD vs Hivemind\n\n| Khía cạnh | GSD | Hivemind |\n|-----------|-----|----------|\n| **Số lượng commands** | 67 commands + 88 workflows | 0 commands (tools sẵn sàng) |\n| **Cơ chế routing** | CJS CommandRoutingHub + namespace routers | SDK tool-based (execute-slash-command + command-engine) |\n| **Frontmatter** | `description`, `agent`, `subtask` | Schema `ExecuteSlashCommandSchema` |\n| **Workflow pattern** | Modes/steps decomposition | Chưa có (planning P24.5) |\n| **Templates** | 30+ template files | Có GSD templates (qua symlink) |\n| **References** | 40+ reference files | Còn thiếu (planning P24.4) |\n| **Agent routing** | Via frontmatter `agent:` field | Semantic agent selector + explicit override |\n| **Command discovery** | `command-routing-hub.cjs` | `discoverCommandBundles()` trong command-engine |\n| **Context absorption** | `get-shit-done/contexts/` | Chưa có (session-context tool, nhưng chưa tích hợp) |\n\n---\n\n## 4. Kiến Nghị Kiến Trúc Command hm-* Tối Ưu Hơn GSD\n\n### Nguyên Tắc Thiết Kế\n1. **Không copy GSD** — GSD repo đã đổi chủ (abandoned → open-gsd/get-shit-done-redux). Hivemind cần kiến trúc riêng.\n2. **Tận dụng SDK tooling** — `execute-slash-command` + `command-engine` đã có. Chỉ cần tạo file command `.md` và mở rộng.\n3. **CQRS thuần túy** — `command-engine` = read-side (discover/analyze/preview), `execute-slash-command` = write-side (dispatch)\n4. **Namespace-driven** — `hm-*` prefix cho tất cả Hivemind commands\n5. **Workflow decomposition** — Không monolithic workflow files. Phân tách thành modes/steps giống GSD\n\n### Cấu Trúc File Đề Xuất\n```\n.opencode/commands/hm/\n├── hm-init-project.md\n├── hm-discuss.md\n├── hm-plan.md\n├── hm-execute.md\n├── hm-verify.md\n├── hm-gate.md\n├── hm-debug.md\n├── hm-audit.md\n├── hm-research.md\n├── hm-synthesize.md\n├── hm-roadmap.md\n├── hm-state.md\n├── hm-progress.md\n├── hm-help.md\n├── hm-doctor.md\n├── hm-update.md\n├── hm-ship.md\n├── hm-config.md\n├── hm-profile.md\n├── hm-session.md\n\n.opencode/workflows/hm/\n├── discuss-phase/\n│   ├── modes/\n│   │   ├── default.md\n│   │   ├── auto.md\n│   │   ├── power.md\n│   │   └── chain.md\n│   └── templates/\n│       └── context.md\n├── execute-phase/\n│   ├── steps/\n│   │   ├── preflight-gate.md\n│   │   ├── execution-gate.md\n│   │   └── post-merge-gate.md\n│   └── execute-plan.md\n├── verify-phase/\n│   ├── steps/\n│   │   ├── code-review.md\n│   │   ├── spec-compliance.md\n│   │   └── evidence-check.md\n│   └── verify.md\n└── ship.md\n```\n\n### 20 hm-* Commands Đề Xuất (4 Categories)\n\n**Category 1: Routing & Discovery (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-help` | List available hm-* commands by category | — | false |\n| `hm-config` | Configure Hivemind settings | — | false |\n| `hm-profile` | View/switch behavioral profile | — | false |\n| `hm-session` | Session management (list, resume, stack) | hm-session-manager | true |\n\n**Category 2: Workflow Pipeline (8 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-init-project` | Initialize project with `.hivemind/` + `.opencode/` | hm-executor | true |\n| `hm-discuss` | Interactive phase discussion (modes: auto/power/chain) | hm-planner | false |\n| `hm-plan` | Create phase plan (PLAN.md) | hm-planner | true |\n| `hm-execute` | Execute phase plans with wave-based parallelization | hm-executor | true |\n| `hm-verify` | Verify phase completion against acceptance criteria | hm-verifier | true |\n| `hm-gate` | Run quality gates (lifecycle→spec→evidence) | hm-verifier | true |\n| `hm-ship` | Create PR, run review, prepare for merge | hm-shipper | true |\n| `hm-update` | Update Hivemind to latest version | — | false |\n\n**Category 3: Audit & Quality (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-audit` | Run audit (phase, milestone, codebase) | hm-auditor | true |\n| `hm-debug` | Systematic debugging with persistent state | hm-debugger | true |\n| `hm-doctor` | Health check (structure, config, state integrity) | hm-executor | false |\n| `hm-review` | Code review (bugs, security, quality) | hm-code-reviewer | true |\n\n**Category 4: Research & Knowledge (4 commands)**\n| Command | Description | Agent | subtask |\n|---------|-------------|-------|---------|\n| `hm-research` | Research phase implementation (stack, features, architecture, pitfalls) | hm-phase-researcher | true |\n| `hm-synthesize` | Synthesize research into SUMMARY.md | hm-research-synthesizer | true |\n| `hm-roadmap` | Roadmap management (view, update, analyze) | hm-roadmapper | true |\n| `hm-state` | State/progress management | hm-planner | false |\n\n---\n\n## 5. Kế Hoạch Triển Khai\n\n### Phase Dependencies (từ ROADMAP.md hiện tại)\n```\nP24.3 (Commands Infra) → P24.4 (References & Templates) → P24.5 (Workflow Arch) → P24.6 (Build HM-* Commands)\n```\n\n### Giai Đoạn Khuyến Nghị\n1. **Phase 24.3.2 trước** — Execute-Slash-Command Core Revamp (đã DISCUSSED, 6 critical flaws cần fix)\n2. **Phase 24.4** — References & Templates: tạo `.hivemind/references/` + `.hivemind/templates/`\n3. **Phase 24.5** — Workflow Files Architecture: size budgets, modes decomposition\n4. **Phase 24.6** — Build HM-* Commands: tạo 20 file command `.md` trong `.opencode/commands/hm/`\n\n### Lưu ý Quan Trọng\n- **GSD research cần re-validation** — Reflection 1 trong ROADMAP.md warns: tất cả 6 GSD research documents dựa trên OLD repo\n- **Cần xác thực với open-gsd/get-shit-done-redux** trước khi áp dụng patterns\n- **Không copy frontmatter fields mù quáng** — cần schema validation tương thích với `ExecuteSlashCommandSchema`\n- **Cần xem xét nâng cấp từ frontmatter YAML đơn giản lên Zod schema** cho validation tốt hơn\n\n---\n\n**Kết luận:** Hivemind đã có SDK tooling layer hoàn chỉnh cho command execution và discovery. Phần còn thiếu là tạo actual command `.md` files (`20 hm-* commands`), workflow files, template files, và reference files. Kiến trúc CQRS hiện tại (command-engine read + execute-slash-command write) là nền tảng vững chắc để xây dựng. Không copy GSD — tận dụng SDK tooling với namespace hm-* riêng."
+}

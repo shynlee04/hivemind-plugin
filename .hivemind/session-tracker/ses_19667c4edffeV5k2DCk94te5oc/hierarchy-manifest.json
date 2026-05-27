@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_19667c4edffeV5k2DCk94te5oc",
+  "lastUpdated": "2026-05-27T13:25:05.983Z",
+  "children": {
+    "ses_196659b91ffevYqN1mJPRfAqaf": {
+      "sessionID": "ses_196659b91ffevYqN1mJPRfAqaf",
+      "parentSessionID": "ses_19667c4edffeV5k2DCk94te5oc",
+      "rootMainSessionID": "ses_19667c4edffeV5k2DCk94te5oc",
+      "delegationDepth": 1,
+      "delegatedBy": "execute-slash-command",
+      "subagentType": "hf-l0-orchestrator",
+      "createdAt": "2026-05-27T13:23:06.557Z",
+      "updatedAt": "2026-05-27T13:23:35.940Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_196659b91ffevYqN1mJPRfAqaf.json"
+    },
+    "ses_19663fd0bffeSdKKh1n0SWk6s1": {
+      "sessionID": "ses_19663fd0bffeSdKKh1n0SWk6s1",
+      "parentSessionID": "ses_19667c4edffeV5k2DCk94te5oc",
+      "rootMainSessionID": "ses_19667c4edffeV5k2DCk94te5oc",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-ai-researcher",
+      "createdAt": "2026-05-27T13:24:52.669Z",
+      "updatedAt": "2026-05-27T13:25:05.983Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_19663fd0bffeSdKKh1n0SWk6s1.json"
+    }
+  },
+  "totalChildren": 2,
+  "maxDepth": 1
+}

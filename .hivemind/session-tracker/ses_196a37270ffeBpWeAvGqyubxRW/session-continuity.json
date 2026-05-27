@@ -1,0 +1,13 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_196a37270ffeBpWeAvGqyubxRW",
+  "lastUpdated": "2026-05-27T12:56:16.043Z",
+  "hierarchy": {
+    "root": "ses_196a37270ffeBpWeAvGqyubxRW",
+    "children": {}
+  },
+  "turnCount": 32,
+  "toolSummary": {
+    "execute-slash-command": 2
+  }
+}

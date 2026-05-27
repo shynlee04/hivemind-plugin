@@ -1,0 +1,66 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1970e6ad5ffeT3mVcG247dekGW",
+  "lastUpdated": "2026-05-27T11:59:00.003Z",
+  "hierarchy": {
+    "root": "ses_1970e6ad5ffeT3mVcG247dekGW",
+    "children": {
+      "ses_1970b1934ffe1COS3uc0Srjn2g": {
+        "file": "ses_1970b1934ffe1COS3uc0Srjn2g.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_197003bdbffequssIxYhVpgCV8": {
+        "file": "ses_197003bdbffequssIxYhVpgCV8.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_196f6bae6ffePV7RqB6e1HMreT": {
+        "file": "ses_196f6bae6ffePV7RqB6e1HMreT.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_196ecb3beffeMZubbB9eFmIUhC": {
+        "file": "ses_196ecb3beffeMZubbB9eFmIUhC.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_196ec091fffeHxW8U9NV8G2utq": {
+        "file": "ses_196ec091fffeHxW8U9NV8G2utq.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_196b8b5e8ffeejsKh15oXt6ROr": {
+        "file": "ses_196b8b5e8ffeejsKh15oXt6ROr.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 39,
+  "toolSummary": {
+    "skill": 9,
+    "glob": 5,
+    "read": 27,
+    "context7_resolve-library-id": 2,
+    "grep": 2,
+    "context7_query-docs": 2,
+    "bash": 7,
+    "execute-slash-command": 11,
+    "task": 3,
+    "zread_search_doc": 2,
+    "zread_read_file": 1
+  }
+}
