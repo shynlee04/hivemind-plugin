@@ -284,6 +284,9 @@ function resolvePrimitiveTargetPath(primitiveTargetRoot: string, primitive: Prim
     agents: "agent",
     skills: "skill",
     commands: "command",
+    workflows: "workflows",
+    references: "references",
+    templates: "templates",
   }
   const singular = singularMap[primitive.kind]
   if (singular) {

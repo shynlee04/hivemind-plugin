@@ -87,6 +87,9 @@ export async function bootstrapRecover(input: BootstrapRecoverInput): Promise<Bo
     agents: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
     skills: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
     commands: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+    workflows: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+    references: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+    templates: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
   }
 
   for (const primitive of listPrimitiveSources()) {
@@ -182,6 +185,9 @@ function resolvePrimitiveTargetPath(primitiveTargetRoot: string, primitive: Prim
     agents: "agent",
     skills: "skill",
     commands: "command",
+    workflows: "workflows",
+    references: "references",
+    templates: "templates",
   }
   const singular = singularMap[primitive.kind]
   if (singular) {

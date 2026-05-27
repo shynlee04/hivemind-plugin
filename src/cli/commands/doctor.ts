@@ -142,6 +142,9 @@ function runPrimitivesCheck(projectRoot: string, scope: BootstrapScope): DoctorR
     agents: "agent",
     skills: "skill",
     commands: "command",
+    workflows: "workflows",
+    references: "references",
+    templates: "templates",
   }
 
   for (const kind of PRIMITIVE_TYPES) {

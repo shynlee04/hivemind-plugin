@@ -90,6 +90,9 @@ function renderRecoverOutput(result: BootstrapRecoverResult): string {
     summarize("agents", result.counts.agents),
     summarize("skills", result.counts.skills),
     summarize("commands", result.counts.commands),
+    summarize("workflows", result.counts.workflows),
+    summarize("references", result.counts.references),
+    summarize("templates", result.counts.templates),
   ]
 
   if (result.fallbackApplied && result.fallbackReason) {
