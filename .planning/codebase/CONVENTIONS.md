@@ -1,336 +1,148 @@
-# Code Conventions
+# Coding Conventions
 
-**Generated:** 2026-05-26
+**Analysis Date:** 2026-05-28
 
-## Overview
+## Naming Patterns
 
-This codebase follows strict TypeScript conventions with a focus on type safety, modularity, and maintainability. The project uses ESLint with TypeScript strict mode, Prettier for formatting, and follows a domain-driven modular architecture.
+**Files:**
+- Kebab-case for all source files: `src/shared/helpers.ts`, `src/tools/delegation/delegate-task.ts`
+- Test files match source with `.test.ts` suffix: `tests/lib/helpers.test.ts`
+- Index files for module exports: `src/shared/index.ts`, `src/tools/index.ts`
 
-## Tech Stack
+**Functions:**
+- camelCase for all functions: `getNestedValue`, `unwrapData`, `createDelegateTaskTool`
+- Factory functions prefixed with `create`: `createCoreHooks`, `createDelegateTaskTool`
+- Private helper functions prefixed with underscore or kept unexported: `extractSdkErrorMessage`
 
-- **Language:** TypeScript 5.0+
-- **Target:** ES2022
-- **Build Tool:** TypeScript compiler (tsc)
-- **Test Framework:** Vitest 4.1.7
-- **Type Validation:** Zod 4.4.3
-- **Package Manager:** npm
+**Classes:**
+- PascalCase for class names: `DelegationManager`, `CompletionDetector`, `SessionTracker`
+- Single responsibility: each class owns one domain concern
+
+**Types:**
+- PascalCase for type aliases: `TaskStatus`, `PendingNotification`, `DelegationMeta`
+- PascalCase for interfaces: `DelegationModuleSetupOptions`, `DelegationModuleSetup`
+- Suffix type unions with `Type` when ambiguous: `SessionStatusType`, `DelegationNotificationType`
+
+**Variables:**
+- camelCase for variables: `sessionTracker`, `delegationManager`
+- UPPER_SNAKE_CASE for constants: `MAX_DESCENDANTS_PER_ROOT`, `WATCH_TIMEOUT_MS`
 
 ## Code Style
 
-### Linter and Formatter
+**Formatting:**
+- No Prettier/ESLint config detected — follow existing patterns
+- 2-space indentation (observed in source files)
+- Single quotes for strings in TypeScript, double quotes in JSON
+- Trailing commas in multi-line arrays/objects
 
-- **TypeScript Compiler Options:**
-  - `src/tsconfig.json` defines strict mode with `strict: true`
-  - `noUnusedLocals: true` - no unused local variables
-  - `noUnusedParameters: true` - no unused parameters
-  - `noImplicitReturns: true` - all code paths must return
-  - `noFallthroughCasesInSwitch: true` - no fallthrough in switches
-  - `verbatimModuleSyntax: true` - explicit import type for type-only imports
-
-### File Extensions
-
-- Source files use `.ts` extension (no `.tsx` detected in this backend-focused codebase)
-- Test files use `.test.ts` convention
-
-### Naming Conventions
-
-#### Files and Directories
-
-```
-Directory pattern: lowercase-with-hyphens
-- coordination/delegation/
-- task-management/continuity/
-- features/session-tracker/
-
-File pattern: lowercase-with-hyphens
-- session-tracker.ts
-- delegation-manager.ts
-- pty-runtime.ts
-```
-
-#### Variables and Constants
-
-```typescript
-// camelCase for variables and functions
-const sessionID: string
-let rootBudget: RootBudget
-
-// UPPER_SNAKE_CASE for constants
-export const MAX_DESCENDANTS_PER_ROOT = 10
-export const SESSION_TRACKER_MAX_DEPTH = 7
-```
-
-#### Functions and Methods
-
-```typescript
-// camelCase, imperative mood (verb-based names)
-function ensureStats(sessionID: string): SessionStats
-function extractSdkErrorMessage(error: unknown): string
-function unwrapData<T = unknown>(response: unknown): T
-function getNestedValue(value: unknown, path: string[]): unknown
-```
-
-#### Classes and Components
-
-Classes use PascalCase and follow a single-responsibility principle:
-
-```typescript
-export class TaskStateManager {
-  private rootBudgets: Map<string, RootBudget>
-  private sessionStats: Map<string, SessionStats>
-  
-  constructor() {
-    this.rootBudgets = new Map()
-    this.sessionStats = new Map()
-  }
-}
-
-export class DelegationManager {
-  private delegations: Map<string, DelegationRecord>
-}
-```
-
-#### Type Definitions
-
-```typescript
-// PascalCase for types, interfaces, and type aliases
-export type TaskStatus = "pending" | "queued" | "running" | "completed" | "failed"
-export interface PermissionRule {
-  permission: string
-  pattern: string
-  action: PermissionAction
-}
-export type PendingNotification = TaskNotification & {
-  createdAt: number
-  delivered: boolean
-}
-```
+**Linting:**
+- TypeScript strict mode enforced via `tsconfig.json`: `"strict": true`
+- Additional strictness: `"noUnusedLocals": true`, `"noUnusedParameters": true`, `"noImplicitReturns": true`
+- `"verbatimModuleSyntax": true` — use `import type` for type-only imports
 
 ## Import Organization
 
-### Module Structure
+**Order:**
+1. External packages: `@opencode-ai/plugin`, `@modelcontextprotocol/sdk`, `zod`
+2. Node built-ins: `node:fs`, `node:path`
+3. Internal shared modules: `./shared/types.js`, `./shared/helpers.js`
+4. Feature modules: `./coordination/delegation/manager.js`
+5. Type-only imports: `import type { ... } from "..."`
 
-Imports follow a consistent order within files:
-
-```typescript
-import type { DelegationMeta } from "../types.js"  // Type imports first
-import { TaskStateManager } from "../state.js"     // Named imports second
-
-// Default imports would follow (none detected in this codebase)
-```
-
-### File Organization Pattern
-
-```
-src/
-├── index.ts                          # Entry point re-exports
-├── shared/                           # Leaf utilities and types
-│   ├── types.ts                      # Shared type definitions
-│   ├── helpers.ts                    # Utility functions
-│   └── security/                      # Security utilities
-├── tools/                            # Tool entrypoints
-├── coordination/                      # Delegation and concurrency
-├── task-management/                   # Session state management
-├── config/                            # Configuration workflow
-├── features/                          # Runtime features
-└── schema-kernel/                     # Zod schemas
-```
-
-## Module Design
-
-### Barrel Files Pattern
-
-Barrel files use index.ts to re-export modules:
-
-```typescript
-// src/index.ts
-export type { TaskStatus, TaskNotification } from "./shared/types.js"
-export { TaskStateManager } from "./shared/state.js"
-export { HarnessControlPlane } from "./plugin.js"
-
-// src/shared/index.ts
-export * from "./types.js"
-export * from "./helpers.js"
-```
-
-### Single Responsibility Pattern
-
-Each module has a single, well-defined responsibility:
-
-- `src/shared/types.ts` - Type definitions only
-- `src/shared/helpers.ts` - Utility functions only
-- `src/shared/state.ts` - Task state management only
-- `src/task-management/continuity/index.ts` - Session persistence only
-
-### Module Size Constraints
-
-- Maximum module size: 500 lines of code
-- This keeps modules maintainable and testable
+**Path Aliases:**
+- None — all imports use relative paths with `.js` extensions
+- Example: `import { createHarnessLifecycleManager } from "./task-management/lifecycle/index.js"`
 
 ## Error Handling
 
-### Error Types and Structures
+**Patterns:**
+- All thrown errors prefixed with `[Harness]`: `throw new Error(\`[Harness] ${message}\`)`
+- Error extraction from SDK responses via `unwrapData()` function
+- Best-effort operations use try/catch with silent failures: `try { ... } catch { break }`
+- Logging via `client.app?.log?.()` with service name and level
 
-Errors follow a consistent pattern with harness prefix:
-
+**Example:**
 ```typescript
-// In src/shared/helpers.ts
-throw new Error(`[Harness] ${message}`)
-```
-
-### Try-Catch Patterns
-
-Errors are caught and re-thrown with context:
-
-```typescript
-try {
-  const result = await tool.execute(args, context)
-  return result
-} catch (error) {
-  const message = extractSdkErrorMessage(error)
-  throw new Error(`[Harness] ${message}`)
-}
-```
-
-### Error Propagation
-
-- Errors propagate up the call chain without silent swallowing
-- SDK errors are extracted and re-wrapped with `[Harness]` prefix
-- Type guards check for error structures before processing
-
-## Type Safety
-
-### Strict Mode
-
-TypeScript strict mode is enabled:
-
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "verbatimModuleSyntax": true
+// From src/shared/helpers.ts
+export function unwrapData<T = unknown>(response: unknown): T {
+  if (isObject(response) && "error" in response && response.error) {
+    const error = response.error
+    const message = extractSdkErrorMessage(error)
+    throw new Error(`[Harness] ${message}`)
   }
-}
-```
-
-### Type Inference
-
-```typescript
-// Type inference with z.infer
-export type PromptSkimResult = z.infer<typeof PromptSkimResultSchema>
-export type PromptAnalysisFinding = z.infer<typeof PromptAnalysisFindingSchema>
-```
-
-### Discriminated Unions
-
-```typescript
-export interface Response {
-  kind: "success" | "error"
-  data?: Data
-  error?: string
-}
-```
-
-## Code Organization
-
-### File Naming
-
-- Underscores in function names for internal/private methods (when applicable)
-- Hyphens in file/directory names
-- PascalCase for classes and types
-
-### Directory Grouping
-
-```
-src/
-├── tools/                    # Tool entrypoints (MCP tools)
-│   ├── delegation/          # Delegation tools
-│   ├── session/             # Session tools
-│   └── prompt/              # Prompt tools
-├── coordination/             # Delegation and concurrency
-├── task-management/          # Session state and lifecycle
-├── config/                   # Configuration workflow
-├── features/                 # Runtime features
-└── schema-kernel/            # Zod schemas
-```
-
-## Testing Conventions
-
-### Test File Naming
-
-- Format: `{test-target}.test.ts`
-- Location: `tests/` directory mirrors `src/` structure
-
-### Test Organization
-
-```
-tests/
-├── lib/                       # Unit tests
-├── integration/               # Integration tests
-├── sidecar/                   # Sidecar component tests
-└── features/                  # Feature-specific tests
-```
-
-## Documentation Standards
-
-### JSDoc Comments
-
-Functions should include JSDoc with:
-- Description of purpose
-- Parameter types and descriptions
-- Return type description
-- Examples when helpful
-
-```typescript
-/**
- * Extract a human-readable error message from OpenCode SDK error objects.
- *
- * SDK error structures vary — this function checks all known shapes:
- *   - String error: used as-is
- *   - Named errors: error.data.message
- *   - BadRequestError: error.errors[] array
- *
- * @param error - The error object to extract message from
- * @returns Human-readable error message string
- */
-function extractSdkErrorMessage(error: unknown): string {
   // ...
 }
 ```
 
-## Special Conventions
+## Documentation
 
-### Harness Prefix
+**JSDoc Patterns:**
+- All exported functions have JSDoc comments with `@param` and `@returns`
+- Complex functions include usage examples
+- Module-level comments describe purpose and architecture
 
-All harness-related errors use `[Harness]` prefix to indicate source:
-
+**Example:**
 ```typescript
-throw new Error(`[Harness] ${message}`)
+/**
+ * Extract the text content of the last assistant message from an array of
+ * session messages.
+ *
+ * Searches backward from the end of the array. The first message whose role
+ * is `"assistant"` (checked at `info.role` first, then top-level `role`) is
+ * selected.
+ *
+ * @param messages - Array of session messages
+ * @returns The extracted assistant text, or empty string if none found
+ */
+export function extractAssistantText(messages: unknown[]): string {
 ```
 
-### Session Naming
+## Git Commit Discipline
 
-Sessions use camelCase with descriptive names:
+**Format:** `phase: what changed — why it matters`
+- Examples: `phase: add delegation status tool — enables monitoring of child sessions`
+- Atomic commits: one logical change per commit
+- Documentation changes committed separately
 
-```typescript
-export const DELEGATION_MANAGER_KEY = "default"
-export const SESSION_TRACKER_MAX_DEPTH = 7
-```
+## Module Design
 
-### Type Guards
+**Exports:**
+- Barrel files (`index.ts`) re-export public API from each module
+- `src/index.ts` aggregates all public exports from the package
+- Plugin entry point: `src/plugin.ts` exports `HarnessControlPlane`
 
-Type guards are used extensively for runtime type checking:
+**Module Size:**
+- Target: max 500 LOC per module
+- Larger modules split into subdirectories: `src/coordination/delegation/` contains multiple focused files
 
-```typescript
-export function isObject(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === "object" && !Array.isArray(value)
-}
-```
+## Type Constraints
+
+**No `any` types:**
+- Use `unknown` for untyped data: `function isObject(value: unknown)`
+- Explicit type assertions with `as`: `return response.data as T`
+- Generic type parameters for flexible APIs: `unwrapData<T = unknown>(response: unknown): T`
+
+**TypeScript Features:**
+- ES2022 target with NodeNext module resolution
+- Declaration files generated for package consumers
+- Source maps for debugging
+
+## Special Patterns
+
+**Dependency Injection:**
+- Classes accept dependencies via constructor options: `new DelegationManager(client, options)`
+- Factory functions receive dependencies as parameters: `createCoreHooks(deps)`
+
+**Async Patterns:**
+- Fire-and-forget for non-blocking operations: `void sessionTracker.initialize().catch(...)`
+- Explicit `Promise<void>` return types for async functions
+- `AbortController` for cancellation support
+
+**State Management:**
+- Dual-layer state: durable JSON file (`continuity.ts`) + in-memory Maps (`state.ts`)
+- Deep-clone-on-read for continuity store
+- Session continuity via `getSessionContinuity`, `patchSessionContinuity`
 
 ---
 
-*Convention analysis: 2026-05-26*
+*Convention analysis: 2026-05-28*

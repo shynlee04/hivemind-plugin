@@ -1,562 +1,313 @@
-<!-- refreshed: 2026-05-26 -->
 # Architecture
 
-**Analysis Date:** 2026-05-26
+**Analysis Date:** 2026-05-28
 
 ## System Overview
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Hivemind Plugin (npm package)                     │
-├──────────────────┬──────────────────┬──────────────────┬────────────────┤
-│   Tools          │   Hooks          │   Task-Management │   Coordination │
-│   `src/tools/`   │   `src/hooks/`   │   `src/task-mana- │   `src/coord-  │
-│   - delegation   │   - lifecycle    │   gement/`        │   ination/`   │
-│   - prompt       │   - guards       │   - journal      │   - delegation │
-│   - session      │   - observers    │   - continuity   │   - spawner   │
-│   - hivemind     │   - transforms   │   - trajectory   │   - concurrency│
-│                                                           │              │
-└────────┬─────────┴────────┬─────────┴──────────┬────────┴───────────────┘
-         │                  │                     │
-         ▼                  ▼                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Features Layer                                    │
-│         `src/features/` — Standalone runtime capabilities               │
-│   - session-tracker, auto-loop, ralph-loop, doc-intelligence            │
-│   - background-command, governance-engine, prompt-packet                │
-└─────────────────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Shared Layer                                      │
-│         `src/shared/` — Leaf utilities and contracts                    │
-│   - session-api, helpers, state, types, security, runtime-policy        │
-└─────────────────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Configuration Layer                               │
-│         `src/config/` — Config subscriber and workflow                  │
-└─────────────────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    Schema Kernel (Zod validation)                        │
-│         `src/schema-kernel/` — Type-safe schemas                        │
-└─────────────────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    Internal State (file-based)                           │
-│         `.hivemind/` — Journals, lineage, state, artifacts               │
-└─────────────────────────────────────────────────────────────────────────┘
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           OpenCode Runtime Host                              │
+│                        (Plugin Loading & Session Management)                │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        HarnessControlPlane (Composition Root)                │
+│                              src/plugin.ts                                   │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │  Tool Registration (23 tools)    │  Hook Registration (7 hooks)     │   │
+│  │  Delegation Module Wiring        │  Lifecycle Manager Setup         │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+              ┌─────────────────────┼─────────────────────┐
+              │                     │                     │
+              ▼                     ▼                     ▼
+┌─────────────────────┐ ┌─────────────────────┐ ┌─────────────────────┐
+│  Coordination Layer │ │  Task Management    │ │  Features Layer     │
+│  (Delegation,       │ │  (Continuity,       │ │  (Session Tracker,  │
+│   Completion,       │ │   Lifecycle,        │ │   Background Cmd,   │
+│   Concurrency)      │ │   Journal)          │ │   Governance)       │
+└─────────────────────┘ └─────────────────────┘ └─────────────────────┘
+              │                     │                     │
+              └─────────────────────┼─────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            Shared Layer (Leaf Utilities)                    │
+│  types.ts │ state.ts │ helpers.ts │ session-api.ts │ runtime-policy.ts     │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         External Integrations                               │
+│  OpenCode SDK (@opencode-ai/sdk) │ Zod Schemas │ Node.js FS              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Architecture Pattern
+## Component Responsibilities
 
-**Pattern:** Plugin Architecture with CQRS-inspired Separation of Concerns
+| Component | Responsibility | File |
+|-----------|----------------|------|
+| **HarnessControlPlane** | Plugin composition root, wires all modules, registers tools/hooks | `src/plugin.ts` |
+| **DelegationManager** | Thin public facade for delegation operations, delegates to coordinator | `src/coordination/delegation/manager.ts` |
+| **DelegationCoordinator** | Dispatches delegations, manages dual-signal completion | `src/coordination/delegation/coordinator.ts` |
+| **CompletionDetector** | Dual-signal completion detection (native + terminal status) | `src/coordination/completion/detector.ts` |
+| **HarnessLifecycleManager** | Session lifecycle state machine, transition guards, activity tracking | `src/task-management/lifecycle/index.ts` |
+| **TaskStateManager** | In-process session/budget state, subagent registry | `src/shared/state.ts` |
+| **ContinuityStore** | Persistent session state, deep-clone-on-read, atomic writes | `src/task-management/continuity/index.ts` |
+| **SessionTracker** | Session knowledge capture, tool metadata, message tracking | `src/features/session-tracker/index.ts` |
+| **ConfigSubscriber** | Lazy-load + cache + fallback for Hivemind configs | `src/config/subscriber.ts` |
+| **SchemaKernel** | Zod schemas for all configuration and runtime types | `src/schema-kernel/` |
 
-**Why this pattern was chosen:**
-- Hivemind is designed as an npm plugin for OpenCode, not a standalone application
-- The plugin architecture allows zero business logic in the plugin layer itself
-- CQRS-inspired separation enables independent evolution of tools (write) and hooks (read)
-- File-based persistence supports durability and recovery across harness restarts
-- Layered architecture provides clear boundaries for testing and maintenance
+## Pattern Overview
+
+**Overall:** CQRS (Command Query Responsibility Segregation)
+
+**Key Characteristics:**
+- **Command Side:** Tools, hooks, and coordination modules mutate state
+- **Query Side:** Read-only tools and status checks query state
+- **9-Surface Authority Model:** Clear mutation authority boundaries
+- **Dual-Layer State:** In-memory Maps (`state.ts`) + durable JSON (`continuity/index.ts`)
+- **Composition Root Pattern:** `plugin.ts` wires all dependencies, contains no business logic
+
+## CQRS Model
+
+**Command Side (Write):**
+- **Tools:** `delegate-task`, `session-patch`, `configure-primitive`, `bootstrap-init`
+- **Hooks:** `tool.execute.before`, `tool.execute.after`, `chat.message`
+- **Coordination:** `DelegationManager.dispatch()`, `DelegationCoordinator.dispatch()`
+- **State Mutation:** `TaskStateManager`, `ContinuityStore.recordSessionContinuity()`
+
+**Query Side (Read):**
+- **Status Tools:** `delegation-status`, `session-tracker`, `session-hierarchy`
+- **Read Operations:** `getSessionContinuity()`, `listSessionContinuity()`, `DelegationManager.getStatus()`
+- **Query Hooks:** `event` observers (read-only event processing)
+
+**CQRS Boundaries:**
+- Command modules may import from query modules (for status checks)
+- Query modules MUST NOT import from command modules (enforced by architecture)
+- State mutations only via `TaskStateManager` or `ContinuityStore` write methods
+
+## 9-Surface Authority Model
+
+| Surface | Authority | Module | Mutation Target |
+|---------|-----------|--------|-----------------|
+| **1. Tool Registration** | Register/unregister tools | `src/plugin.ts` | Plugin tool map |
+| **2. Hook Registration** | Register/unregister hooks | `src/plugin.ts` | Plugin hook map |
+| **3. Delegation Dispatch** | Create/cancel delegations | `src/coordination/delegation/` | `DelegationManager` |
+| **4. Completion Detection** | Monitor session completion | `src/coordination/completion/` | `CompletionDetector` |
+| **5. Concurrency Control** | Acquire/release slots | `src/coordination/concurrency/` | `DelegationConcurrencyQueue` |
+| **6. Lifecycle Management** | Transition session phases | `src/task-management/lifecycle/` | `HarnessLifecycleManager` |
+| **7. Continuity Persistence** | Read/write session state | `src/task-management/continuity/` | `ContinuityStore` |
+| **8. Configuration** | Load/cache config | `src/config/` | `ConfigSubscriber` |
+| **9. Runtime Policy** | Load/apply runtime policy | `src/shared/runtime-policy.ts` | `RuntimePolicy` |
+
+**Authority Rules:**
+- Each surface has a single owning module (no split authority)
+- Mutations flow downward (composition root → coordination → task management → shared)
+- Query operations may flow upward (shared → coordination → composition root)
+- Cross-surface mutations require explicit wiring in composition root
 
 ## Layers
 
-### Core Layer
+**Composition Root:**
+- Purpose: Plugin entry point, dependency wiring, tool/hook registration
+- Location: `src/plugin.ts`
+- Contains: Tool factory calls, hook factory calls, delegation module setup
+- Depends on: All other layers
+- Used by: OpenCode runtime (plugin loader)
 
-**Purpose:** Composition root and plugin registration
+**Coordination Layer:**
+- Purpose: Delegation dispatch, completion detection, concurrency control
+- Location: `src/coordination/`
+- Contains: Delegation modules, completion detector, concurrency queue
+- Depends on: Shared layer, Task Management layer
+- Used by: Composition root, Features layer
 
-**Location:** `src/plugin.ts`, `src/index.ts`
+**Task Management Layer:**
+- Purpose: Session lifecycle, continuity persistence, journaling, trajectory
+- Location: `src/task-management/`
+- Contains: Lifecycle manager, continuity store, journal, trajectory
+- Depends on: Shared layer, Config layer
+- Used by: Composition root, Coordination layer, Features layer
 
-**Contains:**
-- Plugin initialization and lifecycle management
-- Tool and hook registration
-- Shared dependency injection
-- Runtime policy loading
+**Features Layer:**
+- Purpose: Standalone runtime features (session tracking, background commands, governance)
+- Location: `src/features/`
+- Contains: Session tracker, PTY manager, governance engine, doc intelligence
+- Depends on: Shared layer, Task Management layer
+- Used by: Composition root
 
-**Key Files:**
-- `src/plugin.ts` — Main composition root, instantiates shared dependencies, wires hook factories, registers tools
-- `src/index.ts` — Public API re-exports
+**Shared Layer:**
+- Purpose: Leaf utilities, types, SDK wrappers, runtime policy
+- Location: `src/shared/`
+- Contains: Types, state, helpers, session API, runtime policy
+- Depends on: External integrations only
+- Used by: All other layers
 
-**Depends on:**
-- `@opencode-ai/plugin` SDK
-- All tool modules in `src/tools/`
-- All hook factories in `src/hooks/`
-
-**Used by:** OpenCode runtime plugin loader
-
-### Tools Layer
-
-**Purpose:** Write-side operations and agent dispatch
-
-**Location:** `src/tools/`
-
-**Structure:**
-```
-src/tools/
-├── delegation/          — Delegation tools (delegate-task, delegation-status)
-├── config/              — Configuration tools (configure-primitive, bootstrap-init/recover)
-├── session/             — Session tools (session-patch, session-journal-export)
-├── hivemind/            — Hivemind-specific tools (hivemind-doc, trajectory, pressure)
-├── prompt/              — Prompt tools (prompt-skim, prompt-analyze)
-└── hivemind-run-background-command/ — Background task execution
-```
-
-**Key Files:**
-- `src/tools/delegation/delegate-task.ts` — Delegation dispatch tool
-- `src/tools/delegation/delegation-status.ts` — Status polling tool
-- `src/tools/config/bootstrap-init.ts` — Project initialization
-- `src/tools/config/bootstrap-recover.ts` — Symlink repair
-
-**Depends on:**
-- Delegation coordination modules
-- SDK client via `src/shared/session-api.ts`
-
-**Used by:** User commands via OpenCode CLI
-
-### Hooks Layer
-
-**Purpose:** Read-side lifecycle events and guards
-
-**Location:** `src/hooks/`
-
-**Structure:**
-```
-src/hooks/
-├── lifecycle/           — Core lifecycle hooks
-│   ├── core-hooks.ts    — Core lifecycle management
-│   └── session-hooks.ts — Session-specific lifecycle
-├── guards/              — Tool execution guards
-│   └── tool-guard-hooks.ts
-├── observers/           — Event observers
-│   └── event-observers.ts
-└── transforms/          — Tool input/output transforms
-    ├── tool-before-guard.ts
-    ├── tool-after-composer.ts
-    └── chat-message-capture.ts
-```
-
-**Key Files:**
-- `src/hooks/lifecycle/core-hooks.ts` — Core lifecycle management
-- `src/hooks/guards/tool-guard-hooks.ts` — Tool execution guards
-- `src/hooks/transforms/tool-before-guard.ts` — Pre-execution validation
-
-**Depends on:**
-- Session state via `src/shared/state.ts`
-- Lifecycle manager from `src/task-management/lifecycle/index.ts`
-
-**Used by:** OpenCode tool execution pipeline
-
-### Task Management Layer
-
-**Purpose:** Session continuity and state persistence
-
-**Location:** `src/task-management/`
-
-**Structure:**
-```
-src/task-management/
-├── continuity/          — Session persistence (session-continuity.json)
-├── journal/             — Append-only event timeline
-├── trajectory/          — Execution lineage tracking
-└── lifecycle/           — State machine for task status
-```
-
-**Key Files:**
-- `src/task-management/continuity/index.ts` — Session I/O operations
-- `src/task-management/journal/index.ts` — Event append operations
-- `src/task-management/lifecycle/index.ts` — Lifecycle manager
-
-**Depends on:**
-- File system for `.hivemind/state/` persistence
-- Task status types from `src/shared/task-status.ts`
-
-**Used by:** All delegation and task management operations
-
-### Coordination Layer
-
-**Purpose:** Delegation orchestration and concurrency control
-
-**Location:** `src/coordination/`
-
-**Structure:**
-```
-src/coordination/
-├── delegation/          — DelegationManager (WaiterModel)
-│   ├── manager.ts      — WaiterModel dispatch
-│   ├── coordinator.ts  — Delegation coordination
-│   ├── dispatcher.ts   — Task dispatch
-│   ├── lifecycle.ts    — Delegation lifecycle
-│   └── monitor.ts      — Status monitoring
-├── completion/          — Dual-signal completion detection
-├── concurrency/         — Task queue management
-├── command-delegation/  — Slash command delegation
-└── sdk-delegation/      — SDK child session spawning
-```
-
-**Key Files:**
-- `src/coordination/delegation/manager.ts` — DelegationManager class with WaiterModel dispatch and dual-signal completion
-- `src/coordination/completion/detector.ts` — Completion detection logic
-- `src/coordination/concurrency/queue.ts` — Task queue implementation
-
-**Depends on:**
-- Delegation persistence from `src/task-management/continuity/delegation-persistence.ts`
-- Agent resolver from `src/coordination/delegation/agent-resolver.js`
-
-**Used by:** All tool dispatch operations
-
-### Features Layer
-
-**Purpose:** Standalone runtime capabilities
-
-**Location:** `src/features/`
-
-**Structure:**
-```
-src/features/
-├── session-tracker/     — Session event tracking and recovery
-│   ├── capture/         — Event capture
-│   ├── recovery/        — Recovery operations
-│   ├── persistence/     — File persistence
-│   └── hooks/           — Session hooks
-├── auto-loop/           — Automatic task loop
-├── ralph-loop/          — Ralph loop with escalation
-├── background-command/  — Background PTY command execution
-│   └── pty/             — PTY runtime (bun-pty or fallback)
-├── doc-intelligence/    — Document querying
-├── governance-engine/   — Governance session creation
-├── prompt-packet/       — Prompt packet handling
-└── runtime-pressure/    — Runtime pressure monitoring
-```
-
-**Key Files:**
-- `src/features/session-tracker/index.ts` — SessionTracker class
-- `src/features/auto-loop/auto-loop.ts` — Auto-loop implementation
-- `src/features/background-command/pty/pty-runtime.ts` — PTY runtime
-
-**Depends on:**
-- Hooks and coordination layers
-- Configuration subscriber
-
-**Used by:** Auto-running background processes
-
-### Shared Layer
-
-**Purpose:** Leaf utilities and type contracts
-
-**Location:** `src/shared/`
-
-**Structure:**
-```
-src/shared/
-├── session-api.ts      — OpenCode SDK client wrapper
-├── helpers.ts          — Utility functions (asString, getNestedValue)
-├── state.ts            — In-memory state management
-├── types.ts            — Shared TypeScript types
-├── security/           — Security utilities
-├── runtime-policy.ts   — Runtime policy loading
-└── plugin-tool-output-summary.ts — Tool output summarization
-```
-
-**Key Files:**
-- `src/shared/session-api.ts` — SDK client for `tool()`, `hook()` operations
-- `src/shared/helpers.ts` — Utility functions
-- `src/shared/state.ts` — In-memory state Maps (dual-layer with persistence)
-- `src/shared/types.ts` — Shared type definitions
-
-**Depends on:**
-- `@opencode-ai/plugin` SDK types
-
-**Used by:** All other layers
+**Schema Kernel:**
+- Purpose: Zod schema definitions for configuration and runtime types
+- Location: `src/schema-kernel/`
+- Contains: Schema definitions, validation logic
+- Depends on: None (leaf layer)
+- Used by: Config layer, Shared layer
 
 ## Data Flow
 
-### Plugin Initialization Flow
+### Primary Request Path
 
-1. **Entry:** OpenCode plugin loader imports `src/plugin.ts`
-2. **Lifecycle Manager:** `createHarnessLifecycleManager()` creates lifecycle manager
-3. **Shared Dependencies:** Load `session-api`, `state`, `runtime-policy`
-4. **Hook Factories:** Create hook factories (`core-hooks`, `session-hooks`, etc.)
-5. **Tool Creators:** Instantiate tool creator functions
-6. **Registration:** Register all tools and hooks with OpenCode runtime
-7. **Background Loops:** Start auto-loop and ralph-loop via `runAutoLoop()` and `runRalphLoop()`
+1. User sends prompt → OpenCode runtime → `HarnessControlPlane` (`src/plugin.ts:258`)
+2. Tool guard hooks validate budget/concurrency (`src/hooks/guards/tool-guard-hooks.ts`)
+3. Session tracker captures metadata (`src/features/session-tracker/index.ts`)
+4. Delegation manager dispatches to child session (`src/coordination/delegation/manager.ts:73`)
+5. Completion detector monitors dual signals (`src/coordination/completion/detector.ts:68`)
+6. Continuity store persists session state (`src/task-management/continuity/index.ts:352`)
 
-**Key Path:** `src/plugin.ts` lines 30-180
+### Delegation Dispatch Flow
 
-### Delegation Flow
+1. `DelegationManager.dispatch()` → `DelegationCoordinator.dispatch()` (`src/coordination/delegation/manager.ts:73`)
+2. Coordinator validates slot limits, queue key (`src/coordination/delegation/coordinator.ts`)
+3. Child session created via SDK (`src/coordination/delegation/sdk-child-session-starter.ts`)
+4. Dual-signal watcher registered (`src/coordination/completion/detector.ts:92`)
+5. Polling loop monitors message stability (`src/coordination/delegation/manager-runtime.ts`)
 
-1. **Dispatch:** User calls `/gsd` command or `delegate-task` tool
-2. **Tool Creation:** `src/tools/delegation/delegate-task.ts` creates delegation packet
-3. **Agent Resolution:** `src/coordination/delegation/agent-resolver.js` selects target agent
-4. **WaiterModel:** `src/coordination/delegation/manager.ts` dispatches to WaiterModel
-5. **State Persistence:** `src/task-management/continuity/delegation-persistence.ts` persists delegation record
-6. **Completion Detection:** `src/coordination/completion/detector.ts` monitors for completion
-7. **Status Update:** Updates delegation status in `.hivemind/state/delegations.json`
-8. **Result Return:** Returns delegation ID to caller
+### Session Lifecycle State Machine
 
-**Key Path:** `src/tools/delegation/delegate-task.ts` → `src/coordination/delegation/manager.ts`
+```
+┌─────────────┬──────────────────────────────────────────────┐
+│ From         │ To                                           │
+├─────────────┼──────────────────────────────────────────────┤
+│ created     │ queued, dispatching, running, failed         │
+│ queued      │ dispatching, running, failed                 │
+│ dispatching │ running, completed, failed                   │
+│ running     │ completed, failed                            │
+│ completed   │ (terminal)                                   │
+│ failed      │ (terminal)                                   │
+└─────────────┴──────────────────────────────────────────────┘
+```
 
-### Session Continuity Flow
-
-1. **Session Entry:** New delegation created, session ID recorded
-2. **Journal Append:** `src/task-management/journal/index.ts` appends to journal
-3. **Continuity Update:** `src/task-management/continuity/index.ts` updates `session-continuity.json`
-4. **Lineage Tracking:** `src/task-management/trajectory/index.ts` tracks lineage
-5. **Recovery:** On restart, read from `.hivemind/state/session-continuity.json`
-6. **Resume:** Rehydrate state from journal and continuity files
-
-**Key Path:** `src/task-management/continuity/index.ts` → `.hivemind/state/session-continuity.json`
+**State Management:**
+- **In-Memory:** `TaskStateManager` holds session stats, budget tracking, subagent registry
+- **Persistent:** `ContinuityStore` persists to `.hivemind/state/session-continuity.json`
+- **Atomic Writes:** Uses temp file + rename pattern for crash safety
+- **Deep-Clone-on-Read:** All reads return deep clones to prevent mutation
 
 ## Key Abstractions
 
-### Plugin Interface
+**Delegation (WaiterModel):**
+- Purpose: Asynchronous child session dispatch with dual-signal completion
+- Examples: `src/coordination/delegation/manager.ts`, `src/coordination/delegation/coordinator.ts`
+- Pattern: Facade pattern (DelegationManager) + Coordinator pattern
 
-**Purpose:** Defines the contract between Hivemind and OpenCode runtime
+**Dual-Signal Completion:**
+- Purpose: Requires both native Task completion AND terminal status signal
+- Examples: `src/coordination/completion/detector.ts`
+- Pattern: Signal aggregation with stability tracking
 
-**Location:** `src/shared/session-api.ts`
+**Continuity Store:**
+- Purpose: Persistent session state with deep-clone semantics
+- Examples: `src/task-management/continuity/index.ts`
+- Pattern: Singleton store with atomic writes and quarantine on corruption
 
-**Examples:**
-```typescript
-// Tool registration
-tool({
-  name: 'delegate-task',
-  description: 'Delegate work to a specialist agent',
-  async execute(context) { /* ... */ }
-})
-
-// Hook registration
-hook('lifecycle', 'tool-before', async (context) => { /* ... */ })
-```
-
-**Pattern:** OpenCode SDK tool/hook definitions with Zod schemas
-
-### Delegation Packet
-
-**Purpose:** Encapsulates delegation metadata and state
-
-**Location:** `src/coordination/delegation/types.ts`
-
-**Examples:**
-```typescript
-interface Delegation {
-  id: string;                    // Delegation ID
-  sessionId: string;             // Parent session ID
-  status: DelegationStatus;      // dispatched, running, completed, error, timeout
-  agent: string;                 // Target agent name
-  prompt: string;                // Task prompt
-  context: unknown;              // Optional context packet
-  createdAt: string;             // ISO timestamp
-  completedAt?: string;          // Completion timestamp
-}
-```
-
-**Pattern:** Stateful object with lifecycle tracking
-
-### WaiterModel
-
-**Purpose:** Asynchronous delegation dispatch with dual-signal completion
-
-**Location:** `src/coordination/delegation/manager.ts`
-
-**Examples:**
-```typescript
-class DelegationManager {
-  async dispatch(packet: DelegationPacket): Promise<DelegationId> {
-    // 1. Create WaiterModel (background task)
-    // 2. Persist to delegations.json
-    // 3. Return delegation ID immediately
-    // 4. Completion detection happens asynchronously
-  }
-}
-```
-
-**Pattern:** Fire-and-forget with status polling
-
-### Session Continuity
-
-**Purpose:** Durable session state across harness restarts
-
-**Location:** `src/task-management/continuity/index.ts`
-
-**Examples:**
-```typescript
-interface SessionContinuity {
-  sessionId: string;
-  status: string;
-  lastActivity: string;
-  journal: JournalEntry[];
-  lineage: LineageEntry[];
-}
-```
-
-**Pattern:** Deep-clone-on-read JSON file persistence
-
-### Runtime Policy
-
-**Purpose:** Enforce behavioral constraints on agents
-
-**Location:** `src/shared/runtime-policy.ts`
-
-**Examples:**
-```typescript
-interface RuntimePolicy {
-  guardrailLevel: 'strict' | 'moderate' | 'relaxed';
-  delegationMode: 'waiter' | 'synchronous';
-  toolAccessPattern: 'restricted' | 'full';
-  skillFilter: 'curated' | 'all';
-}
-```
-
-**Pattern:** Configuration-driven behavioral constraints
+**Hook Composition:**
+- Purpose: Lifecycle hooks for tool execution, session events, guards
+- Examples: `src/hooks/lifecycle/`, `src/hooks/guards/`, `src/hooks/transforms/`
+- Pattern: Factory functions with dependency injection
 
 ## Entry Points
 
-### Plugin Composition Root
+**HarnessControlPlane (Plugin):**
+- Location: `src/plugin.ts`
+- Triggers: OpenCode plugin loader
+- Responsibilities: Wires all modules, registers 23 tools, registers 7 hooks
 
-**Location:** `src/plugin.ts`
+**Public API (index.ts):**
+- Location: `src/index.ts`
+- Triggers: External consumers (npm package)
+- Responsibilities: Re-exports core types, utilities, and manager classes
 
-**Triggers:** OpenCode plugin loader on startup
+**Schema Kernel:**
+- Location: `src/schema-kernel/index.ts`
+- Triggers: Config loading, validation
+- Responsibilities: Exposes schema definitions and validation functions
 
-**Responsibilities:**
-- Initialize shared dependencies
-- Register all tools and hooks
-- Start background loops (auto-loop, ralph-loop)
-- Load runtime policy
+## Surface Authority Table
 
-**Key Code:**
-```typescript
-// src/plugin.ts lines 180-250
-const lifecycle = createHarnessLifecycleManager()
-const hooks = createCoreHooks(), createSessionHooks(), ...
-const tools = createDelegateTaskTool(), createDelegationStatusTool(), ...
-await opencode.registerTools(tools)
-await opencode.registerHooks(hooks)
-runAutoLoop()
-runRalphLoop()
-```
+| Surface | Owns | Can Mutate | Cannot Mutate |
+|---------|------|------------|---------------|
+| **Tool Registration** | Tool map in plugin | Tool handlers, tool schemas | Hook handlers, state |
+| **Hook Registration** | Hook map in plugin | Hook handlers, event observers | Tool handlers, state |
+| **Delegation Dispatch** | Delegation lifecycle | Delegation records, child sessions | Completion detection, config |
+| **Completion Detection** | Completion signals | Watcher callbacks, cached results | Delegation records, state |
+| **Concurrency Control** | Slot allocation | Queue state, acquire/release | Delegation dispatch, lifecycle |
+| **Lifecycle Management** | Session phases | Lifecycle state, transitions | Continuity store, config |
+| **Continuity Persistence** | Session records | JSON file, store cache | In-memory state, lifecycle |
+| **Configuration** | Config loading | Cached config, defaults | Runtime policy, state |
+| **Runtime Policy** | Policy loading | Policy object, overrides | Config, state |
 
-### CLI Entry Point
+## Circular Dependency Detection
 
-**Location:** `bin/hivemind.cjs`
+**Import Analysis Results:**
+- No circular dependencies detected in `src/` modules
+- Import chains follow layered architecture (composition root → coordination → task management → shared)
+- All imports use `.js` extensions (ESM-compatible)
 
-**Triggers:** User runs `npx hivemind`
+**Potential Risk Areas:**
+- `src/shared/types.ts` re-exports from `src/coordination/delegation/types.ts` (intentional for backward compatibility)
+- `src/shared/types.ts` re-exports from `src/config/workflow/workflow-types.ts` (intentional for backward compatibility)
 
-**Responsibilities:**
-- Parse CLI arguments
-- Initialize OpenCode client
-- Dispatch to appropriate tool
-
-### Tool Entry Points
-
-**Location:** `src/tools/**/*.ts`
-
-**Triggers:** User invokes via OpenCode CLI
-
-**Examples:**
-- `src/tools/delegation/delegate-task.ts` — Delegate to agent
-- `src/tools/config/bootstrap-init.ts` — Initialize project
-- `src/tools/hivemind/session-tracker.ts` — Query session tracker
-
-## Component Diagram
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        OpenCode Runtime                          │
-│  (Plugin Loader, Agent Framework, CLI)                          │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     Hivemind Plugin                              │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   Tools      │  │    Hooks     │  │ Task-Management│         │
-│  │  (Write-Side)│  │  (Read-Side) │  │   (State)    │          │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
-│         │                 │                 │                   │
-│         └─────────────────┴─────────────────┘                   │
-│                           │                                     │
-│                           ▼                                     │
-│                  ┌──────────────────┐                           │
-│                  │ Coordination     │                           │
-│                  │ (Delegation,     │                           │
-│                  │  Concurrency)    │                           │
-│                  └────────┬─────────┘                           │
-│                           │                                     │
-│         ┌─────────────────┼─────────────────┐                  │
-│         ▼                 ▼                 ▼                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │  Features    │  │   Shared     │  │   Config     │         │
-│  │  (Runtime)   │  │   (Utilities)│  │  (Workflow)  │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
-└─────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    File-Based Persistence                        │
-│  .hivemind/state/   .hivemind/journal/   .hivemind/lineage/    │
-└─────────────────────────────────────────────────────────────────┘
-```
+**Enforcement:**
+- TypeScript compiler detects circular imports at build time
+- `tsconfig.json` has `noImplicitReturns: true` and strict mode enabled
+- Module size limit (500 LOC) prevents deep dependency chains
 
 ## Architectural Constraints
 
-- **Threading:** Single-threaded event loop via Node.js; background tasks run as separate processes via WaiterModel
-- **Global state:** In-memory state Maps (`src/shared/state.ts`) synchronized with file persistence; session ID is the primary singleton identifier
-- **Circular imports:** None detected; clear layer boundaries prevent circular dependencies
-- **Module size:** Max 500 LOC per module enforced; plugin.ts is ~29KB (largest module)
-- **Type safety:** `strict: true` in tsconfig; `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`
-- **No `any` types:** Enforced for new code; legacy code may have `any` with TODOs
+- **Threading:** Single-threaded Node.js event loop; async operations via Promises
+- **Global state:** `taskState` singleton (`src/shared/state.ts:188`) holds all in-process state
+- **Circular imports:** None detected in import analysis
+- **Module size:** Max 500 LOC per module; largest file is `plugin.ts` (554 LOC) — borderline acceptable
+- **CQRS boundaries:** Command side (tools/hooks) mutates state; query side (status tools) reads only
+- **9-Surface Authority:** Clear mutation boundaries defined in architecture docs
 
 ## Anti-Patterns
 
-### Static `.md` Files as Agent Definitions
+### Large Composition Root
 
-**What happens:** AGENTS.md files in `.opencode/` are used as agent definition templates
+**What happens:** `plugin.ts` has grown to 554 LOC with many imports and setup logic
+**Why it's wrong:** Makes the composition root hard to maintain and test
+**Do this instead:** Extract delegation setup to dedicated module (partially done with `setupDelegationModules`)
 
-**Why it's wrong:** These are reference documents, not runtime definitions; agents are actual TypeScript code in `src/`
+### Dual State Stores
 
-**Do this instead:** Use `src/plugin.ts` tool/hook registrations for actual agent definitions; AGENTS.md serves as documentation only
+**What happens:** In-memory `TaskStateManager` and persistent `ContinuityStore` must stay synchronized
+**Why it's wrong:** Risk of state drift between stores
+**Do this instead:** Use `hydrateDelegationState` to sync on startup, maintain CQRS boundaries
 
-### Hardcoded Paths in Scripts
+### Synchronous File I/O in Store
 
-**What happens:** Scripts use hardcoded paths outside `bin/` CLI substrate
-
-**Why it's wrong:** Breaks portability and violates plugin architecture principles
-
-**Do this instead:** Use `src/shared/helpers.ts` for path utilities; all CLI logic in `bin/` directory
+**What happens:** `ContinuityStore` uses synchronous `readFileSync`/`writeFileSync`
+**Why it's wrong:** Blocks event loop during persistence
+**Do this instead:** Use async I/O with proper queuing (future improvement)
 
 ## Error Handling
 
-**Strategy:** Structured error throwing with `[Harness]` prefix
+**Strategy:** Best-effort with structured error codes
 
 **Patterns:**
-- Custom error types for specific failure modes
-- Error context includes session ID and delegation ID when available
-- Graceful degradation for optional dependencies (e.g., bun-pty fallback)
-
-**Key Code:**
-```typescript
-// src/shared/helpers.ts
-throw new HarnessError('Delegation failed', {
-  sessionId,
-  delegationId,
-  cause: error
-})
-```
+- `[Harness]` prefix on all thrown errors for identification
+- Structured `DelegationError` with machine-readable codes (`src/coordination/delegation/types.ts:227`)
+- Best-effort operations (notification replay, session abort) silently ignore failures
+- Corrupt continuity files quarantined with timestamp suffix
 
 ## Cross-Cutting Concerns
 
-**Logging:** Console-based via `console.log()`; no external logging service
-
-**Validation:** Zod schemas in `src/schema-kernel/` for all config inputs
-
-**Authentication:** None; runs within OpenCode environment with inherited permissions
-
-**Security:** Plugin-based execution; file-based persistence; no remote auth
+**Logging:** OpenCode SDK `client.app.log()` with service tags
+**Validation:** Zod schemas for config, runtime types, tool parameters
+**Authentication:** Not applicable (local runtime)
+**Security:** Path scope validation (`src/shared/security/path-safety.ts`), redaction of sensitive fields (`src/shared/security/redaction.ts`)
 
 ---
 
-*Architecture analysis: 2026-05-26*
+*Architecture analysis: 2026-05-28*
