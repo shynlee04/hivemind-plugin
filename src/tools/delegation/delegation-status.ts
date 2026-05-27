@@ -6,9 +6,11 @@ import { readPersistedDelegations } from "../../task-management/continuity/deleg
 import { redactTextSecrets } from "../../shared/security/redaction.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
-import type { Delegation, DelegationStatus } from "../../shared/types.js"
+import type { Delegation, DelegationStatus, DelegationTerminalKind } from "../../shared/types.js"
 import { resolveSessionFile } from "../session/session-resolver.js"
 import { safeSessionPath } from "../../features/session-tracker/persistence/atomic-write.js"
+import type { HierarchyManifest, HierarchyManifestChild } from "../../features/session-tracker/types.js"
+import { findStackableSessions, findResumableSessions, getRetryRecommendation, buildStackingGuidanceBanner } from "../../coordination/delegation/session-intelligence.js"
 
 /** Zod contract for delegation-status control actions. */
 export const DelegationControlSchema = z.object({
@@ -24,8 +26,9 @@ export const DelegationControlSchema = z.object({
 const DelegationStatusInputSchema = z.object({
   delegationId: z.string().min(1).optional(),
   status: z.string().optional(),
-  action: z.enum(["status", "get", "list", "control"]).default("status"),
+  action: z.enum(["status", "get", "list", "control", "find-stackable"]).default("status"),
   control: DelegationControlSchema.optional(),
+  agentFilter: z.string().optional(),
 })
 
 type DelegationStatusInput = z.infer<typeof DelegationStatusInputSchema>
@@ -145,7 +148,7 @@ async function getSessionTrackerDelegation(projectRoot: string, sessionId: strin
     fallbackReason: undefined,
     queueKey: "",
     nestingDepth: childRecord.delegationDepth,
-    terminalKind: childRecord.status !== "active" ? (childRecord.status as any) : undefined,
+    terminalKind: childRecord.status !== "active" ? (childRecord.status as DelegationTerminalKind) : undefined,
     terminationSignal: undefined,
     explicitCancellation: false,
     messageCount: childRecord.turns.length,
@@ -166,12 +169,12 @@ async function getSessionTrackerChildren(projectRoot: string, parentSessionId: s
 
     const manifestPath = safeSessionPath(projectRoot, rootSessionId, "hierarchy-manifest.json")
     const raw = await readFile(manifestPath, "utf-8")
-    const manifest = JSON.parse(raw) as any
+    const manifest = JSON.parse(raw) as HierarchyManifest
     const allChildren = manifest.children ?? {}
 
     const children: Delegation[] = []
     for (const [childSessionId, child] of Object.entries(allChildren)) {
-      const childMeta = child as any
+      const childMeta = child as HierarchyManifestChild
       if (childMeta.parentSessionID === parentSessionId) {
         children.push({
           id: childSessionId,
@@ -189,7 +192,7 @@ async function getSessionTrackerChildren(projectRoot: string, parentSessionId: s
           fallbackReason: undefined,
           queueKey: "",
           nestingDepth: childMeta.delegationDepth ?? 1,
-          terminalKind: childMeta.status !== "active" ? childMeta.status : undefined,
+          terminalKind: childMeta.status !== "active" ? (childMeta.status as DelegationTerminalKind) : undefined,
           terminationSignal: undefined,
           explicitCancellation: false,
           lastMessageCount: 0,
@@ -247,7 +250,7 @@ async function getHierarchyContext(
   try {
     const manifestPath = safeSessionPath(projectRoot, rootSessionId, "hierarchy-manifest.json")
     const raw = await readFile(manifestPath, "utf-8")
-    const manifest = JSON.parse(raw) as any
+    const manifest = JSON.parse(raw) as HierarchyManifest
     const allChildren = manifest.children ?? {}
 
     const ancestors: string[] = []
@@ -263,7 +266,7 @@ async function getHierarchyContext(
 
     const childrenList: Array<{ sessionId: string; agent: string; status: string }> = []
     for (const [id, child] of Object.entries(allChildren)) {
-      const childMeta = child as any
+      const childMeta = child as HierarchyManifestChild
       if (childMeta.parentSessionID === currentSessionId) {
         childrenList.push({
           sessionId: id,
@@ -276,7 +279,7 @@ async function getHierarchyContext(
     const siblingsList: Array<{ sessionId: string; agent: string; status: string }> = []
     if (parentSessionId) {
       for (const [id, child] of Object.entries(allChildren)) {
-        const childMeta = child as any
+        const childMeta = child as HierarchyManifestChild
         if (childMeta.parentSessionID === parentSessionId && id !== currentSessionId) {
           siblingsList.push({
             sessionId: id,
@@ -289,15 +292,15 @@ async function getHierarchyContext(
 
     let descendantCount = 0
     for (const [, child] of Object.entries(allChildren)) {
-      const childMeta = child as any
-      let checkParent = childMeta.parentSessionID
+      const childMeta = child as HierarchyManifestChild
+      let checkParent: string | null = childMeta.parentSessionID
       while (checkParent) {
         if (checkParent === currentSessionId) {
           descendantCount++
           break
         }
-        const parentMeta = allChildren[checkParent]
-        checkParent = parentMeta ? parentMeta.parentSessionID : null
+        const parentMeta: HierarchyManifestChild | undefined = allChildren[checkParent]
+        checkParent = parentMeta ? (parentMeta.parentSessionID ?? null) : null
       }
     }
 
@@ -384,12 +387,16 @@ export function createDelegationStatusTool(
 
   return tool({
     description:
-      "Check delegation status and retrieve results. Returns a specific delegation's state by ID, or lists all delegations (optionally filtered by status).",
+      "Check delegation status, discover stackable sessions, and retrieve results. " +
+      "Actions: status (default), list, control, find-stackable. " +
+      "**find-stackable**: Discovers terminal sessions available for stacking — use BEFORE creating new delegations to prefer stack-on over fresh dispatch. " +
+      "The SDK supports stacking onto ANY valid session ID (completed, failed, timed out) both within and across delegation trees.",
     args: {
       delegationId: s.string().optional().describe("Specific delegation ID to check"),
       status: s.string().optional().describe("Filter by status: dispatched, running, completed, error, timeout"),
-      action: s.string().optional().describe("status, list, or control"),
+      action: s.string().optional().describe("status, list, control, or find-stackable"),
       control: s.object({}).optional().describe("Control action payload"),
+      agentFilter: s.string().optional().describe("Filter stackable sessions by agent name (for find-stackable action)"),
     },
     async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
       const parsed = DelegationStatusInputSchema.safeParse(rawArgs)
@@ -400,6 +407,7 @@ export function createDelegationStatusTool(
         if (!context.sessionID) {
           return renderToolResult(error("[Harness] Missing caller session ID for delegation-status"))
         }
+        if (args.action === "find-stackable") return await handleFindStackable(args, context.sessionID, delegationManager, readPersisted, deps)
         if (args.action === "list") return renderList(args, context.sessionID, delegationManager, readPersisted, deps)
         if (args.action === "control") return await handleControl(args, context.sessionID, delegationManager, readPersisted, deps)
 
@@ -474,16 +482,24 @@ export function createDelegationStatusTool(
           )
 
           const isTerminal = delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout"
+          const retryRecommendation = isTerminal ? getRetryRecommendation(delegation) : null
           const options = {
             canAbort: !isTerminal,
             canCancel: !isTerminal,
             canResume: isTerminal,
-            canChain: isTerminal && delegation.status === "completed",
+            canChain: isTerminal,
+            canStackOn: isTerminal,
             resumeCommand: isTerminal
               ? `task({ subagent_type: "${delegation.agent}", task_id: "${delegation.childSessionId}", prompt: "..." })`
               : undefined,
             stackCommand: isTerminal
-              ? `delegate-task({ agent: "${delegation.agent}", prompt: "...", context: '{"parentSessionId": "${delegation.childSessionId}"}' })`
+              ? `delegate-task({ agent: "${delegation.agent}", prompt: "...", stackOnSessionId: "${delegation.childSessionId}" })`
+              : undefined,
+            retryCommand: retryRecommendation
+              ? retryRecommendation.taskCommand
+              : undefined,
+            retryGuidance: retryRecommendation
+              ? retryRecommendation.guidance
               : undefined,
           }
 
@@ -515,7 +531,29 @@ async function renderList(args: DelegationStatusInput, sessionID: string, manage
   }
 
   const filtered = args.status && args.status !== "all" ? accessible.filter((d) => d.status === args.status) : accessible
-  return renderToolResult(success(`${filtered.length} delegation(s)${args.status ? ` with status "${args.status}"` : ""}`, await Promise.all(filtered.map((d) => renderDelegationV2(d as Delegation & { v2?: boolean }, deps))), { total: accessible.length }))
+
+  // Proactively surface stackable and resumable sessions in list output
+  const stackable = findStackableSessions(accessible)
+  const resumable = findResumableSessions(accessible)
+  const guidanceBanner = buildStackingGuidanceBanner(stackable.length, resumable.length)
+
+  const renderedDelegations = await Promise.all(filtered.map((d) => renderDelegationV2(d as Delegation & { v2?: boolean }, deps)))
+  return renderToolResult(success(
+    `${filtered.length} delegation(s)${args.status ? ` with status "${args.status}"` : ""}\n${guidanceBanner}`,
+    renderedDelegations,
+    {
+      total: accessible.length,
+      stackableCount: stackable.length,
+      resumableCount: resumable.length,
+      stackableSessions: stackable.slice(0, 10).map(s => ({
+        childSessionId: s.childSessionId,
+        agent: s.agent,
+        status: s.status,
+        stackCommand: s.delegateTaskCommand,
+        reason: s.reason,
+      })),
+    },
+  ))
 }
 
 async function handleControl(args: DelegationStatusInput, callerSessionId: string, manager: ManagerLike, readPersisted: () => Delegation[], deps: StatusDeps): Promise<string> {
@@ -584,6 +622,65 @@ async function handleControl(args: DelegationStatusInput, callerSessionId: strin
     return renderToolResult(success(`Delegation ${delegation.id} cancelled`, { delegationId: delegation.id, status: "cancelled" }))
   }
   return renderToolResult(error("[Harness] restart/redirect requires coordinator-backed manager control API"))
+}
+
+/**
+ * Handles the find-stackable action: discovers terminal sessions available
+ * for stacking new work onto, surfacing ready-to-use commands.
+ */
+async function handleFindStackable(
+  args: DelegationStatusInput,
+  sessionID: string,
+  manager: ManagerLike,
+  readPersisted: () => Delegation[],
+  deps: StatusDeps,
+): Promise<string> {
+  const projectRoot = deps.projectRoot ?? process.cwd()
+  const all = await mergeAllDelegations(projectRoot, sessionID, manager, readPersisted)
+
+  const accessible = []
+  for (const d of all) {
+    if (await canAccessDelegation(projectRoot, sessionID, d, manager)) {
+      accessible.push(d)
+    }
+  }
+
+  const stackable = findStackableSessions(accessible, args.agentFilter)
+  const resumable = findResumableSessions(accessible)
+  const banner = buildStackingGuidanceBanner(stackable.length, resumable.length)
+
+  if (stackable.length === 0 && resumable.length === 0) {
+    return renderToolResult(success(
+      "No stackable or resumable sessions found — new dispatch is appropriate.",
+      { stackable: [], resumable: [], guidance: banner },
+    ))
+  }
+
+  return renderToolResult(success(
+    banner,
+    {
+      stackable: stackable.slice(0, 15).map(s => ({
+        childSessionId: s.childSessionId,
+        agent: s.agent,
+        status: s.status,
+        delegationId: s.delegationId,
+        completedAt: s.completedAt,
+        error: s.error,
+        reason: s.reason,
+        taskCommand: s.taskCommand,
+        delegateTaskCommand: s.delegateTaskCommand,
+        finalMessageExcerpt: s.finalMessageExcerpt,
+      })),
+      resumable: resumable.slice(0, 10).map(s => ({
+        childSessionId: s.childSessionId,
+        agent: s.agent,
+        status: s.status,
+        delegationId: s.delegationId,
+        reason: s.reason,
+        taskCommand: s.taskCommand,
+      })),
+    },
+  ))
 }
 
 export { DelegationStatusInputSchema }

@@ -9,6 +9,29 @@ import type { SlotHandle } from "./slot-manager.js"
 import { type OpenCodeClient, getSessionMessages } from "../../shared/session-api.js"
 import { notifyParentSession } from "../completion/notification-handler.js"
 
+/**
+ * Minimal SDK message shape used by the coordinator.
+ * The SDK has evolved its message format — messages may carry metadata in a
+ * nested `info` wrapper or directly on the top-level object. This type
+ * captures both shapes without relying on `any`.
+ */
+interface SdkMessageInfo {
+  role?: string
+  modelID?: string
+  providerID?: string
+  model?: { providerID?: string; modelID?: string }
+  error?: unknown
+}
+
+interface SdkMessage {
+  info?: SdkMessageInfo
+  role?: string
+  modelID?: string
+  providerID?: string
+  model?: { providerID?: string; modelID?: string }
+  error?: unknown
+}
+
 export type DispatchParams = PreflightParams
 
 export interface ChainStep {
@@ -89,7 +112,8 @@ export class DelegationCoordinator {
       try {
         const parentMessages = await getSessionMessages(this.deps.client, params.parentSessionId)
         for (const msg of [...parentMessages].reverse()) {
-          const msgInfo = (msg as any)?.info ?? msg
+          const raw = (msg as SdkMessage)
+          const msgInfo: SdkMessage = raw?.info as SdkMessage ?? raw
           if (msgInfo?.modelID && msgInfo?.providerID) {
             inheritedModel = {
               providerID: msgInfo.providerID,
@@ -209,14 +233,14 @@ export class DelegationCoordinator {
       try {
         const messages = await getSessionMessages(this.deps.client, record.childSessionId)
         const lastAssistantMessage = [...messages].reverse().find(m => {
-          const role = (m as any)?.info?.role ?? (m as any)?.role
+          const role = (m as SdkMessage)?.info?.role ?? (m as SdkMessage)?.role
           return role === "assistant"
         })
         if (lastAssistantMessage) {
-          const errorField = (lastAssistantMessage as any)?.info?.error ?? (lastAssistantMessage as any)?.error
+          const errorField = (lastAssistantMessage as SdkMessage)?.info?.error ?? (lastAssistantMessage as SdkMessage)?.error
           if (errorField) {
             const errorMsg = typeof errorField === "object" && errorField !== null
-              ? ((errorField as any).message || JSON.stringify(errorField))
+              ? (((errorField as Record<string, unknown>)?.message) || JSON.stringify(errorField))
               : String(errorField)
             record.error = `[Harness] Child session assistant error: ${errorMsg}`
             record.executionState = "stalled"
