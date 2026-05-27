@@ -1,19 +1,16 @@
-import { existsSync, mkdirSync, readdirSync, rmSync, cpSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, cpSync } from "node:fs";
 import { join } from "node:path";
 
 const projectRoot = process.cwd();
-const metaBuilderRoot = join(projectRoot, ".hivefiver-meta-builder");
 const assetsRoot = join(projectRoot, "assets");
 
-if (!existsSync(metaBuilderRoot)) {
-  console.log("[Harness Build] .hivefiver-meta-builder not found, skipping assets sync.");
-  process.exit(0);
-}
-
 const PRIMITIVE_MAP = {
-  agents: join(metaBuilderRoot, "agents-lab", "active", "refactoring"),
-  skills: join(metaBuilderRoot, "skills-lab", "active", "refactoring"),
-  commands: join(metaBuilderRoot, "commands-lab", "active", "refactoring"),
+  agents: join(projectRoot, ".opencode", "agents"),
+  skills: join(projectRoot, ".opencode", "skills"),
+  commands: join(projectRoot, ".opencode", "command"),
+  workflows: join(projectRoot, ".opencode", "workflows"),
+  references: join(projectRoot, ".hivemind", "references"),
+  templates: join(projectRoot, ".hivemind", "templates"),
 };
 
 console.log("[Harness Build] Syncing active primitives to assets/...");
