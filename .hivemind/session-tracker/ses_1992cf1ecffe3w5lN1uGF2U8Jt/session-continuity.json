@@ -1,0 +1,28 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1992cf1ecffe3w5lN1uGF2U8Jt",
+  "lastUpdated": "2026-05-27T00:36:16.593Z",
+  "hierarchy": {
+    "root": "ses_1992cf1ecffe3w5lN1uGF2U8Jt",
+    "children": {
+      "ses_1992b79dfffeVwAwEEuplt0bxR": {
+        "file": "ses_1992b79dfffeVwAwEEuplt0bxR.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 6,
+  "toolSummary": {
+    "task": 1,
+    "delegation-status": 1,
+    "session-tracker": 1,
+    "hivemind-session-view": 1,
+    "glob": 3,
+    "read": 1,
+    "grep": 1,
+    "bash": 2
+  }
+}
