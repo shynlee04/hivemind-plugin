@@ -84,7 +84,7 @@ export const TIER_1_DIRECTORIES = [
  * Primitive types hosted under `.opencode/`.
  * Each maps to a subdirectory containing YAML/MD definitions.
  */
-export const PRIMITIVE_TYPES = ["agents", "skills", "commands"] as const
+export const PRIMITIVE_TYPES = ["agents", "skills", "commands", "workflows", "references", "templates"] as const
 
 // ---------------------------------------------------------------------------
 // Doctor checks (P0 for BOOT-02)

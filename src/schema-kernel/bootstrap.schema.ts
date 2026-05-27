@@ -58,6 +58,9 @@ export const BootstrapRecoverCountsSchema = z.object({
   agents: BootstrapStatusCountSchema,
   skills: BootstrapStatusCountSchema,
   commands: BootstrapStatusCountSchema,
+  workflows: BootstrapStatusCountSchema,
+  references: BootstrapStatusCountSchema,
+  templates: BootstrapStatusCountSchema,
 })
 
 /**
