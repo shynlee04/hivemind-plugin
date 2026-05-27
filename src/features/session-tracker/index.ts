@@ -37,6 +37,7 @@ export type { ReconsumptionResult, SessionContext } from "./recovery/session-rec
 import type { OpenCodeClient } from "../../shared/session-api.js"
 import { MessageCapture } from "./capture/message-capture.js"
 import { constructDependencies, sessionTrackerRoot } from "./initialization.js"
+import type { InitializedDeps } from "./initialization.js"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { ToolDelegation } from "./tool-delegation.js"
@@ -65,26 +66,26 @@ export class SessionTracker {
   private projectRoot: string
 
   // Capture handlers — initialized in initialize()
-  private eventCapture!: Parameters<typeof constructDependencies>[0]["eventCapture"]
-  private lastMessageCapture!: Parameters<typeof constructDependencies>[0]["lastMessageCapture"]
+  private eventCapture!: InitializedDeps["eventCapture"]
+  private lastMessageCapture!: InitializedDeps["lastMessageCapture"]
   private messageCapture!: MessageCapture
-  private toolCapture!: Parameters<typeof constructDependencies>[0]["toolCapture"]
+  private toolCapture!: InitializedDeps["toolCapture"]
   // Persistence writers
-  private childWriter!: Parameters<typeof constructDependencies>[0]["childWriter"]
-  private sessionIndexWriter!: Parameters<typeof constructDependencies>[0]["sessionIndexWriter"]
-  private projectIndexWriter!: Parameters<typeof constructDependencies>[0]["projectIndexWriter"]
-  private hierarchyIndex!: Parameters<typeof constructDependencies>[0]["hierarchyIndex"]
-  private pendingRegistry!: Parameters<typeof constructDependencies>[0]["pendingRegistry"]
-  private manifestWriter!: Parameters<typeof constructDependencies>[0]["manifestWriter"]
-  private recovery!: Parameters<typeof constructDependencies>[0]["recovery"]
-  private retryQueue!: Parameters<typeof constructDependencies>[0]["retryQueue"]
-  private bootstrap!: Parameters<typeof constructDependencies>[0]["bootstrap"]
-  private classifier!: Parameters<typeof constructDependencies>[0]["classifier"]
+  private childWriter!: InitializedDeps["childWriter"]
+  private sessionIndexWriter!: InitializedDeps["sessionIndexWriter"]
+  private projectIndexWriter!: InitializedDeps["projectIndexWriter"]
+  private hierarchyIndex!: InitializedDeps["hierarchyIndex"]
+  private pendingRegistry!: InitializedDeps["pendingRegistry"]
+  private manifestWriter!: InitializedDeps["manifestWriter"]
+  private recovery!: InitializedDeps["recovery"]
+  private retryQueue!: InitializedDeps["retryQueue"]
+  private bootstrap!: InitializedDeps["bootstrap"]
+  private classifier!: InitializedDeps["classifier"]
   /** Session router — classify-before-I/O routing (CP-ST-06-02). */
-  private sessionRouter!: Parameters<typeof constructDependencies>[0]["sessionRouter"]
+  private sessionRouter!: InitializedDeps["sessionRouter"]
   /** Child recorder — child delegation message capture (CP-ST-06-02). */
-  private childRecorder!: Parameters<typeof constructDependencies>[0]["childRecorder"]
-  private orphanCleanup!: Parameters<typeof constructDependencies>[0]["orphanCleanup"]
+  private childRecorder!: InitializedDeps["childRecorder"]
+  private orphanCleanup!: InitializedDeps["orphanCleanup"]
   /** Tool delegation handler (CP-ST-06-02). */
   private toolDelegation!: ToolDelegation
   /** Project continuity checker (CP-ST-06-02). */
@@ -108,7 +109,7 @@ export class SessionTracker {
    * in the event observer pipeline for `message.updated` /
    * `message.part.updated` events.
    */
-  getLastMessageCapture(): Parameters<typeof constructDependencies>[0]["lastMessageCapture"] {
+  getLastMessageCapture(): InitializedDeps["lastMessageCapture"] {
     return this.lastMessageCapture
   }
 

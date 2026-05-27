@@ -322,7 +322,16 @@ export class EventCapture {
         if (this.manifestWriter) {
           await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         }
-        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch(() => {})
+        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session tracker: backfill failed for child "${sessionID}" (idle handler)`,
+              extra: { error: err instanceof Error ? err.message : String(err) },
+            },
+          })
+        })
         return
       }
       // Main session — "completed" is a valid terminal transition from "running"
@@ -370,7 +379,16 @@ export class EventCapture {
       if (lastMessage && lastMessage.trim().length > 0) {
         const currentTurn = (this.assistantTurnCounters.get(sessionID) ?? 0) + 1
         this.assistantTurnCounters.set(sessionID, currentTurn)
-        await this.sessionWriter.appendAssistantTurn(sessionID, currentTurn, lastMessage).catch(() => {})
+        await this.sessionWriter.appendAssistantTurn(sessionID, currentTurn, lastMessage).catch((err) => {
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session tracker: appendAssistantTurn failed for "${sessionID}"`,
+              extra: { error: err instanceof Error ? err.message : String(err) },
+            },
+          })
+        })
       }
 
       const updates: Record<string, unknown> = { status: "completed" }
@@ -440,7 +458,16 @@ export class EventCapture {
             },
           })
         })
-        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch(() => {})
+        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session tracker: backfill failed for "${sessionID}" (deleted handler)`,
+              extra: { error: err instanceof Error ? err.message : String(err) },
+            },
+          })
+        })
         return
       }
       // Main session — existing behavior
@@ -497,7 +524,16 @@ export class EventCapture {
             },
           })
         })
-        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch(() => {})
+        await this.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
+          void this.client.app?.log?.({
+            body: {
+              service: "session-tracker",
+              level: "warn",
+              message: `[Harness] Session tracker: backfill failed for "${sessionID}" (error handler)`,
+              extra: { error: err instanceof Error ? err.message : String(err) },
+            },
+          })
+        })
         return
       }
       // Main session — existing behavior

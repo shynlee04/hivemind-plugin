@@ -39,7 +39,7 @@ export type PendingNotification = TaskNotification & {
 
 export const MAX_DESCENDANTS_PER_ROOT = 10
 export type SpecialistAgent = string
-export type PermissionAction = "allow" | "ask" | "ask"
+export type PermissionAction = "allow" | "ask"
 
 export type PermissionRule = {
   permission: string

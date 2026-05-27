@@ -220,7 +220,17 @@ export class ChildWriter {
       // Propagate error to caller
       throw err
     })
-    this.writeQueues.set(queueKey, next.catch(() => {}))
+    this.writeQueues.set(
+      queueKey,
+      next.catch((err) => {
+        // Error already propagated via throw at line 221+ and enters retry queue.
+        // This catch prevents unhandled rejection while still logging for observability.
+        console.warn(
+          `[Harness] ChildWriter queue: write failed for "${queueKey}" (enqueued to retry queue):`,
+          err instanceof Error ? err.message : String(err),
+        )
+      }),
+    )
     return next
   }
 

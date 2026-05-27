@@ -7,6 +7,7 @@
  * @module session-tracker/initialization
  */
 
+import type { OpenCodeClient } from "../../shared/session-api.js"
 import { resolve } from "node:path"
 import { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
@@ -30,11 +31,19 @@ import { ToolCapture } from "./capture/tool-capture.js"
 import { SessionRecovery } from "./recovery/session-recovery.js"
 
 /**
- * OpenCode client type — the minimal surface SessionTracker needs.
- * Avoids coupling to the full @opencode-ai/plugin Client export.
+ * Minimal client surface documentation.
+ *
+ * The `constructDependencies` function accepts `OpenCodeClient` (the full SDK
+ * client type) because downstream constructors require it. The session-tracker
+ * modules only use a small subset:
+ *   - `app.log()` — structured logging
+ *   - `session.get()` / `session.messages()` — session data queries
+ *   - `session.children()` — child delegation polling
+ *   - `tui.showToast()` — user notifications
+ *
+ * This documentation-only note replaces the former `ClientLike = any` alias
+ * that erased the type entirely. C1 concern-remediation 2026-05-28.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ClientLike = any
 
 /**
  * All constructed dependencies from initialization.
@@ -85,7 +94,7 @@ export interface InitCallbacks {
  * @returns All constructed dependency instances.
  */
 export function constructDependencies(
-  client: ClientLike,
+  client: OpenCodeClient,
   projectRoot: string,
   callbacks: InitCallbacks,
 ): InitializedDeps {
@@ -148,7 +157,12 @@ export function constructDependencies(
       sessionWriter.updateFrontmatter(
         sessionID,
         { lastMessage: text },
-      ).catch(() => {})
+      ).catch((err) => {
+        console.warn(
+          `[Harness] Session tracker: frontmatter update failed for "${sessionID}":`,
+          err instanceof Error ? err.message : String(err),
+        )
+      })
     },
   })
   const eventCapture = new EventCapture({
