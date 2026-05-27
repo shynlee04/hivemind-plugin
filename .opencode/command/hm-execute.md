@@ -2,26 +2,23 @@
 namespace: hm
 agent: hm-executor
 subtask: true
-description: Execute planned tasks in a phase using wave-based parallelization, atomic commits, deviation handling, and checkpoint recovery.
-argument-hint: "<phase-number> [--wave N] [--gaps-only] [--tdd]"
+description: Execute a created phase plan using TDD, atomic commits, and regression checks.
+argument-hint: "<phase-number> [--only-wave <wave>] [--dry-run]"
 requires: ["hm-plan"]
-validation-gates: ["atomic-commit-gate", "regression-check"]
+validation-gates: ["pre-execution-gate"]
 output-templates: ["hm-summary.md"]
 coordination-model: "waiter-model"
-completion-signals: ["executor-complete"]
+completion-signals: ["plan-executed"]
 tools:
   read: true
   write: true
-  edit: true
   bash: true
   glob: true
   grep: true
   agent: true
-  todowrite: true
-  question: true
 ---
 <objective>
-Execute all plans in a phase using wave-based parallel execution with atomic commits, deviation logging, and verifier integration.
+Execute implementation waves defined in PLAN.md sequentially, running automated tests and committing atomicity.
 </objective>
 
 <execution_context>
@@ -29,11 +26,11 @@ Execute all plans in a phase using wave-based parallel execution with atomic com
 </execution_context>
 
 <context>
-Phase: $ARGUMENTS
+Phase ID: $ARGUMENTS
 Namespace: hm
 Routed Agent: hm-executor
 </context>
 
 <process>
-Execute end-to-end via hm-execute workflow. Produces execution commits and SUMMARY.md.
+Execute end-to-end via hm-execute workflow. Resolves tasks, runs TDD assertions, and updates SUMMARY.md.
 </process>

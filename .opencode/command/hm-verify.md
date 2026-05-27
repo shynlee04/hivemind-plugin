@@ -2,13 +2,13 @@
 namespace: hm
 agent: hm-verifier
 subtask: true
-description: Verify that implemented features meet the roadmap and phase objectives using goal-backward verification of truths, artifacts, and key links.
-argument-hint: "<phase-number> [--quick] [--interactive]"
+description: Verify completed phase deliverables against plan must-haves, truths, and links.
+argument-hint: "<phase-number>"
 requires: ["hm-execute"]
-validation-gates: ["goal-backward-verification", "artifact-integrity-check"]
+validation-gates: ["goal-backward-verification"]
 output-templates: ["hm-verification.md"]
 coordination-model: "waiter-model"
-completion-signals: ["verification-passed"]
+completion-signals: ["verification-complete"]
 tools:
   read: true
   write: true
@@ -16,10 +16,9 @@ tools:
   glob: true
   grep: true
   agent: true
-  question: true
 ---
 <objective>
-Perform goal-backward validation of truths, artifacts, and key links for the target phase to ensure zero regressions.
+Audit the executed phase outcomes against plan must-haves (truths, artifacts, key links) to verify completion.
 </objective>
 
 <execution_context>
@@ -27,11 +26,11 @@ Perform goal-backward validation of truths, artifacts, and key links for the tar
 </execution_context>
 
 <context>
-Phase: $ARGUMENTS
+Phase ID: $ARGUMENTS
 Namespace: hm
 Routed Agent: hm-verifier
 </context>
 
 <process>
-Execute end-to-end via hm-verify workflow. Generates VERIFICATION.md.
+Execute end-to-end via hm-verify workflow. Validates must-haves, outputs VERIFICATION.md report.
 </process>

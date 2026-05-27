@@ -2,25 +2,23 @@
 namespace: hm
 agent: hm-debugger
 subtask: true
-description: Systematic debugging with persistent state to diagnose and fix failing tests, crashes, or unintended behaviors.
-argument-hint: "<error-context-or-test-file> [--interactive] [--max-iterations N]"
+description: Start systematic debugging session to diagnose and repair connection, compilation, or logic errors.
+argument-hint: "[error-description] [--file <path>] [--test]"
 requires: []
-validation-gates: ["debug-verification-gate"]
-output-templates: ["debug-report.md"]
+validation-gates: []
+output-templates: []
 coordination-model: "waiter-model"
-completion-signals: ["bug-resolved"]
+completion-signals: ["debug-resolved"]
 tools:
   read: true
   write: true
-  edit: true
   bash: true
   glob: true
   grep: true
   agent: true
-  question: true
 ---
 <objective>
-Execute systematic debugging loops with persistent state to identify root cause and apply/verify code corrections.
+Diagnose test failures, connection drops, or runtime exceptions systematically, establishing reproducer scripts and fixing the root cause.
 </objective>
 
 <execution_context>
@@ -28,11 +26,11 @@ Execute systematic debugging loops with persistent state to identify root cause 
 </execution_context>
 
 <context>
-Target: $ARGUMENTS
+Error Context: $ARGUMENTS
 Namespace: hm
 Routed Agent: hm-debugger
 </context>
 
 <process>
-Execute end-to-end via hm-debug workflow. Tracks diagnostic steps and outputs debug summaries.
+Execute end-to-end via hm-debug workflow. Creates reproduce script, resolves issue, verifies with tests, and commits.
 </process>

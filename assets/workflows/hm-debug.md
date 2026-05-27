@@ -1,33 +1,64 @@
----
-description: "Debugging workflow: load issue context → investigate codebase → formulate hypotheses → run reproduction tests → fix & verify."
----
+<purpose>
+Systematically diagnose, reproduce, and repair compile, test, or logic failures, ensuring that fixes are verified by reproducing tests.
+</purpose>
 
-# hm-debug
+<required_reading>
+@.opencode/references/hm-coordination-contracts.md
+</required_reading>
 
-## Goal
-Systematically investigate and resolve bugs, maintaining a hypothesis log to track diagnostics.
+<downstream_awareness>
+The fix and its reproducing tests restore the green path:
+1. **automated test suite**: Runs successfully without failure.
+2. **harness state**: Records the resolution of the incident in active session trajectory logs.
+</downstream_awareness>
 
-## Agent Routing Table
-| Role | Agent | Responsibility |
-|------|-------|---------------|
-| Orchestrator | hm-debug-session-manager | Manages debug session state, coordinates debugger |
-| Investigator | hm-debugger | Inspects logs, codebase, formulates hypotheses, writes fix |
+<scope_guardrail>
+**CRITICAL: Minimal changes.** Keep edits strictly focused on resolving the bug. Avoid cosmetic changes, formatting updates, or refactoring code unrelated to the defect.
+</scope_guardrail>
 
-## Execution Phases
-1. **Load Context**: Parse error logs, stack traces, and steps to reproduce.
-2. **Formulate Hypotheses**: Write a list of potential root causes to `DEBUG-SESSION.md`.
-3. **Reproduction Case**: Write a failing unit/integration test to reproduce the bug.
-4. **Investigation**: Inspect code logic, trace variable values, and test each hypothesis.
-5. **Implement Fix**: Modify target code files to fix the issue.
-6. **Verify Fix**: Ensure reproduction test passes (turns green) and no regressions occur.
+<process>
 
-## Checkpoint Protocol
-| Checkpoint Type | Behavior |
-|-----------------|----------|
-| `decision` | Confirm root cause hypothesis before writing fix |
-| `human-verify` | Verify bug fix against manual execution |
+<step name="initialize" priority="first">
+Collect failure context from argument ($ARGUMENTS) and logs:
+- Extract error messages, stack traces, and affected files.
+- Identify the active session or task that encountered the failure.
+</step>
 
-## Exit Criteria
-- Reproduction test code written and passing.
-- Bug root cause identified and fixed.
-- `DEBUG-SESSION.md` populated with hypotheses, diagnostic actions, and verification logs.
+<step name="create_reproducer">
+Write a minimal reproducer script or test case inside the scratch directory (`.scratch/` or `.hivemind/state/`).
+Execute the reproducer to confirm that it fails exactly as reported.
+</step>
+
+<step name="locate_root_cause">
+Scan the codebase to isolate the defect:
+- Grep for error symbols or function signatures.
+- Inspect the logic and dependency paths of the affected modules.
+- Formulate the hypothesis explaining the failure mechanism.
+</step>
+
+<step name="implement_fix">
+Apply target code modifications to resolve the defect. Follow codebase design guidelines (prefixes, errors, deep cloning).
+</step>
+
+<step name="verify_fix">
+Run the reproducer script/test to confirm that the failure is resolved.
+Execute the full automated test suite to verify that no regressions were introduced.
+</step>
+
+<step name="atomic_commit">
+Stage the code modifications and the reproducing test case.
+Commit atomically using a meaningful message:
+```bash
+git commit -m "fix(harness): resolve {{bug_domain}} - include reproducing test"
+```
+</step>
+
+</process>
+
+<success_criteria>
+- Defect successfully reproduced.
+- Root cause isolated and documented.
+- Fix implemented and verified against reproducer.
+- All other tests pass.
+- Atomic commit containing both fix and test succeeded.
+</success_criteria>

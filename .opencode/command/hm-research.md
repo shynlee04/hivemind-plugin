@@ -2,10 +2,10 @@
 namespace: hm
 agent: hm-phase-researcher
 subtask: true
-description: Conduct multi-source stack research and code mapping to produce standard RESEARCH.md context documentation.
-argument-hint: "<phase-number> [--force] [--view]"
+description: Conduct dense stack research and codebase investigation for a roadmap phase.
+argument-hint: "<phase-number> [--deep]"
 requires: []
-validation-gates: ["stack-compatibility-audit"]
+validation-gates: []
 output-templates: ["hm-research.md"]
 coordination-model: "waiter-model"
 completion-signals: ["research-complete"]
@@ -16,11 +16,9 @@ tools:
   glob: true
   grep: true
   agent: true
-  webfetch: true
-  mcp__context7__*: true
 ---
 <objective>
-Analyze required technical stack, mapping conventions, stack dependencies, and target implementation files.
+Investigate target technology stack, package.json versions, codebase reuse patterns, and threat vectors for the roadmap phase.
 </objective>
 
 <execution_context>
@@ -28,11 +26,11 @@ Analyze required technical stack, mapping conventions, stack dependencies, and t
 </execution_context>
 
 <context>
-Phase: $ARGUMENTS
+Phase ID: $ARGUMENTS
 Namespace: hm
 Routed Agent: hm-phase-researcher
 </context>
 
 <process>
-Execute end-to-end via hm-research workflow. Produces technical stack summary and generates RESEARCH.md.
+Execute end-to-end via hm-research workflow. Generates RESEARCH.md containing stack validations, codebase maps, and threat scenarios.
 </process>

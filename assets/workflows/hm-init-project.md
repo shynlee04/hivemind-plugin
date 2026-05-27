@@ -1,35 +1,63 @@
----
-description: "Initialize a new Hivemind-powered project structure with namespaces, directories, and standard config files."
----
+<purpose>
+Initialize a new Hivemind-powered project workspace, establishing the target directories, files, and initial configuration schemas to bootstrap the execution lifecycle.
+</purpose>
 
-# hm-init-project
+<required_reading>
+@.opencode/references/hm-coordination-contracts.md
+</required_reading>
 
-## Goal
-Establish a new Hivemind-powered project workspace containing standard directories, templates, references, and default composition configuration.
+<downstream_awareness>
+The output directory structure and configurations feed directly into the harness validation tools:
+1. **doctor command**: Evaluates whether all expected directories and gitkeep files exist.
+2. **all downstream workflows**: Rely on these target paths (`.opencode/`, `.hivemind/`, `.planning/`) for caching, session persistence, and lineage tracking.
+</downstream_awareness>
 
-## Agent Routing Table
-| Role | Agent | Responsibility |
-|------|-------|---------------|
-| Composition Root | hm-orchestrator | Coordinate folder structure initialization and default state validation |
+<scope_guardrail>
+**CRITICAL: Structure-only setup.** This workflow initializes the workspace layout and minimal configurations. It does NOT generate business logic or source code files. Any attempts to write code beyond default templates/configs must be deferred.
+</scope_guardrail>
 
-## Execution Phases
-1. **Directory Structure**: Create target directories if they do not exist:
-   - `.opencode/command/`
-   - `.opencode/workflows/`
-   - `.opencode/skills/`
-   - `.hivemind/templates/`
-   - `.hivemind/references/`
-   - `.planning/`
-2. **Gitkeep Persistence**: Write `.gitkeep` to all subfolders to preserve git tracking.
-3. **Configuration**: Generate standard `opencode.json` and `.hivemind/state/config-workflows.json`.
-4. **Validation**: Run checklist to verify all folders are tracked.
+<process>
 
-## Checkpoint Protocol
-| Checkpoint Type | Behavior |
-|-----------------|----------|
-| `human-verify` | Verify directory listing matches target workspace structure |
+<step name="validate_parameters" priority="first">
+Parse process arguments ($ARGUMENTS):
+- Target project path (positional).
+- `--scope` (project or global config path, default: project).
+- `--force` (overwrite existing configs if present).
+</step>
 
-## Exit Criteria
-- Directory structure fully established.
-- `.gitkeep` files written and staged.
-- Standard configuration files compiled successfully.
+<step name="create_directories">
+Establish the directory structure recursively:
+- `.opencode/agent/`
+- `.opencode/skill/`
+- `.opencode/command/`
+- `.opencode/workflows/`
+- `.opencode/references/`
+- `.opencode/templates/`
+- `.hivemind/state/`
+- `.hivemind/logs/`
+- `.planning/phases/`
+</step>
+
+<step name="gitkeep_persistence">
+Write empty `.gitkeep` files inside every newly created folder to ensure directory tracking is registered in git.
+</step>
+
+<step name="generate_configurations">
+Write the base configurations:
+1. **configs.json** under `.hivemind/` matching default schema constraints.
+2. **configs.schema.json** generated from the active Zod schema engine.
+3. Write initial `version.json` in `.hivemind/state/` documenting package details.
+</step>
+
+<step name="run_doctor_audit">
+Invoke the `doctor` diagnostic suite to check the initialized directory structure and config schema integrity.
+</step>
+
+</process>
+
+<success_criteria>
+- All target folders successfully created.
+- `.gitkeep` files exist in every subfolder.
+- `configs.json` and `configs.schema.json` compiled and validated.
+- Doctor check passes with green exit code.
+</success_criteria>
