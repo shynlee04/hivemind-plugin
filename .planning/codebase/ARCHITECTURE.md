@@ -1,7 +1,6 @@
-<!-- refreshed: 2026-05-26 -->
 # Architecture
 
-**Analysis Date:** 2026-05-26
+**Analysis Date:** 2026-05-28
 
 ## System Overview
 
@@ -24,6 +23,8 @@
 │         `src/features/` — Standalone runtime capabilities               │
 │   - session-tracker, auto-loop, ralph-loop, doc-intelligence            │
 │   - background-command, governance-engine, prompt-packet                │
+│   - runtime-pressure, sdk-supervisor, agent-work-contracts              │
+│   - bootstrap (primitive-registry, control-plane)                       │
 └─────────────────────────────────────────────────────────────────────────┘
          │
          ▼
@@ -99,8 +100,8 @@
 src/tools/
 ├── delegation/          — Delegation tools (delegate-task, delegation-status)
 ├── config/              — Configuration tools (configure-primitive, bootstrap-init/recover)
-├── session/             — Session tools (session-patch, session-journal-export)
-├── hivemind/            — Hivemind-specific tools (hivemind-doc, trajectory, pressure)
+├── session/             — Session tools (session-patch, session-journal-export, session-tracker)
+├── hivemind/            — Hivemind-specific tools (hivemind-doc, trajectory, pressure, command-engine)
 ├── prompt/              — Prompt tools (prompt-skim, prompt-analyze)
 └── hivemind-run-background-command/ — Background task execution
 ```
@@ -110,6 +111,7 @@ src/tools/
 - `src/tools/delegation/delegation-status.ts` — Status polling tool
 - `src/tools/config/bootstrap-init.ts` — Project initialization
 - `src/tools/config/bootstrap-recover.ts` — Symlink repair
+- `src/tools/session/execute-slash-command.ts` — Slash command execution
 
 **Depends on:**
 - Delegation coordination modules
@@ -126,16 +128,24 @@ src/tools/
 **Structure:**
 ```
 src/hooks/
+├── composition/         — CQRS boundary classification
+│   └── cqrs-boundary.ts
 ├── lifecycle/           — Core lifecycle hooks
 │   ├── core-hooks.ts    — Core lifecycle management
 │   └── session-hooks.ts — Session-specific lifecycle
 ├── guards/              — Tool execution guards
-│   └── tool-guard-hooks.ts
+│   ├── tool-guard-hooks.ts
+│   └── governance-block.ts
 ├── observers/           — Event observers
-│   └── event-observers.ts
+│   ├── event-observers.ts
+│   ├── session-entry-consumer.ts
+│   ├── session-main-consumer.ts
+│   ├── session-tracker-consumer.ts
+│   └── delegation-consumer.ts
 └── transforms/          — Tool input/output transforms
     ├── tool-before-guard.ts
     ├── tool-after-composer.ts
+    ├── tool-after-workflow.ts
     └── chat-message-capture.ts
 ```
 
@@ -143,6 +153,7 @@ src/hooks/
 - `src/hooks/lifecycle/core-hooks.ts` — Core lifecycle management
 - `src/hooks/guards/tool-guard-hooks.ts` — Tool execution guards
 - `src/hooks/transforms/tool-before-guard.ts` — Pre-execution validation
+- `src/hooks/composition/cqrs-boundary.ts` — CQRS boundary classification
 
 **Depends on:**
 - Session state via `src/shared/state.ts`
@@ -160,9 +171,21 @@ src/hooks/
 ```
 src/task-management/
 ├── continuity/          — Session persistence (session-continuity.json)
+│   ├── index.ts         — Store I/O (CRUD operations)
+│   ├── store-cache.ts   — In-memory cache
+│   └── delegation-persistence.ts — Delegation record I/O
 ├── journal/             — Append-only event timeline
+│   ├── index.ts         — Journal entry operations
+│   ├── query.ts         — Journal query operations
+│   ├── replay.ts        — Journal replay operations
+│   └── execution-lineage.ts — Lineage tracking
 ├── trajectory/          — Execution lineage tracking
+│   ├── index.ts         — Trajectory operations
+│   ├── ledger.ts        — Ledger operations
+│   ├── store-operations.ts — Store operations
+│   └── types.ts         — Trajectory types
 └── lifecycle/           — State machine for task status
+    └── index.ts         — Lifecycle manager
 ```
 
 **Key Files:**
@@ -190,11 +213,31 @@ src/coordination/
 │   ├── coordinator.ts  — Delegation coordination
 │   ├── dispatcher.ts   — Task dispatch
 │   ├── lifecycle.ts    — Delegation lifecycle
-│   └── monitor.ts      — Status monitoring
+│   ├── monitor.ts      — Status monitoring
+│   ├── agent-resolver.ts — Agent resolution
+│   ├── slot-manager.ts — Concurrency slot management
+│   ├── state-machine.ts — State machine
+│   ├── completion-detector.ts — Completion detection
+│   ├── notification-router.ts — Notification routing
+│   ├── periodic-notifier.ts — Periodic notifications
+│   ├── retry-handler.ts — Retry handling
+│   ├── resume-resolver.ts — Resume resolution
+│   ├── escalation-timer.ts — Escalation timing
+│   └── survival-kit.ts — Survival kit
 ├── completion/          — Dual-signal completion detection
+│   └── detector.ts
 ├── concurrency/         — Task queue management
+│   └── queue.ts
 ├── command-delegation/  — Slash command delegation
-└── sdk-delegation/      — SDK child session spawning
+├── sdk-delegation/      — SDK child session spawning
+│   └── handler.ts
+└── spawner/             — Session spawning
+    ├── auto-loop.ts     — Auto-loop implementation
+    ├── ralph-loop.ts    — Ralph loop with escalation
+    ├── session-creator.ts — Session creation
+    ├── spawn-request-builder.ts — Spawn request building
+    ├── agent-primitive-policy.ts — Agent primitive policy
+    └── parent-directory.ts — Parent directory resolution
 ```
 
 **Key Files:**
@@ -204,7 +247,7 @@ src/coordination/
 
 **Depends on:**
 - Delegation persistence from `src/task-management/continuity/delegation-persistence.ts`
-- Agent resolver from `src/coordination/delegation/agent-resolver.js`
+- Agent resolver from `src/coordination/delegation/agent-resolver.ts`
 
 **Used by:** All tool dispatch operations
 
@@ -218,10 +261,12 @@ src/coordination/
 ```
 src/features/
 ├── session-tracker/     — Session event tracking and recovery
+│   ├── index.ts         — SessionTracker class
 │   ├── capture/         — Event capture
 │   ├── recovery/        — Recovery operations
 │   ├── persistence/     — File persistence
-│   └── hooks/           — Session hooks
+│   ├── hooks/           — Session hooks
+│   └── tool-delegation.ts — Tool delegation handling
 ├── auto-loop/           — Automatic task loop
 ├── ralph-loop/          — Ralph loop with escalation
 ├── background-command/  — Background PTY command execution
@@ -229,13 +274,30 @@ src/features/
 ├── doc-intelligence/    — Document querying
 ├── governance-engine/   — Governance session creation
 ├── prompt-packet/       — Prompt packet handling
-└── runtime-pressure/    — Runtime pressure monitoring
+├── runtime-pressure/    — Runtime pressure monitoring
+│   ├── index.ts         — Pressure detection
+│   ├── model.ts         — Pressure model
+│   ├── authority-matrix.ts — Authority matrix
+│   └── control-plane.ts — Control plane
+├── sdk-supervisor/      — SDK wrapper supervision
+│   └── index.ts         — SdkSupervisor class
+├── agent-work-contracts/ — Agent work contracts
+├── bootstrap/           — Primitive registry and control plane
+│   ├── primitive-registry.ts — Primitive registry
+│   ├── control-plane/   — Control plane
+│   ├── cross-primitive-validator.ts — Cross-primitive validation
+│   ├── framework-detector.ts — Framework detection
+│   ├── primitive-loader.ts — Primitive loading
+│   └── runtime-validator.ts — Runtime validation
+└── features/            — Feature module index
 ```
 
 **Key Files:**
 - `src/features/session-tracker/index.ts` — SessionTracker class
 - `src/features/auto-loop/auto-loop.ts` — Auto-loop implementation
 - `src/features/background-command/pty/pty-runtime.ts` — PTY runtime
+- `src/features/runtime-pressure/index.ts` — Runtime pressure detection
+- `src/features/sdk-supervisor/index.ts` — SDK supervisor
 
 **Depends on:**
 - Hooks and coordination layers
@@ -256,9 +318,19 @@ src/shared/
 ├── helpers.ts          — Utility functions (asString, getNestedValue)
 ├── state.ts            — In-memory state management
 ├── types.ts            — Shared TypeScript types
-├── security/           — Security utilities
+├── runtime.ts          — Runtime utilities
 ├── runtime-policy.ts   — Runtime policy loading
-└── plugin-tool-output-summary.ts — Tool output summarization
+├── workspace-runtime-policy.ts — Workspace runtime policy
+├── task-status.ts      — Task status definitions
+├── tool-helpers.ts     — Tool helper functions
+├── tool-response.ts    — Tool response utilities
+├── plugin-tool-output-summary.ts — Tool output summarization
+├── session-naming.ts   — Session naming utilities
+├── app-api.ts          — App API utilities
+├── errors/             — Error types
+└── security/           — Security utilities
+    ├── path-scope.ts   — Path scope validation
+    └── redaction.ts    — Data redaction
 ```
 
 **Key Files:**
@@ -266,36 +338,178 @@ src/shared/
 - `src/shared/helpers.ts` — Utility functions
 - `src/shared/state.ts` — In-memory state Maps (dual-layer with persistence)
 - `src/shared/types.ts` — Shared type definitions
+- `src/shared/security/path-scope.ts` — Path scope validation
+- `src/shared/security/redaction.ts` — Data redaction
 
 **Depends on:**
 - `@opencode-ai/plugin` SDK types
 
 **Used by:** All other layers
 
+### Routing Layer
+
+**Purpose:** Session entry classification and behavioral profile resolution
+
+**Location:** `src/routing/`
+
+**Structure:**
+```
+src/routing/
+├── behavioral-profile/  — Behavioral profile resolution
+│   ├── resolve-behavioral-profile.ts — Profile resolution
+│   ├── profiles.ts      — Profile definitions
+│   └── types.ts         — Profile types
+├── command-engine/      — Command engine
+│   ├── index.ts         — Command engine operations
+│   └── types.ts         — Command engine types
+└── session-entry/       — Session entry classification
+    ├── index.ts         — Session entry operations
+    ├── intake-gate.ts   — Intake gate
+    ├── purpose-classifier.ts — Purpose classification
+    ├── profile-resolver.ts — Profile resolution
+    └── language-resolution.ts — Language resolution
+```
+
+**Key Files:**
+- `src/routing/behavioral-profile/resolve-behavioral-profile.ts` — Behavioral profile resolution
+- `src/routing/session-entry/purpose-classifier.ts` — Session purpose classification
+- `src/routing/command-engine/index.ts` — Command engine operations
+
+**Depends on:**
+- Configuration subscriber
+- Schema kernel
+
+**Used by:** Session entry and behavioral profile resolution
+
+### Configuration Layer
+
+**Purpose:** Config subscriber and workflow
+
+**Location:** `src/config/`
+
+**Structure:**
+```
+src/config/
+├── compiler.ts         — Config compiler
+├── subscriber.ts       — Config subscriber
+└── workflow/           — Config workflow
+    └── workflow-types.ts — Workflow types
+```
+
+**Key Files:**
+- `src/config/subscriber.ts` — Config subscriber
+- `src/config/compiler.ts` — Config compiler
+
+**Depends on:**
+- Schema kernel
+- File system
+
+**Used by:** Configuration management
+
+### Schema Kernel
+
+**Purpose:** Zod validation schemas
+
+**Location:** `src/schema-kernel/`
+
+**Structure:**
+```
+src/schema-kernel/
+├── index.ts                    — Schema kernel exports
+├── hivemind-configs.schema.ts  — Hivemind configs schema
+├── tool.schema.ts              — Tool schema
+├── agent-frontmatter.schema.ts — Agent frontmatter schema
+├── agent-work-contract.schema.ts — Agent work contract schema
+├── bootstrap.schema.ts         — Bootstrap schema
+├── command-engine.schema.ts    — Command engine schema
+├── command-frontmatter.schema.ts — Command frontmatter schema
+├── commands.schema.ts          — Commands schema
+├── config-precedence.schema.ts — Config precedence schema
+├── doc-intelligence.schema.ts  — Doc intelligence schema
+├── generate-config-json-schema.ts — Config JSON schema generation
+├── mcp-server.schema.ts        — MCP server schema
+├── prompt-enhance.schema.ts    — Prompt enhance schema
+├── runtime-pressure.schema.ts  — Runtime pressure schema
+├── sdk-supervisor.schema.ts    — SDK supervisor schema
+├── session-tracker.schema.ts   — Session tracker schema
+├── session-view.schema.ts      — Session view schema
+├── skill-metadata.schema.ts    — Skill metadata schema
+└── trajectory.schema.ts        — Trajectory schema
+```
+
+**Key Files:**
+- `src/schema-kernel/index.ts` — Schema kernel exports
+- `src/schema-kernel/hivemind-configs.schema.ts` — Hivemind configs schema
+- `src/schema-kernel/tool.schema.ts` — Tool schema
+
+**Depends on:**
+- Zod library
+
+**Used by:** All layers that need schema validation
+
+### CLI Layer
+
+**Purpose:** Command-line interface
+
+**Location:** `src/cli/`
+
+**Structure:**
+```
+src/cli/
+├── index.ts            — CLI entry point
+├── router.ts           — CLI router
+├── discovery.ts        — CLI discovery
+├── renderer.ts         — CLI renderer
+├── commands/           — CLI commands
+│   ├── init.ts         — Init command
+│   ├── doctor.ts       — Doctor command
+│   ├── recover.ts      — Recover command
+│   ├── version.ts      — Version command
+│   └── help.ts         — Help command
+└── ui/                 — CLI UI
+    └── prompts.ts      — CLI prompts
+```
+
+**Key Files:**
+- `src/cli/index.ts` — CLI entry point
+- `src/cli/router.ts` — CLI router
+
+**Depends on:**
+- Shared utilities
+- Configuration subscriber
+
+**Used by:** CLI operations
+
 ## Data Flow
 
 ### Plugin Initialization Flow
 
 1. **Entry:** OpenCode plugin loader imports `src/plugin.ts`
-2. **Lifecycle Manager:** `createHarnessLifecycleManager()` creates lifecycle manager
-3. **Shared Dependencies:** Load `session-api`, `state`, `runtime-policy`
-4. **Hook Factories:** Create hook factories (`core-hooks`, `session-hooks`, etc.)
-5. **Tool Creators:** Instantiate tool creator functions
-6. **Registration:** Register all tools and hooks with OpenCode runtime
-7. **Background Loops:** Start auto-loop and ralph-loop via `runAutoLoop()` and `runRalphLoop()`
+2. **Config Loading:** Load runtime policy and hivemind configs
+3. **PTY Manager:** Create PTY manager if supported
+4. **Session Tracker:** Create and initialize session tracker
+5. **Delegation Modules:** Wire delegation modules (coordinator, manager, detector, lifecycle, etc.)
+6. **Lifecycle Manager:** Create harness lifecycle manager
+7. **Event Observers:** Create event observers (delegation, session entry, session main, session tracker)
+8. **Hook Factories:** Create hook factories (core-hooks, session-hooks, tool-guard-hooks, etc.)
+9. **Tool Creators:** Instantiate all tool creator functions
+10. **Registration:** Register all tools and hooks with OpenCode runtime
+11. **Background Recovery:** Recover pending delegations and replay pending notifications
 
-**Key Path:** `src/plugin.ts` lines 30-180
+**Key Path:** `src/plugin.ts` lines 258-554
 
 ### Delegation Flow
 
-1. **Dispatch:** User calls `/gsd` command or `delegate-task` tool
+1. **Dispatch:** User calls `delegate-task` tool
 2. **Tool Creation:** `src/tools/delegation/delegate-task.ts` creates delegation packet
-3. **Agent Resolution:** `src/coordination/delegation/agent-resolver.js` selects target agent
-4. **WaiterModel:** `src/coordination/delegation/manager.ts` dispatches to WaiterModel
-5. **State Persistence:** `src/task-management/continuity/delegation-persistence.ts` persists delegation record
-6. **Completion Detection:** `src/coordination/completion/detector.ts` monitors for completion
-7. **Status Update:** Updates delegation status in `.hivemind/state/delegations.json`
-8. **Result Return:** Returns delegation ID to caller
+3. **Agent Resolution:** `src/coordination/delegation/agent-resolver.ts` selects target agent
+4. **Slot Acquisition:** `src/coordination/delegation/slot-manager.ts` acquires concurrency slot
+5. **Dispatch:** `src/coordination/delegation/dispatcher.ts` dispatches to child session
+6. **State Persistence:** `src/task-management/continuity/delegation-persistence.ts` persists delegation record
+7. **Monitoring:** `src/coordination/delegation/monitor.ts` monitors execution
+8. **Completion Detection:** `src/coordination/completion/detector.ts` detects completion
+9. **Status Update:** Updates delegation status in `.hivemind/state/delegations.json`
+10. **Result Return:** Returns delegation ID to caller
 
 **Key Path:** `src/tools/delegation/delegate-task.ts` → `src/coordination/delegation/manager.ts`
 
@@ -343,13 +557,14 @@ hook('lifecycle', 'tool-before', async (context) => { /* ... */ })
 ```typescript
 interface Delegation {
   id: string;                    // Delegation ID
-  sessionId: string;             // Parent session ID
-  status: DelegationStatus;      // dispatched, running, completed, error, timeout
+  parentSessionId: string;       // Parent session ID
+  childSessionId: string;        // Child session ID
   agent: string;                 // Target agent name
   prompt: string;                // Task prompt
-  context: unknown;              // Optional context packet
-  createdAt: string;             // ISO timestamp
-  completedAt?: string;          // Completion timestamp
+  status: DelegationStatus;      // dispatched, running, completed, error, timeout
+  executionMode: "sdk" | "pty" | "headless";
+  queueKey: string;              // Queue key for concurrency
+  nestingDepth: number;          // Nesting depth
 }
 ```
 
@@ -383,12 +598,11 @@ class DelegationManager {
 
 **Examples:**
 ```typescript
-interface SessionContinuity {
-  sessionId: string;
-  status: string;
-  lastActivity: string;
-  journal: JournalEntry[];
-  lineage: LineageEntry[];
+interface SessionContinuityRecord {
+  sessionID: string;
+  promptParams: SessionPromptParams;
+  toolProfile?: SessionToolProfile;
+  metadata: SessionContinuityMetadata;
 }
 ```
 
@@ -403,10 +617,10 @@ interface SessionContinuity {
 **Examples:**
 ```typescript
 interface RuntimePolicy {
-  guardrailLevel: 'strict' | 'moderate' | 'relaxed';
-  delegationMode: 'waiter' | 'synchronous';
-  toolAccessPattern: 'restricted' | 'full';
-  skillFilter: 'curated' | 'all';
+  concurrency: ConcurrencyPolicy;
+  budget: BudgetPolicy;
+  trustedRuntime: TrustedRuntimePolicy;
+  maxDelegationDepth?: number;
 }
 ```
 
@@ -425,17 +639,21 @@ interface RuntimePolicy {
 - Register all tools and hooks
 - Start background loops (auto-loop, ralph-loop)
 - Load runtime policy
+- Initialize session tracker
+- Wire delegation modules
 
 **Key Code:**
 ```typescript
-// src/plugin.ts lines 180-250
-const lifecycle = createHarnessLifecycleManager()
-const hooks = createCoreHooks(), createSessionHooks(), ...
-const tools = createDelegateTaskTool(), createDelegationStatusTool(), ...
-await opencode.registerTools(tools)
-await opencode.registerHooks(hooks)
-runAutoLoop()
-runRalphLoop()
+// src/plugin.ts lines 258-554
+export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
+  const runtimePolicy = loadRuntimePolicy(...)
+  const hivemindConfig = getConfig(...)
+  const ptyManager = await createPtyManagerIfSupported()
+  const sessionTracker = new SessionTracker(...)
+  const delegationModules = setupDelegationModules(...)
+  const lifecycleManager = createHarnessLifecycleManager(...)
+  // ... register tools and hooks
+}
 ```
 
 ### CLI Entry Point
@@ -458,7 +676,7 @@ runRalphLoop()
 **Examples:**
 - `src/tools/delegation/delegate-task.ts` — Delegate to agent
 - `src/tools/config/bootstrap-init.ts` — Initialize project
-- `src/tools/hivemind/session-tracker.ts` — Query session tracker
+- `src/tools/session/session-tracker.ts` — Query session tracker
 
 ## Component Diagram
 
@@ -506,7 +724,7 @@ runRalphLoop()
 - **Threading:** Single-threaded event loop via Node.js; background tasks run as separate processes via WaiterModel
 - **Global state:** In-memory state Maps (`src/shared/state.ts`) synchronized with file persistence; session ID is the primary singleton identifier
 - **Circular imports:** None detected; clear layer boundaries prevent circular dependencies
-- **Module size:** Max 500 LOC per module enforced; plugin.ts is ~29KB (largest module)
+- **Module size:** Max 500 LOC per module enforced; plugin.ts is ~554 LOC (largest module)
 - **Type safety:** `strict: true` in tsconfig; `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`
 - **No `any` types:** Enforced for new code; legacy code may have `any` with TODOs
 
@@ -540,23 +758,19 @@ runRalphLoop()
 **Key Code:**
 ```typescript
 // src/shared/helpers.ts
-throw new HarnessError('Delegation failed', {
-  sessionId,
-  delegationId,
-  cause: error
-})
+throw new Error(`[Harness] Delegation failed for session ${sessionId}`)
 ```
 
 ## Cross-Cutting Concerns
 
-**Logging:** Console-based via `console.log()`; no external logging service
+**Logging:** Structured logging via `client.app.log()` with service/level/message structure
 
 **Validation:** Zod schemas in `src/schema-kernel/` for all config inputs
 
 **Authentication:** None; runs within OpenCode environment with inherited permissions
 
-**Security:** Plugin-based execution; file-based persistence; no remote auth
+**Security:** Plugin-based execution; file-based persistence; no remote auth; path scope validation and data redaction in `src/shared/security/`
 
 ---
 
-*Architecture analysis: 2026-05-26*
+*Architecture analysis: 2026-05-28*

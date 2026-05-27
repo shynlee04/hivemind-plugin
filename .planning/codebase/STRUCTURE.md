@@ -1,6 +1,6 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-05-26
+**Analysis Date:** 2026-05-28
 
 ## Overview
 
@@ -12,6 +12,7 @@ Hivemind is organized as a TypeScript npm package following a plugin architectur
 - **`.planning/`** — Governance artifacts (requirements, roadmaps, architecture maps)
 - **`dist/`** — Compiled TypeScript output (build artifact)
 - **`bin/`** — CLI substrate (entry points for command-line usage)
+- **`sidecar/`** — Next.js sidecar dashboard (read-only)
 
 ## Directory Layout
 
@@ -32,12 +33,16 @@ Hivemind is organized as a TypeScript npm package following a plugin architectur
 │   ├── artifacts/                     # Phase artifacts and outputs
 │   ├── planning/                      # Planning documentation
 │   ├── session-tracker/               # Real-time session event tracking
-│   └── runtime/                       # Runtime state
+│   ├── audit/                         # Audit artifacts
+│   ├── governance/                    # Governance config
+│   └── scripts/                       # Hivemind scripts
 ├── .planning/                         # Governance sector (NOT runtime)
 │   ├── codebase/                      # Codebase analysis docs (ARCHITECTURE.md, STRUCTURE.md, etc.)
 │   ├── architecture/                  # Architecture documentation
 │   ├── research/                      # Research artifacts
-│   └── requirements/                  # Requirements documents
+│   ├── requirements/                  # Requirements documents
+│   ├── phases/                        # Phase planning artifacts
+│   └── debug/                         # Debug artifacts
 ├── src/                               # Runtime implementation (npm package)
 │   ├── cli/                           # CLI implementation
 │   ├── config/                        # Config subscriber and workflow
@@ -48,7 +53,15 @@ Hivemind is organized as a TypeScript npm package following a plugin architectur
 │   ├── shared/                        # Shared utilities and contracts
 │   ├── task-management/               # Session continuity and state
 │   ├── tools/                         # Tool entry points
-│   └── routing/                       # Session entry and behavioral profile
+│   ├── routing/                       # Session entry and behavioral profile
+│   ├── sidecar/                       # Sidecar state
+│   ├── plugin.ts                      # Plugin composition root
+│   └── index.ts                       # Public API re-exports
+├── sidecar/                           # Next.js sidecar dashboard
+│   ├── src/                           # Sidecar source code
+│   ├── package.json                   # Sidecar package manifest
+│   ├── tsconfig.json                  # Sidecar TypeScript config
+│   └── next.config.ts                 # Next.js config
 ├── bin/                               # CLI substrate
 │   └── hivemind.cjs                   # CLI entry point
 ├── dist/                              # Compiled TypeScript output
@@ -61,9 +74,11 @@ Hivemind is organized as a TypeScript npm package following a plugin architectur
 ├── assets/                            # Source-of-truth asset files
 ├── scripts/                           # Build and sync scripts
 ├── state/                             # Legacy state (migration target: .hivemind/state/)
+├── docs/                              # Documentation
 ├── package.json                       # Npm package manifest
 ├── tsconfig.json                      # TypeScript configuration
 ├── vitest.config.ts                   # Vitest testing configuration
+├── opencode.json                      # OpenCode plugin configuration
 └── README.md                          # Project documentation
 ```
 
@@ -79,15 +94,20 @@ Hivemind is organized as a TypeScript npm package following a plugin architectur
 - Hook factories (lifecycle, guards, observers, transforms)
 - Task management (continuity, journal, trajectory, lifecycle)
 - Coordination (delegation, completion, concurrency, spawner)
-- Features (session-tracker, auto-loop, background-command, doc-intelligence)
+- Features (session-tracker, auto-loop, background-command, doc-intelligence, runtime-pressure, sdk-supervisor)
 - Shared utilities and type contracts
 - Schema kernel (Zod validation schemas)
+- Routing (session entry, behavioral profile, command engine)
+- Configuration (subscriber, compiler, workflow)
+- CLI (commands, router, renderer)
 
 **Key Files:**
-- `src/plugin.ts` — Composition root (~29KB, largest module)
+- `src/plugin.ts` — Composition root (~554 LOC, largest module)
 - `src/index.ts` — Public API re-exports
 - `src/shared/session-api.ts` — OpenCode SDK client wrapper
 - `src/coordination/delegation/manager.ts` — WaiterModel delegation manager
+- `src/task-management/continuity/index.ts` — Session persistence I/O
+- `src/features/session-tracker/index.ts` — SessionTracker class
 
 ### .opencode/ (OpenCode Primitives)
 
@@ -114,8 +134,9 @@ Hivemind is organized as a TypeScript npm package following a plugin architectur
 - **`journal/`** — Append-only event timeline (session journals)
 - **`lineage/`** — Execution lineage tracking
 - **`artifacts/`** — Phase artifacts and outputs
-- **`session-tracker/`** — Real-time session event tracking (44 directories)
-- **`planning/`** — Planning documentation (governance artifacts)
+- **`session-tracker/`** — Real-time session event tracking
+- **`audit/`** — Audit artifacts
+- **`governance/`** — Governance config
 
 **IMPORTANT:** This is internal state, NOT user configuration. Do NOT commit secrets or credentials here.
 
@@ -137,6 +158,10 @@ Hivemind is organized as a TypeScript npm package following a plugin architectur
   - `hivemind-runtime-identity-taxonomy-2026-05-07.md` — Naming contract
 - **`research/`** — Research artifacts (30+ research files)
 - **`requirements/`** — Requirements documents
+- **`phases/`** — Phase planning artifacts
+- **`debug/`** — Debug artifacts
+
+**IMPORTANT:** This is governance sector, NOT runtime code. Planning decisions, not implementation.
 
 ### tests/ (Test Suite)
 
@@ -180,12 +205,24 @@ npx hivemind <command>
 
 **Build Command:** `npm run build`
 
+### sidecar/ (Sidecar Dashboard)
+
+**Purpose:** Read-only Next.js sidecar dashboard for runtime visualization
+
+**Contains:**
+- `sidecar/src/` — Sidecar source code
+- `sidecar/package.json` — Sidecar package manifest
+- `sidecar/tsconfig.json` — Sidecar TypeScript config
+- `sidecar/next.config.ts` — Next.js config
+
+**Dependencies:** Next.js 15, React 19, @json-render/react
+
 ## Key File Locations
 
 ### Entry Points
 
 **Plugin Composition Root:**
-- `src/plugin.ts` — Main plugin initialization and registration (~29KB)
+- `src/plugin.ts` — Main plugin initialization and registration (~554 LOC)
 
 **Public API:**
 - `src/index.ts` — Re-exports for public consumption
@@ -205,7 +242,7 @@ npx hivemind <command>
 - `vitest.config.ts` — Vitest testing framework configuration
 
 **OpenCode Config:**
-- `.opencode/opencode.json` — OpenCode plugin configuration
+- `opencode.json` — OpenCode plugin configuration
 
 ### Core Logic
 
@@ -214,6 +251,8 @@ npx hivemind <command>
 - `src/shared/helpers.ts` — Utility functions (asString, getNestedValue)
 - `src/shared/state.ts` — In-memory state management
 - `src/shared/types.ts` — Shared TypeScript types
+- `src/shared/security/path-scope.ts` — Path scope validation
+- `src/shared/security/redaction.ts` — Data redaction
 
 **Delegation Manager:**
 - `src/coordination/delegation/manager.ts` — WaiterModel dispatch and completion detection
@@ -222,6 +261,11 @@ npx hivemind <command>
 - `src/task-management/continuity/index.ts` — Session persistence I/O
 - `src/task-management/journal/index.ts` — Event append operations
 - `src/task-management/lifecycle/index.ts` — Lifecycle manager
+
+**Features:**
+- `src/features/session-tracker/index.ts` — SessionTracker class
+- `src/features/runtime-pressure/index.ts` — Runtime pressure detection
+- `src/features/sdk-supervisor/index.ts` — SDK supervisor
 
 ### Testing
 
@@ -258,6 +302,7 @@ npx hivemind <command>
 - `bin/` — CLI substrate
 - `scripts/` — Build and sync scripts
 - `assets/` — Source-of-truth asset files
+- `sidecar/` — Sidecar dashboard
 
 ### Variable Naming
 
@@ -298,7 +343,13 @@ src/
 ├── hooks/                     # Hook factories
 ├── features/                  # Runtime capabilities
 ├── shared/                    # Utilities and contracts
-└── schema-kernel/             # Validation schemas
+├── routing/                   # Session entry and behavioral profile
+├── config/                    # Config subscriber and workflow
+├── schema-kernel/             # Validation schemas
+├── coordination/              # Delegation orchestration
+├── task-management/           # Session continuity and state
+├── cli/                       # CLI implementation
+└── sidecar/                   # Sidecar state
 ```
 
 ### Feature-Based Organization
@@ -313,7 +364,11 @@ src/features/
 ├── background-command/        # Background PTY execution
 ├── doc-intelligence/          # Document querying
 ├── governance-engine/         # Governance sessions
-└── prompt-packet/             # Prompt handling
+├── prompt-packet/             # Prompt handling
+├── runtime-pressure/          # Runtime pressure monitoring
+├── sdk-supervisor/            # SDK wrapper supervision
+├── agent-work-contracts/      # Agent work contracts
+└── bootstrap/                 # Primitive registry and control plane
 ```
 
 ### Coordination Sub-Layers
@@ -326,7 +381,8 @@ src/coordination/
 ├── completion/                # Dual-signal completion detection
 ├── concurrency/               # Task queue management
 ├── command-delegation/        # Slash command delegation
-└── sdk-delegation/            # SDK child session spawning
+├── sdk-delegation/            # SDK child session spawning
+└── spawner/                   # Session spawning
 ```
 
 ### Task Management Sub-Layers
@@ -506,6 +562,8 @@ describe('myFunction', () => {
 - `lineage/` — Execution lineage
 - `artifacts/` — Phase outputs
 - `session-tracker/` — Real-time tracking
+- `audit/` — Audit artifacts
+- `governance/` — Governance config
 
 **IMPORTANT:** This is internal state, NOT user configuration. Do NOT commit secrets or credentials here.
 
@@ -523,6 +581,8 @@ describe('myFunction', () => {
 - `architecture/` — Architecture documentation
 - `research/` — Research artifacts
 - `requirements/` — Requirements documents
+- `phases/` — Phase planning artifacts
+- `debug/` — Debug artifacts
 
 **IMPORTANT:** This is governance sector, NOT runtime code. Planning decisions, not implementation.
 
@@ -541,6 +601,22 @@ describe('myFunction', () => {
 
 **IMPORTANT:** Never edit files in `dist/` manually. Always rebuild with `npm run build`.
 
+### sidecar/
+
+**Purpose:** Read-only Next.js sidecar dashboard
+
+**Generated:** No — manually authored
+
+**Committed:** Yes — git-tracked
+
+**Contents:**
+- `src/` — Sidecar source code
+- `package.json` — Sidecar package manifest
+- `tsconfig.json` — Sidecar TypeScript config
+- `next.config.ts` — Next.js config
+
+**IMPORTANT:** This is a separate package that reads from `.hivemind/` and `.planning/`. It is read-only for canonical state.
+
 ---
 
-*Structure analysis: 2026-05-26*
+*Structure analysis: 2026-05-28*
