@@ -51,6 +51,9 @@ describe("bootstrapInit", () => {
       expect(existsSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on", "SKILL.md"))).toBe(true)
       expect(existsSync(join(projectRoot, ".opencode", "agents", "hm-orchestrator.md"))).toBe(true)
       expect(existsSync(join(projectRoot, ".opencode", "commands", "start-work.md"))).toBe(true)
+      expect(existsSync(join(projectRoot, ".opencode", "workflows", "hm-discuss.md"))).toBe(true)
+      expect(existsSync(join(projectRoot, ".opencode", "references", "hm-gate-triad.md"))).toBe(true)
+      expect(existsSync(join(projectRoot, ".opencode", "templates", "hm-plan.md"))).toBe(true)
       expect(lstatSync(join(projectRoot, ".opencode", "agents", "hm-orchestrator.md")).isSymbolicLink()).toBe(false)
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })

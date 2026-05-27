@@ -17,6 +17,9 @@ describe("recover command", () => {
           agents: { ok: 0, missing: 3, broken: 0, file: 0, repaired: 3 },
           skills: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
           commands: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          workflows: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          references: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          templates: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
         },
       })),
     })
@@ -39,6 +42,9 @@ describe("recover command", () => {
           agents: { ok: 1, missing: 0, broken: 0, file: 0, repaired: 0 },
           skills: { ok: 1, missing: 0, broken: 0, file: 0, repaired: 0 },
           commands: { ok: 1, missing: 0, broken: 0, file: 0, repaired: 0 },
+          workflows: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          references: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          templates: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
         },
       })),
     })
@@ -60,6 +66,9 @@ describe("recover command", () => {
           agents: { ok: 3, missing: 0, broken: 0, file: 0, repaired: 0 },
           skills: { ok: 3, missing: 0, broken: 0, file: 0, repaired: 0 },
           commands: { ok: 3, missing: 0, broken: 0, file: 0, repaired: 0 },
+          workflows: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          references: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          templates: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
         },
       })),
     })
@@ -81,6 +90,9 @@ describe("recover command", () => {
           agents: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
           skills: { ok: 0, missing: 0, broken: 0, file: 1, repaired: 0 },
           commands: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          workflows: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          references: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
+          templates: { ok: 0, missing: 0, broken: 0, file: 0, repaired: 0 },
         },
       })),
     })

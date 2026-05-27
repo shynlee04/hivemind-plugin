@@ -20,11 +20,17 @@ describe("bootstrapRecover", () => {
       rmSync(join(projectRoot, ".opencode", "skills", "hivemind-power-on"), { recursive: true, force: true })
       rmSync(join(projectRoot, ".opencode", "agents", "hm-orchestrator.md"), { force: true })
       rmSync(join(projectRoot, ".opencode", "commands", "start-work.md"), { force: true })
+      rmSync(join(projectRoot, ".opencode", "workflows", "hm-discuss.md"), { force: true })
+      rmSync(join(projectRoot, ".opencode", "references", "hm-gate-triad.md"), { force: true })
+      rmSync(join(projectRoot, ".opencode", "templates", "hm-plan.md"), { force: true })
 
       const result = await bootstrapRecover({ projectRoot, scope: "project" })
       expect(result.counts.skills.repaired).toBe(1)
       expect(result.counts.agents.repaired).toBe(1)
       expect(result.counts.commands.repaired).toBe(1)
+      expect(result.counts.workflows.repaired).toBe(1)
+      expect(result.counts.references.repaired).toBe(1)
+      expect(result.counts.templates.repaired).toBe(1)
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
@@ -38,12 +44,18 @@ describe("bootstrapRecover", () => {
       rmSync(join(globalRoot, "skills", "hivemind-power-on"), { recursive: true, force: true })
       rmSync(join(globalRoot, "agents", "hm-orchestrator.md"), { force: true })
       rmSync(join(globalRoot, "commands", "start-work.md"), { force: true })
+      rmSync(join(globalRoot, "workflows", "hm-discuss.md"), { force: true })
+      rmSync(join(globalRoot, "references", "hm-gate-triad.md"), { force: true })
+      rmSync(join(globalRoot, "templates", "hm-plan.md"), { force: true })
 
       const result = await bootstrapRecover({ projectRoot, scope: "global", globalConfigDir: globalRoot })
       expect(result.effectiveScope).toBe("global")
       expect(result.counts.skills.repaired).toBe(1)
       expect(result.counts.agents.repaired).toBe(1)
       expect(result.counts.commands.repaired).toBe(1)
+      expect(result.counts.workflows.repaired).toBe(1)
+      expect(result.counts.references.repaired).toBe(1)
+      expect(result.counts.templates.repaired).toBe(1)
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
       rmSync(globalRoot, { recursive: true, force: true })
