@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-26T16:25:00.000Z"
+last_updated: "2026-05-28T04:00:00.000Z"
 progress:
-  total_phases: 43
+  total_phases: 59
   completed_phases: 15
   total_plans: 71
   completed_plans: 70
@@ -16,8 +16,8 @@ progress:
 
 # Hivemind — State
 
-**Last updated:** 2026-05-25
-**Last advance:** Phase 23.2 COMPLETE — all 5 session-tracker bugs fixed (assistant text extraction, compaction summary, tool attribution race, hierarchy manifest, actor metadata). 8 gap phases (P23.3-P23.10) inserted after P23.2 — including notification delivery L1 UAT verification, 5 cross-cluster integration gates, Schema+Config parallel track integration, and pre-structural-cleanup readiness gate. Total phases: 41→51. Cluster restructuring completed with dependency-ordered A-L clusters: D → A + C → B → E/F → G → H → I → J (parallel) → K → L.
+**Last updated:** 2026-05-28
+**Last advance:** Phase 23.2 COMPLETE — all 5 session-tracker bugs fixed. C1-C8 concern-remediation phases added to roadmap (8 phases covering P0-P2 issues from CONCERNS.md audit). Total phases: 51→59.
 **Current focus:** Gap Phase P23.3 — Notification Delivery Completion & L1 UAT Verification (GAP-01)
 **Next recommended run:** Execute P23.3 to verify all 5 session-tracker bug fixes with live UAT evidence before proceeding to P24 (Coordination Dispatch).
 
@@ -76,6 +76,14 @@ progress:
 **Phase 36:** 📋 PENDING — Integration Verification (Group 4, was P35).
 **Phase 37:** 📋 deferred — Fix sync-oss.yml workflow (was P36).
 **Phase 38:** 📋 deferred — Package .opencode/ primitives for distribution (was P37).
+**C1 (Concerns):** 📋 PENDING — Critical Type Safety & Error Handling (P0, no dependencies).
+**C2 (Concerns):** 📋 PENDING — Type Safety & Security Hardening (P1, Depends: C1).
+**C3 (Concerns):** 📋 PENDING — Module Decomposition & Promise Patterns (P1, Depends: C2).
+**C4 (Concerns):** 📋 PENDING — Performance Optimization (P2, Depends: C3).
+**C5 (Concerns):** 📋 PENDING — Error Handling & Code Quality (P2, Depends: C4).
+**C6 (Concerns):** 📋 PENDING — Architectural Refactoring (P2, Depends: C5).
+**C7 (Concerns):** 📋 PENDING — Test Coverage (P2, Depends: C6).
+**C8 (Concerns):** 📋 PENDING — Dependency Cleanup (P2, Depends: C7).
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
