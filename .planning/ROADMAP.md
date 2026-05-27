@@ -5,7 +5,7 @@
 **Status:** Active (Gap-Refined Cluster Restructuring)
 **Current phase:** P23.3 (GAP-01) — Notification Delivery L1 UAT Verification
 **Phase 23.2:** ✅ COMPLETE — all 5 session-tracker bugs fixed
-**Total phases:** 51 (26 mainline + 8 gap + 10 workstream + 7 historical)
+**Total phases:** 59 (26 mainline + 8 gap + 10 workstream + 7 historical + 8 concerns)
 **MVP minimum:** P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36
 **Dependency order:** Phase 0 Governance Baseline → Cluster D (Coordination) → A (Agent) + C (Commands) → P25→P26→B (Documents) → E/F (Primitives/Bootstrap) → G (Routing) → H (Hooks) → I (Auto-loop/PTY) → J (Schema/Config, parallel) → K (Cleanup) → L (Verification)
 
@@ -1455,13 +1455,28 @@ Plans:
 
 ---
 
+## Concern-Remediation Phases (C1-C8)
+
+These 8 phases address code quality, type safety, performance, and architectural concerns identified in `.planning/codebase/CONCERNS.md`. They are sequenced by dependency and priority (P0→P2). Each phase targets specific file-level issues with verifiable success criteria.
+
+- [ ] **C1 (Concerns): Critical Type Safety & Error Handling** — Fix: duplicate PermissionAction union member in src/shared/types.ts; silent error swallowing .catch(() => {}) in event-capture.ts, child-writer.ts, initialization.ts; ClientLike = any type erasure in initialization.ts [Arch-src: YES - src/shared/types.ts, src/features/session-tracker/event-capture.ts, src/task-management/continuity/child-writer.ts, src/plugin.ts initialization.ts] [UAT: zero duplicate union members, zero .catch(() => {}) with empty bodies, zero `ClientLike = any` erasure; typecheck clean]
+- [ ] **C2 (Concerns): Type Safety & Security Hardening** — Fix: 12 `as any` casts in delegation-status.ts, coordinator.ts, session-api.ts; ESLint suppressions in session-api.ts, initialization.ts; console logging in production code (6 files); unsanitized session ID in file paths (3 files); synchronous readFileSync in sidecar; full process.env spread in governance git commit [Arch-src: YES - src/coordination/delegation/delegation-status.ts, src/coordination/coordinator.ts, src/shared/session-api.ts, src/plugin.ts, src/features/session-tracker/*.ts, src/tools/governance/*.ts] [UAT: zero `as any` casts in listed files, zero ESLint suppressions in listed files, zero console.log in production code, session IDs sanitized in file paths, sidecar uses async fs, git commit uses scoped env]
+- [ ] **C3 (Concerns): Module Decomposition & Promise Patterns** — Fix: 8 files >500 LOC (event-capture.ts 1062 LOC highest); fragile promise chain in ChildWriter.enqueueWrite [Arch-src: YES - src/features/session-tracker/event-capture.ts, src/task-management/continuity/child-writer.ts, src/features/session-tracker/index.ts] [UAT: all files ≤500 LOC, ChildWriter.enqueueWrite uses async/await with proper error propagation, typecheck clean]
+- [ ] **C4 (Concerns): Performance Optimization** — Fix: repeated JSON.parse without memoization in delegation-status.ts; synchronous FS in bootstrap-init tool; unbounded timer accumulation in completion detector; execSync blocking in governance session creation [Arch-src: YES - src/coordination/delegation/delegation-status.ts, src/tools/bootstrap/bootstrap-init.ts, src/coordination/completion/detector.ts, src/tools/governance/create-governance-session.ts] [UAT: JSON.parse results cached/memoized, bootstrap-init uses async fs, completion detector clears timers on terminal state, governance session uses async exec]
+- [ ] **C5 (Concerns): Error Handling & Code Quality** — Fix: 14 empty catch blocks across 10+ files; inconsistent error shape handling in coordinator.ts; command delegation env propagation (verify remaining risks) [Arch-src: YES - src/coordination/coordinator.ts, src/coordination/delegation/*.ts, src/tools/delegation/*.ts, src/shared/errors/*.ts] [UAT: zero empty catch blocks (all catch at minimum log or rethrow), consistent DelegationError shape in coordinator, env propagation verified for command delegation path]
+- [ ] **C6 (Concerns): Architectural Refactoring** — Fix: session-tracker god module — extract event handlers into dedicated classes; dual persistence format dependency — create DelegationStatusReader interface; plugin.ts monolithic composition — group tool registrations by domain [Arch-src: YES - src/features/session-tracker/, src/coordination/delegation/delegation-status.ts, src/plugin.ts] [UAT: session-tracker event handlers extracted to ≤3 dedicated classes, DelegationStatusReader interface abstracts persistence format, plugin.ts tool registrations grouped by domain with ≤150 LOC per group]
+- [ ] **C7 (Concerns): Test Coverage** — Fix: untested hooks modules (10+ files with 0 coverage); ~80-100 source files without direct test coverage; missing integration tests for session tracker race conditions [Arch-src: YES - src/hooks/**/*.ts, src/features/**/*.ts, src/task-management/**/*.ts] [UAT: hooks modules ≥50% line coverage, session-tracker race condition integration tests exist and pass, overall test coverage increases by ≥10%]
+- [ ] **C8 (Concerns): Dependency Cleanup** — Fix: bun-pty in dependencies (should be optionalDependencies); bun-types in dependencies (should be devDependencies); Zod v4 pinned with caret range (pin to specific minor); no runtime SDK version validation [Arch-src: YES - package.json, src/shared/sdk-version.ts (new)] [UAT: bun-pty in optionalDependencies, bun-types in devDependencies, Zod pinned to exact minor, runtime SDK version validation check exists and runs on plugin load]
+
+---
+
 ## Managed Autonomous Loop — Cycle 3: Cluster-Based Restructuring (Post-Gap Refinement)
 
 **Current authorized cycle: Cycle 3 — Cluster-Based Restructuring** (Phases 21-38 + GAPs P23.3-P23.10)
 - Entry gate: Phase 20 COMPLETE (2026-05-21)
 - Cluster ordering (critical path): D (Coordination) → A (Agent Quality) + C (Commands & Workflows) → P25 (Trajectory) → P26 (Pressure) → B (Documents) → E (Primitives) + F (Bootstrap) → G (Routing) → H (Hooks) → I (Auto-loop/PTY) → J (Schema/Config, parallel) → K (Cleanup) → L (Verification)
 - 8 integration gate phases (P23.3-P23.10) added to verify cross-cluster compatibility before downstream consumption
-- 51 total phases (33 original + 8 gaps + 10 historical CA/O3/BOOT/MCM/SR/CP-* workstream phases)
+- 59 total phases (33 original + 8 gaps + 8 concerns + 10 historical CA/O3/BOOT/MCM/SR/CP-* workstream phases)
 - MVP minimum (6 phases): P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36
 - Non-destructive foundation sweep (P00.5) precedes Group 1
 
@@ -1496,3 +1511,13 @@ Plans:
 - P23.8: G/H/I Integration Gate (GAP-06)
 - P23.9: Schema+Config Parallel Track Integration (GAP-07)
 - P23.10: Pre-Structural-Cleanup Readiness Gate (GAP-08)
+
+**Concern-remediation phases inserted (C1-C8):**
+- C1: Critical Type Safety & Error Handling (P0)
+- C2: Type Safety & Security Hardening (P1)
+- C3: Module Decomposition & Promise Patterns (P1)
+- C4: Performance Optimization (P2)
+- C5: Error Handling & Code Quality (P2)
+- C6: Architectural Refactoring (P2)
+- C7: Test Coverage (P2)
+- C8: Dependency Cleanup (P2)
