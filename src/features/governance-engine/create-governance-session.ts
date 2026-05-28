@@ -11,7 +11,21 @@
 import { tool } from "@opencode-ai/plugin"
 import type { ToolDefinition } from "@opencode-ai/plugin"
 import { z } from "zod"
-import { execSync } from "node:child_process"
+import { execFile } from "node:child_process"
+import type { ExecFileOptions } from "node:child_process"
+
+/**
+ * Async wrapper around child_process.execFile.
+ * Avoids util.promisify to remain mock-friendly in tests.
+ */
+function execFileAsync(command: string, args: string[], options?: ExecFileOptions): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    execFile(command, args, options, (err, stdout, stderr) => {
+      if (err) reject(err)
+      else resolve({ stdout, stderr })
+    })
+  })
+}
 
 import {
   createSession,
@@ -108,13 +122,20 @@ export function createGovernanceSessionTool(
         depth: 0,
       })
 
-      // --- Step 4: Git commit (best-effort) ---
+      // --- Step 4: Git commit (best-effort, async) ---
       try {
         const cwd = context.directory ?? context.worktree ?? process.cwd()
-        execSync(
-          `git add -A && git commit -m "phase(24.3.1): pre-governance handoff - ${sessionTitle}" --no-verify`,
-          { cwd, env: { ...process.env, GIT_AUTHOR_NAME: "HiveMind", GIT_AUTHOR_EMAIL: "hivemind@local", GIT_COMMITTER_NAME: "HiveMind", GIT_COMMITTER_EMAIL: "hivemind@local" } },
-        )
+        const env = {
+          ...process.env,
+          GIT_AUTHOR_NAME: "HiveMind",
+          GIT_AUTHOR_EMAIL: "hivemind@local",
+          GIT_COMMITTER_NAME: "HiveMind",
+          GIT_COMMITTER_EMAIL: "hivemind@local",
+        }
+        // Stage all files
+        await execFileAsync("git", ["add", "-A"], { cwd, env })
+        // Commit
+        await execFileAsync("git", ["commit", "-m", `phase(24.3.1): pre-governance handoff - ${sessionTitle}`, "--no-verify"], { cwd, env })
       } catch {
         // Best-effort: git failure must never propagate to the caller
       }

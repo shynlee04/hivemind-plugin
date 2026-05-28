@@ -46,9 +46,16 @@ vi.mock("../../../src/shared/session-api.js", () => ({
 
 // Mock node:child_process for git commit
 const mockExecSync = vi.fn()
+// execFile is wrapped in a Promise in the source, so mock must invoke callback
+const mockExecFile = vi.fn(
+  (_cmd: string, _args: string[], _opts: unknown, callback: (err: unknown, result: { stdout: string; stderr: string }) => void) => {
+    callback(null, { stdout: "", stderr: "" })
+  },
+)
 
 vi.mock("node:child_process", () => ({
   execSync: mockExecSync,
+  execFile: mockExecFile,
 }))
 
 // Mock Zod's prettifyError for error rendering
@@ -85,6 +92,7 @@ describe("createGovernanceSessionTool", () => {
     mockSendPrompt.mockResolvedValue({ info: { id: "msg_1" }, parts: [] })
     mockShowTuiToast.mockResolvedValue(undefined)
     mockExecSync.mockReturnValue("")
+    // mockExecFile uses the callback-based implementation defined in the mock factory above
   })
 
   // -----------------------------------------------------------------------
