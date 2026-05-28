@@ -443,6 +443,9 @@ export function createDelegationStatusTool(
       agentFilter: s.string().optional().describe("Filter stackable sessions by agent name (for find-stackable action)"),
     },
     async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
+      // Clear per-invocation cache at start to prevent stale data across rapid tool calls
+      manifestCache.clear()
+
       const parsed = DelegationStatusInputSchema.safeParse(rawArgs)
       if (!parsed.success) return renderToolResult(error(`[Harness] Invalid delegation-status input: ${z.prettifyError(parsed.error)}`))
       const args = parsed.data
