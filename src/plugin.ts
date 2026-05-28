@@ -6,6 +6,7 @@
  * individual hook factory modules and tool implementations.
  */
 import type { Plugin } from "@opencode-ai/plugin"
+import { tool } from "@opencode-ai/plugin/tool"
 import { existsSync, rmSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 
@@ -78,6 +79,114 @@ import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js
 import type { RuntimePolicy } from "./shared/types.js"
 
 const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
+
+// ---------------------------------------------------------------------------
+// Domain-specific dependency types
+// ---------------------------------------------------------------------------
+
+interface DelegationToolDeps {
+  delegationManager: DelegationManager
+  hivemindConfig: HivemindConfigs
+  ptyManager: ReturnType<typeof createPtyManagerIfSupported> extends Promise<infer T> ? T : never
+  client: OpenCodeClient
+  monitor: { getEscalationLevel: (id: string) => string | null }
+  projectDirectory: string
+}
+
+interface SessionToolDeps {
+  client: OpenCodeClient
+  sessionTracker: SessionTracker
+  projectDirectory: string
+}
+
+interface HivemindToolDeps {
+  projectDirectory: string
+}
+
+interface ConfigToolDeps {
+  projectDirectory: string
+}
+
+// ---------------------------------------------------------------------------
+// Domain registration functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Register delegation-domain tools: delegate-task, delegation-status, run-background-command.
+ *
+ * @param deps - Delegation-specific dependencies.
+ * @returns Record of 3 delegation tools.
+ */
+export function registerDelegationTools(deps: DelegationToolDeps): Record<string, ReturnType<typeof tool>> {
+  return {
+    "delegate-task": createDelegateTaskTool(deps.delegationManager, deps.hivemindConfig),
+    "delegation-status": createDelegationStatusTool(deps.delegationManager, {
+      getChildMessageCount: (sessionId) => getSessionMessageCount(deps.client, sessionId),
+      terminateChild: (sessionId) => abortSession(deps.client, sessionId),
+      getEscalationLevel: (delegationId) => deps.monitor.getEscalationLevel(delegationId),
+      projectRoot: deps.projectDirectory,
+    }),
+    "run-background-command": createRunBackgroundCommandTool({ delegationManager: deps.delegationManager, ptyManager: deps.ptyManager }),
+  }
+}
+
+/**
+ * Register session-domain tools: execute-slash-command, session-patch, session-journal-export,
+ * session-tracker, session-hierarchy, session-context, create-governance-session.
+ *
+ * @param deps - Session-specific dependencies.
+ * @returns Record of 7 session tools.
+ */
+export function registerSessionTools(deps: SessionToolDeps): Record<string, ReturnType<typeof tool>> {
+  return {
+    "execute-slash-command": createExecuteSlashCommandTool(deps.client, deps.sessionTracker),
+    "session-patch": createSessionPatchTool(deps.projectDirectory),
+    "session-journal-export": createSessionJournalExportTool(),
+    "session-tracker": createSessionTrackerTool(deps.projectDirectory),
+    "session-hierarchy": createSessionHierarchyTool(deps.projectDirectory),
+    "session-context": createSessionContextTool(deps.projectDirectory),
+    "create-governance-session": createGovernanceSessionTool(deps.client),
+  }
+}
+
+/**
+ * Register hivemind-domain tools: hivemind-doc, hivemind-trajectory, hivemind-pressure,
+ * hivemind-sdk-supervisor, hivemind-command-engine, hivemind-session-view,
+ * hivemind-agent-work-create, hivemind-agent-work-export.
+ *
+ * @param deps - Hivemind-specific dependencies.
+ * @returns Record of 8 hivemind tools.
+ */
+export function registerHivemindTools(deps: HivemindToolDeps): Record<string, ReturnType<typeof tool>> {
+  return {
+    "hivemind-doc": createHivemindDocTool(deps.projectDirectory),
+    "hivemind-trajectory": createHivemindTrajectoryTool(deps.projectDirectory),
+    "hivemind-pressure": createHivemindPressureTool(deps.projectDirectory),
+    "hivemind-sdk-supervisor": createHivemindSdkSupervisorTool(),
+    "hivemind-command-engine": createHivemindCommandEngineTool(deps.projectDirectory),
+    "hivemind-session-view": createHivemindSessionViewTool(deps.projectDirectory),
+    "hivemind-agent-work-create": createHivemindAgentWorkCreateTool(deps.projectDirectory),
+    "hivemind-agent-work-export": createHivemindAgentWorkExportTool(deps.projectDirectory),
+  }
+}
+
+/**
+ * Register config-domain tools: configure-primitive, validate-restart,
+ * bootstrap-init, bootstrap-recover, prompt-skim, prompt-analyze.
+ *
+ * @param deps - Config-specific dependencies.
+ * @returns Record of 6 config tools.
+ */
+export function registerConfigTools(deps: ConfigToolDeps): Record<string, ReturnType<typeof tool>> {
+  return {
+    "configure-primitive": createConfigurePrimitiveTool(),
+    "validate-restart": createValidateRestartTool(),
+    "bootstrap-init": createBootstrapInitTool(),
+    "bootstrap-recover": createBootstrapRecoverTool(),
+    "prompt-skim": createPromptSkimTool(deps.projectDirectory),
+    "prompt-analyze": createPromptAnalyzeTool(deps.projectDirectory),
+  }
+}
 
 /** Return true only for notification types that should append to the parent TUI. */
 function shouldAppendParentTuiNotification(type: DelegationNotificationType): boolean {
@@ -454,35 +563,25 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       })(input, output)
     },
     tool: {
-      "delegate-task": createDelegateTaskTool(delegationManager, hivemindConfig),
-      "delegation-status": createDelegationStatusTool(delegationManager, {
-        getChildMessageCount: (sessionId) => getSessionMessageCount(client, sessionId),
-        terminateChild: (sessionId) => abortSession(client, sessionId),
-        getEscalationLevel: (delegationId) => monitor.getEscalationLevel(delegationId),
-        projectRoot: projectDirectory,
+      ...registerDelegationTools({
+        delegationManager,
+        hivemindConfig,
+        ptyManager,
+        client,
+        monitor,
+        projectDirectory,
       }),
-      "run-background-command": createRunBackgroundCommandTool({ delegationManager, ptyManager }),
-      "prompt-skim": createPromptSkimTool(projectDirectory),
-      "prompt-analyze": createPromptAnalyzeTool(projectDirectory),
-      "session-patch": createSessionPatchTool(projectDirectory),
-      "execute-slash-command": createExecuteSlashCommandTool(client, sessionTracker),
-      "session-journal-export": createSessionJournalExportTool(),
-      "hivemind-doc": createHivemindDocTool(projectDirectory),
-      "hivemind-trajectory": createHivemindTrajectoryTool(projectDirectory),
-      "hivemind-pressure": createHivemindPressureTool(projectDirectory),
-      "hivemind-sdk-supervisor": createHivemindSdkSupervisorTool(),
-      "hivemind-command-engine": createHivemindCommandEngineTool(projectDirectory),
-      "session-tracker": createSessionTrackerTool(projectDirectory),
-      "session-hierarchy": createSessionHierarchyTool(projectDirectory),
-      "session-context": createSessionContextTool(projectDirectory),
-      "hivemind-session-view": createHivemindSessionViewTool(projectDirectory),
-      "hivemind-agent-work-create": createHivemindAgentWorkCreateTool(projectDirectory),
-      "hivemind-agent-work-export": createHivemindAgentWorkExportTool(projectDirectory),
-      "configure-primitive": createConfigurePrimitiveTool(),
-      "validate-restart": createValidateRestartTool(),
-      "bootstrap-init": createBootstrapInitTool(),
-      "bootstrap-recover": createBootstrapRecoverTool(),
-      "create-governance-session": createGovernanceSessionTool(client),
+      ...registerSessionTools({
+        client,
+        sessionTracker,
+        projectDirectory,
+      }),
+      ...registerHivemindTools({
+        projectDirectory,
+      }),
+      ...registerConfigTools({
+        projectDirectory,
+      }),
     },
     // Auto-persist workflow state after configure-primitive calls with workflow params.
     // Best-effort: failures are silently ignored — does not affect the tool call result.
