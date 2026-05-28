@@ -134,6 +134,104 @@ IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
 This is not negotiable. This is not optional. You cannot rationalize your way out of this.
 </EXTREMELY-IMPORTANT>
 
+## SPECIFIC SYSTEM LINEAGE, ROUTING, AND GOVERNANCE RULES
+
+### 1. Framework Lineages & Layer Classifications
+* **Lineage Boundaries**:
+  * **hm-* lineage (Harness Modules)**: The core subject of development. Controls the composition engine runtime (plugin, tools, hooks, task-management, coordination, config, routing). Only loads `hm-*` skills, `gate-*` quality triad skills, and `stack-*` reference skills. Never loads `hf-*` or `gsd-*` skills.
+  * **hf-* lineage (Harness Builder/Authoring)**: Meta-concept authoring tools (agent definitions, skills, commands, rules, permissions). Can modify primitives under `.opencode/` when authorized.
+  * **gsd-* lineage (Get-Shit-Done developer tooling)**: Shipped-with development utilities used to build the harness project itself. 
+* **Layer Hierarchy (L0 -> L3)**:
+  * **L0 Orchestrators** (e.g. `hm-l0-orchestrator`, `hf-l0-orchestrator`):
+    * *Role*: Front-facing user interaction, intent classification, landscape mapping, path routing, and quality gate enforcement.
+    * *Temperature Discipline*: Hard-constrained to **0.2–0.3** for routing stability.
+    * *Code Modification Authority*: ZERO write authority in `src/`, `tests/`, or `.opencode/`.
+  * **L1 Coordinators** (e.g. `hm-coordinator`/`hm-l1-coordinator`, `hf-l1-coordinator`):
+    * *Role*: Wave-based planning and coordination. Decomposes tasks into wave groups (Research, Planning, Execution, Quality, etc.), tracks sub-delegations, and enforces wave dependencies.
+    * *Temperature Discipline*: Hard-constrained to **0.3–0.4** to allow structured decomposition flexibility.
+  * **L2/L3 Specialists & Primitives** (e.g. `hm-planner`, `hm-executor`, `hm-verifier`, `hf-l2-*` builders, `gate-l3-*` gates, `stack-l3-*` references):
+    * *Role*: Context-informed task execution. Directly reads codebase files, writes artifacts to `.hivemind/planning/`, runs test/build commands, and evaluates quality gates.
+    * *Temperature Discipline*: Hard-constrained to **0.0–0.1** to ensure deterministic code modification and verification.
+
+### 2. Framework Oneness Constraints
+* **Definitions**:
+  * **gsd-session**: A session started by a `gsd-*` command (located under `.opencode/commands/gsd-*` or `.opencode/command/gsd-*`).
+  * **harness-session**: A session started by an `hm-*` or `hf-*` command.
+* **Oneness Enforcement**:
+  * If a session is classified as a **gsd-session**, the orchestrator, coordinator, and all spawned subagents MUST strictly use `gsd-*` commands, workflows, and agents. Mixing `gsd` tooling with `hm-*` execution modules (e.g. calling `hm-planner` from a `gsd-session`) is strictly forbidden.
+  * If a session is classified as a **harness-session**, the orchestrator/coordinator and subagents MUST use `hm-*`/`hf-*` commands, workflows, and agents.
+  * Lineage-crossing transitions are allowed only when explicitly bridged by a designated sync command (e.g. `sync-assets.js` or `sync-agents-md.md`).
+
+### 3. The Three-Path Routing Engine
+The L0 agent classifies user intent and routes it through one of three specific execution paths:
+* **Fast-Path (Direct L0 -> L2/L3)**:
+  * *Entry Criteria*: (1) A discrete, single-specialist task. (2) Known command routing. (3) Recovery or simple status check lookup. (4) Direct user request for a specific specialist.
+  * *Targets*: Mapped directly to L2/L3 specialists (e.g. `hm-l2-researcher`, `hm-l2-scout`, `hm-l3-detective`).
+* **Coordinated-Path (L0 -> L1 -> L2/L3)**:
+  * *Entry Criteria*: (1) Multi-specialist task (2+ agents). (2) Sequential task waves with output-input dependencies. (3) Unknown scope requiring planning. (4) Remediation loops after gate failures.
+  * *Targets*: Mapped to `hm-l1-coordinator` or `hf-l1-coordinator` initialized with specific wave types.
+* **Cross-Lineage Path (hm-* -> hf-*)**:
+  * *Entry Criteria*: (1) Request for meta-concept creation/editing (agents, commands, skills, rules, permissions).
+  * *Handoff Protocol*: L0 announces the transition, stops execution in `hm-*`, and dispatches the task to `hf-l0-orchestrator` passing structured handoff context (user intent, identified metadata, prior investigation results).
+
+### 4. Session Continuity: Stacking vs. Resuming
+* **Discovery Step**: Before any new delegation, L0/L1 agents must call `delegation-status({ action: "find-stackable" })` or query `.hivemind/state/delegations.json` and `.hivemind/state/session-continuity.json` to find related sessions.
+* **Resuming Protocol (Incomplete/Aborted Sessions)**:
+  * If an interrupted, aborted, or failed session exists for the same agent/task, the agent MUST resume it.
+  * *Syntax*: Pass the exact `task_id` using the native `task` tool: `task({ subagent_type: "agent-name", task_id: "<aborted-session-id>", prompt: "Continue" })`.
+  * *Constraint*: DO NOT repeat the prompt context; context is automatically recovered by the harness from the session journal.
+* **Stacking Protocol (Completed Sessions/Adding Work)**:
+  * If a session is completed but the task requires additional child work or retries, the agent MUST stack the new delegation on top of it.
+  * *Syntax*: 
+    * `task` tool: Set `task_id` to the existing parent session ID.
+    * `delegate-task` tool: Pass `stackOnSessionId: "<session-id>"` or `context: '{"parentSessionId": "<session-id>"}'`.
+    * `execute-slash-command`: Pass `stackOnSessionId: "<session-id>"`.
+* **Dual-Signal Completion**:
+  * Completion status (`completed` in `STATE.md`) requires agreement from two distinct actors:
+    1. **Doer Specialist** (e.g. `hm-executor` or `gsd-executor`) claims "done".
+    2. **Verifier Specialist** (e.g. `hm-verifier` or `gsd-verifier`) runs automated validations and inspects filesystem evidence.
+  * Both must return a `PASS` verdict. A checklist return without verifiable disk-written artifacts triggers an automatic `FAIL`.
+
+### 5. Tool Governance & Execution Prohibitions
+* **L0 Zero-Write Authority**:
+  * L0 orchestrators are strategists, not executors. They have ZERO codebase write permissions.
+  * L0 agents are strictly forbidden from calling `write_to_file`, `replace_file_content`, `multi_replace_file_content`, or running file-modifying shell commands on `src/` or `tests/`.
+  * L0 write authority is restricted to `.hivemind/planning/**` (for creating `landscape.md` and related session tracking logs).
+  * Harness hook guards automatically block unauthorized codebase writes by throwing `[Harness]` errors at the pre-tool-use lifecycle phase.
+* **Allowed Paths per Layer**:
+  * **L0**: Read: `.planning/`, `.hivemind/`, `.opencode/`. Write: `.hivemind/planning/`.
+  * **L1**: Read: `.planning/`, `.hivemind/`, `.opencode/`. Write: `.hivemind/planning/`.
+  * **L2/L3**: Read: All project paths. Write: `src/`, `tests/`, `.hivemind/planning/`, `.opencode/` (builders only).
+
+### 6. Workflow Step Chaining & Granularity
+Workflows must execute as a deterministic sequence of granular phases to prevent context loss. A standard workflow (e.g., phase discussion) chains through the following steps:
+1. **check_blocking_antipatterns**: Inspects `.continue-here.md` in the active phase directory. If a blocking anti-pattern exists, halts execution until 3-point remediation answers are documented.
+2. **check_spec**: Inspects and reads `*-SPEC.md` to lock functional requirements.
+3. **check_existing**: Checks for existing `*-CONTEXT.md` or `*-DISCUSS-CHECKPOINT.json` to resume interrupted discussion.
+4. **scout_codebase**: Reads codebase maps (e.g., `src/` hierarchy) based on the active phase type.
+5. **present_gray_areas**: Generates and presents highly specific implementation options (reusing existing components, loading behavior, etc.) to the user.
+6. **discuss_areas**: Loop through chosen areas, writing incremental checkpoints to disk after each step is completed.
+7. **write_context**: Generates the final, canonical `*-CONTEXT.md` (for downstream agent consumption) and `*-DISCUSSION-LOG.md` (for auditing).
+8. **git_commit**: Deletes the checkpoint and commits files with the message pattern `docs(phase): capture phase context`.
+9. **update_state**: Records the session status in `.planning/STATE.md` and commits the changes.
+10. **auto_advance**: If `--auto` or `--chain` flags are present, forwards state directly to the planning phase.
+
+### 7. Command-to-Workflow Dispatch Matrix
+OpenCode commands must map to specific wave types managed by the coordinator lineage:
+* **`/plan`**: Multi-round planning workflow (Research -> Design -> Verification). Routes to `hm-coordinator` (planning wave).
+* **`/start-work`**: Starts implementation waves from the current `STATE.md` offset. Routes to `hm-coordinator` (execution wave).
+* **`/ultrawork`**: Triggers full end-to-end lifecycle waves (Plan -> Build -> Test -> Verify). Routes to `hm-coordinator` (full lifecycle wave).
+* **`/deep-init`**: Bootstraps the project context and requirements. Routes to `hm-coordinator` (init wave).
+* **`/harness-doctor`**: Health diagnostics and setup repairs. Routes to `hm-coordinator` (audit wave).
+* **`/harness-audit`**: Automated phase and primitive checks. Routes to `hm-coordinator` (audit wave).
+* **`/deep-research-synthesis-repomix`**: Codebase research and repomix package scanning. Routes to `hm-coordinator` (research wave).
+
+### 8. Turn Anchor Points & Intent Preservation
+* **Intent Anchoring**:
+  * The L0 orchestrator must audit the user's turn-by-turn intent. If the user places an anchor point (e.g., "generate the plan and stop", "only run tests"), the orchestrator must enforce this boundary. It must write the required plan/research artifact and exit immediately. It must NOT auto-advance to downstream execution.
+* **Directory Structure Enforcement**:
+  * Every created file/document must reside in a registered subdirectory matching `.planning/codebase/STRUCTURE.md`. All newly created folders must contain a `.gitkeep` file to be registered in git.
+
 ## Instruction Priority
 
 This override default system prompt behavior, but **user instructions always take precedence**:
