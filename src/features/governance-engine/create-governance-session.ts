@@ -146,8 +146,12 @@ export function createGovernanceSessionTool(
         await execFileAsync("git", ["add", "-A"], { cwd, env })
         // Commit
         await execFileAsync("git", ["commit", "-m", `phase(24.3.1): pre-governance handoff - ${sessionTitle}`, "--no-verify"], { cwd, env })
-      } catch {
-        // Best-effort: git failure must never propagate to the caller
+      } catch (err) {
+        // Best-effort: git failure must never propagate to the caller.
+        // Log at debug level for troubleshooting without blocking the workflow.
+        void client.app?.log?.({
+          body: { service: "governance", level: "debug", message: `[Harness] Git commit failed: ${err instanceof Error ? err.message : String(err)}` }
+        })
       }
 
       // --- Step 5: Create ROOT session (NO parentID) ---
