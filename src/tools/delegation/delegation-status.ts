@@ -120,6 +120,14 @@ async function renderDelegationV2(delegation: Delegation & { v2?: boolean; promp
   return { ...base, agent: delegation.agent, childMessageCount, elapsedHuman: formatElapsed(elapsedMs), elapsedMs, escalationLevel: deps.getEscalationLevel?.(delegation.id) ?? null, progressPct: calculateProgressPct(delegation, elapsedMs), prompt: delegation.prompt, signals: { actionCount: delegation.actionCount ?? 0, messageCount: delegation.messageCount ?? childMessageCount ?? 0, toolCallCount: delegation.toolCallCount ?? 0 } }
 }
 
+const VALID_DELEGATION_STATUSES: ReadonlySet<string> = new Set(["dispatched", "running", "completed", "error", "timeout"])
+
+/** Runtime validation for DelegationStatus — rejects unknown status strings. */
+function validateDelegationStatus(raw: string): DelegationStatus {
+  if (VALID_DELEGATION_STATUSES.has(raw)) return raw as DelegationStatus
+  return "running" // Safe fallback: treat unknown status as running (non-terminal)
+}
+
 // Helper to construct a Delegation representation from session-tracker child data
 async function getSessionTrackerDelegation(projectRoot: string, sessionId: string): Promise<Delegation | null> {
   const resolved = await resolveSessionFile(projectRoot, sessionId)
@@ -142,7 +150,7 @@ async function getSessionTrackerDelegation(projectRoot: string, sessionId: strin
     parentSessionId: childRecord.parentSessionID,
     childSessionId: childRecord.sessionID,
     agent: childRecord.mainAgent?.name ?? childRecord.delegatedBy?.subagentType ?? "unknown",
-    status: childRecord.status as DelegationStatus,
+    status: validateDelegationStatus(childRecord.status),
     result,
     error,
     createdAt: new Date(childRecord.created).getTime(),
