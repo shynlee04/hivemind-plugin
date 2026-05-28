@@ -2,10 +2,14 @@
 description: >
   Authors project documentation including README, API references, and usage
   guides based on implemented code and architecture decisions. Called by
-  hm-orchestrator during hm-docs-update after implementation phases
-  complete and documentation needs updating.
+  hm-orchestrator during hm-docs-update after implementation phases complete and
+  documentation needs updating.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-doc-writer.md
 ---
 
 # hm-doc-writer — Documentation Authoring

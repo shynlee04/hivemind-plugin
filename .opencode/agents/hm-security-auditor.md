@@ -1,10 +1,14 @@
 ---
 description: >
-  Performs STRIDE threat model verification against implemented code,
-  producing SECURITY.md with threat assessments and mitigations. Called by
-  hm-orchestrator during hm-secure-phase after implementation completes.
+  Performs STRIDE threat model verification against implemented code, producing
+  SECURITY.md with threat assessments and mitigations. Called by hm-orchestrator
+  during hm-secure-phase after implementation completes.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-security-auditor.md
 ---
 
 # hm-security-auditor — Security Audit

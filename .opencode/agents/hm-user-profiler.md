@@ -2,10 +2,14 @@
 description: >
   Analyzes developer session interactions to build a behavioral profile,
   producing USER-PROFILE.md with communication style and decision speed
-  dimensions. Called by hm-orchestrator during hm-profile-user to
-  adapt agent behavior to developer preferences.
+  dimensions. Called by hm-orchestrator during hm-profile-user to adapt agent
+  behavior to developer preferences.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-user-profiler.md
 ---
 
 # hm-user-profiler — User Profiling

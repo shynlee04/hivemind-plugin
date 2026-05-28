@@ -6,6 +6,10 @@ description: >
   completes and a structured delivery plan is needed.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-roadmapper.md
 ---
 
 # hm-roadmapper — Roadmap Planning

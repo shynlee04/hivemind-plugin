@@ -1,11 +1,15 @@
 ---
 description: >
   Performs spec-driven authoring, transforming requirements into falsifiable
-  SPEC.md documents with acceptance criteria and verification methods. Called
-  by hm-orchestrator during hm-plan-phase after intent is clarified and
+  SPEC.md documents with acceptance criteria and verification methods. Called by
+  hm-orchestrator during hm-plan-phase after intent is clarified and
   requirements need formal specification.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-specifier.md
 ---
 
 # hm-specifier — Spec-Driven Authoring

@@ -2,11 +2,15 @@
 description: >
   Designs technical architecture and produces Architecture Decision Records.
   Produces ARCHITECTURE.md and ADR-*.md artifacts documenting system design,
-  component boundaries, and dependency decisions.
-  Called by hm-orchestrator during the hm-architect workflow after research
-  completes and a system design needs formalization.
+  component boundaries, and dependency decisions. Called by hm-orchestrator
+  during the hm-architect workflow after research completes and a system design
+  needs formalization.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-architect.md
 ---
 
 # hm-architect — Architecture Design

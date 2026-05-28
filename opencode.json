@@ -1,5 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "prompt": "{file:.opencode/agent-instructions/hm-l2-build.md}"
+    }
+  },
   "instructions": [
     ".opencode/rules/universal-rules.md"
   ],

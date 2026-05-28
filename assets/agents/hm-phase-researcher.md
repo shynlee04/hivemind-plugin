@@ -1,11 +1,15 @@
 ---
 description: >
-  Conducts phase-specific implementation research before planning, producing
-  a RESEARCH.md artifact with approach recommendations and risk assessment. Called
+  Conducts phase-specific implementation research before planning, producing a
+  RESEARCH.md artifact with approach recommendations and risk assessment. Called
   by hm-planner during the hm-plan-phase workflow to inform task breakdown and
   dependency analysis.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-phase-researcher.md
 ---
 
 # hm-phase-researcher — Research

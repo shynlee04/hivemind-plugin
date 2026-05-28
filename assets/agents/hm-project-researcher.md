@@ -1,10 +1,15 @@
 ---
 description: >
-  Conducts domain ecosystem research before roadmap creation, producing STACK.md,
-  FEATURES.md, ARCHITECTURE.md, and PITFALLS.md artifacts. Called by hm-orchestrator
-  during new project initialization to establish technical landscape understanding.
+  Conducts domain ecosystem research before roadmap creation, producing
+  STACK.md, FEATURES.md, ARCHITECTURE.md, and PITFALLS.md artifacts. Called by
+  hm-orchestrator during new project initialization to establish technical
+  landscape understanding.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-project-researcher.md
 ---
 
 # hm-project-researcher — Research

@@ -2,10 +2,14 @@
 description: >
   Verifies implementation completeness through goal-backward validation against
   plan must_haves, producing VERIFICATION.md with evidence truth assessment.
-  Called by hm-orchestrator during the hm-execute-phase workflow after hm-executor
-  completes all plan tasks.
+  Called by hm-orchestrator during the hm-execute-phase workflow after
+  hm-executor completes all plan tasks.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-verifier.md
 ---
 
 # hm-verifier — Verification

@@ -6,6 +6,10 @@ description: >
   after hm-planner produces a verified plan.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-executor.md
 ---
 
 # hm-executor — Implementation

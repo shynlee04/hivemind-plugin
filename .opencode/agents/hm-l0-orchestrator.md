@@ -118,6 +118,7 @@ skills:
 instruction:
   - .opencode/rules/universal-rules.md
   - AGENTS.md
+  - .opencode/agent-instructions/hm-l0-orchestrator.md
 ---
 
 # hm-orchestrator — L0 Strategist / Battle Commander

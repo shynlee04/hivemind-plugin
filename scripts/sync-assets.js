@@ -11,6 +11,7 @@ const PRIMITIVE_MAP = {
   workflows: join(projectRoot, ".opencode", "workflows"),
   references: join(projectRoot, ".opencode", "references"),
   templates: join(projectRoot, ".opencode", "templates"),
+  "agent-instructions": join(projectRoot, ".opencode", "agent-instructions"),
 };
 
 console.log("[Harness Build] Reflecting primitives from assets/ to runtime locations...");

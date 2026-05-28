@@ -2,10 +2,14 @@
 description: >
   Validates frontend implementation against UI design contracts, producing
   BLOCK/FLAG/PASS verdicts per component. Called by hm-orchestrator during
-  hm-ui-phase after hm-ui-researcher produces UI-SPEC.md and implementation
-  is complete.
+  hm-ui-phase after hm-ui-researcher produces UI-SPEC.md and implementation is
+  complete.
 mode: all
 hidden: true
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-ui-checker.md
 ---
 
 # hm-ui-checker — UI Design Validation
