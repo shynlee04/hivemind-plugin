@@ -1,5 +1,5 @@
-import { accessSync, constants, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync } from "node:fs"
-import { mkdir, readFile, writeFile } from "node:fs/promises"
+import { constants, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync } from "node:fs"
+import { access as fsAccess, mkdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, join, resolve } from "node:path"
 
 import { tool } from "@opencode-ai/plugin/tool"
@@ -91,7 +91,7 @@ export async function bootstrapInit(input: BootstrapInitInput): Promise<Bootstra
   const versionFilePath = join(hiveMindRoot, "state", "version.json")
   const configsPath = join(hiveMindRoot, "configs.json")
   const schemaPath = join(hiveMindRoot, "configs.schema.json")
-  const scope = resolveBootstrapScope(projectRoot, input.scope, input.globalConfigDir)
+  const scope = await resolveBootstrapScope(projectRoot, input.scope, input.globalConfigDir)
   const sources = listPrimitiveSources()
   const currentVersion = readInstalledPackageVersion()
   const previousVersion = readTrackedVersion(versionFilePath)
@@ -182,11 +182,11 @@ async function shouldRefreshSchemaArtifact(schemaPath: string): Promise<boolean>
   return currentContents !== expectedContents
 }
 
-function resolveBootstrapScope(
+async function resolveBootstrapScope(
   projectRoot: string,
   requestedScope: BootstrapScope,
   explicitGlobalConfigDir?: string,
-): ScopeResolution {
+): Promise<ScopeResolution> {
   if (requestedScope === "project") {
     return {
       requestedScope,
@@ -198,8 +198,8 @@ function resolveBootstrapScope(
 
   const globalRoot = resolve(explicitGlobalConfigDir ?? process.env.OPENCODE_CONFIG_DIR ?? `${process.env.HOME || "/tmp"}/.config/opencode`)
   try {
-    mkdirSync(globalRoot, { recursive: true })
-    accessSync(globalRoot, constants.W_OK)
+    await mkdir(globalRoot, { recursive: true })
+    await fsAccess(globalRoot, constants.W_OK)
     return {
       requestedScope,
       effectiveScope: "global",
