@@ -12,6 +12,12 @@ import { safeSessionPath } from "../../features/session-tracker/persistence/atom
 import type { HierarchyManifest, HierarchyManifestChild } from "../../features/session-tracker/types.js"
 import { findStackableSessions, findResumableSessions, getRetryRecommendation, buildStackingGuidanceBanner } from "../../coordination/delegation/session-intelligence.js"
 
+// Per-invocation cache for hierarchy-manifest.json — prevents redundant parsing
+// within a single tool execution. Keyed by `${projectRoot}::${rootSessionId}`.
+const manifestCache = new Map<string, { data: HierarchyManifest; ts: number }>()
+const CACHE_TTL = 5_000 // 5 seconds
+const MAX_CACHE_ENTRIES = 10
+
 /** Zod contract for delegation-status control actions. */
 export const DelegationControlSchema = z.object({
   action: z.enum(["abort", "cancel", "restart", "resume", "chain", "adjust-prompt", "change-agent"]),
@@ -160,6 +166,26 @@ async function getSessionTrackerDelegation(projectRoot: string, sessionId: strin
   }
 }
 
+// Per-invocation cache helper for hierarchy-manifest.json parsing.
+// Returns cached data if available and within TTL; otherwise reads and caches.
+async function readManifest(projectRoot: string, rootSessionId: string): Promise<HierarchyManifest> {
+  const cacheKey = `${projectRoot}::${rootSessionId}`
+  const cached = manifestCache.get(cacheKey)
+  if (cached && Date.now() - cached.ts < CACHE_TTL) {
+    return cached.data
+  }
+  const manifestPath = safeSessionPath(projectRoot, rootSessionId, "hierarchy-manifest.json")
+  const raw = await readFile(manifestPath, "utf-8")
+  const data = JSON.parse(raw) as HierarchyManifest
+  // Evict oldest entry if at capacity
+  if (manifestCache.size >= MAX_CACHE_ENTRIES) {
+    const oldest = manifestCache.entries().next().value
+    if (oldest) manifestCache.delete(oldest[0])
+  }
+  manifestCache.set(cacheKey, { data, ts: Date.now() })
+  return data
+}
+
 // Helper to find all child sessions in session-tracker for a given parent session
 async function getSessionTrackerChildren(projectRoot: string, parentSessionId: string): Promise<Delegation[]> {
   try {
@@ -167,9 +193,7 @@ async function getSessionTrackerChildren(projectRoot: string, parentSessionId: s
     if (!resolved) return []
     const rootSessionId = resolved.rootSessionId
 
-    const manifestPath = safeSessionPath(projectRoot, rootSessionId, "hierarchy-manifest.json")
-    const raw = await readFile(manifestPath, "utf-8")
-    const manifest = JSON.parse(raw) as HierarchyManifest
+    const manifest = await readManifest(projectRoot, rootSessionId)
     const allChildren = manifest.children ?? {}
 
     const children: Delegation[] = []
@@ -248,9 +272,7 @@ async function getHierarchyContext(
   nestingDepth: number,
 ): Promise<HierarchyContext | null> {
   try {
-    const manifestPath = safeSessionPath(projectRoot, rootSessionId, "hierarchy-manifest.json")
-    const raw = await readFile(manifestPath, "utf-8")
-    const manifest = JSON.parse(raw) as HierarchyManifest
+    const manifest = await readManifest(projectRoot, rootSessionId)
     const allChildren = manifest.children ?? {}
 
     const ancestors: string[] = []
