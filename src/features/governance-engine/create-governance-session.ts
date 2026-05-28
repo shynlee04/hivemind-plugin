@@ -113,12 +113,16 @@ export function createGovernanceSessionTool(
       }
 
       // --- Step 3: Generate title via naming service ---
+      // Sanitize user input: strip all non-alphanumeric chars (except hyphens) to prevent
+      // any injection vectors in git commit messages or session titles.
+      const rawPurpose = (args.title || args.brief).slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+      const safePurpose = rawPurpose || "governance" // Fallback if sanitization strips everything
       const sessionTitle = generateSessionTitle({
         framework: "hm",
         workflow: "governance",
         classification: "root",
         agent: resolvedAgent,
-        purpose: (args.title || args.brief).slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+        purpose: safePurpose,
         depth: 0,
       })
 
