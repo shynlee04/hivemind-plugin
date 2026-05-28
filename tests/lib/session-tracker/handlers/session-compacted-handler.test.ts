@@ -11,13 +11,18 @@ import type { ChildWriter } from "../../../../src/features/session-tracker/persi
 import type { HierarchyManifestWriter } from "../../../../src/features/session-tracker/persistence/hierarchy-manifest.js"
 import type { ChildBackfiller } from "../../../../src/features/session-tracker/capture/child-backfiller.js"
 
+vi.mock("../../../../src/shared/session-api.js", () => ({
+  getSession: vi.fn(),
+  getSessionMessages: vi.fn(),
+}))
+
 import { SessionCompactedHandler } from "../../../../src/features/session-tracker/capture/handlers/session-compacted-handler.js"
+import { getSession } from "../../../../src/shared/session-api.js"
 
 function createMockDeps() {
   return {
     client: {
       app: { log: vi.fn() },
-      session: { get: vi.fn().mockResolvedValue({ parentID: null }) },
     } as unknown as OpenCodeClient,
     sessionWriter: {
       appendCompactionBlock: vi.fn().mockResolvedValue(undefined),
@@ -43,12 +48,12 @@ describe("SessionCompactedHandler", () => {
   let deps: ReturnType<typeof createMockDeps>
 
   beforeEach(() => {
+    vi.clearAllMocks()
     deps = createMockDeps()
     handler = new SessionCompactedHandler(deps)
   })
 
   it("should use event payload summary when available", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: null } as any)
 
     await handler.handle("compacted-1", { summary: "Context was compacted" })
@@ -60,7 +65,6 @@ describe("SessionCompactedHandler", () => {
   })
 
   it("should fall back to message history when event payload has no summary", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: null } as any)
 
     await handler.handle("compacted-2", {})
@@ -69,7 +73,6 @@ describe("SessionCompactedHandler", () => {
   })
 
   it("should handle child compaction via journey entry", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: "parent-1" } as any)
 
     await handler.handle("compacted-child-1", { summary: "Child compacted" })

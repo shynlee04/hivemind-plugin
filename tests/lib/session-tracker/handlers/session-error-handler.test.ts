@@ -13,13 +13,18 @@ import type { PendingDispatchRegistry } from "../../../../src/features/session-t
 import type { ChildBackfiller } from "../../../../src/features/session-tracker/capture/child-backfiller.js"
 import type { LastMessageCapture } from "../../../../src/features/session-tracker/capture/last-message-capture.js"
 
+vi.mock("../../../../src/shared/session-api.js", () => ({
+  getSession: vi.fn(),
+  getSessionMessages: vi.fn(),
+}))
+
 import { SessionErrorHandler } from "../../../../src/features/session-tracker/capture/handlers/session-error-handler.js"
+import { getSession } from "../../../../src/shared/session-api.js"
 
 function createMockDeps() {
   return {
     client: {
       app: { log: vi.fn() },
-      session: { get: vi.fn().mockResolvedValue({ parentID: null }) },
     } as unknown as OpenCodeClient,
     sessionWriter: {
       sessionFileExists: vi.fn().mockResolvedValue(true),
@@ -54,12 +59,12 @@ describe("SessionErrorHandler", () => {
   let deps: ReturnType<typeof createMockDeps>
 
   beforeEach(() => {
+    vi.clearAllMocks()
     deps = createMockDeps()
     handler = new SessionErrorHandler(deps)
   })
 
   it("should set error status on child sessions", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: "parent-1" } as any)
 
     await handler.handle("child-error-1")
@@ -73,7 +78,6 @@ describe("SessionErrorHandler", () => {
   })
 
   it("should set error status on main sessions", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: null } as any)
 
     await handler.handle("main-error-1")

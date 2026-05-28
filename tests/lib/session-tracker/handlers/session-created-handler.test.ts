@@ -15,15 +15,18 @@ import type { PendingDispatchRegistry } from "../../../../src/features/session-t
 import type { HierarchyManifestWriter } from "../../../../src/features/session-tracker/persistence/hierarchy-manifest.js"
 import type { LastMessageCapture } from "../../../../src/features/session-tracker/capture/last-message-capture.js"
 
-// Handler class will be imported from the FUTURE extracted path
-// This import will FAIL until Wave 1 implementation
+vi.mock("../../../../src/shared/session-api.js", () => ({
+  getSession: vi.fn(),
+  getSessionMessages: vi.fn(),
+}))
+
 import { SessionCreatedHandler } from "../../../../src/features/session-tracker/capture/handlers/session-created-handler.js"
+import { getSession } from "../../../../src/shared/session-api.js"
 
 function createMockDeps() {
   return {
     client: {
       app: { log: vi.fn() },
-      session: { get: vi.fn().mockResolvedValue({ parentID: null }) },
     } as unknown as OpenCodeClient,
     sessionWriter: {
       createSessionDir: vi.fn().mockResolvedValue(undefined),
@@ -33,6 +36,7 @@ function createMockDeps() {
     childWriter: {
       createChildFile: vi.fn().mockResolvedValue(undefined),
       childFileExists: vi.fn().mockResolvedValue(true),
+      setDelegationContext: vi.fn(),
     } as unknown as ChildWriter,
     sessionIndexWriter: {
       addChild: vi.fn().mockResolvedValue(undefined),
@@ -69,17 +73,13 @@ describe("SessionCreatedHandler", () => {
   let deps: ReturnType<typeof createMockDeps>
 
   beforeEach(() => {
+    vi.clearAllMocks()
     deps = createMockDeps()
     handler = new SessionCreatedHandler(deps)
   })
 
   it("should return early when pending dispatch is detected (Gate 0)", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
-    vi.mock("../../../../src/shared/session-api.js", () => ({
-      getSession: vi.fn().mockResolvedValue({ parentID: null }),
-      getSessionMessages: vi.fn().mockResolvedValue([]),
-    }))
-
+    vi.mocked(getSession).mockResolvedValue({ parentID: null } as any)
     deps.pendingRegistry.getAnyActiveEntry = vi.fn().mockReturnValue({
       parentSessionID: "parent-1",
       subagentType: "hm-executor",
@@ -93,7 +93,6 @@ describe("SessionCreatedHandler", () => {
   })
 
   it("should write child file when SDK reports parentID", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: "parent-session" } as any)
 
     await handler.handle("child-session-2")
@@ -103,9 +102,7 @@ describe("SessionCreatedHandler", () => {
   })
 
   it("should write child file when hierarchy index identifies child", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: null } as any)
-
     deps.hierarchyIndex.isChild = vi.fn().mockReturnValue(true)
     deps.hierarchyIndex.getParent = vi.fn().mockReturnValue("parent-from-index")
 
@@ -115,9 +112,7 @@ describe("SessionCreatedHandler", () => {
   })
 
   it("should register delegation from pending registry (Gate 3)", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: null } as any)
-
     deps.pendingRegistry.has = vi.fn().mockReturnValue(true)
     deps.pendingRegistry.get = vi.fn().mockReturnValue({
       parentSessionID: "parent-from-pending",
@@ -130,7 +125,6 @@ describe("SessionCreatedHandler", () => {
   })
 
   it("should create root directory for root sessions", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: null, title: "Root Session" } as any)
 
     await handler.handle("root-session-1")

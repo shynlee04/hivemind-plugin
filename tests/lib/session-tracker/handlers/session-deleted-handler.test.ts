@@ -13,13 +13,18 @@ import type { PendingDispatchRegistry } from "../../../../src/features/session-t
 import type { ChildBackfiller } from "../../../../src/features/session-tracker/capture/child-backfiller.js"
 import type { LastMessageCapture } from "../../../../src/features/session-tracker/capture/last-message-capture.js"
 
+vi.mock("../../../../src/shared/session-api.js", () => ({
+  getSession: vi.fn(),
+  getSessionMessages: vi.fn(),
+}))
+
 import { SessionDeletedHandler } from "../../../../src/features/session-tracker/capture/handlers/session-deleted-handler.js"
+import { getSession } from "../../../../src/shared/session-api.js"
 
 function createMockDeps() {
   return {
     client: {
       app: { log: vi.fn() },
-      session: { get: vi.fn().mockResolvedValue({ parentID: null, title: "Deleted Session" }) },
     } as unknown as OpenCodeClient,
     sessionWriter: {
       sessionFileExists: vi.fn().mockResolvedValue(true),
@@ -54,12 +59,12 @@ describe("SessionDeletedHandler", () => {
   let deps: ReturnType<typeof createMockDeps>
 
   beforeEach(() => {
+    vi.clearAllMocks()
     deps = createMockDeps()
     handler = new SessionDeletedHandler(deps)
   })
 
   it("should update child status to completed for child sessions", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: "parent-1" } as any)
 
     await handler.handle("child-deleted-1")
@@ -68,7 +73,6 @@ describe("SessionDeletedHandler", () => {
   })
 
   it("should complete main session and clean up cache", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: null } as any)
 
     await handler.handle("main-deleted-1")
