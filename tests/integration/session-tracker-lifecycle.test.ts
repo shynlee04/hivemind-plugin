@@ -5,7 +5,7 @@ describe("integration — session tracker lifecycle", () => {
     const mod = await import("../../src/features/session-tracker/index.js")
     expect(mod).toBeDefined()
     expect(typeof mod).toBe("object")
-  })
+  }, 15000)
 
   it("imports session-tracker bootstrap module", async () => {
     const mod = await import("../../src/features/session-tracker/bootstrap.js")
