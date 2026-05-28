@@ -61,6 +61,18 @@ Source architecture: `.planning/architecture/hivemind-source-plane-architecture-
 
 Source evidence: `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` — hm/hf/gate/stack/gsd lineages, L0-L3 hierarchy contract. `.planning/codebase/ARCHITECTURE.md:209-245` — Soft Meta-Concept layer.
 
+### Subdirectory Structure & Granular Roles
+* **`agents/`**: Contains declarative markdown definitions for L0, L1, L2, and L3 agents. Files specify behavior limits, temperature settings, and tool boundaries. Lineage partitions:
+  * `hm-*` (31 files): Core harness product developers (Architect, Code-Fixer, Executor, etc.).
+  * `hf-*` (11 files): Authoring tools (Meta-Builder, Agent-Builder, etc.).
+  * `gsd-*` (33 files): Custom developer tooling.
+* **`command/` and `commands/`**: A parallel pair of folders containing identical markdown command schemas (e.g. `/plan`, `/start-work`, `/ultrawork`). Exists due to ambiguity in different OpenCode execution host version releases. All files and updates must be duplicated in both paths to ensure command registry compatibility.
+* **`workflows/`**: Declarative markdown blueprints outlining execution steps for complex tasks (e.g. `/plan-phase`). They use step schemas (purpose, process steps, success criteria) and lazy-load overlays dynamically depending on runtime CLI parameters (`--auto`, `--chain`, `--text`, `--batch`).
+* **`skills/`**: Reflected skill folders copied from the `.hivefiver-meta-builder/skills-lab/` source-of-truth. Includes gate triad verification folders (`gate-l3-spec-compliance`, `gate-l3-lifecycle-integration`, `gate-l3-evidence-truth`) and stack schemas (`stack-l3-bun-pty`, `stack-l3-zod`, etc.).
+* **`get-shit-done/`**: Ground-level developer configurations, templates, and profiles (such as `USER-PROFILE.md`) utilized specifically during construction of the harness plugin.
+* **`rules/`**: Central constraints definitions (`universal-rules.md`, `commit-governance.md`).
+* **`state/`**: Deprecated migration folder. Writing state is strictly prohibited here.
+
 ## 2. Allowed mutation authority
 
 - Agents, skills, commands, rules, permissions, and OpenCode config may be created or updated here when explicitly authorized by a meta-concept workflow.
@@ -68,11 +80,10 @@ Source evidence: `.planning/architecture/hivemind-runtime-identity-taxonomy-2026
 - Primitive/config changes must preserve hm/hf/gate/stack lineage conventions and the L0→L3 delegation hierarchy. Evidence: `.planning/codebase/ARCHITECTURE.md:217-245`, `.planning/codebase/STRUCTURE.md:197-216`.
 - Closest-sector deviation: no `src/config/` folder is created for primitive/config boundary guidance; this sector owns soft primitive/config placement while runtime config consumers remain in `src/`.
 
-## 3. Forbidden mutations / explicit no-go boundaries
-
-- `.opencode/` SHALL NOT store internal runtime state; `.hivemind/` is canonical state root. Evidence: `.planning/codebase/ARCHITECTURE.md:247-255`, `.planning/codebase/STRUCTURE.md:124-134`.
-- `.opencode/` SHALL NOT be treated as development implementation, source code, or build output. It is exclusively for OpenCode primitives (agents, commands, skills, rules, permissions) that configure runtime behavior.
-- `.opencode/` SHALL NOT contain business logic, state persistence, compiled code, or npm package source — those belong in `src/` (Hard Harness) and `.hivemind/` (Internal State).
+## 3. Forbidden mutations / explicit no-go boundaries (Q6 State Boundary)
+- **State Partition Rule (Q6)**: `.opencode/` is strictly static configurations (soft meta-concepts). It SHALL NOT contain active runtime session data.
+- All internal, dynamic, mutable runtime state (journals, event trackers, continuity data, and trajectories) must reside exclusively under `.hivemind/` at the project root.
+- `.opencode/` SHALL NOT contain package source authority, compilation outputs (`dist/`), or business logic. Business logic lives in `src/`.
 - `.opencode/state/` is legacy migration-only and must not receive new internal state ownership. Evidence: `.planning/codebase/STRUCTURE.md:295-299`.
 - Do not blur hm/hf/gate/stack lineages or ship gsd-* internal developer tooling as product primitives. Evidence: `.planning/codebase/ARCHITECTURE.md:217-233`, `.planning/codebase/STRUCTURE.md:209-216`.
 - Do not edit runtime TypeScript implementation here; runtime source authority remains in `src/`.
@@ -88,12 +99,12 @@ Source evidence: `.planning/architecture/hivemind-runtime-identity-taxonomy-2026
 | stack-* skills | Framework/reference knowledge | Reference only, not implementation authority |
 | `src/` Hard Harness tools | Configured through `.opencode/` primitives (agents call tools, commands route to agents) | Never imports from `.opencode/` — reads only through OpenCode SDK |
 
-## 5. Naming and placement conventions
-
-- Agent files use `hm-*`, `hf-*`, or `gsd-*` prefixes according to lineage; skills use `hm-*`, `hf-*`, `gate-*`, `stack-*`, or `gsd-*` prefixes. Evidence: `.planning/codebase/STRUCTURE.md:197-216`.
+## 5. Naming and placement conventions (Naming Syndicate)
+- Agent files use `hm-*` (harness product development), `hf-*` (harness authoring/builders), or `gsd-*` (developer-only tooling) prefixes.
+- Skills follow: `hm-*` (domain actions), `hf-l2-*` (meta-builder authoring scripts), `gate-l3-*` (lifecycle/spec/evidence gate triad), `stack-l3-*` (third-party/environment reference stacks), or `gsd-*` (project-specific development scripting).
 - Runtime skill location is `.opencode/skills/`; meta-builder source-of-truth is `.hivefiver-meta-builder/skills-lab/` and reflected to `.opencode/skills/`. Evidence: `.planning/codebase/ARCHITECTURE.md:209-215`.
 - New agents, skills, and commands should originate from the meta-builder source areas before reflection to `.opencode/`. Evidence: `.planning/codebase/STRUCTURE.md:241-254`.
-- Commands use OpenCode command files under `.opencode/commands/`; do not invent parallel command roots.
+- Commands use OpenCode command files under both `.opencode/commands/` and `.opencode/command/` directories to prevent installation version incompatibilities.
 
 ## 6. Quality gates and evidence expectations
 
