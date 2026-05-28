@@ -9,8 +9,9 @@ import { error, success } from "../../shared/tool-response.js"
 import type { Delegation, DelegationStatus, DelegationTerminalKind } from "../../shared/types.js"
 import { resolveSessionFile } from "../session/session-resolver.js"
 import { safeSessionPath } from "../../features/session-tracker/persistence/atomic-write.js"
-import type { HierarchyManifest, HierarchyManifestChild } from "../../features/session-tracker/types.js"
+import type { HierarchyManifest } from "../../features/session-tracker/types.js"
 import { findStackableSessions, findResumableSessions, getRetryRecommendation, buildStackingGuidanceBanner } from "../../coordination/delegation/session-intelligence.js"
+import { HierarchyManifestChildSchema, type HierarchyManifestChildValidated } from "./readers/types.js"
 
 // Per-invocation cache for hierarchy-manifest.json — prevents redundant parsing
 // within a single tool execution. Keyed by `${projectRoot}::${rootSessionId}`.
@@ -198,7 +199,9 @@ async function getSessionTrackerChildren(projectRoot: string, parentSessionId: s
 
     const children: Delegation[] = []
     for (const [childSessionId, child] of Object.entries(allChildren)) {
-      const childMeta = child as HierarchyManifestChild
+      const parsed = HierarchyManifestChildSchema.safeParse(child)
+      if (!parsed.success) continue
+      const childMeta = parsed.data as HierarchyManifestChildValidated
       if (childMeta.parentSessionID === parentSessionId) {
         children.push({
           id: childSessionId,
@@ -288,7 +291,9 @@ async function getHierarchyContext(
 
     const childrenList: Array<{ sessionId: string; agent: string; status: string }> = []
     for (const [id, child] of Object.entries(allChildren)) {
-      const childMeta = child as HierarchyManifestChild
+      const parsed = HierarchyManifestChildSchema.safeParse(child)
+      if (!parsed.success) continue
+      const childMeta = parsed.data as HierarchyManifestChildValidated
       if (childMeta.parentSessionID === currentSessionId) {
         childrenList.push({
           sessionId: id,
@@ -301,7 +306,9 @@ async function getHierarchyContext(
     const siblingsList: Array<{ sessionId: string; agent: string; status: string }> = []
     if (parentSessionId) {
       for (const [id, child] of Object.entries(allChildren)) {
-        const childMeta = child as HierarchyManifestChild
+        const parsed = HierarchyManifestChildSchema.safeParse(child)
+        if (!parsed.success) continue
+        const childMeta = parsed.data as HierarchyManifestChildValidated
         if (childMeta.parentSessionID === parentSessionId && id !== currentSessionId) {
           siblingsList.push({
             sessionId: id,
@@ -314,15 +321,19 @@ async function getHierarchyContext(
 
     let descendantCount = 0
     for (const [, child] of Object.entries(allChildren)) {
-      const childMeta = child as HierarchyManifestChild
+      const parsed = HierarchyManifestChildSchema.safeParse(child)
+      if (!parsed.success) continue
+      const childMeta = parsed.data as HierarchyManifestChildValidated
       let checkParent: string | null = childMeta.parentSessionID
       while (checkParent) {
         if (checkParent === currentSessionId) {
           descendantCount++
           break
         }
-        const parentMeta: HierarchyManifestChild | undefined = allChildren[checkParent]
-        checkParent = parentMeta ? (parentMeta.parentSessionID ?? null) : null
+        const parentEntry: unknown = allChildren[checkParent]
+        const parentParseResult = parentEntry ? HierarchyManifestChildSchema.safeParse(parentEntry) : undefined
+        const parentValidated: HierarchyManifestChildValidated | undefined = parentParseResult?.success ? parentParseResult.data as HierarchyManifestChildValidated : undefined
+        checkParent = parentValidated ? (parentValidated.parentSessionID ?? null) : null
       }
     }
 
