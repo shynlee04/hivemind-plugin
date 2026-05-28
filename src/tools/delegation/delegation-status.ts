@@ -325,7 +325,10 @@ async function getHierarchyContext(
       if (!parsed.success) continue
       const childMeta = parsed.data as HierarchyManifestChildValidated
       let checkParent: string | null = childMeta.parentSessionID
+      const visited = new Set<string>() // Cycle detection: prevents infinite loop on circular parent refs
       while (checkParent) {
+        if (visited.has(checkParent)) break // Circular reference detected — stop traversal
+        visited.add(checkParent)
         if (checkParent === currentSessionId) {
           descendantCount++
           break
