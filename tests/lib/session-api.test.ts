@@ -470,6 +470,24 @@ describe("session-api helpers", () => {
 
       expect(getEventSessionID(event)).toBe("ses_23a0b5eabffeB413854W6gnUKC")
     })
+
+    it("extracts sessionID from properties.info.sessionID for message.updated", async () => {
+      const { getEventSessionID } = await import("../../src/shared/session-api.js")
+      const event = {
+        type: "message.updated",
+        properties: { info: { id: "msg_123", sessionID: "ses_123" } },
+      }
+      expect(getEventSessionID(event)).toBe("ses_123")
+    })
+
+    it("extracts sessionID from properties.part.sessionID for message.part.updated", async () => {
+      const { getEventSessionID } = await import("../../src/shared/session-api.js")
+      const event = {
+        type: "message.part.updated",
+        properties: { part: { messageID: "msg_123", sessionID: "ses_456" } },
+      }
+      expect(getEventSessionID(event)).toBe("ses_456")
+    })
   })
 
   describe("getEventParentID", () => {

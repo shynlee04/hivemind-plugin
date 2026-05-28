@@ -268,6 +268,10 @@ function getExplicitEventSessionID(event: unknown): string | undefined {
   return (
     asString(getNestedValue(event, ["properties", "sessionID"])) ??
     asString(getNestedValue(event, ["properties", "sessionId"])) ??
+    asString(getNestedValue(event, ["properties", "part", "sessionID"])) ??
+    asString(getNestedValue(event, ["properties", "part", "sessionId"])) ??
+    asString(getNestedValue(event, ["properties", "info", "sessionID"])) ??
+    asString(getNestedValue(event, ["properties", "info", "sessionId"])) ??
     asString(getNestedValue(event, ["sessionID"])) ??
     asString(getNestedValue(event, ["sessionId"]))
   )
