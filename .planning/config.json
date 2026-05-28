@@ -5,7 +5,7 @@
   "granularity": "fine",
   "parallelization": true,
   "commit_docs": true,
-  "model_profile": "quality",
+  "model_profile": "inherit",
   "workflow": {
     "research": true,
     "plan_check": true,
