@@ -1,41 +1,46 @@
 {
   "version": "2.0",
   "sessionID": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
-  "lastUpdated": "2026-05-27T21:32:47.033Z",
+  "lastUpdated": "2026-05-28T10:52:25.987Z",
   "hierarchy": {
     "root": "ses_194cb9ba4ffejjVjuos6kgQ4w6",
     "children": {
-      "ses_194cae4b2ffeJ2cNYbc9zuwdDW": {
-        "file": "ses_194cae4b2ffeJ2cNYbc9zuwdDW.json",
-        "depth": 1,
-        "status": "active",
-        "delegatedBy": "gsd-codebase-mapper",
-        "children": {}
-      },
-      "ses_194c27351ffer4b1ONh4wyghLd": {
-        "file": "ses_194c27351ffer4b1ONh4wyghLd.json",
-        "depth": 1,
-        "status": "active",
-        "delegatedBy": "gsd-roadmapper",
-        "children": {}
-      },
-      "ses_194b88d79ffe4u9HS6d4RR6dTo": {
-        "file": "ses_194b88d79ffe4u9HS6d4RR6dTo.json",
+      "ses_191df6174ffeHBWRrTL0eG202X": {
+        "file": "ses_191df6174ffeHBWRrTL0eG202X.json",
         "depth": 1,
         "status": "active",
         "delegatedBy": "gsd-executor",
         "children": {}
+      },
+      "ses_191cff67affeS6TwP5gRa5Cq3O": {
+        "file": "ses_191cff67affeS6TwP5gRa5Cq3O.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
+      },
+      "ses_191cb2281ffeZWrqyoirdDO9ZT": {
+        "file": "ses_191cb2281ffeZWrqyoirdDO9ZT.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-ai-researcher",
+        "children": {}
+      },
+      "ses_191ca84faffeJ6cWpsbqC4ngK3": {
+        "file": "ses_191ca84faffeJ6cWpsbqC4ngK3.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
       }
     }
   },
-  "turnCount": 13,
+  "turnCount": 6,
   "toolSummary": {
-    "bash": 9,
-    "task": 5,
-    "read": 4,
     "execute-slash-command": 2,
-    "edit": 3,
-    "skill": 1,
-    "delegation-status": 1
+    "task": 6,
+    "delegation-status": 1,
+    "glob": 1,
+    "bash": 4
   }
 }

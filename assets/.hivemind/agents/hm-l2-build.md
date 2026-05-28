@@ -18,6 +18,10 @@ permission:
     gate-l3-*: allow
     stack-l3-*: allow
 skill: allow
+instruction:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
+  - .opencode/agent-instructions/hm-l2-build.md
 ---
 
 <MANDATORY_COMPLIANCE_REQUIRED>

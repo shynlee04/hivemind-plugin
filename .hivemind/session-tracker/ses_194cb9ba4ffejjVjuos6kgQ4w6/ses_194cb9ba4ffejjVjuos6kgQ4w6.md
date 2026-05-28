@@ -1,19 +1,21 @@
 ---
 sessionID: ses_194cb9ba4ffejjVjuos6kgQ4w6
-created: 2026-05-27T20:50:56.406Z
-updated: 2026-05-27T20:50:56.464Z
+created: 2026-05-28T10:26:25.540Z
+updated: 2026-05-28T10:26:25.540Z
 parentSessionID: null
 delegationDepth: 0
 children:
-  - sessionID: ses_194cae4b2ffeJ2cNYbc9zuwdDW
-    childFile: ses_194cae4b2ffeJ2cNYbc9zuwdDW.json
-  - sessionID: ses_194c27351ffer4b1ONh4wyghLd
-    childFile: ses_194c27351ffer4b1ONh4wyghLd.json
-  - sessionID: ses_194b88d79ffe4u9HS6d4RR6dTo
-    childFile: ses_194b88d79ffe4u9HS6d4RR6dTo.json
+  - sessionID: ses_191df6174ffeHBWRrTL0eG202X
+    childFile: ses_191df6174ffeHBWRrTL0eG202X.json
+  - sessionID: ses_191cff67affeS6TwP5gRa5Cq3O
+    childFile: ses_191cff67affeS6TwP5gRa5Cq3O.json
+  - sessionID: ses_191cb2281ffeZWrqyoirdDO9ZT
+    childFile: ses_191cb2281ffeZWrqyoirdDO9ZT.json
+  - sessionID: ses_191ca84faffeJ6cWpsbqC4ngK3
+    childFile: ses_191ca84faffeJ6cWpsbqC4ngK3.json
 continuityIndex: session-continuity.json
 status: completed
-title: New session - 2026-05-27T20:50:56.219Z
+title: null
 lastMessage: "Tools: task"
 ---
 
@@ -21,535 +23,490 @@ lastMessage: "Tools: task"
 
 **source:** real-human
 
+please continue from the above I just got disconnected 
+
+## USER (turn 12)
+
+**source:** real-human
+
+please continue from the above I just got disconnected 
+
+### Tool: execute-slash-command
+
+**Input:**
+```json
+{
+  "callID": "call_8a60d77a174840d8a5bc352a"
+}
+```
+
+
+## USER (turn 13)
+
+**source:** real-human
+
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Review source files changed during a phase for bugs, security issues, and code quality problems",
+  "subagent_type": "gsd-code-reviewer",
+  "task_id": "ses_191df6174ffeHBWRrTL0eG202X"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_191df6174ffeHBWRrTL0eG202X
+```
+
+
+### Tool: delegation-status
+
+**Input:**
+```json
+{
+  "callID": "call_1e04d05a1fd94ab99721ec14"
+}
+```
+
+
+### Tool: glob
+
+**Input:**
+```json
+{
+  "callID": "call_491881fa5bdd467da9128319"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Continue gatekeeping for C1-C3",
+  "subagent_type": "gsd-code-reviewer",
+  "task_id": "ses_191df6174ffeHBWRrTL0eG202X"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_191df6174ffeHBWRrTL0eG202X
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_f00b76a9e74843db89a647dc"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_2f78c078d6454a36a1c4abcf"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Complete C1-C3 execution and full gatekeeping",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_191df6174ffeHBWRrTL0eG202X"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_191df6174ffeHBWRrTL0eG202X
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_35e1084055f3413b832bc6b8"
+}
+```
+
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Complete C1-C3 gatekeeping check",
+  "subagent_type": "gsd-code-reviewer",
+  "task_id": "ses_191cff67affeS6TwP5gRa5Cq3O"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_191cff67affeS6TwP5gRa5Cq3O
+```
+
+
+## USER (turn 14)
+
+**source:** real-human
+
 <objective>
-Analyze existing codebase using parallel gsd-codebase-mapper agents to produce structured codebase documents.
+Investigate what went wrong during a GSD workflow execution. Analyzes git history, `.planning/` artifacts, and file system state to detect anomalies and generate a structured diagnostic report.
 
-Each mapper agent explores a focus area and **writes documents directly** to `.planning/codebase/`. The orchestrator only receives confirmations, keeping context usage minimal.
-
-Output: .planning/codebase/ folder with 7 structured documents about the codebase state.
+Purpose: Diagnose failed or stuck workflows so the user can understand root cause and take corrective action.
+Output: Forensic report saved to `.planning/forensics/`, presented inline, with optional issue creation.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/map-codebase.md
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/forensics.md
 </execution_context>
 
-<flags>
-- **--fast**: Lightweight scan mode — spawns one mapper agent instead of four. Accepts an optional `--focus` value: `tech`, `arch`, `quality`, `concerns`, or `tech+arch` (default). Faster and lower-context than the full map.
-- **--query**: Codebase intelligence query mode. Sub-commands: `query <term>`, `status`, `diff`, `refresh`. Requires intel to be enabled in config (`intel.enabled: true`). Runs inline for query/status/diff; spawns an agent for refresh.
-- **(no flag)**: Full parallel map — spawns 4 mapper agents to produce all 7 codebase documents.
-</flags>
-
 <context>
-Arguments: deepscan focusing on concerns
+**Data sources:**
+- `git log` (recent commits, patterns, time gaps)
+- `git status` / `git diff` (uncommitted work, conflicts)
+- `.planning/STATE.md` (current position, session history)
+- `.planning/ROADMAP.md` (phase scope and progress)
+- `.planning/phases/*/` (PLAN.md, SUMMARY.md, VERIFICATION.md, CONTEXT.md)
+- `.planning/reports/SESSION_REPORT.md` (last session outcomes)
 
-Parse the first token of deepscan focusing on concerns:
-- If it is `--fast`: strip the flag, run the scan workflow (passing remaining args including optional --focus).
-- If it is `--query`: strip the flag, run the intel workflow (passing remaining args as the subcommand).
-- Otherwise: pass all of deepscan focusing on concerns as focus area to the map-codebase workflow.
-
-**Load project state if exists:**
-Check for .planning/STATE.md - loads context if project already initialized
-
-**This command can run:**
-- Before /gsd-new-project (brownfield codebases) - creates codebase map first
-- After /gsd-new-project (greenfield codebases) - updates codebase map as code evolves
-- Anytime to refresh codebase understanding
+**User input:**
+- Problem description: context can you check for the recent C1 to C3 changes which result in many regressions for the session-trackers - from what I have seen are tjhe main session tracker has lost its ability to track for assistant messages. Secondly the TUI emit the errror messsages for frontmatter update failed as it cant find the file or diretory and the log polute the TUI heavily. Whcih means the logics have been regressed severely; check for the child-writer to if they suffer the same  (optional — will ask if not provided)
 </context>
 
-<when_to_use>
-**Use map-codebase for:**
-- Brownfield projects before initialization (understand existing code first)
-- Refreshing codebase map after significant changes
-- Onboarding to an unfamiliar codebase
-- Before major refactoring (understand current state)
-- When STATE.md references outdated codebase info
-
-**Skip map-codebase for:**
-- Greenfield projects with no code yet (nothing to map)
-- Trivial codebases (<5 files)
-</when_to_use>
-
 <process>
-1. Check if .planning/codebase/ already exists (offer to refresh or skip)
-2. Create .planning/codebase/ directory structure
-3. Spawn 4 parallel gsd-codebase-mapper agents:
-   - Agent 1: tech focus → writes STACK.md, INTEGRATIONS.md
-   - Agent 2: arch focus → writes ARCHITECTURE.md, STRUCTURE.md
-   - Agent 3: quality focus → writes CONVENTIONS.md, TESTING.md
-   - Agent 4: concerns focus → writes CONCERNS.md
-4. Wait for agents to complete, collect confirmations (NOT document contents)
-5. Verify all 7 documents exist with line counts
-6. Commit codebase map
-7. Offer next steps (typically: /gsd-new-project or /gsd-plan-phase)
+Execute end-to-end.
 </process>
 
 <success_criteria>
-- [ ] .planning/codebase/ directory created
-- [ ] All 7 codebase documents written by mapper agents
-- [ ] Documents follow template structure
-- [ ] Parallel agents completed without errors
-- [ ] User knows next steps
+- Evidence gathered from all available data sources
+- At least 4 anomaly types checked (stuck loop, missing artifacts, abandoned work, crash/interruption)
+- Structured forensic report written to `.planning/forensics/report-{timestamp}.md`
+- Report presented inline with findings, anomalies, and recommendations
+- Interactive investigation offered for deeper analysis
+- GitHub issue creation offered if actionable findings exist
 </success_criteria>
-Called the Read tool with the following input: {"filePath":"/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/map-codebase.md"}
-<path>/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/map-codebase.md</path>
+
+<critical_rules>
+- **Read-only investigation:** Do not modify project source files during forensics. Only write the forensic report and update STATE.md session tracking.
+- **Redact sensitive data:** Strip absolute paths, API keys, tokens from reports and issues.
+- **Ground findings in evidence:** Every anomaly must cite specific commits, files, or state data.
+- **No speculation without evidence:** If data is insufficient, say so — do not fabricate root causes.
+</critical_rules>
+Called the Read tool with the following input: {"filePath":"/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/forensics.md"}
+<path>/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/forensics.md</path>
 <type>file</type>
 <content>
-1: <purpose>
-2: Orchestrate parallel codebase mapper agents to analyze codebase and produce structured documents in .planning/codebase/
-3: 
-4: Each agent has fresh context, explores a specific focus area, and **writes documents directly**. The orchestrator only receives confirmation + line counts, then writes a summary.
-5: 
-6: Output: .planning/codebase/ folder with 7 structured documents about the codebase state.
-7: </purpose>
-8: 
-9: <available_agent_types>
-10: Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-11: - gsd-codebase-mapper — Maps project structure and dependencies
-12: </available_agent_types>
+1: # Forensics Workflow
+2: 
+3: Post-mortem investigation for failed or stuck GSD workflows. Analyzes git history,
+4: `.planning/` artifacts, and file system state to detect anomalies and generate a
+5: structured diagnostic report.
+6: 
+7: **Principle:** This is a read-only investigation. Do not modify project files.
+8: Only write the forensic report.
+9: 
+10: ---
+11: 
+12: ## Step 1: Get Problem Description
 13: 
-14: <philosophy>
-15: **Why dedicated mapper agents:**
-16: - Fresh context per domain (no token contamination)
-17: - Agents write documents directly (no context transfer back to orchestrator)
-18: - Orchestrator only summarizes what was created (minimal context usage)
-19: - Faster execution (agents run simultaneously)
-20: 
-21: **Document quality over length:**
-22: Include enough detail to be useful as reference. Prioritize practical examples (especially code patterns) over arbitrary brevity.
+14: ```bash
+15: PROBLEM="$ARGUMENTS"
+16: ```
+17: 
+18: If `$ARGUMENTS` is empty, ask the user:
+19: > "What went wrong? Describe the issue — e.g., 'autonomous mode got stuck on phase 3',
+20: > 'execute-phase failed silently', 'costs seem unusually high'."
+21: 
+22: Record the problem description for the report.
 23: 
-24: **Always include file paths:**
-25: Documents are reference material for the agent when planning/executing. Always include actual file paths formatted with backticks: `src/services/user.ts`.
-26: </philosophy>
+24: ## Step 2: Gather Evidence
+25: 
+26: Collect data from all available sources. Missing sources are fine — adapt to what exists.
 27: 
-28: <process>
+28: ### 2a. Git History
 29: 
-30: <step name="parse_paths_flag" priority="first">
-31: Parse an optional `--paths <p1,p2,...>` argument. When supplied (by the
-32: post-execute codebase-drift gate in `/gsd-execute-phase` or by a user running
-33: `/gsd-map-codebase --paths apps/accounting,packages/ui`), the workflow
-34: operates in **incremental-remap mode**:
-35: 
-36: - Pass `--paths <p1>,<p2>,...` through to each spawned `gsd-codebase-mapper`
-37:   agent's prompt. Agents scope their Glob/Grep/Bash exploration to the listed
-38:   repo-relative prefixes only — no whole-repo scan.
-39: - Reject path values that contain `..`, start with `/`, or include shell
-40:   metacharacters (`;`, `` ` ``, `$`, `&`, `|`, `<`, `>`). If all provided
-41:   paths are invalid, fall back to a normal whole-repo run.
-42: - On write, each mapper stamps `last_mapped_commit: <HEAD sha>` into the YAML
-43:   frontmatter of every document it produces (see `bin/lib/drift.cjs:writeMappedCommit`).
+30: ```bash
+31: # Recent commits (last 30)
+32: git log --oneline -30
+33: 
+34: # Commits with timestamps for gap analysis
+35: git log --format="%H %ai %s" -30
+36: 
+37: # Files changed in recent commits (detect repeated edits)
+38: git log --name-only --format="" -20 | sort | uniq -c | sort -rn | head -20
+39: 
+40: # Uncommitted work
+41: git status --short
+42: git diff --stat
+43: ```
 44: 
-45: **Explicit contract — propagate `--paths` through a single normalized
-46: variable.** Downstream steps (`spawn_agents`, `sequential_mapping`, and any
-47: Agent-mode prompt construction) MUST use `${PATH_SCOPE_HINT}` to ensure every
-48: mapper receives the same deterministic scope. Without this contract
-49: incremental-remap can silently regress to a whole-repo scan.
-50: 
-51: ```bash
-52: # Validated, comma-separated paths (empty if --paths absent or all rejected):
-53: SCOPED_PATHS="<validated paths or empty>"
-54: if [ -n "$SCOPED_PATHS" ]; then
-55:   PATH_SCOPE_HINT="--paths $SCOPED_PATHS"
-56: else
-57:   PATH_SCOPE_HINT=""
-58: fi
-59: ```
-60: 
-61: All mapper prompts built later in this workflow MUST include
-62: `${PATH_SCOPE_HINT}` (expanded to empty when full-repo mode is in effect).
+45: Record:
+46: - Commit timeline (dates, messages, frequency)
+47: - Most-edited files (potential stuck-loop indicator)
+48: - Uncommitted changes (potential crash/interruption indicator)
+49: 
+50: ### 2b. Planning State
+51: 
+52: Read these files if they exist:
+53: - `.planning/STATE.md` — current milestone, phase, progress, blockers, last session
+54: - `.planning/ROADMAP.md` — phase list with status
+55: - `.planning/config.json` — workflow configuration
+56: 
+57: Extract:
+58: - Current phase and its status
+59: - Last recorded session stop point
+60: - Any blockers or flags
+61: 
+62: ### 2c. Phase Artifacts
 63: 
-64: When `--paths` is absent, behave exactly as before: full-repo scan, all 7
-65: documents refreshed.
-66: </step>
-67: 
-68: <step name="init_context" priority="first">
-69: Load codebase mapping context:
-70: 
-71: ```bash
-72: # SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
-73: GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
-74: if [ -f "$GSD_TOOLS" ]; then
-75:   GSD_SDK="node $GSD_TOOLS"
-76: elif command -v gsd-sdk >/dev/null 2>&1; then
-77:   GSD_SDK="gsd-sdk"
-78: else
-79:   echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
-80:   echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
-81:   exit 1
-82: fi
-83: INIT=$($GSD_SDK query init.map-codebase)
-84: if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-85: AGENT_SKILLS_MAPPER=$($GSD_SDK query agent-skills gsd-codebase-mapper)
-86: ```
-87: 
-88: Extract from init JSON: `mapper_model`, `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`, `subagent_timeout`, `date`.
-89: </step>
-90: 
-91: <step name="check_existing">
-92: Check if .planning/codebase/ already exists using `has_maps` from init context.
+64: For each phase directory in `.planning/phases/*/`:
+65: 
+66: ```bash
+67: ls .planning/phases/*/
+68: ```
+69: 
+70: For each phase, check which artifacts exist:
+71: - `{padded}-PLAN.md` or `{padded}-PLAN-*.md` (execution plans)
+72: - `{padded}-SUMMARY.md` (completion summary)
+73: - `{padded}-VERIFICATION.md` (quality verification)
+74: - `{padded}-CONTEXT.md` (design decisions)
+75: - `{padded}-RESEARCH.md` (pre-planning research)
+76: 
+77: Track: which phases have complete artifact sets vs gaps.
+78: 
+79: ### 2d. Session Reports
+80: 
+81: Read `.planning/reports/SESSION_REPORT.md` if it exists — extract last session outcomes,
+82: work completed, token estimates.
+83: 
+84: ### 2e. Git Worktree State
+85: 
+86: ```bash
+87: git worktree list
+88: ```
+89: 
+90: Check for orphaned worktrees (from crashed agents).
+91: 
+92: ## Step 3: Detect Anomalies
 93: 
-94: If `codebase_dir_exists` is true:
-95: ```bash
-96: ls -la .planning/codebase/
-97: ```
-98: 
-99: **If exists:**
-100: 
-101: ```
-102: .planning/codebase/ already exists with these documents:
-103: [List files found]
+94: Evaluate the gathered evidence against these anomaly patterns:
+95: 
+96: ### Stuck Loop Detection
+97: 
+98: **Signal:** Same file appears in 3+ consecutive commits within a short time window.
+99: 
+100: ```bash
+101: # Look for files committed repeatedly in sequence
+102: git log --name-only --format="---COMMIT---" -20
+103: ```
 104: 
-105: What's next?
-106: 1. Refresh - Delete existing and remap codebase
-107: 2. Update - Keep existing, only update specific documents
-108: 3. Skip - Use existing codebase map as-is
-109: ```
+105: Parse commit boundaries. If any file appears in 3+ consecutive commits, flag as:
+106: - **Confidence HIGH** if the commit messages are similar (e.g., "fix:", "fix:", "fix:" on same file)
+107: - **Confidence MEDIUM** if the file appears frequently but commit messages vary
+108: 
+109: ### Missing Artifact Detection
 110: 
-111: Wait for user response.
+111: **Signal:** Phase appears complete (has commits, is past in roadmap) but lacks expected artifacts.
 112: 
-113: If "Refresh": Delete .planning/codebase/, continue to create_structure
-114: If "Update": Ask which documents to update, continue to spawn_agents (filtered)
-115: If "Skip": Exit workflow
-116: 
-117: **If doesn't exist:**
-118: Continue to create_structure.
-119: </step>
-120: 
-121: <step name="create_structure">
-122: Create .planning/codebase/ directory:
-123: 
-124: ```bash
-125: mkdir -p .planning/codebase
-126: ```
-127: 
-128: **Expected output files:**
-129: - STACK.md (from tech mapper)
-130: - INTEGRATIONS.md (from tech mapper)
-131: - ARCHITECTURE.md (from arch mapper)
-132: - STRUCTURE.md (from arch mapper)
-133: - CONVENTIONS.md (from quality mapper)
-134: - TESTING.md (from quality mapper)
-135: - CONCERNS.md (from concerns mapper)
-136: 
-137: Continue to spawn_agents.
-138: </step>
-139: 
-140: <step name="detect_runtime_capabilities">
-141: Before spawning agents, detect whether the current runtime supports the `Agent` tool for subagent delegation.
-142: 
-143: **How to detect:** Check if you have access to an `Agent` tool (may be capitalized as `Agent` or lowercase as `agent` depending on runtime). If you do NOT have an `Agent`/`agent` tool (or only have tools like `browser_subagent` which is for web browsing, NOT code analysis):
-144: 
-145: → **Skip `spawn_agents` and `collect_confirmations`** — go directly to `sequential_mapping` instead.
-146: 
-147: **CRITICAL:** Never use `browser_subagent` or `Explore` as a substitute for `Agent`. The `browser_subagent` tool is exclusively for web page interaction and will fail for codebase analysis. If `Agent` is unavailable, perform the mapping sequentially in-context.
-148: </step>
-149: 
-150: <step name="spawn_agents" condition="Agent tool is available">
-151: Spawn 4 parallel gsd-codebase-mapper agents.
+113: For each phase that should be complete:
+114: - PLAN.md missing → planning step was skipped
+115: - SUMMARY.md missing → phase was not properly closed
+116: - VERIFICATION.md missing → quality check was skipped
+117: 
+118: ### Partial-plan Drift Detection
+119: 
+120: **Signal:** commits exist but SUMMARY.md is missing for the current or recently
+121: active plan.
+122: 
+123: Run the same comparison as the execute-phase safe-resume verifier: identify the
+124: active plan from STATE.md/phase artifacts, search git history for that plan id,
+125: then compare against the expected SUMMARY.md path. If production commits exist
+126: but SUMMARY.md is missing, flag a high-confidence partial-plan drift anomaly.
+127: This usually means an executor was interrupted after implementation commits but
+128: before atomic close-out.
+129: 
+130: ### Abandoned Work Detection
+131: 
+132: **Signal:** Large gap between last commit and current time, with STATE.md showing mid-execution.
+133: 
+134: ```bash
+135: # Time since last commit
+136: git log -1 --format="%ai"
+137: ```
+138: 
+139: If STATE.md shows an active phase but the last commit is >2 hours old and there are
+140: uncommitted changes, flag as potential abandonment or crash.
+141: 
+142: ### Crash/Interruption Detection
+143: 
+144: **Signal:** Uncommitted changes + STATE.md shows mid-execution + orphaned worktrees.
+145: 
+146: Combine:
+147: - `git status` shows modified/staged files
+148: - STATE.md has an active execution entry
+149: - `git worktree list` shows worktrees beyond the main one
+150: 
+151: ### Scope Drift Detection
 152: 
-153: Use Agent tool with `subagent_type="gsd-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true` for parallel execution.
+153: **Signal:** Recent commits touch files outside the current phase's expected scope.
 154: 
-155: **CRITICAL:** Use the dedicated `gsd-codebase-mapper` agent, NOT `Explore` or `browser_subagent`. The mapper agent writes documents directly.
-156: 
-157: **Agent 1: Tech Focus**
+155: Read the current phase PLAN.md to determine expected file paths. Compare against
+156: files actually modified in recent commits. Flag any files that are clearly outside
+157: the phase's domain.
 158: 
-159: ```text
-160: Agent(
-161:   subagent_type="gsd-codebase-mapper",
-162:   model="{mapper_model}",
-163:   run_in_background=true,
-164:   description="Map codebase tech stack",
-165:   prompt="Focus: tech
-166: Today's date: {date}
-167: 
-168: Analyze this codebase for technology stack and external integrations.
-169: 
-170: Write these documents to .planning/codebase/:
-171: - STACK.md - Languages, runtime, frameworks, dependencies, configuration
-172: - INTEGRATIONS.md - External APIs, databases, auth providers, webhooks
+159: ### Test Regression Detection
+160: 
+161: **Signal:** Commit messages containing "fix test", "revert", or re-commits of test files.
+162: 
+163: ```bash
+164: git log --oneline -20 | grep -iE "fix test|revert|broken|regression|fail"
+165: ```
+166: 
+167: ## Step 4: Generate Report
+168: 
+169: Create the forensics directory if needed:
+170: ```bash
+171: mkdir -p .planning/forensics
+172: ```
 173: 
-174: IMPORTANT: Use {date} for all [YYYY-MM-DD] date placeholders in documents.
+174: Write to `.planning/forensics/report-$(date +%Y%m%d-%H%M%S).md`:
 175: 
-176: Scope: ${PATH_SCOPE_HINT:-(full repo)} — when --paths is supplied, restrict exploration to those prefixes only.
-177: 
-178: Explore thoroughly. Write documents directly using templates. Return confirmation only.
-179: ${AGENT_SKILLS_MAPPER}"
-180: )
-181: ```
-182: 
-183: **Agent 2: Architecture Focus**
-184: 
-185: ```text
-186: Agent(
-187:   subagent_type="gsd-codebase-mapper",
-188:   model="{mapper_model}",
-189:   run_in_background=true,
-190:   description="Map codebase architecture",
-191:   prompt="Focus: arch
-192: Today's date: {date}
-193: 
-194: Analyze this codebase architecture and directory structure.
-195: 
-196: Write these documents to .planning/codebase/:
-197: - ARCHITECTURE.md - Pattern, layers, data flow, abstractions, entry points
-198: - STRUCTURE.md - Directory layout, key locations, naming conventions
-199: 
-200: IMPORTANT: Use {date} for all [YYYY-MM-DD] date placeholders in documents.
-201: 
-202: Scope: ${PATH_SCOPE_HINT:-(full repo)} — when --paths is supplied, restrict exploration to those prefixes only.
+176: ```markdown
+177: # Forensic Report
+178: 
+179: **Generated:** {ISO timestamp}
+180: **Problem:** {user's description}
+181: 
+182: ---
+183: 
+184: ## Evidence Summary
+185: 
+186: ### Git Activity
+187: - **Last commit:** {date} — "{message}"
+188: - **Commits (last 30):** {count}
+189: - **Time span:** {earliest} → {latest}
+190: - **Uncommitted changes:** {yes/no — list if yes}
+191: - **Active worktrees:** {count — list if >1}
+192: 
+193: ### Planning State
+194: - **Current milestone:** {version or "none"}
+195: - **Current phase:** {number — name — status}
+196: - **Last session:** {stopped_at from STATE.md}
+197: - **Blockers:** {any flags from STATE.md}
+198: 
+199: ### Artifact Completeness
+200: | Phase | PLAN | CONTEXT | RESEARCH | SUMMARY | VERIFICATION |
+201: |-------|------|---------|----------|---------|-------------|
+202: {for each phase: name | ✅/❌ per artifact}
 203: 
-204: Explore thoroughly. Write documents directly using templates. Return confirmation only.
-205: ${AGENT_SKILLS_MAPPER}"
-206: )
-207: ```
-208: 
-209: **Agent 3: Quality Focus**
-210: 
-211: ```text
-212: Agent(
-213:   subagent_type="gsd-codebase-mapper",
-214:   model="{mapper_model}",
-215:   run_in_background=true,
-216:   description="Map codebase conventions",
-217:   prompt="Focus: quality
-218: Today's date: {date}
+204: ## Anomalies Detected
+205: 
+206: ### {Anomaly Type} — {Confidence: HIGH/MEDIUM/LOW}
+207: **Evidence:** {specific commits, files, or state data}
+208: **Interpretation:** {what this likely means}
+209: 
+210: {repeat for each anomaly found}
+211: 
+212: ## Root Cause Hypothesis
+213: 
+214: Based on the evidence above, the most likely explanation is:
+215: 
+216: {1-3 sentence hypothesis grounded in the anomalies}
+217: 
+218: ## Recommended Actions
 219: 
-220: Analyze this codebase for coding conventions and testing patterns.
-221: 
-222: Write these documents to .planning/codebase/:
-223: - CONVENTIONS.md - Code style, naming, patterns, error handling
-224: - TESTING.md - Framework, structure, mocking, coverage
+220: 1. {Specific, actionable remediation step}
+221: 2. {Another step if applicable}
+222: 3. {Recovery command if applicable — e.g., `/gsd-resume-work`, `/gsd-execute-phase N`}
+223: 
+224: ---
 225: 
-226: IMPORTANT: Use {date} for all [YYYY-MM-DD] date placeholders in documents.
-227: 
-228: Scope: ${PATH_SCOPE_HINT:-(full repo)} — when --paths is supplied, restrict exploration to those prefixes only.
-229: 
-230: Explore thoroughly. Write documents directly using templates. Return confirmation only.
-231: ${AGENT_SKILLS_MAPPER}"
-232: )
-233: ```
-234: 
-235: **Agent 4: Concerns Focus**
-236: 
-237: ```
-238: Agent(
-239:   subagent_type="gsd-codebase-mapper",
-240:   model="{mapper_model}",
-241:   run_in_background=true,
-242:   description="Map codebase concerns",
-243:   prompt="Focus: concerns
-244: Today's date: {date}
-245: 
-246: Analyze this codebase for technical debt, known issues, and areas of concern.
-247: 
-248: Write this document to .planning/codebase/:
-249: - CONCERNS.md - Tech debt, bugs, security, performance, fragile areas
-250: 
-251: IMPORTANT: Use {date} for all [YYYY-MM-DD] date placeholders in documents.
-252: 
-253: Scope: ${PATH_SCOPE_HINT:-(full repo)} — when --paths is supplied, restrict exploration to those prefixes only.
-254: 
-255: Explore thoroughly. Write document directly using template. Return confirmation only.
-256: ${AGENT_SKILLS_MAPPER}"
-257: )
-258: ```
-259: 
-260: > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all 4 Agent() calls above with `run_in_background=true`, do NOT read any source files, analyze the codebase, or write any mapping documents independently while the subagents are active. Wait for all 4 agents to complete before proceeding to collect_confirmations. This prevents duplicate work and wasted context.
-261: 
-262: Continue to collect_confirmations.
-263: </step>
+226: *Report generated by `/gsd-forensics`. All paths redacted for portability.*
+227: ```
+228: 
+229: **Redaction rules:**
+230: - Replace absolute paths with relative paths (strip `$HOME` prefix)
+231: - Remove any API keys, tokens, or credentials found in git diff output
+232: - Truncate large diffs to first 50 lines
+233: 
+234: ## Step 5: Present Report
+235: 
+236: Display the full forensic report inline.
+237: 
+238: ## Step 6: Offer Interactive Investigation
+239: 
+240: > "Report saved to `.planning/forensics/report-{timestamp}.md`.
+241: >
+242: > I can dig deeper into any finding. Want me to:
+243: > - Trace a specific anomaly to its root cause?
+244: > - Read specific files referenced in the evidence?
+245: > - Check if a similar issue has been reported before?"
+246: 
+247: If the user asks follow-up questions, answer from the evidence already gathered.
+248: Read additional files only if specifically needed.
+249: 
+250: ## Step 7: Offer Issue Creation
+251: 
+252: If actionable anomalies were found (HIGH or MEDIUM confidence):
+253: 
+254: > "Want me to create a GitHub issue for this? I'll format the findings and redact paths."
+255: 
+256: If confirmed:
+257: ```bash
+258: # Check if "bug" label exists before using it
+259: BUG_LABEL=$(gh label list --repo open-gsd/get-shit-done-redux --search "bug" --json name -q '.[0].name' 2>/dev/null)
+260: LABEL_FLAG=""
+261: if [ -n "$BUG_LABEL" ]; then
+262:   LABEL_FLAG="--label bug"
+263: fi
 264: 
-265: <step name="collect_confirmations">
-266: Wait for all 4 agents to complete using TaskOutput tool.
-267: 
-268: **For each agent task_id returned by the Agent tool calls above:**
-269: ```
-270: TaskOutput tool:
-271:   task_id: "{task_id from Agent result}"
-272:   block: true
-273:   timeout: {subagent_timeout from init context, default 300000}
-274: ```
-275: 
-276: > The timeout is configurable via `workflow.subagent_timeout` in `.planning/config.json` (milliseconds). Default: 300000 (5 minutes). Increase for large codebases or slower models.
-277: 
-278: Call TaskOutput for all 4 agents in parallel (single message with 4 TaskOutput calls).
-279: 
-280: Once all TaskOutput calls return, read each agent's output file to collect confirmations.
-281: 
-282: **Expected confirmation format from each agent:**
-283: ```
-284: ## Mapping Complete
-285: 
-286: **Focus:** {focus}
-287: **Documents written:**
-288: - `.planning/codebase/{DOC1}.md` ({N} lines)
-289: - `.planning/codebase/{DOC2}.md` ({N} lines)
-290: 
-291: Ready for orchestrator summary.
-292: ```
-293: 
-294: **What you receive:** Just file paths and line counts. NOT document contents.
-295: 
-296: If any agent failed, note the failure and continue with successful documents.
-297: 
-298: Continue to verify_output.
-299: </step>
-300: 
-301: <step name="sequential_mapping" condition="Agent tool is NOT available (e.g. Antigravity, Gemini CLI, Codex)">
-302: When the `Agent` tool is unavailable, perform codebase mapping sequentially in the current context. This replaces `spawn_agents` and `collect_confirmations`.
-303: 
-304: **IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Use only file system tools (Read, Bash, Write, Grep, Glob, list_dir, view_file, grep_search, or equivalent tools available in your runtime).
-305: 
-306: **IMPORTANT:** Use `{date}` from init context for all `[YYYY-MM-DD]` date placeholders in documents. NEVER guess the date.
-307: 
-308: **SCOPE:** When `${PATH_SCOPE_HINT}` is non-empty (i.e. `--paths` was supplied), restrict every pass below to the validated path prefixes in `${SCOPED_PATHS}`. Do NOT scan files outside those prefixes. When `${PATH_SCOPE_HINT}` is empty, perform a full-repo scan.
-309: 
-310: Perform all 4 mapping passes sequentially:
-311: 
-312: **Pass 1: Tech Focus**
-313: - Explore package.json/Cargo.toml/go.mod/requirements.txt, config files, dependency trees
-314: - Write `.planning/codebase/STACK.md` — Languages, runtime, frameworks, dependencies, configuration
-315: - Write `.planning/codebase/INTEGRATIONS.md` — External APIs, databases, auth providers, webhooks
-316: 
-317: **Pass 2: Architecture Focus**
-318: - Explore directory structure, entry points, module boundaries, data flow
-319: - Write `.planning/codebase/ARCHITECTURE.md` — Pattern, layers, data flow, abstractions, entry points
-320: - Write `.planning/codebase/STRUCTURE.md` — Directory layout, key locations, naming conventions
-321: 
-322: **Pass 3: Quality Focus**
-323: - Explore code style, error handling patterns, test files, CI config
-324: - Write `.planning/codebase/CONVENTIONS.md` — Code style, naming, patterns, error handling
-325: - Write `.planning/codebase/TESTING.md` — Framework, structure, mocking, coverage
-326: 
-327: **Pass 4: Concerns Focus**
-328: - Explore TODOs, known issues, fragile areas, security patterns
-329: - Write `.planning/codebase/CONCERNS.md` — Tech debt, bugs, security, performance, fragile areas
-330: 
-331: Use the same document templates as the `gsd-codebase-mapper` agent. Include actual file paths formatted with backticks.
-332: 
-333: Continue to verify_output.
-334: </step>
-335: 
-336: <step name="verify_output">
-337: Verify all documents created successfully:
-338: 
-339: ```bash
-340: ls -la .planning/codebase/
-341: wc -l .planning/codebase/*.md
-342: ```
-343: 
-344: **Verification checklist:**
-345: - All 7 documents exist
-346: - No empty documents (each should have >20 lines)
-347: 
-348: If any documents missing or empty, note which agents may have failed.
-349: 
-350: Continue to scan_for_secrets.
-351: </step>
-352: 
-353: <step name="scan_for_secrets">
-354: **CRITICAL SECURITY CHECK:** Scan output files for accidentally leaked secrets before committing.
-355: 
-356: Run secret pattern detection:
-357: 
-358: ```bash
-359: # Check for common API key patterns in generated docs
-360: grep -E '(sk-[a-zA-Z0-9]{20,}|sk_live_[a-zA-Z0-9]+|sk_test_[a-zA-Z0-9]+|ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}|glpat-[a-zA-Z0-9_-]+|AKIA[A-Z0-9]{16}|xox[baprs]-[a-zA-Z0-9-]+|-----BEGIN.*PRIVATE KEY|eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.)' .planning/codebase/*.md 2>/dev/null && SECRETS_FOUND=true || SECRETS_FOUND=false
-361: ```
-362: 
-363: **If SECRETS_FOUND=true:**
-364: 
-365: ```
-366: ⚠️  SECURITY ALERT: Potential secrets detected in codebase documents!
-367: 
-368: Found patterns that look like API keys or tokens in:
-369: [show grep output]
-370: 
-371: This would expose credentials if committed.
-372: 
-373: **Action required:**
-374: 1. Review the flagged content above
-375: 2. If these are real secrets, they must be removed before committing
-376: 3. Consider adding sensitive files to Claude Code "Deny" permissions
-377: 
-378: Pausing before commit. Reply "safe to proceed" if the flagged content is not actually sensitive, or edit the files first.
-379: ```
-380: 
-381: Wait for user confirmation before continuing to commit_codebase_map.
-382: 
-383: **If SECRETS_FOUND=false:**
-384: 
-385: Continue to commit_codebase_map.
-386: </step>
-387: 
-388: <step name="commit_codebase_map">
-389: Commit the codebase map:
-390: 
-391: ```bash
-392: $GSD_SDK query commit "docs: map existing codebase" --files .planning/codebase/*.md
-393: ```
-394: 
-395: Continue to offer_next.
-396: </step>
-397: 
-398: <step name="offer_next">
-399: Present completion summary and next steps.
-400: 
-401: **Get line counts:**
-402: ```bash
-403: wc -l .planning/codebase/*.md
-404: ```
-405: 
-406: **Output format:**
-407: 
-408: ```
-409: Codebase mapping complete.
-410: 
-411: Created .planning/codebase/:
-412: - STACK.md ([N] lines) - Technologies and dependencies
-413: - ARCHITECTURE.md ([N] lines) - System design and patterns
-414: - STRUCTURE.md ([N] lines) - Directory layout and organization
-415: - CONVENTIONS.md ([N] lines) - Code style and patterns
-416: - TESTING.md ([N] lines) - Test structure and practices
-417: - INTEGRATIONS.md ([N] lines) - External services and APIs
-418: - CONCERNS.md ([N] lines) - Technical debt and issues
-419: 
-420: 
-421: ---
-422: 
-423: ## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
-424: 
-425: **Initialize project** — use codebase context for planning
-426: 
-427: `/clear` then:
-428: 
-429: `/gsd-new-project`
-430: 
-431: ---
-432: 
-433: **Also available:**
-434: - Re-run mapping: `/gsd-map-codebase`
-435: - Review specific file: `cat .planning/codebase/STACK.md`
-436: - Edit any document before proceeding
-437: 
-438: ---
-439: ```
-440: 
-441: End workflow.
-442: </step>
-443: 
-444: </process>
-445: 
-446: <success_criteria>
-447: - .planning/codebase/ directory created
-448: - If Agent tool available: 4 parallel gsd-codebase-mapper agents spawned with run_in_background=true
-449: - If Agent tool NOT available: 4 sequential mapping passes performed inline (never using browser_subagent)
-450: - All 7 codebase documents exist
-451: - No empty documents (each should have >20 lines)
-452: - Clear completion summary with line counts
-453: - User offered clear next steps in GSD style
-454: </success_criteria>
+265: gh issue create \
+266:   --repo open-gsd/get-shit-done-redux \
+267:   --title "bug: {concise description from anomaly}" \
+268:   $LABEL_FLAG \
+269:   --body "{formatted findings from report}"
+270: ```
+271: 
+272: ## Step 8: Update STATE.md
+273: 
+274: ```bash
+275: # SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+276: GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+277: if [ -f "$GSD_TOOLS" ]; then
+278:   GSD_SDK="node $GSD_TOOLS"
+279: elif command -v gsd-sdk >/dev/null 2>&1; then
+280:   GSD_SDK="gsd-sdk"
+281: else
+282:   echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+283:   echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+284:   exit 1
+285: fi
+286: $GSD_SDK query state.record-session "" \
+287:   "Forensic investigation complete" \
+288:   ".planning/forensics/report-{timestamp}.md"
+289: ```
 
-(End of file - total 454 lines)
+(End of file - total 289 lines)
 </content>
 
 <system-reminder>
@@ -667,353 +624,17 @@ Source evidence: `.planning/architecture/hivemind-runtime-identity-taxonomy-2026
 
 </system-reminder>
 
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_99ec6ef3ec8e4e7599450510"
-}
-```
-
-
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_0abbb6134d6a403c81439123"
-}
-```
-
-
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_365a2c91374d4a80a98dd385"
-}
-```
-
-
-## ASSISTANT (turn 1)
-
-`.planning/codebase/` đã tồn tại với 7 documents (cập nhật lúc 03:24-03:48 hôm nay):
-
-| Document | Lines | Last Modified |
-|----------|-------|---------------|
-| ARCHITECTURE.md | 33,975 chars | 03:26 |
-| CONCERNS.md | 30,022 chars | 03:48 |
-| CONVENTIONS.md | 8,533 chars | 03:24 |
-| INTEGRATIONS.md | 10,360 chars | 03:24 |
-| STACK.md | 6,710 chars | 03:24 |
-| STRUCTURE.md | 65,084 chars | 03:39 |
-| TESTING.md | 10,538 chars | 03:24 |
-
-Bạn muốn làm gì tiếp?
-
-1. **Refresh** - Xóa tất cả và map lại toàn bộ
-2. **Update concerns** - Chỉ cập nhật lại CONCERNS.md (focus theo yêu cầu)
-3. **Update all** - Giữ existing, cập nhật lại tất cả 7 documents
-4. **Skip** - Sử dụng bản đồ hiện tại
-
-## USER (turn 2)
-
-**source:** real-human
-
-2
-
-### Tool: task
-
-**Input:**
-```json
-{
-  "description": "Map codebase concerns",
-  "subagent_type": "gsd-codebase-mapper",
-  "task_id": "ses_194cae4b2ffeJ2cNYbc9zuwdDW"
-}
-```
-
-**Output:** (pruned)
-```
-task_id: ses_194cae4b2ffeJ2cNYbc9zuwdDW
-```
-
-
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_20eb252302de4e46b2b8aa64"
-}
-```
-
-
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_c2cc2ff47e094952b47a0945"
-}
-```
-
-
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_a520a0c07a7748c9a980a25f"
-}
-```
-
-
-## ASSISTANT (turn 2)
-
-✅ **CONCERNS.md updated** — 372 lines, committed.
-
-`.planning/codebase/` hiện tại:
-| Document | Status |
-|----------|--------|
-| ARCHITECTURE.md | giữ nguyên |
-| CONCERNS.md | ✅ refresh |
-| CONVENTIONS.md | giữ nguyên |
-| INTEGRATIONS.md | giữ nguyên |
-| STACK.md | giữ nguyên |
-| STRUCTURE.md | giữ nguyên |
-| TESTING.md | giữ nguyên |
-
----
-
-**Next steps:**
-- `/gsd-new-project` — initialize project với codebase context
-- `/gsd-plan-phase` — plan phase tiếp theo
-- Review: `cat .planning/codebase/CONCERNS.md`
-
-## USER (turn 3)
-
-**source:** real-human
-
-route the command to create a phase to tackle all critical, warning, high, and medium cocerns using gsd phases updating roadmap and state use the command execution tools and decide to route using agent as sub or main - make them sequential, one at a time, and be strategic
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/.planning/codebase/CONCERNS.md"
-}
-```
-
-
 ### Tool: execute-slash-command
 
 **Input:**
 ```json
 {
-  "callID": "call_0473ec161c6647fbb37faa38"
+  "callID": "call_60345248f8d5412e8ae15c2c"
 }
 ```
 
 
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_8281ac66a03c456ca3ec7a77"
-}
-```
-
-
-### Tool: task
-
-**Input:**
-```json
-{
-  "description": "Add concern phases to roadmap",
-  "subagent_type": "gsd-roadmapper",
-  "task_id": "ses_194c27351ffer4b1ONh4wyghLd"
-}
-```
-
-**Output:** (pruned)
-```
-task_id: ses_194c27351ffer4b1ONh4wyghLd
-```
-
-
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_cc0a458ac1bb427ab2405e26"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
-}
-```
-
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
-}
-```
-
-
-### Tool: edit
-
-**Input:**
-```json
-{
-  "callID": "call_6c3cc4ba38a1474099e1b8b9"
-}
-```
-
-
-### Tool: edit
-
-**Input:**
-```json
-{
-  "callID": "call_09e9fb2f159b40d28deb99d1"
-}
-```
-
-
-### Tool: edit
-
-**Input:**
-```json
-{
-  "callID": "call_bc6bdb62aeb1483d8e07c353"
-}
-```
-
-
-### Tool: bash
-
-**Input:**
-```json
-{
-  "callID": "call_fa8050aa42c64708a4f3e276"
-}
-```
-
-
-## ASSISTANT (turn 3)
-
-✅ **Hoàn tất!** Đã thêm 8 concern-remediation phases:
-
-| Phase | Title | Priority | Dependencies |
-|-------|-------|----------|--------------|
-| C1 | Critical Type Safety & Error Handling | P0 | — |
-| C2 | Type Safety & Security Hardening | P1 | C1 |
-| C3 | Module Decomposition & Promise Patterns | P1 | C2 |
-| C4 | Performance Optimization | P2 | C3 |
-| C5 | Error Handling & Code Quality | P2 | C4 |
-| C6 | Architectural Refactoring | P2 | C5 |
-| C7 | Test Coverage | P2 | C6 |
-| C8 | Dependency Cleanup | P2 | C7 |
-
-**Commits:**
-- `b243c40e` — roadmap updated (C1-C8 added)
-- `a4a59c6e` — STATE.md updated
-
-**Next steps:**
-- `/gsd-execute-phase` — execute C1 (Critical issues first)
-- `/gsd-plan-phase C1` — create detailed plan for C1
-- `/gsd-progress` — check overall progress
-
-## USER (turn 4)
-
-**source:** real-human
-
-Route to the appropriate codebase-intelligence skill based on the user's intent.
-`gsd-scan` and `gsd-intel` were folded into `gsd-map-codebase` flags by #2790.
-
-| User wants | Invoke |
-|---|---|
-| Map the full codebase structure | gsd-map-codebase |
-| Quick lightweight codebase scan | gsd-map-codebase --fast |
-| Query mapped intelligence files | gsd-map-codebase --query |
-| Generate a knowledge graph | gsd-graphify |
-| Update project documentation | gsd-docs-update |
-| Extract learnings from a completed phase | gsd-extract-learnings |
-
-Invoke the matched skill directly using the Skill tool.
-
- <C1	Critical Type Safety & Error Handling	P0	—
-C2	Type Safety & Security Hardening	P1	C1
-C3	Module Decomposition & Promise Patterns	P1	C2
-C4	Performance Optimization	P2	C3
-C5	Error Handling & Code Quality	P2	C4 > run all these in auto mode
-
-## USER (turn 6)
-
-**source:** real-human
-
-Route to the appropriate codebase-intelligence skill based on the user's intent.
-`gsd-scan` and `gsd-intel` were folded into `gsd-map-codebase` flags by #2790.
-
-| User wants | Invoke |
-|---|---|
-| Map the full codebase structure | gsd-map-codebase |
-| Quick lightweight codebase scan | gsd-map-codebase --fast |
-| Query mapped intelligence files | gsd-map-codebase --query |
-| Generate a knowledge graph | gsd-graphify |
-| Update project documentation | gsd-docs-update |
-| Extract learnings from a completed phase | gsd-extract-learnings |
-
-Invoke the matched skill directly using the Skill tool.
-
- <C1	Critical Type Safety & Error Handling	P0	—
-C2	Type Safety & Security Hardening	P1	C1
-C3	Module Decomposition & Promise Patterns	P1	C2
-C4	Performance Optimization	P2	C3
-C5	Error Handling & Code Quality	P2	C4 > run all these in auto mode
-
-### Tool: skill
-
-**Input:**
-```json
-{
-  "name": "gsd-autonomous"
-}
-```
-
-**Output:** (pruned)
-```
-# Skill: gsd-autonomous
-```
-
-
-### Tool: execute-slash-command
-
-**Input:**
-```json
-{
-  "callID": "call_a896a2c142d9446183477c88"
-}
-```
-
-
-## USER (turn 7)
+## USER (turn 15)
 
 **source:** real-human
 
@@ -1026,132 +647,95 @@ C5	Error Handling & Code Quality	P2	C4 > run all these in auto mode
 {
   "description": "Run all remaining phases autonomously — discuss→plan→execute per phase",
   "subagent_type": "gsd-ai-researcher",
-  "task_id": "ses_194b88d79ffe4u9HS6d4RR6dTo"
+  "task_id": "ses_191cb2281ffeZWrqyoirdDO9ZT"
 }
 ```
 
 **Output:** (pruned)
 ```
-task_id: ses_194b88d79ffe4u9HS6d4RR6dTo
+task_id: ses_191cb2281ffeZWrqyoirdDO9ZT
 ```
 
 
-### Tool: delegation-status
+## ASSISTANT (turn 2)
 
-**Input:**
-```json
-{
-  "callID": "call_056cd9b25e4b45f2ba212800"
-}
-```
+Tools: task
 
-
-### Tool: read
-
-**Input:**
-```json
-{
-  "filePath": "/Users/apple/hivemind-plugin-private/.planning/codebase/CONCERNS.md"
-}
-```
-
-
-## USER (turn 8)
+## USER (turn 16)
 
 **source:** real-human
 
-retry stack on the previous with build agent
+<objective>
+Investigate what went wrong during a GSD workflow execution. Analyzes git history, `.planning/` artifacts, and file system state to detect anomalies and generate a structured diagnostic report.
 
-## ASSISTANT (turn 5)
+Purpose: Diagnose failed or stuck workflows so the user can understand root cause and take corrective action.
+Output: Forensic report saved to `.planning/forensics/`, presented inline, with optional issue creation.
+</objective>
 
-Tools: read
+<execution_context>
+@/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/workflows/forensics.md
+</execution_context>
 
-## USER (turn 9)
+<context>
+**Data sources:**
+- `git log` (recent commits, patterns, time gaps)
+- `git status` / `git diff` (uncommitted work, conflicts)
+- `.planning/STATE.md` (current position, session history)
+- `.planning/ROADMAP.md` (phase scope and progress)
+- `.planning/phases/*/` (PLAN.md, SUMMARY.md, VERIFICATION.md, CONTEXT.md)
+- `.planning/reports/SESSION_REPORT.md` (last session outcomes)
 
-**source:** real-human
+**User input:**
+- Problem description: context can you check for the recent C1 to C3 changes which result in many regressions for the session-trackers - from what I have seen are tjhe main session tracker has lost its ability to track for assistant messages. Secondly the TUI emit the errror messsages for frontmatter update failed as it cant find the file or diretory and the log polute the TUI heavily. Whcih means the logics have been regressed severely; check for the child-writer to if they suffer the same  (optional — will ask if not provided)
+</context>
 
-retry stack on the previous with build agent see the correct subagent_type and put build do exactly what I am asking
+<process>
+Execute end-to-end.
+</process>
 
-## ASSISTANT (turn 6)
+<success_criteria>
+- Evidence gathered from all available data sources
+- At least 4 anomaly types checked (stuck loop, missing artifacts, abandoned work, crash/interruption)
+- Structured forensic report written to `.planning/forensics/report-{timestamp}.md`
+- Report presented inline with findings, anomalies, and recommendations
+- Interactive investigation offered for deeper analysis
+- GitHub issue creation offered if actionable findings exist
+</success_criteria>
 
-Tools: read
-
-## USER (turn 10)
-
-**source:** real-human
-
-retry stack on the previous with build agent see the correct subagent_type and put build do exactly what I am asking
+<critical_rules>
+- **Read-only investigation:** Do not modify project source files during forensics. Only write the forensic report and update STATE.md session tracking.
+- **Redact sensitive data:** Strip absolute paths, API keys, tokens from reports and issues.
+- **Ground findings in evidence:** Every anomaly must cite specific commits, files, or state data.
+- **No speculation without evidence:** If data is insufficient, say so — do not fabricate root causes.
+</critical_rules> 
 
 ### Tool: task
 
 **Input:**
 ```json
 {
-  "description": "Build/execute C1-C8 phases",
-  "subagent_type": "gsd-executor",
-  "task_id": "ses_194b88d79ffe4u9HS6d4RR6dTo"
+  "description": "Investigate C1-C3 regressions in session-tracker",
+  "subagent_type": "gsd-code-reviewer",
+  "task_id": "ses_191ca84faffeJ6cWpsbqC4ngK3"
 }
 ```
 
 **Output:** (pruned)
 ```
-task_id: ses_194b88d79ffe4u9HS6d4RR6dTo
+task_id: ses_191ca84faffeJ6cWpsbqC4ngK3
 ```
 
 
-## ASSISTANT (turn 7)
-
-Đúng vậy, lần trước tôi dùng sai `subagent_type` (gsd-ai-researcher thay vì gsd-executor). Stack onto previous session với `gsd-executor`:
-
-## ASSISTANT (turn 8)
-
-Đúng vậy, lần trước tôi dùng sai `subagent_type` (gsd-ai-researcher thay vì gsd-executor). Stack onto previous session với `gsd-executor`:
-
-## USER (turn 11)
-
-**source:** real-human
-
-continue stack on the previous one I was disconnected and it was in the middle
-
-## USER (turn 12)
-
-**source:** real-human
-
-I order only C1 to C5 auto mation do not go beyond
-
-## USER (turn 13)
-
-**source:** real-human
-
-I order only C1 to C3 automation do not go beyond - please stack on the previous and let's known
-
-## ASSISTANT (turn 9)
-
-Tools: task
-
-### Tool: task
+### Tool: bash
 
 **Input:**
 ```json
 {
-  "description": "Continue C1-C8 phase execution",
-  "subagent_type": "gsd-executor",
-  "task_id": "ses_194b88d79ffe4u9HS6d4RR6dTo"
+  "callID": "call_7d9a54b66e1a430391ad45de"
 }
 ```
 
-**Output:** (pruned)
-```
-task_id: ses_194b88d79ffe4u9HS6d4RR6dTo
-```
 
-
-## ASSISTANT (turn 10)
+## ASSISTANT (turn 3)
 
 Tools: task
-
-## USER (turn 14)
-
-**source:** real-human
-
-I order only C1 to C3 automation do not go beyond - please stack on the previous and let's known
