@@ -496,10 +496,10 @@ export function createDelegationStatusTool(
               ? `delegate-task({ agent: "${delegation.agent}", prompt: "...", stackOnSessionId: "${delegation.childSessionId}" })`
               : undefined,
             retryCommand: retryRecommendation
-              ? retryRecommendation.taskCommand
+              ? redactTextSecrets(retryRecommendation.taskCommand)
               : undefined,
             retryGuidance: retryRecommendation
-              ? retryRecommendation.guidance
+              ? redactTextSecrets(retryRecommendation.guidance)
               : undefined,
           }
 
