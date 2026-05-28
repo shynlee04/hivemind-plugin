@@ -136,45 +136,66 @@ This is not negotiable. This is not optional. You cannot rationalize your way ou
 
 ## SPECIFIC SYSTEM LINEAGE, ROUTING, AND GOVERNANCE RULES
 
-### 1. Framework Lineages & Layer Classifications
-* **Lineage Boundaries**:
-  * **hm-* lineage (Harness Modules)**: The core subject of development. Controls the composition engine runtime (plugin, tools, hooks, task-management, coordination, config, routing). Only loads `hm-*` skills, `gate-*` quality triad skills, and `stack-*` reference skills. Never loads `hf-*` or `gsd-*` skills.
-  * **hf-* lineage (Harness Builder/Authoring)**: Meta-concept authoring tools (agent definitions, skills, commands, rules, permissions). Can modify primitives under `.opencode/` when authorized.
-  * **gsd-* lineage (Get-Shit-Done developer tooling)**: Shipped-with development utilities used to build the harness project itself. 
-* **Layer Hierarchy (L0 -> L3)**:
-  * **L0 Orchestrators** (e.g. `hm-l0-orchestrator`, `hf-l0-orchestrator`):
-    * *Role*: Front-facing user interaction, intent classification, landscape mapping, path routing, and quality gate enforcement.
-    * *Temperature Discipline*: Hard-constrained to **0.2–0.3** for routing stability.
-    * *Code Modification Authority*: ZERO write authority in `src/`, `tests/`, or `.opencode/`.
-  * **L1 Coordinators** (e.g. `hm-coordinator`/`hm-l1-coordinator`, `hf-l1-coordinator`):
-    * *Role*: Wave-based planning and coordination. Decomposes tasks into wave groups (Research, Planning, Execution, Quality, etc.), tracks sub-delegations, and enforces wave dependencies.
-    * *Temperature Discipline*: Hard-constrained to **0.3–0.4** to allow structured decomposition flexibility.
-  * **L2/L3 Specialists & Primitives** (e.g. `hm-planner`, `hm-executor`, `hm-verifier`, `hf-l2-*` builders, `gate-l3-*` gates, `stack-l3-*` references):
-    * *Role*: Context-informed task execution. Directly reads codebase files, writes artifacts to `.hivemind/planning/`, runs test/build commands, and evaluates quality gates.
-    * *Temperature Discipline*: Hard-constrained to **0.0–0.1** to ensure deterministic code modification and verification.
+### 1. Lineage Distinctions: HM/HF Lineages vs. GSD Developer Tooling
+* **HM/HF lineages (Subject of Development)**:
+  * This is the core composition engine runtime under development.
+  * Lineage-specific primitives: `hm-*` (product development workflows and L2/L3 specialists) and `hf-*` (meta-builder authoring modules and workflows).
+  * Their runtime files (agent definitions, commands, skills, and workflows) reside under `.opencode/agents/hm-*`, `.opencode/agents/hf-*`, `.opencode/command/hm-*`, `.opencode/command/hf-*`, `.opencode/commands/hm-*`, `.opencode/commands/hf-*`, `.opencode/workflows/hm-*`, `.opencode/workflows/hf-*`, `.opencode/skills/hm-*`, and `.opencode/skills/hf-l2-*`.
+* **GSD lineage (Internal Developer Tooling)**:
+  * Pristine development utilities used to build, test, and audit the harness project itself.
+  * All GSD files are tracked explicitly in [gsd-file-manifest.json](file:///Users/apple/hivemind-plugin-private/.opencode/gsd-file-manifest.json).
+  * Manifest paths include:
+    * `get-shit-done/` (sub-modules, references, templates, and CJS scripts under `get-shit-done/bin/lib/`).
+    * `.opencode/agents/gsd-*` (declarative agent files).
+    * `.opencode/command/gsd-*` and `.opencode/commands/gsd-*` (developer-facing CLI commands).
+  * **Critical Partition**: No GSD primitives or assets are shipped as part of the harness package. Lineage-crossing transitions (e.g. calling an `hm-*` module from a `gsd-*` session) are strictly forbidden, unless explicitly mapped through sync/bridging scripts (e.g., `sync-assets.js` or `sync-agents-md.md`).
 
-### 2. Framework Oneness Constraints
-* **Definitions**:
-  * **gsd-session**: A session started by a `gsd-*` command (located under `.opencode/commands/gsd-*` or `.opencode/command/gsd-*`).
-  * **harness-session**: A session started by an `hm-*` or `hf-*` command.
-* **Oneness Enforcement**:
-  * If a session is classified as a **gsd-session**, the orchestrator, coordinator, and all spawned subagents MUST strictly use `gsd-*` commands, workflows, and agents. Mixing `gsd` tooling with `hm-*` execution modules (e.g. calling `hm-planner` from a `gsd-session`) is strictly forbidden.
-  * If a session is classified as a **harness-session**, the orchestrator/coordinator and subagents MUST use `hm-*`/`hf-*` commands, workflows, and agents.
-  * Lineage-crossing transitions are allowed only when explicitly bridged by a designated sync command (e.g. `sync-assets.js` or `sync-agents-md.md`).
+### 2. Command vs. Commands & Agent vs. Agents Registry Ambiguity
+To prevent installation version drift and execution failures across different OpenCode host releases, the following plural/singular directory rules are enforced:
+* **Command vs. Commands Folder Synchronization**:
+  * Both `.opencode/command/` and `.opencode/commands/` directories are primary roots.
+  * Any new command file or modification to an existing command MUST be duplicated identically to both paths. 
+  * If a command exists only in one directory, the validator throws a registration mismatch warning.
+* **Agent vs. Agents Namespace Routing**:
+  * Declarative agent files live in `.opencode/agents/`.
+  * The SDK uses the singular string `agent` to declare the handler type, but maps to the plural folder path `agents/` on disk.
+  * Lineage naming formatting:
+    * Agent prefix formats: `hm-[a-z0-9-]+` or `hf-[a-z0-9-]+`.
+    * Skill folder format: `.opencode/skills/hm-[a-z0-9-]+/` or `.opencode/skills/hf-l2-[a-z0-9-]+/`.
+    * Verification skills use: `gate-l3-[a-z0-9-]+` or `stack-l3-[a-z0-9-]+`.
 
-### 3. The Three-Path Routing Engine
-The L0 agent classifies user intent and routes it through one of three specific execution paths:
-* **Fast-Path (Direct L0 -> L2/L3)**:
-  * *Entry Criteria*: (1) A discrete, single-specialist task. (2) Known command routing. (3) Recovery or simple status check lookup. (4) Direct user request for a specific specialist.
-  * *Targets*: Mapped directly to L2/L3 specialists (e.g. `hm-l2-researcher`, `hm-l2-scout`, `hm-l3-detective`).
-* **Coordinated-Path (L0 -> L1 -> L2/L3)**:
-  * *Entry Criteria*: (1) Multi-specialist task (2+ agents). (2) Sequential task waves with output-input dependencies. (3) Unknown scope requiring planning. (4) Remediation loops after gate failures.
-  * *Targets*: Mapped to `hm-l1-coordinator` or `hf-l1-coordinator` initialized with specific wave types.
-* **Cross-Lineage Path (hm-* -> hf-*)**:
-  * *Entry Criteria*: (1) Request for meta-concept creation/editing (agents, commands, skills, rules, permissions).
-  * *Handoff Protocol*: L0 announces the transition, stops execution in `hm-*`, and dispatches the task to `hf-l0-orchestrator` passing structured handoff context (user intent, identified metadata, prior investigation results).
+### 3. Highly Specific L0 Orchestrator Rules (`hm-l0-orchestrator`, `hf-l0-orchestrator`)
+* **Execution Banishment**:
+  * L0 agents act strictly as strategists and coordinators. Under no circumstances may they invoke file-modifying tools (`write_to_file`, `replace_file_content`, `multi_replace_file_content`) or bash processes that mutate codebase source (`src/` or `tests/`).
+  * L0 writes are restricted to session tracking and landscape generation within `.hivemind/planning/**`.
+  * L0 reads are strictly restricted to metadata surfaces (`.planning/`, `.hivemind/`, `.opencode/`) using offset-based reading or globs. Full-file comprehension reads of source code are banned.
+* **Intent & Turn Anchoring**:
+  * L0 must parse user turns for explicit boundaries (e.g., "only research", "generate plan and stop").
+  * When an anchor point is detected, L0 must write the corresponding milestone artifact (e.g. `RESEARCH.md` or `PLAN.md`) and return control immediately. It is strictly forbidden from auto-advancing to implementation waves.
+* **Three-Path Routing Enforcement**:
+  * For every user request, L0 must explicitly evaluate and record the routing path:
+    * **Fast-Path**: Single-specialist target (`hm-l2-*`). Bypasses L1.
+    * **Coordinated-Path**: Multi-agent waves. Routes to `hm-coordinator` or `hf-coordinator` with designated wave context.
+    * **Cross-Lineage Path**: Meta-concept tasks. Immediately suspends `hm-*` lineage and hands off to `hf-l0-orchestrator` with structured context.
 
-### 4. Session Continuity: Stacking vs. Resuming
+### 4. Highly Specific L2 Build/Authoring Agent Rules (`hf-l2-agent-builder`, `hf-l2-command-builder`, etc.)
+* **AQUAL Validation Triad Compliance**:
+  * Every created or modified primitive (agent, skill, command) must be validated against the 8-point AQUAL quality checklist before writing to disk:
+    1. `AQUAL-01`: complete YAML frontmatter (name, description, mode, temperature, lineage, skills, instructions, permissions).
+    2. `AQUAL-02`: XML-tagged body containing exactly 10 required sections.
+    3. `AQUAL-03`: Lineage skill binding (no hf-* skills in hm-* agents).
+    4. `AQUAL-04`: Valid L2 depth range.
+    5. `AQUAL-05`: Granular ask-all + explicit allow permission block.
+    6. `AQUAL-06`: Max 500 lines line-length check.
+    7. `AQUAL-07`: All skill references resolve to existing `SKILL.md` files.
+    8. `AQUAL-08`: Temperature matches depth range (L2 = 0.0-0.15).
+  * If validation fails, L2 builders must run a self-correction loop. After 3 failed remediation cycles, they must escalate to the L1 coordinator.
+* **Lineage Flexibility**:
+  * L2 authoring agents (`hf-*`) possess flexible lineage bindings. They are authorized to load `hm-*` research tools (e.g., `hm-detective`) for scanning codebase patterns, but must justify the cross-lineage access explicitly in their output report.
+* **Target Scoping**:
+  * All file writes from L2 builders must be strictly constrained to `.opencode/agents/`, `.opencode/command/`, `.opencode/commands/`, or `.opencode/skills/`. Mutation of `src/` files or `.hivemind/` state files is strictly banned.
+
+### 5. Session Continuity: Stacking vs. Resuming
 * **Discovery Step**: Before any new delegation, L0/L1 agents must call `delegation-status({ action: "find-stackable" })` or query `.hivemind/state/delegations.json` and `.hivemind/state/session-continuity.json` to find related sessions.
 * **Resuming Protocol (Incomplete/Aborted Sessions)**:
   * If an interrupted, aborted, or failed session exists for the same agent/task, the agent MUST resume it.
@@ -191,17 +212,6 @@ The L0 agent classifies user intent and routes it through one of three specific 
     1. **Doer Specialist** (e.g. `hm-executor` or `gsd-executor`) claims "done".
     2. **Verifier Specialist** (e.g. `hm-verifier` or `gsd-verifier`) runs automated validations and inspects filesystem evidence.
   * Both must return a `PASS` verdict. A checklist return without verifiable disk-written artifacts triggers an automatic `FAIL`.
-
-### 5. Tool Governance & Execution Prohibitions
-* **L0 Zero-Write Authority**:
-  * L0 orchestrators are strategists, not executors. They have ZERO codebase write permissions.
-  * L0 agents are strictly forbidden from calling `write_to_file`, `replace_file_content`, `multi_replace_file_content`, or running file-modifying shell commands on `src/` or `tests/`.
-  * L0 write authority is restricted to `.hivemind/planning/**` (for creating `landscape.md` and related session tracking logs).
-  * Harness hook guards automatically block unauthorized codebase writes by throwing `[Harness]` errors at the pre-tool-use lifecycle phase.
-* **Allowed Paths per Layer**:
-  * **L0**: Read: `.planning/`, `.hivemind/`, `.opencode/`. Write: `.hivemind/planning/`.
-  * **L1**: Read: `.planning/`, `.hivemind/`, `.opencode/`. Write: `.hivemind/planning/`.
-  * **L2/L3**: Read: All project paths. Write: `src/`, `tests/`, `.hivemind/planning/`, `.opencode/` (builders only).
 
 ### 6. Workflow Step Chaining & Granularity
 Workflows must execute as a deterministic sequence of granular phases to prevent context loss. A standard workflow (e.g., phase discussion) chains through the following steps:
