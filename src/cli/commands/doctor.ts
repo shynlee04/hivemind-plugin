@@ -241,7 +241,7 @@ function runHealthCommand(script: HealthScript, projectRoot: string): HealthComm
   const result = spawnSync("npm", command, {
     cwd: projectRoot,
     encoding: "utf8",
-    env: { ...process.env, CI: "true" },
+    env: { ...process.env, CI: "true" }, // Safety: doctor is a CLI diagnostic tool — full env is intentional; not a production delegation path (per REQ-04)
   })
   return {
     exitCode: result.status ?? 1,

@@ -22,7 +22,7 @@ function execFileAsync(command: string, args: string[], options?: ExecFileOption
   return new Promise((resolve, reject) => {
     execFile(command, args, options, (err, stdout, stderr) => {
       if (err) reject(err)
-      else resolve({ stdout, stderr })
+      else resolve({ stdout: String(stdout), stderr: String(stderr) })
     })
   })
 }
@@ -125,8 +125,14 @@ export function createGovernanceSessionTool(
       // --- Step 4: Git commit (best-effort, async) ---
       try {
         const cwd = context.directory ?? context.worktree ?? process.cwd()
+        // Per REQ-03: scoped env allowlist matching buildMinimalEnv pattern — prevents
+        // accidental exposure of API keys, tokens, or secrets to child git process
         const env = {
-          ...process.env,
+          PATH: process.env.PATH,
+          HOME: process.env.HOME,
+          TERM: process.env.TERM,
+          LANG: process.env.LANG,
+          PWD: process.env.PWD,
           GIT_AUTHOR_NAME: "HiveMind",
           GIT_AUTHOR_EMAIL: "hivemind@local",
           GIT_COMMITTER_NAME: "HiveMind",
