@@ -71,6 +71,102 @@ function createDeps() {
   return { detector, dispatcher, lifecycle, monitor, notificationRouter, retryHandler, slotHandle }
 }
 
+// Import Zod schema and extraction functions for unit testing
+import { sdkMessageSchema, extractSdkMessageRole, extractSdkMessageError } from "../../../../src/coordination/delegation/coordinator.js"
+
+describe("sdkMessageSchema", () => {
+  it("validates a message with info-wrapped role and error", () => {
+    const result = sdkMessageSchema.safeParse({
+      info: { role: "assistant", error: { message: "fail" } },
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(extractSdkMessageRole(result.data)).toBe("assistant")
+      expect(extractSdkMessageError(result.data)).toBe("fail")
+    }
+  })
+
+  it("validates a message with top-level role and error", () => {
+    const result = sdkMessageSchema.safeParse({
+      role: "user",
+      error: "string error",
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(extractSdkMessageRole(result.data)).toBe("user")
+      expect(extractSdkMessageError(result.data)).toBe("string error")
+    }
+  })
+
+  it("prefers info-wrapped role over top-level role", () => {
+    const result = sdkMessageSchema.safeParse({
+      info: { role: "assistant" },
+      role: "user",
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(extractSdkMessageRole(result.data)).toBe("assistant")
+    }
+  })
+
+  it("returns undefined for role when no role field is present", () => {
+    const result = sdkMessageSchema.safeParse({ error: "something" })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(extractSdkMessageRole(result.data)).toBeUndefined()
+    }
+  })
+
+  it("returns undefined for error when no error field is present", () => {
+    const result = sdkMessageSchema.safeParse({ role: "assistant" })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(extractSdkMessageError(result.data)).toBeUndefined()
+    }
+  })
+
+  it("extracts error message from object with .message property", () => {
+    const result = sdkMessageSchema.safeParse({
+      info: { error: { message: "Internal server error" } },
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(extractSdkMessageError(result.data)).toBe("Internal server error")
+    }
+  })
+
+  it("returns String(errorField) for object without .message (no JSON.stringify)", () => {
+    const result = sdkMessageSchema.safeParse({
+      error: { code: 500 },
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const extracted = extractSdkMessageError(result.data)
+      expect(extracted).toBe("[object Object]")
+    }
+  })
+
+  it("returns String(errorField) for primitive error", () => {
+    const result = sdkMessageSchema.safeParse({
+      error: 42,
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(extractSdkMessageError(result.data)).toBe("42")
+    }
+  })
+
+  it("rejects null input", () => {
+    const result = sdkMessageSchema.safeParse(null)
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects non-object input", () => {
+    const result = sdkMessageSchema.safeParse("string")
+    expect(result.success).toBe(false)
+  })
+})
+
 describe("DelegationCoordinator", () => {
   it("executes preflight, creates a record, starts monitoring, and returns the delegation id", async () => {
     const deps = createDeps()

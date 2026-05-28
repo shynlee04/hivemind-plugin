@@ -6,6 +6,7 @@ import type { DelegationRetryHandler } from "./retry-handler.js"
 import type { PeriodicNotifier } from "./periodic-notifier.js"
 import type { Delegation, DelegationNotification, DelegationResult, DelegationSignalSource, DelegationStatus } from "./types.js"
 import type { SlotHandle } from "./slot-manager.js"
+import { z } from "zod"
 import { type OpenCodeClient, getSessionMessages } from "../../shared/session-api.js"
 import { notifyParentSession } from "../completion/notification-handler.js"
 
@@ -30,6 +31,57 @@ interface SdkMessage {
   providerID?: string
   model?: { providerID?: string; modelID?: string }
   error?: unknown
+}
+
+/**
+ * Zod-validated SDK message shape covering both `info.*` wrapper and
+ * top-level field positions. Used by the typed extraction functions below
+ * to avoid inline type assertions (`as SdkMessage`, `as Record`).
+ */
+export const sdkMessageSchema = z.object({
+  role: z.string().optional(),
+  info: z.object({
+    role: z.string().optional(),
+    error: z.unknown().optional(),
+  }).optional(),
+  error: z.unknown().optional(),
+})
+
+/** Inferred body type from the Zod schema. */
+export type SdkMessageShape = z.infer<typeof sdkMessageSchema>
+
+/**
+ * Extract the role field from an SDK message, preferring `info.role` over
+ * the top-level `role` (the nested wrapper is the newer SDK format).
+ *
+ * @param msg - A parsed SDK message body (Zod-validated).
+ * @returns The role string, or `undefined` if neither field is present.
+ */
+export function extractSdkMessageRole(msg: SdkMessageShape): string | undefined {
+  return msg?.info?.role ?? msg?.role
+}
+
+/**
+ * Extract a concise error string from an SDK message. Searches `info.error`
+ * first, then falls back to top-level `error`. For object errors, extracts
+ * the `.message` property if available; otherwise returns `String(errorField)`.
+ *
+ * This function deliberately does NOT use `JSON.stringify()` on the error
+ * field — JSON.stringify produces unreadable long strings for complex objects.
+ *
+ * @param msg - A parsed SDK message body (Zod-validated).
+ * @returns A concise error string, or `undefined` if no error field is present.
+ */
+export function extractSdkMessageError(msg: SdkMessageShape): string | undefined {
+  const errorField = msg?.info?.error ?? msg?.error
+  if (errorField === undefined) return undefined
+  if (typeof errorField === "object" && errorField !== null) {
+    const message = (errorField as Record<string, unknown>)?.message
+    return typeof message === "string" && message.length > 0
+      ? message
+      : String(errorField)
+  }
+  return String(errorField)
 }
 
 export type DispatchParams = PreflightParams
@@ -233,15 +285,14 @@ export class DelegationCoordinator {
       try {
         const messages = await getSessionMessages(this.deps.client, record.childSessionId)
         const lastAssistantMessage = [...messages].reverse().find(m => {
-          const role = (m as SdkMessage)?.info?.role ?? (m as SdkMessage)?.role
-          return role === "assistant"
+          // Per REQ-02: typed extraction via Zod-schematized body; fallback semantics preserved
+          const parsed = sdkMessageSchema.safeParse(m)
+          return parsed.success && extractSdkMessageRole(parsed.data) === "assistant"
         })
         if (lastAssistantMessage) {
-          const errorField = (lastAssistantMessage as SdkMessage)?.info?.error ?? (lastAssistantMessage as SdkMessage)?.error
-          if (errorField) {
-            const errorMsg = typeof errorField === "object" && errorField !== null
-              ? (((errorField as Record<string, unknown>)?.message) || JSON.stringify(errorField))
-              : String(errorField)
+          const parsed = sdkMessageSchema.safeParse(lastAssistantMessage)
+          const errorMsg = parsed.success ? extractSdkMessageError(parsed.data) : undefined
+          if (errorMsg) {
             record.error = `[Harness] Child session assistant error: ${errorMsg}`
             record.executionState = "stalled"
             this.failDispatch(delegationId, new Error(record.error))
