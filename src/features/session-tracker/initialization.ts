@@ -148,12 +148,23 @@ export function constructDependencies(
   // Create transform utility
   const agentTransform = new AgentTransform()
 
+  // Per-session assistant turn recording state for mid-session tracking.
+  // Maps sessionID → { turnCount, lastText, lastTurnTime } — used by the
+  // onLastMessageUpdate callback to distinguish streaming continuations
+  // from genuinely new responses.
+  const assistantTurnState = new Map<string, { turnCount: number; lastText: string; lastTurnTime: number }>()
+
   // Create capture handlers
   const lastMessageCapture = new LastMessageCapture({
     onLastMessageUpdate: (sessionID: string, text: string) => {
-      // Continuous frontmatter update as assistant text streams in.
+      // Continuous frontmatter + body turn update as assistant text streams in.
       // This preserves the latest text even if the session crashes or
       // the user disconnects before session.idle fires.
+      //
+      // Mid-session turn recording heuristic:
+      //   - First text for a session → append as turn 1
+      //   - Streaming continuation (new text starts with old) → update frontmatter only
+      //   - Genuinely new response (no prefix match) → increment counter, append turn
       //
       // Guard: skip if the session .md file doesn't exist on disk
       // (e.g., child sessions that only have .json records). Without
@@ -161,7 +172,35 @@ export function constructDependencies(
       // message.part.updated event on child sessions, leaking to TUI.
       sessionWriter.sessionFileExists(sessionID).then((exists) => {
         if (!exists) return
-        return sessionWriter.updateFrontmatter(sessionID, { lastMessage: text })
+
+        const trimmed = text.trim()
+        if (!trimmed) return
+
+        const state = assistantTurnState.get(sessionID) ?? { turnCount: 0, lastText: "", lastTurnTime: 0 }
+
+        if (state.lastText === "") {
+          // First text for this session — append as turn 1
+          state.turnCount = 1
+          state.lastText = trimmed
+          state.lastTurnTime = Date.now()
+          assistantTurnState.set(sessionID, state)
+          return sessionWriter.appendAssistantTurn(sessionID, 1, trimmed)
+        }
+
+        const isStreamingUpdate = trimmed.startsWith(state.lastText) && trimmed.length > state.lastText.length
+        if (!isStreamingUpdate && trimmed !== state.lastText) {
+          // Genuinely new response — append as new turn with incremented counter
+          state.turnCount++
+          state.lastText = trimmed
+          state.lastTurnTime = Date.now()
+          assistantTurnState.set(sessionID, state)
+          return sessionWriter.appendAssistantTurn(sessionID, state.turnCount, trimmed)
+        }
+
+        // Streaming update of existing response — update lastText but don't append
+        state.lastText = trimmed
+        assistantTurnState.set(sessionID, state)
+        return sessionWriter.updateFrontmatter(sessionID, { lastMessage: trimmed })
       }).catch((err) => {
         void client.app?.log?.({
           body: {

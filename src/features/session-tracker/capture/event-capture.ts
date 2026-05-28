@@ -365,16 +365,32 @@ export class EventCapture {
       }
 
       // SDK fallback: only if LastMessageCapture is unavailable or returned empty.
+      // Iterates ALL assistant messages chronologically and appends each as
+      // a body turn (n-turn recording for main sessions that received
+      // multiple assistant responses before session.idle).
       if (!lastMessage) {
         try {
           const messages = await getSessionMessages(this.client, sessionID)
           if (messages && messages.length > 0) {
-            for (let i = messages.length - 1; i >= 0; i--) {
+            for (let i = 0; i < messages.length; i++) {
               if (this.backfiller.messageRole(messages[i]) === "assistant") {
                 const text = this.backfiller.extractTextFromSdkMessage(messages[i], true)
                 if (text && text.trim().length > 0) {
-                  lastMessage = text.trim()
-                  break
+                  const turnNumber = (this.assistantTurnCounters.get(sessionID) ?? 0) + 1
+                  this.assistantTurnCounters.set(sessionID, turnNumber)
+                  const trimmedText = text.trim()
+                  // Append as a body turn (separate from frontmatter update below)
+                  await this.sessionWriter.appendAssistantTurn(sessionID, turnNumber, trimmedText).catch((err) => {
+                    void this.client.app?.log?.({
+                      body: {
+                        service: "session-tracker",
+                        level: "warn",
+                        message: `[Harness] Session tracker: appendAssistantTurn failed for "${sessionID}" (SDK fallback)`,
+                        extra: { error: err instanceof Error ? err.message : String(err) },
+                      },
+                    })
+                  })
+                  lastMessage = trimmedText
                 }
               }
             }
