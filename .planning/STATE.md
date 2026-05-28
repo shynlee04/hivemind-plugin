@@ -18,8 +18,9 @@ progress:
 
 **Last updated:** 2026-05-28
 **Last advance:** Phase C5 COMPLETE — all 4 REQs satisfied across 3 plans. coordinator.ts typed SdkMessageShape extraction (REQ-02), scoped env allowlist in create-governance-session.ts (REQ-03), doctor.ts safety comment (REQ-04), verified zero empty catch blocks (REQ-01). 3/3 plans, 0 regressions, typecheck clean.
-**Current focus:** Phase C6-Architectural-Refactoring — pending
-**Next recommended run:** Execute C6 (Architectural Refactoring) or continue with P23.3 to verify all 5 session-tracker bug fixes with live UAT evidence before proceeding to P24 (Coordination Dispatch).
+**Current focus:** Phase C6-Architectural-Refactoring — COMPLETE
+**Last advance:** Phase C6 COMPLETE — 3 REQs satisfied across 5 plans. EventCapture god module decomposed (1050→162 LOC, 6 handler classes extracted). DelegationStatusReader interface with Zod-validated readers (zero 'as any' casts). plugin.ts domain-grouped tool registration (4 functions, 24 tools). Full test suite: 218 files, 2672 tests, typecheck clean. 6 atomic commits.
+**Next recommended run:** Execute C7 (Test Coverage) or continue with P23.3 to verify all 5 session-tracker bug fixes with live UAT evidence before proceeding to P24 (Coordination Dispatch).
 
 ---
 
@@ -81,7 +82,7 @@ progress:
 **C3 (Concerns):** ✅ COMPLETE — Module Decomposition & Promise Patterns (P1). Extracted ChildBackfiller (149 LOC) from event-capture.ts (1098→1007 LOC). ChildWriter queue verified safe for parallel children (per-child key). 2 files, 161 insertions.
 **C4 (Concerns):** ✅ COMPLETE — Performance Optimization (P2, Depends: C3). 3 plans: pruneStaleTimers test scaffold (TDD RED), timer leak fix + JSON.parse cache, execFile async + async FS bootstrap-init. 6 atomic commits. 2620/2622 tests pass, typecheck clean.
 **C5 (Concerns):** 📋 PENDING — Error Handling & Code Quality (P2, Depends: C4).
-**C6 (Concerns):** 📋 PENDING — Architectural Refactoring (P2, Depends: C5).
+**C6 (Concerns):** ✅ COMPLETE — Architectural Refactoring (P2, Depends: C5). EventCapture 1050→162 LOC, 6 handlers extracted. DelegationStatusReader + Zod schemas (zero 'as any'). plugin.ts domain-grouped (4 functions, 24 tools). 6 commits, 2672 tests, typecheck clean.
 **C7 (Concerns):** 📋 PENDING — Test Coverage (P2, Depends: C6).
 **C8 (Concerns):** 📋 PENDING — Dependency Cleanup (P2, Depends: C7).
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
