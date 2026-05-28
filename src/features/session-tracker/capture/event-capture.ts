@@ -1,23 +1,13 @@
 /**
- * Session lifecycle event capture handler.
+ * Session lifecycle event capture handler — thin router.
  *
- * Handles `session.created`, `session.idle`, `session.deleted`,
- * `session.error`, `session.compacted`, and `session.next.text.ended`
- * events from the OpenCode `event` hook. Distinguishes root sessions
- * from child sessions via SDK `parentID` check.
- *
- * Root sessions: creates `.hivemind/session-tracker/{sessionID}/` subdir
- * and `{sessionID}.md` file. Child sessions: skipped (handled by tool-capture
- * when `task` tool fires).
- *
- * All handlers are best-effort — errors are logged, never thrown.
+ * REQ-C6-01: Reduced from 1050 LOC to ≤200 LOC. Delegates all event
+ * handling to dedicated handler classes under handlers/.
  *
  * @module session-tracker/capture/event-capture
  */
 
-import { parseSessionTitle } from "../../../shared/session-naming.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
-import { getSession, getSessionMessages } from "../../../shared/session-api.js"
 import type { SessionWriter } from "../persistence/session-writer.js"
 import type { ChildWriter } from "../persistence/child-writer.js"
 import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
@@ -25,49 +15,37 @@ import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
 import type { HierarchyManifestWriter } from "../persistence/hierarchy-manifest.js"
-import type { ChildSessionRecord, JourneyEntry } from "../types.js"
-import { sanitizeSessionID } from "../persistence/atomic-write.js"
-import { isValidSessionID } from "../types.js"
-import { asString, getNestedValue } from "../../../shared/helpers.js"
 import type { LastMessageCapture } from "./last-message-capture.js"
 import { ChildBackfiller } from "./child-backfiller.js"
+import { sanitizeSessionID } from "../persistence/atomic-write.js"
+import { isValidSessionID } from "../types.js"
+import type { JourneyEntry } from "../types.js"
+import { getSession } from "../../../shared/session-api.js"
+import type { HandlerDeps } from "./handlers/types.js"
+
+import { SessionCreatedHandler } from "./handlers/session-created-handler.js"
+import { SessionIdleHandler } from "./handlers/session-idle-handler.js"
+import { SessionDeletedHandler } from "./handlers/session-deleted-handler.js"
+import { SessionErrorHandler } from "./handlers/session-error-handler.js"
+import { SessionCompactedHandler } from "./handlers/session-compacted-handler.js"
+import { SessionNextTextEndedHandler } from "./handlers/session-next-text-ended-handler.js"
 
 // ---------------------------------------------------------------------------
-// EventCapture class
+// Handler interface
 // ---------------------------------------------------------------------------
 
-/**
- * Handles session lifecycle events from the OpenCode `event` hook.
- *
- * Delegated by the hook pipeline. Never writes files directly — relies on
- * {@link SessionWriter} for all persistence operations.
- */
+interface EventHandler {
+  handle(sessionID: string, event?: Record<string, unknown>): Promise<void>
+}
+
+// ---------------------------------------------------------------------------
+// EventCapture — thin router
+// ---------------------------------------------------------------------------
+
 export class EventCapture {
-  private client: OpenCodeClient
-  private sessionWriter: SessionWriter
-  private childWriter: ChildWriter
-  private sessionIndexWriter: SessionIndexWriter
-  private projectIndexWriter: ProjectIndexWriter | undefined
-  private hierarchyIndex: HierarchyIndex | undefined
-  private pendingRegistry: PendingDispatchRegistry | undefined
-  private manifestWriter: HierarchyManifestWriter | undefined
-  private lastMessageCapture: LastMessageCapture | undefined
-  private backfiller: ChildBackfiller
+  private deps: HandlerDeps
+  private handlers: Record<string, EventHandler>
 
-  /**
-   * Per-session assistant turn counters for body writing.
-   * Incremented each time an assistant turn is appended to the body.
-   */
-  private assistantTurnCounters: Map<string, number> = new Map()
-
-  /**
-   * @param deps - Injected dependencies.
-   * @param deps.client - The OpenCode SDK client for session queries.
-   * @param deps.sessionWriter - The session writer for persistence.
-   * @param deps.childWriter - The child writer for child session .json updates (DEFECT-08).
-   * @param deps.sessionIndexWriter - The session index writer for hierarchy updates (DEFECT-08).
-   * @param deps.projectIndexWriter - Optional project index writer for session registration.
-   */
   constructor(deps: {
     client: OpenCodeClient
     sessionWriter: SessionWriter
@@ -79,33 +57,26 @@ export class EventCapture {
     manifestWriter?: HierarchyManifestWriter
     lastMessageCapture?: LastMessageCapture
   }) {
-    this.client = deps.client
-    this.sessionWriter = deps.sessionWriter
-    this.childWriter = deps.childWriter
-    this.sessionIndexWriter = deps.sessionIndexWriter
-    this.projectIndexWriter = deps.projectIndexWriter
-    this.hierarchyIndex = deps.hierarchyIndex
-    this.pendingRegistry = deps.pendingRegistry
-    this.manifestWriter = deps.manifestWriter
-    this.lastMessageCapture = deps.lastMessageCapture
-    this.backfiller = new ChildBackfiller({ client: deps.client, childWriter: deps.childWriter })
+    const backfiller = new ChildBackfiller({ client: deps.client, childWriter: deps.childWriter })
+    const assistantTurnCounters = new Map<string, number>()
+
+    this.deps = {
+      ...deps,
+      backfiller,
+      assistantTurnCounters,
+    }
+
+    this.handlers = {
+      "session.created": new SessionCreatedHandler(this.deps),
+      "session.idle": new SessionIdleHandler(this.deps),
+      "session.deleted": new SessionDeletedHandler(this.deps),
+      "session.error": new SessionErrorHandler(this.deps),
+      "session.compacted": new SessionCompactedHandler(this.deps),
+      "session.next.compaction.ended": new SessionCompactedHandler(this.deps),
+      "session.next.text.ended": new SessionNextTextEndedHandler(this.deps),
+    }
   }
 
-  /**
-   * Handles a session lifecycle event from the `event` hook.
-   *
-   * @param event - Hook input containing eventType, sessionID, and raw event data.
-   * @returns Promise that resolves when the event has been processed.
-   *
-   * @remarks
-   * Supported event types:
-   * - `session.created` — creates subdir + .md for root sessions
-   * - `session.idle` — updates session status to "completed", backfills lastMessage
-   * - `session.deleted` — marks session status as "completed"
-   * - `session.error` — marks session status as "error"
-   * - `session.compacted` — appends compaction summary block
-   * - `session.next.text.ended` — captures assistant text as lastMessage
-   */
   async handleSessionEvent(event: {
     eventType: string
     sessionID: string
@@ -116,10 +87,8 @@ export class EventCapture {
         return
       }
 
-      // Validate sessionID matches its own sanitized form — reject any
-      // sessionID that would be altered by sanitization (path traversal guard).
       if (event.sessionID !== sanitizeSessionID(event.sessionID)) {
-        void this.client.app?.log?.({
+        void this.deps.client.app?.log?.({
           body: {
             service: "session-tracker",
             level: "warn",
@@ -129,39 +98,20 @@ export class EventCapture {
         return
       }
 
-      switch (event.eventType) {
-        case "session.created":
-          await this.handleSessionCreated(event.sessionID)
-          break
-        case "session.idle":
-          await this.handleSessionIdle(event.sessionID)
-          break
-        case "session.deleted":
-          await this.handleSessionDeleted(event.sessionID)
-          break
-        case "session.error":
-          await this.handleSessionError(event.sessionID)
-          break
-        case "session.compacted":
-          await this.handleSessionCompacted(event.sessionID, event.event as Record<string, unknown>)
-          break
-        case "session.next.text.ended":
-          await this.handleSessionNextTextEnded(event.sessionID, event.event as Record<string, unknown>)
-          break
-        case "session.next.compaction.ended":
-          await this.handleSessionCompacted(event.sessionID, event.event as Record<string, unknown>)
-          break
-        default:
-          void this.client.app?.log?.({
-            body: {
-              service: "session-tracker",
-              level: "warn",
-              message: `[Harness] Session tracker: unknown event type "${event.eventType}"`,
-            },
-          })
+      const handler = this.handlers[event.eventType]
+      if (handler) {
+        await handler.handle(event.sessionID, event.event as Record<string, unknown>)
+      } else {
+        void this.deps.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: `[Harness] Session tracker: unknown event type "${event.eventType}"`,
+          },
+        })
       }
     } catch (err) {
-      void this.client.app?.log?.({
+      void this.deps.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -172,739 +122,6 @@ export class EventCapture {
     }
   }
 
-  /**
-   * Handles `session.created` — creates subdir + .md for root sessions only.
-   *
-   * Uses `client.session.get()` (via `getSession` helper) to check `parentID`.
-   * Root sessions (null parentID) get a new subdirectory + .md file initialized.
-   * Child sessions (non-null parentID) are skipped — the task tool handler
-   * will create their child .json file under the parent's subdir when the
-   * delegation spawn event fires.
-   */
-  private async handleSessionCreated(sessionID: string): Promise<void> {
-    try {
-      // Gate 0 (CP-ST-05-01): BEFORE-THE-FACT classification.
-      // Check if ANY task dispatch was recently recorded via PreToolUse hook.
-      // If so, this session is almost certainly a child — write .json immediately
-      // without waiting for SDK parentID or creating a directory.
-      // Uses getAnyActiveEntry() unconditionally (Option A) — handles any number
-      // of concurrent dispatches (normal when agents delegate 10+ tasks rapidly).
-      // No longer bails on pendingCount > 1 (Option B) — falls through to SDK
-      // retry + Gates 2/3 for defense-in-depth.
-      const anyPending = this.pendingRegistry?.getAnyActiveEntry()
-      if (anyPending) {
-        void this.client.app?.log?.({
-          body: {
-            service: "session-tracker",
-            level: "info",
-            message: `[Harness] Session tracker: Gate 0 classification — pending dispatch detected for "${sessionID}"`,
-          },
-        })
-        await this.writeImmediateChildFile(sessionID, anyPending.parentSessionID, anyPending.subagentType, anyPending.delegationDepth)
-        return
-      }
-
-      // Retry logic: the SDK might not report parentID on the first call
-      // if the child session was JUST created (race with task tool completion).
-      let parentID: string | null | undefined
-      let sessionTitle: string | undefined
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          const session = await getSession(this.client, sessionID)
-          parentID = session.parentID as string | null | undefined
-          sessionTitle = (session as Record<string, unknown>).title as string | undefined
-          if (parentID) break
-          // If parentID is null/undefined on first attempt, wait and retry
-          if (attempt === 0) {
-            await new Promise((r) => setTimeout(r, 100))
-          }
-        } catch {
-          // SDK call failed — fall through to hierarchy index check.
-          break
-        }
-      }
-
-      if (parentID != null) {
-        // D-06: Child session — write child .json IMMEDIATELY
-        // (not deferred to PostToolUse handleTask)
-        await this.writeImmediateChildFile(sessionID, parentID)
-        return
-      }
-
-      // parentID is null/undefined — run gates to classify session.
-
-      // Gate 2: Check hierarchy index before treating as root.
-      // If the SDK doesn't report parentID but the hierarchy index knows
-      // this session is a child, write child .json immediately.
-      if (this.hierarchyIndex?.isChild(sessionID)) {
-        // D-06: Child session via hierarchy index — resolve parent
-        const resolvedParent = this.hierarchyIndex.getParent(sessionID)
-        if (resolvedParent) {
-          await this.writeImmediateChildFile(sessionID, resolvedParent)
-        }
-        // Classified as child — never create root directory
-        return
-      }
-
-      // Gate 3: Check pending dispatch registry.
-      // If a parent session recently dispatched a task, the resulting
-      // child session is tracked here even before the SDK or hierarchy
-      // index knows about it.
-      if (this.pendingRegistry?.has(sessionID)) {
-        // D-06: Child session via pending registry — resolve parent
-        const pendingEntry = this.pendingRegistry.get(sessionID)
-        const effectiveParent = pendingEntry?.parentSessionID
-        if (effectiveParent) {
-          await this.writeImmediateChildFile(sessionID, effectiveParent, pendingEntry?.subagentType)
-        }
-        return
-      }
-
-      // All three gates passed — root main session (D-02).
-      // This is the ONLY path that creates directories for session.created.
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "info",
-          message: `[Harness] Session tracker: creating root main session directory for "${sessionID}"`,
-        },
-      })
-
-      // Root session — create subdirectory + .md file with title
-      await this.sessionWriter.createSessionDir(sessionID)
-      await this.sessionWriter.initializeSessionFile(sessionID, {
-        sessionID,
-        parentSessionID: null,
-        delegationDepth: 0,
-        status: "active",
-        title: sessionTitle,
-      })
-
-      // Register the session in the project-level continuity index
-      if (this.projectIndexWriter) {
-        await this.projectIndexWriter.addSession(
-          sessionID,
-          `${sessionID}/`,
-          `${sessionID}.md`,
-        )
-      }
-      // Child sessions are handled by tool-capture when task tool fires
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: failed to handle session.created for "${sessionID}"`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
-  }
-
-  /**
-   * Handles `session.idle` — updates the session status to "completed".
-   * Child sessions are routed through childWriter + sessionIndexWriter (DEFECT-08).
-   *
-   * Uses "completed" instead of "idle" because "idle" is not a valid TaskStatus,
-   * which prevents any further status transitions and leaves sessions stuck.
-   * "completed" is terminal and valid — `running → completed` is in VALID_TRANSITIONS.
-   *
-   * Respects status precedence: terminal states ("completed", "error") are NOT
-   * overwritten. This prevents the race where session.idle fires
-   * after recordChildTaskDelegation already set "completed".
-   */
-  private async handleSessionIdle(sessionID: string): Promise<void> {
-    try {
-      // Check if this is a child session
-      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
-      if (childRoute) {
-        if (!(await this.childWriter.childFileExists(childRoute.parentID, sessionID))) {
-          return
-        }
-        // Child session — updateChildStatus has built-in precedence guard
-        await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "completed")
-        await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
-        // D-07: update hierarchy-manifest.json
-        if (this.manifestWriter) {
-          await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
-        }
-        await this.backfiller.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
-          void this.client.app?.log?.({
-            body: {
-              service: "session-tracker",
-              level: "warn",
-              message: `[Harness] Session tracker: backfill failed for child "${sessionID}" (idle handler)`,
-              extra: { error: err instanceof Error ? err.message : String(err) },
-            },
-          })
-        })
-        return
-      }
-      // Main session — "completed" is a valid terminal transition from "running"
-      if (!(await this.sessionWriter.sessionFileExists(sessionID))) {
-        return
-      }
-      // BUGFIX: Fallback to SDK messages when pendingRegistry.lastMessage is empty.
-      // The pendingRegistry.lastMessage is only populated for child sessions (via
-      // delegation tracking), NOT for main sessions. When this field is empty,
-      // read the session messages via SDK to extract the last assistant text.
-      // Note: handleSessionNextTextEnded (session.next.text.ended) is dead code
-      // because the OpenCode SDK does not dispatch this event — see SDK types
-      // (EventSessionIdle, EventSessionStatus, etc.). There is no dedicated event
-      // that delivers completed assistant text; the SDK must be queried directly.
-      const lastMessageEntry = this.pendingRegistry?.get(sessionID)
-      let lastMessage = lastMessageEntry?.lastMessage
-
-      // Fallback: read from LastMessageCapture first (zero-cost — no SDK poll).
-      // This eliminates the getSessionMessages() SDK polling that was previously
-      // required because the SDK does not dispatch session.next.text.ended events.
-      // LastMessageCapture tracks assistant text from message.updated /
-      // message.part.updated events in the event hook pipeline.
-      if (!lastMessage && this.lastMessageCapture) {
-        lastMessage = this.lastMessageCapture.getLastMessage(sessionID)
-      }
-
-      // SDK fallback: only if LastMessageCapture is unavailable or returned empty.
-      // Iterates ALL assistant messages chronologically and appends each as
-      // a body turn (n-turn recording for main sessions that received
-      // multiple assistant responses before session.idle).
-      if (!lastMessage) {
-        try {
-          const messages = await getSessionMessages(this.client, sessionID)
-          if (messages && messages.length > 0) {
-            for (let i = 0; i < messages.length; i++) {
-              if (this.backfiller.messageRole(messages[i]) === "assistant") {
-                const text = this.backfiller.extractTextFromSdkMessage(messages[i], true)
-                if (text && text.trim().length > 0) {
-                  const turnNumber = (this.assistantTurnCounters.get(sessionID) ?? 0) + 1
-                  this.assistantTurnCounters.set(sessionID, turnNumber)
-                  const trimmedText = text.trim()
-                  // Append as a body turn (separate from frontmatter update below)
-                  await this.sessionWriter.appendAssistantTurn(sessionID, turnNumber, trimmedText).catch((err) => {
-                    void this.client.app?.log?.({
-                      body: {
-                        service: "session-tracker",
-                        level: "warn",
-                        message: `[Harness] Session tracker: appendAssistantTurn failed for "${sessionID}" (SDK fallback)`,
-                        extra: { error: err instanceof Error ? err.message : String(err) },
-                      },
-                    })
-                  })
-                  lastMessage = trimmedText
-                }
-              }
-            }
-          }
-        } catch {
-          // SDK call failed — proceed without lastMessage
-        }
-      }
-
-      // Write assistant text to body (continuous preservation, not just frontmatter)
-      if (lastMessage && lastMessage.trim().length > 0) {
-        const currentTurn = (this.assistantTurnCounters.get(sessionID) ?? 0) + 1
-        this.assistantTurnCounters.set(sessionID, currentTurn)
-        await this.sessionWriter.appendAssistantTurn(sessionID, currentTurn, lastMessage).catch((err) => {
-          void this.client.app?.log?.({
-            body: {
-              service: "session-tracker",
-              level: "warn",
-              message: `[Harness] Session tracker: appendAssistantTurn failed for "${sessionID}"`,
-              extra: { error: err instanceof Error ? err.message : String(err) },
-            },
-          })
-        })
-      }
-
-      const updates: Record<string, unknown> = { status: "completed" }
-      if (lastMessage) {
-        updates.lastMessage = lastMessage
-      }
-      await this.sessionWriter.updateFrontmatter(
-        sessionID,
-        updates as Partial<import("../types.js").SessionRecord>,
-      )
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: failed to handle session.idle for "${sessionID}"`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
-  }
-
-  /**
-   * Handles `session.deleted` — marks the session status as "completed".
-   * Child sessions are routed through childWriter + sessionIndexWriter (DEFECT-08).
-   */
-  private async handleSessionDeleted(sessionID: string): Promise<void> {
-    try {
-      // Check if this is a child session
-      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
-      if (childRoute) {
-        if (!(await this.childWriter.childFileExists(childRoute.parentID, sessionID))) {
-          return
-        }
-        // Child session — update .json via childWriter
-        await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "completed")
-        await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
-        // D-07: update hierarchy-manifest.json
-        if (this.manifestWriter) {
-          await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
-        }
-        // F-18: Backfill child metadata with real agent identity
-        // Priority: 1. Parse from naming service session title, 2. pendingRegistry, 3. "unknown"
-        let parsedAgentName: string | undefined
-        try {
-          const session = await getSession(this.client, sessionID)
-          const title = (session as Record<string, unknown>).title as string | undefined
-          if (title) {
-            const parsed = parseSessionTitle(title)
-            if (parsed) parsedAgentName = parsed.agent
-          }
-        } catch { /* session fetch failed - fall through */ }
-
-        const pendingEntry = this.pendingRegistry?.get(sessionID)
-        // Fix: handle union type PendingDispatchEntry | PendingDispatchEntry[]
-        const entry = Array.isArray(pendingEntry) ? pendingEntry[0] : pendingEntry
-        const agentName = parsedAgentName ?? entry?.subagentType ?? "unknown"
-        const model = entry?.model ?? ""
-        await this.childWriter.backfillChildMetadata(
-          childRoute.parentID,
-          sessionID,
-          { agentName, model },
-        ).catch((err) => {
-          void this.client.app?.log?.({
-            body: {
-              service: "session-tracker",
-              level: "warn",
-              message: `[Harness] Session tracker: backfill failed for "${sessionID}"`,
-              extra: { error: err instanceof Error ? err.message : String(err) },
-            },
-          })
-        })
-        await this.backfiller.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
-          void this.client.app?.log?.({
-            body: {
-              service: "session-tracker",
-              level: "warn",
-              message: `[Harness] Session tracker: backfill failed for "${sessionID}" (deleted handler)`,
-              extra: { error: err instanceof Error ? err.message : String(err) },
-            },
-          })
-        })
-        return
-      }
-      // Main session — existing behavior
-      if (!(await this.sessionWriter.sessionFileExists(sessionID))) {
-        return
-      }
-      await this.sessionWriter.updateFrontmatter(sessionID, {
-        status: "completed",
-      } as Partial<import("../types.js").SessionRecord>)
-      // Clean up LastMessageCapture cache for this session
-      this.lastMessageCapture?.clearSession(sessionID)
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: failed to handle session.deleted for "${sessionID}"`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
-  }
-
-  /**
-   * Handles `session.error` — marks the session status as "error".
-   * Child sessions are routed through childWriter + sessionIndexWriter (DEFECT-08).
-   */
-  private async handleSessionError(sessionID: string): Promise<void> {
-    try {
-      // Check if this is a child session
-      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
-      if (childRoute) {
-        if (!(await this.childWriter.childFileExists(childRoute.parentID, sessionID))) {
-          return
-        }
-        // Child session — update .json via childWriter
-        await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "error")
-        await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "error")
-        // D-07: update hierarchy-manifest.json
-        if (this.manifestWriter) {
-          await this.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "error")
-        }
-        // F-18: Backfill child metadata with real agent identity
-        const pendingEntry = this.pendingRegistry?.get(sessionID)
-        // Fix: handle union type PendingDispatchEntry | PendingDispatchEntry[]
-        const entry = Array.isArray(pendingEntry) ? pendingEntry[0] : pendingEntry
-        const agentName = entry?.subagentType ?? "unknown"
-        const model = entry?.model ?? ""
-        await this.childWriter.backfillChildMetadata(
-          childRoute.parentID,
-          sessionID,
-          { agentName, model },
-        ).catch((err) => {
-          void this.client.app?.log?.({
-            body: {
-              service: "session-tracker",
-              level: "warn",
-              message: `[Harness] Session tracker: backfill failed for "${sessionID}"`,
-              extra: { error: err instanceof Error ? err.message : String(err) },
-            },
-          })
-        })
-        await this.backfiller.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
-          void this.client.app?.log?.({
-            body: {
-              service: "session-tracker",
-              level: "warn",
-              message: `[Harness] Session tracker: backfill failed for "${sessionID}" (error handler)`,
-              extra: { error: err instanceof Error ? err.message : String(err) },
-            },
-          })
-        })
-        return
-      }
-      // Main session — existing behavior
-      if (!(await this.sessionWriter.sessionFileExists(sessionID))) {
-        return
-      }
-      await this.sessionWriter.updateFrontmatter(sessionID, {
-        status: "error",
-      } as Partial<import("../types.js").SessionRecord>)
-      // Clean up LastMessageCapture cache for this session
-      this.lastMessageCapture?.clearSession(sessionID)
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: failed to handle session.error for "${sessionID}"`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
-  }
-
-  /**
-   * Writes the child .json file IMMEDIATELY at session.created (D-06).
-   *
-   * This closes the race window where child data was lost between
-   * session.created and PostToolUse. The child .json is written under
-   * the root main session directory (via childWriter.resolveWriteParent,
-   * per CP-ST-04-02). The hierarchy manifest is also updated (D-07).
-   *
-   * RC-5: Errors propagate to caller and are enqueued to the retry queue
-   * by childWriter. A failed immediate write does not block the session
-   * lifecycle but is logged for observability.
-   *
-   * @param sessionID - The child session ID.
-   * @param parentID - The immediate parent session ID.
-   * @param explicitSubagentType - Subagent type from PendingDispatchRegistry,
-   *   if available. Falls back to "unknown".
-   */
-  private async writeImmediateChildFile(
-    sessionID: string,
-    parentID: string,
-    explicitSubagentType?: string,
-    explicitDelegationDepth?: number,
-    explicitAgentName?: string,
-    explicitModel?: string,
-  ): Promise<void> {
-    if (!this.childWriter) return
-
-    const now = new Date().toISOString()
-    // REQ-23.2-03: Direct child ID lookup + parent-based fallback for race conditions
-    const pendingEntry =
-      this.pendingRegistry?.get(sessionID) ??
-      this.pendingRegistry?.getByParent(parentID)
-    // Fix: handle union type PendingDispatchEntry | PendingDispatchEntry[]
-    const entry = Array.isArray(pendingEntry) ? pendingEntry[0] : pendingEntry
-    const subagentType = explicitSubagentType ?? entry?.subagentType ?? "unknown"
-    let delegationDepth = explicitDelegationDepth ?? 1
-
-    try {
-      if (this.hierarchyIndex) {
-        this.hierarchyIndex.registerChild(parentID, sessionID)
-        delegationDepth = explicitDelegationDepth ?? this.hierarchyIndex.getDepth?.(sessionID) ?? 1
-      }
-
-      // Write child .json under the root main session directory
-      // (childWriter.resolveWriteParent resolves to root main per CP-ST-04-02)
-      await this.childWriter.createChildFile(parentID, sessionID, {
-        sessionID,
-        parentSessionID: parentID,
-        delegationDepth,
-        delegatedBy: {
-          agentName: explicitAgentName ?? subagentType,
-          model: explicitModel ?? entry?.model ?? "",
-          tool: entry?.tool ?? "task",
-          description: "",
-          subagentType,
-        },
-        created: now,
-        updated: now,
-        status: "active",
-        mainAgent: {
-          name: explicitAgentName ?? subagentType,
-          model: explicitModel ?? entry?.model ?? "",
-        },
-        turns: [],
-        children: [],
-        journey: [],
-      })
-
-      // Bug D-2: Store delegation context so child-recorder can use it
-      // as fallback when chat.message hook payload has empty agent/model.
-      this.childWriter.setDelegationContext(sessionID, {
-        agentName: explicitAgentName ?? subagentType,
-        model: explicitModel ?? entry?.model,
-      })
-
-      // D-07: update hierarchy-manifest.json
-      // Register child in hierarchy index first so getRootMain works
-      if (this.hierarchyIndex && this.manifestWriter) {
-        const rootMain = this.hierarchyIndex.getRootMain(sessionID)
-        if (rootMain) {
-          if (typeof this.sessionIndexWriter.addChild === "function") {
-            await this.sessionIndexWriter.addChild(
-              rootMain,
-              sessionID,
-              `${sessionID}.json`,
-              delegationDepth,
-              subagentType,
-              delegationDepth > 1 ? parentID : undefined,
-            )
-          }
-          await this.projectIndexWriter?.incrementChildCount(rootMain, delegationDepth)
-          await this.projectIndexWriter?.addSession(
-            sessionID,
-            `${rootMain}/`,
-            `${sessionID}.json`,
-          )
-          // REQ-23.2-04: Populate hierarchy-manifest.json (was missing at this call site)
-          if (typeof this.manifestWriter.addChild === "function") {
-            await this.manifestWriter.addChild({
-              rootMainSessionID: rootMain,
-              childSessionID: sessionID,
-              parentSessionID: parentID,
-              delegationDepth,
-              delegatedBy: entry?.tool ?? "task",
-              subagentType,
-              childFile: `${sessionID}.json`,
-            })
-          }
-          // Bug A: populate root .md frontmatter children array
-          await this.sessionWriter.addChildRef(rootMain, {
-            sessionID,
-            childFile: `${sessionID}.json`,
-          })
-        }
-      }
-    } catch (err) {
-      // RC-5: Log but don't swallow — childWriter already enqueued to retry queue
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: immediate child .json write failed for "${sessionID}" — enqueued to retry queue`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
-  }
-
-  /**
-   * Resolves lifecycle status routing for a child session.
-   *
-   * Uses SDK parent metadata first, then the in-memory hierarchy index, then
-   * pending dispatch metadata. Status writes need both immediate parent and
-   * root main because child `.json` paths and session-continuity indexes use
-   * different authorities.
-   *
-   * @param sessionID - Session receiving a lifecycle status event.
-   * @returns Child route data, or `undefined` when the session is main/unknown.
-   */
-  private async resolveChildLifecycleRoute(sessionID: string): Promise<{
-    parentID: string
-    rootMainID: string
-  } | undefined> {
-    let parentID: string | null | undefined
-    try {
-      const session = await getSession(this.client, sessionID)
-      parentID = session.parentID as string | null | undefined
-    } catch {
-      parentID = undefined
-    }
-
-    const indexedParent = this.hierarchyIndex?.getParent(sessionID)
-    const pendingParent = this.pendingRegistry?.get(sessionID)?.parentSessionID
-    const effectiveParentID = parentID ?? indexedParent ?? pendingParent
-    if (!effectiveParentID) return undefined
-
-    if (this.hierarchyIndex && !this.hierarchyIndex.isChild(sessionID)) {
-      this.hierarchyIndex.registerChild(effectiveParentID, sessionID)
-    }
-
-    const rootMainID = this.hierarchyIndex?.getRootMain(sessionID) ?? effectiveParentID
-    return { parentID: effectiveParentID, rootMainID }
-  }
-
-  /**
-   * Handles `session.next.text.ended` — captures assistant text as `lastMessage`.
-   *
-   * **NOTE: This method is currently unreachable.**
-   * The OpenCode SDK (`@opencode-ai/sdk`) does NOT dispatch `session.next.text.ended`
-   * — this event type does not exist in the SDK's `Event` union type
-   * (`EventSessionIdle`, `EventSessionStatus`, etc.). The SDK's session events are:
-   * `session.created`, `session.updated`, `session.deleted`, `session.idle`,
-   * `session.error`, `session.status`, `session.compacted`, `session.diff`.
-   *
-   * This method is retained for forward compatibility (if the SDK adds this event
-   * in a future version). The PRIMARY mechanism for capturing `lastMessage` for
-   * main sessions is now the SDK message fallback in `handleSessionIdle`, which
-   * queries `getSessionMessages(this.client, sessionID)` on session idle.
-   *
-   * The `chat.message` hook only provides `UserMessage` (role: "user"), so assistant
-   * text is never delivered via `handleAssistantMessage()` in message-capture.ts.
-   *
-   * @param sessionID - The session that completed a text response.
-   * @param event - Raw event payload from the SDK (unused — event is never dispatched).
-   */
-  private async handleSessionNextTextEnded(
-    sessionID: string,
-    event: Record<string, unknown> | undefined,
-  ): Promise<void> {
-    try {
-      const text = asString(getNestedValue(event, ["properties", "text"]))
-      if (!text || text.trim().length === 0) {
-        return
-      }
-
-      // Skip child sessions — their lastMessage is captured via backfillChildTurnsFromSdk
-      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
-      if (childRoute) {
-        return
-      }
-
-      // Main session — update .md frontmatter with assistant text
-      await this.sessionWriter.updateFrontmatter(sessionID, {
-        lastMessage: text.trim(),
-      })
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: failed to capture lastMessage from session.next.text.ended for "${sessionID}"`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
-  }
-
-  /**
-   * Handles `session.compacted` — writes a compaction block to the session .md file (D-10).
-   *
-   * Records the compaction timestamp and references session-continuity.json
-   * for active delegations and pending work at time of compaction.
-   */
-  private async handleSessionCompacted(
-    sessionID: string,
-    event: Record<string, unknown> | undefined,
-  ): Promise<void> {
-    try {
-      const now = new Date().toISOString()
-      // REQ-23.2-02: Try event payload first, then message history fallback
-      let compactContext: string
-
-      const eventSummary = this.findCompactionText(event)
-      if (eventSummary) {
-        // Event payload has summary text — use it directly
-        compactContext = `**compact_summary:**\n\n${eventSummary}\n`
-      } else {
-        // Event payload has no summary (metadata-only event) — read message history
-        compactContext = await this.resolveCompactionFromMessages(sessionID)
-      }
-      const section =
-        `## COMPACTED (${now})\n\n` +
-        compactContext +
-        `\n**Continuity index:** See \`session-continuity.json\` for active delegations and pending work at time of compaction.\n`
-
-      const childRoute = await this.resolveChildLifecycleRoute(sessionID)
-      if (childRoute) {
-        if (!(await this.childWriter.childFileExists(childRoute.parentID, sessionID))) {
-          return
-        }
-        await this.childWriter.appendJourneyEntry(childRoute.parentID, sessionID, {
-          timestamp: now,
-          type: "session_compacted",
-          content: compactContext,
-          metadata: { capturedFrom: "session.compacted" },
-        })
-        return
-      }
-
-      await this.sessionWriter.appendCompactionBlock(sessionID, section)
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Harness] Session tracker: compaction capture failed for "${sessionID}"`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
-  }
-
-  /**
-   * Finds the most likely compact summary string in a version-tolerant payload.
-   *
-   * @param value - Raw event value to scan.
-   * @returns The first non-empty summary-like string without trimming content.
-   */
-  private findCompactionText(value: unknown): string | undefined {
-    if (typeof value === "string") return value.trim().length > 0 ? value : undefined
-    if (!value || typeof value !== "object" || Array.isArray(value)) return undefined
-
-    const record = value as Record<string, unknown>
-    const preferredKeys = [
-      "summary", "compactSummary", "compactionSummary",
-      "content", "context", "message", "text",
-      "compact_summary", "compaction_text", "output",
-    ]
-    for (const key of preferredKeys) {
-      const candidate = record[key]
-      if (typeof candidate === "string" && candidate.trim().length > 0) return candidate
-    }
-    for (const key of Object.keys(record)) {
-      const val = record[key]
-      if (val && typeof val === "object" && !Array.isArray(val)) {
-        const nested = this.findCompactionText(val)
-        if (nested) return nested
-      }
-    }
-    return undefined
-  }
-
-  /**
-   * Records a journey entry for either a main or child session.
-   *
-   * Routes to `childWriter.appendJourneyEntry` for child sessions (non-null
-   * parentID) or `sessionWriter.appendJourneyEntry` for main sessions.
-   *
-   * Best-effort: errors are logged but never thrown.
-   *
-   * @param sessionID - The session identifier.
-   * @param entry - The journey entry to record.
-   * @returns Promise that resolves when the entry is recorded.
-   */
   async recordJourneyEntry(
     sessionID: string,
     entry: JourneyEntry,
@@ -914,28 +131,25 @@ export class EventCapture {
 
       let parentID: string | null | undefined
       try {
-        const session = await getSession(this.client, sessionID)
+        const session = await getSession(this.deps.client, sessionID)
         parentID = session.parentID as string | null | undefined
       } catch {
-        // SDK call failed — fall back to main session routing
         parentID = null
       }
 
       if (parentID) {
-        if (!(await this.childWriter.childFileExists(parentID, sessionID))) {
+        if (!(await this.deps.childWriter.childFileExists(parentID, sessionID))) {
           return
         }
-        // Child session — append to .json journey array
-        await this.childWriter.appendJourneyEntry(parentID, sessionID, entry)
+        await this.deps.childWriter.appendJourneyEntry(parentID, sessionID, entry)
       } else {
-        if (!(await this.sessionWriter.sessionFileExists(sessionID))) {
+        if (!(await this.deps.sessionWriter.sessionFileExists(sessionID))) {
           return
         }
-        // Main session — append to .md file
-        await this.sessionWriter.appendJourneyEntry(sessionID, entry)
+        await this.deps.sessionWriter.appendJourneyEntry(sessionID, entry)
       }
     } catch (err) {
-      void this.client.app?.log?.({
+      void this.deps.client.app?.log?.({
         body: {
           service: "session-tracker",
           level: "warn",
@@ -944,107 +158,5 @@ export class EventCapture {
         },
       })
     }
-  }
-
-  /**
-   * Resolves compaction content from session message history.
-   * Fallback when the session.compacted event payload is metadata-only.
-   *
-   * @param sessionID - The session that was compacted.
-   * @returns Markdown content for the compaction section.
-   */
-  private async resolveCompactionFromMessages(sessionID: string): Promise<string> {
-    try {
-      const messages = await getSessionMessages(this.client, sessionID)
-      if (messages && messages.length > 0) {
-        let lastAssistantMsg: unknown
-        for (let i = messages.length - 1; i >= 0; i--) {
-          if (this.backfiller.messageRole(messages[i]) === "assistant") {
-            lastAssistantMsg = messages[i]
-            break
-          }
-        }
-        if (lastAssistantMsg) {
-          const text = this.backfiller.extractTextFromSdkMessage(lastAssistantMsg)
-          if (text && text.trim().length > 0) {
-            return `**compact_summary:**\n\n${text}\n`
-          }
-        }
-        const lastMsg = messages[messages.length - 1]
-        const fallbackText = this.backfiller.extractTextFromSdkMessage(lastMsg)
-        if (fallbackText && fallbackText.trim().length > 0) {
-          return `**compact_summary:**\n\n${fallbackText}\n`
-        }
-      }
-    } catch {
-      // getSessionMessages failed — fall through
-    }
-
-    const childData = await this.childWriter.readChildData(sessionID)
-    if (childData) {
-      const summary = this.extractSummaryFromChildRecord(childData)
-      if (summary) return `**compact_summary:**\n\n${summary}\n`
-    }
-
-    const childSummaries = await this.collectChildSummaries(sessionID)
-    if (childSummaries && childSummaries.length > 0) {
-      return `**compact_summary (from children):**\n\n${childSummaries.join("\n---\n")}\n`
-    }
-
-    return "**Compaction occurred — summary unavailable.**\n"
-  }
-
-  /**
-   * Collects lastMessage summaries from all child sessions
-   * in the hierarchy manifest for a given root session.
-   */
-  private async collectChildSummaries(rootSessionID: string): Promise<string[]> {
-    try {
-      if (!this.manifestWriter) return []
-      const children = await this.manifestWriter.getChildren(rootSessionID)
-      if (!children || Object.keys(children).length === 0) return []
-
-      const summaries: string[] = []
-      for (const [childID, meta] of Object.entries(children)) {
-        if (meta.status === "completed") {
-          const childData = await this.childWriter.readChildData(childID)
-          if (childData?.lastMessage && childData.lastMessage.trim().length > 0) {
-            summaries.push(`**${childID}:** ${childData.lastMessage.substring(0, 2000)}`)
-          }
-        }
-      }
-      return summaries
-    } catch {
-      return []
-    }
-  }
-
-  /**
-   * Extracts a compaction summary from a child session record.
-   *
-   * Prefers `lastMessage`, then last assistant turn content, then any
-   * turn content as fallback.
-   *
-   * @param record - The child session record to extract from.
-   * @returns Summary text, or `undefined` if no usable content found.
-   */
-  private extractSummaryFromChildRecord(record: ChildSessionRecord): string | undefined {
-    if (record.lastMessage && record.lastMessage.trim().length > 0) {
-      return record.lastMessage.trim()
-    }
-
-    const turns = record.turns
-    if (turns && turns.length > 0) {
-      for (let i = turns.length - 1; i >= 0; i--) {
-        const t = turns[i]
-        if (t.role === "assistant" || t.actor.includes("agent")) {
-          if (t.content && t.content.trim().length > 0) return t.content.trim()
-        }
-      }
-      const last = turns[turns.length - 1]
-      if (last.content && last.content.trim().length > 0) return last.content.trim()
-    }
-
-    return undefined
   }
 }

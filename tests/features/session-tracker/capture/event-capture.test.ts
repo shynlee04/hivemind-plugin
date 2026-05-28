@@ -284,7 +284,7 @@ describe("EventCapture", () => {
     })
 
     it("should log warning on unknown event type", async () => {
-      const client = (eventCapture as any).client
+      const client = (eventCapture as any).deps.client
 
       await eventCapture.handleSessionEvent({
         eventType: "session.unknown_type",
