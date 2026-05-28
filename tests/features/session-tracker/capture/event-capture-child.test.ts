@@ -50,12 +50,14 @@ describe("EventCapture — child session routing (DEFECT-08)", () => {
       appendAgentBlock: vi.fn(),
       appendToolBlock: vi.fn(),
       appendCompactionBlock: vi.fn(),
+      sessionFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as SessionWriter
 
     childWriter = {
       updateChildStatus: mockUpdateChildStatusCw,
       createChildFile: vi.fn(),
       appendChildTurn: vi.fn(),
+      childFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as ChildWriter
 
     sessionIndexWriter = {

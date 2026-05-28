@@ -253,6 +253,27 @@ export class ChildWriter {
   }
 
   /**
+   * Checks if a child session `.json` file exists on disk.
+   *
+   * @param parentSessionID - The parent session ID.
+   * @param childSessionID - The child session ID.
+   * @returns True if the file exists on disk.
+   */
+  async childFileExists(
+    parentSessionID: string,
+    childSessionID: string,
+  ): Promise<boolean> {
+    try {
+      const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
+      const filePath = this.getChildFilePath(writeParent, childSessionID)
+      await readFile(filePath, "utf-8")
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * Merges new child metadata into an existing record without losing live data.
    *
    * @param existing - Existing child record from disk, if any.

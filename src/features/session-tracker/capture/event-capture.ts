@@ -318,6 +318,9 @@ export class EventCapture {
       // Check if this is a child session
       const childRoute = await this.resolveChildLifecycleRoute(sessionID)
       if (childRoute) {
+        if (!(await this.childWriter.childFileExists(childRoute.parentID, sessionID))) {
+          return
+        }
         // Child session — updateChildStatus has built-in precedence guard
         await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "completed")
         await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
@@ -338,6 +341,9 @@ export class EventCapture {
         return
       }
       // Main session — "completed" is a valid terminal transition from "running"
+      if (!(await this.sessionWriter.sessionFileExists(sessionID))) {
+        return
+      }
       // BUGFIX: Fallback to SDK messages when pendingRegistry.lastMessage is empty.
       // The pendingRegistry.lastMessage is only populated for child sessions (via
       // delegation tracking), NOT for main sessions. When this field is empty,
@@ -423,6 +429,9 @@ export class EventCapture {
       // Check if this is a child session
       const childRoute = await this.resolveChildLifecycleRoute(sessionID)
       if (childRoute) {
+        if (!(await this.childWriter.childFileExists(childRoute.parentID, sessionID))) {
+          return
+        }
         // Child session — update .json via childWriter
         await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "completed")
         await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
@@ -474,6 +483,9 @@ export class EventCapture {
         return
       }
       // Main session — existing behavior
+      if (!(await this.sessionWriter.sessionFileExists(sessionID))) {
+        return
+      }
       await this.sessionWriter.updateFrontmatter(sessionID, {
         status: "completed",
       } as Partial<import("../types.js").SessionRecord>)
@@ -500,6 +512,9 @@ export class EventCapture {
       // Check if this is a child session
       const childRoute = await this.resolveChildLifecycleRoute(sessionID)
       if (childRoute) {
+        if (!(await this.childWriter.childFileExists(childRoute.parentID, sessionID))) {
+          return
+        }
         // Child session — update .json via childWriter
         await this.childWriter.updateChildStatus(childRoute.parentID, sessionID, "error")
         await this.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "error")
@@ -540,6 +555,9 @@ export class EventCapture {
         return
       }
       // Main session — existing behavior
+      if (!(await this.sessionWriter.sessionFileExists(sessionID))) {
+        return
+      }
       await this.sessionWriter.updateFrontmatter(sessionID, {
         status: "error",
       } as Partial<import("../types.js").SessionRecord>)
@@ -804,6 +822,9 @@ export class EventCapture {
 
       const childRoute = await this.resolveChildLifecycleRoute(sessionID)
       if (childRoute) {
+        if (!(await this.childWriter.childFileExists(childRoute.parentID, sessionID))) {
+          return
+        }
         await this.childWriter.appendJourneyEntry(childRoute.parentID, sessionID, {
           timestamp: now,
           type: "session_compacted",
@@ -885,9 +906,15 @@ export class EventCapture {
       }
 
       if (parentID) {
+        if (!(await this.childWriter.childFileExists(parentID, sessionID))) {
+          return
+        }
         // Child session — append to .json journey array
         await this.childWriter.appendJourneyEntry(parentID, sessionID, entry)
       } else {
+        if (!(await this.sessionWriter.sessionFileExists(sessionID))) {
+          return
+        }
         // Main session — append to .md file
         await this.sessionWriter.appendJourneyEntry(sessionID, entry)
       }

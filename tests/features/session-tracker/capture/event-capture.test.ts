@@ -47,10 +47,12 @@ describe("EventCapture", () => {
       appendAgentBlock: vi.fn(),
       appendToolBlock: vi.fn(),
       appendAssistantTurn: vi.fn().mockResolvedValue(undefined),
+      sessionFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as SessionWriter
 
     childWriter = {
       updateChildStatus: mockUpdateChildStatus,
+      childFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as ChildWriter
 
     sessionIndexWriter = {
@@ -324,10 +326,12 @@ describe("handleSessionCreated() — root-only directory creation (D-02)", () =>
       initializeSessionFile: mockInitializeSessionFile,
       updateFrontmatter: vi.fn(),
       addChildRef: vi.fn(),
+      sessionFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as SessionWriter
 
     const childWriter = {
       updateChildStatus: vi.fn(),
+      childFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as ChildWriter
 
     const sessionIndexWriter = {
@@ -487,6 +491,7 @@ describe("handleSessionCreated() — immediate child .json write (D-06) + manife
       initializeSessionFile: mockInitializeSessionFile,
       updateFrontmatter: vi.fn(),
       addChildRef: vi.fn(),
+      sessionFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as SessionWriter
 
     const childWriter = {
@@ -494,6 +499,7 @@ describe("handleSessionCreated() — immediate child .json write (D-06) + manife
       updateChildStatus: vi.fn(),
       setDelegationContext: vi.fn(),
       getDelegationContext: vi.fn().mockReturnValue(undefined),
+      childFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as ChildWriter
 
     const sessionIndexWriter = {
@@ -688,10 +694,12 @@ describe("session.next.text.ended — lastMessage capture for main sessions", ()
       appendUserTurn: vi.fn(),
       appendAgentBlock: vi.fn(),
       appendToolBlock: vi.fn(),
+      sessionFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as SessionWriter
 
     childWriter = {
       updateChildStatus: vi.fn().mockResolvedValue(undefined),
+      childFileExists: vi.fn().mockResolvedValue(true),
     } as unknown as ChildWriter
 
     sessionIndexWriter = {

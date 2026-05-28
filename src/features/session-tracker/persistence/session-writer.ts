@@ -253,6 +253,22 @@ export class SessionWriter {
   }
 
   /**
+   * Checks if the main session file exists on disk.
+   *
+   * @param sessionID - The session identifier.
+   * @returns True if the file exists on disk.
+   */
+  async sessionFileExists(sessionID: string): Promise<boolean> {
+    try {
+      const filePath = this.getSessionFilePath(sessionID)
+      await readFile(filePath, "utf-8")
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * Appends a child reference to the root session `.md` frontmatter's
    * `children` array. Prevents duplicates by checking for existing
    * sessionID entries before appending.
