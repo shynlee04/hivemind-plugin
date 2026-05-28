@@ -263,14 +263,38 @@ export class ChildWriter {
     parentSessionID: string,
     childSessionID: string,
   ): Promise<boolean> {
+    // Primary: resolve via hierarchy index (D-03 root main directory)
+    const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
+    const primaryPath = this.getChildFilePath(writeParent, childSessionID)
     try {
-      const writeParent = this.resolveWriteParent(childSessionID, parentSessionID)
-      const filePath = this.getChildFilePath(writeParent, childSessionID)
-      await readFile(filePath, "utf-8")
+      await readFile(primaryPath, "utf-8")
       return true
+    } catch {
+      // Primary lookup failed — fall back to scanning all directories
+      // (matches readChildData pattern at child-writer.ts:331-371)
+    }
+
+    // Fallback: scan all session-tracker subdirectories
+    const trackerRoot = resolve(this.projectRoot, ".hivemind", "session-tracker")
+    let entries: string[]
+    try {
+      entries = await readdir(trackerRoot)
     } catch {
       return false
     }
+
+    const targetFile = `${childSessionID}.json`
+    for (const entry of entries) {
+      try {
+        const filePath = safeSessionPath(this.projectRoot, entry, targetFile)
+        await readFile(filePath, "utf-8")
+        return true
+      } catch {
+        continue
+      }
+    }
+
+    return false
   }
 
   /**
