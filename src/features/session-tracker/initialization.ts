@@ -154,14 +154,23 @@ export function constructDependencies(
       // Continuous frontmatter update as assistant text streams in.
       // This preserves the latest text even if the session crashes or
       // the user disconnects before session.idle fires.
-      sessionWriter.updateFrontmatter(
-        sessionID,
-        { lastMessage: text },
-      ).catch((err) => {
-        console.warn(
-          `[Harness] Session tracker: frontmatter update failed for "${sessionID}":`,
-          err instanceof Error ? err.message : String(err),
-        )
+      //
+      // Guard: skip if the session .md file doesn't exist on disk
+      // (e.g., child sessions that only have .json records). Without
+      // this check, updateFrontmatter throws ENOENT for every
+      // message.part.updated event on child sessions, leaking to TUI.
+      sessionWriter.sessionFileExists(sessionID).then((exists) => {
+        if (!exists) return
+        return sessionWriter.updateFrontmatter(sessionID, { lastMessage: text })
+      }).catch((err) => {
+        void client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "warn",
+            message: `[Harness] Session tracker: frontmatter update failed for "${sessionID}"`,
+            extra: { error: err instanceof Error ? err.message : String(err) },
+          },
+        })
       })
     },
   })
