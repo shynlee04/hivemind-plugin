@@ -65,6 +65,7 @@ describe("CompletionDetector.pruneStaleTimers", () => {
   it("pruneStaleTimers partially prunes when some timers are stale", () => {
     vi.useFakeTimers()
     const detector = new CompletionDetector(30000)
+    const clearTimeoutSpy = vi.spyOn(global, "clearTimeout")
 
     // Add 3 timers: session-1 (5000ms old), session-2 (1000ms old), session-3 (10000ms old)
     detector["stabilityTimers"].set("session-1", setTimeout(() => {}, 30000))
@@ -87,5 +88,8 @@ describe("CompletionDetector.pruneStaleTimers", () => {
     expect(detector["stabilityTimers"].has("session-2")).toBe(true)
     expect(detector["messageCounts"].has("session-2")).toBe(true)
     expect(detector["timerStartTimes"].has("session-2")).toBe(true)
+    // clearTimeout was called for each pruned timer
+    expect(clearTimeoutSpy).toHaveBeenCalled()
+    clearTimeoutSpy.mockRestore()
   })
 })

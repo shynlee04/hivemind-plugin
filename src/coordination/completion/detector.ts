@@ -33,6 +33,7 @@ export class CompletionDetector {
   private dualSignalWatchers = new Map<string, DualSignalWatcher>()
   private messageCounts = new Map<string, number>()
   private stabilityTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  private timerStartTimes = new Map<string, number>()
 
   constructor(private readonly stabilityTimeoutMs: number = 30000) {}
 
@@ -185,6 +186,7 @@ export class CompletionDetector {
     const timerId = setTimeout(() => {
       this.stabilityTimers.delete(sessionID)
       this.messageCounts.delete(sessionID)
+      this.timerStartTimes.delete(sessionID)
 
       const watcher = this.watchers.get(sessionID)
       if (watcher) {
@@ -197,6 +199,7 @@ export class CompletionDetector {
     }, this.stabilityTimeoutMs)
 
     this.stabilityTimers.set(sessionID, timerId)
+    this.timerStartTimes.set(sessionID, Date.now())
   }
 
   private clearStabilityTimer(sessionID: string): void {
@@ -206,6 +209,29 @@ export class CompletionDetector {
       this.stabilityTimers.delete(sessionID)
     }
     this.messageCounts.delete(sessionID)
+    this.timerStartTimes.delete(sessionID)
+  }
+
+  /**
+   * Removes stability timers that have been running longer than maxAgeMs.
+   * Call periodically from the monitor/poll loop to prevent unbounded Map growth.
+   *
+   * @param maxAgeMs - Maximum age in milliseconds. Timers older than this are pruned.
+   * @returns The number of timers that were pruned.
+   */
+  pruneStaleTimers(maxAgeMs: number): number {
+    let pruned = 0
+    for (const [sessionId, timerId] of this.stabilityTimers.entries()) {
+      const startedAt = this.timerStartTimes.get(sessionId)
+      if (startedAt !== undefined && Date.now() - startedAt > maxAgeMs) {
+        clearTimeout(timerId)
+        this.stabilityTimers.delete(sessionId)
+        this.messageCounts.delete(sessionId)
+        this.timerStartTimes.delete(sessionId)
+        pruned++
+      }
+    }
+    return pruned
   }
 
   private fireDualSignalIfReady(delegationId: string, watcher: DualSignalWatcher): void {
