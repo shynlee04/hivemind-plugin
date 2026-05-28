@@ -18,11 +18,12 @@ export default defineConfig({
       // Floor sits ~5pp below actual to absorb normal churn while still
       // catching a real regression. Raise the floor again as coverage
       // climbs; never lower it without an explicit audit amendment.
+      // C7-Test-Coverage: raised from 85/72/85/85 to 90/80/90/90
       thresholds: {
-        statements: 85,
-        branches: 72,
-        functions: 85,
-        lines: 85,
+        statements: 90,
+        branches: 80,
+        functions: 90,
+        lines: 90,
       },
     },
   },
