@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-28T04:00:00.000Z"
+last_updated: "2026-05-28T12:45:02.726Z"
 progress:
-  total_phases: 59
-  completed_phases: 15
-  total_plans: 71
-  completed_plans: 70
-  percent: 99
+  total_phases: 46
+  completed_phases: 12
+  total_plans: 90
+  completed_plans: 78
+  percent: 26
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -79,7 +79,7 @@ progress:
 **C1 (Concerns):** ✅ COMPLETE — Critical Type Safety & Error Handling (P0). Fixed: duplicate PermissionAction union, ClientLike=any erasure, 6 silent .catch(() => {}) with structured logging. 5 files, 90 insertions.
 **C2 (Concerns):** ✅ COMPLETE — Type Safety & Security Hardening (P1). Fixed: 12 `as any` casts with typed interfaces, ESLint suppressions removed, session ID validation, sidecar async read, env scope hardening. 6 files, 145 insertions.
 **C3 (Concerns):** ✅ COMPLETE — Module Decomposition & Promise Patterns (P1). Extracted ChildBackfiller (149 LOC) from event-capture.ts (1098→1007 LOC). ChildWriter queue verified safe for parallel children (per-child key). 2 files, 161 insertions.
-**C4 (Concerns):** 📋 PENDING — Performance Optimization (P2, Depends: C3).
+**C4 (Concerns):** ✅ COMPLETE — Performance Optimization (P2, Depends: C3). 3 plans: pruneStaleTimers test scaffold (TDD RED), timer leak fix + JSON.parse cache, execFile async + async FS bootstrap-init. 6 atomic commits. 2620/2622 tests pass, typecheck clean.
 **C5 (Concerns):** 📋 PENDING — Error Handling & Code Quality (P2, Depends: C4).
 **C6 (Concerns):** 📋 PENDING — Architectural Refactoring (P2, Depends: C5).
 **C7 (Concerns):** 📋 PENDING — Test Coverage (P2, Depends: C6).
