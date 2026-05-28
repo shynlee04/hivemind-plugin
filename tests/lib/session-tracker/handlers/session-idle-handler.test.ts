@@ -13,13 +13,19 @@ import type { HierarchyManifestWriter } from "../../../../src/features/session-t
 import type { ChildBackfiller } from "../../../../src/features/session-tracker/capture/child-backfiller.js"
 import type { LastMessageCapture } from "../../../../src/features/session-tracker/capture/last-message-capture.js"
 
+// Mock session-api at module level
+vi.mock("../../../../src/shared/session-api.js", () => ({
+  getSession: vi.fn(),
+  getSessionMessages: vi.fn(),
+}))
+
 import { SessionIdleHandler } from "../../../../src/features/session-tracker/capture/handlers/session-idle-handler.js"
+import { getSession, getSessionMessages } from "../../../../src/shared/session-api.js"
 
 function createMockDeps() {
   return {
     client: {
       app: { log: vi.fn() },
-      session: { get: vi.fn().mockResolvedValue({ parentID: null }) },
     } as unknown as OpenCodeClient,
     sessionWriter: {
       sessionFileExists: vi.fn().mockResolvedValue(true),
@@ -55,12 +61,12 @@ describe("SessionIdleHandler", () => {
   let deps: ReturnType<typeof createMockDeps>
 
   beforeEach(() => {
+    vi.clearAllMocks()
     deps = createMockDeps()
     handler = new SessionIdleHandler(deps)
   })
 
   it("should update child status to completed for child sessions", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: "parent-1" } as any)
 
     await handler.handle("child-idle-1")
@@ -70,7 +76,6 @@ describe("SessionIdleHandler", () => {
   })
 
   it("should complete main session and capture lastMessage", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: null } as any)
     deps.lastMessageCapture.getLastMessage = vi.fn().mockReturnValue("Hello from assistant")
 
@@ -83,7 +88,6 @@ describe("SessionIdleHandler", () => {
   })
 
   it("should increment assistantTurnCounters on repeated calls", async () => {
-    const { getSession } = await import("../../../../src/shared/session-api.js")
     vi.mocked(getSession).mockResolvedValue({ parentID: null } as any)
     deps.lastMessageCapture.getLastMessage = vi.fn().mockReturnValue("Turn text")
 
