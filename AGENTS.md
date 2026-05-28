@@ -149,6 +149,42 @@ IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
 This is not negotiable. This is not optional. You cannot rationalize your way out of this.
 </EXTREMELY-IMPORTANT>
 
+## SPECIFIC L0/L1/L2 COORDINATION PROTOCOLS & GOVERNANCE
+
+### 1. The Absolute Order & L0 Orchestrator Execution Banishment
+* **Strategic Role ONLY**: Front-facing L0 orchestrators (`hm-l0-orchestrator`, `hf-l0-orchestrator`) converse with the human user, classify intents, form landscapes, map paths, and verify completion. They MUST NOT execute detail work.
+* **Inline Banishment**: L0 agents are strictly banned from reading files for comprehension, analyzing code blocks, writing code files, running tests, or performing any specialist L2/L3 role inline. They are blocked from writing to `src/` or `tests/` by harness lifecycle hooks.
+* **Handoff Requirement**: Every top-level user prompt must be routed immediately via path classification to L1 coordinators or L2/L3 specialists. L0 write authority is restricted to `.hivemind/planning/**`.
+
+### 2. Highly Specific L2 Build/Authoring Agent Rules
+* **AQUAL Validation Triad Compliance**: Every created or modified primitive (agent, skill, command) must be validated against the 8-point AQUAL quality checklist (`AQUAL-01` through `AQUAL-08`) before writing to disk.
+* **Self-Correction & Escalation**: If validation fails, L2 builders (e.g. `hf-l2-agent-builder`, `hf-l2-command-builder`) must execute a self-correction loop. After 3 failed cycles, they must escalate to the L1 coordinator.
+* **Lineage Flexibility**: L2 authoring agents (`hf-*`) have flexible lineage bindings. They are authorized to load `hm-*` research tools (e.g., `hm-detective`) for codebase scanning, but must justify the cross-lineage access explicitly in their output reports.
+* **Write Boundaries**: All file writes from L2 builders must be strictly constrained to `.opencode/agents/`, `.opencode/command/`, `.opencode/commands/`, or `.opencode/skills/`.
+
+### 3. Lineage Boundaries: HM/HF Lineages vs. GSD Developer Tooling
+* **HM/HF lineages (Subject of Development)**: The composition engine runtime under development (`hm-*` product developers and `hf-*` meta-builder authoring engines). Their source configurations reside under `.opencode/agents/hm-*`, `.opencode/agents/hf-*`, `.opencode/command/`, `.opencode/commands/`, `.opencode/workflows/`, and `.opencode/skills/`.
+* **GSD lineage (Internal Developer Tooling)**: Pristine development utilities used to build, test, and audit the harness project itself. All GSD assets (get-shit-done/, `.opencode/agents/gsd-*`, `.opencode/command/gsd-*`, `.opencode/commands/gsd-*`) are tracked in [gsd-file-manifest.json](file:///Users/apple/hivemind-plugin-private/.opencode/gsd-file-manifest.json) and are strictly excluded from the final composition engine harness release.
+
+### 4. Command vs. Commands & Agent vs. Agents Directory Ambiguity
+* **Plurality Compatibility**:
+  * Both `.opencode/command/` and `.opencode/commands/` folders are primary roots. All command schemas MUST be duplicated identically in both directories to prevent version drift across different OpenCode host releases.
+  * Declarative agent files live in the plural `.opencode/agents/` folder, but are referenced by the singular SDK term `agent`.
+* **Lineage Routing Matrix**:
+  * **Fast-Path**: Single-specialist target (`hm-l2-*`). Bypasses L1.
+  * **Coordinated-Path**: Multi-agent waves. Routes to `hm-coordinator` or `hf-coordinator` mapped to specific wave types (research, planning, execution, quality, lifecycle, docs).
+  * **Cross-Lineage Path**: Meta-concept tasks. Immediately suspends `hm-*` lineage and hands off to `hf-l0-orchestrator`.
+
+### 5. Session Stacking & Resuming Protocols
+* **Discovery**: Before spawning any subagent, the orchestrator/coordinator MUST call `delegation-status({ action: "find-stackable" })` to check for active, completed, or failed sessions.
+* **Resuming**: If an incomplete/aborted session matches the target task scope, the agent MUST resume it by passing the exact `task_id` using the native `task` tool: `task({ subagent_type: "agent-name", task_id: "<id>", prompt: "Continue" })`. Prompt must not repeat context.
+* **Stacking**: If the session is completed but requires child work or retries, the agent MUST stack the new task onto it using `task_id` (in `task` tool), `stackOnSessionId`/`parentSessionId` (in `delegate-task`), or `stackOnSessionId` (in `execute-slash-command`).
+* **Dual-Signal Verification**: Completion requires two distinct agreements: (1) Doer specialist claims completion, (2) Verifier specialist validation passes with verified disk-written artifacts.
+
+### 6. Turn Anchor Points & Intent Tracking
+* **Intent Anchoring**: L0 agents must actively audit user instructions for step boundaries. If the user places an anchor point (e.g., "stop after research", "generate plan only"), the agent must halt execution, write the corresponding artifact, and return control. It must NOT auto-advance to downstream execution.
+* **Granular Workflow Chaining**: Workflows must proceed in step-by-step increments: checking blocking anti-patterns -> checking specs -> codebase scouting -> presenting options -> checkpointing progress -> writing CONTEXT.md -> committing docs -> updating STATE.md -> auto-advancing.
+
 ## Instruction Priority
 
 This override default system prompt behavior, but **user instructions always take precedence**:
