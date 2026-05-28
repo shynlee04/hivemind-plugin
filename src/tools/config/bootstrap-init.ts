@@ -1,4 +1,5 @@
-import { accessSync, constants, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs"
+import { accessSync, constants, cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync } from "node:fs"
+import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, join, resolve } from "node:path"
 
 import { tool } from "@opencode-ai/plugin/tool"
@@ -110,19 +111,19 @@ export async function bootstrapInit(input: BootstrapInitInput): Promise<Bootstra
     configSchemaJson: existsSync(schemaPath),
   }
 
-  mkdirSync(hiveMindRoot, { recursive: true })
+  await mkdir(hiveMindRoot, { recursive: true })
   for (const directory of TIER_1_DIRECTORIES) {
     const directoryPath = join(hiveMindRoot, directory)
     if (existsSync(directoryPath)) {
       existing.hiveMindDirectories += 1
     } else {
-      mkdirSync(directoryPath, { recursive: true })
+      await mkdir(directoryPath, { recursive: true })
       created.hiveMindDirectories += 1
     }
 
     const gitkeepPath = join(directoryPath, GITKEEP_FILE)
     if (!existsSync(gitkeepPath)) {
-      writeFileSync(gitkeepPath, "", "utf8")
+      await writeFile(gitkeepPath, "", "utf8")
       created.gitkeepFiles += 1
     }
   }
@@ -133,18 +134,18 @@ export async function bootstrapInit(input: BootstrapInitInput): Promise<Bootstra
   }
 
   if (!existsSync(configsPath)) {
-    writeFileSync(configsPath, renderConfigJson(input.config, input.nonInteractive), "utf8")
+    await writeFile(configsPath, renderConfigJson(input.config, input.nonInteractive), "utf8")
     created.configsJson = true
   }
 
-  const schemaDriftDetected = shouldRefreshSchemaArtifact(schemaPath)
+  const schemaDriftDetected = await shouldRefreshSchemaArtifact(schemaPath)
   if (schemaDriftDetected) {
     writeConfigJsonSchema(projectRoot)
     created.configSchemaJson = true
   }
 
   const hadVersionFile = existsSync(versionFilePath)
-  writeVersionFile(versionFilePath, currentVersion)
+  await writeVersionFile(versionFilePath, currentVersion)
   created.versionFile = !hadVersionFile || previousVersion !== currentVersion
 
   for (const primitive of sources) {
@@ -171,12 +172,12 @@ export async function bootstrapInit(input: BootstrapInitInput): Promise<Bootstra
   }
 }
 
-function shouldRefreshSchemaArtifact(schemaPath: string): boolean {
+async function shouldRefreshSchemaArtifact(schemaPath: string): Promise<boolean> {
   if (!existsSync(schemaPath)) {
     return true
   }
 
-  const currentContents = readFileSync(schemaPath, "utf8")
+  const currentContents = await readFile(schemaPath, "utf8")
   const expectedContents = `${JSON.stringify(generateHivemindConfigsJsonSchema(), null, 2)}\n`
   return currentContents !== expectedContents
 }
@@ -232,9 +233,9 @@ function readTrackedVersion(versionFilePath: string): string | null {
   }
 }
 
-function writeVersionFile(versionFilePath: string, version: string): void {
-  mkdirSync(dirname(versionFilePath), { recursive: true })
-  writeFileSync(versionFilePath, `${JSON.stringify({ version }, null, 2)}\n`, "utf8")
+async function writeVersionFile(versionFilePath: string, version: string): Promise<void> {
+  await mkdir(dirname(versionFilePath), { recursive: true })
+  await writeFile(versionFilePath, `${JSON.stringify({ version }, null, 2)}\n`, "utf8")
 }
 
 function renderConfigJson(config: BootstrapInitInput["config"], nonInteractive: boolean): string {
