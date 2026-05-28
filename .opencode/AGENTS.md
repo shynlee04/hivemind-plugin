@@ -66,11 +66,10 @@ Source evidence: `.planning/architecture/hivemind-runtime-identity-taxonomy-2026
   * `hm-*` (31 files): Core harness product developers (Architect, Code-Fixer, Executor, etc.).
   * `hf-*` (11 files): Authoring tools (Meta-Builder, Agent-Builder, etc.).
   * `gsd-*` (33 files): Custom developer tooling.
-  * *Creation/Maintenance*: Governed by `hf-l2-agent-builder` to ensure AQUAL compliance.
-* **`command/` and `commands/`**: A parallel pair of folders containing identical markdown command schemas (e.g. `/plan`, `/start-work`, `/ultrawork`). Exists due to ambiguity in different OpenCode execution host version releases. All files and updates must be duplicated in both paths to ensure command registry compatibility and prevent CLI target errors.
+* **`command/` and `commands/`**: A parallel pair of folders containing identical markdown command schemas (e.g. `/plan`, `/start-work`, `/ultrawork`). Exists due to ambiguity in different OpenCode execution host version releases. All files and updates must be duplicated in both paths to ensure command registry compatibility.
 * **`workflows/`**: Declarative markdown blueprints outlining execution steps for complex tasks (e.g. `/plan-phase`). They use step schemas (purpose, process steps, success criteria) and lazy-load overlays dynamically depending on runtime CLI parameters (`--auto`, `--chain`, `--text`, `--batch`).
 * **`skills/`**: Reflected skill folders copied from the `.hivefiver-meta-builder/skills-lab/` source-of-truth. Includes gate triad verification folders (`gate-l3-spec-compliance`, `gate-l3-lifecycle-integration`, `gate-l3-evidence-truth`) and stack schemas (`stack-l3-bun-pty`, `stack-l3-zod`, etc.).
-* **`get-shit-done/`**: Ground-level developer configurations, templates, and profiles (such as `USER-PROFILE.md`) utilized specifically during construction of the harness plugin. All files inside this folder are tracked in `gsd-file-manifest.json` and represent developer-only assets.
+* **`get-shit-done/`**: Ground-level developer configurations, templates, and profiles (such as `USER-PROFILE.md`) utilized specifically during construction of the harness plugin.
 * **`rules/`**: Central constraints definitions (`universal-rules.md`, `commit-governance.md`).
 * **`state/`**: Deprecated migration folder. Writing state is strictly prohibited here.
 
@@ -86,7 +85,7 @@ Source evidence: `.planning/architecture/hivemind-runtime-identity-taxonomy-2026
 - All internal, dynamic, mutable runtime state (journals, event trackers, continuity data, and trajectories) must reside exclusively under `.hivemind/` at the project root.
 - `.opencode/` SHALL NOT contain package source authority, compilation outputs (`dist/`), or business logic. Business logic lives in `src/`.
 - `.opencode/state/` is legacy migration-only and must not receive new internal state ownership. Evidence: `.planning/codebase/STRUCTURE.md:295-299`.
-- **Lineage Partition Rule**: Do not blur hm/hf/gate/stack lineages or ship gsd-* internal developer tooling as product primitives. GSD tooling tracked in `gsd-file-manifest.json` represents developer-only utilities.
+- Do not blur hm/hf/gate/stack lineages or ship gsd-* internal developer tooling as product primitives. Evidence: `.planning/codebase/ARCHITECTURE.md:217-233`, `.planning/codebase/STRUCTURE.md:209-216`.
 - Do not edit runtime TypeScript implementation here; runtime source authority remains in `src/`.
 
 ## 4. Actors and consumers
