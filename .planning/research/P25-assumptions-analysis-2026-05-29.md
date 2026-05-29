@@ -1,267 +1,412 @@
-# P25 Assumptions Analysis — Trajectory Redesign
+# Phase 25 Assumptions Analysis
 
-**Generated:** 2026-05-29
-**Analyzer:** gsd-assumptions-analyzer
-**Phase:** P25 — Trajectory Redesign
-**Phase description (ROADMAP.md L99):** "Trajectory + Agent-Work-Contract redesign"
-**Dependencies:** P24 (COMPLETE), P23 (COMPLETE), CP-ST-* (COMPLETE)
-**Blocks:** P26 (Pressure + Notification Redesign), P23.6 (P25→P26→B Integration Gate)
+**Date:** 2026-05-29
+**Source:** Deep architecture research (`deep-architecture-research-2026-05-29.md`) + codebase analysis
+**Status:** ANALYSIS — for user review before Phase 25.1 planning
+**Prior context:** `P25-CONTEXT.md` (2026-05-29), `P25-GRAY-AREAS.md` (2026-05-29)
 
 ---
 
-## Scope Assumptions
+## CRITICAL FINDING FROM RESEARCH
 
-### A1. "Trajectory Redesign" means rewriting the existing trajectory module, not just extending it.
+> "The harness can only OBSERVE and INJECT, not CONTROL."
+> — deep-architecture-research-2026-05-29.md, §3
 
-**Assumption:** P25 is a redesign (architectural change), not a feature addition.
-
-**Why this way:** ROADMAP says "Trajectory + Agent-Work-Contract redesign" — "redesign" implies structural change to existing code, not new modules. The existing trajectory module (414 LOC across 4 files) is minimal but functional: a ledger with CRUD operations, evidence attachment, checkpointing, and traversal. Agent-work-contracts (400 LOC across 4 files) already exists as a separate feature module. The phrase "redesign" suggests these two need architectural changes to work together properly or to meet new requirements not yet captured.
-
-**If wrong:** If this is actually just a feature extension (e.g., add new fields, new actions), the scope is much smaller and the planning overhead is overkill. The implementation would be 1-2 plans, not a multi-wave effort.
-
-**Confidence:** Likely — "redesign" is a strong word, but the ROADMAP entry lacks a detailed spec to confirm scope depth.
-
-### A2. Agent-Work-Contract redesign means restructuring how contracts relate to trajectories, not rewriting contracts from scratch.
-
-**Assumption:** The agent-work-contract module's core schema, store, and operations are sound. The redesign targets the integration seam between trajectory and contracts, not the contract model itself.
-
-**Why this way:** `src/features/agent-work-contracts/` (400 LOC) is well-structured: Zod schema (`schema-kernel/agent-work-contract.schema.ts`, 148 LOC), store with quarantine-on-corrupt (`store.ts`, 146 LOC), pressure-aware creation (`operations.ts`, 162 LOC), and proper types (`types.ts`, 89 LOC). The trajectory module already has `attachTrajectoryEvidence` called from `createAgentWorkContract` (operations.ts:58). The seam exists but may need reworking for tighter integration.
-
-**If wrong:** If contracts need a full rewrite, the scope doubles. The schema, store, and operations files would all need replacement.
-
-**Confidence:** Likely — the code is functional; the integration exists but the "redesign" label suggests the seam needs rework.
-
-### A3. The trajectory redesign should produce a unified state model that covers session lifecycle, delegation tracking, and evidence collection.
-
-**Assumption:** P25 aims to unify trajectory with the lifecycle state machine (SessionLifecyclePhase from `src/task-management/lifecycle/index.ts`) and the continuity store (from `src/task-management/continuity/index.ts`).
-
-**Why this way:** Three overlapping status models exist today (HarnessStatus, SessionLifecyclePhase, DelegationPacketStatus) as documented in `src/shared/types.ts:119-142`. Trajectory currently tracks `active|closed` independently. The lifecycle manager (`lifecycle/index.ts`, 242 LOC) tracks phases `created|queued|dispatching|running|completed|failed`. Continuity tracks per-session metadata. These three systems are disconnected from trajectory. P25 likely needs to bridge them.
-
-**If wrong:** If trajectory redesign is standalone (doesn't touch lifecycle/continuity), the scope is much narrower — just the trajectory module itself.
-
-**Confidence:** Unclear — the ROADMAP entry is too terse to confirm whether the goal is unification or standalone redesign.
+This means:
+- Trajectory and contracts must be tools that agents CHOOSE to call
+- The harness can make tools available, inject instructions, guard execution, and capture when agents do/don't call
+- The harness CANNOT force agents to call trajectory or contracts
+- The current P25.1 approach (auto-create at delegation time via session-tracker hooks) is the correct pattern — it uses hooks to automatically create records, not agent opt-in
 
 ---
 
-## Code State Assumptions
+## 1. Trajectory Assumptions
 
-### B1. The trajectory module is functional and has passing tests.
+### A1: Trajectory is a per-delegation evidence record, not a per-phase mindmap
 
-**Assumption:** The current trajectory code works, passes tests, and does not need emergency fixes.
+**What we assume:** Each trajectory record corresponds to a single delegation (child session), not to a phase or workflow. The `TrajectoryRecord` type has `rootSessionId`, `sessionId`, `parentTrajectoryId` — all session-scoped.
 
-**Evidence:** `tests/tools/hivemind-trajectory.test.ts` (62 LOC) has 2 test cases covering all 6 actions (attach, checkpoint, event, traverse, inspect, close). The tool is registered in `src/plugin.ts:163`. The ledger has proper quarantine-on-corrupt (ledger.ts:74-78). Store operations handle edge cases (missing trajectory creation with rootSessionId requirement, duplicate checkpoint/event dedup). LOC counts: types 128, ledger 93, store-operations 190, index 3 = **414 LOC total**.
+**Why this way:** Code at `src/task-management/trajectory/types.ts:53-76` shows `TrajectoryRecord` with session IDs, not phase/workflow IDs. The P25.1 integration (`tool-delegation.ts:384-470`) creates trajectories per delegation with `traj-${childSessionID}` as the ID.
 
-**If wrong:** If trajectory has hidden bugs or test gaps, P25 needs remediation before redesign.
+**What we DON'T know:** Whether trajectory should ALSO track phase-level progress (e.g., "Phase 25 is 60% complete"). Currently it only tracks delegation-level evidence.
 
-**Confidence:** Confident — tests exist, code is clean, no dead code or stubs found.
+**If wrong:** If trajectory should be phase-scoped, the entire data model needs restructuring. The current `rootSessionId` grouping allows querying all delegations under a root session, which approximates phase-level aggregation.
 
-### B2. The agent-work-contract module is functional and has passing tests.
+**Confidence:** Confident — code and P25.1 implementation both confirm delegation-scoped design.
 
-**Assumption:** The current contract code works, has tests, and the pressure integration is wired correctly.
+### A2: Trajectory is created automatically at delegation time, not by agent opt-in
 
-**Evidence:** `tests/tools/hivemind-agent-work.test.ts` exists (verified via glob). The contract module has proper Zod schemas (`schema-kernel/agent-work-contract.schema.ts`, 148 LOC), atomic writes with temp-file-rename pattern (`store.ts:49-51`), quarantine-on-corrupt (`store.ts:98-100`), deep-clone-on-read (`store.ts:108-146`), pressure-gated creation (`operations.ts:27-38`), bounded compaction fields (`operations.ts:93-101`), and markdown export (`operations.ts:121-152`). The tool is registered in `src/plugin.ts` (via `hivemind-agent-work.ts`, 152 LOC). LOC counts: schema 148, store 146, operations 162, types 89, index 3 = **400 LOC total**. Plus tool wrapper: 152 LOC.
+**What we assume:** When `task` or `delegate-task` fires, session-tracker automatically creates a trajectory record via `createDelegationTrajectoryAndContract()` at `tool-delegation.ts:384-470`.
 
-**If wrong:** If contract tests are missing or broken, P25 needs test remediation first.
+**Why this way:** P25.1 SUMMARY confirms: "Trajectory records automatically created when `task` or `delegate-task` tool fires delegation." This uses the `tool.execute.after` hook — the harness observes the delegation and creates the record.
 
-**Confidence:** Confendent — tests exist, code follows established patterns (quarantine, atomic writes, deep-clone).
+**What we DON'T know:** Whether agents should ALSO be able to create trajectory records manually (e.g., for non-delegation work). Currently the `hivemind-trajectory` tool exists for manual operations.
 
-### B3. The continuity module (467 LOC) does NOT reference trajectory.
+**If wrong:** If only automatic creation is needed, the manual `hivemind-trajectory` tool may be unnecessary. If both are needed, the tool provides richer data (checkpoints, events, evidence refs) while hooks provide baseline lifecycle tracking.
 
-**Assumption:** Continuity and trajectory are currently disconnected. There is no import of trajectory in continuity, and no `trajectoryId` field in the continuity store schema.
+**Confidence:** Confident — P25.1 implementation proves the automatic pattern works.
 
-**Evidence:** Grep for "trajectory" in `src/task-management/continuity/*.ts` returned zero matches. The continuity store schema (`ContinuityStoreFile` type) has sessions, governance, but no trajectory field. Continuity tracks: delegationMeta, lifecycle, pendingNotifications, resultCapture, compactionCheckpoint, delegationPacket — but not trajectory.
+### A3: Trajectory↔session-tracker integration is via dynamic import, not direct dependency
 
-**If wrong:** If continuity already references trajectory, the integration seam is different than assumed.
+**What we assume:** `tool-delegation.ts` uses `await import("../../task-management/trajectory/index.js")` to avoid circular dependencies. This is a deliberate architectural choice.
 
-**Confidence:** Confident — grep confirms zero references.
+**Why this way:** P25.1 SUMMARY: "Dynamic `await import()` for trajectory/contract modules to avoid circular dependency concerns."
 
-### B4. The lifecycle module (242 LOC) does NOT reference trajectory.
+**What we DON'T know:** Whether this pattern is sustainable at scale. Dynamic imports add latency and bypass static analysis.
 
-**Assumption:** Lifecycle manages session state machines independently of trajectory.
+**If wrong:** If circular deps can be resolved differently (e.g., extracting a shared interface), the dynamic import could be replaced with a static import.
 
-**Evidence:** Lifecycle imports from continuity, completion, notification-handler, delegation-manager, session-api, and state — but not trajectory. The `HarnessLifecycleManager` class manages phase transitions, completion detection, notification replay, and delegation launch — all without trajectory awareness.
-
-**If wrong:** If lifecycle already wires to trajectory, the "redesign" is less about bridging and more about extending.
-
-**Confidence:** Confident — code inspection confirms no trajectory imports.
-
-### B5. There are 8 files >500 LOC in the codebase (per ROADMAP L10), but none in the trajectory/agent-work-contract scope.
-
-**Assumption:** The trajectory and agent-work-contract modules are well under the 500 LOC max module size rule.
-
-**Evidence:** Trajectory: 128+93+190+3 = 414 LOC (4 files). Agent-work-contracts: 148+146+162+89+3 = 548 LOC (5 files, but split across schema/store/operations/types/index). No single file exceeds 200 LOC except continuity/index.ts (467 LOC) which is in a different module.
-
-**If wrong:** If a file is near 500 LOC and needs expansion during redesign, it may need splitting.
-
-**Confidence:** Confident — LOC counts verified.
+**Confidence:** Confident — code at `tool-delegation.ts:397-399` shows the dynamic import pattern.
 
 ---
 
-## Dependency Assumptions
+## 2. Contract Assumptions
 
-### C1. P24 (Coordination Dispatch) is COMPLETE and provides stable delegation infrastructure.
+### B1: Contracts are active governance, not passive records
 
-**Assumption:** P24 delivered working delegation dispatch, completion detection, and concurrency management that P25 can build on.
+**What we assume:** Agent-work-contracts enforce boundaries through the lifecycle state machine (`lifecycle.ts:19-25`). Transitions are validated: `created→running→blocked→completed→cancelled`. Invalid transitions throw errors.
 
-**Evidence:** ROADMAP L83 marks P24 as COMPLETE with "all 9 sub-phases 24.1-24.9 delivered." The coordination module exists at `src/coordination/` with delegation manager, completion detector, and notification handler. P25 depends on stable delegation to wire trajectory evidence from delegated sessions.
+**Why this way:** `lifecycle.ts:99-114` implements `transitionContract()` which validates against `ALLOWED_TRANSITIONS` matrix. This is active governance — the contract enforces valid state transitions.
 
-**If wrong:** If P24 has unresolved issues (the "P23.4 GAP-02 D→A Integration Gate" is still pending per ROADMAP L84), P25 may hit integration problems.
+**What we DON'T know:** Whether contracts should ALSO enforce tool restrictions (e.g., "this agent can only call these tools"). Currently `scope.allowedSurfaces` exists but is empty in auto-created contracts.
 
-**Confidence:** Likely — P24 code exists, but the integration gate P23.4 is not yet verified.
+**If wrong:** If contracts should enforce tool restrictions, the `tool.execute.before` hook would need to check contract state before allowing tool calls. This would be a significant addition.
 
-### C2. CP-ST-05 (Session-Tracker) is COMPLETE and provides session lifecycle tracking.
+**Confidence:** Confident — lifecycle state machine is implemented and tested (15 tests).
 
-**Assumption:** The session-tracker module (35 files, verified via glob) is stable and provides the session data that trajectory needs to reference.
+### B2: Contracts auto-create at delegation time with minimal data
 
-**Evidence:** ROADMAP L252 marks CP-ST-05 as COMPLETE with "3/3 waves, 12 commits — Gate 0 classification, journey recording, quarantine protocol, monolith refactor (982→807 LOC), 362/364 tests." The session-tracker captures session lifecycle, messages, tool calls, and delegation hierarchies into `.hivemind/session-tracker/` artifacts. Trajectory could reference session-tracker data as evidence.
+**What we assume:** P25.1 creates contracts with `L4_IMPLEMENTATION_TRACE` as minimum evidence level, empty `allowedSurfaces`, `dependencies`, `nonGoals`, and minimal `compaction` data. The agent is expected to enrich the contract later.
 
-**If wrong:** If session-tracker has unresolved data loss issues, trajectory evidence references may point to unreliable data.
+**Why this way:** `tool-delegation.ts:431-459` shows the auto-created contract with placeholder data. P25.1 SUMMARY: "L4_IMPLEMENTATION_TRACE as minimum evidence level for auto-created contracts."
 
-**Confidence:** Likely — 362/364 tests pass (2 failures), but the session-tracker module is large (807 LOC in the main file) and complex.
+**What we DON'T know:** Whether agents actually enrich contracts after creation. No mechanism forces or encourages this.
 
-### C3. The runtime-pressure module is stable and wired correctly.
+**If wrong:** If contracts remain at minimal data, they're essentially delegation metadata — not the rich governance documents the schema was designed for.
 
-**Assumption:** Pressure detection works and agent-work-contract creation correctly gates on pressure decisions.
+**Confidence:** Confident — code shows the minimal creation pattern.
 
-**Evidence:** `src/features/runtime-pressure/` exists with 5 files. `operations.ts:27-38` calls `detectRuntimePressure` and checks `outcome === "block"` or `outcome === "require_approval"`. The authority-matrix.ts (252 LOC) documents which tools write to trajectory.
+### B3: Contracts are pressure-aware at creation time
 
-**If wrong:** If pressure detection has bugs, contract creation may bypass gates.
+**What we assume:** `createAgentWorkContract()` in `operations.ts:22-63` calls `detectRuntimePressure()` and blocks creation if pressure is high. This is the only pressure integration point.
 
-**Confidence:** Likely — code follows established patterns, but no dedicated pressure tests were found in the trajectory/contract test files.
+**Why this way:** Code at `operations.ts:23-34` shows the pressure check before contract creation. If pressure blocks, no contract is created and no trajectory evidence is recorded.
 
----
+**What we DON'T know:** Whether pressure should also affect contract lifecycle transitions (e.g., blocking `startContract()` when pressure is high).
 
-## Implementation Order Assumptions
+**If wrong:** If pressure should gate lifecycle transitions, `lifecycle.ts` would need to import and call `detectRuntimePressure()`.
 
-### D1. Trajectory redesign should be done BEFORE P26 (Pressure + Notification).
-
-**Assumption:** P25 is correctly sequenced before P26 because P26 needs the redesigned trajectory to attach pressure evidence.
-
-**Evidence:** ROADMAP L99 shows P25 → P26 dependency. The pressure tool (`hivemind-pressure.ts:80`) already calls `eventTrajectory` to attach pressure evidence. If trajectory changes its API, P26 must adapt.
-
-**If wrong:** If P26 doesn't actually need trajectory changes, P25 could be deferred.
-
-**Confidence:** Confident — the dependency is explicit in the roadmap and the code shows pressure→trajectory wiring.
-
-### D2. The redesign should start with schema/type changes, then operations, then tool wiring.
-
-**Assumption:** The implementation should follow bottom-up: types first (what data), then operations (how to mutate), then tool (how agents interact).
-
-**Why this way:** The existing code follows this pattern: `schema-kernel/agent-work-contract.schema.ts` → `features/agent-work-contracts/store.ts` → `features/agent-work-contracts/operations.ts` → `tools/hivemind/hivemind-agent-work.ts`. Following the same pattern reduces risk.
-
-**If wrong:** If the redesign requires top-down changes (e.g., new tool surface first), the order reverses.
-
-**Confidence:** Likely — the existing pattern is consistent across trajectory, contracts, and pressure modules.
-
-### D3. Tests should be written/updated before or alongside code changes.
-
-**Assumption:** TDD approach — update tests first or in parallel with code changes.
-
-**Why this way:** AGENTS.md mandates "PRACTICE EXTREMELY STRICT TEST-DRIVEN DEVELOPMENTS." Existing tests (`hivemind-trajectory.test.ts`, `hivemind-agent-work.test.ts`) provide regression baselines.
-
-**If wrong:** If this is a pure refactor with no behavior change, tests may not need updates.
-
-**Confidence:** Confident — project governance requires TDD.
+**Confidence:** Confident — code shows pressure check at creation only.
 
 ---
 
-## Risk Assumptions
+## 3. Orchestrator Assumptions
 
-### E1. The trajectory↔continuity bridge is the highest-risk integration point.
+### C1: The "orchestrator" is an L0 agent defined in `.opencode/agents/hm-l0-orchestrator.md`
 
-**Assumption:** Connecting trajectory to the continuity store (467 LOC) is risky because continuity is a central persistence layer with deep clone-on-read patterns and legacy file path resolution.
+**What we assume:** The orchestrator is a markdown-defined agent with YAML frontmatter specifying permissions, skills, delegation routing, and behavioral contracts. It's NOT plugin logic or hook handlers.
 
-**Why this way:** Continuity is imported by lifecycle, delegation, session-tracker, and multiple tools. Any change to its schema or API ripples across the codebase. The trajectory module currently writes to its own ledger file (`trajectory-ledger.json`), separate from continuity (`session-continuity.json`). Merging or bridging these requires careful version migration.
+**Why this way:** `.opencode/agents/hm-l0-orchestrator.md` (806 lines) defines the L0 orchestrator with full agent definition including delegation routing, landscape protocol, artifact contract, iron laws, etc.
 
-**If wrong:** If the redesign keeps trajectory as a separate ledger (doesn't merge with continuity), the risk drops significantly.
+**What we DON'T know:** Whether the orchestrator should ALSO be implemented as programmatic logic in `src/` (not just agent instructions). The ROADMAP Reflection 2 says: "The L0 orchestrator's coordination logic must use programmatic tools, not agent instruction bloat."
 
-**Confidence:** Likely — the architectural boundary is clear but the integration is complex.
+**If wrong:** If the orchestrator is only agent instructions, it relies on the LLM following complex instructions. If it's programmatic, it would be a new module in `src/`.
 
-### E2. Schema version migration is a risk if trajectory ledger format changes.
+**Confidence:** Confident — the agent definition exists and is comprehensive.
 
-**Assumption:** If `TrajectoryLedger` version bumps from 1 to 2, existing `.hivemind/state/trajectory-ledger.json` files need migration.
+### C2: The orchestrator CANNOT force agents to call specific tools
 
-**Why this way:** `TRAJECTORY_LEDGER_VERSION = 1` (types.ts:4). The ledger reader checks version match (ledger.ts:82). A version bump without migration would quarantine existing ledgers as corrupt.
+**What we assume:** The orchestrator can only instruct agents (via system prompt injection) and observe their behavior (via hooks). It cannot block tool calls or force tool calls.
 
-**If wrong:** If the redesign keeps version 1 and extends the schema additively, no migration needed.
+**Why this way:** Deep architecture research §3: "The harness cannot programmatically control agent behavior." The `tool.execute.before` hook can inspect/modify args but cannot force a different tool to be called.
 
-**Confidence:** Likely — the version gate is strict (exact match, not >=).
+**What we DON'T know:** Whether the `permission.ask` hook could be used to deny permission for certain actions unless trajectory/contract tools are called first. This would be an indirect enforcement mechanism.
 
-### E3. The agent-work-contract store has a separate file (`agent-work-contracts.json`) from trajectory (`trajectory-ledger.json`).
+**If wrong:** If permission gating is possible, the orchestrator could require trajectory/contract calls before allowing other tool calls.
 
-**Assumption:** These are separate state files today. The redesign may merge them or keep them separate.
-
-**Why this way:** `getAgentWorkContractsFilePath` (store.ts:16-18) resolves to `.hivemind/state/agent-work-contracts.json`. `getTrajectoryLedgerPath` (ledger.ts:19-22) resolves to `.hivemind/state/trajectory-ledger.json`. Two separate JSON files in the same directory. Merging them would simplify the state model but requires migration.
-
-**If wrong:** If they should remain separate, the "redesign" is about improving the integration API, not the storage model.
-
-**Confidence:** Unclear — the ROADMAP doesn't specify whether the redesign merges state files.
-
-### E4. The lifecycle state machine may need new states to support trajectory integration.
-
-**Assumption:** The current lifecycle phases (`created|queued|dispatching|running|completed|failed`) may need extension to support trajectory-specific states like `evidence-pending` or `contract-active`.
-
-**Why this way:** Trajectory tracks `active|closed`. Lifecycle tracks `created|queued|dispatching|running|completed|failed`. These don't align. If trajectory needs to participate in lifecycle transitions, new phases may be needed.
-
-**If wrong:** If trajectory remains a parallel tracking system (not lifecycle-integrated), no new states needed.
-
-**Confidence:** Unclear — the design intent is not specified in available docs.
+**Confidence:** Confident — the hook model is observation-first.
 
 ---
 
-## Unknowns
+## 4. Hook/Event Assumptions
 
-### U1. What specific problems does the trajectory redesign solve?
+### D1: The `event` hook receives ALL OpenCode runtime events
 
-**Status:** The ROADMAP entry is one line: "Trajectory + Agent-Work-Contract redesign." No SPEC.md, no CONTEXT.md, no requirements exist for P25 yet.
+**What we assume:** The `event` hook in the Plugin return object receives events including `session.created`, `session.idle`, `session.error`, `session.deleted`, `session.updated`, `message.updated`, `message.part.updated`.
 
-**Impact:** Without knowing the problems (e.g., "trajectory is disconnected from session lifecycle", "evidence references are unreliable", "contracts don't propagate compaction state"), the planning phase cannot produce a correct spec.
+**Why this way:** Deep architecture research §1: "PRIMARY EVENT BUS. Receives ALL OpenCode events." Plugin SDK type at `index.d.ts:174-176` shows `event?: (input: { event: Event }) => Promise<void>`.
 
-**Action needed:** Run `gsd-spec-phase` or `gsd-discuss-phase` to clarify requirements before planning.
+**What we DON'T know:** The exact shape of the `Event` type — it's imported from `@opencode-ai/sdk` but not fully typed in the plugin SDK. The codebase uses `getNestedValue` and `asString` helpers to extract fields defensively.
 
-### U2. Is the trajectory↔agent-work-contract integration the core problem, or is there a broader redesign scope?
+**If wrong:** If certain events are not delivered to the `event` hook, session-tracker would miss lifecycle transitions.
 
-**Status:** The code shows a thin integration: `createAgentWorkContract` calls `attachTrajectoryEvidence` (operations.ts:58). Is this seam insufficient? Does it need bidirectional linking? Does trajectory need to query contract state?
+**Confidence:** Confident — session-tracker already uses this hook extensively.
 
-**Impact:** If the integration is the core problem, scope is narrow (maybe 2-3 plans). If there's a broader vision (e.g., trajectory as the single source of truth for all session/delegation/evidence state), scope is much larger.
+### D2: `tool.execute.before` can inspect and modify tool args
 
-**Action needed:** Clarify whether the redesign is targeted (fix the integration seam) or architectural (unify state models).
+**What we assume:** The `tool.execute.before` hook receives `{ tool, sessionID, callID }` as input and `{ args: any }` as output. The output's `args` can be modified before the tool executes.
 
-### U3. How does the session-tracker's journey recording relate to trajectory?
+**Why this way:** Plugin SDK type at `index.d.ts:234-240` shows the hook signature. Hivemind uses this for circuit breaker and budget guard.
 
-**Status:** Session-tracker records journeys into `.hivemind/session-tracker/`. Trajectory records evidence/checkpoints into `.hivemind/state/trajectory-ledger.json`. Are these complementary? Overlapping? Should one replace the other?
+**What we DON'T know:** Whether modifying `args` in `tool.execute.before` actually changes what the tool receives. The SDK documentation doesn't explicitly confirm this.
 
-**Impact:** If they're complementary (session-tracker = raw data, trajectory = structured evidence), the redesign is about wiring them. If overlapping, one may need to be deprecated.
+**If wrong:** If args modification doesn't propagate, the guard pattern would only work for blocking (by throwing), not for modifying.
 
-**Action needed:** Map the data flow: session-tracker captures → ??? → trajectory references.
+**Confidence:** Likely — the pattern is used in production but not explicitly documented.
 
-### U4. What is the relationship between trajectory and the delegation persistence (`delegations.json`)?
+### D3: `experimental.chat.system.transform` injects into the system prompt
 
-**Status:** `src/task-management/continuity/delegation-persistence.ts` manages delegation records. Trajectory currently tracks root-session-lineage. Delegations track parent-child session relationships. These may overlap.
+**What we assume:** This hook receives `{ sessionID?, model }` as input and `{ system: string[] }` as output. The output's `system` array is appended to the system prompt.
 
-**Impact:** If trajectory should subsume delegation tracking, scope expands. If they remain separate, the redesign is limited to trajectory's own model.
+**Why this way:** Plugin SDK type at `index.d.ts:264-269`. Hivemind uses this for behavioral profile injection.
 
-**Action needed:** Clarify whether trajectory replaces, extends, or complements delegation persistence.
+**What we DON'T know:** Whether the injected strings are APPENDED to the system prompt or REPLACE it. The hook name says "transform" which could mean either.
 
-### U5. What evidence exists that the current trajectory module is inadequate?
+**If wrong:** If injected strings replace the system prompt, the behavioral profile injection would break the agent's base instructions.
 
-**Status:** No known bugs, no failing tests, no user complaints documented. The module is small (414 LOC), clean, and follows established patterns.
+**Confidence:** Likely — the name "transform" suggests modification, not replacement.
 
-**Impact:** If the current module works fine, the "redesign" may be about adding capabilities (e.g., lifecycle integration, session-tracker bridging) rather than fixing problems. This changes the planning approach from "fix broken things" to "add new features."
+### D4: We CANNOT create custom hooks
 
-**Action needed:** Identify concrete gaps or failures that motivate the redesign.
+**What we assume:** The Plugin SDK only supports the hooks defined in the `Hooks` interface. We cannot register custom hook points.
+
+**Why this way:** The `Hooks` interface at `index.d.ts:173-316` is a fixed set of properties. There's no `registerHook()` or `addHook()` method.
+
+**What we DON'T know:** Whether the SDK has extension points not visible in the type definitions.
+
+**If wrong:** If custom hooks are possible, we could create trajectory/contract-specific hook points.
+
+**Confidence:** Confident — the SDK interface is fixed.
 
 ---
 
-## Summary of Assumption Confidence
+## 5. Agent Hierarchy Assumptions
 
-| Category | Confident | Likely | Unclear |
-|----------|-----------|--------|---------|
-| Scope (A) | 0 | 3 | 0 |
-| Code state (B) | 4 | 0 | 0 |
-| Dependencies (C) | 0 | 3 | 0 |
-| Implementation order (D) | 1 | 2 | 0 |
-| Risks (E) | 0 | 2 | 2 |
-| Unknowns (U) | — | — | 5 |
+### E1: There are 76 agent definitions in `.opencode/agents/`
 
-**Key finding:** Code state is well-understood (all Confident). Scope and risks have reasonable assumptions (Likely). But 5 Unknowns need resolution before planning can begin. The ROADMAP entry is too terse — a spec phase is required before any implementation planning.
+**What we assume:** The directory listing shows 76 `.md` files in `.opencode/agents/`.
+
+**Why this way:** Glob of `.opencode/agents/*.md` returns 76 files.
+
+**What we DON'T know:** How many are actually loaded by OpenCode at runtime. Some may be inactive or filtered by config.
+
+**If wrong:** If fewer agents are loaded, the hierarchy may be simpler than assumed.
+
+**Confidence:** Confident — file count verified.
+
+### E2: Agents have 4 hierarchy levels (L0/L1/L2/L3)
+
+**What we assume:** L0 = orchestrator (front-facing strategist), L1 = coordinator (wave dispatch), L2 = domain specialists, L3 = deep specialists/quality gates.
+
+**Why this way:** Deep architecture research §6: "Hierarchy Levels" table shows L0/L1/L2/L3 with specific agent names per level.
+
+**What we DON'T know:** Whether L1 actually exists in practice. The ROADMAP says "Remove L1, restructure L2/L3 by domain" (P24.1). L1 may be removed.
+
+**If wrong:** If L1 is removed, the hierarchy becomes L0→L2/L3 (flat dispatch). This changes coordination patterns.
+
+**Confidence:** Likely — P24.1 is listed as "PENDING" so L1 still exists.
+
+### E3: Agent tool access is controlled by YAML frontmatter `permission` field
+
+**What we assume:** Each agent's `.md` file has a `permission` field in YAML frontmatter that specifies which tools the agent can call (allow/deny/ask).
+
+**Why this way:** `hm-l0-orchestrator.md` shows `permission: { read: deny, edit: deny, task: { "*": ask, hm-l1-*: allow } }` etc.
+
+**What we DON'T know:** Whether OpenCode actually enforces these permissions at runtime, or if they're just documentation.
+
+**If wrong:** If permissions are not enforced, agents could call any tool regardless of their frontmatter.
+
+**Confidence:** Likely — OpenCode's permission system is referenced in the SDK.
+
+---
+
+## 6. Runtime Assumptions
+
+### F1: OpenCode executes agents in child sessions via the `task` tool
+
+**What we assume:** When an agent calls `task(description, subagent_type, prompt)`, OpenCode creates a new child session with the specified agent type and sends the prompt. The parent session continues.
+
+**Why this way:** Deep architecture research §3: "The native `task` tool is OpenCode's built-in subagent dispatch mechanism."
+
+**What we DON'T know:** Whether the child session shares the parent's context window or has its own. The research says it "creates a child session" which implies separate context.
+
+**If wrong:** If context is shared, the child session would have access to parent conversation history.
+
+**Confidence:** Confident — the research confirms child session creation.
+
+### F2: Session state persists in `.hivemind/state/session-continuity.json`
+
+**What we assume:** The continuity store at `src/task-management/continuity/index.ts` persists to `.hivemind/state/session-continuity.json` with atomic writes (temp file + rename).
+
+**Why this way:** Code at `continuity/index.ts:303-325` shows the atomic write pattern. The canonical path is `.hivemind/state/` per Q6.
+
+**What we DON'T know:** Whether this file is also read/written by OpenCode itself, or only by the Hivemind plugin.
+
+**If wrong:** If OpenCode also writes to this file, there could be race conditions.
+
+**Confidence:** Confident — the code shows the full read/write cycle.
+
+### F3: Delegation lifecycle is tracked by `DelegationManager` → `DelegationCoordinator`
+
+**What we assume:** When `task` or `delegate-task` fires, the `DelegationManager` tracks the delegation through states: `dispatched → running → completed/error/timeout`. The `DelegationCoordinator` handles the actual dispatch and completion detection.
+
+**Why this way:** Deep architecture research §3: "Delegation Lifecycle States" and code at `src/coordination/delegation/`.
+
+**What we DON'T know:** Whether the delegation lifecycle is the SAME as the trajectory lifecycle. Currently they're separate: delegation has 5 states, trajectory has 2 (active/closed).
+
+**If wrong:** If they should be unified, the trajectory would need more states to match delegation.
+
+**Confidence:** Confident — both systems exist and are separate.
+
+### F4: The CQRS boundary is: hooks = read-side, tools = write-side
+
+**What we assume:** Hooks (`event`, `tool.execute.before/after`, `chat.message`) are observation-only (read-side). Tools (`hivemind-trajectory`, `hivemind-agent-work-create`) are mutation (write-side).
+
+**Why this way:** AGENTS.md: "CQRS compliance: hooks must NEVER write files directly (REQ-ST-11)." Session-tracker is described as "Read-side observer (hooks) → SessionTracker → persistence layer."
+
+**What we DON'T know:** Whether the P25.1 integration violates this by having hooks call trajectory/contract write functions. `tool-delegation.ts:397-469` calls `attachTrajectoryEvidence()` and `createAgentWorkContract()` from within a hook handler.
+
+**If wrong:** If CQRS is strictly enforced, the P25.1 approach would be a violation. The trajectory/contract writes should go through a separate write path.
+
+**Confidence:** Unclear — the P25.1 implementation does write from hooks, which may violate the CQRS principle.
+
+---
+
+## 7. Unknowns (Need User Input)
+
+### U1: Should trajectory track phase-level progress or only delegation-level?
+
+**Status:** Currently delegation-scoped only. No phase/workflow tracking.
+
+**Impact:** If phase-level tracking is needed, trajectory needs a new record type or aggregation layer.
+
+**Action needed:** Clarify whether trajectory should answer "How is Phase 25 progressing?" or only "What evidence exists for this delegation?"
+
+### U2: Should contracts enforce tool restrictions?
+
+**Status:** `scope.allowedSurfaces` exists but is empty in auto-created contracts. No enforcement mechanism.
+
+**Impact:** If yes, `tool.execute.before` would need to check contract state. Significant addition.
+
+**Action needed:** Clarify whether contracts are governance documents (for humans) or enforcement mechanisms (for runtime).
+
+### U3: Should pressure gate lifecycle transitions, not just creation?
+
+**Status:** Pressure only gates contract creation (`operations.ts:23-34`). Lifecycle transitions (`lifecycle.ts`) have no pressure check.
+
+**Impact:** If yes, `lifecycle.ts` would need to import `detectRuntimePressure()`.
+
+**Action needed:** Clarify whether pressure should block `startContract()`, `completeContract()`, etc.
+
+### U4: Does the P25.1 hook-based write pattern violate CQRS?
+
+**Status:** `tool-delegation.ts` calls `attachTrajectoryEvidence()` and `createAgentWorkContract()` from within hook handlers. This writes to `.hivemind/state/` from the read-side.
+
+**Impact:** If CQRS is strictly enforced, this needs to be refactored to use a write queue or separate write path.
+
+**Action needed:** Clarify whether the CQRS boundary is a hard rule or a guideline.
+
+### U5: Should agents be able to manually create trajectory records?
+
+**Status:** The `hivemind-trajectory` tool exists for manual operations. P25.1 adds automatic creation. Both can coexist.
+
+**Impact:** If manual creation is unnecessary, the tool could be simplified or removed.
+
+**Action needed:** Clarify whether the manual tool is still needed given automatic creation.
+
+### U6: What is the relationship between trajectory and the delegation persistence (`delegations.json`)?
+
+**Status:** `src/task-management/continuity/delegation-persistence.ts` manages delegation records. Trajectory tracks evidence. They're separate.
+
+**Impact:** If they should be merged, the state model simplifies. If separate, they need clear boundaries.
+
+**Action needed:** Map the data overlap: what's in trajectory that's also in delegation persistence?
+
+---
+
+## 8. Known Facts (Code-Verified)
+
+| Fact | Evidence | Confidence |
+|------|----------|------------|
+| Trajectory stores at `.hivemind/state/trajectory-ledger.json` | `ledger.ts:19-22` | Confident |
+| Contracts store at `.hivemind/state/agent-work-contracts.json` | `store.ts:16-18` | Confident |
+| Trajectory has 2 statuses: `active`, `closed` | `types.ts:9` | Confident |
+| Contracts have 5 statuses: `created`, `running`, `blocked`, `completed`, `cancelled` | `lifecycle.ts:19-25` | Confident |
+| P25.1 creates trajectories at delegation time via `tool-delegation.ts:384-470` | Code verified | Confident |
+| P25.1 creates contracts at delegation time via `tool-delegation.ts:426-469` | Code verified | Confident |
+| Dynamic imports used to avoid circular deps | `tool-delegation.ts:397-399` | Confident |
+| Pressure gates contract creation only, not lifecycle | `operations.ts:23-34` | Confident |
+| `findContractsByTrajectory()` exists for cross-linking | `operations.ts:168-170` | Confident |
+| Bounds constants in `bounds.ts`: 1200/1200/2400/20 | `bounds.ts:12-21` | Confident |
+| 34 trajectory tests + 20 contract tests exist | `25-SUMMARY.md` | Confident |
+| Session-tracker uses `event`, `chat.message`, `tool.execute.before/after` hooks | `plugin.ts:520-612` | Confident |
+| OpenCode SDK exposes 15+ hooks | `index.d.ts:173-316` | Confident |
+| Tools registered via `tool()` factory with Zod schemas | `tool.d.ts:47-55` | Confident |
+| `experimental.chat.system.transform` injects into system prompt | `index.d.ts:264-269` | Confident |
+| 76 agent definitions in `.opencode/agents/` | Directory listing | Confident |
+| L0 orchestrator defined at `.opencode/agents/hm-l0-orchestrator.md` (806 lines) | File verified | Confident |
+
+---
+
+## 9. Hallucination Risk Areas
+
+### H1: "The orchestrator can force agents to call trajectory tools"
+
+**Risk:** HIGH. The research clearly states the harness can only OBSERVE and INJECT, not CONTROL. The orchestrator (an agent) cannot force other agents to call specific tools.
+
+**Mitigation:** P25.1's automatic creation via hooks is the correct approach — it doesn't rely on agent compliance.
+
+### H2: "Contracts enforce tool restrictions at runtime"
+
+**Risk:** MEDIUM. The schema has `scope.allowedSurfaces` but no enforcement mechanism exists. Auto-created contracts have empty `allowedSurfaces`.
+
+**Mitigation:** Don't assume enforcement exists. If needed, it must be built.
+
+### H3: "Trajectory and delegation lifecycle are unified"
+
+**Risk:** MEDIUM. They're separate systems with different status models. Delegation has 5 states, trajectory has 2.
+
+**Mitigation:** Don't assume unification. If needed, it must be designed.
+
+### H4: "The CQRS boundary is strictly enforced"
+
+**Risk:** MEDIUM. P25.1 writes to trajectory/contracts from hook handlers, which may violate CQRS. The AGENTS.md says "hooks must NEVER write files directly" but the implementation does.
+
+**Mitigation:** Clarify whether this is acceptable or needs refactoring.
+
+### H5: "Agents will enrich auto-created contracts with rich data"
+
+**Risk:** LOW-MEDIUM. Auto-created contracts have minimal data. No mechanism encourages enrichment.
+
+**Mitigation:** If enrichment is needed, system prompt injection should instruct agents to call `hivemind-agent-work-create` with full data.
+
+### H6: "The `event` hook receives all events reliably"
+
+**Risk:** LOW. Session-tracker already depends on this and has 362/364 tests passing.
+
+**Mitigation:** The pattern is proven in production.
+
+---
+
+## Summary
+
+| Category | Confident | Likely | Unclear | Unknown |
+|----------|-----------|--------|---------|---------|
+| Trajectory (A) | 3 | 0 | 0 | 0 |
+| Contracts (B) | 2 | 1 | 0 | 0 |
+| Orchestrator (C) | 1 | 1 | 0 | 0 |
+| Hooks/Events (D) | 2 | 2 | 0 | 0 |
+| Agent Hierarchy (E) | 1 | 2 | 0 | 0 |
+| Runtime (F) | 3 | 0 | 1 | 0 |
+| Unknowns (U) | — | — | — | 6 |
+| Hallucination Risk (H) | — | — | — | 6 |
+
+**Key finding:** The codebase is well-understood (13 Confident, 6 Likely). The main unknowns are design decisions (U1-U6) that need user input, not code gaps. The hallucination risks are manageable with the P25.1 automatic creation pattern.
+
+**Critical insight:** The deep architecture research confirms that P25.1's hook-based automatic creation is the correct approach. The harness cannot force agents to call tools, but it CAN automatically create records when delegations happen via hooks. This is the foundation for trajectory and contract integration.
+
+---
+
+*Analysis date: 2026-05-29*
+*Analyzer: gsd-assumptions-analyzer*
+*Source: deep-architecture-research-2026-05-29.md + codebase inspection*

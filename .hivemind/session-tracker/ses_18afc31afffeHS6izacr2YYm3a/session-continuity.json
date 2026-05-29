@@ -1,0 +1,24 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_18afc31afffeHS6izacr2YYm3a",
+  "lastUpdated": "2026-05-29T18:39:57.004Z",
+  "hierarchy": {
+    "root": "ses_18afc31afffeHS6izacr2YYm3a",
+    "children": {
+      "ses_18afa4b7bffeGWvLpGnGPOlSRM": {
+        "file": "ses_18afa4b7bffeGWvLpGnGPOlSRM.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 59,
+  "toolSummary": {
+    "bash": 6,
+    "read": 1,
+    "execute-slash-command": 1,
+    "task": 3
+  }
+}
