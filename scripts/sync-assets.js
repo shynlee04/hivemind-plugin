@@ -133,35 +133,9 @@ try {
       continue; // Skip the build-mode cleanup below
     }
 
-    // ── BUILD MODE: Destructive cleanup + re-copy ───────────────────────
-    if (existsSync(targetDir)) {
-      for (const entry of readdirSync(targetDir)) {
-        if (isMetaEntry(entry)) continue;
-
-        const targetPath = join(targetDir, entry);
-        backupFile(targetPath);
-        console.log(
-          `${logPrefix} Backed up ${targetPath} → .backup/${entry}`,
-        );
-
-        // Conflict detection: warn if source exists and content differs
-        const sourcePath = join(assetsRoot, kind, entry);
-        if (existsSync(sourcePath)) {
-          try {
-            const existingContent = readFileSync(targetPath, "utf-8");
-            const sourceContent = readFileSync(sourcePath, "utf-8");
-            if (existingContent !== sourceContent) {
-              console.log(
-                `${logPrefix} ⚠ Conflict detected: ${kind}/${entry} differs from assets/ version. Backup saved to .backup/${entry}`,
-              );
-            }
-          } catch {
-            // Binary or unreadable files: skip diff check silently
-          }
-        }
-      }
-      rmSync(targetDir, { recursive: true, force: true });
-    }
+    // ── BUILD MODE: Non-destructive source-only sync ─────────────────────
+    // Only touches files that have a corresponding source in assets/.
+    // User-created primitives (files NOT in assets/) are left completely alone.
     mkdirSync(targetDir, { recursive: true });
 
     for (const entry of readdirSync(sourceDir)) {
@@ -171,10 +145,28 @@ try {
       const srcPath = join(sourceDir, entry);
       const destPath = join(targetDir, entry);
 
+      if (existsSync(destPath)) {
+        try {
+          const existingContent = readFileSync(destPath, "utf-8");
+          const sourceContent = readFileSync(srcPath, "utf-8");
+          if (existingContent === sourceContent) {
+            continue; // Identical — skip (no-op)
+          }
+          // Content differs — backup user/modified version, then overwrite
+          backupFile(destPath);
+          console.log(
+            `${logPrefix} ⚠ ${kind}/${entry} differs from assets/ — backed up to .backup/${entry}, overwriting with assets/ version`,
+          );
+        } catch {
+          // Binary or unreadable — skip diff check
+          continue;
+        }
+      }
+
       cpSync(srcPath, destPath, { recursive: true });
     }
     console.log(
-      `${logPrefix} Reflected ${kind} from assets/${kind} to ${targetDir}`,
+      `${logPrefix} Reflected ${kind} from assets/${kind} to ${targetDir} (non-destructive)`,
     );
   }
 
