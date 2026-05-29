@@ -1,6 +1,5 @@
-import { existsSync, mkdirSync, readdirSync, rmSync, cpSync, renameSync, readFileSync, writeFileSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { execSync } from "node:child_process";
+import { existsSync, mkdirSync, readdirSync, rmSync, cpSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 // ── Mode detection ──────────────────────────────────────────────────────────
 const installMode = process.argv.slice(2).includes("--mode=install");
@@ -54,13 +53,7 @@ const PRIMITIVE_MAP = {
   templates: join(stage.consumerRoot, ".opencode", "templates"),
 };
 
-// Singular/plural mirror pairs for dual-directory compatibility per AGENTS.md §4
-const SINGULAR_PLURAL_PAIRS = [
-  { plural: "commands", singular: "command" },
-  { plural: "agents", singular: "agent" },
-  { plural: "skills", singular: "skill" },
-  { plural: "workflows", singular: "workflow" },
-];
+
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -92,8 +85,6 @@ console.log(
   `${logPrefix} Reflecting primitives from assets/ to runtime locations...`,
 );
 
-const syncedKinds = new Set();
-
 try {
   for (const [kind, targetDir] of Object.entries(PRIMITIVE_MAP)) {
     const sourceDir = join(assetsRoot, kind);
@@ -104,8 +95,6 @@ try {
       );
       continue;
     }
-
-    syncedKinds.add(kind);
 
     if (installMode) {
       // ── INSTALL MODE: Non-destructive per-file merge ──────────────────
@@ -146,13 +135,6 @@ try {
 
     // ── BUILD MODE: Destructive cleanup + re-copy ───────────────────────
     if (existsSync(targetDir)) {
-      // Preserve any existing .backup/ directory before destructive cleanup
-      const tmpBackupDir = join(stage.consumerRoot, ".opencode", ".backup", kind);
-      if (existsSync(join(targetDir, ".backup"))) {
-        mkdirSync(dirname(tmpBackupDir), { recursive: true });
-        renameSync(join(targetDir, ".backup"), tmpBackupDir);
-      }
-
       for (const entry of readdirSync(targetDir)) {
         if (isMetaEntry(entry)) continue;
 
@@ -182,12 +164,6 @@ try {
     }
     mkdirSync(targetDir, { recursive: true });
 
-    // Restore any pre-existing .backup/ directory
-    const tmpBackupDir = join(stage.consumerRoot, ".opencode", ".backup", kind);
-    if (existsSync(tmpBackupDir)) {
-      renameSync(tmpBackupDir, join(targetDir, ".backup"));
-    }
-
     for (const entry of readdirSync(sourceDir)) {
       if (entry === ".gitkeep") continue;
       if (shouldSkipGsd(entry)) continue;
@@ -202,65 +178,7 @@ try {
     );
   }
 
-  // ── Mirror plural → singular for dual-directory compatibility ──────────
-  for (const { plural: pluralKind, singular: singularName } of SINGULAR_PLURAL_PAIRS) {
-    if (!syncedKinds.has(pluralKind)) continue;
 
-    const pluralDir = PRIMITIVE_MAP[pluralKind];
-    const singularDir = join(stage.consumerRoot, ".opencode", singularName);
-
-    if (!existsSync(singularDir)) {
-      mkdirSync(singularDir, { recursive: true });
-    }
-
-    let mirrored = 0;
-    let warned = 0;
-    for (const entry of readdirSync(pluralDir)) {
-      if (isMetaEntry(entry)) continue;
-      if (shouldSkipGsd(entry)) continue;
-
-      const pluralPath = join(pluralDir, entry);
-      const singularPath = join(singularDir, entry);
-
-      if (existsSync(singularPath)) {
-        // FLAW 3: Check before mirror — compare plural vs singular
-        try {
-          const pluralContent = readFileSync(pluralPath, "utf-8");
-          const singularContent = readFileSync(singularPath, "utf-8");
-
-          if (pluralContent !== singularContent) {
-            // They differ — backup BOTH, skip mirror, log warning
-            const pluralBackup = backupFile(pluralPath);
-            const singularBackup = backupFile(singularPath);
-            warned++;
-            console.log(
-              `${logPrefix} ⚠ Conflict: ${pluralKind}/${entry} differs from ${singularName}/${entry}. Backed up both to .backup/. Skipping mirror.`,
-            );
-            continue;
-          }
-        } catch {
-          // Binary or unreadable — skip conflict check
-        }
-      }
-
-      // Mirror plural → singular
-      cpSync(pluralPath, singularPath, { recursive: true });
-      mirrored++;
-    }
-    console.log(
-      `${logPrefix} Mirrored ${mirrored} ${pluralKind} to ${singularDir} (${warned} conflicts skipped)`,
-    );
-  }
-
-  // ── FLAW 4: Remove legacy .backup files ─────────────────────────────────
-  try {
-    execSync(
-      `find "${join(stage.consumerRoot, ".opencode")}" -name "*.backup" -type f -delete 2>/dev/null`,
-      { stdio: "pipe" },
-    );
-  } catch {
-    // Non-critical: skip cleanup error
-  }
 
   // Write version stamp after successful install-mode sync
   if (installMode) {
@@ -279,9 +197,8 @@ try {
     }
   }
 
-  const syncedCount = syncedKinds.size;
   console.log(
-    `${logPrefix} Assets reflection completed. Synced ${syncedCount} primitive types.`,
+    `${logPrefix} Assets reflection completed.`,
   );
 } catch (err) {
   console.error(
