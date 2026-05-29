@@ -510,7 +510,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
 2.5. **Per-plan worktree decision (run for each plan in this wave BEFORE its dispatch):**
 
-   Read and execute `workflows/hm-execute-phase/steps/per-plan-worktree-gate.md` for each plan. It extracts `PLAN_FILES` from the plan's JSON, intersects against `SUBMODULE_PATHS` (with normalization, bidirectional matching, and glob-prefix handling), and sets `USE_WORKTREES_FOR_PLAN` to `false` when the plan touches a submodule path. Append `plan_id` to a `WAVE_WORKTREE_PLANS` accumulator when `USE_WORKTREES_FOR_PLAN != false`.
+   Read and execute `.opencode/workflows/execute-phase/steps/hm-per-plan-worktree-gate.md` for each plan. It extracts `PLAN_FILES` from the plan's JSON, intersects against `SUBMODULE_PATHS` (with normalization, bidirectional matching, and glob-prefix handling), and sets `USE_WORKTREES_FOR_PLAN` to `false` when the plan touches a submodule path. Append `plan_id` to a `WAVE_WORKTREE_PLANS` accumulator when `USE_WORKTREES_FOR_PLAN != false`.
 
    The dispatch branches in step 3 below MUST gate on `USE_WORKTREES_FOR_PLAN` for the current plan, not on the project-level `USE_WORKTREES`.
 
@@ -828,7 +828,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    harness engineering research: agents reliably report Self-Check: PASSED even when
    merging their work creates failures.
 
-   Read and execute `workflows/hm-execute-phase/steps/post-merge-gate.md`.
+   Read and execute `.opencode/workflows/execute-phase/steps/hm-post-merge-gate.md`.
 
 5.7. **Post-wave shared artifact update (when at least one plan used worktrees, skip if tests failed):**
 
@@ -1357,7 +1357,7 @@ any internal error here MUST fall through to `verify_phase_goal`. The phase
 is never failed by this gate.
 
 Load and follow the full step spec from
-`workflows/hm-execute-phase/steps/codebase-drift-gate.md` —
+`.opencode/workflows/execute-phase/steps/hm-codebase-drift-gate.md` —
 covers the SDK call, JSON contract, `warn` vs `auto-remap` branches, mapper
 spawn template, and the two `workflow.drift_*` config keys.
 </step>
