@@ -4,16 +4,27 @@ import { join, resolve } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import {
+  addTrajectoryEvent,
   attachTrajectoryEvidence,
   checkpointTrajectory,
   closeTrajectory,
+  createPhaseTrajectory,
   createTrajectoryLedger,
   eventTrajectory,
   inspectTrajectoryLedger,
+  transitionTrajectory,
   traverseTrajectory,
 } from "../../../src/task-management/trajectory/store-operations.js"
 
 import { readTrajectoryLedger, writeTrajectoryLedger } from "../../../src/task-management/trajectory/ledger.js"
+
+import {
+  EVENT_DELEGATION_STARTED,
+  EVENT_EXECUTION_COMPLETE,
+  EVENT_VERIFICATION_PASS,
+  TRAJECTORY_AUTO_TRANSITIONS,
+  TRAJECTORY_TRANSITIONS,
+} from "../../../src/task-management/trajectory/types.js"
 
 function makeRoot(): string {
   return join(tmpdir(), `trajectory-store-test-${Date.now()}-${Math.random().toString(36).slice(2)}`)
@@ -53,6 +64,128 @@ function seedClosedTrajectory(root: string, id = "traj-closed", rootSessionId = 
   }
   writeTrajectoryLedger(root, ledger)
 }
+
+describe("phase-level trajectory operations", () => {
+  let root: string
+
+  beforeEach(() => {
+    root = makeRoot()
+    mkdirSync(root, { recursive: true })
+  })
+
+  afterEach(() => {
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  it("createPhaseTrajectory creates trajectory with ID traj-phase-{N}", () => {
+    const { trajectory } = createPhaseTrajectory({
+      projectRoot: root,
+      phaseNumber: "25.5",
+      rootSessionId: "root-1",
+    })
+    expect(trajectory.id).toBe("traj-phase-25.5")
+  })
+
+  it("Created trajectory has status 'planning'", () => {
+    const { trajectory } = createPhaseTrajectory({
+      projectRoot: root,
+      phaseNumber: "25.5",
+      rootSessionId: "root-1",
+    })
+    expect(trajectory.status).toBe("planning")
+  })
+
+  it("createPhaseTrajectory throws if trajectory already exists", () => {
+    createPhaseTrajectory({
+      projectRoot: root,
+      phaseNumber: "25.5",
+      rootSessionId: "root-1",
+    })
+    expect(() =>
+      createPhaseTrajectory({
+        projectRoot: root,
+        phaseNumber: "25.5",
+        rootSessionId: "root-1",
+      }),
+    ).toThrow("[Harness]")
+  })
+
+  it("transitionTrajectory from 'planning' to 'executing' succeeds", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    const { trajectory } = transitionTrajectory(root, "traj-phase-25.5", "executing")
+    expect(trajectory.status).toBe("executing")
+  })
+
+  it("transitionTrajectory from 'planning' to 'verifying' throws (invalid)", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    expect(() => transitionTrajectory(root, "traj-phase-25.5", "verifying")).toThrow("[Harness]")
+  })
+
+  it("transitionTrajectory from 'completed' to 'closed' succeeds", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    transitionTrajectory(root, "traj-phase-25.5", "executing")
+    transitionTrajectory(root, "traj-phase-25.5", "verifying")
+    transitionTrajectory(root, "traj-phase-25.5", "completed")
+    const { trajectory } = transitionTrajectory(root, "traj-phase-25.5", "closed")
+    expect(trajectory.status).toBe("closed")
+  })
+
+  it("transitionTrajectory from 'closed' to any state throws (terminal)", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    transitionTrajectory(root, "traj-phase-25.5", "executing")
+    transitionTrajectory(root, "traj-phase-25.5", "verifying")
+    transitionTrajectory(root, "traj-phase-25.5", "completed")
+    transitionTrajectory(root, "traj-phase-25.5", "closed")
+    expect(() => transitionTrajectory(root, "traj-phase-25.5", "planning")).toThrow("[Harness]")
+  })
+
+  it("transitionTrajectory is idempotent — transitioning to current state is no-op", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    const { trajectory } = transitionTrajectory(root, "traj-phase-25.5", "planning")
+    expect(trajectory.status).toBe("planning")
+  })
+
+  it("addTrajectoryEvent with EVENT_DELEGATION_STARTED auto-transitions planning→executing", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    const { trajectory } = addTrajectoryEvent(root, "traj-phase-25.5", EVENT_DELEGATION_STARTED, "first delegation")
+    expect(trajectory.status).toBe("executing")
+  })
+
+  it("addTrajectoryEvent with EVENT_EXECUTION_COMPLETE auto-transitions executing→verifying", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    transitionTrajectory(root, "traj-phase-25.5", "executing")
+    const { trajectory } = addTrajectoryEvent(root, "traj-phase-25.5", EVENT_EXECUTION_COMPLETE, "execution done")
+    expect(trajectory.status).toBe("verifying")
+  })
+
+  it("addTrajectoryEvent with EVENT_VERIFICATION_PASS auto-transitions verifying→completed", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    transitionTrajectory(root, "traj-phase-25.5", "executing")
+    transitionTrajectory(root, "traj-phase-25.5", "verifying")
+    const { trajectory } = addTrajectoryEvent(root, "traj-phase-25.5", EVENT_VERIFICATION_PASS, "verification passed")
+    expect(trajectory.status).toBe("completed")
+  })
+
+  it("addTrajectoryEvent without auto-transition event type does NOT change status", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    const { trajectory } = addTrajectoryEvent(root, "traj-phase-25.5", "note", "just a note")
+    expect(trajectory.status).toBe("planning")
+  })
+
+  it("Delegation trajectory can set parentTrajectoryId to traj-phase-{N}", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    const { trajectory } = attachTrajectoryEvidence({
+      projectRoot: root,
+      trajectoryId: "traj-ses-child",
+      rootSessionId: "root-1",
+      sessionId: "ses-child",
+      parentTrajectoryId: "traj-phase-25.5",
+      evidenceRef: "delegation:ses-child",
+    })
+    expect(trajectory.parentTrajectoryId).toBe("traj-phase-25.5")
+    expect(trajectory.id).toBe("traj-ses-child")
+  })
+})
 
 describe("trajectory store operations", () => {
   let root: string
@@ -217,7 +350,6 @@ describe("trajectory store operations", () => {
     expect(() => attachTrajectoryEvidence({
       projectRoot: root,
       trajectoryId: "traj-new",
-      // No rootSessionId provided
     })).toThrow("[Harness] rootSessionId is required")
   })
 
@@ -286,14 +418,12 @@ describe("trajectory store operations", () => {
 
     it("mutations still work on active trajectories (no regression)", () => {
       seedTrajectory(root, "traj-active")
-
       const { trajectory: traj1 } = attachTrajectoryEvidence({
         projectRoot: root,
         trajectoryId: "traj-active",
         evidenceRef: "ref-active",
       })
       expect(traj1.evidenceRefs).toContain("ref-active")
-
       const { event } = eventTrajectory({
         projectRoot: root,
         trajectoryId: "traj-active",
@@ -301,14 +431,12 @@ describe("trajectory store operations", () => {
         summary: "active event",
       })
       expect(event.eventType).toBe("recovery")
-
       const { checkpoint } = checkpointTrajectory({
         projectRoot: root,
         trajectoryId: "traj-active",
         summary: "active checkpoint",
       })
       expect(checkpoint.summary).toBe("active checkpoint")
-
       const { trajectory: closed } = closeTrajectory({
         projectRoot: root,
         trajectoryId: "traj-active",
