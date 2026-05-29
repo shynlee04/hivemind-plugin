@@ -53,6 +53,15 @@
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+### Source vs Deploy Architecture
+
+This diagram shows the `src/` TypeScript npm package layer. The shipped OpenCode primitives (agents, commands, skills, workflows) follow a **source-of-truth → deploy** model:
+
+- **Source:** `assets/` — author all primitives here
+- **Authoring Lab:** `.hivefiver-meta-builder/` — meta-authoring environment for primitives before reflection to `assets/`
+- **Deploy:** `.opencode/` — synced copy via `scripts/sync-assets.js`. NEVER develop directly in `.opencode/`
+- **Exception:** `gsd-*` primitives are developer tooling (NOT shipped) and may live in `.opencode/get-shit-done/`
+
 ## Architecture Pattern
 
 **Pattern:** Plugin Architecture with CQRS-inspired Separation of Concerns
