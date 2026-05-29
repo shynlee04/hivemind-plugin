@@ -33,7 +33,8 @@ export const ALLOWED_TRANSITIONS: Record<AgentWorkStatus, AgentWorkStatus[]> = {
  * @throws {Error} When the contract doesn't exist or the transition is invalid.
  */
 export function startContract(projectRoot: string, contractId: string) {
-  return transitionContract(projectRoot, contractId, "running")
+  const contract = transitionContract(projectRoot, contractId, "running")
+  return upsertAgentWorkContract(projectRoot, contract)
 }
 
 /**
@@ -84,12 +85,15 @@ export function cancelContract(projectRoot: string, contractId: string, reason: 
 }
 
 /**
- * Internal transition helper that validates and persists status changes.
+ * Internal transition helper that validates and applies status changes.
+ *
+ * Does NOT persist — callers are responsible for a single write via
+ * `upsertAgentWorkContract` after applying any additional mutations.
  *
  * @param projectRoot - Trusted project root.
  * @param contractId - Contract to transition.
  * @param targetStatus - Desired target status.
- * @returns Updated contract.
+ * @returns Updated (unpersisted) contract.
  * @throws {Error} When the contract doesn't exist or the transition is invalid.
  */
 function transitionContract(projectRoot: string, contractId: string, targetStatus: AgentWorkStatus) {
@@ -107,5 +111,5 @@ function transitionContract(projectRoot: string, contractId: string, targetStatu
 
   contract.status = targetStatus
   contract.updatedAt = Date.now()
-  return upsertAgentWorkContract(projectRoot, contract)
+  return contract
 }
