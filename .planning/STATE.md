@@ -24,7 +24,7 @@ progress:
 **Phase 24.6:** ✅ COMPLETE — 3 critical commands elevated from stubs to 100+ lines (commit `4959ff08`). Typecheck + tests clean.
 **Phase 24.7:** ✅ COMPLETE — sync-assets.js fixed: backup + conflict detection + command/ directory mirror (commit `e901fa91`). 118 commands synced to both directories. Typecheck + tests clean.
 **Phase 24.8:** ✅ COMPLETE — `--mode=install` flag, non-destructive per-file merge, dual-root resolution via INIT_CWD, version drift optimization, postinstall hook. 3 tasks, 2 files modified. Commit `8861bf16`. Typecheck + tests clean.
-**Next recommended run:** P23.3 (Notification Delivery L1 UAT Verification) or P24.9.
+**Next recommended run:** P23.8 (G/H/I Integration Gate) or P23.3 (Notification Delivery L1 UAT Verification).
 
 ---
 
@@ -46,7 +46,7 @@ progress:
 **P23.4 (GAP-02):** 📋 PENDING — Cross-Cluster Gate D→A — verify Coordination + Agent Hierarchy + Agent Quality integration. Depends: P24, P24.1, P24.2. Blocks: P24.3.
 **P23.5 (GAP-03):** 📋 PENDING — Cross-Cluster Gate A→C — verify Agent Quality + Commands Infrastructure integration. Depends: P23.4, P24.3-P24.6. Blocks: P25.
 **P23.6 (GAP-04):** 📋 PENDING — Post-P25→P26→B Integration Gate — verify Trajectory/Pressure + Artifact naming consistency. Depends: P25, P26, P26.1, P26.2. Blocks: P24.7-P24.9.
-**P23.7 (GAP-05):** 📋 PENDING — Post-E/F/G Integration Gate — verify Primitives + Bootstrap + Routing integration. Depends: P24.7, P24.8, P24.9, P27. Blocks: P28.
+**P23.7 (GAP-05):** ✅ COMPLETE — E/F/G Integration Gate — all 5 criteria PASS. Research confirms full integration: primitives parity (6 types), bootstrap tooling, governance config, pipeline wiring, P28 compatibility. See `.planning/phases/P23.7-efg-integration-gate/P23.7-VERIFICATION.md`.
 **P23.8 (GAP-06):** 📋 PENDING — Post-G/H/I Integration Gate — verify Routing + Hooks + Auto-looping integration. Depends: P27, P28, P29. Blocks: P30/P31 parallel track, P33.
 **P23.9 (GAP-07):** 📋 PENDING — Schema+Config Parallel Track Integration — verify P30+P31 produce consistent schemas/configs. Depends: P30, P31. Blocks: P33-P35.
 **P23.10 (GAP-08):** 📋 PENDING — Pre-Structural-Cleanup Readiness Gate — final design freeze before Group 4. Depends: P23.7, P23.8, P23.9. Blocks: P33.
