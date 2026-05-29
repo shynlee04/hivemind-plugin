@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  PhaseTrajectoryCreateSchema,
+  TrajectoryDepthSchema,
+} from "../../../src/schema-kernel/trajectory.schema.js"
+
+import {
   TRAJECTORY_AUTO_TRANSITIONS,
   TRAJECTORY_LEDGER_VERSION,
   TRAJECTORY_TRANSITIONS,
@@ -178,5 +183,68 @@ describe("trajectory types", () => {
     expect(input.rootSessionId).toBeUndefined()
     expect(input.sessionId).toBeUndefined()
     expect(input.evidenceRef).toBeUndefined()
+  })
+})
+
+describe("trajectory Zod schemas", () => {
+  it("PhaseTrajectoryCreateSchema validates valid input", () => {
+    const result = PhaseTrajectoryCreateSchema.parse({
+      projectRoot: "/tmp/test",
+      phaseNumber: "25.5",
+      rootSessionId: "ses-root",
+      phaseName: "Trajectory + Contract Redesign",
+    })
+    expect(result.projectRoot).toBe("/tmp/test")
+    expect(result.phaseNumber).toBe("25.5")
+    expect(result.rootSessionId).toBe("ses-root")
+    expect(result.phaseName).toBe("Trajectory + Contract Redesign")
+  })
+
+  it("PhaseTrajectoryCreateSchema rejects missing projectRoot", () => {
+    expect(() =>
+      PhaseTrajectoryCreateSchema.parse({
+        phaseNumber: "25.5",
+        rootSessionId: "ses-root",
+      }),
+    ).toThrow()
+  })
+
+  it("PhaseTrajectoryCreateSchema rejects missing phaseNumber", () => {
+    expect(() =>
+      PhaseTrajectoryCreateSchema.parse({
+        projectRoot: "/tmp/test",
+        rootSessionId: "ses-root",
+      }),
+    ).toThrow()
+  })
+
+  it("PhaseTrajectoryCreateSchema rejects missing rootSessionId", () => {
+    expect(() =>
+      PhaseTrajectoryCreateSchema.parse({
+        projectRoot: "/tmp/test",
+        phaseNumber: "25.5",
+      }),
+    ).toThrow()
+  })
+
+  it("PhaseTrajectoryCreateSchema accepts optional phaseName", () => {
+    const result = PhaseTrajectoryCreateSchema.parse({
+      projectRoot: "/tmp/test",
+      phaseNumber: 25,
+      rootSessionId: "ses-root",
+    })
+    expect(result.phaseName).toBeUndefined()
+    expect(result.phaseNumber).toBe(25)
+  })
+
+  it("TrajectoryDepthSchema validates summary, detailed, full", () => {
+    expect(TrajectoryDepthSchema.parse("summary")).toBe("summary")
+    expect(TrajectoryDepthSchema.parse("detailed")).toBe("detailed")
+    expect(TrajectoryDepthSchema.parse("full")).toBe("full")
+  })
+
+  it("TrajectoryDepthSchema rejects invalid depth", () => {
+    expect(() => TrajectoryDepthSchema.parse("invalid")).toThrow()
+    expect(() => TrajectoryDepthSchema.parse("")).toThrow()
   })
 })
