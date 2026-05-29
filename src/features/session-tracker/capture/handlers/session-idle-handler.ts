@@ -33,6 +33,8 @@ export class SessionIdleHandler {
         if (this.deps.manifestWriter) {
           await this.deps.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
         }
+        // REQ-25.1-03: Record trajectory completion event
+        this.recordTrajectoryCompletion(sessionID).catch(() => { /* best-effort */ })
         await this.deps.backfiller.backfillChildTurnsFromSdk(childRoute.parentID, sessionID).catch((err) => {
           void this.deps.client.app?.log?.({
             body: {
@@ -117,6 +119,37 @@ export class SessionIdleHandler {
           service: "session-tracker",
           level: "warn",
           message: `[Harness] Session tracker: failed to handle session.idle for "${sessionID}"`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
+  }
+
+  /**
+   * Records a trajectory completion event for a child session.
+   * Best-effort: failures are logged but do not break session.idle handling.
+   *
+   * @param sessionID - The child session ID that completed.
+   */
+  private async recordTrajectoryCompletion(sessionID: string): Promise<void> {
+    if (!this.deps.projectRoot) return
+    try {
+      const { eventTrajectory } = await import(
+        "../../../../task-management/trajectory/index.js"
+      )
+      eventTrajectory({
+        projectRoot: this.deps.projectRoot,
+        trajectoryId: `traj-${sessionID}`,
+        eventType: "delegation_completed",
+        summary: `Child session ${sessionID} completed`,
+        evidenceRef: `session-tracker:idle:${sessionID}`,
+      })
+    } catch (err) {
+      void this.deps.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Trajectory completion event failed for ${sessionID}`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
