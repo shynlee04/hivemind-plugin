@@ -96,7 +96,7 @@ Every phase must explicitly trace through these protocols:
 - [x] **P24.4 (Cluster C): References & Templates System** — CANCELLED — architecture correction. Templates/references = static markdown files, NOT runtime engines. Command → Workflow → Agent routing handles everything. `.planning/references/artifact-schema.md` (from 24.2) is sufficient. [GSD-reval: YES - reference patterns from old GSD] [Arch-src: N/A - CANCELLED] [UAT: N/A - CANCELLED]
 - [x] **P24.5 (Cluster C): Workflow Files Architecture** — Size budgets, modes decomposition [GSD-reval: YES] [Arch-src: YES - .opencode/workflows/] [UAT: workflow file creation] ✅ CODE EXISTS — 106 workflow files (103 hm-*). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
 - [x] **P24.6 (Cluster C): Build HM-* Commands** — 118 commands built [GSD-reval: YES] [Arch-src: YES - .opencode/commands/] [UAT: each command runnable] ✅ CODE EXISTS — 118 commands (99 hm + 7 hf + 12 other). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
-- [ ] **P25: Trajectory Redesign** — Trajectory + Agent-Work-Contract redesign [GSD-reval: NO] [Arch-src: YES - src/task-management/trajectory/] [UAT: trajectory state transitions]
+- [x] **P25: Trajectory Redesign** 🗣️ CONTEXT GATHERED — all 7 gray areas decided, READY FOR PLANNING. [GSD-reval: NO] [Arch-src: YES - src/task-management/trajectory/] [UAT: trajectory state transitions]
 - [ ] **P26: Pressure + Notification Redesign** — Pressure scoring, notification delivery redesign [GSD-reval: NO] [Arch-src: YES - src/features/pressure/ + src/features/notification/] [UAT: pressure scoring live]
 - [ ] **P26.1 (Cluster B): Artifact Naming Convention** — Standardized naming/pathing [GSD-reval: YES - ADR-0006 from old GSD] [Arch-src: YES - src/shared/ or src/features/governance/] [UAT: artifact naming validation]
 - [ ] **P26.2 (Cluster B): Artifact Dependency & Gatekeeping** — Cross-reference validation [GSD-reval: YES - gate patterns from old GSD] [Arch-src: YES - src/features/governance/] [UAT: cross-ref validation gate]
@@ -1273,6 +1273,7 @@ Plans:
 
 ### Phase 25: Trajectory + Agent-Work-Contract Redesign (Group 1 — was Phase 24)
 
+**Status:** 🗣️ CONTEXT GATHERED — all 7 gray areas decided, P25-CONTEXT.md written (2026-05-29). READY FOR PLANNING.
 **Goal:** Fix trajectory state transitions. Add trajectory tests (zero currently). Fix agent-work-contract lifecycle. Deduplicate deriveSurface(). Incorporate P23-06 assessment findings.
 **Depends on:** Phase 23, 24, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6
 **Debts inherited from Phase 23:** M-4 (legacy .harness/ path) — see `23-DEBTS-REGISTER-2026-05-23.md`
