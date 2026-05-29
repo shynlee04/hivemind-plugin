@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-29T17:02:00.000Z"
+last_updated: "2026-05-29T23:00:00.000Z"
 progress:
   total_phases: 46
-  completed_phases: 18
-  total_plans: 96
-  completed_plans: 87
-  percent: 37
+  completed_phases: 22
+  total_plans: 100
+  completed_plans: 91
+  percent: 43
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,10 +17,14 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-29
-**Last advance:** Phase 24.8 COMPLETE — install-mode primitive extraction with non-destructive merge, dual-root resolution via INIT_CWD, version drift optimization, postinstall hook. 1 plan, 3 tasks, 2 files modified. Typecheck clean, 236/236 test files pass.
-**Current focus:** Phase 24.8 — Primitives Install-Time Extraction — COMPLETE
-**Last advance:** Phase 24.8 COMPLETE — `--mode=install` flag added to sync-assets.js. Non-destructive per-file merge (backup+skip, no rmSync). Dual-root resolution via `process.env.INIT_CWD`. Version drift optimization via `.hivemind/state/version.json`. `postinstall` hook wired in package.json. Build mode unchanged. 1 atomic commit (8861bf16).
-**Next recommended run:** Phase 24.9 (Bootstrap Init Flow Expansion) or P23.3 (Notification Delivery L1 UAT Verification).
+**Last advance:** Phase 24.4-24.8 closure — documentation updated with all fixes applied
+**Current focus:** Phases 24.4-24.8 — CLOSED
+**Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
+**Phase 24.5:** ✅ COMPLETE — 4 broken workflow step paths fixed (commit `158a9d66`). Typecheck clean.
+**Phase 24.6:** ✅ COMPLETE — 3 critical commands elevated from stubs to 100+ lines (commit `4959ff08`). Typecheck + tests clean.
+**Phase 24.7:** ✅ COMPLETE — sync-assets.js fixed: backup + conflict detection + command/ directory mirror (commit `e901fa91`). 118 commands synced to both directories. Typecheck + tests clean.
+**Phase 24.8:** ✅ COMPLETE — `--mode=install` flag, non-destructive per-file merge, dual-root resolution via INIT_CWD, version drift optimization, postinstall hook. 3 tasks, 2 files modified. Commit `8861bf16`. Typecheck + tests clean.
+**Next recommended run:** P23.3 (Notification Delivery L1 UAT Verification) or P24.9.
 
 ---
 
@@ -55,16 +59,15 @@ progress:
 **   Plan 02:** ✅ COMPLETE — Plugin registration + unit tests. Tool registered in plugin.ts (REQ-01), 14 unit tests covering REQ-02 through REQ-07, typecheck clean, no regressions. 2 atomic commits (b0f1b087, f4057c82).
 **   Plan 03:** ✅ COMPLETE — Full verification pass. All 9 REQs verified with L2 evidence (grep + source read + typecheck + test suite). Typecheck clean, 14/14 governance engine tests pass, tool discoverable in plugin.ts. 6 pre-existing session-tracker failures documented. 1 atomic commit.
 **Phase 24.3.2:** 🗣️ DISCUSSED — Execute-Slash-Command Core Revamp (Cluster C — Commands & Workflows, Depends: P24.3.1). Context written with 6 gray area decisions via GSD advisor mode. Decisions: Frontmatter-Driven Namespace (GA-1), Inline YAML Extension (GA-2), Hybrid Facade (GA-3), Extend Command-Engine (GA-4), Contract-Based Validation (GA-5), Optional Namespace + Legacy Fallback (GA-6).
-**Phase 24.4:** 📋 PENDING — References & Templates System (Cluster C — Commands & Workflows, INSERTED, Depends: P24.3, P24.3.1).
-**Phase 24.5:** 🟡 ACTIVE — Workflow Files Architecture
-**   Plan 02:** ✅ COMPLETE — fix 4 broken workflow step paths (2 files modified: hm-execute-phase.md, hm-full.md). Typecheck clean. (Cluster C — Commands & Workflows, INSERTED, Depends: P24.4).
-**Phase 24.6:** 📋 PENDING — Build HM-* Commands (Cluster C — Commands & Workflows, INSERTED, Depends: P24.5).
+**Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. Command → Workflow → Agent routing handles everything. `.planning/references/artifact-schema.md` (from 24.2) is sufficient for reference needs. CONTEXT+SUMMARY+CANCELLED PLAN already written. (Cluster C — Commands & Workflows, INSERTED, Depends: P24.3, P24.3.1).
+**Phase 24.5:** ✅ COMPLETE — CODE EXISTS, fixes applied. 4 broken workflow step paths fixed in 2 files (hm-execute-phase.md, hm-full.md). Commit `158a9d66`. 106 workflow files total (103 hm-*). Typecheck clean. (Cluster C — Commands & Workflows, INSERTED, Depends: P24.4).
+**Phase 24.6:** ✅ COMPLETE — CODE EXISTS, improvements applied. 118 commands total (99 hm + 7 hf + 12 other). 3 critical commands elevated from ~37 to 100+ lines: hm-execute.md, hm-audit.md, hm-research.md (commit `4959ff08`). Synced to both commands/ and command/ directories. Typecheck + tests clean. (Cluster C — Commands & Workflows, INSERTED, Depends: P24.5).
 **Phase 25:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Group 1, Depends: P23, P24, P24.1, P24.2, P24.3, P24.4, P24.5, P24.6).
 **Phase 26:** 📋 PENDING — Pressure + Notification Redesign (Group 1, Depends: P23, P24, P24.1, P24.2, P24.3, P24.4, P24.5, P24.6, P25).
 **Phase 26.1:** 📋 PENDING — Artifact Naming & Pathing Convention (Cluster B — Documents, Depends: P26).
 **Phase 26.2:** 📋 PENDING — Artifact Dependency & Gatekeeping (Cluster B — Documents, Depends: P26.1).
-**Phase 24.7:** 📋 PENDING — Primitives Asset Schema (Cluster E — Primitives Distribution, INSERTED, Depends: P26).
-**Phase 24.8:** ✅ COMPLETE — Primitives Install-Time Extraction (Cluster E — Primitives Distribution, INSERTED, Depends: P24.7). `--mode=install` flag on sync-assets.js with non-destructive merge, dual-root resolution via INIT_CWD, version drift optimization, postinstall hook. 1 plan, 3 tasks. Typecheck clean, 236/236 test files pass.
+**Phase 24.7:** ✅ COMPLETE — CODE EXISTS, fixes applied. 21 schema files in `src/schema-kernel/`. sync-assets.js fixed: backup + content-drift conflict detection + command/ directory mirror (commit `e901fa91`). 118 commands synced to both `.opencode/commands/` and `.opencode/command/`. 67 GSD files preserved. Typecheck + tests clean. (Cluster E — Primitives Distribution, INSERTED, Depends: P26).
+**Phase 24.8:** ✅ COMPLETE — IMPLEMENTED (Cluster E — Primitives Distribution, INSERTED, Depends: P24.7). `--mode=install` flag on sync-assets.js with non-destructive per-file merge, dual-root resolution via `process.env.INIT_CWD`, version drift optimization via `.hivemind/state/version.json`, `postinstall` hook in package.json. Build mode unchanged. 3 tasks, 2 files modified. 1 atomic commit (`8861bf16`). Typecheck clean, 236/236 test files pass.
 **Phase 24.9:** 📋 PENDING — Bootstrap Init Flow Expansion (Cluster F — Bootstrap & Init, INSERTED, Depends: P24.8).
 **Phase 27:** 📋 PENDING — Routing + Intent Loop Foundation — scope expanded (Group 2, Depends: P21-P26.2, P24.7, P24.8, P24.9).
 **Phase 28:** 📋 PENDING — Hook Injection Plane Redesign — scope expanded (Group 2, Depends: P27).
@@ -169,7 +172,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 |-------|----------|--------|
 | **8 files exceeding 500 LOC cap** — delegation-status.ts (734), child-writer.ts (658), plugin.ts (653), execute-slash-command.ts (631), session-tracker/index.ts (625), coordinator.ts (556), tool-delegation.ts (502), tool-capture.ts (502) | 🔴 CRITICAL | Systemic module size violation — not isolated to 1 file as previously claimed |
 | **7 dead hm-l2-* agent refs** in `.hivemind/governance/config.json` | 🔴 CRITICAL | Governance dispatch to `hm-l2-scout`, `hm-l2-researcher`, etc. will silently fail — names don't exist since 24.1 renaming |
-| **6 empty phase directories** (24.4-24.9) | 🔴 HIGH | Code exists for workflows (106), commands (118), schemas (21), bootstrap tools — but no governance traceability |
+| **4 empty phase directories** (24.4-24.9, partially closed) | 🟡 MEDIUM → 🟢 RESOLVED | P24.4 CANCELLED, P24.5-P24.8 closed with CONTEXT+SUMMARY. 24.9 remains pending. |
 | **Phase 24 root directory empty** — no SPEC, PLAN, or SUMMARY for parent phase | 🔴 HIGH | Sub-phases operated without parent specification, causing I-01 to I-08 cross-phase incoherences |
 | **106 workflow files exist but governance integration missing** — `.opencode/workflows/` has 103 hm-* files but no formal routing layer | 🟡 MEDIUM | 3-layer routing (Command → Workflow → Agent) lacks integration |
 | **10 agents still reference gsd-sdk** — hm-architect, hm-codebase-mapper, hm-executor, hm-l0-orchestrator, et al. | 🟡 MEDIUM | Legacy GSD references not fully cleaned by 24.2 GAP plans |
@@ -350,6 +353,13 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-05-25** — Phase 23.2 COMPLETE: all 5 session-tracker bugs fixed across 4 plans. BUG#1: extractTextContent multi-field support. BUG#2: compaction summary fallback via message history. BUG#3: tool attribution race fix. BUG#4: manifestWriter.addChild() in both tool-delegation.ts and event-capture.ts. BUG#5: subagentType dual-key extraction.
 - **2026-05-25** — 8 gap phases (P23.3-P23.10) INSERTED after P23.2. Critical cluster dependency ordering locked: D → A + C → P25 → P26 → B → E/F → G → H → I → J (parallel) → K → L. MVP minimum: P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36. Cross-cluster integration gates verify compatibility before downstream consumption.
 
+- **2026-05-29** — **Phase 24.4-24.8 CLOSED**. All documentation updated with closure summaries.
+  - P24.4 **CANCELLED** — architecture correction (overengineering: templates/references are static markdown, not runtime engines)
+  - P24.5 **COMPLETE** — 4 broken workflow step paths fixed (commit `158a9d66`); typecheck clean
+  - P24.6 **COMPLETE** — 3 critical commands elevated to 100+ lines (commit `4959ff08`); synced to both commands/ and command/ directories; typecheck + tests clean
+  - P24.7 **COMPLETE** — sync-assets.js fixed with backup, conflict detection, and command/ mirror (commit `e901fa91`); 118 commands in both directories; typecheck + tests clean
+  - P24.8 **COMPLETE** — `--mode=install` flag with non-destructive merge, dual-root resolution, version drift optimization, postinstall hook (commit `8861bf16`); typecheck + tests clean
+
 ### Key Restructuring Decisions
 
 | ID | Decision |
@@ -390,9 +400,9 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 12. **Phase 24.3** 📋 PENDING — Commands Infrastructure (Depends: P23.4, P24.2). ⚠️ CODE EXISTS for sub-phases but parent phase directory empty.
 13. **Phase 24.3.1** 🟡 PLANNED — Governance Session Prototype (Depends: P24, Blocks: P24.3-P24.6). ⚠️ CODE EXISTS (governance-engine/ tools) but dead hm-l2-* agent refs in config.
-14. **Phase 24.4** 📋 PENDING — References & Templates System. ⚠️ Phase dir EMPTY. `.planning/references/artifact-schema.md` built by 24.2.
-15. **Phase 24.5** 📋 PENDING — Workflow Files Architecture. ⚠️ **CODE EXISTS**: 106 workflow files in `.opencode/workflows/` (103 hm-*). Phase dir EMPTY (governance gap only).
-16. **Phase 24.6** 📋 PENDING — Build HM-* Commands. ⚠️ **CODE EXISTS**: 118 commands total. Phase dir EMPTY (governance gap only).
+14. **Phase 24.4** ❌ CANCELLED — architecture correction (overengineering). Templates/references are static markdown. CONTEXT+SUMMARY+CANCELLED PLAN written.
+15. **Phase 24.5** ✅ COMPLETE — 106 workflow files (103 hm-*). 4 broken step paths fixed (commit `158a9d66`). Typecheck clean.
+16. **Phase 24.6** ✅ COMPLETE — 118 commands total (99 hm + 7 hf + 12 other). 3 critical commands elevated to 100+ lines (commit `4959ff08`). Typecheck + tests clean.
 
 ### Trajectory + Pressure
 
@@ -406,8 +416,8 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ### Cluster E — Primitives Distribution
 
-21. **Phase 24.7** 📋 PENDING — Primitives Asset Schema. ⚠️ **CODE EXISTS**: 21 schema files in `src/schema-kernel/`. Phase dir EMPTY.
-22. **Phase 24.8** 📋 PENDING — Primitives Install-Time Extraction. ⚠️ Phase dir EMPTY. `src/features/bootstrap/` exists but traceability unclear.
+21. **Phase 24.7** ✅ COMPLETE — 21 schema files in `src/schema-kernel/`. sync-assets.js fixed with backup + conflict detection + command/ mirror (commit `e901fa91`). Typecheck + tests clean.
+22. **Phase 24.8** ✅ COMPLETE — `--mode=install` flag with non-destructive merge, dual-root resolution, version drift, postinstall hook (commit `8861bf16`). Typecheck + tests clean.
 
 ### Cluster F — Bootstrap & Init
 

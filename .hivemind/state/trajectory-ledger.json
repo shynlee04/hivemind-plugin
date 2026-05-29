@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "updatedAt": 1779232610624,
+  "events": [
+    {
+      "timestamp": "2026-05-29T23:00:00.000Z",
+      "sessionID": "hm-doc-writer-session",
+      "eventType": "docs_updated",
+      "details": {
+        "writtenDocuments": [
+          ".planning/phases/24.5-workflow-files-architecture/24.5-SUMMARY.md",
+          ".planning/phases/24.6-build-hm-commands/24.6-SUMMARY.md",
+          ".planning/phases/24.7-primitives-asset-schema/24.7-SUMMARY.md",
+          ".planning/phases/24.8-primitives-install-extraction/24.8-SUMMARY.md"
+        ],
+        "updatedDocuments": [
+          ".planning/ROADMAP.md",
+          ".planning/STATE.md"
+        ],
+        "phaseClosures": {
+          "24.4": "CANCELLED",
+          "24.5": "COMPLETE",
+          "24.6": "COMPLETE",
+          "24.7": "COMPLETE",
+          "24.8": "COMPLETE"
+        },
+        "status": "COMPLETED"
+      }
+    }
+  ],
+  "trajectories": {
+    "traj_thinking_001": {
+      "id": "traj_thinking_001",
+      "rootSessionId": "thinking-block-research-ses-01",
+      "sessionId": "thinking-block-research-ses-01",
+      "parentTrajectoryId": null,
+      "status": "active",
+      "evidenceRefs": [
+        "awc_309ddb38-8128-4f17-8a2e-34a8cb2fc7a7",
+        "dt-1779217864180-2a378z",
+        "awc_ddd7286e-48ac-4efc-b41c-a98e8ed7ec02"
+      ],
+      "checkpoints": [],
+      "events": [
+        {
+          "eventId": "evt_001",
+          "eventType": "research_start",
+          "summary": "Started research on OpenCode thinking block representation",
+          "evidenceRefs": [
+            "awc_309ddb38-8128-4f17-8a2e-34a8cb2fc7a7"
+          ],
+          "createdAt": 1779097674067
+        },
+        {
+          "eventId": "evt_live_test_002",
+          "eventType": "delegation.live_test_completed",
+          "summary": "Live test completed: delegate-task dispatch, agent-work-contract, trajectory attachment verified",
+          "evidenceRefs": [
+            "dt-1779217864180-2a378z",
+            "awc_ddd7286e-48ac-4efc-b41c-a98e8ed7ec02"
+          ],
+          "createdAt": 1779217933597
+        }
+      ],
+      "createdAt": 1779097674067,
+      "updatedAt": 1779217933597
+    },
+    "traj_uat_phase16_02": {
+      "id": "traj_uat_phase16_02",
+      "rootSessionId": "ses_uat_current",
+      "sessionId": "ses_uat_current",
+      "parentTrajectoryId": null,
+      "status": "active",
+      "evidenceRefs": [
+        ".hivemind/planning/uat/16-UAT-AUDIT-2026-05-20.md",
+        ".hivemind/planning/uat/16-UAT-SUMMARY-2026-05-20.md",
+        "agent-work-contract:awc_e8392ff5-5bd0-42e4-912a-20cb4805f77d"
+      ],
+      "checkpoints": [
+        {
+          "checkpointId": "chk_uat_03_polling",
+          "summary": "UAT Phase 16 checkpoint: both delegations running, polling status",
+          "evidenceRefs": [],
+          "createdAt": 1779230083863
+        },
+        {
+          "checkpointId": "chk_uat_04_complete",
+          "summary": "UAT Phase 16 COMPLETE — 12 tools tested, 2 delegations dispatched, 1 audit artifact created, 3 critical bugs found",
+          "evidenceRefs": [],
+          "createdAt": 1779230203560
+        }
+      ],
+      "events": [
+        {
+          "eventId": "evt_uat_01",
+          "eventType": "delegation.researcher_dispatched",
+          "summary": "Researcher delegation dt-1779230033342-whhlhg dispatched to hm-l2-researcher for session-tracker research",
+          "evidenceRefs": [],
+          "createdAt": 1779230204300
+        },
+        {
+          "eventId": "evt_uat_02",
+          "eventType": "delegation.auditor_completed",
+          "summary": "Auditor delegation dt-1779230042902-5clda3 completed — audit artifact at .hivemind/planning/uat/16-UAT-AUDIT-2026-05-20.md",
+          "evidenceRefs": [
+            ".hivemind/planning/uat/16-UAT-AUDIT-2026-05-20.md",
+            ".hivemind/planning/uat/16-UAT-SUMMARY-2026-05-20.md"
+          ],
+          "createdAt": 1779230205443
+        },
+        {
+          "eventId": "evt_uat_pressure_01",
+          "eventType": "runtime-pressure",
+          "summary": "Phase 16 UAT completed: steady state, no pressure events, all tools functioning at tier 0 — tier 0/steady/allow",
+          "evidenceRefs": [],
+          "createdAt": 1779230206175
+        }
+      ],
+      "createdAt": 1779230083863,
+      "updatedAt": 1779232610624
+    }
+  }
+}
