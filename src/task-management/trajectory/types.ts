@@ -5,8 +5,63 @@ export const TRAJECTORY_LEDGER_VERSION = 1 as const
 
 /**
  * Lifecycle status for a trajectory record.
+ *
+ * Per D-31 to D-35 (CONTEXT.md), trajectories use 5 lifecycle states
+ * with both automatic (event-based) and manual (tool-call) transitions.
+ *
+ * State machine:
+ * ```
+ * planning ──→ executing ──→ verifying ──→ completed ──→ closed
+ * ```
  */
-export type TrajectoryStatus = "active" | "closed"
+export type TrajectoryStatus = "planning" | "executing" | "verifying" | "completed" | "closed"
+
+/**
+ * Valid state transitions for trajectory lifecycle.
+ *
+ * Each key is a source status, value is an array of valid target statuses.
+ * Empty arrays indicate terminal states.
+ *
+ * @remarks
+ * Based on ALLOWED_TRANSITIONS pattern from agent-work-contracts/lifecycle.ts.
+ */
+export const TRAJECTORY_TRANSITIONS: Record<TrajectoryStatus, TrajectoryStatus[]> = {
+  planning: ["executing", "closed"],
+  executing: ["verifying", "closed"],
+  verifying: ["completed", "closed"],
+  completed: ["closed"],
+  closed: [],
+}
+
+/**
+ * Event type constants for automatic trajectory transitions.
+ *
+ * Per D-32 to D-34, certain events trigger automatic state transitions.
+ */
+export const EVENT_DELEGATION_STARTED = "delegation:started" as const
+export const EVENT_EXECUTION_COMPLETE = "execution:complete" as const
+export const EVENT_VERIFICATION_PASS = "verification:pass" as const
+
+/**
+ * Maps event types to automatic target states.
+ *
+ * When a trajectory receives an event matching one of these keys,
+ * it should automatically transition to the mapped target state
+ * (if the transition is valid per TRAJECTORY_TRANSITIONS).
+ */
+export const TRAJECTORY_AUTO_TRANSITIONS: Record<string, TrajectoryStatus> = {
+  [EVENT_DELEGATION_STARTED]: "executing",
+  [EVENT_EXECUTION_COMPLETE]: "verifying",
+  [EVENT_VERIFICATION_PASS]: "completed",
+}
+
+/**
+ * Jump link format for connecting trajectory events to delegation records.
+ *
+ * Per D-22, jump links use `delegation:{childSessionID}` format.
+ * This avoids data duplication between trajectory and delegation-persistence.
+ */
+export type JumpLink = `delegation:${string}`
 
 /**
  * Evidence reference stored by trajectory records.
@@ -76,6 +131,19 @@ export type TrajectoryRecord = {
 }
 
 /**
+ * Phase-level trajectory record extending TrajectoryRecord.
+ *
+ * Per D-01, trajectory is per-PHASE (not per-delegation).
+ * Per D-04, phase trajectory ID format is `traj-phase-{N}`.
+ */
+export type PhaseTrajectoryRecord = TrajectoryRecord & {
+  /** Phase number from ROADMAP (e.g. 25, "25.5"). */
+  phaseNumber: number | string
+  /** Optional human-readable phase name. */
+  phaseName?: string
+}
+
+/**
  * Durable trajectory ledger file shape.
  */
 export type TrajectoryLedger = {
@@ -106,6 +174,36 @@ export type TrajectoryTraversal = {
   /** Parent-child edges between matching records. */
   edges: TrajectoryEdge[]
 }
+
+/**
+ * Summary projection for progressive disclosure (depth=summary).
+ *
+ * Per D-28, summary returns: status + event count + phase name + duration.
+ */
+export type TrajectorySummary = {
+  /** Trajectory ID. */
+  id: string
+  /** Current lifecycle status. */
+  status: TrajectoryStatus
+  /** Number of events recorded. */
+  eventCount: number
+  /** Number of checkpoints recorded. */
+  checkpointCount: number
+  /** Duration in milliseconds (updatedAt - createdAt). */
+  durationMs: number
+  /** Optional phase name (for phase-level trajectories). */
+  phaseName?: string
+}
+
+/**
+ * Progressive disclosure depth levels.
+ *
+ * Per D-27, all 3 levels are required:
+ * - `summary`: status + event count + phase name + duration
+ * - `detailed`: event types + summaries + delegation chain
+ * - `full`: all evidence refs + checkpoints + jump links + full event data
+ */
+export type TrajectoryDepth = "summary" | "detailed" | "full"
 
 /**
  * Common input accepted by trajectory mutating operations.

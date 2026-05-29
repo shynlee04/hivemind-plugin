@@ -61,7 +61,7 @@ describe("trajectory ledger", () => {
       rootSessionId: "ses-root",
       sessionId: null,
       parentTrajectoryId: null,
-      status: "active",
+      status: "planning",
       evidenceRefs: ["ref-1"],
       checkpoints: [],
       events: [],

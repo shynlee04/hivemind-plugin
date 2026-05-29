@@ -166,7 +166,7 @@ function upsertTrajectory(ledger: TrajectoryLedger, input: TrajectoryMutationInp
     rootSessionId: input.rootSessionId,
     sessionId: input.sessionId ?? null,
     parentTrajectoryId: input.parentTrajectoryId ?? null,
-    status: "active",
+    status: "planning",
     evidenceRefs: [],
     checkpoints: [],
     events: [],
