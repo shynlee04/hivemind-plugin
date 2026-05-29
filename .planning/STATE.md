@@ -3,35 +3,24 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-28T17:39:51.499Z"
+last_updated: "2026-05-29T17:02:00.000Z"
 progress:
   total_phases: 46
-  completed_phases: 13
-  total_plans: 90
-  completed_plans: 82
-  percent: 28
-code_truth:
-  agents: 42
-  skills: 34
-  commands: 118
-  workflows: 106
-  test_files: 236
-  tests_pass: 2790
-  typecheck: PASS
-  files_over_500_loc: 8
-  dead_gov_config_refs: 7
-  empty_phase_dirs: 6
+  completed_phases: 18
+  total_plans: 96
+  completed_plans: 87
+  percent: 37
 ---
 
 <!-- generated-by: gsd-doc-writer -->
 
 # Hivemind — State
 
-**Last updated:** 2026-05-28
-**Last advance:** Phase C7 COMPLETE — all 5 REQs satisfied across 1 plan. 15 hook test suites (190+ tests), 10 integration test files for 5 high-risk modules, 90/80/90/90 thresholds configured. Full test suite: 2778/2792 pass, typecheck clean. 6 atomic commits.
-**Current focus:** Phase C7-Test-Coverage — COMPLETE
-**Last advance:** Phase C7 COMPLETE — 5 REQs satisfied across 1 plan. 8 new hook test files (auth, delegation, session, task-management, continuity, session-tracker, completion, tools) with ≥5 tests each. 10 integration test files for delegation/, continuity/, session-tracker/, completion/, tools/delegation/. vitest.config.ts thresholds raised from 85/72/85/85 to 90/80/90/90. coverage-report.md generated. 6 atomic commits, 19 new files.
-**Next recommended run:** C8 (Dependency Cleanup) or P23.3 (Notification Delivery L1 UAT Verification).
+**Last updated:** 2026-05-29
+**Last advance:** Phase 24.8 COMPLETE — install-mode primitive extraction with non-destructive merge, dual-root resolution via INIT_CWD, version drift optimization, postinstall hook. 1 plan, 3 tasks, 2 files modified. Typecheck clean, 236/236 test files pass.
+**Current focus:** Phase 24.8 — Primitives Install-Time Extraction — COMPLETE
+**Last advance:** Phase 24.8 COMPLETE — `--mode=install` flag added to sync-assets.js. Non-destructive per-file merge (backup+skip, no rmSync). Dual-root resolution via `process.env.INIT_CWD`. Version drift optimization via `.hivemind/state/version.json`. `postinstall` hook wired in package.json. Build mode unchanged. 1 atomic commit (8861bf16).
+**Next recommended run:** Phase 24.9 (Bootstrap Init Flow Expansion) or P23.3 (Notification Delivery L1 UAT Verification).
 
 ---
 
@@ -75,7 +64,7 @@ code_truth:
 **Phase 26.1:** 📋 PENDING — Artifact Naming & Pathing Convention (Cluster B — Documents, Depends: P26).
 **Phase 26.2:** 📋 PENDING — Artifact Dependency & Gatekeeping (Cluster B — Documents, Depends: P26.1).
 **Phase 24.7:** 📋 PENDING — Primitives Asset Schema (Cluster E — Primitives Distribution, INSERTED, Depends: P26).
-**Phase 24.8:** 📋 PENDING — Primitives Install-Time Extraction (Cluster E — Primitives Distribution, INSERTED, Depends: P24.7).
+**Phase 24.8:** ✅ COMPLETE — Primitives Install-Time Extraction (Cluster E — Primitives Distribution, INSERTED, Depends: P24.7). `--mode=install` flag on sync-assets.js with non-destructive merge, dual-root resolution via INIT_CWD, version drift optimization, postinstall hook. 1 plan, 3 tasks. Typecheck clean, 236/236 test files pass.
 **Phase 24.9:** 📋 PENDING — Bootstrap Init Flow Expansion (Cluster F — Bootstrap & Init, INSERTED, Depends: P24.8).
 **Phase 27:** 📋 PENDING — Routing + Intent Loop Foundation — scope expanded (Group 2, Depends: P21-P26.2, P24.7, P24.8, P24.9).
 **Phase 28:** 📋 PENDING — Hook Injection Plane Redesign — scope expanded (Group 2, Depends: P27).
