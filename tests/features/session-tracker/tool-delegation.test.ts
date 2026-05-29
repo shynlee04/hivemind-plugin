@@ -10,7 +10,7 @@
 
 import { describe, it, expect } from "vitest"
 import { generateSessionTitle, parseSessionTitle } from "../../../src/shared/session-naming.js"
-import { deriveSubagentType, deriveAgentNameFromSession, asRecord } from "../../../src/features/session-tracker/tool-delegation.js"
+import { deriveSubagentType, deriveAgentNameFromSession, asRecord } from "../../../src/features/session-tracker/tool-delegation-utils.js"
 
 // ---------------------------------------------------------------------------
 // deriveSubagentType — pure function tests
