@@ -96,7 +96,7 @@ Every phase must explicitly trace through these protocols:
 - [x] **P24.4 (Cluster C): References & Templates System** — CANCELLED — architecture correction. Templates/references = static markdown files, NOT runtime engines. Command → Workflow → Agent routing handles everything. `.planning/references/artifact-schema.md` (from 24.2) is sufficient. [GSD-reval: YES - reference patterns from old GSD] [Arch-src: N/A - CANCELLED] [UAT: N/A - CANCELLED]
 - [x] **P24.5 (Cluster C): Workflow Files Architecture** — Size budgets, modes decomposition [GSD-reval: YES] [Arch-src: YES - .opencode/workflows/] [UAT: workflow file creation] ✅ CODE EXISTS — 106 workflow files (103 hm-*). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
 - [x] **P24.6 (Cluster C): Build HM-* Commands** — 118 commands built [GSD-reval: YES] [Arch-src: YES - .opencode/commands/] [UAT: each command runnable] ✅ CODE EXISTS — 118 commands (99 hm + 7 hf + 12 other). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
-- [x] **P25: Trajectory Redesign** 🗣️ CONTEXT GATHERED — all 7 gray areas decided, READY FOR PLANNING. [GSD-reval: NO] [Arch-src: YES - src/task-management/trajectory/] [UAT: trajectory state transitions]
+- [x] **P25: Trajectory + Agent-Work-Contract Redesign** ✅ PLANNED — 6 plans, 4 waves, TDD-first. [GSD-reval: NO] [Arch-src: YES - src/task-management/trajectory/ + src/features/agent-work-contracts/] [UAT: trajectory state transitions + lifecycle]
 - [ ] **P26: Pressure + Notification Redesign** — Pressure scoring, notification delivery redesign [GSD-reval: NO] [Arch-src: YES - src/features/pressure/ + src/features/notification/] [UAT: pressure scoring live]
 - [ ] **P26.1 (Cluster B): Artifact Naming Convention** — Standardized naming/pathing [GSD-reval: YES - ADR-0006 from old GSD] [Arch-src: YES - src/shared/ or src/features/governance/] [UAT: artifact naming validation]
 - [ ] **P26.2 (Cluster B): Artifact Dependency & Gatekeeping** — Cross-reference validation [GSD-reval: YES - gate patterns from old GSD] [Arch-src: YES - src/features/governance/] [UAT: cross-ref validation gate]
@@ -1273,20 +1273,26 @@ Plans:
 
 ### Phase 25: Trajectory + Agent-Work-Contract Redesign (Group 1 — was Phase 24)
 
-**Status:** 🗣️ CONTEXT GATHERED — all 7 gray areas decided, P25-CONTEXT.md written (2026-05-29). READY FOR PLANNING.
-**Goal:** Fix trajectory state transitions. Add trajectory tests (zero currently). Fix agent-work-contract lifecycle. Deduplicate deriveSurface(). Incorporate P23-06 assessment findings.
+**Status:** ✅ PLANNED — 6 plans in 4 waves (2026-05-29)
+**Goal:** Add comprehensive tests to trajectory module (0→15-30 tests), implement agent-work-contract lifecycle state machine, unify compaction bounds, establish bidirectional cross-linking, investigate deriveSurface() — all TDD-first.
 **Depends on:** Phase 23, 24, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6
-**Debts inherited from Phase 23:** M-4 (legacy .harness/ path) — see `23-DEBTS-REGISTER-2026-05-23.md`
+**Plans:** 6 plans in 4 waves
+- [ ] 25-01-PLAN.md — Trajectory RED tests (Wave 1, TDD, 29 tests across 4 files)
+- [ ] 25-02-PLAN.md — Unified bounds + deriveSurface investigation (Wave 1, parallel)
+- [ ] 25-03-PLAN.md — Contract lifecycle state machine (Wave 2, TDD, 14 tests)
+- [ ] 25-04-PLAN.md — Bidirectional cross-linking (Wave 2, TDD, 6 tests)
+- [ ] 25-05-PLAN.md — Make trajectory tests GREEN (Wave 3, TDD loop completion)
+- [ ] 25-06-PLAN.md — Final verification + SUMMARY (Wave 4)
 
 **Governance:**
 
 - **GSD Re-validation:** NO — trajectory is Hivemind-native (session-tracker lineage), not GSD-sourced
-- **Architecture Absorption:** YES — trajectory logic in `src/task-management/trajectory/`, agent-work-contract in `src/features/work-contract/`. NOT in agent profiles.
-- **Protocol Chain:** Spec (P25-SPEC.md including P23-06 assessment) → Research (existing trajectory code + P23-06 structured assessment) → Context (P23-06 findings, trajectory debts) → Dependencies (P23-P24.6 chain) → Tech compliance (validate against session-tracker types) → Patterns (existing trajectory.ts patterns) → Feature completeness (trajectory tests exist + correct state transitions) → Tests (TDD: RED tests for trajectory first) → Gates (lifecycle → spec → evidence)
+- **Architecture Absorption:** YES — trajectory logic in `src/task-management/trajectory/`, agent-work-contract in `src/features/agent-work-contracts/`. NOT in agent profiles.
+- **Protocol Chain:** Spec (P25-SPEC.md) → Context (P25-CONTEXT.md, 15 decisions D-01–D-15) → Gray areas (P25-GRAY-AREAS.md, 7 decided) → Plans (6 plans, 4 waves) → TDD (RED→GREEN→REFACTOR) → Gates (lifecycle → spec → evidence)
 - **Integration Checkpoints:** Adjacent: P24.6 (input), P26 (output), P23.6 (P25→P26→B gate)
-- **TBD Registry:** TBD-25-01: deriveSurface deduplication may reveal further code duplication across modules; TBD-25-02: Legacy .harness/ path may have more consumers than currently identified
-- **Live UAT Node:** Run a multi-session delegation chain → verify trajectory states (PENDING→ACTIVE→COMPLETED→ARCHIVED) transition correctly in session-tracker logs
-- **Deferred Stacking:** Trajectory visualization (deferred), trajectory analytics (deferred to post-P36)
+- **TBD Registry:** TBD-25-01: deriveSurface() exists at delegation-persistence.ts:22 — distinct from getToolAuthority(), no dedup needed; TBD-25-02: Blocked evidence deferred to post-M36 (D-12)
+- **Live UAT Node:** Run trajectory lifecycle → verify state transitions and cross-linking in session-tracker logs
+- **Deferred Stacking:** Blocked contract evidence (D-12, post-M36), trajectory visualization, trajectory analytics
 
 ### Phase 26: Pressure + Notification Redesign (Group 1 — was Phase 25)
 
