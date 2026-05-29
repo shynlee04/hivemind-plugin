@@ -7,6 +7,7 @@
 **Current phase:** P23.3 (GAP-01) — Notification Delivery L1 UAT Verification
 **Phase 23.2:** ✅ COMPLETE — all 5 session-tracker bugs fixed
 **Total phases:** 59 (26 mainline + 8 gap + 10 workstream + 7 historical + 8 concerns)
+**CODE VERIFIED (2026-05-29):** See `.planning/research/phase24-*-2026-05-29.md` and `.planning/research/code-truth-*-2026-05-29.md` for full corrections. Key deltas: 42 agents (not 89), 34 skills (not 123), 118 commands (not 106/19), 106 workflows, 8 files >500 LOC (not 1), 7 dead gov refs, 6 empty phase dirs.
 **MVP minimum:** P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36
 **Dependency order:** Phase 0 Governance Baseline → Cluster D (Coordination) → A (Agent) + C (Commands) → P25→P26→B (Documents) → E/F (Primitives/Bootstrap) → G (Routing) → H (Hooks) → I (Auto-loop/PTY) → J (Schema/Config, parallel) → K (Cleanup) → L (Verification)
 
@@ -93,16 +94,16 @@ Every phase must explicitly trace through these protocols:
 - [ ] **P24.3.3 (Cluster C): Execute-Slash-Command Advanced Features** — Module extraction, contract validation, semantic matching, two-stage routing (P24.3.3.1 + P24.3.3.2 merged) [GSD-reval: YES - deep-analysis-tools-2026-05-21.md] [Arch-src: YES - src/tools/session/execute-slash-command.ts] [UAT: module extraction, contract validation, fuzzy discovery, 10+ tests pass]
 - [ ] **P23.5 (GAP-03): A→C Integration Gate** — Verify Agents + Commands integration [GSD-reval: YES - command patterns may have changed]
 - [ ] **P24.4 (Cluster C): References & Templates System** — Standardized references/templates [GSD-reval: YES - reference patterns from old GSD] [Arch-src: YES - src/features/ or src/shared/] [UAT: reference lookup test]
-- [ ] **P24.5 (Cluster C): Workflow Files Architecture** — Size budgets, modes decomposition [GSD-reval: YES - size budgets sourced from old GSD] [Arch-src: YES - src/routing/ or src/features/] [UAT: workflow file creation]
-- [ ] **P24.6 (Cluster C): Build HM-* Commands** — hm-init-project, hm-discuss, hm-plan, etc. [GSD-reval: YES - command patterns from old GSD research] [Arch-src: YES - src/cli/commands/ + .opencode/commands/] [UAT: each command runnable]
+- [x] **P24.5 (Cluster C): Workflow Files Architecture** — Size budgets, modes decomposition [GSD-reval: YES] [Arch-src: YES - .opencode/workflows/] [UAT: workflow file creation] ✅ CODE EXISTS — 106 workflow files (103 hm-*). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
+- [x] **P24.6 (Cluster C): Build HM-* Commands** — 118 commands built [GSD-reval: YES] [Arch-src: YES - .opencode/commands/] [UAT: each command runnable] ✅ CODE EXISTS — 118 commands (99 hm + 7 hf + 12 other). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
 - [ ] **P25: Trajectory Redesign** — Trajectory + Agent-Work-Contract redesign [GSD-reval: NO] [Arch-src: YES - src/task-management/trajectory/] [UAT: trajectory state transitions]
 - [ ] **P26: Pressure + Notification Redesign** — Pressure scoring, notification delivery redesign [GSD-reval: NO] [Arch-src: YES - src/features/pressure/ + src/features/notification/] [UAT: pressure scoring live]
 - [ ] **P26.1 (Cluster B): Artifact Naming Convention** — Standardized naming/pathing [GSD-reval: YES - ADR-0006 from old GSD] [Arch-src: YES - src/shared/ or src/features/governance/] [UAT: artifact naming validation]
 - [ ] **P26.2 (Cluster B): Artifact Dependency & Gatekeeping** — Cross-reference validation [GSD-reval: YES - gate patterns from old GSD] [Arch-src: YES - src/features/governance/] [UAT: cross-ref validation gate]
 - [ ] **P23.6 (GAP-04): P25→P26→B Integration Gate** — Verify Trajectory/Pressure/Artifacts [GSD-reval: NO]
-- [ ] **P24.7 (Cluster E): Primitives Asset Schema** — Schema per primitive type + code-gen [GSD-reval: YES - primitive schema patterns from old GSD] [Arch-src: YES - src/schema-kernel/ + src/assets/] [UAT: schema validation test]
-- [ ] **P24.8 (Cluster E): Primitives Install-Time Extraction** — Real file extraction (not symlinks) [GSD-reval: NO] [Arch-src: YES - src/cli/init + src/tools/bootstrap] [UAT: npx hivemind init E2E]
-- [ ] **P24.9 (Cluster F): Bootstrap Init Flow Expansion** — Full end-to-end init experience [GSD-reval: NO] [Arch-src: YES - src/cli/ + src/tools/bootstrap] [UAT: init → doctor E2E]
+- [x] **P24.7 (Cluster E): Primitives Asset Schema** — Schema per primitive type + code-gen [GSD-reval: YES] [Arch-src: YES - src/schema-kernel/ + src/assets/] [UAT: schema validation test] ✅ CODE EXISTS — 21 schema files + configure-primitive tool. Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
+- [ ] **P24.8 (Cluster E): Primitives Install-Time Extraction** — Real file extraction (not symlinks) [GSD-reval: NO] [Arch-src: YES - src/cli/init + src/tools/bootstrap] [UAT: npx hivemind init E2E] 🔍 INVESTIGATION PENDING — Phase dir EMPTY. Need to determine if postinstall extraction was implemented.
+- [x] **P24.9 (Cluster F): Bootstrap Init Flow Expansion** — Full end-to-end init experience [GSD-reval: NO] [Arch-src: YES - src/cli/ + src/tools/bootstrap] [UAT: init → doctor E2E] ✅ CODE EXISTS — bootstrap-init, bootstrap-recover, CLI commands, bin/hivemind.cjs. Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
 - [ ] **P27 (Cluster G): Routing + Intent Loop** — Intent classification, two-stage routing [GSD-reval: YES - two-stage routing from old GSD research] [Arch-src: YES - src/routing/] [UAT: route intent → correct handler]
 - [ ] **P27.1 (Cluster G): Intent Classification Enhancement** — Natural language intent parser, fuzzy matching, dynamic routing [GSD-reval: YES] [Arch-src: YES - src/routing/] [UAT: intent routing accuracy >90%]
 - [ ] **P23.7 (GAP-05): E/F/G Integration Gate** — Verify Primitives/Bootstrap/Routing [GSD-reval: NO]
@@ -1560,6 +1561,13 @@ These 8 phases address code quality, type safety, performance, and architectural
   - [ ] C5-02-PLAN.md — Scoped env for create-governance-session.ts + doctor.ts comment (REQ-03, REQ-04)
   - [ ] C5-03-PLAN.md — Verify zero empty catch blocks (REQ-01 — already satisfied)
 - [ ] **C6 (Concerns): Architectural Refactoring** — Fix: session-tracker god module — extract event handlers into dedicated classes; dual persistence format dependency — create DelegationStatusReader interface; plugin.ts monolithic composition — group tool registrations by domain [Arch-src: YES - src/features/session-tracker/, src/coordination/delegation/delegation-status.ts, src/plugin.ts] [UAT: session-tracker event handlers extracted to ≤3 dedicated classes, DelegationStatusReader interface abstracts persistence format, plugin.ts tool registrations grouped by domain with ≤150 LOC per group]
+  **Plans:** 5 plans
+  Plans:
+  - [ ] 01-01-PLAN.md — TDD test scaffolds for all 3 requirements (Wave 0)
+  - [ ] 01-02-PLAN.md — REQ-C6-01: Extract event handlers from EventCapture god module (Wave 1)
+  - [ ] 01-03-PLAN.md — REQ-C6-02: DelegationStatusReader interface + Zod-validated readers (Wave 1)
+  - [ ] 01-04-PLAN.md — REQ-C6-03: Domain-grouped plugin.ts tool registration (Wave 2)
+  - [ ] 01-05-PLAN.md — Integration verification (Wave 3)
 - [ ] **C7 (Concerns): Test Coverage** — Fix: untested hooks modules (10+ files with 0 coverage); ~80-100 source files without direct test coverage; missing integration tests for session tracker race conditions [Arch-src: YES - src/hooks/**/*.ts, src/features/**/*.ts, src/task-management/**/*.ts] [UAT: hooks modules ≥50% line coverage, session-tracker race condition integration tests exist and pass, overall test coverage increases by ≥10%]
 - [ ] **C8 (Concerns): Dependency Cleanup** — Fix: bun-pty in dependencies (should be optionalDependencies); bun-types in dependencies (should be devDependencies); Zod v4 pinned with caret range (pin to specific minor); no runtime SDK version validation [Arch-src: YES - package.json, src/shared/sdk-version.ts (new)] [UAT: bun-pty in optionalDependencies, bun-types in devDependencies, Zod pinned to exact minor, runtime SDK version validation check exists and runs on plugin load]
 
