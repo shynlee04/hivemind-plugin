@@ -10,6 +10,17 @@ progress:
   total_plans: 90
   completed_plans: 82
   percent: 28
+code_truth:
+  agents: 42
+  skills: 34
+  commands: 118
+  workflows: 106
+  test_files: 236
+  tests_pass: 2790
+  typecheck: PASS
+  files_over_500_loc: 8
+  dead_gov_config_refs: 7
+  empty_phase_dirs: 6
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -56,7 +67,8 @@ progress:
 **   Plan 03:** ✅ COMPLETE — Full verification pass. All 9 REQs verified with L2 evidence (grep + source read + typecheck + test suite). Typecheck clean, 14/14 governance engine tests pass, tool discoverable in plugin.ts. 6 pre-existing session-tracker failures documented. 1 atomic commit.
 **Phase 24.3.2:** 🗣️ DISCUSSED — Execute-Slash-Command Core Revamp (Cluster C — Commands & Workflows, Depends: P24.3.1). Context written with 6 gray area decisions via GSD advisor mode. Decisions: Frontmatter-Driven Namespace (GA-1), Inline YAML Extension (GA-2), Hybrid Facade (GA-3), Extend Command-Engine (GA-4), Contract-Based Validation (GA-5), Optional Namespace + Legacy Fallback (GA-6).
 **Phase 24.4:** 📋 PENDING — References & Templates System (Cluster C — Commands & Workflows, INSERTED, Depends: P24.3, P24.3.1).
-**Phase 24.5:** 📋 PENDING — Workflow Files Architecture (Cluster C — Commands & Workflows, INSERTED, Depends: P24.4).
+**Phase 24.5:** 🟡 ACTIVE — Workflow Files Architecture
+**   Plan 02:** ✅ COMPLETE — fix 4 broken workflow step paths (2 files modified: hm-execute-phase.md, hm-full.md). Typecheck clean. (Cluster C — Commands & Workflows, INSERTED, Depends: P24.4).
 **Phase 24.6:** 📋 PENDING — Build HM-* Commands (Cluster C — Commands & Workflows, INSERTED, Depends: P24.5).
 **Phase 25:** 📋 PENDING — Trajectory + Agent-Work-Contract Redesign (Group 1, Depends: P23, P24, P24.1, P24.2, P24.3, P24.4, P24.5, P24.6).
 **Phase 26:** 📋 PENDING — Pressure + Notification Redesign (Group 1, Depends: P23, P24, P24.1, P24.2, P24.3, P24.4, P24.5, P24.6, P25).
@@ -133,32 +145,46 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 
 ---
 
-## What's Delivered
+## What's Delivered (CODE-VERIFIED 2026-05-29)
 
 | Component | Status | Details |
 |-----------|--------|---------|
 | Build system | ✅ | tsc clean, typecheck passes, dist/ produces correctly |
-| Test suite | ✅ | 125 test files, 1767 tests, 2 failures (README heading assertions) |
-| 24 custom tools | ✅ | Registered in plugin.ts, Zod schemas, CQRS write-side |
+| Test suite | ✅ | **236 test files, 2790/2792 pass** (typecheck clean) |
+| 24+ custom tools | ✅ | Registered in plugin.ts, Zod schemas, CQRS write-side |
 | 6 hook types | ✅ | Event observers, system/messages transforms, tool guards |
 | configs.json schema | ✅ | 29 fields, readConfigs()/writeConfigs(), lazy-cached subscriber |
 | Behavioral profiles | ✅ | 3 modes → profile mapping, wired into hooks/delegation/gates |
 | Toggle gates | ✅ | 6 toggles wired, 4 @future-consumer annotated, 4 deferred |
 | Delegation engine | ✅ | WaiterModel dispatch, dual-signal completion, PTY/SDK lanes |
 | Continuity persistence | ✅ | Deep-clone-on-read, session journal, Q6 state root migration |
-| 89 agents | ✅ | L0/L1/L2/L3 hierarchy, hm-* + hf-* lineages |
-| 123 active skill directories | ✅ | Current primitive inventory excludes `.gitkeep`; lineage counts require MCM doctor proof before shipping claims |
-| 19 commands | ✅ | start-work, plan, deep-init, ultrawork, harness-doctor, etc. |
+| **42 agents** (31 hm-* + 11 hf-*) | ✅ | All exist in `.opencode/agents/`. No hm-l2-* files remain (renamed per 24.1) |
+| **34 skills** | ✅ | SKILL.md packages in `.opencode/skills/` (34 directories) |
+| **118 commands** (99 hm + 7 hf + 12 other) | ✅ | Registered in `.opencode/commands/`. 19 core + 99 hm-* + 7 hf-* + 4 test + 2 harness + 2 deep + 1 ultrawork + 1 sync + 1 start + 1 plan |
+| **106 workflows** (103 hm-*) | ✅ | Exist in `.opencode/workflows/` — contradicts some planning docs claiming "NOT STARTED" |
 | Agent/skill integration constitution | ✅ | BOOT-08: lineage, permissions, hierarchy, routing contracts (L5 governance) |
-| Agent migration verification | ✅ | MCM-01: 56 shipped agents (45 hm-* + 11 hf-*) classified and discoverable |
-| Skill migration verification | ✅ | MCM-02: 48 shipped skills (35 hm-* + 13 hf-*) classified and discoverable |
+| Agent migration verification | ✅ | MCM-01: 42 shipped agents (31 hm-* + 11 hf-*) classified and discoverable |
+| Skill migration verification | ✅ | MCM-02: 34 shipped skills (21 hm-* + 13 hf-*) classified and discoverable |
 | Session Tracker Root Cause Rewrite | ✅ | CP-ST-06: 6 root causes fixed, 418/418 tests pass, retry queue, runtime preservation, parent task result capture |
-| Session-Tracker Bugfix — Unified task/delegate-task | ✅ | P23.2: all 5 bugs fixed (assistant text, compaction, tool attribution, hierarchy manifest, actor metadata). 4/4 plans complete |
-| 8 Gap Phases for Cross-Cluster Integration | 📋 INSERTED | P23.3-P23.10: integration gates between cluster transitions — D→A, A→C, P25→P26→B, E/F/G, G/H/I, Schema+Config, pre-cleanup readiness |
+| Session-Tracker Bugfix — Unified task/delegate-task | ✅ | P23.2: all 5 bugs fixed. 4/4 plans complete |
+| 8 Gap Phases for Cross-Cluster Integration | 📋 INSERTED | P23.3-P23.10: integration gates between cluster transitions |
+| **8 files exceed 500 LOC** (systemic) | ⚠️ | 734, 658, 653, 631, 625, 556, 502, 502 — violates module size cap |
+| **7 dead agent refs** in `.hivemind/governance/config.json` | ❌ | References hm-l2-* names that don't exist (phase 24.1→24.3.1 conflict) |
+| **6 empty phase directories** (24.4-24.9) | ⚠️ | Only `.gitkeep` — code exists but no governance artifacts |
 
 ---
 
-## What's Broken / Missing
+## What's Broken / Missing (CODE-VERIFIED 2026-05-29)
+
+| Issue | Severity | Action |
+|-------|----------|--------|
+| **8 files exceeding 500 LOC cap** — delegation-status.ts (734), child-writer.ts (658), plugin.ts (653), execute-slash-command.ts (631), session-tracker/index.ts (625), coordinator.ts (556), tool-delegation.ts (502), tool-capture.ts (502) | 🔴 CRITICAL | Systemic module size violation — not isolated to 1 file as previously claimed |
+| **7 dead hm-l2-* agent refs** in `.hivemind/governance/config.json` | 🔴 CRITICAL | Governance dispatch to `hm-l2-scout`, `hm-l2-researcher`, etc. will silently fail — names don't exist since 24.1 renaming |
+| **6 empty phase directories** (24.4-24.9) | 🔴 HIGH | Code exists for workflows (106), commands (118), schemas (21), bootstrap tools — but no governance traceability |
+| **Phase 24 root directory empty** — no SPEC, PLAN, or SUMMARY for parent phase | 🔴 HIGH | Sub-phases operated without parent specification, causing I-01 to I-08 cross-phase incoherences |
+| **106 workflow files exist but governance integration missing** — `.opencode/workflows/` has 103 hm-* files but no formal routing layer | 🟡 MEDIUM | 3-layer routing (Command → Workflow → Agent) lacks integration |
+| **10 agents still reference gsd-sdk** — hm-architect, hm-codebase-mapper, hm-executor, hm-l0-orchestrator, et al. | 🟡 MEDIUM | Legacy GSD references not fully cleaned by 24.2 GAP plans |
+| **19 of 31 agents contain loop/gate logic** — violates Q-04 spec, 189+ occurrences | 🟡 MEDIUM | GAP plans intentionally added gating protocols, contradicting integration review |
 
 | Issue | Severity | Action |
 |-------|----------|--------|
@@ -373,11 +399,11 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ### Cluster C — Commands & Workflows
 
-12. **Phase 24.3** 📋 PENDING — Commands Infrastructure (Depends: P23.4, P24.2).
-13. **Phase 24.3.1** 🟡 PLANNED — Governance Session Prototype (Depends: P24, Blocks: P24.3-P24.6).
-14. **Phase 24.4** 📋 PENDING — References & Templates System (Depends: P24.3, P24.3.1).
-15. **Phase 24.5** 📋 PENDING — Workflow Files Architecture (Depends: P24.4).
-16. **Phase 24.6** 📋 PENDING — Build HM-* Commands (Depends: P24.5).
+12. **Phase 24.3** 📋 PENDING — Commands Infrastructure (Depends: P23.4, P24.2). ⚠️ CODE EXISTS for sub-phases but parent phase directory empty.
+13. **Phase 24.3.1** 🟡 PLANNED — Governance Session Prototype (Depends: P24, Blocks: P24.3-P24.6). ⚠️ CODE EXISTS (governance-engine/ tools) but dead hm-l2-* agent refs in config.
+14. **Phase 24.4** 📋 PENDING — References & Templates System. ⚠️ Phase dir EMPTY. `.planning/references/artifact-schema.md` built by 24.2.
+15. **Phase 24.5** 📋 PENDING — Workflow Files Architecture. ⚠️ **CODE EXISTS**: 106 workflow files in `.opencode/workflows/` (103 hm-*). Phase dir EMPTY (governance gap only).
+16. **Phase 24.6** 📋 PENDING — Build HM-* Commands. ⚠️ **CODE EXISTS**: 118 commands total. Phase dir EMPTY (governance gap only).
 
 ### Trajectory + Pressure
 
@@ -391,12 +417,12 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 ### Cluster E — Primitives Distribution
 
-21. **Phase 24.7** 📋 PENDING — Primitives Asset Schema (Depends: P23.6, P26).
-22. **Phase 24.8** 📋 PENDING — Primitives Install-Time Extraction (Depends: P24.7).
+21. **Phase 24.7** 📋 PENDING — Primitives Asset Schema. ⚠️ **CODE EXISTS**: 21 schema files in `src/schema-kernel/`. Phase dir EMPTY.
+22. **Phase 24.8** 📋 PENDING — Primitives Install-Time Extraction. ⚠️ Phase dir EMPTY. `src/features/bootstrap/` exists but traceability unclear.
 
 ### Cluster F — Bootstrap & Init
 
-23. **Phase 24.9** 📋 PENDING — Bootstrap Init Flow Expansion (Depends: P24.8).
+23. **Phase 24.9** 📋 PENDING — Bootstrap Init Flow Expansion. ⚠️ **CODE EXISTS**: `src/features/bootstrap/`, `src/tools/bootstrap-init.ts`, `src/tools/bootstrap-recover.ts`. Phase dir EMPTY.
 
 ### Cluster G — Routing
 
