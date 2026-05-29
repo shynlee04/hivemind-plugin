@@ -96,7 +96,7 @@ Every phase must explicitly trace through these protocols:
 - [x] **P24.4 (Cluster C): References & Templates System** — CANCELLED — architecture correction. Templates/references = static markdown files, NOT runtime engines. Command → Workflow → Agent routing handles everything. `.planning/references/artifact-schema.md` (from 24.2) is sufficient. [GSD-reval: YES - reference patterns from old GSD] [Arch-src: N/A - CANCELLED] [UAT: N/A - CANCELLED]
 - [x] **P24.5 (Cluster C): Workflow Files Architecture** — Size budgets, modes decomposition [GSD-reval: YES] [Arch-src: YES - .opencode/workflows/] [UAT: workflow file creation] ✅ CODE EXISTS — 106 workflow files (103 hm-*). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
 - [x] **P24.6 (Cluster C): Build HM-* Commands** — 118 commands built [GSD-reval: YES] [Arch-src: YES - .opencode/commands/] [UAT: each command runnable] ✅ CODE EXISTS — 118 commands (99 hm + 7 hf + 12 other). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
-- [x] **P25: Trajectory + Agent-Work-Contract Redesign** ✅ PLANNED — 6 plans, 4 waves, TDD-first. [GSD-reval: NO] [Arch-src: YES - src/task-management/trajectory/ + src/features/agent-work-contracts/] [UAT: trajectory state transitions + lifecycle]
+- [x] **P25: Trajectory + Agent-Work-Contract Redesign** ✅ COMPLETE — 34 trajectory tests, 20 contract tests, lifecycle state machine, unified bounds, cross-linking. Typecheck clean, 2844 tests pass. [GSD-reval: NO] [Arch-src: YES - src/task-management/trajectory/ + src/features/agent-work-contracts/] [UAT: trajectory state transitions + lifecycle]
 - [ ] **P26: Pressure + Notification Redesign** — Pressure scoring, notification delivery redesign [GSD-reval: NO] [Arch-src: YES - src/features/pressure/ + src/features/notification/] [UAT: pressure scoring live]
 - [ ] **P26.1 (Cluster B): Artifact Naming Convention** — Standardized naming/pathing [GSD-reval: YES - ADR-0006 from old GSD] [Arch-src: YES - src/shared/ or src/features/governance/] [UAT: artifact naming validation]
 - [ ] **P26.2 (Cluster B): Artifact Dependency & Gatekeeping** — Cross-reference validation [GSD-reval: YES - gate patterns from old GSD] [Arch-src: YES - src/features/governance/] [UAT: cross-ref validation gate]
@@ -1273,16 +1273,16 @@ Plans:
 
 ### Phase 25: Trajectory + Agent-Work-Contract Redesign (Group 1 — was Phase 24)
 
-**Status:** ✅ PLANNED — 6 plans in 4 waves (2026-05-29)
+**Status:** ✅ COMPLETE — 6 plans in 4 waves (2026-05-29)
 **Goal:** Add comprehensive tests to trajectory module (0→15-30 tests), implement agent-work-contract lifecycle state machine, unify compaction bounds, establish bidirectional cross-linking, investigate deriveSurface() — all TDD-first.
 **Depends on:** Phase 23, 24, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6
 **Plans:** 6 plans in 4 waves
-- [ ] 25-01-PLAN.md — Trajectory RED tests (Wave 1, TDD, 29 tests across 4 files)
-- [ ] 25-02-PLAN.md — Unified bounds + deriveSurface investigation (Wave 1, parallel)
-- [ ] 25-03-PLAN.md — Contract lifecycle state machine (Wave 2, TDD, 14 tests)
-- [ ] 25-04-PLAN.md — Bidirectional cross-linking (Wave 2, TDD, 6 tests)
-- [ ] 25-05-PLAN.md — Make trajectory tests GREEN (Wave 3, TDD loop completion)
-- [ ] 25-06-PLAN.md — Final verification + SUMMARY (Wave 4)
+- [x] 25-01-PLAN.md — Trajectory RED tests (Wave 1, TDD, 34 tests across 4 files)
+- [x] 25-02-PLAN.md — Unified bounds + deriveSurface investigation (Wave 1, parallel)
+- [x] 25-03-PLAN.md — Contract lifecycle state machine (Wave 2, TDD, 15 tests)
+- [x] 25-04-PLAN.md — Bidirectional cross-linking (Wave 2, TDD, 6 tests)
+- [x] 25-05-PLAN.md — Make trajectory tests GREEN (Wave 3, TDD loop completion)
+- [x] 25-06-PLAN.md — Final verification + SUMMARY (Wave 4)
 
 **Governance:**
 
