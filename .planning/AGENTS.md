@@ -2,6 +2,14 @@
 
 **Evidence level:** L5 documentation guidance only. This file does not prove runtime readiness; runtime claims require L1-L3 proof from authorized verification workflows.
 
+## CONSTITUTION: Source vs Deploy
+
+- `assets/` = SOURCE of truth for ALL shipped primitives (agents, commands, skills, workflows, references, templates)
+- `.opencode/` = DEPLOYED copy (client-side manifestation). NEVER develop directly here.
+- Development workflow: edit in `assets/` → run `node scripts/sync-assets.js` → verify in `.opencode/`
+- If `.opencode/` is deleted, running `node scripts/sync-assets.js` (or `npm run build`) regenerates everything.
+- Exception: `gsd-*` primitives are developer tooling, NOT shipped, and may live in `.opencode/get-shit-done/`
+
 ## 1. Sector purpose and lifecycle role
 
 `.planning/` is the Planning/Governance sector for source-backed requirements, roadmaps, architecture maps, audits, research, lifecycle notes, and phase authorization artifacts. It explains and gates work; it does not implement runtime behavior. Source evidence: `.planning/ROADMAP.md:29-49`, `.planning/architecture/sector-agents-docs-implementation-plan-2026-05-07.md:12-15`, `.planning/codebase/STRUCTURE.md:73-79`.
