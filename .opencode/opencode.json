@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": {
+      "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/*": "allow"
+    },
+    "external_directory": {
+      "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/*": "allow"
+    }
+  }
+}
