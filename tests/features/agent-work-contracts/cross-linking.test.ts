@@ -8,6 +8,11 @@ import {
   findContractsByTrajectory,
 } from "../../../src/features/agent-work-contracts/index.js"
 
+import {
+  AgentWorkCreateToolInputSchema,
+  parseAgentWorkCreateToolInput,
+} from "../../../src/schema-kernel/agent-work-contract.schema.js"
+
 import type {
   AgentWorkContract,
   AgentWorkCreateResult,
@@ -155,5 +160,75 @@ describe("agent work contract types — pressure removal", () => {
     createAgentWorkContract({ ...createInput(root, "traj-shared"), id: "contract-2" })
     const found = findContractsByTrajectory(root, "traj-shared")
     expect(found).toHaveLength(2)
+  })
+})
+
+describe("agent work contract Zod schema — backward compatible pressure field stripping", () => {
+  const validInput = {
+    ownerAgent: "test-agent",
+    taskBoundary: "Test task",
+    minimumEvidenceLevel: "L2_AUTOMATED_TEST",
+  }
+
+  it("Schema.parse() accepts input WITH pressureScore, pressureTier, pressureApproved — no error", () => {
+    const result = AgentWorkCreateToolInputSchema.parse({
+      ...validInput,
+      pressureScore: 0.9,
+      pressureTier: 8,
+      pressureApproved: true,
+    })
+    expect(result).toBeDefined()
+    expect(result.ownerAgent).toBe("test-agent")
+  })
+
+  it("Schema.parse() result does NOT contain pressureScore (stripped)", () => {
+    const result = AgentWorkCreateToolInputSchema.parse({
+      ...validInput,
+      pressureScore: 0.9,
+    })
+    expect((result as Record<string, unknown>).pressureScore).toBeUndefined()
+  })
+
+  it("Schema.parse() result does NOT contain pressureTier (stripped)", () => {
+    const result = AgentWorkCreateToolInputSchema.parse({
+      ...validInput,
+      pressureTier: 8,
+    })
+    expect((result as Record<string, unknown>).pressureTier).toBeUndefined()
+  })
+
+  it("Schema.parse() accepts input WITHOUT pressure fields — works normally", () => {
+    const result = AgentWorkCreateToolInputSchema.parse(validInput)
+    expect(result.ownerAgent).toBe("test-agent")
+    expect(result.taskBoundary).toBe("Test task")
+  })
+
+  it("Schema.parse() validates required fields (ownerAgent, taskBoundary, minimumEvidenceLevel)", () => {
+    expect(() => AgentWorkCreateToolInputSchema.parse({})).toThrow()
+    expect(() =>
+      AgentWorkCreateToolInputSchema.parse({ ownerAgent: "a", taskBoundary: "b" }),
+    ).toThrow() // missing minimumEvidenceLevel
+  })
+
+  it("Schema.parse() rejects missing ownerAgent", () => {
+    expect(() =>
+      AgentWorkCreateToolInputSchema.parse({
+        taskBoundary: "Test",
+        minimumEvidenceLevel: "L2_AUTOMATED_TEST",
+      }),
+    ).toThrow()
+  })
+
+  it("parseAgentWorkCreateToolInput strips pressure fields from output", () => {
+    const result = parseAgentWorkCreateToolInput({
+      ...validInput,
+      pressureScore: 0.9,
+      pressureTier: 8,
+      pressureApproved: true,
+    })
+    expect((result as Record<string, unknown>).pressureScore).toBeUndefined()
+    expect((result as Record<string, unknown>).pressureTier).toBeUndefined()
+    expect((result as Record<string, unknown>).pressureApproved).toBeUndefined()
+    expect(result.ownerAgent).toBe("test-agent")
   })
 })
