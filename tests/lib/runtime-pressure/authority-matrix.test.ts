@@ -7,21 +7,29 @@ describe("runtime pressure authority matrix", () => {
     const tools = inspectToolAuthorityCatalog().map((entry) => entry.name).sort()
 
     expect(tools).toEqual([
+      "bootstrap-init",
+      "bootstrap-recover",
       "configure-primitive",
+      "create-governance-session",
       "delegate-task",
       "delegation-status",
+      "execute-slash-command",
       "hivemind-agent-work-create",
       "hivemind-agent-work-export",
       "hivemind-command-engine",
       "hivemind-doc",
       "hivemind-pressure",
       "hivemind-sdk-supervisor",
+      "hivemind-session-view",
       "hivemind-trajectory",
       "prompt-analyze",
       "prompt-skim",
       "run-background-command",
+      "session-context",
+      "session-hierarchy",
       "session-journal-export",
       "session-patch",
+      "session-tracker",
       "validate-restart",
     ])
   })
