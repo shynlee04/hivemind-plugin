@@ -18,6 +18,43 @@ Internal state lives in `.hivemind/` (journals, lineage, session-tracker, runtim
 
 ---
 
+### Source vs Deploy Architecture
+
+The project follows a strict **source-of-truth → deploy** model for all shipped OpenCode primitives:
+
+```
+assets/                      → Source of truth for all primitives
+assets/agents/               → 42 agent .md definitions + build.json
+assets/commands/             → 124 command definitions
+assets/skills/               → 34 skill packages (SKILL.md + references/)
+assets/workflows/            → 103 workflow files
+assets/references/           → Reference docs
+assets/templates/            → Template files
+assets/.hivemind/            → Bootstrap state templates
+
+scripts/sync-assets.js       → Sync tool: assets/ → .opencode/
+
+.opencode/agents/            → Deployed copy (synced from assets/agents/)
+.opencode/commands/          → Deployed copy (mirrored to command/ as well)
+.opencode/skills/            → Deployed copy (synced from assets/skills/)
+.opencode/workflows/         → Deployed copy (synced from assets/workflows/)
+.opencode/plugins/           → Plugin loader wrappers (thin, re-export dist/)
+.opencode/get-shit-done/     → GSD developer tooling (NOT shipped, exception to rule)
+```
+
+**Development workflow:**
+1. Edit primitives in `assets/` (or author in `.hivefiver-meta-builder/` then reflect to `assets/`)
+2. Run `node scripts/sync-assets.js` (or `npm run build`) to deploy to `.opencode/`
+3. Verify behavior in `.opencode/` — this is the read-only deployed view
+
+**Rules:**
+- NEVER develop directly in `.opencode/` — it is a deploy target, not a development directory
+- If `.opencode/` is deleted, running the sync script regenerates everything from `assets/`
+- User modifications to `.opencode/` files are backed up (`.backup` suffix) before overwrite during sync
+- GSD (`gsd-*`) primitives are internal developer tooling, NOT shipped, stored in `.opencode/get-shit-done/`
+
+---
+
 ## 2. Directory Layout
 
 ```
