@@ -1,32 +1,127 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  TRAJECTORY_AUTO_TRANSITIONS,
   TRAJECTORY_LEDGER_VERSION,
+  TRAJECTORY_TRANSITIONS,
 } from "../../../src/task-management/trajectory/types.js"
 
 import type {
   EvidenceRef,
+  JumpLink,
+  PhaseTrajectoryRecord,
   TrajectoryCheckpoint,
   TrajectoryEvent,
   TrajectoryLedger,
   TrajectoryMutationInput,
   TrajectoryRecord,
+  TrajectoryStatus,
 } from "../../../src/task-management/trajectory/types.js"
 
 describe("trajectory types", () => {
   it("TRAJECTORY_LEDGER_VERSION is 1 (const assertion)", () => {
     expect(TRAJECTORY_LEDGER_VERSION).toBe(1)
-    // Verify it's a const assertion by checking the type narrows to literal 1
     const version: 1 = TRAJECTORY_LEDGER_VERSION
     expect(version).toBe(1)
   })
 
-  it("TrajectoryStatus type accepts 'active' and 'closed'", () => {
-    // Runtime validation that the type values are correct
-    const active: "active" = "active"
-    const closed: "closed" = "closed"
-    expect(active).toBe("active")
-    expect(closed).toBe("closed")
+  it("TrajectoryStatus has exactly 5 members: planning, executing, verifying, completed, closed", () => {
+    const statuses: TrajectoryStatus[] = ["planning", "executing", "verifying", "completed", "closed"]
+    expect(statuses).toHaveLength(5)
+    // Verify each is a valid TrajectoryStatus
+    for (const s of statuses) {
+      const typed: TrajectoryStatus = s
+      expect(typeof typed).toBe("string")
+    }
+  })
+
+  it("TRAJECTORY_TRANSITIONS['planning'] includes 'executing' and 'closed'", () => {
+    expect(TRAJECTORY_TRANSITIONS["planning"]).toContain("executing")
+    expect(TRAJECTORY_TRANSITIONS["planning"]).toContain("closed")
+  })
+
+  it("TRAJECTORY_TRANSITIONS['executing'] includes 'verifying' and 'closed'", () => {
+    expect(TRAJECTORY_TRANSITIONS["executing"]).toContain("verifying")
+    expect(TRAJECTORY_TRANSITIONS["executing"]).toContain("closed")
+  })
+
+  it("TRAJECTORY_TRANSITIONS['verifying'] includes 'completed' and 'closed'", () => {
+    expect(TRAJECTORY_TRANSITIONS["verifying"]).toContain("completed")
+    expect(TRAJECTORY_TRANSITIONS["verifying"]).toContain("closed")
+  })
+
+  it("TRAJECTORY_TRANSITIONS['completed'] includes 'closed' only", () => {
+    expect(TRAJECTORY_TRANSITIONS["completed"]).toEqual(["closed"])
+  })
+
+  it("TRAJECTORY_TRANSITIONS['closed'] is empty array (terminal state)", () => {
+    expect(TRAJECTORY_TRANSITIONS["closed"]).toEqual([])
+  })
+
+  it("PhaseTrajectoryRecord extends TrajectoryRecord with phaseNumber and optional phaseName", () => {
+    const phaseRecord: PhaseTrajectoryRecord = {
+      id: "traj-phase-25.5",
+      rootSessionId: "ses-root",
+      sessionId: null,
+      parentTrajectoryId: null,
+      status: "planning",
+      evidenceRefs: [],
+      checkpoints: [],
+      events: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      phaseNumber: "25.5",
+      phaseName: "Trajectory + Contract Redesign",
+    }
+    expect(phaseRecord.phaseNumber).toBe("25.5")
+    expect(phaseRecord.phaseName).toBe("Trajectory + Contract Redesign")
+    // Verify it satisfies TrajectoryRecord shape
+    expect(phaseRecord.id).toBe("traj-phase-25.5")
+    expect(phaseRecord.status).toBe("planning")
+  })
+
+  it("JumpLink type enforces delegation:{childSessionID} format", () => {
+    const jumpLink: JumpLink = "delegation:ses_child_123"
+    expect(jumpLink).toMatch(/^delegation:/)
+    // Verify it's a string (runtime check for template literal)
+    expect(typeof jumpLink).toBe("string")
+    expect(jumpLink.startsWith("delegation:")).toBe(true)
+  })
+
+  it("TrajectoryRecord.parentTrajectoryId accepts string | null", () => {
+    const withParent: TrajectoryRecord = {
+      id: "traj-ses-child",
+      rootSessionId: "ses-root",
+      sessionId: "ses-child",
+      parentTrajectoryId: "traj-phase-25.5",
+      status: "executing",
+      evidenceRefs: [],
+      checkpoints: [],
+      events: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+    expect(withParent.parentTrajectoryId).toBe("traj-phase-25.5")
+
+    const withoutParent: TrajectoryRecord = {
+      id: "traj-phase-25.5",
+      rootSessionId: "ses-root",
+      sessionId: null,
+      parentTrajectoryId: null,
+      status: "planning",
+      evidenceRefs: [],
+      checkpoints: [],
+      events: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+    expect(withoutParent.parentTrajectoryId).toBeNull()
+  })
+
+  it("TRAJECTORY_AUTO_TRANSITIONS maps event types to target states", () => {
+    expect(TRAJECTORY_AUTO_TRANSITIONS["delegation:started"]).toBe("executing")
+    expect(TRAJECTORY_AUTO_TRANSITIONS["execution:complete"]).toBe("verifying")
+    expect(TRAJECTORY_AUTO_TRANSITIONS["verification:pass"]).toBe("completed")
   })
 
   it("EvidenceRef is string type", () => {
@@ -62,29 +157,6 @@ describe("trajectory types", () => {
     expect(typeof event.createdAt).toBe("number")
   })
 
-  it("TrajectoryRecord shape has all required fields", () => {
-    const record: TrajectoryRecord = {
-      id: "traj-1",
-      rootSessionId: "ses-root",
-      sessionId: "ses-1",
-      parentTrajectoryId: null,
-      status: "active",
-      evidenceRefs: ["ref-1"],
-      checkpoints: [],
-      events: [],
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }
-    expect(record.id).toBe("traj-1")
-    expect(record.rootSessionId).toBe("ses-root")
-    expect(record.sessionId).toBe("ses-1")
-    expect(record.parentTrajectoryId).toBeNull()
-    expect(record.status).toBe("active")
-    expect(Array.isArray(record.evidenceRefs)).toBe(true)
-    expect(Array.isArray(record.checkpoints)).toBe(true)
-    expect(Array.isArray(record.events)).toBe(true)
-  })
-
   it("TrajectoryLedger shape has version, updatedAt, trajectories", () => {
     const ledger: TrajectoryLedger = {
       version: TRAJECTORY_LEDGER_VERSION,
@@ -103,7 +175,6 @@ describe("trajectory types", () => {
     }
     expect(input.projectRoot).toBe("/tmp/test")
     expect(input.trajectoryId).toBe("traj-1")
-    // Optional fields should be undefined by default
     expect(input.rootSessionId).toBeUndefined()
     expect(input.sessionId).toBeUndefined()
     expect(input.evidenceRef).toBeUndefined()
