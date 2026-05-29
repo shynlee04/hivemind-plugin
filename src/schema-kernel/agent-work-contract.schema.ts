@@ -85,6 +85,10 @@ export const AgentWorkContractStoreSchema = z.object({
 
 /**
  * Tool input schema for `hivemind-agent-work-create`.
+ *
+ * Per D-43/D-44: pressure fields are ACCEPTED but STRIPPED from parsed output.
+ * The schema accepts them for backward compatibility, but the transform removes
+ * them so operations never see pressure data.
  */
 export const AgentWorkCreateToolInputSchema = z.object({
   id: z.string().min(1).optional(),
@@ -105,10 +109,11 @@ export const AgentWorkCreateToolInputSchema = z.object({
   reinjectionPayload: z.string().default(""),
   sourceRefs: z.array(z.string().min(1)).default([]),
   trajectoryId: z.string().min(1).optional(),
+  // Pressure fields: ACCEPTED for backward compat (D-43) but STRIPPED in transform (D-44)
   pressureScore: z.number().optional(),
   pressureTier: z.number().optional(),
   pressureApproved: z.boolean().default(false),
-})
+}).transform(({ pressureScore: _ps, pressureTier: _pt, pressureApproved: _pa, ...rest }) => rest)
 
 /**
  * Tool input schema for `hivemind-agent-work-export`.
