@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto"
 
 import { attachTrajectoryEvidence } from "../../task-management/trajectory/index.js"
 import { detectRuntimePressure } from "../runtime-pressure/index.js"
-import { getAgentWorkContract, upsertAgentWorkContract } from "./store.js"
+import { ANCHOR_LIMIT, BRIEFING_LIMIT, REINJECTION_LIMIT, SUMMARY_LIMIT } from "./bounds.js"
+import { getAgentWorkContract, readAgentWorkContracts, upsertAgentWorkContract } from "./store.js"
 import type {
   AgentWorkCompaction,
   AgentWorkContract,
@@ -11,11 +12,6 @@ import type {
   CreateAgentWorkContractInput,
   ExportAgentWorkContractInput,
 } from "./types.js"
-
-const BRIEFING_LIMIT = 1_200
-const SUMMARY_LIMIT = 1_200
-const REINJECTION_LIMIT = 2_400
-const ANCHOR_LIMIT = 20
 
 /**
  * Create a pressure-aware durable agent work contract.
@@ -94,9 +90,9 @@ function boundCompaction(compaction: AgentWorkCompaction): AgentWorkCompaction {
   return {
     briefing: boundText(compaction.briefing, BRIEFING_LIMIT),
     summary: boundText(compaction.summary, SUMMARY_LIMIT),
-    anchors: compaction.anchors.slice(0, ANCHOR_LIMIT).map((anchor) => boundText(anchor, 160)),
+    anchors: compaction.anchors.slice(0, ANCHOR_LIMIT).map((anchor: string) => boundText(anchor, 160)),
     reinjectionPayload: boundText(compaction.reinjectionPayload, REINJECTION_LIMIT),
-    sourceRefs: compaction.sourceRefs.slice(0, ANCHOR_LIMIT).map((sourceRef) => boundText(sourceRef, 240)),
+    sourceRefs: compaction.sourceRefs.slice(0, ANCHOR_LIMIT).map((sourceRef: string) => boundText(sourceRef, 240)),
   }
 }
 
@@ -159,4 +155,16 @@ function renderMarkdownContract(contract: AgentWorkContract): string {
  */
 function renderList(values: string[]): string {
   return values.length > 0 ? values.map((value) => `- ${value}`).join("\n") : "- None"
+}
+
+/**
+ * Find all contracts matching a given trajectory ID.
+ *
+ * @param projectRoot - Trusted project root.
+ * @param trajectoryId - Trajectory ID to match.
+ * @returns Deep-cloned contracts with the given trajectoryId.
+ */
+export function findContractsByTrajectory(projectRoot: string, trajectoryId: string): AgentWorkContract[] {
+  const store = readAgentWorkContracts(projectRoot)
+  return Object.values(store.contracts).filter((contract) => contract.trajectoryId === trajectoryId)
 }

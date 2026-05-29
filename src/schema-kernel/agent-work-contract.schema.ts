@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { ANCHOR_LIMIT, BRIEFING_LIMIT, REINJECTION_LIMIT, SUMMARY_LIMIT } from "../features/agent-work-contracts/bounds.js"
+
 /**
  * Evidence hierarchy labels accepted by agent work contracts.
  */
@@ -49,11 +51,11 @@ export const AgentWorkEvidenceSchema = z.object({
  * Bounded compaction preservation payload schema.
  */
 export const AgentWorkCompactionSchema = z.object({
-  briefing: z.string().default(""),
-  summary: z.string().default(""),
-  anchors: z.array(z.string().min(1)).default([]),
-  reinjectionPayload: z.string().default(""),
-  sourceRefs: z.array(z.string().min(1)).default([]),
+  briefing: z.string().max(BRIEFING_LIMIT).default(""),
+  summary: z.string().max(SUMMARY_LIMIT).default(""),
+  anchors: z.array(z.string().min(1)).max(ANCHOR_LIMIT).default([]),
+  reinjectionPayload: z.string().max(REINJECTION_LIMIT).default(""),
+  sourceRefs: z.array(z.string().min(1)).max(ANCHOR_LIMIT).default([]),
 })
 
 /**
