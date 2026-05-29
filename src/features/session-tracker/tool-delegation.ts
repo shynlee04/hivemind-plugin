@@ -69,8 +69,6 @@ export class ToolDelegation {
     this.pendingRegistry = deps.pendingRegistry
     this.manifestWriter = deps.manifestWriter
     this.projectRoot = deps.projectRoot
-    // projectRoot is used by createDelegationTrajectoryAndContract (Task 3)
-    void this.projectRoot
   }
 
   /**
@@ -338,6 +336,10 @@ export class ToolDelegation {
       `${rootMain}/`,
       `${childSessionID}.json`,
     )
+    // REQ-25.1-01, REQ-25.1-02: Create trajectory record and agent-work-contract
+    await this.createDelegationTrajectoryAndContract(
+      childSessionID, input.sessionID, subagentType, description, rootMain, input.tool,
+    )
     // BUG-3 FIX: Extract the child agent's final assistant response and append it
     // as both a journey entry AND a turn. OpenCode fires chat.message for the parent
     // session (not the child), so child assistant responses are never captured by the
@@ -365,6 +367,105 @@ export class ToolDelegation {
       await this.childWriter.updateChildStatus(input.sessionID, childSessionID, "completed")
       await this.sessionIndexWriter.updateChildStatus(rootMain, childSessionID, "completed")
       await this.manifestWriter.updateChildStatus(rootMain, childSessionID, "completed")
+    }
+  }
+
+  /**
+   * Creates trajectory record and agent-work-contract for a delegation.
+   * Best-effort: failures are logged but do not break delegation.
+   *
+   * @param childSessionID - The child session ID.
+   * @param parentSessionID - The parent session ID.
+   * @param subagentType - The subagent type.
+   * @param description - The task description.
+   * @param rootMain - The root main session ID.
+   * @param tool - The tool name used for dispatch.
+   */
+  private async createDelegationTrajectoryAndContract(
+    childSessionID: string,
+    parentSessionID: string,
+    subagentType: string,
+    description: string,
+    rootMain: string,
+    tool: string,
+  ): Promise<void> {
+    const trajectoryId = `traj-${childSessionID}`
+    const contractId = `awc-${childSessionID}`
+
+    // --- Trajectory (REQ-25.1-01) ---
+    try {
+      const { attachTrajectoryEvidence, eventTrajectory } = await import(
+        "../../task-management/trajectory/index.js"
+      )
+      attachTrajectoryEvidence({
+        projectRoot: this.projectRoot,
+        trajectoryId,
+        rootSessionId: rootMain,
+        sessionId: childSessionID,
+        parentTrajectoryId: `traj-${parentSessionID}`,
+        evidenceRef: `session-tracker:delegation:${tool}:${childSessionID}`,
+      })
+      eventTrajectory({
+        projectRoot: this.projectRoot,
+        trajectoryId,
+        eventType: "delegation_dispatch",
+        summary: `${tool} delegation to ${subagentType}: ${description.slice(0, 200)}`,
+        evidenceRef: `session-tracker:child-json:${childSessionID}`,
+      })
+    } catch (err) {
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Trajectory creation failed for delegation ${childSessionID}`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
+
+    // --- Contract (REQ-25.1-02) ---
+    try {
+      const { createAgentWorkContract } = await import(
+        "../../features/agent-work-contracts/index.js"
+      )
+      createAgentWorkContract({
+        projectRoot: this.projectRoot,
+        id: contractId,
+        owner: {
+          agent: subagentType,
+          sessionId: childSessionID,
+          parentSessionId: parentSessionID,
+        },
+        scope: {
+          taskBoundary: description.slice(0, 500) || "Delegated task",
+          allowedSurfaces: [],
+          dependencies: [],
+          nonGoals: [],
+        },
+        evidence: {
+          requiredProof: [],
+          minimumEvidenceLevel: "L4_IMPLEMENTATION_TRACE",
+          verificationCommands: [],
+          blockedStateRules: [],
+        },
+        compaction: {
+          briefing: description.slice(0, 200) || "",
+          summary: "",
+          anchors: [],
+          reinjectionPayload: "",
+          sourceRefs: [],
+        },
+        trajectoryId,
+      })
+    } catch (err) {
+      void this.client.app?.log?.({
+        body: {
+          service: "session-tracker",
+          level: "warn",
+          message: `[Harness] Contract creation failed for delegation ${childSessionID}`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
     }
   }
 }
