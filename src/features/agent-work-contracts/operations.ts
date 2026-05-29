@@ -106,7 +106,7 @@ function boundCompaction(compaction: AgentWorkCompaction): AgentWorkCompaction {
  */
 function boundText(value: string, limit: number): string {
   if (value.length <= limit) return value
-  return value.slice(0, Math.max(0, limit - 1)).trimEnd()
+  return value.slice(0, limit).trimEnd()
 }
 
 /**
