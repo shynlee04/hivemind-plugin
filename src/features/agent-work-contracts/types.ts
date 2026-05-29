@@ -5,7 +5,6 @@ import type {
   AgentWorkOwner,
   AgentWorkScope,
 } from "../../schema-kernel/agent-work-contract.schema.js"
-import type { PressureDecision } from "../runtime-pressure/index.js"
 
 export type {
   AgentWorkCompaction,
@@ -20,6 +19,10 @@ export type {
 
 /**
  * Input accepted by the contract creation operation.
+ *
+ * Per D-09 to D-13, all pressure integration has been removed.
+ * Pressure fields (pressureScore, pressureTier, pressureApproved) are
+ * silently ignored at the schema layer for backward compatibility (D-43/D-44).
  */
 export type CreateAgentWorkContractInput = {
   /** Trusted project root where `.hivemind/state/agent-work-contracts.json` is written. */
@@ -36,36 +39,15 @@ export type CreateAgentWorkContractInput = {
   compaction: AgentWorkCompaction
   /** Optional trajectory ID to receive an evidence reference. */
   trajectoryId?: string
-  /** Optional pressure score to classify before writing. */
-  pressureScore?: number
-  /** Optional direct pressure tier to classify before writing. */
-  pressureTier?: number
-  /** True when the caller has approved a gated-pressure write. */
-  pressureApproved?: boolean
 }
 
 /**
  * Result returned when a contract create operation writes successfully.
+ *
+ * Per D-09 to D-13, pressure integration removed.
+ * createAgentWorkContract returns the contract directly.
  */
-export type AgentWorkCreateSuccess = {
-  status: "created"
-  contract: AgentWorkContract
-  pressureDecision: PressureDecision
-}
-
-/**
- * Result returned when Phase 57 pressure gates prevent a write.
- */
-export type AgentWorkCreatePressureBlocked = {
-  status: "pressure-blocked"
-  pressureDecision: PressureDecision
-  reason: string
-}
-
-/**
- * Union result for contract creation.
- */
-export type AgentWorkCreateResult = AgentWorkCreateSuccess | AgentWorkCreatePressureBlocked
+export type AgentWorkCreateResult = AgentWorkContract
 
 /**
  * Export operation input for a durable work contract.

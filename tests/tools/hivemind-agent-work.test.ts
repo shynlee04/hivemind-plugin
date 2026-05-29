@@ -53,21 +53,26 @@ describe("hivemind agent work tools", () => {
     const exportTool = createHivemindAgentWorkExportTool(root)
 
     const created = parseResult(await createTool.execute(createArgs as never, mockCtx))
-    const createdData = created.data as { contract: { id: string } }
-    const exported = parseResult(await exportTool.execute({ contractId: createdData.contract.id, format: "markdown" } as never, mockCtx))
+    // After pressure removal, tool returns contract directly in data (not wrapped in { contract })
+    const createdData = created.data as { id: string }
+    const exported = parseResult(await exportTool.execute({ contractId: createdData.id, format: "markdown" } as never, mockCtx))
 
     expect(created.kind).toBe("success")
-    expect(createdData.contract.id).toMatch(/^awc_/)
+    expect(createdData.id).toMatch(/^awc_/)
     expect(exported).toMatchObject({ kind: "success", data: { format: "markdown" } })
     expect(String((exported.data as { payload: string }).payload)).toContain("Implement agent work contracts")
   })
 
-  it("does not write contracts when Phase 57 pressure blocks the create action", async () => {
+  it("creates contract with backward-compatible pressure fields (silently ignored)", async () => {
     const createTool = createHivemindAgentWorkCreateTool(root)
 
-    const result = parseResult(await createTool.execute({ ...createArgs, pressureTier: 9 } as never, mockCtx))
+    // Passing pressure fields should NOT error — they are silently ignored (D-43/D-44)
+    const result = parseResult(await createTool.execute({ ...createArgs, pressureTier: 9, pressureScore: 0.9 } as never, mockCtx))
 
-    expect(result).toMatchObject({ kind: "error", data: { status: "pressure-blocked" } })
-    expect(existsSync(join(root, ".hivemind", "state", "agent-work-contracts.json"))).toBe(false)
+    expect(result.kind).toBe("success")
+    // Contract should be created, not pressure-blocked
+    const data = result.data as { id: string; status: string }
+    expect(data.id).toMatch(/^awc_/)
+    expect(data.status).toBe("created")
   })
 })

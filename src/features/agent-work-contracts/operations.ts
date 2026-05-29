@@ -1,38 +1,26 @@
 import { randomUUID } from "node:crypto"
 
 import { attachTrajectoryEvidence } from "../../task-management/trajectory/index.js"
-import { detectRuntimePressure } from "../runtime-pressure/index.js"
 import { ANCHOR_LIMIT, BRIEFING_LIMIT, REINJECTION_LIMIT, SUMMARY_LIMIT } from "./bounds.js"
 import { getAgentWorkContract, readAgentWorkContracts, upsertAgentWorkContract } from "./store.js"
 import type {
   AgentWorkCompaction,
   AgentWorkContract,
-  AgentWorkCreateResult,
   AgentWorkExportResult,
   CreateAgentWorkContractInput,
   ExportAgentWorkContractInput,
 } from "./types.js"
 
 /**
- * Create a pressure-aware durable agent work contract.
+ * Create a durable agent work contract.
  *
- * @param input - Contract fields and pressure context.
- * @returns Created contract or pressure-blocked result.
+ * Per D-09 to D-13, all pressure integration has been removed.
+ * Per D-43/D-44, old pressure fields are silently ignored at the schema layer.
+ *
+ * @param input - Contract fields.
+ * @returns Created contract.
  */
-export function createAgentWorkContract(input: CreateAgentWorkContractInput): AgentWorkCreateResult {
-  const pressureDecision = detectRuntimePressure({
-    score: input.pressureScore,
-    tier: input.pressureTier,
-    toolName: "hivemind-agent-work-create",
-  })
-
-  if (pressureDecision.outcome === "block") {
-    return { status: "pressure-blocked", pressureDecision, reason: pressureDecision.reason }
-  }
-  if (pressureDecision.outcome === "require_approval" && input.pressureApproved !== true) {
-    return { status: "pressure-blocked", pressureDecision, reason: "gated pressure requires explicit approval before contract store writes" }
-  }
-
+export function createAgentWorkContract(input: CreateAgentWorkContractInput): AgentWorkContract {
   const now = Date.now()
   const id = input.id ?? `awc_${randomUUID()}`
   const trajectoryEvidenceRef = input.trajectoryId ? `agent-work-contract:${id}` : undefined
@@ -60,7 +48,7 @@ export function createAgentWorkContract(input: CreateAgentWorkContractInput): Ag
     })
   }
 
-  return { status: "created", contract: persisted, pressureDecision }
+  return persisted
 }
 
 /**

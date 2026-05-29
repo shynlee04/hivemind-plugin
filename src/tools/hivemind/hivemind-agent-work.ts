@@ -18,7 +18,7 @@ type ToolContext = { sessionID?: string }
  * Create the `hivemind-agent-work-create` OpenCode tool.
  *
  * @param projectRoot - Trusted project root where the contract store is written.
- * @returns Tool that creates pressure-aware durable work contracts.
+ * @returns Tool that creates durable work contracts.
  *
  * @example
  * ```typescript
@@ -29,7 +29,7 @@ export function createHivemindAgentWorkCreateTool(projectRoot: string): ReturnTy
   const s = tool.schema
 
   return tool({
-    description: "Create a durable, pressure-aware agent work contract without dispatching sessions or mutating delegation records.",
+    description: "Create a durable agent work contract without dispatching sessions or mutating delegation records.",
     args: {
       id: s.string().optional().describe("Optional stable contract ID"),
       ownerAgent: s.string().describe("Agent that owns the work contract"),
@@ -49,17 +49,15 @@ export function createHivemindAgentWorkCreateTool(projectRoot: string): ReturnTy
       reinjectionPayload: s.string().optional().describe("Bounded payload for resumed agent reinjection"),
       sourceRefs: s.array(s.string()).optional().describe("Source references for the contract"),
       trajectoryId: s.string().optional().describe("Optional trajectory ID to receive contract evidence"),
-      pressureScore: s.number().optional().describe("Runtime pressure score for Phase 57 decisioning"),
-      pressureTier: s.number().optional().describe("Runtime pressure tier for Phase 57 decisioning"),
-      pressureApproved: s.boolean().optional().describe("Explicit approval for gated-pressure writes"),
+      // Pressure fields: ACCEPTED but IGNORED (D-43, D-44 — backward compatibility)
+      pressureScore: s.number().optional().describe("Deprecated: silently ignored"),
+      pressureTier: s.number().optional().describe("Deprecated: silently ignored"),
+      pressureApproved: s.boolean().optional().describe("Deprecated: silently ignored"),
     },
     async execute(rawArgs: AgentWorkCreateToolInput, _context: ToolContext): Promise<string> {
       try {
         const args = parseAgentWorkCreateToolInput(rawArgs)
         const data = executeAgentWorkCreateToolAction(projectRoot, args)
-        if (data.status === "pressure-blocked") {
-          return renderToolResult(error("Agent work contract create blocked by runtime pressure", data))
-        }
         return renderToolResult(success("Agent work contract created", data))
       } catch (caughtError) {
         const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
@@ -132,9 +130,6 @@ export function executeAgentWorkCreateToolAction(projectRoot: string, args: Agen
       sourceRefs: args.sourceRefs,
     },
     trajectoryId: args.trajectoryId,
-    pressureScore: args.pressureScore,
-    pressureTier: args.pressureTier,
-    pressureApproved: args.pressureApproved,
   })
 }
 

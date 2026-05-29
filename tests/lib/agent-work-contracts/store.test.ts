@@ -33,14 +33,13 @@ const baseContract = {
   },
 } as const
 
-function createInput(projectRoot: string, overrides: Partial<typeof baseContract> & { pressureTier?: number } = {}) {
+function createInput(projectRoot: string, overrides: Partial<typeof baseContract> = {}) {
   return {
     projectRoot,
     owner: overrides.owner ?? baseContract.owner,
     scope: overrides.scope ?? baseContract.scope,
     evidence: overrides.evidence ?? baseContract.evidence,
     compaction: overrides.compaction ?? baseContract.compaction,
-    pressureTier: overrides.pressureTier,
   }
 }
 
@@ -59,19 +58,11 @@ describe("agent work contract store", () => {
     const result = createAgentWorkContract(createInput(root))
 
     expect(result.status).toBe("created")
-    expect(result.contract.scope.taskBoundary).toBe(baseContract.scope.taskBoundary)
+    expect(result.scope.taskBoundary).toBe(baseContract.scope.taskBoundary)
     expect(getAgentWorkContractsFilePath(root)).toBe(join(root, ".hivemind", "state", "agent-work-contracts.json"))
     expect(existsSync(join(root, ".hivemind", "state", "agent-work-contracts.json"))).toBe(true)
     expect(existsSync(join(root, ".hivemind", "state", "delegations.json"))).toBe(false)
     expect(existsSync(join(root, ".hivemind", "state", "session-continuity.json"))).toBe(false)
-  })
-
-  it("applies Phase 57 pressure gates before mutating the contract store", () => {
-    const blocked = createAgentWorkContract(createInput(root, { pressureTier: 9 }))
-
-    expect(blocked.status).toBe("pressure-blocked")
-    expect(blocked.pressureDecision.outcome).toBe("block")
-    expect(existsSync(join(root, ".hivemind", "state", "agent-work-contracts.json"))).toBe(false)
   })
 
   it("bounds compaction preservation payloads for safe reinjection", () => {
@@ -85,32 +76,32 @@ describe("agent work contract store", () => {
       },
     }))
 
-    expect(result.contract.compaction.briefing.length).toBeLessThanOrEqual(1_200)
-    expect(result.contract.compaction.summary.length).toBeLessThanOrEqual(1_200)
-    expect(result.contract.compaction.anchors).toHaveLength(20)
-    expect(result.contract.compaction.reinjectionPayload.length).toBeLessThanOrEqual(2_400)
+    expect(result.compaction.briefing.length).toBeLessThanOrEqual(1_200)
+    expect(result.compaction.summary.length).toBeLessThanOrEqual(1_200)
+    expect(result.compaction.anchors).toHaveLength(20)
+    expect(result.compaction.reinjectionPayload.length).toBeLessThanOrEqual(2_400)
   })
 
   it("exports JSON and Markdown handoff artifacts without mutating the contract store", () => {
     const created = createAgentWorkContract(createInput(root))
     const before = readFileSync(getAgentWorkContractsFilePath(root), "utf-8")
 
-    const jsonExport = exportAgentWorkContract({ projectRoot: root, contractId: created.contract.id, format: "json" })
-    const markdownExport = exportAgentWorkContract({ projectRoot: root, contractId: created.contract.id, format: "markdown" })
+    const jsonExport = exportAgentWorkContract({ projectRoot: root, contractId: created.id, format: "json" })
+    const markdownExport = exportAgentWorkContract({ projectRoot: root, contractId: created.id, format: "markdown" })
     const after = readFileSync(getAgentWorkContractsFilePath(root), "utf-8")
 
     expect(jsonExport.format).toBe("json")
-    expect(jsonExport.payload).toMatchObject({ contract: { id: created.contract.id } })
+    expect(jsonExport.payload).toMatchObject({ contract: { id: created.id } })
     expect(markdownExport.format).toBe("markdown")
-    expect(markdownExport.payload).toContain(`# Agent Work Contract: ${created.contract.id}`)
+    expect(markdownExport.payload).toContain(`# Agent Work Contract: ${created.id}`)
     expect(after).toBe(before)
   })
 
   it("returns deep-cloned contracts on read", () => {
     const created = createAgentWorkContract(createInput(root))
     const firstRead = readAgentWorkContracts(root)
-    firstRead.contracts[created.contract.id]!.scope.allowedSurfaces.push("mutated")
+    firstRead.contracts[created.id]!.scope.allowedSurfaces.push("mutated")
 
-    expect(readAgentWorkContracts(root).contracts[created.contract.id]!.scope.allowedSurfaces).not.toContain("mutated")
+    expect(readAgentWorkContracts(root).contracts[created.id]!.scope.allowedSurfaces).not.toContain("mutated")
   })
 })

@@ -58,7 +58,7 @@ describe("agent work contract types — pressure removal", () => {
 
   it("AgentWorkContract type does NOT have pressureScore field", () => {
     const result = createAgentWorkContract(createInput(root, "traj-1"))
-    const contract = result.contract
+    const contract = result
     // pressureScore should not exist on the contract
     expect(Object.keys(contract)).not.toContain("pressureScore")
     expect((contract as Record<string, unknown>).pressureScore).toBeUndefined()
@@ -66,14 +66,14 @@ describe("agent work contract types — pressure removal", () => {
 
   it("AgentWorkContract type does NOT have pressureTier field", () => {
     const result = createAgentWorkContract(createInput(root, "traj-1"))
-    const contract = result.contract
+    const contract = result
     expect(Object.keys(contract)).not.toContain("pressureTier")
     expect((contract as Record<string, unknown>).pressureTier).toBeUndefined()
   })
 
   it("AgentWorkContract type does NOT have pressureApproved field", () => {
     const result = createAgentWorkContract(createInput(root, "traj-1"))
-    const contract = result.contract
+    const contract = result
     expect(Object.keys(contract)).not.toContain("pressureApproved")
     expect((contract as Record<string, unknown>).pressureApproved).toBeUndefined()
   })
@@ -87,7 +87,7 @@ describe("agent work contract types — pressure removal", () => {
     expect((input as Record<string, unknown>).pressureApproved).toBeUndefined()
     // The create call should succeed
     const result = createAgentWorkContract(input)
-    expect(result.contract).toBeDefined()
+    expect(result).toBeDefined()
   })
 
   it("AgentWorkCreateResult does NOT contain pressure-blocked variant", () => {
@@ -100,41 +100,41 @@ describe("agent work contract types — pressure removal", () => {
 
   it("AgentWorkContract has scope.allowedSurfaces field (string array)", () => {
     const result = createAgentWorkContract(createInput(root, "traj-1"))
-    expect(Array.isArray(result.contract.scope.allowedSurfaces)).toBe(true)
-    expect(result.contract.scope.allowedSurfaces).toEqual(["src/test"])
+    expect(Array.isArray(result.scope.allowedSurfaces)).toBe(true)
+    expect(result.scope.allowedSurfaces).toEqual(["src/test"])
   })
 
   it("AgentWorkContract has evidence.requiredProof field (string array)", () => {
     const result = createAgentWorkContract(createInput(root, "traj-1"))
-    expect(Array.isArray(result.contract.evidence.requiredProof)).toBe(true)
+    expect(Array.isArray(result.evidence.requiredProof)).toBe(true)
   })
 
   it("AgentWorkContract status union includes all 5 statuses", () => {
     const result = createAgentWorkContract(createInput(root, "traj-1"))
     // The contract starts in "created" status
-    expect(result.contract.status).toBe("created")
+    expect(result.status).toBe("created")
     // Verify the status is one of the 5 valid statuses
     const validStatuses = ["created", "running", "blocked", "completed", "cancelled"]
-    expect(validStatuses).toContain(result.contract.status)
+    expect(validStatuses).toContain(result.status)
   })
 
   // Preserve existing cross-linking tests
   it("createAgentWorkContract with trajectoryId auto-populates trajectoryId on persisted contract", () => {
     const result = createAgentWorkContract(createInput(root, "traj-1"))
     expect(result.status).toBe("created")
-    expect(result.contract.trajectoryId).toBe("traj-1")
+    expect(result.trajectoryId).toBe("traj-1")
   })
 
   it("createAgentWorkContract without trajectoryId leaves trajectoryId undefined", () => {
     const result = createAgentWorkContract(createInput(root))
     expect(result.status).toBe("created")
-    expect(result.contract.trajectoryId).toBeUndefined()
+    expect(result.trajectoryId).toBeUndefined()
   })
 
   it("createAgentWorkContract with trajectoryId calls attachTrajectoryEvidence", () => {
     const result = createAgentWorkContract(createInput(root, "traj-1"))
     expect(result.status).toBe("created")
-    expect(result.contract.trajectoryEvidenceRef).toContain("agent-work-contract:")
+    expect(result.trajectoryEvidenceRef).toContain("agent-work-contract:")
   })
 
   it("findContractsByTrajectory returns contracts matching trajectoryId", () => {
