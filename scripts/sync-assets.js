@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, rmSync, cpSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 // ── Mode detection ──────────────────────────────────────────────────────────
 const installMode = process.argv.slice(2).includes("--mode=install");
