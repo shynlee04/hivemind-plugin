@@ -1,5 +1,13 @@
 # AGENTS.md
 
+## CONSTITUTION: Source vs Deploy
+
+- `assets/` = SOURCE of truth for ALL shipped primitives (agents, commands, skills, workflows, references, templates)
+- `.opencode/` = DEPLOYED copy (client-side manifestation). NEVER develop directly here.
+- Development workflow: edit in `assets/` → run `node scripts/sync-assets.js` → verify in `.opencode/`
+- If `.opencode/` is deleted, running `node scripts/sync-assets.js` (or `npm run build`) regenerates everything.
+- Exception: `gsd-*` primitives are developer tooling, NOT shipped, and may live in `.opencode/get-shit-done/`
+
 ## Project Overview
 
 ## THE ABSOLUTE ORDER - AFTER EACH AND EVERY FRONT-FACING USER'S PROMPTING (NO MATTER WHAT) FRONT-FACING AGENT NEVER DO SPECIALISTS' WORK
