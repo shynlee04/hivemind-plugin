@@ -2,7 +2,7 @@
 namespace: hm
 agent: hm-planner
 subtask: true
-description: "Create detailed phase plan (PLAN.md) with research, task breakdown, dependency analysis, and goal-backward validation. Routes through hm-phase-researcher, hm-planner, hm-pattern-mapper, hm-plan-checker, and hm-intent-loop agents."
+description: "Create detailed phase plan (PLAN.md) with research, task breakdown, dependency analysis, and goal-backward validation. Routes through hm-phase-researcher, hm-planner, hm-pattern-mapper, hm-plan-checker, hm-intent-loop, and hm-specifier agents."
 argument-hint: "<phase-number> [--research] [--skip-research] [--gaps] [--skip-verify] [--mvp]"
 requires: []
 validation-gates: ["spec-compliance-gate"]

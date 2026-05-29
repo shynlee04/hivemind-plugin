@@ -3,6 +3,8 @@
 **Created:** 2026-05-07  
 **Source:** Full audit reconciliation (SRC, Planning, Primitives) + Codebase Map + HIVEMIND-PHILOSOPHY-2026-04-10.md + PROJECT-ISSUES-2026-05-05.md
 
+**CODE VERIFIED (2026-05-29):** All counts below reflect live codebase scan. See `.planning/research/` for methodology.
+
 **Phase 0 authority:** `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` supersedes older package/CLI naming. Product = Hivemind. Package/bin = `hivemind`. `opencode-harness` and `hivemind-tools` are legacy aliases only.
 
 ---
@@ -15,9 +17,9 @@ Features agents can explicitly call or skills can activate.
 |----|-------------|----------|--------|----------|
 | f-01 | NL command routing (`nl-route` tool) | HIGH | DELIVERED | `src/tools/nl-route.ts`, test coverage |
 | f-02 | Delegation dispatch (`delegate-task` tool) | HIGH | DELIVERED | `src/tools/delegate-task.ts`, `delegation-manager.ts` (450 LOC) |
-| f-03a | Agent registry with permission enforcement | HIGH | PARTIAL | 89 agent files exist, no runtime enforcement |
-| f-03b | Skill registry with consumption tracking | HIGH | PARTIAL | 123 active skill directories plus `.gitkeep`; integration-contracts skill maps bindings |
-| f-03c | Tool registry and wiring | HIGH | PARTIAL | 16 tools in plugin.ts, no unified registry |
+| f-03a | Agent registry with permission enforcement | HIGH | PARTIAL | **42 agent files exist** (31 hm-* + 11 hf-*, code-verified 2026-05-29), no runtime enforcement |
+| f-03b | Skill registry with consumption tracking | HIGH | PARTIAL | **34 skill directories** (code-verified 2026-05-29); integration-contracts skill maps bindings |
+| f-03c | Tool registry and wiring | HIGH | PARTIAL | **24+ tools** in plugin.ts, no unified registry |
 | f-03e | Custom tool registry and stacking | MEDIUM | PARTIAL | Tools exist, no stacking |
 | f-03f | Hook registry and feature wiring | MEDIUM | PARTIAL | 6 hook types wired, no registry |
 | f-06 | Multi-lane delegation (native/SDK/PTY) | HIGH | PARTIAL | Core WaiterModel works, lanes exist but not routed |

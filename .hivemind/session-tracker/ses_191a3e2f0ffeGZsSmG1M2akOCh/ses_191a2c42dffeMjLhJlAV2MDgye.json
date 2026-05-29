@@ -1,0 +1,427 @@
+{
+  "sessionID": "ses_191a2c42dffeMjLhJlAV2MDgye",
+  "parentSessionID": "ses_191a3e2f0ffeGZsSmG1M2akOCh",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-debugger",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Investigate frontmatter writer ENOENT error",
+    "subagentType": "gsd-debugger"
+  },
+  "created": "2026-05-28T11:34:24.490Z",
+  "updated": "2026-05-28T11:36:33.028Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-debugger",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are the subagent Name: gsd-debugger. You must do as this prompt instructed and knowing that you are being delegated.\n\n## INVESTIGATION TASK: Frontmatter Writer Failure / ENOENT Error\n\n### Context\nThe session-tracker in this Hivemind harness project has regressions after C1-C3 changes (commits a6f2bef1..0e035f1c). There are error logs leaking to the TUI saying \"frontmatter writer failure\" - the system cannot track the location of paths/files and produces ENOENT errors.\n\n### Files to Investigate\n1. `src/features/session-tracker/persistence/session-writer.ts` - Session writer with frontmatter writing\n2. `src/features/session-tracker/initialization.ts` - Initialization (lines 152-167 for onLastMessageUpdate callback)\n3. `src/features/session-tracker/capture/last-message-capture.ts` - Last message capture\n4. `src/features/session-tracker/index.ts` - Session tracker entry - `hasMainSessionFile()` method\n5. `src/features/session-tracker/capture/event-capture.ts` - Event capture (sessionFileExists checks)\n6. `src/features/session-tracker/persistence/atomic-write.ts` - Atomic write utilities\n7. `src/features/session-tracker/types.ts` - Types\n\n### Known Issues to Investigate\n1. **Frontmatter update path resolution**: In initialization.ts line 157-165, the `onLastMessageUpdate` callback in `LastMessageCapture` constructor calls `sessionWriter.updateFrontmatter(sessionID, { lastMessage: text })`. If the sessionID doesn't have a corresponding .md file on disk (e.g., for child sessions or sessions that haven't been created yet), this will throw ENOENT.\n\n2. **Latest fix in 0e035f1c**: The latest commit \"fix(session-tracker): check file existence before updating session status or journey to prevent ENOENT warnings\" tried to fix this by adding `sessionFileExists` checks. But the fix might be incomplete or miss some code paths.\n\n3. **Race condition in initialization**: The `onLastMessageUpdate` callback fires from `LastMessageCapture.handleEvent` which is called from the event hook pipeline. If this fires BEFORE `initialize()` completes (before the session directory is created), the frontmatter update will fail with ENOENT.\n\n4. **Child session frontmatter writes**: When `LastMessageCapture` fires for a child session (which has no .md file - only .json files), the `updateFrontmatter` call will always fail with ENOENT because child sessions don't have .md files.\n\n5. **The latest commit 0e035f1c** added checks at some call sites but may have missed:\n   - The `onLastMessageUpdate` callback in initialization.ts\n   - The `handleSessionNextTextEnded` handler\n   - Other implicit frontmatter update paths\n\n### What to Look For\n- All code paths that call `sessionWriter.updateFrontmatter()` or `sessionWriter.appendAssistantTurn()`\n- Check if each code path has proper file existence checks BEFORE the write\n- Check if the error messages are properly swallowed (logged at warn level) vs leaking to TUI\n- Look at what changed in commit 0e035f1c vs what was missed\n\n### Expected Findings\nReturn a structured investigation report with:\n1. Root cause of the frontmatter writer ENOENT errors\n2. Specific code locations (file:line) where the bug manifests\n3. All code paths that are missing file existence checks\n4. Whether the latest fix (0e035f1c) is complete or partial\n5. Evidence from the code (no assumptions without code references)\n\n### Constraints\n- Read-only investigation - do NOT modify any files\n- Every claim must cite specific file paths and line numbers\n- If evidence is insufficient, say so honestly",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I am **subagent: gsd-debugger**, delegated for read-only investigation of frontmatter writer ENOENT errors. Let me start systematically.\n\nFirst, I'll check for existing debug sessions and load the required reference files.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Good — there are active debug sessions. Let me check which ones are most relevant to this investigation, then start reading the source files.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Now let me read the source files and examine the git history to trace the issue.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Now let me read the remaining source files and examine the git history around the key commits.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Let me examine the git history and the plugin hook wiring to understand the full picture.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Let me read the plugin.ts hook wiring and also look at how the event hook pipeline triggers `LastMessageCapture.handleEvent`.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Let me check the remaining `updateFrontmatter` call site in message-capture.ts and the hook wiring context.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Let me do one final check on the hook wiring to understand the event observer pipeline and verify all `updateFrontmatter` call sites.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "I now have all the evidence. Let me compile the comprehensive investigation report.\n\n---\n\n## ROOT CAUSE FOUND\n\n**Debug Session:** Investigating ENOENT frontmatter writer failures after C1-C3 changes\n\n**Root Cause:** The `onLastMessageUpdate` callback registered in `src/features/session-tracker/initialization.ts` (lines 153-166) calls `sessionWriter.updateFrontmatter()` **without any file existence guard**. This callback fires on **every** `message.part.updated` event from the event hook pipeline — including for child sessions (which never have `.md` files) and for main sessions whose `.md` file hasn't been created yet (race condition with `session.created`).\n\nThe commit `0e035f1c` only added guards to `event-capture.ts` lifecycle handlers but completely missed this path, which is the **most frequently triggered** source of ENOENT errors.\n\n### Evidence Summary\n\n**Evidence 1 — The unguarded callback (PRIMARY ROOT CAUSE):**\n\n`initialization.ts:153-166` — The `onLastMessageUpdate` callback:\n```typescript\nconst lastMessageCapture = new LastMessageCapture({\n  onLastMessageUpdate: (sessionID: string, text: string) => {\n    sessionWriter.updateFrontmatter(          // ← UNGUARDED — will fail with ENOENT\n      sessionID,\n      { lastMessage: text },\n    ).catch((err) => {\n      console.warn(                            // ← console.warn leaks to TUI\n        `[Harness] Session tracker: frontmatter update failed for \"${sessionID}\":`,\n        err instanceof Error ? err.message : String(err),\n      )\n    })\n  },\n})\n```\n\n- No `sessionWriter.sessionFileExists(sessionID)` check before the call\n- The `.catch()` swallows but doesn't prevent the ENOENT from happening\n- Uses `console.warn()` instead of `client.app.log()` — this leak to TUI stderr\n\n**Evidence 2 — This fires for EVERY `message.part.updated` event including child sessions:**\n\n`last-message-capture.ts:143-182` — `handleMessagePartUpdated()`:\n- Line 179: `this.onLastMessageUpdate?.(entry.sessionID, combinedText)` — triggers on every text part update\n- The `LastMessageCapture` doesn't distinguish between main and child sessions\n- Line 180: fires for ALL sessions, including children that have no `.md` file\n\n**Evidence 3 — Hook pipeline wires LastMessageCapture for ALL events:**\n\n`plugin.ts:411-416` — The event observer pipeline:\n```typescript\neventObservers: [consumeDelegationFact, sessionEventObserver, ..., async ({ event }) => {\n  if (event && typeof event === \"object\") {\n    const lmc = sessionTracker.getLastMessageCapture()\n    lmc?.handleEvent(event as Record<string, unknown>)\n  }\n}],\n```\n- Every event passes through `LastMessageCapture.handleEvent()`\n- If it's `message.part.updated` with assistant text, the unguarded callback fires\n\n**Evidence 4 — Commit 0e035f1c added guarded checks but missed this path:**\n\n```\nFix added to:         handleSessionIdle (event-capture.ts:344)  ✅\nFix added to:         handleSessionDeleted (event-capture.ts:486)  ✅\nFix added to:         handleSessionError (event-capture.ts:558)  ✅\nFix added to:         handleSessionCompacted (event-capture.ts:825)  ✅\nFix added to:         recordJourneyEntry (event-capture.ts:909, 915)  ✅\nFix MISSING from:     onLastMessageUpdate (initialization.ts:157)  ❌ ← PRIMARY\nFix MISSING from:     handleSessionNextTextEnded (event-capture.ts:780)  ❌ (but dead code)\nFix MISSING from:     handleAssistantMessage (message-capture.ts:231)  ❌ (but dead code)\n```\n\n**Evidence 5 — Child sessions are the most common ENOENT trigger:**\n\nChild sessions only have `.json` files (written by `childWriter`), never `.md` files. Every time a child session produces an assistant text part, `LastMessageCapture.handleMessagePartUpdated()` fires → calls `onLastMessageUpdate` → calls `updateFrontmatter()` → `readFile(filePath, \"utf-8\")` → **ENOENT**.\n\nThis happens for every child delegation (L1, L2, L3...) for every assistant text update.\n\n**Evidence 6 — `console.warn` vs `client.app.log` — the TUI leak:**\n\n- `initialization.ts:161`: Uses `console.warn()` → output goes to stderr → **visible in TUI** as \"frontmatter writer failure\"\n- `event-capture.ts` all handlers: Use `void this.client.app?.log?.({... level: \"warn\" ...})` → goes through OpenCode SDK → **not visible in TUI**\n\n### Files Involved\n\n- **`src/features/session-tracker/initialization.ts:153-166`**: The PRIMARY unguarded `updateFrontmatter` call via `onLastMessageUpdate` callback\n- **`src/features/session-tracker/capture/last-message-capture.ts:179-180`**: Where `onLastMessageUpdate` is invoked for every text part update\n- **`src/features/session-tracker/persistence/session-writer.ts:235-253`**: `updateFrontmatter()` — will throw ENOENT if file doesn't exist (no guard internally either)\n- **`src/plugin.ts:411-416`**: Event observer pipeline that routes all events through `LastMessageCapture`\n\n### Suggested Fix Direction\n\nTwo changes needed:\n\n1. **Add file existence check in `initialization.ts:157`**: Before calling `sessionWriter.updateFrontmatter()`, check `sessionWriter.sessionFileExists(sessionID)`. If false, skip the update silently. This eliminates ENOENT for child sessions.\n\n2. **Change `console.warn` to `client.app.log`**: Replace `console.warn(...)` with `void this.client.app?.log?.({ body: { service: \"session-tracker\", level: \"warn\", ... } })` in the `.catch()` handler. This prevents future TUI leaks even if other edge cases are discovered.\n\n### Files Changed (if fixing)\n- `src/features/session-tracker/initialization.ts` — add `sessionFileExists` guard + use `client.app.log` instead of `console.warn`\n- (Optionally) `src/plugin.ts` — pass `client` reference if `onLastMessageUpdate` needs access to `client.app.log`\n\n### Specialist Hint\n`typescript`",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "gsd-debugger",
+      "content": "I now have all the evidence. Let me compile the comprehensive investigation report.\n\n---\n\n## ROOT CAUSE FOUND\n\n**Debug Session:** Investigating ENOENT frontmatter writer failures after C1-C3 changes\n\n**Root Cause:** The `onLastMessageUpdate` callback registered in `src/features/session-tracker/initialization.ts` (lines 153-166) calls `sessionWriter.updateFrontmatter()` **without any file existence guard**. This callback fires on **every** `message.part.updated` event from the event hook pipeline — including for child sessions (which never have `.md` files) and for main sessions whose `.md` file hasn't been created yet (race condition with `session.created`).\n\nThe commit `0e035f1c` only added guards to `event-capture.ts` lifecycle handlers but completely missed this path, which is the **most frequently triggered** source of ENOENT errors.\n\n### Evidence Summary\n\n**Evidence 1 — The unguarded callback (PRIMARY ROOT CAUSE):**\n\n`initialization.ts:153-166` — The `onLastMessageUpdate` callback:\n```typescript\nconst lastMessageCapture = new LastMessageCapture({\n  onLastMessageUpdate: (sessionID: string, text: string) => {\n    sessionWriter.updateFrontmatter(          // ← UNGUARDED — will fail with ENOENT\n      sessionID,\n      { lastMessage: text },\n    ).catch((err) => {\n      console.warn(                            // ← console.warn leaks to TUI\n        `[Harness] Session tracker: frontmatter update failed for \"${sessionID}\":`,\n        err instanceof Error ? err.message : String(err),\n      )\n    })\n  },\n})\n```\n\n- No `sessionWriter.sessionFileExists(sessionID)` check before the call\n- The `.catch()` swallows but doesn't prevent the ENOENT from happening\n- Uses `console.warn()` instead of `client.app.log()` — this leak to TUI stderr\n\n**Evidence 2 — This fires for EVERY `message.part.updated` event including child sessions:**\n\n`last-message-capture.ts:143-182` — `handleMessagePartUpdated()`:\n- Line 179: `this.onLastMessageUpdate?.(entry.sessionID, combinedText)` — triggers on every text part update\n- The `LastMessageCapture` doesn't distinguish between main and child sessions\n- Line 180: fires for ALL sessions, including children that have no `.md` file\n\n**Evidence 3 — Hook pipeline wires LastMessageCapture for ALL events:**\n\n`plugin.ts:411-416` — The event observer pipeline:\n```typescript\neventObservers: [consumeDelegationFact, sessionEventObserver, ..., async ({ event }) => {\n  if (event && typeof event === \"object\") {\n    const lmc = sessionTracker.getLastMessageCapture()\n    lmc?.handleEvent(event as Record<string, unknown>)\n  }\n}],\n```\n- Every event passes through `LastMessageCapture.handleEvent()`\n- If it's `message.part.updated` with assistant text, the unguarded callback fires\n\n**Evidence 4 — Commit 0e035f1c added guarded checks but missed this path:**\n\n```\nFix added to:         handleSessionIdle (event-capture.ts:344)  ✅\nFix added to:         handleSessionDeleted (event-capture.ts:486)  ✅\nFix added to:         handleSessionError (event-capture.ts:558)  ✅\nFix added to:         handleSessionCompacted (event-capture.ts:825)  ✅\nFix added to:         recordJourneyEntry (event-capture.ts:909, 915)  ✅\nFix MISSING from:     onLastMessageUpdate (initialization.ts:157)  ❌ ← PRIMARY\nFix MISSING from:     handleSessionNextTextEnded (event-capture.ts:780)  ❌ (but dead code)\nFix MISSING from:     handleAssistantMessage (message-capture.ts:231)  ❌ (but dead code)\n```\n\n**Evidence 5 — Child sessions are the most common ENOENT trigger:**\n\nChild sessions only have `.json` files (written by `childWriter`), never `.md` files. Every time a child session produces an assistant text part, `LastMessageCapture.handleMessagePartUpdated()` fires → calls `onLastMessageUpdate` → calls `updateFrontmatter()` → `readFile(filePath, \"utf-8\")` → **ENOENT**.\n\nThis happens for every child delegation (L1, L2, L3...) for every assistant text update.\n\n**Evidence 6 — `console.warn` vs `client.app.log` — the TUI leak:**\n\n- `initialization.ts:161`: Uses `console.warn()` → output goes to stderr → **visible in TUI** as \"frontmatter writer failure\"\n- `event-capture.ts` all handlers: Use `void this.client.app?.log?.({... level: \"warn\" ...})` → goes through OpenCode SDK → **not visible in TUI**\n\n### Files Involved\n\n- **`src/features/session-tracker/initialization.ts:153-166`**: The PRIMARY unguarded `updateFrontmatter` call via `onLastMessageUpdate` callback\n- **`src/features/session-tracker/capture/last-message-capture.ts:179-180`**: Where `onLastMessageUpdate` is invoked for every text part update\n- **`src/features/session-tracker/persistence/session-writer.ts:235-253`**: `updateFrontmatter()` — will throw ENOENT if file doesn't exist (no guard internally either)\n- **`src/plugin.ts:411-416`**: Event observer pipeline that routes all events through `LastMessageCapture`\n\n### Suggested Fix Direction\n\nTwo changes needed:\n\n1. **Add file existence check in `initialization.ts:157`**: Before calling `sessionWriter.updateFrontmatter()`, check `sessionWriter.sessionFileExists(sessionID)`. If false, skip the update silently. This eliminates ENOENT for child sessions.\n\n2. **Change `console.warn` to `client.app.log`**: Replace `console.warn(...)` with `void this.client.app?.log?.({ body: { service: \"session-tracker\", level: \"warn\", ... } })` in the `.catch()` handler. This prevents future TUI leaks even if other edge cases are discovered.\n\n### Files Changed (if fixing)\n- `src/features/session-tracker/initialization.ts` — add `sessionFileExists` guard + use `client.app.log` instead of `console.warn`\n- (Optionally) `src/plugin.ts` — pass `client` reference if `onLastMessageUpdate` needs access to `client.app.log`\n\n### Specialist Hint\n`typescript`",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-28T11:34:36.659Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_lz1QnM8T2nxyfyX7Ak6j5081",
+        "input": {
+          "filePath": "/Users/apple/.config/opencode/get-shit-done/references/mandatory-initial-read.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:36.666Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_Nfz3SUT802UBrUq8zUkJ5815",
+        "input": {
+          "filePath": "/Users/apple/.config/opencode/get-shit-done/references/debugger-philosophy.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:36.672Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_bUepAO8xP6Vb4nFRXBFG5666",
+        "input": {
+          "filePath": "/Users/apple/.config/opencode/get-shit-done/references/common-bug-patterns.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:36.678Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_6ppStZK0JIJe14AiPNVe6282",
+        "input": {
+          "filePath": "/Users/apple/.config/opencode/get-shit-done/references/thinking-models-debug.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:36.688Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_CrhgE6029hIJ45pRkv7U6954",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:47.587Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_D2DX1nmDqzozL9f13xFC1036",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/debug/session-tracker-lastmessage-root-cause-2026-05-25.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:47.593Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_yknWcfFgX1Vuq2lb9czu3076",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/debug/session-tracker-bugfix-2026-05-25.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:47.601Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_WOautEGwKaoysO6NiMb87026",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:55.408Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_tlDkSMaZghjMtjq4evKQ0869",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/initialization.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:55.414Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_HTlOxWSlEwDyb3xdihSX4722",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:55.421Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Tdi9BIkjEyDkrXWfqVSL1732",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/persistence/session-writer.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:34:55.426Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_66NZBUTx20FqgnGRMiSB9083",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/last-message-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:02.176Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_aKbmA6j3Vx7iL61kLO2G4682",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:02.184Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_dGCUSH98vFWDnDndEHsQ6489",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/persistence/atomic-write.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:02.200Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_HNTwa8l66Q2n5VaxL6Fs1425",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/event-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:11.474Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_DmsEQGW8HgiSTydyo7Sn5610",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:11.493Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_Fboou6FbxTiVDMt4XZFl3813",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:19.382Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_qgXUvHFvVaOG5or4ONsW3814",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:19.400Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_I18yO3z6mw0xGV0MspWq5873",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:27.048Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_vCRUK4r8xEpcH7Skgye26008",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:27.056Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_wBYe32eMwZIGwrm5AQaG0927",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:36.147Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_TlUApfYYGHdbzTTl33ur5763",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:36.157Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_2r7mKb8XeKU9KP8WDAu41498",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/message-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:49.366Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Lx6mAJrHSxXwfNOF3K4U5628",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:35:49.377Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_7fj7BnnYFVrfoNCfZGvV2786",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-28T11:36:32.989Z",
+      "type": "assistant_message",
+      "content": "I now have all the evidence. Let me compile the comprehensive investigation report.\n\n---\n\n## ROOT CAUSE FOUND\n\n**Debug Session:** Investigating ENOENT frontmatter writer failures after C1-C3 changes\n\n**Root Cause:** The `onLastMessageUpdate` callback registered in `src/features/session-tracker/initialization.ts` (lines 153-166) calls `sessionWriter.updateFrontmatter()` **without any file existence guard**. This callback fires on **every** `message.part.updated` event from the event hook pipeline — including for child sessions (which never have `.md` files) and for main sessions whose `.md` file hasn't been created yet (race condition with `session.created`).\n\nThe commit `0e035f1c` only added guards to `event-capture.ts` lifecycle handlers but completely missed this path, which is the **most frequently triggered** source of ENOENT errors.\n\n### Evidence Summary\n\n**Evidence 1 — The unguarded callback (PRIMARY ROOT CAUSE):**\n\n`initialization.ts:153-166` — The `onLastMessageUpdate` callback:\n```typescript\nconst lastMessageCapture = new LastMessageCapture({\n  onLastMessageUpdate: (sessionID: string, text: string) => {\n    sessionWriter.updateFrontmatter(          // ← UNGUARDED — will fail with ENOENT\n      sessionID,\n      { lastMessage: text },\n    ).catch((err) => {\n      console.warn(                            // ← console.warn leaks to TUI\n        `[Harness] Session tracker: frontmatter update failed for \"${sessionID}\":`,\n        err instanceof Error ? err.message : String(err),\n      )\n    })\n  },\n})\n```\n\n- No `sessionWriter.sessionFileExists(sessionID)` check before the call\n- The `.catch()` swallows but doesn't prevent the ENOENT from happening\n- Uses `console.warn()` instead of `client.app.log()` — this leak to TUI stderr\n\n**Evidence 2 — This fires for EVERY `message.part.updated` event including child sessions:**\n\n`last-message-capture.ts:143-182` — `handleMessagePartUpdated()`:\n- Line 179: `this.onLastMessageUpdate?.(entry.sessionID, combinedText)` — triggers on every text part update\n- The `LastMessageCapture` doesn't distinguish between main and child sessions\n- Line 180: fires for ALL sessions, including children that have no `.md` file\n\n**Evidence 3 — Hook pipeline wires LastMessageCapture for ALL events:**\n\n`plugin.ts:411-416` — The event observer pipeline:\n```typescript\neventObservers: [consumeDelegationFact, sessionEventObserver, ..., async ({ event }) => {\n  if (event && typeof event === \"object\") {\n    const lmc = sessionTracker.getLastMessageCapture()\n    lmc?.handleEvent(event as Record<string, unknown>)\n  }\n}],\n```\n- Every event passes through `LastMessageCapture.handleEvent()`\n- If it's `message.part.updated` with assistant text, the unguarded callback fires\n\n**Evidence 4 — Commit 0e035f1c added guarded checks but missed this path:**\n\n```\nFix added to:         handleSessionIdle (event-capture.ts:344)  ✅\nFix added to:         handleSessionDeleted (event-capture.ts:486)  ✅\nFix added to:         handleSessionError (event-capture.ts:558)  ✅\nFix added to:         handleSessionCompacted (event-capture.ts:825)  ✅\nFix added to:         recordJourneyEntry (event-capture.ts:909, 915)  ✅\nFix MISSING from:     onLastMessageUpdate (initialization.ts:157)  ❌ ← PRIMARY\nFix MISSING from:     handleSessionNextTextEnded (event-capture.ts:780)  ❌ (but dead code)\nFix MISSING from:     handleAssistantMessage (message-capture.ts:231)  ❌ (but dead code)\n```\n\n**Evidence 5 — Child sessions are the most common ENOENT trigger:**\n\nChild sessions only have `.json` files (written by `childWriter`), never `.md` files. Every time a child session produces an assistant text part, `LastMessageCapture.handleMessagePartUpdated()` fires → calls `onLastMessageUpdate` → calls `updateFrontmatter()` → `readFile(filePath, \"utf-8\")` → **ENOENT**.\n\nThis happens for every child delegation (L1, L2, L3...) for every assistant text update.\n\n**Evidence 6 — `console.warn` vs `client.app.log` — the TUI leak:**\n\n- `initialization.ts:161`: Uses `console.warn()` → output goes to stderr → **visible in TUI** as \"frontmatter writer failure\"\n- `event-capture.ts` all handlers: Use `void this.client.app?.log?.({... level: \"warn\" ...})` → goes through OpenCode SDK → **not visible in TUI**\n\n### Files Involved\n\n- **`src/features/session-tracker/initialization.ts:153-166`**: The PRIMARY unguarded `updateFrontmatter` call via `onLastMessageUpdate` callback\n- **`src/features/session-tracker/capture/last-message-capture.ts:179-180`**: Where `onLastMessageUpdate` is invoked for every text part update\n- **`src/features/session-tracker/persistence/session-writer.ts:235-253`**: `updateFrontmatter()` — will throw ENOENT if file doesn't exist (no guard internally either)\n- **`src/plugin.ts:411-416`**: Event observer pipeline that routes all events through `LastMessageCapture`\n\n### Suggested Fix Direction\n\nTwo changes needed:\n\n1. **Add file existence check in `initialization.ts:157`**: Before calling `sessionWriter.updateFrontmatter()`, check `sessionWriter.sessionFileExists(sessionID)`. If false, skip the update silently. This eliminates ENOENT for child sessions.\n\n2. **Change `console.warn` to `client.app.log`**: Replace `console.warn(...)` with `void this.client.app?.log?.({ body: { service: \"session-tracker\", level: \"warn\", ... } })` in the `.catch()` handler. This prevents future TUI leaks even if other edge cases are discovered.\n\n### Files Changed (if fixing)\n- `src/features/session-tracker/initialization.ts` — add `sessionFileExists` guard + use `client.app.log` instead of `console.warn`\n- (Optionally) `src/plugin.ts` — pass `client` reference if `onLastMessageUpdate` needs access to `client.app.log`\n\n### Specialist Hint\n`typescript`",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_191a2c42dffeMjLhJlAV2MDgye"
+      }
+    }
+  ],
+  "lastMessage": "I now have all the evidence. Let me compile the comprehensive investigation report.\n\n---\n\n## ROOT CAUSE FOUND\n\n**Debug Session:** Investigating ENOENT frontmatter writer failures after C1-C3 changes\n\n**Root Cause:** The `onLastMessageUpdate` callback registered in `src/features/session-tracker/initialization.ts` (lines 153-166) calls `sessionWriter.updateFrontmatter()` **without any file existence guard**. This callback fires on **every** `message.part.updated` event from the event hook pipeline — including for child sessions (which never have `.md` files) and for main sessions whose `.md` file hasn't been created yet (race condition with `session.created`).\n\nThe commit `0e035f1c` only added guards to `event-capture.ts` lifecycle handlers but completely missed this path, which is the **most frequently triggered** source of ENOENT errors.\n\n### Evidence Summary\n\n**Evidence 1 — The unguarded callback (PRIMARY ROOT CAUSE):**\n\n`initialization.ts:153-166` — The `onLastMessageUpdate` callback:\n```typescript\nconst lastMessageCapture = new LastMessageCapture({\n  onLastMessageUpdate: (sessionID: string, text: string) => {\n    sessionWriter.updateFrontmatter(          // ← UNGUARDED — will fail with ENOENT\n      sessionID,\n      { lastMessage: text },\n    ).catch((err) => {\n      console.warn(                            // ← console.warn leaks to TUI\n        `[Harness] Session tracker: frontmatter update failed for \"${sessionID}\":`,\n        err instanceof Error ? err.message : String(err),\n      )\n    })\n  },\n})\n```\n\n- No `sessionWriter.sessionFileExists(sessionID)` check before the call\n- The `.catch()` swallows but doesn't prevent the ENOENT from happening\n- Uses `console.warn()` instead of `client.app.log()` — this leak to TUI stderr\n\n**Evidence 2 — This fires for EVERY `message.part.updated` event including child sessions:**\n\n`last-message-capture.ts:143-182` — `handleMessagePartUpdated()`:\n- Line 179: `this.onLastMessageUpdate?.(entry.sessionID, combinedText)` — triggers on every text part update\n- The `LastMessageCapture` doesn't distinguish between main and child sessions\n- Line 180: fires for ALL sessions, including children that have no `.md` file\n\n**Evidence 3 — Hook pipeline wires LastMessageCapture for ALL events:**\n\n`plugin.ts:411-416` — The event observer pipeline:\n```typescript\neventObservers: [consumeDelegationFact, sessionEventObserver, ..., async ({ event }) => {\n  if (event && typeof event === \"object\") {\n    const lmc = sessionTracker.getLastMessageCapture()\n    lmc?.handleEvent(event as Record<string, unknown>)\n  }\n}],\n```\n- Every event passes through `LastMessageCapture.handleEvent()`\n- If it's `message.part.updated` with assistant text, the unguarded callback fires\n\n**Evidence 4 — Commit 0e035f1c added guarded checks but missed this path:**\n\n```\nFix added to:         handleSessionIdle (event-capture.ts:344)  ✅\nFix added to:         handleSessionDeleted (event-capture.ts:486)  ✅\nFix added to:         handleSessionError (event-capture.ts:558)  ✅\nFix added to:         handleSessionCompacted (event-capture.ts:825)  ✅\nFix added to:         recordJourneyEntry (event-capture.ts:909, 915)  ✅\nFix MISSING from:     onLastMessageUpdate (initialization.ts:157)  ❌ ← PRIMARY\nFix MISSING from:     handleSessionNextTextEnded (event-capture.ts:780)  ❌ (but dead code)\nFix MISSING from:     handleAssistantMessage (message-capture.ts:231)  ❌ (but dead code)\n```\n\n**Evidence 5 — Child sessions are the most common ENOENT trigger:**\n\nChild sessions only have `.json` files (written by `childWriter`), never `.md` files. Every time a child session produces an assistant text part, `LastMessageCapture.handleMessagePartUpdated()` fires → calls `onLastMessageUpdate` → calls `updateFrontmatter()` → `readFile(filePath, \"utf-8\")` → **ENOENT**.\n\nThis happens for every child delegation (L1, L2, L3...) for every assistant text update.\n\n**Evidence 6 — `console.warn` vs `client.app.log` — the TUI leak:**\n\n- `initialization.ts:161`: Uses `console.warn()` → output goes to stderr → **visible in TUI** as \"frontmatter writer failure\"\n- `event-capture.ts` all handlers: Use `void this.client.app?.log?.({... level: \"warn\" ...})` → goes through OpenCode SDK → **not visible in TUI**\n\n### Files Involved\n\n- **`src/features/session-tracker/initialization.ts:153-166`**: The PRIMARY unguarded `updateFrontmatter` call via `onLastMessageUpdate` callback\n- **`src/features/session-tracker/capture/last-message-capture.ts:179-180`**: Where `onLastMessageUpdate` is invoked for every text part update\n- **`src/features/session-tracker/persistence/session-writer.ts:235-253`**: `updateFrontmatter()` — will throw ENOENT if file doesn't exist (no guard internally either)\n- **`src/plugin.ts:411-416`**: Event observer pipeline that routes all events through `LastMessageCapture`\n\n### Suggested Fix Direction\n\nTwo changes needed:\n\n1. **Add file existence check in `initialization.ts:157`**: Before calling `sessionWriter.updateFrontmatter()`, check `sessionWriter.sessionFileExists(sessionID)`. If false, skip the update silently. This eliminates ENOENT for child sessions.\n\n2. **Change `console.warn` to `client.app.log`**: Replace `console.warn(...)` with `void this.client.app?.log?.({ body: { service: \"session-tracker\", level: \"warn\", ... } })` in the `.catch()` handler. This prevents future TUI leaks even if other edge cases are discovered.\n\n### Files Changed (if fixing)\n- `src/features/session-tracker/initialization.ts` — add `sessionFileExists` guard + use `client.app.log` instead of `console.warn`\n- (Optionally) `src/plugin.ts` — pass `client` reference if `onLastMessageUpdate` needs access to `client.app.log`\n\n### Specialist Hint\n`typescript`"
+}

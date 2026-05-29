@@ -5,10 +5,6 @@ description: >
   hm-plan-phase to ensure new code follows established patterns.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-pattern-mapper.md
 ---
 
 # hm-pattern-mapper — Pattern Mapping

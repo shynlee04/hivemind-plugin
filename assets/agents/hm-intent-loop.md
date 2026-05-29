@@ -1,15 +1,11 @@
 ---
 description: >
   Clarifies user intent through structured Q&A sessions when requirements are
-  ambiguous or incomplete. Produces INTENT.md documenting clarified requirements
-  and design decisions. Called by hm-orchestrator during hm-plan-phase when the
-  plan brief is underspecified.
+  ambiguous or incomplete. Produces INTENT.md documenting clarified
+  requirements and design decisions. Called by hm-orchestrator during
+  hm-plan-phase when the plan brief is underspecified.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-intent-loop.md
 ---
 
 # hm-intent-loop — Intent Clarification

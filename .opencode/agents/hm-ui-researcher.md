@@ -1,15 +1,11 @@
 ---
 description: >
   Creates UI design contracts as UI-SPEC.md documents defining component
-  structure, layout, states, and visual design tokens. Called by hm-orchestrator
-  during hm-ui-phase when frontend screens need formal design specifications
-  before implementation.
+  structure, layout, states, and visual design tokens. Called by
+  hm-orchestrator during hm-ui-phase when frontend screens need formal
+  design specifications before implementation.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-ui-researcher.md
 ---
 
 # hm-ui-researcher — UI Design Contract

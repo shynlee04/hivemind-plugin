@@ -1,0 +1,54 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_191a3e2f0ffeGZsSmG1M2akOCh",
+  "lastUpdated": "2026-05-28T11:46:58.749Z",
+  "hierarchy": {
+    "root": "ses_191a3e2f0ffeGZsSmG1M2akOCh",
+    "children": {
+      "ses_191a2c455ffe4pTP7rpxQge3CZ": {
+        "file": "ses_191a2c455ffe4pTP7rpxQge3CZ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_191a2c42dffeMjLhJlAV2MDgye": {
+        "file": "ses_191a2c42dffeMjLhJlAV2MDgye.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_1919c0e06ffeOdmOwgxLxYOpBn": {
+        "file": "ses_1919c0e06ffeOdmOwgxLxYOpBn.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1919c0de7ffe3gZYA1ssFJv2nb": {
+        "file": "ses_1919c0de7ffe3gZYA1ssFJv2nb.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_19199983effeo7i4Zt5BRDToc1": {
+        "file": "ses_19199983effeo7i4Zt5BRDToc1.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {
+    "skill": 5,
+    "bash": 12,
+    "glob": 1,
+    "read": 8,
+    "task": 5,
+    "write": 1
+  }
+}

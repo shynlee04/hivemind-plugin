@@ -10,7 +10,7 @@ Combine outputs from parallel research agents into a single consolidated SUMMARY
 ## Agent Routing Table
 | Role | Agent | Responsibility |
 |------|-------|---------------|
-| Synthesis | hm-orchestrator | Routes to hm-orchestrator which synthesizes research outputs via configured sub-agent dispatch |
+| Synthesis | hm-synthesizer | Collects, cross-references, and consolidates research outputs |
 
 ## Execution Phases
 1. **Collect Research**: Read all research artifact files from the specified directory (default: .planning/research/).

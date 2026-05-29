@@ -1,30 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1780048924943,
-  "metadata": {
-    "resultCapture": {
-      "docsUpdate": {
-        "writtenDocuments": [
-          ".planning/phases/24.5-workflow-files-architecture/24.5-SUMMARY.md",
-          ".planning/phases/24.6-build-hm-commands/24.6-SUMMARY.md",
-          ".planning/phases/24.7-primitives-asset-schema/24.7-SUMMARY.md",
-          ".planning/phases/24.8-primitives-install-extraction/24.8-SUMMARY.md"
-        ],
-        "updatedDocuments": [
-          ".planning/ROADMAP.md",
-          ".planning/STATE.md"
-        ],
-        "verificationStatus": "all claims verified against codebase evidence",
-        "phaseClosures": {
-          "24.4": "CANCELLED",
-          "24.5": "COMPLETE",
-          "24.6": "COMPLETE",
-          "24.7": "COMPLETE",
-          "24.8": "COMPLETE"
-        }
-      }
-    }
-  },
+  "updatedAt": 1780052481712,
   "sessions": {
     "ses-parent-prompt-fail": {
       "sessionID": "ses-parent-prompt-fail",
@@ -47,18 +23,18 @@
             "duration": 0,
             "elapsedHuman": "0ms",
             "metadata": {
-              "delegationId": "d0ba6211-d3eb-4026-ad76-b564c758dd89",
+              "delegationId": "9da6b3e3-1179-4e80-b526-c8aaa2061469",
               "terminalState": "error",
               "recoveryGuarantee": "resumable",
               "summaryPreview": "Failed to send prompt to child session"
             },
-            "createdAt": 1780048914573,
+            "createdAt": 1780052474354,
             "delivered": false,
             "retryCount": 0,
             "maxRetries": 3
           }
         ],
-        "updatedAt": 1780048914573
+        "updatedAt": 1780052474354
       }
     },
     "ses-parent-notify-fail": {
@@ -81,18 +57,18 @@
             "duration": 15000,
             "elapsedHuman": "15.0s",
             "metadata": {
-              "delegationId": "395c7554-2d22-4420-9303-c07d0bc3dc06",
+              "delegationId": "88427195-65de-4de4-b6af-105a368aac0f",
               "terminalState": "completed",
               "recoveryGuarantee": "resumable",
               "summaryPreview": "task completed successfully"
             },
-            "createdAt": 1780048935076,
+            "createdAt": 1780052493540,
             "delivered": false,
             "retryCount": 0,
             "maxRetries": 3
           }
         ],
-        "updatedAt": 1780048935076
+        "updatedAt": 1780052493540
       }
     },
     "ses-parent-pending-notify": {
@@ -115,57 +91,22 @@
             "duration": 15000,
             "elapsedHuman": "15.0s",
             "metadata": {
-              "delegationId": "4e88b786-3c7d-4179-8eb3-2c52f39e5a0f",
+              "delegationId": "9170ae95-a07f-4e69-b546-766b03140825",
               "terminalState": "completed",
               "recoveryGuarantee": "resumable",
               "summaryPreview": "notification-first completion delivered"
             },
-            "createdAt": 1780048935223,
+            "createdAt": 1780052493667,
             "delivered": false,
             "retryCount": 0,
             "maxRetries": 3
           }
         ],
-        "updatedAt": 1780048935223
+        "updatedAt": 1780052493667
       }
     },
     "ses_parent": {
       "sessionID": "ses_parent",
-      "promptParams": {},
-      "metadata": {
-        "status": "running",
-        "description": "Recovered parent session notification queue",
-        "delegation": null,
-        "constraints": [],
-        "pendingNotifications": [
-          {
-            "sessionID": "fake-ses-1",
-            "description": "Delegation: builder",
-            "agent": "builder",
-            "status": "failed",
-            "error": "Failed to send prompt to child session",
-            "resultPreview": "Failed to send prompt to child session",
-            "briefSummary": "Delegated work finished with terminal state error after 3ms. Summary preview: Failed to send prompt to child session",
-            "outputLink": "session://fake-ses-1",
-            "duration": 3,
-            "elapsedHuman": "3ms",
-            "metadata": {
-              "delegationId": "22fc8113-3a11-42f4-8127-2082d27713bb",
-              "terminalState": "error",
-              "recoveryGuarantee": "resumable",
-              "summaryPreview": "Failed to send prompt to child session"
-            },
-            "createdAt": 1780048923570,
-            "delivered": false,
-            "retryCount": 0,
-            "maxRetries": 3
-          }
-        ],
-        "updatedAt": 1780048923570
-      }
-    },
-    "ses_parent2": {
-      "sessionID": "ses_parent2",
       "promptParams": {},
       "metadata": {
         "status": "running",
@@ -185,18 +126,53 @@
             "duration": 2,
             "elapsedHuman": "2ms",
             "metadata": {
-              "delegationId": "b84e92a3-bece-4104-a667-67fb6a37af78",
+              "delegationId": "764d9c42-03ee-4767-aca1-9a5493635f12",
               "terminalState": "error",
               "recoveryGuarantee": "resumable",
               "summaryPreview": "Failed to send prompt to child session"
             },
-            "createdAt": 1780048923756,
+            "createdAt": 1780052480965,
             "delivered": false,
             "retryCount": 0,
             "maxRetries": 3
           }
         ],
-        "updatedAt": 1780048923756
+        "updatedAt": 1780052480965
+      }
+    },
+    "ses_parent2": {
+      "sessionID": "ses_parent2",
+      "promptParams": {},
+      "metadata": {
+        "status": "running",
+        "description": "Recovered parent session notification queue",
+        "delegation": null,
+        "constraints": [],
+        "pendingNotifications": [
+          {
+            "sessionID": "fake-ses-1",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Failed to send prompt to child session",
+            "resultPreview": "Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 1ms. Summary preview: Failed to send prompt to child session",
+            "outputLink": "session://fake-ses-1",
+            "duration": 1,
+            "elapsedHuman": "1ms",
+            "metadata": {
+              "delegationId": "e8da6748-3b02-4e8f-addb-544215efb962",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Failed to send prompt to child session"
+            },
+            "createdAt": 1780052481072,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780052481072
       }
     },
     "ses_cleanup": {
@@ -220,18 +196,18 @@
             "duration": 0,
             "elapsedHuman": "0ms",
             "metadata": {
-              "delegationId": "dd87bf1f-8fd6-4c0c-a7de-c0ee6bd4b767",
+              "delegationId": "2188b441-f8b0-4f46-a2fc-0ca4a4840445",
               "terminalState": "error",
               "recoveryGuarantee": "resumable",
               "summaryPreview": "Failed to send prompt to child session"
             },
-            "createdAt": 1780048923760,
+            "createdAt": 1780052481075,
             "delivered": false,
             "retryCount": 0,
             "maxRetries": 3
           }
         ],
-        "updatedAt": 1780048923760
+        "updatedAt": 1780052481075
       }
     },
     "ses_recovery": {
@@ -250,23 +226,23 @@
             "status": "failed",
             "error": "Failed to send prompt to child session",
             "resultPreview": "Failed to send prompt to child session",
-            "briefSummary": "Delegated work finished with terminal state error after 2ms. Summary preview: Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 1ms. Summary preview: Failed to send prompt to child session",
             "outputLink": "session://fake-ses-1",
-            "duration": 2,
-            "elapsedHuman": "2ms",
+            "duration": 1,
+            "elapsedHuman": "1ms",
             "metadata": {
-              "delegationId": "7b813e20-e5f5-41d9-988e-addacfd14ecf",
+              "delegationId": "789054d4-b890-4009-9bb5-52c392207e10",
               "terminalState": "error",
               "recoveryGuarantee": "resumable",
               "summaryPreview": "Failed to send prompt to child session"
             },
-            "createdAt": 1780048924231,
+            "createdAt": 1780052481294,
             "delivered": false,
             "retryCount": 0,
             "maxRetries": 3
           }
         ],
-        "updatedAt": 1780048924231
+        "updatedAt": 1780052481294
       }
     },
     "ses_concurrent": {
@@ -280,30 +256,30 @@
         "pendingNotifications": [
           {
             "sessionID": "fake-ses-1",
-            "description": "Delegation: researcher",
-            "agent": "researcher",
+            "description": "Delegation: builder",
+            "agent": "builder",
             "status": "failed",
             "error": "Failed to send prompt to child session",
             "resultPreview": "Failed to send prompt to child session",
-            "briefSummary": "Delegated work finished with terminal state error after 1ms. Summary preview: Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 2ms. Summary preview: Failed to send prompt to child session",
             "outputLink": "session://fake-ses-1",
-            "duration": 1,
-            "elapsedHuman": "1ms",
+            "duration": 2,
+            "elapsedHuman": "2ms",
             "metadata": {
-              "delegationId": "ca78e464-282c-41ea-b31b-7ba9a1d332da",
+              "delegationId": "2edbbda6-020d-4f87-b593-d3fc57e85a2a",
               "terminalState": "error",
               "recoveryGuarantee": "resumable",
               "summaryPreview": "Failed to send prompt to child session"
             },
-            "createdAt": 1780048924543,
+            "createdAt": 1780052481434,
             "delivered": false,
             "retryCount": 0,
             "maxRetries": 3
           },
           {
             "sessionID": "fake-ses-2",
-            "description": "Delegation: builder",
-            "agent": "builder",
+            "description": "Delegation: researcher",
+            "agent": "researcher",
             "status": "failed",
             "error": "Failed to send prompt to child session",
             "resultPreview": "Failed to send prompt to child session",
@@ -312,18 +288,18 @@
             "duration": 1,
             "elapsedHuman": "1ms",
             "metadata": {
-              "delegationId": "be9a27cc-7b21-4ca6-acb5-cb1b31c19678",
+              "delegationId": "196cca69-8513-48ec-82d6-8ff82bf426ba",
               "terminalState": "error",
               "recoveryGuarantee": "resumable",
               "summaryPreview": "Failed to send prompt to child session"
             },
-            "createdAt": 1780048924548,
+            "createdAt": 1780052481441,
             "delivered": false,
             "retryCount": 0,
             "maxRetries": 3
           }
         ],
-        "updatedAt": 1780048924548
+        "updatedAt": 1780052481441
       }
     },
     "ses-parent-monitor-fail": {
@@ -347,24 +323,24 @@
             "duration": 1,
             "elapsedHuman": "1ms",
             "metadata": {
-              "delegationId": "da04f21b-b7af-40f3-b588-b310729684bd",
+              "delegationId": "cc30ab10-5917-4a2f-be5a-017989bbd83a",
               "terminalState": "error",
               "recoveryGuarantee": "resumable",
               "summaryPreview": "Failed to send prompt to child session"
             },
-            "createdAt": 1780048924943,
+            "createdAt": 1780052481712,
             "delivered": false,
             "retryCount": 0,
             "maxRetries": 3
           }
         ],
-        "updatedAt": 1780048924943
+        "updatedAt": 1780052481712
       }
     }
   },
   "governance": {
     "rules": [],
     "violations": [],
-    "updatedAt": 1780048914573
+    "updatedAt": 1780052474354
   }
 }

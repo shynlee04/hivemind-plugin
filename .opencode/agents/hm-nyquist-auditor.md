@@ -1,15 +1,11 @@
 ---
 description: >
   Performs Nyquist validation gap analysis on completed phases, identifying
-  untested behaviors and verification blind spots. Produces VALIDATION.md and
-  fills gaps with targeted test cases. Called by hm-orchestrator during
+  untested behaviors and verification blind spots. Produces VALIDATION.md
+  and fills gaps with targeted test cases. Called by hm-orchestrator during
   hm-validate-phase after implementation and review complete.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-nyquist-auditor.md
 ---
 
 # hm-nyquist-auditor — Nyquist Validation Audit

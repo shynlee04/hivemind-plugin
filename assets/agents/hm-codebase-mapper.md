@@ -1,15 +1,11 @@
 ---
 description: >
   Extracts codebase structure, dependency graphs, and pattern maps, producing
-  .planning/codebase/*.md artifacts for the planning layer. Called by
-  hm-orchestrator during new project initialization or when the codebase needs
-  structural analysis for informed planning.
+  .planning/codebase/*.md artifacts for the planning layer. Called by hm-orchestrator
+  during new project initialization or when the codebase needs structural analysis
+  for informed planning.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-codebase-mapper.md
 ---
 
 # hm-codebase-mapper — Planning

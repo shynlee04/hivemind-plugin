@@ -1,14 +1,10 @@
 ---
 description: >
   Orchestrates multi-cycle debugging sessions with checkpoint state persistence
-  and investigator dispatch. Called by hm-orchestrator during hm-debug after a
-  bug is reported during execution or verification.
+  and investigator dispatch. Called by hm-orchestrator during hm-debug after
+  a bug is reported during execution or verification.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-debug-session-manager.md
 ---
 
 # hm-debug-session-manager — Debug Session Orchestration

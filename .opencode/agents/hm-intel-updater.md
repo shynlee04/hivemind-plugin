@@ -1,15 +1,11 @@
 ---
 description: >
-  Maintains codebase intelligence files in .planning/intel/ with structured JSON
-  summaries of project state, module boundaries, and key interfaces. Called by
-  hm-orchestrator during hm-map-codebase after codebase analysis produces raw
-  findings that need structured persistence.
+  Maintains codebase intelligence files in .planning/intel/ with structured
+  JSON summaries of project state, module boundaries, and key interfaces.
+  Called by hm-orchestrator during hm-map-codebase after codebase analysis
+  produces raw findings that need structured persistence.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-intel-updater.md
 ---
 
 # hm-intel-updater — Codebase Intelligence

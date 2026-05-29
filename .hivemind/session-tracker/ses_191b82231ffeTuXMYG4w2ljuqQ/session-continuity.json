@@ -1,0 +1,42 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_191b82231ffeTuXMYG4w2ljuqQ",
+  "lastUpdated": "2026-05-28T11:22:49.477Z",
+  "hierarchy": {
+    "root": "ses_191b82231ffeTuXMYG4w2ljuqQ",
+    "children": {
+      "ses_191aff4d0ffed6pTHn2113qnjd": {
+        "file": "ses_191aff4d0ffed6pTHn2113qnjd.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_191aff154ffeMxA3ZqWAjAHm25": {
+        "file": "ses_191aff154ffeMxA3ZqWAjAHm25.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_191aeeb07ffec923bFODl2W12L": {
+        "file": "ses_191aeeb07ffec923bFODl2W12L.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 5,
+  "toolSummary": {
+    "skill": 3,
+    "glob": 5,
+    "bash": 1,
+    "read": 2,
+    "execute-slash-command": 2,
+    "delegation-status": 2,
+    "task": 1,
+    "session-tracker": 1
+  }
+}

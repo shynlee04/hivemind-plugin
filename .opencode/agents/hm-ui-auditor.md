@@ -1,15 +1,11 @@
 ---
 description: >
   Performs 6-pillar visual audit of implemented frontend screens, producing
-  UI-REVIEW.md with per-pillar scores and improvement recommendations. Called by
-  hm-orchestrator during hm-ui-review after frontend implementation is complete
-  and deployed.
+  UI-REVIEW.md with per-pillar scores and improvement recommendations.
+  Called by hm-orchestrator during hm-ui-review after frontend implementation
+  is complete and deployed.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-ui-auditor.md
 ---
 
 # hm-ui-auditor — Visual UI Audit

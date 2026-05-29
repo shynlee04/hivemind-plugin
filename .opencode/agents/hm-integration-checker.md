@@ -1,14 +1,10 @@
 ---
 description: >
   Validates cross-phase integration and end-to-end flow correctness, producing
-  integration reports. Called by hm-orchestrator during hm-audit-milestone after
-  multiple phases complete and cross-phase coherence needs verification.
+  integration reports. Called by hm-orchestrator during hm-audit-milestone
+  after multiple phases complete and cross-phase coherence needs verification.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-integration-checker.md
 ---
 
 # hm-integration-checker — Integration Validation

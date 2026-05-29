@@ -1,15 +1,10 @@
 ---
 description: >
-  Validates plan completeness through goal-backward analysis, producing a
-  PASS/FAIL verdict with detailed findings. Called by hm-planner during the
-  hm-plan-phase workflow as a quality gate before plan is accepted for
-  execution.
+  Validates plan completeness through goal-backward analysis, producing a PASS/FAIL
+  verdict with detailed findings. Called by hm-planner during the hm-plan-phase
+  workflow as a quality gate before plan is accepted for execution.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-plan-checker.md
 ---
 
 # hm-plan-checker — Planning

@@ -1,14 +1,10 @@
 ---
 description: >
   Applies code review fixes atomically, producing one commit per fix and
-  generating REVIEW-FIX.md. Called by hm-orchestrator during hm-code-review with
-  the --fix flag after hm-code-reviewer produces REVIEW.md.
+  generating REVIEW-FIX.md. Called by hm-orchestrator during hm-code-review
+  with the --fix flag after hm-code-reviewer produces REVIEW.md.
 mode: all
 hidden: true
-instruction:
-  - .opencode/rules/universal-rules.md
-  - AGENTS.md
-  - .opencode/agent-instructions/hm-code-fixer.md
 ---
 
 # hm-code-fixer — Code Fix Application

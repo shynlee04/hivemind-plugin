@@ -1,0 +1,585 @@
+{
+  "sessionID": "ses_18cbad24fffeZbNwZYINsL33sS",
+  "parentSessionID": "ses_18d1340bbffeYv0irFifikMzRw",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research P23.5 A→C integration",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-29T10:26:14.082Z",
+  "updated": "2026-05-29T10:30:37.505Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are gsd-phase-researcher. Research P23.5 (A→C Cross-Cluster Integration Gate).\n\n## Purpose\nVerify that Agent cluster (P24.1, P24.2) integrates correctly with Commands cluster (P24.3-P24.6).\n\n## Research Tasks\n\n### 1. Agent Inventory\nList ALL hm-* agents and their `agent:` field targets in command frontmatter:\n- Read `.opencode/agents/hm-*.md` - count 31 agents\n- Read `.opencode/commands/hm-*.md` - find agent references in YAML frontmatter\n- Verify: every command references an existing agent?\n\n### 2. Command→Agent Mapping\nFor each command in `.opencode/commands/hm-*.md`:\n- Extract from YAML frontmatter which agent it routes to\n- Check if that agent exists in `.opencode/agents/`\n- Report any commands routing to non-existent agents\n\n### 3. Workflow→Agent Mapping\nFor each workflow in `.opencode/workflows/hm-*.md`:\n- Check if the workflow body references specific agents\n- Verify those agents exist\n\n### 4. Integration Gaps\nIdentify specific integration failures:\n- Commands referencing dead agents?\n- Workflows referencing dead agents?\n- Missing command→workflow→agent chain links?\n\n## Output\nWrite `.planning/research/P23-5-ac-integration-research-2026-05-29.md`\n",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: skill",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Let me begin by gathering the full inventory of agents, commands, and workflows.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Good. I have the full inventory. Now let me extract the agent: field from each command's YAML frontmatter.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Workflows don't use YAML `agent:` field. Let me search for agent mentions in workflow bodies and check agent descriptions.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Let me search for specific agent references in workflow bodies and count total commands.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Let me now check which agents are never referenced by any command, and search workflow files for agent references.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Let me get a clean workflow agent reference count:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "Let me check for existing phase context and verify the phase directory structure:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": "Tools: write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** 23.5 — A→C Cross-Cluster Integration Gate\n**Confidence:** HIGH\n**File:** `.planning/research/P23-5-ac-integration-research-2026-05-29.md`\n\n### Key Findings\n\n1. **Command→agent YAML layer is CLEAN** — all 14 unique `agent:` field targets resolve to existing agent files. Zero broken links.\n\n2. **command/ and commands/ directories are PERFECTLY SYNCED** — 99 files each, identical content. No duplication drift.\n\n3. **5 Truly Orphan Agents** (no command route, no workflow dispatch):\n   - `hm-architect`, `hm-ecologist`, `hm-intel-updater`, `hm-l0-orchestrator`, `hm-shipper`\n\n4. **1 Semi-Orphan Agent** (`hm-specifier`) — claimed in command description but never dispatched by the actual workflow.\n\n5. **1 Weakly Referenced Agent** (`hm-synthesizer`) — mentioned in a workflow table but no actual spawn site.\n\n6. **Command description mismatch** — `hm-plan-phase` claims to route through 6 agents but YAML routes to 1 (`hm-planner`).\n\n7. **10 agents are workflow-bridged** (no command route, but correctly spawned by workflow bodies) — valid architecture pattern for sub-agents.\n\n### Files Created\n- `.planning/research/P23-5-ac-integration-research-2026-05-29.md`\n\n### Confidence Assessment\n\n| Area | Level | Reason |\n|------|-------|--------|\n| Agent inventory | HIGH | Direct filesystem audit |\n| Command→agent mapping | HIGH | Grep of YAML frontmatter in all 99 files |\n| Workflow→agent dispatch | HIGH | Full-text grep across all 103 workflow files |\n| Orphan detection | HIGH | Cross-referenced 3 data sources |\n\n### Open Questions\n\n1. **5 orphan agents** — intentional stubs or dead code? Needs human decision (create commands, archive, or document as reserved).\n2. **`hm-specifier`** — description claims it's part of the routing chain; workflow doesn't spawn it. Bug in description or missing workflow step?\n3. **`hm-synthesizer`** — listed in a workflow table with no spawn. Aspirational documentation or stale reference?\n\n### Ready for Planning\n\nResearch complete. The data identifies discrete integration gaps ready for remediation planning.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 25,
+      "actor": "gsd-phase-researcher",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** 23.5 — A→C Cross-Cluster Integration Gate\n**Confidence:** HIGH\n**File:** `.planning/research/P23-5-ac-integration-research-2026-05-29.md`\n\n### Key Findings\n\n1. **Command→agent YAML layer is CLEAN** — all 14 unique `agent:` field targets resolve to existing agent files. Zero broken links.\n\n2. **command/ and commands/ directories are PERFECTLY SYNCED** — 99 files each, identical content. No duplication drift.\n\n3. **5 Truly Orphan Agents** (no command route, no workflow dispatch):\n   - `hm-architect`, `hm-ecologist`, `hm-intel-updater`, `hm-l0-orchestrator`, `hm-shipper`\n\n4. **1 Semi-Orphan Agent** (`hm-specifier`) — claimed in command description but never dispatched by the actual workflow.\n\n5. **1 Weakly Referenced Agent** (`hm-synthesizer`) — mentioned in a workflow table but no actual spawn site.\n\n6. **Command description mismatch** — `hm-plan-phase` claims to route through 6 agents but YAML routes to 1 (`hm-planner`).\n\n7. **10 agents are workflow-bridged** (no command route, but correctly spawned by workflow bodies) — valid architecture pattern for sub-agents.\n\n### Files Created\n- `.planning/research/P23-5-ac-integration-research-2026-05-29.md`\n\n### Confidence Assessment\n\n| Area | Level | Reason |\n|------|-------|--------|\n| Agent inventory | HIGH | Direct filesystem audit |\n| Command→agent mapping | HIGH | Grep of YAML frontmatter in all 99 files |\n| Workflow→agent dispatch | HIGH | Full-text grep across all 103 workflow files |\n| Orphan detection | HIGH | Cross-referenced 3 data sources |\n\n### Open Questions\n\n1. **5 orphan agents** — intentional stubs or dead code? Needs human decision (create commands, archive, or document as reserved).\n2. **`hm-specifier`** — description claims it's part of the routing chain; workflow doesn't spawn it. Bug in description or missing workflow step?\n3. **`hm-synthesizer`** — listed in a workflow table with no spawn. Aspirational documentation or stale reference?\n\n### Ready for Planning\n\nResearch complete. The data identifies discrete integration gaps ready for remediation planning.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-29T10:26:22.510Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_2KZLkqzLCFQkCcwlNTCu9676",
+        "input": {
+          "name": "gsd-research-phase"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:30.528Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_EnHHXq6Q5fbb73c5oFZy5604",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:37.920Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_akEu0Ew2v5klVp2XeTtW9854",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:38.307Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_nObTmlTh1AfOZk0J59ak1564",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:38.610Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_h0C0IMnytlc9lMvLuJPI4379",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:38.866Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_icemgS3jGgyZ3xF2UNQf5202",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:47.519Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_YgBD1iTIFYRBt9rhtwXI7518",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:47.647Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_gh59w1huXNNUH8r1ZHXM2775",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:47.680Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_02_eQDiyzwWALyIGPemix3p3134",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:55.360Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_HwYGt84RrOuaJXiFN8708296",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:26:56.160Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_5MjgKmSaPUtIh54gMV3p3101",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:27:04.384Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_5JUGALYJc4FUKGz65P9q9240",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:27:05.390Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_IqccpFyZjMsGDgkAVI2O8452",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:27:05.594Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_tda0JkfjK1WN6qoKw92i5661",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:27:18.305Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_E4lMpvnZQ4CLjxf7fEWL7144",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:27:19.986Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_Y38SgGp4k9zaf5pgwElq9044",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:27:28.752Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_fZftNsQmi7bOkRwhQmeA7362",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:27:37.465Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_Al4sorxcBvdOG3RjBAqL8443",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:27:46.947Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_jHEApjRjmpKVUXB429Rh3040",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:27:57.146Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_lbwncgGswHLY5zbF1U3k2002",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:28:07.989Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_Udt93XUi0edNAlglx9ee0898",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:28:09.073Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_nkfoPWXyF5Zqtlkxeznc4427",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:28:17.704Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_qLZH3FFDRPbM097E0Mbs2227",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:28:18.124Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_vr9v0ks98HO7U9Xo7Xcd4788",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:28:25.623Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_GnfT0LDx5cBUteYeC9I01687",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:28:32.888Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_y31YVCUr6d26xVZXvlAq4656",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:28:46.640Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_ruLNqO4gOpDC30Lelyub1956",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:28:47.490Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_1lMtyDmWXC6NaDpy8pKU3461",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:28:55.409Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_yLC7Y5UXFr0WvKKSxs6t0080",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:29:03.284Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_pFaRfgS6qFguProLDjYA5015",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:29:12.226Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_It4THLLE8OKm57epV57m1711",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:29:44.754Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_lFCns7DBpS3wqyym6Gid2541",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:30:19.441Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_ET_8MYG3n0nxeikrfaXnW4n3133",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:30:26.649Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_TQOqXjkhMry6wTkqd8U24974",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T10:30:37.454Z",
+      "type": "assistant_message",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** 23.5 — A→C Cross-Cluster Integration Gate\n**Confidence:** HIGH\n**File:** `.planning/research/P23-5-ac-integration-research-2026-05-29.md`\n\n### Key Findings\n\n1. **Command→agent YAML layer is CLEAN** — all 14 unique `agent:` field targets resolve to existing agent files. Zero broken links.\n\n2. **command/ and commands/ directories are PERFECTLY SYNCED** — 99 files each, identical content. No duplication drift.\n\n3. **5 Truly Orphan Agents** (no command route, no workflow dispatch):\n   - `hm-architect`, `hm-ecologist`, `hm-intel-updater`, `hm-l0-orchestrator`, `hm-shipper`\n\n4. **1 Semi-Orphan Agent** (`hm-specifier`) — claimed in command description but never dispatched by the actual workflow.\n\n5. **1 Weakly Referenced Agent** (`hm-synthesizer`) — mentioned in a workflow table but no actual spawn site.\n\n6. **Command description mismatch** — `hm-plan-phase` claims to route through 6 agents but YAML routes to 1 (`hm-planner`).\n\n7. **10 agents are workflow-bridged** (no command route, but correctly spawned by workflow bodies) — valid architecture pattern for sub-agents.\n\n### Files Created\n- `.planning/research/P23-5-ac-integration-research-2026-05-29.md`\n\n### Confidence Assessment\n\n| Area | Level | Reason |\n|------|-------|--------|\n| Agent inventory | HIGH | Direct filesystem audit |\n| Command→agent mapping | HIGH | Grep of YAML frontmatter in all 99 files |\n| Workflow→agent dispatch | HIGH | Full-text grep across all 103 workflow files |\n| Orphan detection | HIGH | Cross-referenced 3 data sources |\n\n### Open Questions\n\n1. **5 orphan agents** — intentional stubs or dead code? Needs human decision (create commands, archive, or document as reserved).\n2. **`hm-specifier`** — description claims it's part of the routing chain; workflow doesn't spawn it. Bug in description or missing workflow step?\n3. **`hm-synthesizer`** — listed in a workflow table with no spawn. Aspirational documentation or stale reference?\n\n### Ready for Planning\n\nResearch complete. The data identifies discrete integration gaps ready for remediation planning.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_18cbad24fffeZbNwZYINsL33sS"
+      }
+    }
+  ],
+  "lastMessage": "## RESEARCH COMPLETE\n\n**Phase:** 23.5 — A→C Cross-Cluster Integration Gate\n**Confidence:** HIGH\n**File:** `.planning/research/P23-5-ac-integration-research-2026-05-29.md`\n\n### Key Findings\n\n1. **Command→agent YAML layer is CLEAN** — all 14 unique `agent:` field targets resolve to existing agent files. Zero broken links.\n\n2. **command/ and commands/ directories are PERFECTLY SYNCED** — 99 files each, identical content. No duplication drift.\n\n3. **5 Truly Orphan Agents** (no command route, no workflow dispatch):\n   - `hm-architect`, `hm-ecologist`, `hm-intel-updater`, `hm-l0-orchestrator`, `hm-shipper`\n\n4. **1 Semi-Orphan Agent** (`hm-specifier`) — claimed in command description but never dispatched by the actual workflow.\n\n5. **1 Weakly Referenced Agent** (`hm-synthesizer`) — mentioned in a workflow table but no actual spawn site.\n\n6. **Command description mismatch** — `hm-plan-phase` claims to route through 6 agents but YAML routes to 1 (`hm-planner`).\n\n7. **10 agents are workflow-bridged** (no command route, but correctly spawned by workflow bodies) — valid architecture pattern for sub-agents.\n\n### Files Created\n- `.planning/research/P23-5-ac-integration-research-2026-05-29.md`\n\n### Confidence Assessment\n\n| Area | Level | Reason |\n|------|-------|--------|\n| Agent inventory | HIGH | Direct filesystem audit |\n| Command→agent mapping | HIGH | Grep of YAML frontmatter in all 99 files |\n| Workflow→agent dispatch | HIGH | Full-text grep across all 103 workflow files |\n| Orphan detection | HIGH | Cross-referenced 3 data sources |\n\n### Open Questions\n\n1. **5 orphan agents** — intentional stubs or dead code? Needs human decision (create commands, archive, or document as reserved).\n2. **`hm-specifier`** — description claims it's part of the routing chain; workflow doesn't spawn it. Bug in description or missing workflow step?\n3. **`hm-synthesizer`** — listed in a workflow table with no spawn. Aspirational documentation or stale reference?\n\n### Ready for Planning\n\nResearch complete. The data identifies discrete integration gaps ready for remediation planning."
+}

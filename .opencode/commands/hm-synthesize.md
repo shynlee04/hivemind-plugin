@@ -31,6 +31,7 @@ Combine outputs from parallel research agents into a single consolidated SUMMARY
 <context>
 Research Directory: $ARGUMENTS
 Namespace: hm
+Routed Agent: hm-synthesizer
 </context>
 
 <process>
