@@ -36,6 +36,24 @@ function seedTrajectory(root: string, id = "traj-1", rootSessionId = "ses-root")
   writeTrajectoryLedger(root, ledger)
 }
 
+function seedClosedTrajectory(root: string, id = "traj-closed", rootSessionId = "ses-root"): void {
+  const ledger = readTrajectoryLedger(root)
+  ledger.trajectories[id] = {
+    id,
+    rootSessionId,
+    sessionId: null,
+    parentTrajectoryId: null,
+    status: "closed",
+    evidenceRefs: ["existing-ref"],
+    checkpoints: [],
+    events: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    closeSummary: "closed for testing",
+  }
+  writeTrajectoryLedger(root, ledger)
+}
+
 describe("trajectory store operations", () => {
   let root: string
 
@@ -214,5 +232,88 @@ describe("trajectory store operations", () => {
     })
     expect(trajectory.sessionId).toBe("ses-new")
     expect(trajectory.parentTrajectoryId).toBe("parent-1")
+  })
+
+  describe("immutability guard — closed trajectories", () => {
+    it("eventTrajectory throws on closed trajectory", () => {
+      seedClosedTrajectory(root, "traj-closed")
+      expect(() => eventTrajectory({
+        projectRoot: root,
+        trajectoryId: "traj-closed",
+        eventType: "recovery",
+        summary: "should fail",
+      })).toThrow("[Harness] trajectory is closed: traj-closed")
+    })
+
+    it("attachTrajectoryEvidence throws on closed trajectory", () => {
+      seedClosedTrajectory(root, "traj-closed")
+      expect(() => attachTrajectoryEvidence({
+        projectRoot: root,
+        trajectoryId: "traj-closed",
+        evidenceRef: "new-ref",
+      })).toThrow("[Harness] trajectory is closed: traj-closed")
+    })
+
+    it("checkpointTrajectory throws on closed trajectory", () => {
+      seedClosedTrajectory(root, "traj-closed")
+      expect(() => checkpointTrajectory({
+        projectRoot: root,
+        trajectoryId: "traj-closed",
+        summary: "should fail",
+      })).toThrow("[Harness] trajectory is closed: traj-closed")
+    })
+
+    it("closeTrajectory throws on already-closed trajectory", () => {
+      seedClosedTrajectory(root, "traj-closed")
+      expect(() => closeTrajectory({
+        projectRoot: root,
+        trajectoryId: "traj-closed",
+        summary: "closing again",
+      })).toThrow("[Harness] trajectory is already closed: traj-closed")
+    })
+
+    it("read operations succeed on closed trajectory", () => {
+      seedClosedTrajectory(root, "traj-closed")
+
+      const { trajectory } = inspectTrajectoryLedger({ projectRoot: root, trajectoryId: "traj-closed" })
+      expect(trajectory).toBeDefined()
+      expect(trajectory!.status).toBe("closed")
+
+      const traversal = traverseTrajectory({ projectRoot: root, trajectoryId: "traj-closed" })
+      expect(traversal.trajectories).toHaveLength(1)
+      expect(traversal.trajectories[0]!.status).toBe("closed")
+    })
+
+    it("mutations still work on active trajectories (no regression)", () => {
+      seedTrajectory(root, "traj-active")
+
+      const { trajectory: traj1 } = attachTrajectoryEvidence({
+        projectRoot: root,
+        trajectoryId: "traj-active",
+        evidenceRef: "ref-active",
+      })
+      expect(traj1.evidenceRefs).toContain("ref-active")
+
+      const { event } = eventTrajectory({
+        projectRoot: root,
+        trajectoryId: "traj-active",
+        eventType: "recovery",
+        summary: "active event",
+      })
+      expect(event.eventType).toBe("recovery")
+
+      const { checkpoint } = checkpointTrajectory({
+        projectRoot: root,
+        trajectoryId: "traj-active",
+        summary: "active checkpoint",
+      })
+      expect(checkpoint.summary).toBe("active checkpoint")
+
+      const { trajectory: closed } = closeTrajectory({
+        projectRoot: root,
+        trajectoryId: "traj-active",
+      })
+      expect(closed.status).toBe("closed")
+    })
   })
 })

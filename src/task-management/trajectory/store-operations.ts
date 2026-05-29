@@ -30,6 +30,10 @@ export function inspectTrajectoryLedger(input: { projectRoot: string; trajectory
  */
 export function attachTrajectoryEvidence(input: TrajectoryMutationInput): { ledger: TrajectoryLedger; trajectory: TrajectoryRecord } {
   const ledger = readTrajectoryLedger(input.projectRoot)
+  const existing = ledger.trajectories[input.trajectoryId]
+  if (existing?.status === "closed") {
+    throw new Error(`[Harness] trajectory is closed: ${input.trajectoryId}`)
+  }
   const now = Date.now()
   const trajectory = upsertTrajectory(ledger, input, now)
   const evidenceRefs = normalizeEvidenceRefs(input.evidenceRef, input.evidenceRefs)
@@ -48,6 +52,10 @@ export function attachTrajectoryEvidence(input: TrajectoryMutationInput): { ledg
  */
 export function checkpointTrajectory(input: TrajectoryMutationInput & { checkpointId?: string; summary: string }): { ledger: TrajectoryLedger; trajectory: TrajectoryRecord; checkpoint: TrajectoryCheckpoint } {
   const ledger = readTrajectoryLedger(input.projectRoot)
+  const existing = ledger.trajectories[input.trajectoryId]
+  if (existing?.status === "closed") {
+    throw new Error(`[Harness] trajectory is closed: ${input.trajectoryId}`)
+  }
   const now = Date.now()
   const trajectory = upsertTrajectory(ledger, input, now)
   const checkpoint: TrajectoryCheckpoint = {
@@ -72,6 +80,10 @@ export function checkpointTrajectory(input: TrajectoryMutationInput & { checkpoi
  */
 export function eventTrajectory(input: TrajectoryMutationInput & { eventId?: string; eventType: string; summary: string }): { ledger: TrajectoryLedger; trajectory: TrajectoryRecord; event: TrajectoryEvent } {
   const ledger = readTrajectoryLedger(input.projectRoot)
+  const existing = ledger.trajectories[input.trajectoryId]
+  if (existing?.status === "closed") {
+    throw new Error(`[Harness] trajectory is closed: ${input.trajectoryId}`)
+  }
   const now = Date.now()
   const trajectory = upsertTrajectory(ledger, input, now)
   const event: TrajectoryEvent = {
@@ -101,6 +113,9 @@ export function closeTrajectory(input: { projectRoot: string; trajectoryId: stri
   const trajectory = ledger.trajectories[input.trajectoryId]
   if (!trajectory) {
     throw new Error(`[Harness] Trajectory "${input.trajectoryId}" not found`)
+  }
+  if (trajectory.status === "closed") {
+    throw new Error(`[Harness] trajectory is already closed: ${input.trajectoryId}`)
   }
   const now = Date.now()
   trajectory.status = "closed"
