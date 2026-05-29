@@ -54,6 +54,7 @@ export function createAgentWorkContract(input: CreateAgentWorkContractInput): Ag
     attachTrajectoryEvidence({
       projectRoot: input.projectRoot,
       trajectoryId: input.trajectoryId,
+      rootSessionId: input.owner.sessionId,
       sessionId: input.owner.sessionId,
       evidenceRef: trajectoryEvidenceRef,
     })
