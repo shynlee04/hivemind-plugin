@@ -521,6 +521,7 @@ export class SessionTracker {
         hierarchyIndex: this.hierarchyIndex,
         pendingRegistry: this.pendingRegistry,
         manifestWriter: this.manifestWriter,
+        projectRoot: this.projectRoot,
       })
       this.projectContinuityChecker = new ProjectContinuityChecker({
         projectIndexWriter: this.projectIndexWriter,

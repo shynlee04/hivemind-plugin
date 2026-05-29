@@ -32,6 +32,7 @@ export interface ToolDelegationDeps {
   hierarchyIndex: HierarchyIndex
   pendingRegistry: PendingDispatchRegistry
   manifestWriter: HierarchyManifestWriter
+  projectRoot: string
 }
 
 /**
@@ -50,6 +51,8 @@ export class ToolDelegation {
   private readonly hierarchyIndex: HierarchyIndex
   private readonly pendingRegistry: PendingDispatchRegistry
   private readonly manifestWriter: HierarchyManifestWriter
+  /** Project root for trajectory/contract writes (used by createDelegationTrajectoryAndContract). */
+  private readonly projectRoot: string
 
   /**
    * Creates a new ToolDelegation handler.
@@ -65,6 +68,9 @@ export class ToolDelegation {
     this.hierarchyIndex = deps.hierarchyIndex
     this.pendingRegistry = deps.pendingRegistry
     this.manifestWriter = deps.manifestWriter
+    this.projectRoot = deps.projectRoot
+    // projectRoot is used by createDelegationTrajectoryAndContract (Task 3)
+    void this.projectRoot
   }
 
   /**

@@ -223,6 +223,7 @@ export function constructDependencies(
     pendingRegistry,
     manifestWriter,
     lastMessageCapture,
+    projectRoot,
   })
   const messageCapture = new MessageCapture({
     client,

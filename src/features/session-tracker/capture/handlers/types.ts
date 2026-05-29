@@ -42,6 +42,7 @@ export interface HandlerDeps {
   lastMessageCapture?: LastMessageCapture
   backfiller: ChildBackfiller
   assistantTurnCounters: Map<string, number>
+  projectRoot: string
 }
 
 // ---------------------------------------------------------------------------

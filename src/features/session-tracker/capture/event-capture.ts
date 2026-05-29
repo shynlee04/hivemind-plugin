@@ -56,6 +56,7 @@ export class EventCapture {
     pendingRegistry?: PendingDispatchRegistry
     manifestWriter?: HierarchyManifestWriter
     lastMessageCapture?: LastMessageCapture
+    projectRoot?: string
   }) {
     const backfiller = new ChildBackfiller({ client: deps.client, childWriter: deps.childWriter })
     const assistantTurnCounters = new Map<string, number>()
@@ -64,6 +65,7 @@ export class EventCapture {
       ...deps,
       backfiller,
       assistantTurnCounters,
+      projectRoot: deps.projectRoot ?? "",
     }
 
     this.handlers = {
