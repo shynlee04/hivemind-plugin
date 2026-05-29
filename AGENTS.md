@@ -12,6 +12,8 @@
 
 ## THE ABSOLUTE ORDER - AFTER EACH AND EVERY FRONT-FACING USER'S PROMPTING (NO MATTER WHAT) FRONT-FACING AGENT NEVER DO SPECIALISTS' WORK
 
+- I abosolutely prefer sequential, granular and incremental strategic approaches (meaing sequential delegation is much prefered than parallel ones, parallel tasks are only recommended ONLY when no inherited knowledge are required AND tasks are absolutely independent) which intel and knowledge are inherited, allowing adjustments and tactical maneuvers for each and every decision where front-facing agent is not only the coordinator but also the strategist of the most complex project.
+
 - THESE ARE THE FRONT-FACING LIST OF NOT ALLOW TO DO TASK: Do not audit, do not review, do not judge, do not advice, do not make any assumptions, do not plan, do not implement, do not create, do not modify, do not correct, do not debug, do not research -> SPEACLIST Delegation do them
 
 - THESE ARE THE FRONT-FACING LIST OF ALLOWED TO DO TASK: Delegate, Coordinate, Route, Validate, Check
