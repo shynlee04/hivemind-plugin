@@ -92,7 +92,7 @@ Every phase must explicitly trace through these protocols:
   - Wave 2 (Facade Extraction): Plan 03 (Hybrid Facade + Delegation Context + Namespace Wiring), Plan 04 (Comprehensive Wave 2 Test Coverage)
   - Wave 3 (Cleanup + Verification): Plan 05 (Session Tools Move + Narrow Import Migration), Plan 06 (Final Verification + Comprehensive Test Suite)
 - [ ] **P24.3.3 (Cluster C): Execute-Slash-Command Advanced Features** — Module extraction, contract validation, semantic matching, two-stage routing (P24.3.3.1 + P24.3.3.2 merged) [GSD-reval: YES - deep-analysis-tools-2026-05-21.md] [Arch-src: YES - src/tools/session/execute-slash-command.ts] [UAT: module extraction, contract validation, fuzzy discovery, 10+ tests pass]
-- [ ] **P23.5 (GAP-03): A→C Integration Gate** — Verify Agents + Commands integration [GSD-reval: YES - command patterns may have changed]
+- [ ] **P23.5 (GAP-03): A→C Integration Gate** — 2 plans — Create orphan agent commands, fix command description alignment, fix workflow docs [GSD-reval: NO - command pattern fix only, YAML frontmatter unchanged]
 - [x] **P24.4 (Cluster C): References & Templates System** — CANCELLED — architecture correction. Templates/references = static markdown files, NOT runtime engines. Command → Workflow → Agent routing handles everything. `.planning/references/artifact-schema.md` (from 24.2) is sufficient. [GSD-reval: YES - reference patterns from old GSD] [Arch-src: N/A - CANCELLED] [UAT: N/A - CANCELLED]
 - [x] **P24.5 (Cluster C): Workflow Files Architecture** — Size budgets, modes decomposition [GSD-reval: YES] [Arch-src: YES - .opencode/workflows/] [UAT: workflow file creation] ✅ CODE EXISTS — 106 workflow files (103 hm-*). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
 - [x] **P24.6 (Cluster C): Build HM-* Commands** — 118 commands built [GSD-reval: YES] [Arch-src: YES - .opencode/commands/] [UAT: each command runnable] ✅ CODE EXISTS — 118 commands (99 hm + 7 hf + 12 other). Governance gap closed 2026-05-29 via retroactive CONTEXT+SUMMARY.
@@ -909,20 +909,31 @@ These 8 phases fill gaps identified by the gsd-advisor-researcher after Phase 23
 
 ### P23.5: Cross-Cluster Gate A→C—Integration Gate (GAP-03)
 
-**Goal:** Verify that Agent Quality improvements integrate correctly with Commands Infrastructure (P24.3-P24.6). Gate: agent-driven commands route correctly through the new namespace routers and workflow separation patterns.
+**Goal:** Close 3 A→C integration gaps: (1) create commands for 5 orphan agents so they are dispatchable, (2) fix hm-plan-phase description alignment with actual YAML routing, (3) fix hm-synthesize command/workflow documentation alignment. Gate: every hm-* agent must have a command route or the documentation must accurately reflect the routing gap.
 
-**Why this exists:** Commands Infrastructure (P24.3-P24.6) introduces namespace routers, workflow modes, and frontmatter schemas that agents must use for command dispatch. Without a verified integration gate, agents may dispatch commands using incompatible patterns.
+**Why this exists:** Research found 5 orphan agents with zero command routing, a misleading command description (hm-plan-phase claims hm-specifier routing), and a workflow table listing hm-synthesizer with no actual spawn. Without fixes, agents remain undiscoverable and documentation causes confusion.
 
-**Depends on:** P23.4 (D→A gate), P24.3, P24.4, P24.5, P24.6
+**Depends on:** P24.5, P24.6 (commands/workflows exist to be audited; P24.4 CANCELLED)
 **Blocks:** P25 (Trajectory + Agent-Work-Contract Redesign)
+
+**Requirements:** REQ-01 (orphan agent commands), REQ-02 (hm-specifier routing), REQ-03 (hm-synthesizer alignment), REQ-04 (cross-directory sync), REQ-05 (no regressions)
+
+**Plans:** 2 plans in 1 wave
+
+| Plan | Wave | Objective |
+|------|------|-----------|
+| `P23.5-01-PLAN.md` | 1 | Create 6 new commands (5 orphan agents + hm-specifier) in both commands/ and command/ |
+| `P23.5-02-PLAN.md` | 1 | Fix hm-plan-phase description + hm-synthesize command context + workflow table |
 
 **Success Criteria:**
 
-1. Agents from restructured hierarchy can dispatch commands through namespace routers
-2. Workflow separation patterns produce correct command routing decisions
-3. YAML frontmatter schema validates agent-driven command definitions
-4. Backward compatibility with existing command dispatch verified
-5. P25 phase requirements confirmed as compatible with new A+C integration
+1. 5 orphan agents have dispatchable commands in both `.opencode/commands/` and `.opencode/command/`
+2. `hm-specifier` has a dedicated command (matching REQ-02-B)
+3. `hm-plan-phase` description no longer claims routing through `hm-specifier`
+4. `hm-synthesize` command context no longer claims "Routed Agent: hm-synthesizer"
+5. `hm-synthesize` workflow Agent Routing Table reflects actual `hm-orchestrator` routing
+6. `.opencode/commands/` and `.opencode/command/` remain in perfect sync
+7. `npm run typecheck` and `npm test` pass with zero regressions
 
 ### P23.6: Post-P25→P26→B Integration Gate (GAP-04)
 
