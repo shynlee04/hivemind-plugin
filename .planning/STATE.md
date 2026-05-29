@@ -24,6 +24,8 @@ progress:
 **Phase 24.6:** ✅ COMPLETE — 3 critical commands elevated from stubs to 100+ lines (commit `4959ff08`). Typecheck + tests clean.
 **Phase 24.7:** ✅ COMPLETE — sync-assets.js fixed: backup + conflict detection + command/ directory mirror (commit `e901fa91`). 118 commands synced to both directories. Typecheck + tests clean.
 **Phase 24.8:** ✅ COMPLETE — `--mode=install` flag, non-destructive per-file merge, dual-root resolution via INIT_CWD, version drift optimization, postinstall hook. 3 tasks, 2 files modified. Commit `8861bf16`. Typecheck + tests clean.
+**P23.5:** ✅ COMPLETE — Cross-Cluster Gate A→C (Agent Quality + Commands Infrastructure). 2 plans executed: 6 orphan agent commands created (12 files, commit `e99ff8bb`), 3 documentation-truth gaps fixed (commit `1a815207`). Typecheck + tests clean.
+
 **Next recommended run:** P23.8 (G/H/I Integration Gate) or P23.3 (Notification Delivery L1 UAT Verification).
 
 ---
@@ -380,7 +382,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 
 1. **P23.3 (GAP-01)** 📋 PENDING — Notification Delivery L1 UAT Verification — verify all 5 bug fixes with live UAT before P24. Depends: P23.2 COMPLETE.
 2. **P23.4 (GAP-02)** 📋 PENDING — Cross-Cluster Gate D→A — Coordination + Agent integration. Depends: P24, P24.1, P24.2.
-3. **P23.5 (GAP-03)** 📋 PENDING — Cross-Cluster Gate A→C — Agents + Commands integration. Depends: P23.4, P24.3-P24.6.
+3. **P23.5 (GAP-03)** ✅ COMPLETE — Cross-Cluster Gate A→C — Agents + Commands integration. 2 plans: 6 orphan agent commands created (12 files), 3 documentation-truth gaps fixed. Commits `e99ff8bb`, `1a815207`. Typecheck + tests clean. Depends: P23.4, P24.3-P24.6.
 4. **P23.6 (GAP-04)** 📋 PENDING — Post-P25→P26→B Integration — Trajectory/Pressure + Artifacts. Depends: P25, P26, P26.1, P26.2.
 5. **P23.7 (GAP-05)** 📋 PENDING — Post-E/F/G Integration — Primitives/Bootstrap/Routing. Depends: P24.7, P24.8, P24.9, P27.
 6. **P23.8 (GAP-06)** 📋 PENDING — Post-G/H/I Integration — Routing/Hooks/Auto-loop. Depends: P27, P28, P29.
