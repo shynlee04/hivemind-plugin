@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-29T13:22:16.318Z"
+last_updated: "2026-05-29T16:36:06.774Z"
 progress:
   total_phases: 46
   completed_phases: 17
@@ -65,6 +65,9 @@ progress:
 **Phase 24.5:** ✅ COMPLETE — CODE EXISTS, fixes applied. 4 broken workflow step paths fixed in 2 files (hm-execute-phase.md, hm-full.md). Commit `158a9d66`. 106 workflow files total (103 hm-*). Typecheck clean. (Cluster C — Commands & Workflows, INSERTED, Depends: P24.4).
 **Phase 24.6:** ✅ COMPLETE — CODE EXISTS, improvements applied. 118 commands total (99 hm + 7 hf + 12 other). 3 critical commands elevated from ~37 to 100+ lines: hm-execute.md, hm-audit.md, hm-research.md (commit `4959ff08`). Synced to both commands/ and command/ directories. Typecheck + tests clean. (Cluster C — Commands & Workflows, INSERTED, Depends: P24.5).
 **Phase 25:** ✅ COMPLETE — Trajectory + Agent-Work-Contract Redesign (Group 1, Depends: P23, P24, P24.1, P24.2, P24.3, P24.4, P24.5, P24.6). 34 trajectory tests, 20 contract tests, lifecycle state machine, unified bounds, cross-linking. Typecheck clean, 2844 tests pass. Commit `f2db2918`.
+**Phase 25.1:** 📋 PENDING — Task Tool Integration: Wire Trajectory + Contracts (CRITICAL, Depends: P25). Wire trajectory event recording and agent-work-contract creation into the native task tool lifecycle via session-tracker's `recordChildTaskDelegation()`. Hook point verified at `src/features/session-tracker/tool-delegation.ts:227`. Both `task` and `delegate-task` tools covered. Changes: 4-5 files, ~30 lines. Research: `.planning/research/task-tool-integration-research-2026-05-29.md`. Verification: `.planning/research/integration-verification-2026-05-29.md`.
+**Phase 25.2:** ✅ COMPLETE — Trajectory Immutability Guard (HIGH, Depends: P25). All 4 mutation operations throw on closed trajectories. 7 new tests, 2857 total pass. Commit `7f14b58c`.
+**Phase 25.3:** 📋 PENDING — Pressure Authority Matrix Completion (MEDIUM, Depends: P25). Register all 23 plugin tools in the pressure authority matrix. 8 tools currently missing. Changes: 1 file (authority-matrix.ts), ~40 lines.
 **Phase 26:** 📋 PENDING — Pressure + Notification Redesign (Group 1, Depends: P23, P24, P24.1, P24.2, P24.3, P24.4, P24.5, P24.6, P25).
 **Phase 26.1:** 📋 PENDING — Artifact Naming & Pathing Convention (Cluster B — Documents, Depends: P26).
 **Phase 26.2:** 📋 PENDING — Artifact Dependency & Gatekeeping (Cluster B — Documents, Depends: P26.1).
@@ -358,6 +361,8 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-05-29** — **Phase 24.4-24.8 CLOSED**.
 - **2026-05-29** — **Phase 25 discussion COMPLETE** — all 7 gray areas decided and captured in P25-CONTEXT.md. Key decisions: TDD-first testing (15-30 tests), standalone lifecycle module, bidirectional contract↔trajectory linking, unified compaction constants, deriveSurface() investigation pending, blocked evidence deferred to post-M36, concurrent write lock dismissed as non-issue. Ready for planning.
 - **2026-05-29** — **Phase 25 EXECUTION COMPLETE** — 6 plans in 4 waves executed. 34 trajectory tests (4 files), 20 contract tests (2 files). lifecycle.ts with state machine + 4 transition functions. bounds.ts unified constants. findContractsByTrajectory cross-linking. deriveSurface() verified at delegation-persistence.ts:22. Typecheck clean, 2844 tests pass, 0 regressions. TDD gate: test(...) before feat(...).
+- **2026-05-29** — **Phase 25.2 COMPLETE** — Trajectory Immutability Guard. All 4 mutation operations (eventTrajectory, attachTrajectoryEvidence, checkpointTrajectory, closeTrajectory) throw on closed trajectories. 7 new tests (T-01 through T-06), 2857 total pass. Inline guards, no shared helper. Read operations unaffected. Commit `7f14b58c`.
+- **2026-05-29** — **Phases 25.1-25.3 INSERTED** — Task tool integration (CRITICAL), trajectory immutability guard (HIGH), pressure authority matrix completion (MEDIUM). System audit revealed trajectory and agent-work-contract modules work in isolation but are NOT wired into the delegation lifecycle. Native task tool bypasses both modules entirely. Research and verification completed by 3 sequential agents. Hook point verified at `src/features/session-tracker/tool-delegation.ts:227` — covers BOTH native task AND delegate-task tools.
 - **2026-05-29** — **Phase 24 parent governance + gap phase closure:**
   - P23.3 (GAP-01) ARCHIVED — PASSED (deferred) — requires live OpenCode L1 UAT, cannot run headless. Archive note at `.planning/phases/P23.3-archive.md`.
   - Phase 24 (Cluster D) COMPLETE — retroactive parent governance applied. CONTEXT+SUMMARY written documenting all 9 sub-phases (24.1-24.9) and coordination module at src/coordination/ (6 submodules, 33+ files).
