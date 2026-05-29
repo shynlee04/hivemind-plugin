@@ -1,0 +1,34 @@
+{
+  "name": "stack-zod",
+  "version": "4.x",
+  "sourceRepo": "colinhacks/zod",
+  "sourceVersion": "v4.0.1",
+  "downloadDate": "2026-04-28",
+  "downloadMethod": "repomix_pack_remote_repository",
+  "repomixOutputId": "76c7ed0a41689311",
+  "repomixOutputPath": "/var/folders/xq/pq0b7jpn75s3l6d0pzpyw2380000gn/T/repomix/mcp-outputs/hlgeDV/repomix-output.xml",
+  "totalFiles": 470,
+  "totalTokens": 1240833,
+  "packages": {
+    "zod": {
+      "import": "zod",
+      "description": "Classic API — method chaining, full feature set",
+      "location": "packages/zod/src/v4/classic/"
+    },
+    "zod-mini": {
+      "import": "zod/mini",
+      "description": "Mini API — functional, tree-shakable, smaller bundle",
+      "location": "packages/zod/src/v4/mini/"
+    },
+    "zod-core": {
+      "import": "zod/v4/core",
+      "description": "Core primitives — for library authors building on Zod",
+      "location": "packages/zod/src/v4/core/"
+    },
+    "zod-v3": {
+      "import": "zod/v3",
+      "description": "Legacy v3 compat",
+      "location": "packages/zod/src/v3/"
+    }
+  }
+}

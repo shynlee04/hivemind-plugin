@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, readdirSync, rmSync, cpSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readdirSync, rmSync, cpSync, renameSync, readFileSync, writeFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { execSync } from "node:child_process";
 
 // ── Mode detection ──────────────────────────────────────────────────────────
 const installMode = process.argv.slice(2).includes("--mode=install");
@@ -53,11 +54,45 @@ const PRIMITIVE_MAP = {
   templates: join(stage.consumerRoot, ".opencode", "templates"),
 };
 
+// Singular/plural mirror pairs for dual-directory compatibility per AGENTS.md §4
+const SINGULAR_PLURAL_PAIRS = [
+  { plural: "commands", singular: "command" },
+  { plural: "agents", singular: "agent" },
+  { plural: "skills", singular: "skill" },
+  { plural: "workflows", singular: "workflow" },
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/**
+ * Backup a file to a `.backup/` folder next to it.
+ *   .opencode/commands/file.md → .opencode/commands/.backup/file.md
+ */
+function backupFile(filePath) {
+  const dir = dirname(filePath);
+  const entry = filePath.split("/").pop();
+  const backupDir = join(dir, ".backup");
+  mkdirSync(backupDir, { recursive: true });
+  const backupPath = join(backupDir, entry);
+  if (!existsSync(backupPath)) {
+    cpSync(filePath, backupPath, { recursive: true });
+  }
+  return backupPath;
+}
+
+function shouldSkipGsd(entry) {
+  return entry.startsWith("gsd-") || entry === "gsd";
+}
+
+function isMetaEntry(entry) {
+  return entry === ".gitkeep" || entry === ".backup";
+}
+
 console.log(
   `${logPrefix} Reflecting primitives from assets/ to runtime locations...`,
 );
 
-let mirrorCount = 0;
+const syncedKinds = new Set();
 
 try {
   for (const [kind, targetDir] of Object.entries(PRIMITIVE_MAP)) {
@@ -70,12 +105,13 @@ try {
       continue;
     }
 
+    syncedKinds.add(kind);
+
     if (installMode) {
       // ── INSTALL MODE: Non-destructive per-file merge ──────────────────
       mkdirSync(targetDir, { recursive: true });
       for (const entry of readdirSync(sourceDir)) {
-        if (entry === ".gitkeep" || entry.startsWith("gsd-") || entry === "gsd")
-          continue;
+        if (entry === ".gitkeep" || shouldSkipGsd(entry)) continue;
         const srcPath = join(sourceDir, entry);
         const destPath = join(targetDir, entry);
         if (existsSync(destPath)) {
@@ -86,15 +122,12 @@ try {
               continue; // Identical — skip (no-op)
             }
             // Content differs — user has modified this file
-            const backupPath = destPath + ".backup";
-            if (!existsSync(backupPath)) {
-              cpSync(destPath, backupPath, { recursive: true });
-              console.log(
-                `${logPrefix} ⚠ Preserved user-modified ${entry} → ${entry}.backup`,
-              );
-            }
+            backupFile(destPath);
             console.log(
-              `${logPrefix} ⚠ Skipping ${kind}/${entry} — user-modified. Backup: ${entry}.backup`,
+              `${logPrefix} ⚠ Preserved user-modified ${entry} → .backup/${entry}`,
+            );
+            console.log(
+              `${logPrefix} ⚠ Skipping ${kind}/${entry} — user-modified. Backup: .backup/${entry}`,
             );
             continue;
           } catch {
@@ -104,7 +137,6 @@ try {
         }
         // Target doesn't exist — fresh copy
         cpSync(srcPath, destPath, { recursive: true });
-        if (kind === "commands") mirrorCount++;
       }
       console.log(
         `${logPrefix} Reflected ${kind} (install-mode, non-destructive)`,
@@ -112,18 +144,24 @@ try {
       continue; // Skip the build-mode cleanup below
     }
 
-    // ── BUILD MODE: Destructive cleanup + re-copy (unchanged) ──────────
+    // ── BUILD MODE: Destructive cleanup + re-copy ───────────────────────
     if (existsSync(targetDir)) {
+      // Preserve any existing .backup/ directory before destructive cleanup
+      const tmpBackupDir = join(stage.consumerRoot, ".opencode", ".backup", kind);
+      if (existsSync(join(targetDir, ".backup"))) {
+        mkdirSync(dirname(tmpBackupDir), { recursive: true });
+        renameSync(join(targetDir, ".backup"), tmpBackupDir);
+      }
+
       for (const entry of readdirSync(targetDir)) {
-        if (entry === ".gitkeep" || entry.endsWith(".backup")) continue;
+        if (isMetaEntry(entry)) continue;
+
         const targetPath = join(targetDir, entry);
-        const backupPath = targetPath + ".backup";
-        if (!existsSync(backupPath)) {
-          cpSync(targetPath, backupPath, { recursive: true });
-          console.log(
-            `${logPrefix} Backed up ${targetPath} → ${backupPath}`,
-          );
-        }
+        backupFile(targetPath);
+        console.log(
+          `${logPrefix} Backed up ${targetPath} → .backup/${entry}`,
+        );
+
         // Conflict detection: warn if source exists and content differs
         const sourcePath = join(assetsRoot, kind, entry);
         if (existsSync(sourcePath)) {
@@ -132,7 +170,7 @@ try {
             const sourceContent = readFileSync(sourcePath, "utf-8");
             if (existingContent !== sourceContent) {
               console.log(
-                `${logPrefix} ⚠ Conflict detected: ${kind}/${entry} differs from assets/ version. Backup saved to ${backupPath}`,
+                `${logPrefix} ⚠ Conflict detected: ${kind}/${entry} differs from assets/ version. Backup saved to .backup/${entry}`,
               );
             }
           } catch {
@@ -144,85 +182,84 @@ try {
     }
     mkdirSync(targetDir, { recursive: true });
 
+    // Restore any pre-existing .backup/ directory
+    const tmpBackupDir = join(stage.consumerRoot, ".opencode", ".backup", kind);
+    if (existsSync(tmpBackupDir)) {
+      renameSync(tmpBackupDir, join(targetDir, ".backup"));
+    }
+
     for (const entry of readdirSync(sourceDir)) {
       if (entry === ".gitkeep") continue;
-      if (entry.startsWith("gsd-") || entry === "gsd") continue;
+      if (shouldSkipGsd(entry)) continue;
 
       const srcPath = join(sourceDir, entry);
       const destPath = join(targetDir, entry);
 
       cpSync(srcPath, destPath, { recursive: true });
-      if (kind === "commands") mirrorCount++;
     }
     console.log(
       `${logPrefix} Reflected ${kind} from assets/${kind} to ${targetDir}`,
     );
   }
 
-  // Mirror commands/ → command/ for dual-directory compatibility per AGENTS.md §4
-  if (mirrorCount > 0) {
-    const commandsDir = PRIMITIVE_MAP.commands;
-    const commandMirrorDir = join(
-      stage.consumerRoot,
-      ".opencode",
-      "command",
-    );
-    if (!existsSync(commandMirrorDir)) {
-      mkdirSync(commandMirrorDir, { recursive: true });
+  // ── Mirror plural → singular for dual-directory compatibility ──────────
+  for (const { plural: pluralKind, singular: singularName } of SINGULAR_PLURAL_PAIRS) {
+    if (!syncedKinds.has(pluralKind)) continue;
+
+    const pluralDir = PRIMITIVE_MAP[pluralKind];
+    const singularDir = join(stage.consumerRoot, ".opencode", singularName);
+
+    if (!existsSync(singularDir)) {
+      mkdirSync(singularDir, { recursive: true });
     }
+
     let mirrored = 0;
-    for (const entry of readdirSync(commandsDir)) {
-      if (entry === ".gitkeep" || entry.endsWith(".backup")) continue;
-      if (entry.startsWith("gsd-") || entry === "gsd") continue;
-      const srcPath = join(commandsDir, entry);
-      const destPath = join(commandMirrorDir, entry);
-      if (existsSync(destPath)) {
-        if (installMode) {
-          // Non-destructive: compare content
-          try {
-            const existingContent = readFileSync(destPath, "utf-8");
-            const sourceContent = readFileSync(srcPath, "utf-8");
-            if (existingContent === sourceContent) continue; // identical
-            // Differs — backup + skip
-            const backupPath = destPath + ".backup";
-            if (!existsSync(backupPath)) {
-              cpSync(destPath, backupPath, { recursive: true });
-            }
-            continue;
-          } catch {
-            /* skip */
-          }
-        } else {
-          // Build mode: existing backup + overwrite logic
-          const backupPath = destPath + ".backup";
-          if (!existsSync(backupPath)) {
-            cpSync(destPath, backupPath, { recursive: true });
+    let warned = 0;
+    for (const entry of readdirSync(pluralDir)) {
+      if (isMetaEntry(entry)) continue;
+      if (shouldSkipGsd(entry)) continue;
+
+      const pluralPath = join(pluralDir, entry);
+      const singularPath = join(singularDir, entry);
+
+      if (existsSync(singularPath)) {
+        // FLAW 3: Check before mirror — compare plural vs singular
+        try {
+          const pluralContent = readFileSync(pluralPath, "utf-8");
+          const singularContent = readFileSync(singularPath, "utf-8");
+
+          if (pluralContent !== singularContent) {
+            // They differ — backup BOTH, skip mirror, log warning
+            const pluralBackup = backupFile(pluralPath);
+            const singularBackup = backupFile(singularPath);
+            warned++;
             console.log(
-              `${logPrefix} Backed up ${destPath} → ${backupPath}`,
+              `${logPrefix} ⚠ Conflict: ${pluralKind}/${entry} differs from ${singularName}/${entry}. Backed up both to .backup/. Skipping mirror.`,
             );
+            continue;
           }
-          // Conflict detection
-          try {
-            const existingContent = readFileSync(destPath, "utf-8");
-            const sourceContent = readFileSync(srcPath, "utf-8");
-            if (existingContent !== sourceContent) {
-              console.log(
-                `${logPrefix} ⚠ Conflict detected: command/${entry} differs from commands/ version. Backup saved to ${backupPath}`,
-              );
-            }
-          } catch {
-            // Binary or unreadable: skip diff
-          }
+        } catch {
+          // Binary or unreadable — skip conflict check
         }
       }
-      if (!installMode || !existsSync(destPath)) {
-        cpSync(srcPath, destPath, { recursive: true });
-        mirrored++;
-      }
+
+      // Mirror plural → singular
+      cpSync(pluralPath, singularPath, { recursive: true });
+      mirrored++;
     }
     console.log(
-      `${logPrefix} Mirrored ${mirrored} commands to ${commandMirrorDir}`,
+      `${logPrefix} Mirrored ${mirrored} ${pluralKind} to ${singularDir} (${warned} conflicts skipped)`,
     );
+  }
+
+  // ── FLAW 4: Remove legacy .backup files ─────────────────────────────────
+  try {
+    execSync(
+      `find "${join(stage.consumerRoot, ".opencode")}" -name "*.backup" -type f -delete 2>/dev/null`,
+      { stdio: "pipe" },
+    );
+  } catch {
+    // Non-critical: skip cleanup error
   }
 
   // Write version stamp after successful install-mode sync
@@ -242,8 +279,9 @@ try {
     }
   }
 
+  const syncedCount = syncedKinds.size;
   console.log(
-    `${logPrefix} Assets reflection completed. Synced ${mirrorCount} commands, mirrored to command/ directory.`,
+    `${logPrefix} Assets reflection completed. Synced ${syncedCount} primitive types.`,
   );
 } catch (err) {
   console.error(

@@ -1,0 +1,240 @@
+{
+  "skill": "hf-naming-syndicate",
+  "version": "1.0.0",
+  "trigger_queries": [
+    {
+      "id": "positive-validate-hm-skill",
+      "query": "Validate that 'hm-test-driven-execution' follows the naming convention.",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Identifies prefix as hm-* (product dev lineage)",
+        "Confirms 3-word pattern: domain=test, subdomain=driven, function=execution",
+        "Matches regex: ^hm-[a-z][a-z0-9]*(-[a-z][a-z0-9]*){1,3}$",
+        "Verdict: PASS"
+      ]
+    },
+    {
+      "id": "positive-validate-hf-skill",
+      "query": "Check if 'hf-agent-composition' is a valid skill name.",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Identifies prefix as hf-* (meta builder lineage)",
+        "Confirms 2-word pattern: domain=agent, function=composition",
+        "Matches regex: ^hf-[a-z][a-z0-9]*(-[a-z][a-z0-9]*){1,3}$",
+        "Verdict: PASS"
+      ]
+    },
+    {
+      "id": "positive-validate-gate-skill",
+      "query": "Is 'gate-evidence-truth' correctly named for the internal gate lineage?",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Identifies prefix as gate-* (internal quality gate)",
+        "Confirms 2-word pattern: domain=evidence, function=truth",
+        "Flags scope: THIS PROJECT ONLY — gate-* skills are NOT shipped",
+        "Verdict: PASS"
+      ]
+    },
+    {
+      "id": "negative-too-many-words",
+      "query": "Is 'hm-deep-codebase-research-and-analysis-system' a valid name?",
+      "expected_loaded": true,
+      "scenario_type": "negative",
+      "assertions": [
+        "Detects violation: 5 words after prefix (max 3)",
+        "Returns FAIL with specific rule reference",
+        "Suggests compliant alternatives: 'hm-deep-research', 'hm-codebase-analysis'",
+        "Does NOT create — only validates"
+      ]
+    },
+    {
+      "id": "negative-wrong-prefix",
+      "query": "I want to create a meta-builder skill called 'hm-skill-author'. Is this correct?",
+      "expected_loaded": true,
+      "scenario_type": "negative",
+      "assertions": [
+        "Detects lineage mismatch: hm-* prefix on a meta-builder skill",
+        "Returns FAIL — should be hf-* prefix",
+        "Suggests: 'hf-skill-author'",
+        "Routes to hf-meta-builder for creation"
+      ]
+    },
+    {
+      "id": "positive-validate-agent-l0",
+      "query": "Validate that 'hm-orchestrator' follows agent naming rules.",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Identifies as L0 agent (-orchestrator suffix)",
+        "Confirms hm-* lineage prefix",
+        "Validates: L0 agents MUST end in -orchestrator",
+        "Verdict: PASS"
+      ]
+    },
+    {
+      "id": "negative-agent-suffix-violation",
+      "query": "Can I name my specialist research agent 'hm-researcher-orchestrator'?",
+      "expected_loaded": true,
+      "scenario_type": "negative",
+      "assertions": [
+        "Detects suffix violation: L2 agent using -orchestrator",
+        "Returns FAIL — L2 agents must NOT use orchestrator suffix",
+        "Suggests: 'hm-researcher' (correct L2 naming)",
+        "Explains: If agent truly orchestrates, promote to L0 and remove domain specialization"
+      ]
+    },
+    {
+      "id": "boundary-unprefixed",
+      "query": "What naming rules apply to 'opencode-config-workflow'?",
+      "expected_loaded": true,
+      "scenario_type": "boundary",
+      "assertions": [
+        "Identifies as unprefixed (framework-agnostic)",
+        "Acknowledges this is intentionally unprefixed",
+        "Notes: unprefixed is allowed ONLY for framework-agnostic skills",
+        "Cross-refs to Known Name Anomalies table"
+      ]
+    },
+    {
+      "id": "boundary-straddling",
+      "query": "I need a skill that serves BOTH hm-* and hf-* lineages. How should I name it?",
+      "expected_loaded": true,
+      "scenario_type": "boundary",
+      "assertions": [
+        "Flags this as a straddling boundary case",
+        "Explains Rule: must have explicit justification + cross-lineage consumed-by",
+        "Recommends picking primary lineage for prefix, documenting secondary in consumed-by",
+        "Routes to Conflict Resolution section"
+      ]
+    },
+    {
+      "id": "negative-abbreviation",
+      "query": "Is 'hm-cfg-mgr' a valid name?",
+      "expected_loaded": true,
+      "scenario_type": "negative",
+      "assertions": [
+        "Detects ambiguous abbreviations: 'cfg' and 'mgr'",
+        "Returns FAIL per non-machine-verifiable rules",
+        "Suggests: 'hm-config-manager'",
+        "Cites: 'No ambiguous abbreviations' rule"
+      ]
+    },
+    {
+      "id": "positive-stack-reference",
+      "query": "Validate the name 'stack-zod' against the naming convention.",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Identifies prefix as stack-* (tech reference lineage)",
+        "Confirms 1-word pattern: domain=zod (compound concept, function fused)",
+        "Matches regex: ^stack-[a-z][a-z0-9]*(-[a-z][a-z0-9]*){1,3}$",
+        "Verdict: PASS"
+      ]
+    },
+    {
+      "id": "negative-numeric-version",
+      "query": "Can I name my new debug skill 'hm-debug-v2'?",
+      "expected_loaded": true,
+      "scenario_type": "negative",
+      "assertions": [
+        "Detects numeric suffix (v2)",
+        "Returns FAIL — no numeric suffixes allowed",
+        "Suggests semantic alternative: 'hm-systematic-debug'",
+        "Explains: version numbers belong in version field, not names"
+      ]
+    },
+    {
+      "id": "positive-glob-l2-specialists",
+      "query": "What glob pattern should I use in an agent allowlist to match all L2 hm specialists?",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Returns: '\"hm-l2-*\": allow'",
+        "Explains: matches all L2 hm specialists (execution layer)",
+        "Notes: depth-specific — does NOT match hm-l1-coordinator or hm-l0-orchestrator",
+        "Cross-refs to Agent Allowlist Patterns table"
+      ]
+    },
+    {
+      "id": "positive-glob-exact-match",
+      "query": "How do I allow only the hm-l1-coordinator but not other L1 agents?",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Returns: '\"hm-l1-coordinator\": allow'",
+        "Explains: exact-match pattern — no wildcard",
+        "Contrasts with '\"hm-l1-*\": allow' which matches all L1 agents",
+        "Cross-refs to Exact-Match Patterns table"
+      ]
+    },
+    {
+      "id": "negative-glob-cross-lineage",
+      "query": "Can I add '\"hf-l2-*\": allow' to an hm-l1-coordinator's permission allowlist?",
+      "expected_loaded": true,
+      "scenario_type": "negative",
+      "assertions": [
+        "Flags lineage locking violation",
+        "Returns FAIL: hm-* agents MUST use hm-l*-* patterns",
+        "Explains: cross-lineage loading is ONLY for gate-l3-* and stack-l3-* patterns",
+        "Cites Glob Enforcement Rule 1"
+      ]
+    },
+    {
+      "id": "positive-glob-gsd-exclusion",
+      "query": "Should 'gsd-executor' appear in a shipped agent's skill allowlist?",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Returns: NO — gsd-* agents are excluded from naming scheme",
+        "Explains: GSD agents are internal project build tools, NOT shipped",
+        "Recommends: 'gsd-*': ask in public-facing agents",
+        "Cites Glob Enforcement Rule 4"
+      ]
+    }
+  ],
+  "rich_source_evidence": [
+    {
+      "gate": "RICH-1",
+      "claim": "Complete naming taxonomy for all 5 lineages",
+      "evidence": "SKILL.md defines prefix rules for hm-*, hf-*, gate-*, stack-* + unprefixed. references/naming-taxonomy.md provides domain-function breakdown for all 51 active skills."
+    },
+    {
+      "gate": "RICH-2",
+      "claim": "Multiple validation strategies (machine + human + glob)",
+      "evidence": "Machine-verifiable regex rules + human-review rules + glob pattern reference for agent allowlists. Agent naming includes L0/L1/L2 layer suffixes. Edge cases documented for single-word, compound, and abbreviated names."
+    },
+    {
+      "gate": "RICH-3",
+      "claim": "Cross-references to 7+ sibling skills and agents",
+      "evidence": "hm-lineage-router, hf-meta-builder, hf-skill-synthesis, hivefiver-skill-author, hivefiver-agent-builder, hm-gate-orchestrator. All documented in Cross-References table."
+    },
+    {
+      "gate": "RICH-4",
+      "claim": "Structured naming with decision trees",
+      "evidence": "5-step conflict resolution. 4-mode self-correction. Anti-pattern table with detection + correction for 5 patterns."
+    },
+    {
+      "gate": "RICH-5",
+      "claim": "Progressive disclosure via reference files",
+      "evidence": "SKILL.md (rules + validation + history) + references/naming-taxonomy.md (complete domain-function taxonomy for all 51 skills)."
+    },
+    {
+      "gate": "RICH-6",
+      "claim": "Works across all project types",
+      "evidence": "Framework-agnostic paths section. Naming rules are about meta-concept names, not project content. Regex validation works on any platform."
+    },
+    {
+      "gate": "RICH-7",
+      "claim": "Honest about limitations",
+      "evidence": "Known Name Anomalies table with 6 intentionally-retained anomalies. Self-correction with 5 modes. Anti-patterns with detection + correction."
+    },
+    {
+      "gate": "RICH-8",
+      "claim": "This evals file + metrics scorecard",
+      "evidence": "16 eval scenarios (8 positive, 6 negative, 2 boundary) covering naming validation + glob patterns. metrics/rich-gate-scorecard.md with D1-D8 scoring."
+    }
+  ]
+}
