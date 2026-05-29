@@ -28,6 +28,35 @@ export const TrajectoryToolInputSchema = z.object({
 export type TrajectoryToolInput = z.infer<typeof TrajectoryToolInputSchema>
 
 /**
+ * Zod schema for phase trajectory creation input.
+ *
+ * Per D-01/D-04, trajectory is per-PHASE with ID format `traj-phase-{N}`.
+ */
+export const PhaseTrajectoryCreateSchema = z.object({
+  projectRoot: z.string().min(1),
+  phaseNumber: z.union([z.number(), z.string()]),
+  rootSessionId: z.string().min(1),
+  phaseName: z.string().optional(),
+})
+
+/**
+ * Inferred phase trajectory creation input.
+ */
+export type PhaseTrajectoryCreateInput = z.infer<typeof PhaseTrajectoryCreateSchema>
+
+/**
+ * Zod schema for progressive disclosure depth parameter.
+ *
+ * Per D-27, all 3 levels are required: summary, detailed, full.
+ */
+export const TrajectoryDepthSchema = z.enum(["summary", "detailed", "full"])
+
+/**
+ * Inferred trajectory depth type.
+ */
+export type TrajectoryDepth = z.infer<typeof TrajectoryDepthSchema>
+
+/**
  * Parse and validate action-specific trajectory tool input.
  *
  * @param rawInput - Untrusted raw tool arguments.
