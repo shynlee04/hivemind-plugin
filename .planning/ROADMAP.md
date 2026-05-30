@@ -630,16 +630,16 @@ Plans:
 
 **Goal:** As a project maintainer, I want to fix all test failures and typecheck errors and ensure the build succeeds, so that the codebase has a solid foundation before deeper audits.
 **Mode:** mvp
-**Requirements:** TBD
-**Depends on:** P36, P37, P38
-**Plans:** 5 plans (4 Waves)
+**Requirements:** None specified
+**Depends on:** P36, P37, P38 (absorbed as sub-tasks)
+**Plans:** 5 plans in 3 waves
 
-### Phase 40: Public Ship Readiness
-
-**Goal:** Polish GitHub repo (README, LICENSE, CONTRIBUTING, CI badges), finalize npm package exports and publish workflow, audit `.gitignore`/`.npmignore`, write community-facing documentation, and run final build + smoke test for public open-source release.
-**Requirements:** TBD
-**Depends on:** P39
-**Plans:** TBD
+Plans:
+- [ ] 39-01-PLAN.md — Fix 18 timeout failures in bootstrap tests (Wave 1) — goal baseline
+- [ ] 39-02-PLAN.md — C6 handler extraction + DelegationStatusReader (Wave 1) — architectural refactoring
+- [ ] 39-03-PLAN.md — C6 plugin.ts domain grouping + verification (Wave 2) — refactoring verification
+- [ ] 39-04-PLAN.md — C7 test coverage continuation + coverage thresholds (Wave 1) — test quality
+- [ ] 39-05-PLAN.md — C8 dependency cleanup + GSD re-validation + compliance audit (Wave 3) — audit readiness
 
 ---
 
