@@ -136,7 +136,7 @@ Every phase must explicitly trace through these protocols:
 - [ ] **P36 (Cluster L): Integration Verification** — Full regression, dist rebuild, smoke tests [GSD-reval: NO] [Arch-src: N/A - verification only] [UAT: full suite pass]
 - [ ] **P37: Fix sync-oss.yml** (DEFERRED) [GSD-reval: NO]
 - [ ] **P38: Package .opencode/ Primitives** (DEFERRED) [GSD-reval: NO]
-- [ ] **P39: Integration Completion & Hardening** — Finish all remaining in-progress work across P23-P38. Fix all test failures and typecheck errors. Run spec/pattern/design compliance audit across all code. E2E integration verification with OpenCode runtime. Zero known tech debt pass. **Plans:** 5 plans in 4 waves. [GSD-reval: NO] [Arch-src: N/A - verification + cross-cutting] [UAT: full suite pass, typecheck clean, E2E dispatch working]
+- [ ] **P39: Integration Completion & Hardening — Ship Readiness** — Resolve ALL 80+ ongoing phases: verify 40 complete phases have E2E evidence, complete 23 partial phases with code delivery, absorb 39 not-started phases. Fix 19 test timeouts. Fix sync-oss.yml to whitelist only public-safe artifacts (exclude GSD/OMO). Complete C4-C7 concern implementations. Align language governance (vi/en). Absorb P36-P38. **Plans:** 7 waves (Core Stability → Sync-OSS → Partials → Absorb Empty → Verify Complete → Governance → E2E). [GSD-reval: YES - partial] [UAT: full suite pass, typecheck clean, E2E dispatch working, OSS sync verified leak-free]
   **Plans:**
   - [ ] 39-01-PLAN.md — Wave 1: Performance Optimization (C4) — JSON.parse memoization, async FS, timer cleanup, async exec
   - [ ] 39-02-PLAN.md — Wave 1: Error Handling & Code Quality (C5) — typed extraction, scoped env, empty catch sweep
@@ -626,20 +626,13 @@ Plans:
 
 - [x] Phase 20 direct execution — dependency cleanup completed in `38e0bd8f`; progress/state manifests updated in `b3875fd6`. Evidence: `package.json`/`package-lock.json` dependency cleanup, `.planning/STATE.md` focus advanced to Phase 21, `AGENTS.md` current phase context updated.
 
-### Phase 39: Integration Completion & Hardening — Core Stability
+### Phase 39: Integration Completion & Hardening — Ship Readiness
 
-**Goal:** As a project maintainer, I want to fix all test failures and typecheck errors and ensure the build succeeds, so that the codebase has a solid foundation before deeper audits.
+**Goal:** As a project maintainer, I want to resolve ALL 80+ ongoing phases — verify 40 complete phases, complete 23 partial phases, absorb 39 not-started phases — and prepare the repo for public GitHub + npm publication, so that Hivemind is stable, tested, E2E-verified, with zero GSD/OMO internal artifacts leaked and full community-ready documentation.
 **Mode:** mvp
-**Requirements:** None specified
-**Depends on:** P36, P37, P38 (absorbed as sub-tasks)
-**Plans:** 5 plans in 3 waves
-
-Plans:
-- [ ] 39-01-PLAN.md — Fix 18 timeout failures in bootstrap tests (Wave 1) — goal baseline
-- [ ] 39-02-PLAN.md — C6 handler extraction + DelegationStatusReader (Wave 1) — architectural refactoring
-- [ ] 39-03-PLAN.md — C6 plugin.ts domain grouping + verification (Wave 2) — refactoring verification
-- [ ] 39-04-PLAN.md — C7 test coverage continuation + coverage thresholds (Wave 1) — test quality
-- [ ] 39-05-PLAN.md — C8 dependency cleanup + GSD re-validation + compliance audit (Wave 3) — audit readiness
+**Requirements:** TBD
+**Depends on:** None — absorbs all upstream phases (P26-P38 empty, P36-P38 aspirational)
+**Plans:** 7 waves (Core Stability → Sync-OSS → Complete Partials → Absorb Empty → Verify Complete → Governance/Philosophy → E2E)
 
 ---
 
