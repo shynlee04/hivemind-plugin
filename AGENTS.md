@@ -457,10 +457,10 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 
 **Reordered restructuring (Phases 21-37):** Owner's 3-group framework applied — Group 1 (Orchestration Design Fix) → Group 2 (Routing/Coordination) → Group 3 (Schema/Config) → Group 4 (Structural Cleanup). Based on 16 research artifacts (6,621 LOC), 6 deep-analysis cluster reports, phase-reordering analysis (4 critical violations found), session-tracker flaws analysis (16 flaws, 2 CRITICAL).
 **Phase 18-20:** ✅ COMPLETE (2026-05-21) — root cleanup, non-destructive remediation, dependency cleanup.
-**Active phase:** Phase 21.2 — Front-Agent Switch One-Shot Agent Override prototype. L3 unit/typecheck evidence exists for the synthetic `subtask:false + agent` parent-prompt path; L1 live UAT is still required before front-agent switching readiness can be claimed.
-**Sequence:** Session-Tracker (P21) → Status/Error (P22) → Dispatch/Delegate (P23) → Trajectory/Contract (P24) → Pressure/Notification (P25) → Routing/Intent (P26) → Hooks (P27) → Auto-Loop/PTY (P28) → Schema (P29) → Config (P30) → Primitives (P31) → Plugin Decomp (P32) → Async I/O+Errors (P33) → Module Splits (P34) → Integration (P35) → sync-oss.yml (P36) → Package Primitives (P37).
-**Group order:** Group 1 (P21-P25, HIGHEST) → Group 2 (P26-P28) → Group 3 (P29-P31) → Group 4 (P32-P35, LAST) → P36-P37 independent.
-**Key decisions:** Async I/O + typed errors pushed to P33 (Group 4, LAST); plugin decomposition pushed to P32; session-tracker fixed FIRST with production evidence.
+**Active phase:** Phase 39.8 — Enable execute-slash-command in child/sub sessions and prevent recursive subtasks. L3 unit/typecheck/build evidence exists, and all 2,963 tests pass successfully.
+**Sequence:** Session-Tracker (P21) → Status/Error (P22) → Dispatch/Delegate (P23) → Trajectory/Contract (P24) → Pressure/Notification (P25) → Routing/Intent (P26) → Hooks (P27) → Auto-Loop/PTY (P28) → Schema (P29) → Config (P30) → Primitives (P31) → Plugin Decomp (P32) → Async I/O+Errors (P33) → Module Splits (P34) → Integration (P35) → sync-oss.yml (P36) → Package Primitives (P37) → Integration Completion & Hardening (P39).
+**Group order:** Group 1 (P21-P25, HIGHEST) → Group 2 (P26-P28) → Group 3 (P29-P31) → Group 4 (P32-P35, LAST) → P36-P37 independent → P39 core ship hardening.
+**Key decisions:** Async I/O + typed errors pushed to P33 (Group 4, LAST); plugin decomposition pushed to P32; session-tracker fixed FIRST with production evidence; child session execution upgrades implemented.
 **Research artifacts:**
 - `.planning/research/phase-reordering-final-recommendation-2026-05-21.md` (543 LOC)
 - `.planning/research/hard-restructuring-synthesis-2026-05-21.md` (454 LOC)
