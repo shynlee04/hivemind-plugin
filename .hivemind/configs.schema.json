@@ -183,6 +183,66 @@
         }
       },
       "additionalProperties": false
+    },
+    "governance": {
+      "default": {
+        "rules": []
+      },
+      "type": "object",
+      "properties": {
+        "rules": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "condition": {
+                "type": "object",
+                "properties": {
+                  "toolNames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "sessionIDs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": {}
+              },
+              "action": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "escalation": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  }
+                },
+                "additionalProperties": {}
+              },
+              "enabled": {
+                "default": true,
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

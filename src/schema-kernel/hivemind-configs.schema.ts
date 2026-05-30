@@ -271,7 +271,7 @@ export const GovernanceRuleSchema = z.object({
   }).catchall(z.unknown()),
   action: z.object({
     type: z.string(), // e.g. "block", "warn", "escalate"
-    escalation: z.record(z.unknown()).optional(),
+    escalation: z.record(z.string(), z.unknown()).optional(),
   }).catchall(z.unknown()),
   enabled: z.boolean().default(true),
 })
