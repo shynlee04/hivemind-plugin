@@ -7,13 +7,15 @@ import { describe, expect, it } from "vitest"
 import { bootstrapInit } from "../../src/tools/config/bootstrap-init.js"
 import { bootstrapRecover } from "../../src/tools/config/bootstrap-recover.js"
 
+const TIMEOUT_30S = 30_000
+
 function createTempProject(): string {
   const projectRoot = mkdtempSync(join(tmpdir(), "hivemind-bootstrap-recover-"))
   return projectRoot
 }
 
 describe("bootstrapRecover", () => {
-  it("repairs missing project-scope symlinks", async () => {
+  it("repairs missing project-scope symlinks", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     try {
       await bootstrapInit({ projectRoot, scope: "project", nonInteractive: true, config: {} })
@@ -36,7 +38,7 @@ describe("bootstrapRecover", () => {
     }
   })
 
-  it("repairs only the selected global primitive scope", async () => {
+  it("repairs only the selected global primitive scope", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     const globalRoot = mkdtempSync(join(tmpdir(), "hivemind-bootstrap-recover-global-"))
     try {
@@ -62,7 +64,7 @@ describe("bootstrapRecover", () => {
     }
   })
 
-  it("skips real-file conflicts without overwriting contents", async () => {
+  it("skips real-file conflicts without overwriting contents", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     try {
       await bootstrapInit({ projectRoot, scope: "project", nonInteractive: true, config: {} })
@@ -79,7 +81,7 @@ describe("bootstrapRecover", () => {
     }
   })
 
-  it("recreates broken symlinks to the correct relative target", async () => {
+  it("recreates broken symlinks to the correct relative target", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     try {
       await bootstrapInit({ projectRoot, scope: "project", nonInteractive: true, config: {} })

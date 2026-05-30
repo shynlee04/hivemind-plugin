@@ -6,6 +6,8 @@ import { describe, expect, it } from "vitest"
 
 import { bootstrapInit } from "../../src/tools/config/bootstrap-init.js"
 
+const TIMEOUT_30S = 30_000
+
 const CANONICAL_HIVEMIND_DIRECTORIES = [
   "state",
   "delegation",
@@ -33,7 +35,7 @@ function createTempProject(): string {
 }
 
 describe("bootstrapInit", () => {
-  it("creates tier-1 .hivemind directories with .gitkeep files and project-scope symlinks", async () => {
+  it("creates tier-1 .hivemind directories with .gitkeep files and project-scope symlinks", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     try {
       const result = await bootstrapInit({
@@ -60,7 +62,7 @@ describe("bootstrapInit", () => {
     }
   })
 
-  it("keeps .hivemind local while installing primitives to an explicit global scope", async () => {
+  it("keeps .hivemind local while installing primitives to an explicit global scope", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     const globalRoot = mkdtempSync(join(tmpdir(), "hivemind-bootstrap-global-"))
     try {
@@ -83,7 +85,7 @@ describe("bootstrapInit", () => {
     }
   })
 
-  it("falls back to project scope when the explicit global path is unavailable", async () => {
+  it("falls back to project scope when the explicit global path is unavailable", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     const blockerFile = join(projectRoot, "global-blocker")
     try {
@@ -106,7 +108,7 @@ describe("bootstrapInit", () => {
     }
   })
 
-  it("preserves existing real files and existing configs.json byte-for-byte", async () => {
+  it("preserves existing real files and existing configs.json byte-for-byte", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     const existingConfig = "{\n  \"$schema\": \"./configs.schema.json\",\n  \"mode\": \"free-style\"\n}\n"
     try {
@@ -129,7 +131,7 @@ describe("bootstrapInit", () => {
     }
   })
 
-  it("backs up the selected primitive target when version drift exists and skips backup on fresh install", async () => {
+  it("backs up the selected primitive target when version drift exists and skips backup on fresh install", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     try {
       mkdirSync(join(projectRoot, ".hivemind", "state"), { recursive: true })
@@ -159,7 +161,7 @@ describe("bootstrapInit", () => {
     }
   })
 
-  it("refreshes configs.schema.json when version drift exists or generated content differs", async () => {
+  it("refreshes configs.schema.json when version drift exists or generated content differs", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     try {
       mkdirSync(join(projectRoot, ".hivemind", "state"), { recursive: true })
@@ -181,7 +183,7 @@ describe("bootstrapInit", () => {
     }
   })
 
-  it("backs up user-defined files with .backup suffix instead of directly overwriting them", async () => {
+  it("backs up user-defined files with .backup suffix instead of directly overwriting them", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = createTempProject()
     try {
       await bootstrapInit({

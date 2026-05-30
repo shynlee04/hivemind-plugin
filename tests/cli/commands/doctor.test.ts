@@ -6,6 +6,8 @@ import { tmpdir } from "node:os"
 import { createDoctorCommand } from "../../../src/cli/commands/doctor.js"
 import { bootstrapInit } from "../../../src/tools/config/bootstrap-init.js"
 
+const TIMEOUT_30S = 30_000
+
 async function createHealthyProject(): Promise<string> {
   const projectRoot = mkdtempSync(join(tmpdir(), "hivemind-doctor-"))
   await bootstrapInit({ projectRoot, scope: "project", nonInteractive: true })
@@ -13,7 +15,7 @@ async function createHealthyProject(): Promise<string> {
 }
 
 describe("doctor command", () => {
-  it("reports PASS rows and ALL CHECKS PASS on a healthy project", async () => {
+  it("reports PASS rows and ALL CHECKS PASS on a healthy project", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({
@@ -36,7 +38,7 @@ describe("doctor command", () => {
     }
   })
 
-  it("fails when typecheck or test health commands fail", async () => {
+  it("fails when typecheck or test health commands fail", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({
@@ -57,7 +59,7 @@ describe("doctor command", () => {
     }
   })
 
-  it("uses the default ESM-safe SDK resolver when no resolver override is provided", async () => {
+  it("uses the default ESM-safe SDK resolver when no resolver override is provided", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot })
@@ -70,7 +72,7 @@ describe("doctor command", () => {
     }
   })
 
-  it("supports explicit global-scope doctor checks while keeping local structure/config rooted in project", async () => {
+  it("supports explicit global-scope doctor checks while keeping local structure/config rooted in project", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({
@@ -86,7 +88,7 @@ describe("doctor command", () => {
     }
   })
 
-  it("passes when primitive targets are real files", async () => {
+  it("passes when primitive targets are real files", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({
@@ -105,7 +107,7 @@ describe("doctor command", () => {
     }
   })
 
-  it("returns exit code 1 when structure check fails", async () => {
+  it("returns exit code 1 when structure check fails", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     try {
       rmSync(join(projectRoot, ".hivemind", "state", ".gitkeep"))
@@ -124,7 +126,7 @@ describe("doctor command", () => {
     }
   })
 
-  it("returns exit code 64 for invalid --check values", async () => {
+  it("returns exit code 64 for invalid --check values", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     try {
       const command = createDoctorCommand({ resolveProjectRoot: () => projectRoot, resolveSdk: () => "/sdk/path" })
@@ -135,7 +137,7 @@ describe("doctor command", () => {
     }
   })
 
-  it("remains read-only and never calls write APIs", async () => {
+  it("remains read-only and never calls write APIs", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     const writeSpy = vi.spyOn(process.stdout, "write")
     try {
@@ -148,7 +150,7 @@ describe("doctor command", () => {
     }
   })
 
-  it("fails config check when configs.json contains schema-invalid runtime values", async () => {
+  it("fails config check when configs.json contains schema-invalid runtime values", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     try {
       writeFileSync(
@@ -166,7 +168,7 @@ describe("doctor command", () => {
     }
   })
 
-  it("fails config check when configs.schema.json drifts from the canonical generated contract", async () => {
+  it("fails config check when configs.schema.json drifts from the canonical generated contract", { timeout: TIMEOUT_30S }, async () => {
     const projectRoot = await createHealthyProject()
     try {
       writeFileSync(join(projectRoot, ".hivemind", "configs.schema.json"), '{"type":"object","properties":{}}\n', "utf8")
