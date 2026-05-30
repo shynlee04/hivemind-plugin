@@ -24,7 +24,7 @@ describe("AgentResolver", () => {
       prompt: "implement the slice",
     })
 
-    expect(profile).toEqual({ mode: "write-capable", tools: ["read", "edit", "glob", "grep"] })
+    expect(profile).toEqual({ mode: "write-capable", tools: ["read", "edit", "glob", "grep", "execute-slash-command"] })
   })
 
   it("disables recursive delegation tools for resolved agents", () => {

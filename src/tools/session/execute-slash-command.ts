@@ -286,6 +286,10 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         // Determine parentSessionID — stackOnSessionId takes precedence
         const resolvedParentSessionID = executionArgs.stackOnSessionId || executionArgs.parentSessionID || ctx.sessionID || ""
 
+        // Resolve if we are in a child/sub session
+        const resolved = await resolveSessionFile(projectRoot, ctx.sessionID)
+        const isChildSession = resolved ? resolved.type === "child" : false
+
         // Check if subtask was explicitly passed in args
         const hasExplicitSubtask = overrideSubtask !== undefined
         const subtaskParam = overrideSubtask
@@ -341,7 +345,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           } as ToolResult
         }
 
-        const shouldDispatchSubtask = subtaskParam ?? commandBundle?.subtask === true
+        const shouldDispatchSubtask = isChildSession ? false : (subtaskParam ?? commandBundle?.subtask === true)
         if (shouldDispatchSubtask) {
           const subtaskAgent = resolvedAgent
           if (!subtaskAgent) {
@@ -427,10 +431,6 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             error: false,
           } as ToolResult
         }
-
-        const resolved = await resolveSessionFile(projectRoot, ctx.sessionID)
-        const isChildSession = resolved ? resolved.type === "child" : false
-
         // Build the slash command text for TUI pipeline
         // NOTE: @agent prefix in prompt text does NOT work for agent override
         // Agent is passed via metadata/context, not prompt text

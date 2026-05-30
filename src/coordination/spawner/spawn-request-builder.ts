@@ -26,8 +26,8 @@ type DelegateParams = {
 export type { ValidatedAgent, DelegateParams }
 
 const READ_ONLY_TOOLS = ["read", "glob", "grep"] as const
-const WRITE_CAPABLE_TOOLS = ["read", "edit", "write", "bash", "glob", "grep"] as const
-const WRITE_TOOLS = new Set(["edit", "write", "bash"])
+const WRITE_CAPABLE_TOOLS = ["read", "edit", "write", "bash", "glob", "grep", "execute-slash-command"] as const
+const WRITE_TOOLS = new Set(["edit", "write", "bash", "execute-slash-command"])
 const REVIEW_MARKERS = ["review", "critic", "audit", "verify", "research", "inspect", "read-only"]
 
 /**
@@ -90,7 +90,7 @@ function toolsFromAgentMetadata(agent: ValidatedAgent): readonly string[] | unde
   if (agent.tools) {
     allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => {
       const value = agent.tools?.[toolName]
-      if (value === undefined && (toolName === "read" || toolName === "glob" || toolName === "grep")) {
+      if (value === undefined && (toolName === "read" || toolName === "glob" || toolName === "grep" || toolName === "execute-slash-command")) {
         return true
       }
       return value === true
@@ -98,7 +98,7 @@ function toolsFromAgentMetadata(agent: ValidatedAgent): readonly string[] | unde
   } else if (agent.permission) {
     allowed = WRITE_CAPABLE_TOOLS.filter((toolName) => {
       const value = agent.permission?.[toolName]
-      if (value === undefined && (toolName === "read" || toolName === "glob" || toolName === "grep")) {
+      if (value === undefined && (toolName === "read" || toolName === "glob" || toolName === "grep" || toolName === "execute-slash-command")) {
         return true
       }
       return isPermissionAllowed(value)

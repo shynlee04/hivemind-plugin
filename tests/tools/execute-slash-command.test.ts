@@ -821,5 +821,63 @@ Verify prefix override.
       agent: "gsd-executor",
     })
   })
+
+  it("should prevent subtask delegation and force subtask:false when running inside a child session", async () => {
+    const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
+    const commandMock = vi.fn(async () => undefined)
+    const client = {
+      session: { prompt: promptMock, command: commandMock },
+      tui: {
+        clearPrompt: vi.fn(),
+        appendPrompt: vi.fn(),
+        submitPrompt: vi.fn(),
+      },
+    } as unknown as PluginInput["client"]
+
+    const projectRoot = await createProjectWithCommand(
+      "subtask-in-child-cmd",
+      `---
+description: "Subtask command running inside child session"
+agent: gsd-executor
+subtask: true
+---
+Body content.
+`,
+    )
+
+    // Write a mock session file so resolveSessionFile identifies it as a child session
+    const parentSessionTrackerDir = path.join(projectRoot, ".hivemind", "session-tracker", "ses_parent")
+    await mkdir(parentSessionTrackerDir, { recursive: true })
+    const sessionFile = path.join(parentSessionTrackerDir, "ses_child.json")
+    await writeFile(sessionFile, JSON.stringify({ sessionID: "ses_child", type: "child" }), "utf-8")
+
+    const tool = createExecuteSlashCommandTool(client)
+    const result = await tool.execute(
+      { command: "subtask-in-child-cmd", subtask: true }, // Explicitly requested subtask:true
+      {
+        sessionID: "ses_child",
+        agent: "gsd-executor",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+        abort: new AbortController().signal,
+        ask: vi.fn(),
+        messageID: "msg_child",
+      } as any,
+    )
+    await flushDeferred()
+
+    expect(result.metadata).toMatchObject({
+      mode: "session-prompt", // Dispatched directly as session-prompt to child session
+      dispatched: true,
+    })
+
+    expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
+      path: { id: "ses_child" },
+      body: {
+        parts: [{ type: "text", text: "/subtask-in-child-cmd" }],
+      }
+    }))
+  })
 })
 

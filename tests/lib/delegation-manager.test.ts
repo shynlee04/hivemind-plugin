@@ -810,6 +810,7 @@ describe("DelegationManager", () => {
             grep: true,
             "delegate-task": false,
             task: false,
+            "execute-slash-command": true,
           },
         },
       })

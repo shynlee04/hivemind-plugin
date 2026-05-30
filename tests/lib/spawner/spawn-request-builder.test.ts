@@ -35,7 +35,7 @@ describe("buildSdkSpawnRequest", () => {
 
     expect(profile).toEqual({
       mode: "write-capable",
-      tools: ["read", "edit", "write", "bash", "glob", "grep"],
+      tools: ["read", "edit", "write", "bash", "glob", "grep", "execute-slash-command"],
     })
   })
 
@@ -65,7 +65,7 @@ describe("buildSdkSpawnRequest", () => {
 
     expect(profile).toEqual({
       mode: "write-capable",
-      tools: ["read", "edit", "bash", "glob", "grep"],
+      tools: ["read", "edit", "bash", "glob", "grep", "execute-slash-command"],
     })
   })
 
@@ -83,7 +83,7 @@ describe("buildSdkSpawnRequest", () => {
 
     expect(profile).toEqual({
       mode: "write-capable",
-      tools: ["read", "edit", "bash", "glob", "grep"],
+      tools: ["read", "edit", "bash", "glob", "grep", "execute-slash-command"],
     })
   })
 
@@ -105,7 +105,7 @@ describe("buildSdkSpawnRequest", () => {
 
     expect(profile).toEqual({
       mode: "write-capable",
-      tools: ["read", "edit", "glob", "grep"],
+      tools: ["read", "edit", "glob", "grep", "execute-slash-command"],
     })
   })
 
@@ -124,7 +124,7 @@ describe("buildSdkSpawnRequest", () => {
 
     expect(profile).toEqual({
       mode: "write-capable",
-      tools: ["read", "edit", "glob", "grep"],
+      tools: ["read", "edit", "glob", "grep", "execute-slash-command"],
     })
   })
 })
