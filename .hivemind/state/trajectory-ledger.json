@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1780154584887,
+  "updatedAt": 1780156759768,
   "trajectories": {
     "traj_thinking_001": {
       "id": "traj_thinking_001",
@@ -246,10 +246,28 @@
             "commit:15c1ba8b"
           ],
           "createdAt": 1780154584887
+        },
+        {
+          "eventId": "ev-p40-4002-resume",
+          "eventType": "execution:start",
+          "summary": "P40.02 resuming after disconnect. Task 4 done, Tasks 1/3/2/5 remaining.",
+          "createdAt": 1780156291031
+        },
+        {
+          "eventId": "ev-p40-4002-resume",
+          "eventType": "execution:start",
+          "summary": "P40.02 resuming. Task 4 done (f9ca68e6). Plan recreation needed.",
+          "createdAt": 1780156759768
+        },
+        {
+          "eventId": "ev-p40-4002-complete",
+          "eventType": "execution:complete",
+          "summary": "P40.02 completed. Dual delegation state machines consolidated into single shared instance.",
+          "createdAt": 1780171536521
         }
       ],
       "createdAt": 1780152723121,
-      "updatedAt": 1780154584887
+      "updatedAt": 1780171536521
     },
     "traj-phase-40.01": {
       "id": "traj-phase-40.01",
@@ -337,6 +355,93 @@
       ],
       "createdAt": 1780152723121,
       "updatedAt": 1780154584887
+    },
+    "traj-phase-40.02": {
+      "id": "traj-phase-40.02",
+      "parentId": "traj-phase-40",
+      "status": "completed",
+      "phase": "P40.02",
+      "scope": "Consolidate dual v1/v2 delegation state machines — Task 4 done, resuming from Task 1",
+      "allowedSurfaces": [
+        "src/coordination/delegation/",
+        "src/plugin.ts",
+        "tests/lib/delegation/"
+      ],
+      "forbiddenSurfaces": [
+        "src/tools/",
+        ".opencode/"
+      ],
+      "evidenceRefs": [
+        "commit:f9ca68e6",
+        ".planning/phases/P40-public-ship-readiness/40.02-RESEARCH.md",
+        "commit:9d4e1505",
+        "commit:641e976a",
+        "commit:fd892fa6",
+        "commit:cfcaa335"
+      ],
+      "checkpoints": [
+        {
+          "checkpointId": "chk-p4002-task4-done",
+          "summary": "Task 4 (lifecycle interface expansion) completed. registerDelegation now accepts optional scheduleSafetyCeiling. Resuming from Task 1.",
+          "evidenceRefs": [
+            "commit:f9ca68e6"
+          ],
+          "createdAt": 1780156291031
+        },
+        {
+          "checkpointId": "chk-p4002-task4-evidence",
+          "summary": "Task 4 (lifecycle interface) completed in prior session (f9ca68e6). Plan was lost to sync script. Recreating.",
+          "evidenceRefs": [
+            "commit:f9ca68e6"
+          ],
+          "createdAt": 1780156759768
+        },
+        {
+          "checkpointId": "chk-p4002-execution-complete",
+          "summary": "All 5 tasks done. Typecheck clean, 2975 tests pass. All grep gates green.",
+          "evidenceRefs": [
+            "commit:9d4e1505",
+            "commit:641e976a",
+            "commit:fd892fa6",
+            "commit:cfcaa335"
+          ],
+          "createdAt": 1780171536521
+        }
+      ],
+      "events": [
+        {
+          "eventId": "ev-p4002-resume",
+          "eventType": "execution:start",
+          "summary": "Resuming P40.02 execution. Task 4 done. Tasks 1/3/2/5 remaining.",
+          "createdAt": 1780156291031
+        },
+        {
+          "eventId": "ev-p4002-resume-planning",
+          "eventType": "execution:start",
+          "summary": "Resuming P40.02. Task 4 done. Plan lost to sync script. Recreating via gsd-planner.",
+          "createdAt": 1780156759768
+        },
+        {
+          "eventId": "ev-p4002-execution-start",
+          "eventType": "execution:start",
+          "summary": "Plan verified (commit 3ee82193). Executing Tasks 1/3/2/5.",
+          "createdAt": 1780157337338
+        },
+        {
+          "eventId": "ev-p4002-execute-resume",
+          "eventType": "execution:resume",
+          "summary": "Resuming P40.02 execution after disconnect. Uncommitted executor changes + pending Tasks 2/3/5.",
+          "createdAt": 1780158879826
+        },
+        {
+          "eventId": "ev-p4002-execution-complete",
+          "eventType": "execution:complete",
+          "summary": "P40.02 execution complete. Typecheck 0 errors, 2975 tests pass, all grep gates green.",
+          "createdAt": 1780171536521
+        }
+      ],
+      "createdAt": 1780156291031,
+      "updatedAt": 1780171536521
     }
   }
 }
