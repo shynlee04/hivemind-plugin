@@ -185,7 +185,7 @@ export const TOOL_AUTHORITY_MATRIX: readonly ToolAuthority[] = [
     stateSurface: "hivemind-state",
     pressureBehavior: HIVEMIND_STATE_WRITER,
     evidenceAttachment: "trajectory-ledger",
-    reason: "writes dedicated agent work contract records after pressure gating",
+    reason: "writes dedicated agent work contract records in the contract store",
   },
   {
     name: "hivemind-agent-work-export",
