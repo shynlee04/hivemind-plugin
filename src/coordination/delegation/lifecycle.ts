@@ -4,7 +4,7 @@ import { buildDelegationResult } from "./state-machine.js"
 export interface DelegationLifecycleStateMachine {
   get(delegationId: string): Delegation | undefined
   getAll?: () => Delegation[]
-  registerDelegation?: (delegation: Delegation, scheduleSafetyCeiling?: boolean) => void
+  registerDelegation?: (delegation: Delegation, scheduleSafetyCeiling: boolean) => void
   transition(delegationId: string, toStatus: DelegationStatus): boolean
   transitionToTerminal?: (delegationId: string, toStatus: DelegationStatus, error?: string) => void
 }
@@ -19,7 +19,7 @@ export class DelegationLifecycle {
    * @param delegation - Prepared delegation record created by the coordinator.
    */
   register(delegation: Delegation): void {
-    this.stateMachine.registerDelegation?.(delegation)
+    this.stateMachine.registerDelegation?.(delegation, false)
   }
 
   /**
