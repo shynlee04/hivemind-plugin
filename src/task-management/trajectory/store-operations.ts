@@ -1,6 +1,11 @@
 import { randomUUID } from "node:crypto"
 
 import { createEmptyTrajectoryLedger, readTrajectoryLedger, writeTrajectoryLedger } from "./ledger.js"
+import {
+  TRAJECTORY_AUTO_TRANSITIONS,
+  TRAJECTORY_TRANSITIONS,
+  type TrajectoryStatus,
+} from "./types.js"
 import type {
   EvidenceRef,
   TrajectoryCheckpoint,
@@ -10,6 +15,144 @@ import type {
   TrajectoryRecord,
   TrajectoryTraversal,
 } from "./types.js"
+
+/**
+ * Create a phase-level trajectory in the ledger.
+ *
+ * Per D-04, phase trajectory ID format is `traj-phase-{N}`.
+ * Per D-31, new trajectories start in "planning" status.
+ * Per D-15/D-36, orchestrator creates phase trajectories explicitly.
+ *
+ * @param input - Phase trajectory creation parameters.
+ * @returns Updated ledger and created trajectory.
+ * @throws {Error} If a trajectory with the same phase number already exists.
+ */
+export function createPhaseTrajectory(input: {
+  projectRoot: string
+  phaseNumber: number | string
+  rootSessionId: string
+  phaseName?: string
+}): { ledger: TrajectoryLedger; trajectory: TrajectoryRecord } {
+  const trajectoryId = `traj-phase-${input.phaseNumber}`
+  const ledger = readTrajectoryLedger(input.projectRoot)
+  const existing = ledger.trajectories[trajectoryId]
+  if (existing) {
+    throw new Error(`[Harness] phase trajectory already exists: ${trajectoryId}`)
+  }
+  const now = Date.now()
+  const trajectory: TrajectoryRecord = {
+    id: trajectoryId,
+    rootSessionId: input.rootSessionId,
+    sessionId: null,
+    parentTrajectoryId: null,
+    status: "planning",
+    evidenceRefs: [],
+    checkpoints: [],
+    events: [],
+    createdAt: now,
+    updatedAt: now,
+  }
+  ledger.trajectories[trajectoryId] = trajectory
+  ledger.updatedAt = now
+  writeTrajectoryLedger(input.projectRoot, ledger)
+  return { ledger, trajectory }
+}
+
+/**
+ * Transition a trajectory to a target status, validating against TRAJECTORY_TRANSITIONS.
+ *
+ * Per D-31 to D-35, transitions support both automatic (event-based) and
+ * manual (orchestrator tool call) paths. This is the manual transition function.
+ *
+ * Idempotent: transitioning to the current state is a no-op.
+ *
+ * @param projectRoot - Project root whose ledger should be used.
+ * @param trajectoryId - Target trajectory ID.
+ * @param targetStatus - Desired target status.
+ * @returns Updated ledger and trajectory.
+ * @throws {Error} When the trajectory doesn't exist or the transition is invalid.
+ */
+export function transitionTrajectory(
+  projectRoot: string,
+  trajectoryId: string,
+  targetStatus: TrajectoryStatus,
+): { ledger: TrajectoryLedger; trajectory: TrajectoryRecord } {
+  const ledger = readTrajectoryLedger(projectRoot)
+  const trajectory = ledger.trajectories[trajectoryId]
+  if (!trajectory) {
+    throw new Error(`[Harness] trajectory not found: ${trajectoryId}`)
+  }
+
+  // Idempotent: same-state transition is a no-op
+  if (trajectory.status === targetStatus) {
+    return { ledger, trajectory }
+  }
+
+  const allowed = TRAJECTORY_TRANSITIONS[trajectory.status]
+  if (!allowed.includes(targetStatus)) {
+    throw new Error(
+      `[Harness] invalid trajectory transition: ${trajectory.status}→${targetStatus} (${trajectoryId})`,
+    )
+  }
+
+  const now = Date.now()
+  trajectory.status = targetStatus
+  trajectory.updatedAt = now
+  ledger.updatedAt = now
+  writeTrajectoryLedger(projectRoot, ledger)
+  return { ledger, trajectory }
+}
+
+/**
+ * Add an event to a trajectory with automatic state transitions.
+ *
+ * Per D-32 to D-34, certain event types trigger automatic state transitions.
+ * If the event type matches TRAJECTORY_AUTO_TRANSITIONS, and the transition
+ * is valid per TRAJECTORY_TRANSITIONS, the trajectory's status is updated.
+ *
+ * @param projectRoot - Project root whose ledger should be used.
+ * @param trajectoryId - Target trajectory ID.
+ * @param eventType - Event type string (may trigger auto-transition).
+ * @param summary - Human-readable event summary.
+ * @returns Updated ledger and trajectory.
+ * @throws {Error} When the trajectory doesn't exist.
+ */
+export function addTrajectoryEvent(
+  projectRoot: string,
+  trajectoryId: string,
+  eventType: string,
+  summary: string,
+): { ledger: TrajectoryLedger; trajectory: TrajectoryRecord } {
+  const ledger = readTrajectoryLedger(projectRoot)
+  const trajectory = ledger.trajectories[trajectoryId]
+  if (!trajectory) {
+    throw new Error(`[Harness] trajectory not found: ${trajectoryId}`)
+  }
+
+  const now = Date.now()
+  const event: TrajectoryEvent = {
+    eventId: `event-${randomUUID()}`,
+    eventType,
+    summary,
+    evidenceRefs: [],
+    createdAt: now,
+  }
+  trajectory.events = [...trajectory.events, event]
+  trajectory.updatedAt = now
+  ledger.updatedAt = now
+
+  // Check for auto-transition
+  const autoTarget = TRAJECTORY_AUTO_TRANSITIONS[eventType]
+  if (autoTarget) {
+    const allowed = TRAJECTORY_TRANSITIONS[trajectory.status]
+    if (allowed.includes(autoTarget)) {
+      trajectory.status = autoTarget
+    }
+  }
+
+  writeTrajectoryLedger(projectRoot, ledger)
+  return { ledger, trajectory }
+}
 
 /**
  * Inspect the trajectory ledger, optionally focusing on a single trajectory.
