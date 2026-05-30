@@ -19,6 +19,7 @@ import type { HivemindConfigs } from "../../schema-kernel/hivemind-configs.schem
 import type { TaskStateManager } from "../../shared/state.js"
 import { getDelegationMeta } from "../../shared/state.js"
 import { classifyHookEffect } from "../composition/cqrs-boundary.js"
+import { evaluateGovernance } from "../../features/governance-engine/index.js"
 
 // ---------------------------------------------------------------------------
 // Dependency shape
@@ -55,6 +56,7 @@ export interface ToolGuardHooks {
 export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHooks {
   const { stateManager, lifecycleManager } = deps
   const workspacePolicy = deps.runtimePolicy ?? DEFAULT_RUNTIME_POLICY
+  const lastGovResult = new Map<string, { warnings: string[]; escalations: any[]; blocks: string[] }>()
 
   /**
    * Resolve the effective runtime policy for a given session.
@@ -109,10 +111,29 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
         )
       }
 
+      // Governance rules check
+      const depsHivemindConfig = deps.hivemindConfig as HivemindConfigs | undefined
+      if (depsHivemindConfig?.governance?.rules) {
+        const govResult = evaluateGovernance(toolName, sessionID, depsHivemindConfig.governance.rules)
+        lastGovResult.set(sessionID, {
+          warnings: govResult.warnings,
+          escalations: govResult.escalations,
+          blocks: govResult.blocks,
+        })
+
+        if (govResult.blocked) {
+          stateManager.addWarning(sessionID, `Tool call blocked by governance: ${govResult.blocks.join("; ")}`)
+          throw new Error(`[Harness] Tool execution blocked by governance: ${govResult.blocks.join("; ")}`)
+        }
+
+        for (const warn of govResult.warnings) {
+          stateManager.addWarning(sessionID, warn)
+        }
+      }
+
       // BOOT-09: Document Language Tool Guard (Layer 2 — D-11)
       // Pre-execution language reminder for Write/Edit/apply_patch at document_paths.
       // Per D-12: this is NOT content validation — it's a pre-execution instruction reminder.
-      const depsHivemindConfig = deps.hivemindConfig as HivemindConfigs | undefined
       if (depsHivemindConfig?.documents_and_artifacts_language && depsHivemindConfig.document_paths) {
         const docLang = depsHivemindConfig.documents_and_artifacts_language
         const docPaths = depsHivemindConfig.document_paths
@@ -171,6 +192,8 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
       const delegation = getDelegationMeta(sessionID)
       const continuity = getSessionContinuity(sessionID)
       const lifecycle = lifecycleManager?.getLifecycleSnapshot(sessionID)
+      const gov = lastGovResult.get(sessionID) ?? { warnings: [], escalations: [], blocks: [] }
+      lastGovResult.delete(sessionID)
 
       output.metadata = {
         ...(isObject(output.metadata) ? output.metadata : {}),
@@ -187,7 +210,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
           continuityStatus: continuity?.metadata.status,
           lifecycle,
           routing: continuity?.metadata.route,
-          governance: { warnings: [], escalations: [], blocks: [] },
+          governance: gov,
           continuityStorage: getContinuityStoragePath(),
           continuity: continuity
             ? {

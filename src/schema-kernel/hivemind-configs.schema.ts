@@ -263,6 +263,23 @@ export function migrateKeys(raw: Record<string, unknown>): Record<string, unknow
  * const configs = readConfigs("/path/to/project")
  * ```
  */
+export const GovernanceRuleSchema = z.object({
+  id: z.string(),
+  condition: z.object({
+    toolNames: z.array(z.string()).optional(),
+    sessionIDs: z.array(z.string()).optional(),
+  }).catchall(z.unknown()),
+  action: z.object({
+    type: z.string(), // e.g. "block", "warn", "escalate"
+    escalation: z.record(z.unknown()).optional(),
+  }).catchall(z.unknown()),
+  enabled: z.boolean().default(true),
+})
+
+export const GovernanceConfigsSchema = z.object({
+  rules: z.array(GovernanceRuleSchema).default([]),
+})
+
 export const HivemindConfigsSchema = z
   .object({
     conversation_language: SupportedLanguageSchema.default("en"),
@@ -281,6 +298,7 @@ export const HivemindConfigsSchema = z
     atomic_commit: z.boolean().default(true),
     commit_docs: z.boolean().default(true),
     workflow: WorkflowConfigSchema,
+    governance: GovernanceConfigsSchema.default({ rules: [] }),
   })
   .strip()
 

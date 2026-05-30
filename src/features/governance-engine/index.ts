@@ -11,3 +11,4 @@
  */
 
 export { createGovernanceSessionTool } from "./create-governance-session.js"
+export { evaluateGovernance } from "./evaluator.js"
