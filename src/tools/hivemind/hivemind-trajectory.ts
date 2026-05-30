@@ -47,7 +47,7 @@ export function createHivemindTrajectoryTool(projectRoot: string): ReturnType<ty
       phaseName: s.string().optional().describe("Optional phase name for create action"),
       depth: s.string().optional().describe("Progressive disclosure depth: summary, detailed, or full"),
     },
-    async execute(rawArgs: TrajectoryToolInput, _context: ToolContext): Promise<string> {
+    async execute(rawArgs: Record<string, unknown>, _context: ToolContext): Promise<string> {
       try {
         const args = parseTrajectoryToolInput(rawArgs)
         const data = executeTrajectoryToolAction(projectRoot, args)

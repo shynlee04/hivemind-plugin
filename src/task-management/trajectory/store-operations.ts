@@ -300,7 +300,7 @@ export function traverseTrajectory(input: {
   const depth = input.depth ?? "full"
 
   if (depth === "summary") {
-    return { summaries: selected.map((trajectory) => projectSummary(trajectory, ledger)) }
+    return { summaries: selected.map((trajectory) => projectSummary(trajectory)) }
   }
 
   if (depth === "detailed") {
@@ -366,7 +366,7 @@ function compareTrajectoryRecords(a: TrajectoryRecord, b: TrajectoryRecord): num
  *
  * Per D-28, summary returns: id, status, eventCount, checkpointCount, durationMs, phaseName.
  */
-function projectSummary(record: TrajectoryRecord, ledger: TrajectoryLedger): TrajectorySummary {
+function projectSummary(record: TrajectoryRecord): TrajectorySummary {
   return {
     id: record.id,
     status: record.status,
