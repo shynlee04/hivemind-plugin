@@ -1,7 +1,7 @@
 # Sync source changes from feature/harness-implementation to oss-dev
-# Auto-detects all non-dot directories at root and syncs them
-# Excludes dot directories and restricts docs/ to specific subdirs
-# Consumes .planning/ docs to update README + CHANGELOG
+# Explicit whitelist model — only listed paths and file patterns are synced.
+# GSD/internal artifacts (gsd-* agents, get-shit-done/, .planning/, .hivemind/,
+# .hivefiver-meta-builder/) are explicitly excluded from public OSS branch.
 name: Sync to OSS Branch
 
 on:
@@ -15,17 +15,17 @@ on:
         description: 'Dry run — show what would be synced without pushing'
         type: boolean
         default: true
-      update_docs:
-        description: 'Also update README/CHANGELOG from .planning/ docs'
-        type: boolean
-        default: true
 
 permissions:
   contents: write
 
 env:
-  # Explicitly sync these config files
-  SYNC_FILES: >-
+  # WHITELIST: Only these paths are synced to the OSS branch
+  PUBLIC_PATHS: >-
+    src/
+    docs/philosophy/
+    docs/guides/
+    docs/architecture/
     package.json
     tsconfig.json
     vitest.config.ts
@@ -33,6 +33,25 @@ env:
     CONTRIBUTING.md
     CHANGELOG.md
     LICENSE
+    .npmignore
+    .gitignore
+    .github/workflows/
+
+  # EXCLUDE: Patterns to filter out from .opencode/ and root
+  EXCLUDE_PATTERNS: >-
+    .opencode/agents/gsd-
+    .opencode/skills/gsd-
+    .opencode/commands/gsd-
+    .opencode/workflows/gsd-
+    .opencode/get-shit-done/
+    .opencode/references/
+    .opencode/templates/
+    .hivefiver-meta-builder/
+    .hivemind/
+    .planning/
+    .scratch/
+    node_modules/
+    dist/
 
 jobs:
   sync:
@@ -55,61 +74,71 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Detect syncable paths
-        id: detect
+      - name: Resolve whitelist paths
+        id: resolve
         run: |
-          echo "🔍 Detecting syncable paths from feature branch..."
-          
-          # Find all top-level directories that don't start with a dot
-          # Exclude node_modules and docs (docs is handled specially)
-          DIRS=$(find . -maxdepth 1 -type d ! -name ".*" ! -name "node_modules" ! -name "docs" ! -name "." -exec basename {} \; | sort)
-          
+          echo "🔍 Resolving whitelist paths from PUBLIC_PATHS..."
+
           PATHS=""
-          for dir in $DIRS; do
-            PATHS="$PATHS $dir/"
-            echo "  ✅ $dir/ (auto-detected)"
+          for path in ${{ env.PUBLIC_PATHS }}; do
+            if [ -e "$path" ]; then
+              PATHS="$PATHS $path"
+              echo "  ✅ $path"
+            else
+              echo "  ⚠️  $path (not found)"
+            fi
           done
 
-          # Explicitly add .opencode
+          # .opencode/ — whitelist shipped primitives only (hm-*/hf-*/gate-*/stack-*)
           if [ -d ".opencode" ]; then
-            PATHS="$PATHS .opencode/"
-            echo "  ✅ .opencode/ (explicitly added)"
+            for subdir in agents commands skills workflows; do
+              shipped_count=0
+              for pattern in "hm-" "hf-" "gate-" "stack-"; do
+                files=$(find ".opencode/$subdir" -name "${pattern}*" -type f 2>/dev/null)
+                if [ -n "$files" ]; then
+                  shipped_count=$((shipped_count + 1))
+                  PATHS="$PATHS $(echo "$files" | tr '\n' ' ')"
+                fi
+              done
+              echo "  ✅ .opencode/$subdir/ ($shipped_count shipped primitives)"
+            done
+            # .opencode/references/ and .opencode/templates/ excluded (internal paths)
+            echo "  ⏭️ .opencode/references/ (excluded — internal paths)"
+            echo "  ⏭️ .opencode/templates/ (excluded — internal paths)"
           fi
-          
-          # Handle docs specially (only philosophy, guides, architecture)
-          for docdir in docs/philosophy docs/guides docs/architecture; do
-            if [ -d "$docdir" ]; then
-              PATHS="$PATHS $docdir/"
-              echo "  ✅ $docdir/"
-            fi
-          done
-
-          # Add standard config files
-          for file in ${{ env.SYNC_FILES }}; do
-            if [ -f "$file" ]; then
-              PATHS="$PATHS $file"
-              echo "  ✅ $file"
-            fi
-          done
 
           echo "SYNC_PATHS=$PATHS" >> $GITHUB_ENV
-          echo "📦 Paths to sync: $PATHS"
+          echo "📦 Whitelisted paths: $PATHS"
 
-      - name: Generate docs and changelog
-        if: github.event.inputs.update_docs == 'true'
+      - name: Pre-sync validation — check for leaks
         run: |
-          echo "📝 Updating README and CHANGELOG from .planning/..."
-          if [ -f "bin/update-docs.js" ]; then
-            node bin/update-docs.js
+          echo "🔍 Validating no GSD/internal artifacts in whitelist..."
+
+          LEAKED_GSD=$(find .opencode -name "gsd-*" -type f 2>/dev/null | wc -l)
+          if [ "$LEAKED_GSD" -gt 0 ]; then
+            echo "::warning::LEAK DETECTED: $LEAKED_GSD gsd-* files in .opencode/"
+            echo "Would-be leaked files:"
+            find .opencode -name "gsd-*" -type f 2>/dev/null
+          else
+            echo "  ✅ No GSD files in .opencode/ content"
           fi
+
+          for banned_dir in .planning .hivemind .hivefiver-meta-builder .scratch; do
+            if [ -d "$banned_dir" ]; then
+              count=$(find "$banned_dir" -type f 2>/dev/null | wc -l)
+              echo "  ✅ $banned_dir/ ($count files — excluded from sync)"
+            fi
+          done
+
+          echo "  ✅ Pre-sync validation complete"
 
       - name: Generate sync patch
         run: |
           echo "📦 Generating diff for paths: $SYNC_PATHS"
-          
+
           # Generate patch for changes
           git diff ${{ github.event.inputs.commit_range }} -- $SYNC_PATHS > /tmp/sync.patch || true
-          
+
           # Capture new files by diffing against oss-dev
           git diff origin/oss-dev..HEAD -- $SYNC_PATHS > /tmp/full-sync.patch || true
 
@@ -138,10 +167,10 @@ jobs:
         if: env.HAS_CHANGES == 'true' && github.event.inputs.dry_run == 'false'
         run: |
           SOURCE_SHA=$(git rev-parse HEAD)
-          
-          echo "🔄 Dereferencing symlinks for agent infrastructure..."
+
+          echo "🔄 Dereferencing symlinks for shipped primitives..."
           mkdir -p /tmp/resolved-opencode
-          for dir in agents commands skills; do
+          for dir in agents commands skills workflows; do
             if [ -e ".opencode/$dir" ]; then
               cp -RL ".opencode/$dir" "/tmp/resolved-opencode/"
             fi
@@ -161,14 +190,23 @@ jobs:
             fi
           done
 
+          # Explicitly remove any banned directories that may exist on oss-dev
+          for dirtoban in .planning .hivemind .hivefiver-meta-builder; do
+            if [ -d "$dirtoban" ]; then
+              echo "  🗑️  Removing banned directory: $dirtoban/"
+              git rm -rf --cached "$dirtoban" 2>/dev/null || true
+              rm -rf "$dirtoban"
+            fi
+          done
+
           echo "🔄 Syncing directories and files from $SOURCE_SHA..."
           for path in $SYNC_PATHS; do
             echo "  → $path"
             git checkout $SOURCE_SHA -- "$path" 2>/dev/null || echo "  ⚠️  $path skipped"
           done
-          
-          echo "🔄 Restoring dereferenced agent infrastructure..."
-          for dir in agents commands skills; do
+
+          echo "🔄 Restoring dereferenced shipped primitives..."
+          for dir in agents commands skills workflows; do
             if [ -d "/tmp/resolved-opencode/$dir" ]; then
               rm -rf ".opencode/$dir"
               cp -R "/tmp/resolved-opencode/$dir" ".opencode/"
