@@ -34,6 +34,7 @@ interface DelegationManagerOptions {
   runtimePolicy?: RuntimePolicy
   monitor?: Pick<DelegationMonitor, "start">
   notificationRouter?: Pick<NotificationRouter, "register">
+  stateMachine?: DelegationStateMachine
 }
 
 const DEFAULT_MANAGER_RUNTIME_POLICY: RuntimePolicy = {
@@ -92,7 +93,9 @@ export class DelegationManager {
     this.runtimePolicy = options.runtimePolicy ?? DEFAULT_MANAGER_RUNTIME_POLICY
     this.monitor = options.monitor
     this.notificationRouter = options.notificationRouter
-    this.state = new DelegationStateMachine({
+    // Late-binding closure for clearExternalTimers — handlers are created
+    // after the DSM but the closure captures `this` which is already allocated.
+    this.state = options.stateMachine ?? new DelegationStateMachine({
       client,
       clearExternalTimers: (id) => {
         this.sdkHandler.clearTimers(id)
@@ -103,14 +106,14 @@ export class DelegationManager {
     this.commandHandler = new CommandDelegationHandler(options.ptyManager ?? null, {
       getDelegation: (id) => dm.state.get(id),
       registerDelegation: (d, s) => dm.state.registerDelegation(d, s),
-      persistAllDelegations: () => dm.state.persistAll(),
+      persistAllDelegations: () => {},
       buildResult: (d) => buildDelegationResult(d),
       cleanupTracking: (id, sid) => dm.state.cleanupTracking(id, sid),
       onTerminal: (id, terminalState, err, terminalDetail) => dm.state.transitionToTerminal(id, terminalState, err, terminalDetail),
     })
     this.sdkHandler = new SdkDelegationHandler(client, {
       getDelegation: (id) => dm.state.get(id),
-      persistAllDelegations: () => dm.state.persistAll(),
+      persistAllDelegations: () => {},
       cleanupTracking: (id, sid) => dm.state.cleanupTracking(id, sid),
       scheduleSafetyCeiling: (d) => dm.state.scheduleSafetyCeiling(d),
       onSessionIdle: (sid) => dm.handleSessionIdle(sid),
@@ -219,7 +222,7 @@ export class DelegationManager {
         queueKey: acquireQueueKey,
       }
       this.state.registerDelegation(delegation, true)
-      this.state.persistAll()
+      // Persist is handled by the shared state machine's transition/transitionToTerminal below.
       this.notificationRouter?.register(delegation.id, params.parentSessionId)
       try {
         const promptBody = {
