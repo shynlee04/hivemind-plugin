@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1780078293777,
+  "updatedAt": 1780145268050,
   "workflows": {
     "wf-moum1iu4-gstos8": {
       "id": "wf-moum1iu4-gstos8",
@@ -23937,6 +23937,1862 @@
       "mode": "batch-modify",
       "startedAt": 1780078293767,
       "updatedAt": 1780078293768
+    },
+    "wf-mprbvadi-bbif4r": {
+      "id": "wf-mprbvadi-bbif4r",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780083690822
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780083690822
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780083690822
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780083690822,
+      "updatedAt": 1780083690822
+    },
+    "wf-mps03lo5-akfozy": {
+      "id": "wf-mps03lo5-akfozy",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780124389493
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780124389493
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780124389493
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780124389493,
+      "updatedAt": 1780124389493
+    },
+    "wf-mps0fwmg-l0zq7q": {
+      "id": "wf-mps0fwmg-l0zq7q",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780124963561
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780124963561
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780124963561
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780124963560,
+      "updatedAt": 1780124963561
+    },
+    "wf-mps9jsjo-ph3uh7": {
+      "id": "wf-mps9jsjo-ph3uh7",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140261444
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140261444
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140261444
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140261444,
+      "updatedAt": 1780140261444
+    },
+    "wf-mps9mk2n-xa8qbu": {
+      "id": "wf-mps9mk2n-xa8qbu",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140390432
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140390432
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140390432
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140390431,
+      "updatedAt": 1780140390432
+    },
+    "wf-mps9nhjp-ozmm08": {
+      "id": "wf-mps9nhjp-ozmm08",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140433813
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140433814
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140433814
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140433813,
+      "updatedAt": 1780140433814
+    },
+    "wf-mps9oimy-8oy3y8": {
+      "id": "wf-mps9oimy-8oy3y8",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140481882
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140481882
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140481882
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140481882,
+      "updatedAt": 1780140481882
+    },
+    "wf-mps9pek2-0vpdbl": {
+      "id": "wf-mps9pek2-0vpdbl",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140523250
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140523251
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140523251
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140523250,
+      "updatedAt": 1780140523251
+    },
+    "wf-mps9rv4w-n2v75l": {
+      "id": "wf-mps9rv4w-n2v75l",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140638049
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140638049
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140638049
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140638048,
+      "updatedAt": 1780140638049
+    },
+    "wf-mps9rvec-klbxwe": {
+      "id": "wf-mps9rvec-klbxwe",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140638388
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140638389
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140638389
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140638388,
+      "updatedAt": 1780140638389
+    },
+    "wf-mps9sv58-nema6u": {
+      "id": "wf-mps9sv58-nema6u",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140684717
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140684790
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140684791
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140684716,
+      "updatedAt": 1780140684791
+    },
+    "wf-mps9uzh0-kbm9ul": {
+      "id": "wf-mps9uzh0-kbm9ul",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140783637
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140783637
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140783637
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140783636,
+      "updatedAt": 1780140783637
+    },
+    "wf-mps9vpnb-i7bofx": {
+      "id": "wf-mps9vpnb-i7bofx",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140817560
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140817561
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140817561
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140817559,
+      "updatedAt": 1780140817561
+    },
+    "wf-mps9wsge-8u2t13": {
+      "id": "wf-mps9wsge-8u2t13",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140867854
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140867855
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140867855
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140867854,
+      "updatedAt": 1780140867855
+    },
+    "wf-mps9x7zn-6tfi5k": {
+      "id": "wf-mps9x7zn-6tfi5k",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140887987
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140887988
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140887988
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140887987,
+      "updatedAt": 1780140887988
+    },
+    "wf-mps9x8cl-o1li4l": {
+      "id": "wf-mps9x8cl-o1li4l",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140888454
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140888454
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140888454
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140888453,
+      "updatedAt": 1780140888454
+    },
+    "wf-mps9z706-80k96u": {
+      "id": "wf-mps9z706-80k96u",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140980023
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140980023
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140980023
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140980022,
+      "updatedAt": 1780140980023
+    },
+    "wf-mps9zazt-goj7eu": {
+      "id": "wf-mps9zazt-goj7eu",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780140985194
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780140985194
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780140985194
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780140985193,
+      "updatedAt": 1780140985194
+    },
+    "wf-mpsa0f7x-oga7en": {
+      "id": "wf-mpsa0f7x-oga7en",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780141037326
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780141037326
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780141037326
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780141037325,
+      "updatedAt": 1780141037326
+    },
+    "wf-mpsa0ka9-snj511": {
+      "id": "wf-mpsa0ka9-snj511",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780141043889
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780141043890
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780141043890
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780141043889,
+      "updatedAt": 1780141043890
+    },
+    "wf-mpsa1593-rzpw71": {
+      "id": "wf-mpsa1593-rzpw71",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780141071064
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780141071064
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780141071064
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780141071063,
+      "updatedAt": 1780141071064
+    },
+    "wf-mpsa2m27-6zm2hl": {
+      "id": "wf-mpsa2m27-6zm2hl",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780141139504
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780141139507
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780141139507
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780141139503,
+      "updatedAt": 1780141139507
+    },
+    "wf-mpsa44rm-85uoan": {
+      "id": "wf-mpsa44rm-85uoan",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780141210403
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780141210403
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780141210403
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780141210402,
+      "updatedAt": 1780141210403
+    },
+    "wf-mpsbff04-br9twh": {
+      "id": "wf-mpsbff04-br9twh",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780143416500
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780143416500
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780143416500
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780143416500,
+      "updatedAt": 1780143416500
+    },
+    "wf-mpsbm97e-xqykku": {
+      "id": "wf-mpsbm97e-xqykku",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780143735578
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780143735578
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780143735578
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780143735578,
+      "updatedAt": 1780143735578
+    },
+    "wf-mpsbncmr-ltc1r5": {
+      "id": "wf-mpsbncmr-ltc1r5",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780143786675
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780143786675
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780143786675
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780143786675,
+      "updatedAt": 1780143786675
+    },
+    "wf-mpsbu7oy-m73x6x": {
+      "id": "wf-mpsbu7oy-m73x6x",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780144106866
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780144106866
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780144106866
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780144106866,
+      "updatedAt": 1780144106866
+    },
+    "wf-mpsbvzc3-95ncot": {
+      "id": "wf-mpsbvzc3-95ncot",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780144189347
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780144189347
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780144189347
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780144189347,
+      "updatedAt": 1780144189347
+    },
+    "wf-mpscj3nt-cacy2k": {
+      "id": "wf-mpscj3nt-cacy2k",
+      "type": "batch-config",
+      "currentTurn": 3,
+      "turns": {
+        "0": {
+          "status": "complete",
+          "output": {
+            "discovered": [
+              "agent-a"
+            ]
+          },
+          "completedAt": 1780145268042
+        },
+        "1": {
+          "status": "complete",
+          "output": {
+            "investigated": true
+          },
+          "completedAt": 1780145268042
+        },
+        "2": {
+          "status": "complete",
+          "output": {
+            "collected": true
+          },
+          "completedAt": 1780145268042
+        },
+        "3": {
+          "status": "pending",
+          "output": null
+        },
+        "4": {
+          "status": "pending",
+          "output": null
+        },
+        "5": {
+          "status": "pending",
+          "output": null
+        },
+        "6": {
+          "status": "pending",
+          "output": null
+        },
+        "7": {
+          "status": "pending",
+          "output": null
+        }
+      },
+      "targetPrimitives": [
+        {
+          "type": "agent",
+          "name": "resume-agent"
+        },
+        {
+          "type": "command",
+          "name": "resume-cmd"
+        }
+      ],
+      "scope": "project",
+      "mode": "batch-modify",
+      "startedAt": 1780145268041,
+      "updatedAt": 1780145268042
     }
   }
 }

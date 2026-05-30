@@ -1,0 +1,460 @@
+{
+  "sessionID": "ses_1875a2b6dffedeHIzzuMVm7BtG",
+  "parentSessionID": "ses_18773c333ffeheRO5lJXdOi34C",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-advisor-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research P39 grey areas",
+    "subagentType": "gsd-advisor-researcher"
+  },
+  "created": "2026-05-30T11:29:54.353Z",
+  "updated": "2026-05-30T11:42:17.120Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-advisor-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are the gsd-advisor-researcher. Research grey area decisions for phase P39 \"Integration Completion & Hardening — Core Stability\" in the Hivemind project.\n\n## Phase Goal\nAs a project maintainer, I want to fix all test failures and typecheck errors and ensure the build succeeds, so that the codebase has a solid foundation before deeper audits.\n\n## Grey Areas to Research\n\n### Grey Area 1: GSD Research Validity\nThe project's GSD research (6 documents from Phase 23) was based on the OLD GSD repo (github.com/gsd-build/get-shit-done). The new maintainer is at open-gsd/get-shit-done-redux. \n- How much of the existing GSD patterns still apply?\n- What specific patterns (command routing, workflow modes, namespace routers) need re-validation?\n- What can be safely considered Hivemind-native vs GSD-derived?\n\n### Grey Area 2: OSS Sync Strategy\nThe sync-oss.yml syncs from `feature/harness-implementation` to `oss-dev` branch with specific path filtering.\n- Read `.github/workflows/sync-oss.yml` — what does it currently sync?\n- What artifacts MUST be excluded? (GSD agents/skills/commands, `.planning/`, `.hivemind/`, `.hivefiver-meta-builder/`, etc.)\n- What artifacts MUST be included? (`src/`, `.opencode/` non-GSD primitives, `docs/` philosophy/guides)\n- Should sync be path-based exclusion or inclusion? Which is safer?\n\n### Grey Area 3: Language Governance Model\nThe project uses vi for conversation, en for documents.\n- Where is this currently configured? (AGENTS.md mentions it, ROADMAP.md mentions it)\n- How should the config plane enforce this?\n- What happens when config and runtime disagree?\n\n### Grey Area 4: Test Baseline Reality\n- What's the actual current test pass count?\n- Are there known flaky tests?\n- What's the typecheck status?\n\n### Grey Area 5: P36/P37/P38 Dependency Reality\nP39 depends on P36 (Integration Verification), P37 (Fix sync-oss.yml DEFERRED), P38 (Package .opencode/ Primitives DEFERRED).\n- Are these actually prerequisites or aspirational dependencies?\n- If P37/P38 are DEFERRED, can P39 proceed without them?\n\n## Your Task\nResearch each grey area by reading actual files in the codebase. For each, produce:\n1. Current state\n2. Options/alternatives\n3. Recommendation with rationale\n4. Risk level (HIGH/MEDIUM/LOW)\n\nReturn a structured comparison table with clear rationale and evidence (file paths, line numbers).",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll research all 5 grey areas systematically. Let me start by gathering evidence from the codebase in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read, read, bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Let me continue gathering evidence - tests might take long, let me try with a bigger timeout and also read the remaining files.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Let me continue gathering more evidence - the P39 dependency section, language governance config, and more test details.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Let me gather remaining evidence - language config, test details, and build status.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Let me read the configs.json and check the specific failing tests for full completeness.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Let me get one final piece - the GSD research document stats and the build status.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Now I have all the evidence. Let me compile the comprehensive research report.\n\n---\n\n## Grey Area 1: GSD Research Validity\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Re-validate all 6 GSD docs against `open-gsd/get-shit-done-redux`** | Removes knowledge risk, updates 2286 LOC of research, prevents downstream phase contamination | ~4-6 hours research effort, open-gsd repo may also differ from OLD GSD | 6 files, ~2286 LOC — Risk: research effort may not yield actionable differences | Rec if old-GSD patterns are directly embedded in active code paths (P24.3, P24.5, P24.6, P26.1, P26.2, P27, P28, P29, P31, P32) |\n| **Tag GSD-derived patterns as \"Hivemind-adapted\" and skip re-validation** | Zero immediate effort, ROADMAP.markdown Reflection 1 already flags the risk | Accepts stale reference risk — patterns may have changed in new repo | 0 files changed — Risk: knowledge gap may cause design flaws in P27-P32 | Rec if P39's focus is test/typecheck fixes only and GSD-dependent phases are all deferred beyond P39 |\n| **Partial re-validation: only command routing + workflow modes** | Covers highest-risk patterns (67+88 commands/workflows claim), saves ~70% effort | Misses quality gate patterns, SDK surface, agent architecture | 2 docs (~800 LOC) re-validated — Risk: medium, non-routing patterns less likely to have changed | **Rec for P39** — command routing (P24.3 ref) and workflow size budgets (P24.5 ref) are the most consequential GSD-derived patterns with downstream impact |\n\n**Rationale:** The 6 GSD research documents (2286 LOC total from `23-GSD-*` files) were sourced from the abandoned `gsd-build/get-shit-done` repo. ROADMAP.md lines 20-25 explicitly flag this as Reflection 1. However, P39's mandate is test/typecheck hardening — NOT command infrastructure or workflow architecture. The GSD-dependent phases (P24.3, P24.5, P24.6, P26.1, P26.2, P27, P28, P29, P31, P32 per ROADMAP `[GSD-reval: YES]` tags) are ALL deferred past P39. Therefore, a full re-validation is unnecessary for P39. A lightweight check of the two highest-risk GSD patterns (command routing from `23-GSD-command-system.md` and workflow size budgets from `23-GSD-workflow-pipeline.md`) is sufficient. The Hivemind-native features (trajectory, session-tracker, coordination dispatch, notification delivery) have zero GSD dependency and are safe.\n\n---\n\n## Grey Area 2: OSS Sync Strategy\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Path-based exclusion (current approach)** | Simple: \"sync everything except dotfiles\" — auto-discovers non-dot dirs | **Leaks GSD primitives**: `.opencode/` is synced in full, including 67 GSD agents + 67 GSD skills + 33 GSD commands that are internal dev tooling. Also syncs `tests/` and all root-level non-dot dirs | 1 file (`.github/workflows/sync-oss.yml`) — Risk: HIGH — GSD artifacts exposed in OSS branch | NOT recommended — the automatic non-dot-directory detection is too broad and leaks development internals |\n| **Path-based inclusion (whitelist)** | Explicitly safe: only `src/`, selected `docs/*`, `.opencode/hm-*/.hf-*` primitives, `package.json`, `tsconfig.json`, `README.md`, `LICENSE`, `CHANGELOG.md`, `CONTRIBUTING.md`, `vitest.config.ts`. No GSD leaks. | Requires maintenance when new source paths are added — must update YAML | 1 file (`.github/workflows/sync-oss.yml`) + needs GSD primitive filtering logic — Risk: LOW after initial setup | **RECOMMENDED** — the only safe approach. Must filter `.opencode/` to exclude `gsd-*` agents/commands/skills while keeping `hm-*`, `hf-*`, `gate-*`, `stack-*` primitives. Sync OSS tests only if they're integration tests that don't leak internals. |\n| **Hybrid: auto-detect non-dot dirs + explicit GSD exclusion** | Combines auto-discovery with safety — non-dot dirs are OK, but `.opencode/` gets filtered | More complex YAML logic, still may sync `tests/` which has no business in OSS | 1 file — Risk: MEDIUM — complexity of filtering logic | Rec if maintainers prefer auto-discovery but want to fix the GSD leak. Must add explicit GSD-primitive exclusion to the `.opencode/` sync step. |\n\n**Rationale:** The current sync-oss.yml (lines 63-76) auto-detects ALL non-dot top-level directories and explicitly adds `.opencode/` — but `.opencode/` contains 67 GSD agents, 67 GSD skills, and 33 GSD commands that are INTERNAL developer tooling. ROADMAP.md Section 4 explicitly states GSD primitives are \"excluded\" from shipped output. The current sync strategy leaks these to the public `oss-dev` branch. Path-based inclusion is safer because it requires explicit opt-in for every synced path. The sync-oss.yml line 63 also attempts `find . -maxdepth 1 -type d ! -name \".*\" ! -name \"node_modules\" ! -name \"docs\"` which syncs `tests/`, `.opencode/` (full), and any other non-dot directory — far too broad for OSS.\n\n---\n\n## Grey Area 3: Language Governance Model\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Config-driven enforcement (current)** | Centralized in `.hivemind/configs.json` (line 3-4), propagated through subscriber → behavioral profile → hooks. Zod schema validates 10 languages. | Config is user-editable — can drift from project conventions. No compile-time enforcement. | 8+ files across schema-kernel, routing, hooks, config — Risk: MEDIUM — config/runtime disagreement not properly detected | Rec if the current system is sufficient for P39 scope (test/typecheck fixes only) |\n| **Add Agent system prompt injection via system.transform** | Lock language at session start — hook injects `\"Use vi for conversation and en for documents\"` at every conversation start (core-hooks.ts line 79 already does this) | Only covers conversations, not doc paths. doc path language enforcement is in tool-guard-hooks.ts (line 116) | Already wired — Risk: LOW | **RECOMMENDED** — this is already implemented in core-hooks.ts and tool-guard-hooks.ts. P39 should verify it works rather than redesign |\n| **Add config-runtime disagreement detection + alert** | When `.hivemind/configs.json` language != AGENTS.md/ROADMAP.md language claim, emit warning | Requires cross-file validation, not currently implemented | 1-2 new files — Risk: LOW | Rec if config governance drift is a real concern (CA-04.2 tracks this as D-BIND-03: \"conversation_language traced as wired in L5\") |\n\n**Rationale:** The language governance model is already well-implemented across the codebase. `supportedLanguageSchema` (hivemind-configs.schema.ts lines 18-29) defines 10 valid language codes. `.hivemind/configs.json` has `conversation_language: \"vi\"` and `documents_and_artifacts_language: \"en\"`. `core-hooks.ts` line 79 injects language into system prompts. `tool-guard-hooks.ts` line 116 prepends language to document writes. `resolve-behavioral-profile.ts` line 74 surfaces language in the behavioral profile. `language-resolution.ts` provides runtime detection with script type classification. The only gap is CA-04.2 (ROADMAP line 197) — `conversation_language` is \"traced as wired in L5 config traceability\" but not L1-L3 verified. P39 can close this gap by adding a test that verifies config language propagates through the full pipeline.\n\n---\n\n## Grey Area 4: Test Baseline Reality\n\n**Evidence summary:**\n- **Test pass rate:** 2943 passed, 10 failed, 2 skipped (245 files)\n- **Failed files (3):**\n  - `tests/tools/bootstrap-init.test.ts` — ~5 tests timing out at 5000ms\n  - `tests/cli/commands/doctor.test.ts` — ~3 tests timing out at 5000ms\n  - (Additional failures in tests/tools/bootstrap-init.test.ts backups section)\n- **Root cause of ALL failures:** Timeout at 5000ms default — these tests perform real filesystem operations (`createTempProject()`, `createHealthyProject()`, real file I/O) that exceed the default timeout\n- **Typecheck:** ✅ CLEAN — exit code 0, zero output (no errors)\n- **Build:** ✅ SUCCEEDS — dist/ directory created with 19 entries\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Increase testTimeout for bootstrap-init and doctor tests** | Minimal change, directly addresses root cause (timeout, not logic failure) | May mask real performance issues if tests are genuinely too slow | 2 test files, ~2 minutes — Risk: LOW | **RECOMMENDED** — all 10 failures are timeout, not logic. Set timeout to 30000ms for the multi-file operations. |\n| **Mock the filesystem in bootstrap-init and doctor tests** | Tests run instantly, no timeout risk, better unit-test isolation | Heavy refactor — bootstrap-init tests are integration-style by design, mocking FS loses real init verification | 2 test files + maybe new test helpers — Risk: MEDIUM | Rec only if timeout persists after increasing to 30000ms. The tests are structurally fine — they just need more time. |\n| **Defer test fixes to P36 (Integration Verification)** | Zero effort for P39 | Leaves P39 with incomplete goal (\"fix ALL test failures and typecheck errors\" — ROADMAP line 625) | 0 files — Risk: HIGH — contradicts P39's stated goal | NOT recommended — P39's primary goal is fixing test failures. 10 failures with known root cause is trivial to fix. |\n\n**Rationale:** Typecheck is CLEAN (exit 0). Build SUCCEEDS (`npm run build` completes with dist/ output). The only failures are 10 tests across 3 files that time out at the default 5000ms vitest timeout. The tests (`bootstrap-init.test.ts` and `doctor.test.ts`) perform real filesystem operations including `createTempProject()` and `createHealthyProject()` which involve directory creation, file writing, and module initialization — operations that can take >5 seconds on macOS. These are NOT logic failures or regression bugs. The fix is trivial: either add `testTimeout: 30000` to these specific test files or set `--testTimeout 30000` globally. No flaky tests were observed (all failures are consistently timeout-based). Phase 20's baseline was 2382 tests passed (ROADMAP line 613) — current 2943 passed shows 561 new tests added since then with zero logic regressions.\n\n---\n\n## Grey Area 5: P36/P37/P38 Dependency Reality\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **P39 proceeds independently (ignore P36/P37/P38 deps)** | P39's goal (fix tests + typecheck + build) needs NO dependency on P36 (full regression), P37 (sync-oss fix), or P38 (primitive packaging). All three are independent concerns. | ROADMAP line 628 formally lists them as deps — skipping violates chain. | 0 files — Risk: LOW — these are aspirational dependencies, not technical blockers | **RECOMMENDED** — P37 is marked DEFERRED (line 137), P38 is DEFERRED (line 138). They are independent tasks with zero overlap with test/typecheck fixes. |\n| **Merge P36 into P39 (since they have same goal)** | P36 \"Integration Verification — Full regression, dist rebuild, smoke tests\" is identical to P39's scope. Consolidates effort. | Loses P36's formal \"Integration Verification\" identity — may skip P36's specific debts (M-5: GSD agent list validation) | 1 line in ROADMAP.md — Risk: LOW | **RECOMMENDED** — P36 and P39 have overlapping goals. P39 (fix all test failures + typecheck + build) is a superset of P36 (regression + dist rebuild + smoke tests). Merge P36 into P39 scope. |\n| **Block P39 until P36/P37/P38 are complete** | Follows ROADMAP dependency chain strictly | P37/P38 are DEFERRED indefinitely. P36 has no plans. This blocks ALL hardening work indefinitely. | All phases blocked — Risk: CRITICAL | NOT recommended — P37 and P38 are explicitly tagged DEFERRED with no plans or requirements. Waiting for them would permanently block P39. |\n\n**Rationale:** ROADMAP.md line 628 lists P39's dependencies as `P36, P37, P38`. However, P37 line 137 says `(DEFERRED)`, P38 line 138 says `(DEFERRED)`, and P36 line 1577 says `Depends on: Phase 35` with zero plans. P37's sole purpose is fixing sync-oss.yml (Grey Area 2). P38's sole purpose is packaging `.opencode/` for distribution. Neither has ANY bearing on P39's goal of fixing test failures, typecheck errors, and build success. P36's goal (\"Full regression, dist rebuild, smoke tests\" — line 1576) IS a subset of P39's goal (\"Fix all test failures and typecheck errors and ensure the build succeeds\" — line 625). The dependencies are **aspirational** — written into the roadmap before P39 was fully scoped. P39 can and should proceed independently, and P36 should be folded into P39's scope.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "gsd-advisor-researcher",
+      "content": "Now I have all the evidence. Let me compile the comprehensive research report.\n\n---\n\n## Grey Area 1: GSD Research Validity\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Re-validate all 6 GSD docs against `open-gsd/get-shit-done-redux`** | Removes knowledge risk, updates 2286 LOC of research, prevents downstream phase contamination | ~4-6 hours research effort, open-gsd repo may also differ from OLD GSD | 6 files, ~2286 LOC — Risk: research effort may not yield actionable differences | Rec if old-GSD patterns are directly embedded in active code paths (P24.3, P24.5, P24.6, P26.1, P26.2, P27, P28, P29, P31, P32) |\n| **Tag GSD-derived patterns as \"Hivemind-adapted\" and skip re-validation** | Zero immediate effort, ROADMAP.markdown Reflection 1 already flags the risk | Accepts stale reference risk — patterns may have changed in new repo | 0 files changed — Risk: knowledge gap may cause design flaws in P27-P32 | Rec if P39's focus is test/typecheck fixes only and GSD-dependent phases are all deferred beyond P39 |\n| **Partial re-validation: only command routing + workflow modes** | Covers highest-risk patterns (67+88 commands/workflows claim), saves ~70% effort | Misses quality gate patterns, SDK surface, agent architecture | 2 docs (~800 LOC) re-validated — Risk: medium, non-routing patterns less likely to have changed | **Rec for P39** — command routing (P24.3 ref) and workflow size budgets (P24.5 ref) are the most consequential GSD-derived patterns with downstream impact |\n\n**Rationale:** The 6 GSD research documents (2286 LOC total from `23-GSD-*` files) were sourced from the abandoned `gsd-build/get-shit-done` repo. ROADMAP.md lines 20-25 explicitly flag this as Reflection 1. However, P39's mandate is test/typecheck hardening — NOT command infrastructure or workflow architecture. The GSD-dependent phases (P24.3, P24.5, P24.6, P26.1, P26.2, P27, P28, P29, P31, P32 per ROADMAP `[GSD-reval: YES]` tags) are ALL deferred past P39. Therefore, a full re-validation is unnecessary for P39. A lightweight check of the two highest-risk GSD patterns (command routing from `23-GSD-command-system.md` and workflow size budgets from `23-GSD-workflow-pipeline.md`) is sufficient. The Hivemind-native features (trajectory, session-tracker, coordination dispatch, notification delivery) have zero GSD dependency and are safe.\n\n---\n\n## Grey Area 2: OSS Sync Strategy\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Path-based exclusion (current approach)** | Simple: \"sync everything except dotfiles\" — auto-discovers non-dot dirs | **Leaks GSD primitives**: `.opencode/` is synced in full, including 67 GSD agents + 67 GSD skills + 33 GSD commands that are internal dev tooling. Also syncs `tests/` and all root-level non-dot dirs | 1 file (`.github/workflows/sync-oss.yml`) — Risk: HIGH — GSD artifacts exposed in OSS branch | NOT recommended — the automatic non-dot-directory detection is too broad and leaks development internals |\n| **Path-based inclusion (whitelist)** | Explicitly safe: only `src/`, selected `docs/*`, `.opencode/hm-*/.hf-*` primitives, `package.json`, `tsconfig.json`, `README.md`, `LICENSE`, `CHANGELOG.md`, `CONTRIBUTING.md`, `vitest.config.ts`. No GSD leaks. | Requires maintenance when new source paths are added — must update YAML | 1 file (`.github/workflows/sync-oss.yml`) + needs GSD primitive filtering logic — Risk: LOW after initial setup | **RECOMMENDED** — the only safe approach. Must filter `.opencode/` to exclude `gsd-*` agents/commands/skills while keeping `hm-*`, `hf-*`, `gate-*`, `stack-*` primitives. Sync OSS tests only if they're integration tests that don't leak internals. |\n| **Hybrid: auto-detect non-dot dirs + explicit GSD exclusion** | Combines auto-discovery with safety — non-dot dirs are OK, but `.opencode/` gets filtered | More complex YAML logic, still may sync `tests/` which has no business in OSS | 1 file — Risk: MEDIUM — complexity of filtering logic | Rec if maintainers prefer auto-discovery but want to fix the GSD leak. Must add explicit GSD-primitive exclusion to the `.opencode/` sync step. |\n\n**Rationale:** The current sync-oss.yml (lines 63-76) auto-detects ALL non-dot top-level directories and explicitly adds `.opencode/` — but `.opencode/` contains 67 GSD agents, 67 GSD skills, and 33 GSD commands that are INTERNAL developer tooling. ROADMAP.md Section 4 explicitly states GSD primitives are \"excluded\" from shipped output. The current sync strategy leaks these to the public `oss-dev` branch. Path-based inclusion is safer because it requires explicit opt-in for every synced path. The sync-oss.yml line 63 also attempts `find . -maxdepth 1 -type d ! -name \".*\" ! -name \"node_modules\" ! -name \"docs\"` which syncs `tests/`, `.opencode/` (full), and any other non-dot directory — far too broad for OSS.\n\n---\n\n## Grey Area 3: Language Governance Model\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Config-driven enforcement (current)** | Centralized in `.hivemind/configs.json` (line 3-4), propagated through subscriber → behavioral profile → hooks. Zod schema validates 10 languages. | Config is user-editable — can drift from project conventions. No compile-time enforcement. | 8+ files across schema-kernel, routing, hooks, config — Risk: MEDIUM — config/runtime disagreement not properly detected | Rec if the current system is sufficient for P39 scope (test/typecheck fixes only) |\n| **Add Agent system prompt injection via system.transform** | Lock language at session start — hook injects `\"Use vi for conversation and en for documents\"` at every conversation start (core-hooks.ts line 79 already does this) | Only covers conversations, not doc paths. doc path language enforcement is in tool-guard-hooks.ts (line 116) | Already wired — Risk: LOW | **RECOMMENDED** — this is already implemented in core-hooks.ts and tool-guard-hooks.ts. P39 should verify it works rather than redesign |\n| **Add config-runtime disagreement detection + alert** | When `.hivemind/configs.json` language != AGENTS.md/ROADMAP.md language claim, emit warning | Requires cross-file validation, not currently implemented | 1-2 new files — Risk: LOW | Rec if config governance drift is a real concern (CA-04.2 tracks this as D-BIND-03: \"conversation_language traced as wired in L5\") |\n\n**Rationale:** The language governance model is already well-implemented across the codebase. `supportedLanguageSchema` (hivemind-configs.schema.ts lines 18-29) defines 10 valid language codes. `.hivemind/configs.json` has `conversation_language: \"vi\"` and `documents_and_artifacts_language: \"en\"`. `core-hooks.ts` line 79 injects language into system prompts. `tool-guard-hooks.ts` line 116 prepends language to document writes. `resolve-behavioral-profile.ts` line 74 surfaces language in the behavioral profile. `language-resolution.ts` provides runtime detection with script type classification. The only gap is CA-04.2 (ROADMAP line 197) — `conversation_language` is \"traced as wired in L5 config traceability\" but not L1-L3 verified. P39 can close this gap by adding a test that verifies config language propagates through the full pipeline.\n\n---\n\n## Grey Area 4: Test Baseline Reality\n\n**Evidence summary:**\n- **Test pass rate:** 2943 passed, 10 failed, 2 skipped (245 files)\n- **Failed files (3):**\n  - `tests/tools/bootstrap-init.test.ts` — ~5 tests timing out at 5000ms\n  - `tests/cli/commands/doctor.test.ts` — ~3 tests timing out at 5000ms\n  - (Additional failures in tests/tools/bootstrap-init.test.ts backups section)\n- **Root cause of ALL failures:** Timeout at 5000ms default — these tests perform real filesystem operations (`createTempProject()`, `createHealthyProject()`, real file I/O) that exceed the default timeout\n- **Typecheck:** ✅ CLEAN — exit code 0, zero output (no errors)\n- **Build:** ✅ SUCCEEDS — dist/ directory created with 19 entries\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Increase testTimeout for bootstrap-init and doctor tests** | Minimal change, directly addresses root cause (timeout, not logic failure) | May mask real performance issues if tests are genuinely too slow | 2 test files, ~2 minutes — Risk: LOW | **RECOMMENDED** — all 10 failures are timeout, not logic. Set timeout to 30000ms for the multi-file operations. |\n| **Mock the filesystem in bootstrap-init and doctor tests** | Tests run instantly, no timeout risk, better unit-test isolation | Heavy refactor — bootstrap-init tests are integration-style by design, mocking FS loses real init verification | 2 test files + maybe new test helpers — Risk: MEDIUM | Rec only if timeout persists after increasing to 30000ms. The tests are structurally fine — they just need more time. |\n| **Defer test fixes to P36 (Integration Verification)** | Zero effort for P39 | Leaves P39 with incomplete goal (\"fix ALL test failures and typecheck errors\" — ROADMAP line 625) | 0 files — Risk: HIGH — contradicts P39's stated goal | NOT recommended — P39's primary goal is fixing test failures. 10 failures with known root cause is trivial to fix. |\n\n**Rationale:** Typecheck is CLEAN (exit 0). Build SUCCEEDS (`npm run build` completes with dist/ output). The only failures are 10 tests across 3 files that time out at the default 5000ms vitest timeout. The tests (`bootstrap-init.test.ts` and `doctor.test.ts`) perform real filesystem operations including `createTempProject()` and `createHealthyProject()` which involve directory creation, file writing, and module initialization — operations that can take >5 seconds on macOS. These are NOT logic failures or regression bugs. The fix is trivial: either add `testTimeout: 30000` to these specific test files or set `--testTimeout 30000` globally. No flaky tests were observed (all failures are consistently timeout-based). Phase 20's baseline was 2382 tests passed (ROADMAP line 613) — current 2943 passed shows 561 new tests added since then with zero logic regressions.\n\n---\n\n## Grey Area 5: P36/P37/P38 Dependency Reality\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **P39 proceeds independently (ignore P36/P37/P38 deps)** | P39's goal (fix tests + typecheck + build) needs NO dependency on P36 (full regression), P37 (sync-oss fix), or P38 (primitive packaging). All three are independent concerns. | ROADMAP line 628 formally lists them as deps — skipping violates chain. | 0 files — Risk: LOW — these are aspirational dependencies, not technical blockers | **RECOMMENDED** — P37 is marked DEFERRED (line 137), P38 is DEFERRED (line 138). They are independent tasks with zero overlap with test/typecheck fixes. |\n| **Merge P36 into P39 (since they have same goal)** | P36 \"Integration Verification — Full regression, dist rebuild, smoke tests\" is identical to P39's scope. Consolidates effort. | Loses P36's formal \"Integration Verification\" identity — may skip P36's specific debts (M-5: GSD agent list validation) | 1 line in ROADMAP.md — Risk: LOW | **RECOMMENDED** — P36 and P39 have overlapping goals. P39 (fix all test failures + typecheck + build) is a superset of P36 (regression + dist rebuild + smoke tests). Merge P36 into P39 scope. |\n| **Block P39 until P36/P37/P38 are complete** | Follows ROADMAP dependency chain strictly | P37/P38 are DEFERRED indefinitely. P36 has no plans. This blocks ALL hardening work indefinitely. | All phases blocked — Risk: CRITICAL | NOT recommended — P37 and P38 are explicitly tagged DEFERRED with no plans or requirements. Waiting for them would permanently block P39. |\n\n**Rationale:** ROADMAP.md line 628 lists P39's dependencies as `P36, P37, P38`. However, P37 line 137 says `(DEFERRED)`, P38 line 138 says `(DEFERRED)`, and P36 line 1577 says `Depends on: Phase 35` with zero plans. P37's sole purpose is fixing sync-oss.yml (Grey Area 2). P38's sole purpose is packaging `.opencode/` for distribution. Neither has ANY bearing on P39's goal of fixing test failures, typecheck errors, and build success. P36's goal (\"Full regression, dist rebuild, smoke tests\" — line 1576) IS a subset of P39's goal (\"Fix all test failures and typecheck errors and ensure the build succeeds\" — line 625). The dependencies are **aspirational** — written into the roadmap before P39 was fully scoped. P39 can and should proceed independently, and P36 should be folded into P39's scope.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-30T11:30:11.184Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_WXVwMZGQHpuQgnHOYlMY1332",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:30:11.197Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_h73Sn3OQIMdFpsKrkSJM4235",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:30:11.225Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_ilM6gimxBS3Udn9nxeFC5053",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:30:11.282Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_nQgMALGeWKyTrf0G8fKa5657",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:30:47.548Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_JzQxjqdlfUUyRc5hJSOG5523",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:30:47.713Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_LO3L6DcWDDzP3zTJkGgy7706",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.github/workflows/sync-oss.yml"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:32:31.580Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_aWo2SwK1wJ3ucIYqNA9I9321",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:32:49.547Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_32E9AZNJm6roD0amaVAx2272",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:33:02.216Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_Yc7XIocWfFKf91szWK6n1226",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:33:02.354Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_RAAA76p5MP7QxfambMY34131",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:33:41.004Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_k6cP5J6H2HDWnEiUOKmX8411",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:34:03.517Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_6Y9VjF4fQ2Zeo1GTw8mb8583",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:34:18.011Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_H3Ozq4Q5pxSaDDSyjVb35481",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:34:18.406Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_O7DLiZ4f2474UfROKpyN4653",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:34:27.446Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_02_M5tgWxB65UnheInhUSA65169",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:34:43.021Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_bAQPHLHCmk6gNL7oGtMw0827",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:36:58.856Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_0lC9QgXDx71emGjegCvm8007",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:36:59.151Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_i362fIfsZlS8ibYGyEZj4869",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:38:29.952Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_3TNiJEJC3ZUd17acyX5p8469",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:38:31.806Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_1mUgrV0oGTetKcfiTaLA4056",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:38:42.651Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_NwzDgDIBokRAqKyKYRMv3638",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/configs.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:38:43.646Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_nzO4PYr7YaQUGSZj8nxO7840",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/hivemind-configs.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:39:50.304Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_eztsQngDnpqpdt7FBGtZ7494",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:39:59.920Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_FrVgUwYvNeyMCwl2NZWy0732",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:40:34.674Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_pPwRARpg4rMBULvgdli93696",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:40:55.172Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_3bze95UkVHAiUmAZmCOk0279",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:41:04.562Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_tm497UCNAOlRwtT9mbAx2995",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:41:17.324Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_xHsufyfwsyJoU4CTCbsX5349",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:41:23.976Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_N2GJ2dPooepUUNDw6GyN3617",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:41:31.536Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_2eB1DDLDQkBuL17XPbRf5158",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-30T11:42:17.071Z",
+      "type": "assistant_message",
+      "content": "Now I have all the evidence. Let me compile the comprehensive research report.\n\n---\n\n## Grey Area 1: GSD Research Validity\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Re-validate all 6 GSD docs against `open-gsd/get-shit-done-redux`** | Removes knowledge risk, updates 2286 LOC of research, prevents downstream phase contamination | ~4-6 hours research effort, open-gsd repo may also differ from OLD GSD | 6 files, ~2286 LOC — Risk: research effort may not yield actionable differences | Rec if old-GSD patterns are directly embedded in active code paths (P24.3, P24.5, P24.6, P26.1, P26.2, P27, P28, P29, P31, P32) |\n| **Tag GSD-derived patterns as \"Hivemind-adapted\" and skip re-validation** | Zero immediate effort, ROADMAP.markdown Reflection 1 already flags the risk | Accepts stale reference risk — patterns may have changed in new repo | 0 files changed — Risk: knowledge gap may cause design flaws in P27-P32 | Rec if P39's focus is test/typecheck fixes only and GSD-dependent phases are all deferred beyond P39 |\n| **Partial re-validation: only command routing + workflow modes** | Covers highest-risk patterns (67+88 commands/workflows claim), saves ~70% effort | Misses quality gate patterns, SDK surface, agent architecture | 2 docs (~800 LOC) re-validated — Risk: medium, non-routing patterns less likely to have changed | **Rec for P39** — command routing (P24.3 ref) and workflow size budgets (P24.5 ref) are the most consequential GSD-derived patterns with downstream impact |\n\n**Rationale:** The 6 GSD research documents (2286 LOC total from `23-GSD-*` files) were sourced from the abandoned `gsd-build/get-shit-done` repo. ROADMAP.md lines 20-25 explicitly flag this as Reflection 1. However, P39's mandate is test/typecheck hardening — NOT command infrastructure or workflow architecture. The GSD-dependent phases (P24.3, P24.5, P24.6, P26.1, P26.2, P27, P28, P29, P31, P32 per ROADMAP `[GSD-reval: YES]` tags) are ALL deferred past P39. Therefore, a full re-validation is unnecessary for P39. A lightweight check of the two highest-risk GSD patterns (command routing from `23-GSD-command-system.md` and workflow size budgets from `23-GSD-workflow-pipeline.md`) is sufficient. The Hivemind-native features (trajectory, session-tracker, coordination dispatch, notification delivery) have zero GSD dependency and are safe.\n\n---\n\n## Grey Area 2: OSS Sync Strategy\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Path-based exclusion (current approach)** | Simple: \"sync everything except dotfiles\" — auto-discovers non-dot dirs | **Leaks GSD primitives**: `.opencode/` is synced in full, including 67 GSD agents + 67 GSD skills + 33 GSD commands that are internal dev tooling. Also syncs `tests/` and all root-level non-dot dirs | 1 file (`.github/workflows/sync-oss.yml`) — Risk: HIGH — GSD artifacts exposed in OSS branch | NOT recommended — the automatic non-dot-directory detection is too broad and leaks development internals |\n| **Path-based inclusion (whitelist)** | Explicitly safe: only `src/`, selected `docs/*`, `.opencode/hm-*/.hf-*` primitives, `package.json`, `tsconfig.json`, `README.md`, `LICENSE`, `CHANGELOG.md`, `CONTRIBUTING.md`, `vitest.config.ts`. No GSD leaks. | Requires maintenance when new source paths are added — must update YAML | 1 file (`.github/workflows/sync-oss.yml`) + needs GSD primitive filtering logic — Risk: LOW after initial setup | **RECOMMENDED** — the only safe approach. Must filter `.opencode/` to exclude `gsd-*` agents/commands/skills while keeping `hm-*`, `hf-*`, `gate-*`, `stack-*` primitives. Sync OSS tests only if they're integration tests that don't leak internals. |\n| **Hybrid: auto-detect non-dot dirs + explicit GSD exclusion** | Combines auto-discovery with safety — non-dot dirs are OK, but `.opencode/` gets filtered | More complex YAML logic, still may sync `tests/` which has no business in OSS | 1 file — Risk: MEDIUM — complexity of filtering logic | Rec if maintainers prefer auto-discovery but want to fix the GSD leak. Must add explicit GSD-primitive exclusion to the `.opencode/` sync step. |\n\n**Rationale:** The current sync-oss.yml (lines 63-76) auto-detects ALL non-dot top-level directories and explicitly adds `.opencode/` — but `.opencode/` contains 67 GSD agents, 67 GSD skills, and 33 GSD commands that are INTERNAL developer tooling. ROADMAP.md Section 4 explicitly states GSD primitives are \"excluded\" from shipped output. The current sync strategy leaks these to the public `oss-dev` branch. Path-based inclusion is safer because it requires explicit opt-in for every synced path. The sync-oss.yml line 63 also attempts `find . -maxdepth 1 -type d ! -name \".*\" ! -name \"node_modules\" ! -name \"docs\"` which syncs `tests/`, `.opencode/` (full), and any other non-dot directory — far too broad for OSS.\n\n---\n\n## Grey Area 3: Language Governance Model\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Config-driven enforcement (current)** | Centralized in `.hivemind/configs.json` (line 3-4), propagated through subscriber → behavioral profile → hooks. Zod schema validates 10 languages. | Config is user-editable — can drift from project conventions. No compile-time enforcement. | 8+ files across schema-kernel, routing, hooks, config — Risk: MEDIUM — config/runtime disagreement not properly detected | Rec if the current system is sufficient for P39 scope (test/typecheck fixes only) |\n| **Add Agent system prompt injection via system.transform** | Lock language at session start — hook injects `\"Use vi for conversation and en for documents\"` at every conversation start (core-hooks.ts line 79 already does this) | Only covers conversations, not doc paths. doc path language enforcement is in tool-guard-hooks.ts (line 116) | Already wired — Risk: LOW | **RECOMMENDED** — this is already implemented in core-hooks.ts and tool-guard-hooks.ts. P39 should verify it works rather than redesign |\n| **Add config-runtime disagreement detection + alert** | When `.hivemind/configs.json` language != AGENTS.md/ROADMAP.md language claim, emit warning | Requires cross-file validation, not currently implemented | 1-2 new files — Risk: LOW | Rec if config governance drift is a real concern (CA-04.2 tracks this as D-BIND-03: \"conversation_language traced as wired in L5\") |\n\n**Rationale:** The language governance model is already well-implemented across the codebase. `supportedLanguageSchema` (hivemind-configs.schema.ts lines 18-29) defines 10 valid language codes. `.hivemind/configs.json` has `conversation_language: \"vi\"` and `documents_and_artifacts_language: \"en\"`. `core-hooks.ts` line 79 injects language into system prompts. `tool-guard-hooks.ts` line 116 prepends language to document writes. `resolve-behavioral-profile.ts` line 74 surfaces language in the behavioral profile. `language-resolution.ts` provides runtime detection with script type classification. The only gap is CA-04.2 (ROADMAP line 197) — `conversation_language` is \"traced as wired in L5 config traceability\" but not L1-L3 verified. P39 can close this gap by adding a test that verifies config language propagates through the full pipeline.\n\n---\n\n## Grey Area 4: Test Baseline Reality\n\n**Evidence summary:**\n- **Test pass rate:** 2943 passed, 10 failed, 2 skipped (245 files)\n- **Failed files (3):**\n  - `tests/tools/bootstrap-init.test.ts` — ~5 tests timing out at 5000ms\n  - `tests/cli/commands/doctor.test.ts` — ~3 tests timing out at 5000ms\n  - (Additional failures in tests/tools/bootstrap-init.test.ts backups section)\n- **Root cause of ALL failures:** Timeout at 5000ms default — these tests perform real filesystem operations (`createTempProject()`, `createHealthyProject()`, real file I/O) that exceed the default timeout\n- **Typecheck:** ✅ CLEAN — exit code 0, zero output (no errors)\n- **Build:** ✅ SUCCEEDS — dist/ directory created with 19 entries\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Increase testTimeout for bootstrap-init and doctor tests** | Minimal change, directly addresses root cause (timeout, not logic failure) | May mask real performance issues if tests are genuinely too slow | 2 test files, ~2 minutes — Risk: LOW | **RECOMMENDED** — all 10 failures are timeout, not logic. Set timeout to 30000ms for the multi-file operations. |\n| **Mock the filesystem in bootstrap-init and doctor tests** | Tests run instantly, no timeout risk, better unit-test isolation | Heavy refactor — bootstrap-init tests are integration-style by design, mocking FS loses real init verification | 2 test files + maybe new test helpers — Risk: MEDIUM | Rec only if timeout persists after increasing to 30000ms. The tests are structurally fine — they just need more time. |\n| **Defer test fixes to P36 (Integration Verification)** | Zero effort for P39 | Leaves P39 with incomplete goal (\"fix ALL test failures and typecheck errors\" — ROADMAP line 625) | 0 files — Risk: HIGH — contradicts P39's stated goal | NOT recommended — P39's primary goal is fixing test failures. 10 failures with known root cause is trivial to fix. |\n\n**Rationale:** Typecheck is CLEAN (exit 0). Build SUCCEEDS (`npm run build` completes with dist/ output). The only failures are 10 tests across 3 files that time out at the default 5000ms vitest timeout. The tests (`bootstrap-init.test.ts` and `doctor.test.ts`) perform real filesystem operations including `createTempProject()` and `createHealthyProject()` which involve directory creation, file writing, and module initialization — operations that can take >5 seconds on macOS. These are NOT logic failures or regression bugs. The fix is trivial: either add `testTimeout: 30000` to these specific test files or set `--testTimeout 30000` globally. No flaky tests were observed (all failures are consistently timeout-based). Phase 20's baseline was 2382 tests passed (ROADMAP line 613) — current 2943 passed shows 561 new tests added since then with zero logic regressions.\n\n---\n\n## Grey Area 5: P36/P37/P38 Dependency Reality\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **P39 proceeds independently (ignore P36/P37/P38 deps)** | P39's goal (fix tests + typecheck + build) needs NO dependency on P36 (full regression), P37 (sync-oss fix), or P38 (primitive packaging). All three are independent concerns. | ROADMAP line 628 formally lists them as deps — skipping violates chain. | 0 files — Risk: LOW — these are aspirational dependencies, not technical blockers | **RECOMMENDED** — P37 is marked DEFERRED (line 137), P38 is DEFERRED (line 138). They are independent tasks with zero overlap with test/typecheck fixes. |\n| **Merge P36 into P39 (since they have same goal)** | P36 \"Integration Verification — Full regression, dist rebuild, smoke tests\" is identical to P39's scope. Consolidates effort. | Loses P36's formal \"Integration Verification\" identity — may skip P36's specific debts (M-5: GSD agent list validation) | 1 line in ROADMAP.md — Risk: LOW | **RECOMMENDED** — P36 and P39 have overlapping goals. P39 (fix all test failures + typecheck + build) is a superset of P36 (regression + dist rebuild + smoke tests). Merge P36 into P39 scope. |\n| **Block P39 until P36/P37/P38 are complete** | Follows ROADMAP dependency chain strictly | P37/P38 are DEFERRED indefinitely. P36 has no plans. This blocks ALL hardening work indefinitely. | All phases blocked — Risk: CRITICAL | NOT recommended — P37 and P38 are explicitly tagged DEFERRED with no plans or requirements. Waiting for them would permanently block P39. |\n\n**Rationale:** ROADMAP.md line 628 lists P39's dependencies as `P36, P37, P38`. However, P37 line 137 says `(DEFERRED)`, P38 line 138 says `(DEFERRED)`, and P36 line 1577 says `Depends on: Phase 35` with zero plans. P37's sole purpose is fixing sync-oss.yml (Grey Area 2). P38's sole purpose is packaging `.opencode/` for distribution. Neither has ANY bearing on P39's goal of fixing test failures, typecheck errors, and build success. P36's goal (\"Full regression, dist rebuild, smoke tests\" — line 1576) IS a subset of P39's goal (\"Fix all test failures and typecheck errors and ensure the build succeeds\" — line 625). The dependencies are **aspirational** — written into the roadmap before P39 was fully scoped. P39 can and should proceed independently, and P36 should be folded into P39's scope.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1875a2b6dffedeHIzzuMVm7BtG"
+      }
+    }
+  ],
+  "lastMessage": "Now I have all the evidence. Let me compile the comprehensive research report.\n\n---\n\n## Grey Area 1: GSD Research Validity\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Re-validate all 6 GSD docs against `open-gsd/get-shit-done-redux`** | Removes knowledge risk, updates 2286 LOC of research, prevents downstream phase contamination | ~4-6 hours research effort, open-gsd repo may also differ from OLD GSD | 6 files, ~2286 LOC — Risk: research effort may not yield actionable differences | Rec if old-GSD patterns are directly embedded in active code paths (P24.3, P24.5, P24.6, P26.1, P26.2, P27, P28, P29, P31, P32) |\n| **Tag GSD-derived patterns as \"Hivemind-adapted\" and skip re-validation** | Zero immediate effort, ROADMAP.markdown Reflection 1 already flags the risk | Accepts stale reference risk — patterns may have changed in new repo | 0 files changed — Risk: knowledge gap may cause design flaws in P27-P32 | Rec if P39's focus is test/typecheck fixes only and GSD-dependent phases are all deferred beyond P39 |\n| **Partial re-validation: only command routing + workflow modes** | Covers highest-risk patterns (67+88 commands/workflows claim), saves ~70% effort | Misses quality gate patterns, SDK surface, agent architecture | 2 docs (~800 LOC) re-validated — Risk: medium, non-routing patterns less likely to have changed | **Rec for P39** — command routing (P24.3 ref) and workflow size budgets (P24.5 ref) are the most consequential GSD-derived patterns with downstream impact |\n\n**Rationale:** The 6 GSD research documents (2286 LOC total from `23-GSD-*` files) were sourced from the abandoned `gsd-build/get-shit-done` repo. ROADMAP.md lines 20-25 explicitly flag this as Reflection 1. However, P39's mandate is test/typecheck hardening — NOT command infrastructure or workflow architecture. The GSD-dependent phases (P24.3, P24.5, P24.6, P26.1, P26.2, P27, P28, P29, P31, P32 per ROADMAP `[GSD-reval: YES]` tags) are ALL deferred past P39. Therefore, a full re-validation is unnecessary for P39. A lightweight check of the two highest-risk GSD patterns (command routing from `23-GSD-command-system.md` and workflow size budgets from `23-GSD-workflow-pipeline.md`) is sufficient. The Hivemind-native features (trajectory, session-tracker, coordination dispatch, notification delivery) have zero GSD dependency and are safe.\n\n---\n\n## Grey Area 2: OSS Sync Strategy\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Path-based exclusion (current approach)** | Simple: \"sync everything except dotfiles\" — auto-discovers non-dot dirs | **Leaks GSD primitives**: `.opencode/` is synced in full, including 67 GSD agents + 67 GSD skills + 33 GSD commands that are internal dev tooling. Also syncs `tests/` and all root-level non-dot dirs | 1 file (`.github/workflows/sync-oss.yml`) — Risk: HIGH — GSD artifacts exposed in OSS branch | NOT recommended — the automatic non-dot-directory detection is too broad and leaks development internals |\n| **Path-based inclusion (whitelist)** | Explicitly safe: only `src/`, selected `docs/*`, `.opencode/hm-*/.hf-*` primitives, `package.json`, `tsconfig.json`, `README.md`, `LICENSE`, `CHANGELOG.md`, `CONTRIBUTING.md`, `vitest.config.ts`. No GSD leaks. | Requires maintenance when new source paths are added — must update YAML | 1 file (`.github/workflows/sync-oss.yml`) + needs GSD primitive filtering logic — Risk: LOW after initial setup | **RECOMMENDED** — the only safe approach. Must filter `.opencode/` to exclude `gsd-*` agents/commands/skills while keeping `hm-*`, `hf-*`, `gate-*`, `stack-*` primitives. Sync OSS tests only if they're integration tests that don't leak internals. |\n| **Hybrid: auto-detect non-dot dirs + explicit GSD exclusion** | Combines auto-discovery with safety — non-dot dirs are OK, but `.opencode/` gets filtered | More complex YAML logic, still may sync `tests/` which has no business in OSS | 1 file — Risk: MEDIUM — complexity of filtering logic | Rec if maintainers prefer auto-discovery but want to fix the GSD leak. Must add explicit GSD-primitive exclusion to the `.opencode/` sync step. |\n\n**Rationale:** The current sync-oss.yml (lines 63-76) auto-detects ALL non-dot top-level directories and explicitly adds `.opencode/` — but `.opencode/` contains 67 GSD agents, 67 GSD skills, and 33 GSD commands that are INTERNAL developer tooling. ROADMAP.md Section 4 explicitly states GSD primitives are \"excluded\" from shipped output. The current sync strategy leaks these to the public `oss-dev` branch. Path-based inclusion is safer because it requires explicit opt-in for every synced path. The sync-oss.yml line 63 also attempts `find . -maxdepth 1 -type d ! -name \".*\" ! -name \"node_modules\" ! -name \"docs\"` which syncs `tests/`, `.opencode/` (full), and any other non-dot directory — far too broad for OSS.\n\n---\n\n## Grey Area 3: Language Governance Model\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Config-driven enforcement (current)** | Centralized in `.hivemind/configs.json` (line 3-4), propagated through subscriber → behavioral profile → hooks. Zod schema validates 10 languages. | Config is user-editable — can drift from project conventions. No compile-time enforcement. | 8+ files across schema-kernel, routing, hooks, config — Risk: MEDIUM — config/runtime disagreement not properly detected | Rec if the current system is sufficient for P39 scope (test/typecheck fixes only) |\n| **Add Agent system prompt injection via system.transform** | Lock language at session start — hook injects `\"Use vi for conversation and en for documents\"` at every conversation start (core-hooks.ts line 79 already does this) | Only covers conversations, not doc paths. doc path language enforcement is in tool-guard-hooks.ts (line 116) | Already wired — Risk: LOW | **RECOMMENDED** — this is already implemented in core-hooks.ts and tool-guard-hooks.ts. P39 should verify it works rather than redesign |\n| **Add config-runtime disagreement detection + alert** | When `.hivemind/configs.json` language != AGENTS.md/ROADMAP.md language claim, emit warning | Requires cross-file validation, not currently implemented | 1-2 new files — Risk: LOW | Rec if config governance drift is a real concern (CA-04.2 tracks this as D-BIND-03: \"conversation_language traced as wired in L5\") |\n\n**Rationale:** The language governance model is already well-implemented across the codebase. `supportedLanguageSchema` (hivemind-configs.schema.ts lines 18-29) defines 10 valid language codes. `.hivemind/configs.json` has `conversation_language: \"vi\"` and `documents_and_artifacts_language: \"en\"`. `core-hooks.ts` line 79 injects language into system prompts. `tool-guard-hooks.ts` line 116 prepends language to document writes. `resolve-behavioral-profile.ts` line 74 surfaces language in the behavioral profile. `language-resolution.ts` provides runtime detection with script type classification. The only gap is CA-04.2 (ROADMAP line 197) — `conversation_language` is \"traced as wired in L5 config traceability\" but not L1-L3 verified. P39 can close this gap by adding a test that verifies config language propagates through the full pipeline.\n\n---\n\n## Grey Area 4: Test Baseline Reality\n\n**Evidence summary:**\n- **Test pass rate:** 2943 passed, 10 failed, 2 skipped (245 files)\n- **Failed files (3):**\n  - `tests/tools/bootstrap-init.test.ts` — ~5 tests timing out at 5000ms\n  - `tests/cli/commands/doctor.test.ts` — ~3 tests timing out at 5000ms\n  - (Additional failures in tests/tools/bootstrap-init.test.ts backups section)\n- **Root cause of ALL failures:** Timeout at 5000ms default — these tests perform real filesystem operations (`createTempProject()`, `createHealthyProject()`, real file I/O) that exceed the default timeout\n- **Typecheck:** ✅ CLEAN — exit code 0, zero output (no errors)\n- **Build:** ✅ SUCCEEDS — dist/ directory created with 19 entries\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **Increase testTimeout for bootstrap-init and doctor tests** | Minimal change, directly addresses root cause (timeout, not logic failure) | May mask real performance issues if tests are genuinely too slow | 2 test files, ~2 minutes — Risk: LOW | **RECOMMENDED** — all 10 failures are timeout, not logic. Set timeout to 30000ms for the multi-file operations. |\n| **Mock the filesystem in bootstrap-init and doctor tests** | Tests run instantly, no timeout risk, better unit-test isolation | Heavy refactor — bootstrap-init tests are integration-style by design, mocking FS loses real init verification | 2 test files + maybe new test helpers — Risk: MEDIUM | Rec only if timeout persists after increasing to 30000ms. The tests are structurally fine — they just need more time. |\n| **Defer test fixes to P36 (Integration Verification)** | Zero effort for P39 | Leaves P39 with incomplete goal (\"fix ALL test failures and typecheck errors\" — ROADMAP line 625) | 0 files — Risk: HIGH — contradicts P39's stated goal | NOT recommended — P39's primary goal is fixing test failures. 10 failures with known root cause is trivial to fix. |\n\n**Rationale:** Typecheck is CLEAN (exit 0). Build SUCCEEDS (`npm run build` completes with dist/ output). The only failures are 10 tests across 3 files that time out at the default 5000ms vitest timeout. The tests (`bootstrap-init.test.ts` and `doctor.test.ts`) perform real filesystem operations including `createTempProject()` and `createHealthyProject()` which involve directory creation, file writing, and module initialization — operations that can take >5 seconds on macOS. These are NOT logic failures or regression bugs. The fix is trivial: either add `testTimeout: 30000` to these specific test files or set `--testTimeout 30000` globally. No flaky tests were observed (all failures are consistently timeout-based). Phase 20's baseline was 2382 tests passed (ROADMAP line 613) — current 2943 passed shows 561 new tests added since then with zero logic regressions.\n\n---\n\n## Grey Area 5: P36/P37/P38 Dependency Reality\n\n| Option | Pros | Cons | Complexity | Recommendation |\n|--------|------|------|------------|----------------|\n| **P39 proceeds independently (ignore P36/P37/P38 deps)** | P39's goal (fix tests + typecheck + build) needs NO dependency on P36 (full regression), P37 (sync-oss fix), or P38 (primitive packaging). All three are independent concerns. | ROADMAP line 628 formally lists them as deps — skipping violates chain. | 0 files — Risk: LOW — these are aspirational dependencies, not technical blockers | **RECOMMENDED** — P37 is marked DEFERRED (line 137), P38 is DEFERRED (line 138). They are independent tasks with zero overlap with test/typecheck fixes. |\n| **Merge P36 into P39 (since they have same goal)** | P36 \"Integration Verification — Full regression, dist rebuild, smoke tests\" is identical to P39's scope. Consolidates effort. | Loses P36's formal \"Integration Verification\" identity — may skip P36's specific debts (M-5: GSD agent list validation) | 1 line in ROADMAP.md — Risk: LOW | **RECOMMENDED** — P36 and P39 have overlapping goals. P39 (fix all test failures + typecheck + build) is a superset of P36 (regression + dist rebuild + smoke tests). Merge P36 into P39 scope. |\n| **Block P39 until P36/P37/P38 are complete** | Follows ROADMAP dependency chain strictly | P37/P38 are DEFERRED indefinitely. P36 has no plans. This blocks ALL hardening work indefinitely. | All phases blocked — Risk: CRITICAL | NOT recommended — P37 and P38 are explicitly tagged DEFERRED with no plans or requirements. Waiting for them would permanently block P39. |\n\n**Rationale:** ROADMAP.md line 628 lists P39's dependencies as `P36, P37, P38`. However, P37 line 137 says `(DEFERRED)`, P38 line 138 says `(DEFERRED)`, and P36 line 1577 says `Depends on: Phase 35` with zero plans. P37's sole purpose is fixing sync-oss.yml (Grey Area 2). P38's sole purpose is packaging `.opencode/` for distribution. Neither has ANY bearing on P39's goal of fixing test failures, typecheck errors, and build success. P36's goal (\"Full regression, dist rebuild, smoke tests\" — line 1576) IS a subset of P39's goal (\"Fix all test failures and typecheck errors and ensure the build succeeds\" — line 625). The dependencies are **aspirational** — written into the roadmap before P39 was fully scoped. P39 can and should proceed independently, and P36 should be folded into P39's scope."
+}

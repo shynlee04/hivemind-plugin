@@ -1,23 +1,23 @@
 [
   {
-    "id": "fe413bf7-d72c-41ba-8a10-536a0ad37479",
-    "parentSessionId": "ses-parent-session",
-    "childSessionId": "child-real-queue",
+    "id": "ee97384c-cd8b-4b83-88b5-63a74d477227",
+    "parentSessionId": "ses-parent-monitor-fail",
+    "childSessionId": "child-prompt-fail-monitor",
     "agent": "builder",
-    "status": "timeout",
-    "error": "[Harness] Delegation safety ceiling reached after 1800000ms",
-    "createdAt": 1780078295428,
-    "completedAt": 1780080095441,
+    "status": "error",
+    "createdAt": 1780145279772,
     "lastMessageCount": 0,
     "stablePollCount": 0,
-    "lastMessageCountChangeAt": 1780078295428,
+    "lastMessageCountChangeAt": 1780145279772,
+    "nestingDepth": 1,
     "executionMode": "sdk",
+    "workingDirectory": "/Users/apple/hivemind-plugin-private",
+    "queueKey": "agent:builder",
     "surface": "agent-delegation",
     "recoveryGuarantee": "resumable",
-    "workingDirectory": "/Users/apple/hivemind-plugin-private",
-    "queueKey": "provider:anthropic:model:claude-3-5-sonnet",
-    "nestingDepth": 1,
     "explicitCancellation": false,
-    "gracePeriodExpiresAt": 1780080695442
+    "completedAt": 1780145279774,
+    "error": "Failed to send prompt to child session",
+    "gracePeriodExpiresAt": 1780145879775
   }
 ]

@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_18afc31afffeHS6izacr2YYm3a",
-  "lastUpdated": "2026-05-29T18:39:57.004Z",
+  "lastUpdated": "2026-05-30T10:51:51.681Z",
   "hierarchy": {
     "root": "ses_18afc31afffeHS6izacr2YYm3a",
     "children": {
@@ -11,14 +11,65 @@
         "status": "active",
         "delegatedBy": "gsd-phase-researcher",
         "children": {}
+      },
+      "ses_18af0bbfaffeTCg1poYhBjvgCz": {
+        "file": "ses_18af0bbfaffeTCg1poYhBjvgCz.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_18aea7437ffeq9t8BNqNPsf6gV": {
+        "file": "ses_18aea7437ffeq9t8BNqNPsf6gV.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-planner",
+        "children": {
+          "ses_18ae4049affexNsaBBOgnotZfO": {
+            "file": "ses_18ae4049affexNsaBBOgnotZfO.json",
+            "depth": 2,
+            "status": "completed",
+            "delegatedBy": "gsd-planner",
+            "children": {}
+          },
+          "ses_18ae5c564ffe1zWaJUgh4VEvDb": {
+            "file": "ses_18ae5c564ffe1zWaJUgh4VEvDb.json",
+            "depth": 2,
+            "status": "completed",
+            "delegatedBy": "gsd-planner",
+            "children": {}
+          }
+        }
+      },
+      "ses_18ad7d6cfffeGEwcp7C7F7JQFb": {
+        "file": "ses_18ad7d6cfffeGEwcp7C7F7JQFb.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_18acc7248ffezZeOSzddlhFRd2": {
+        "file": "ses_18acc7248ffezZeOSzddlhFRd2.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_18ac9bb76ffeK2H86yx7hPjfwl": {
+        "file": "ses_18ac9bb76ffeK2H86yx7hPjfwl.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
       }
     }
   },
-  "turnCount": 59,
+  "turnCount": 76,
   "toolSummary": {
-    "bash": 6,
+    "bash": 12,
     "read": 1,
-    "execute-slash-command": 1,
-    "task": 3
+    "execute-slash-command": 6,
+    "task": 14,
+    "write": 1
   }
 }

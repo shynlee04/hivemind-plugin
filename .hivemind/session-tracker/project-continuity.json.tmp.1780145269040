@@ -1,14 +1,14 @@
 {
   "version": "2.0",
   "projectRoot": "/Users/apple/hivemind-plugin-private",
-  "lastUpdated": "2026-05-30T12:47:49.033Z",
+  "lastUpdated": "2026-05-30T12:47:49.040Z",
   "sessions": {
     "ses_191aeeb07ffec923bFODl2W12L": {
       "dir": "ses_191b82231ffeTuXMYG4w2ljuqQ/",
       "mainFile": "ses_191aeeb07ffec923bFODl2W12L.json",
       "continuityIndex": "ses_191b82231ffeTuXMYG4w2ljuqQ/session-continuity.json",
       "created": "2026-05-30T12:29:50.305Z",
-      "updated": "2026-05-30T12:47:49.033Z",
+      "updated": "2026-05-30T12:47:48.897Z",
       "status": "active",
       "childCount": 0,
       "totalDelegationDepth": 0
@@ -978,7 +978,7 @@
       "mainFile": "ses_19199983effeo7i4Zt5BRDToc1.json",
       "continuityIndex": "ses_191a3e2f0ffeGZsSmG1M2akOCh/session-continuity.json",
       "created": "2026-05-30T12:44:20.796Z",
-      "updated": "2026-05-30T12:47:49.006Z",
+      "updated": "2026-05-30T12:47:49.040Z",
       "status": "active",
       "childCount": 0,
       "totalDelegationDepth": 0

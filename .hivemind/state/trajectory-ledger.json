@@ -1,33 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1779232610624,
-  "events": [
-    {
-      "timestamp": "2026-05-29T23:00:00.000Z",
-      "sessionID": "hm-doc-writer-session",
-      "eventType": "docs_updated",
-      "details": {
-        "writtenDocuments": [
-          ".planning/phases/24.5-workflow-files-architecture/24.5-SUMMARY.md",
-          ".planning/phases/24.6-build-hm-commands/24.6-SUMMARY.md",
-          ".planning/phases/24.7-primitives-asset-schema/24.7-SUMMARY.md",
-          ".planning/phases/24.8-primitives-install-extraction/24.8-SUMMARY.md"
-        ],
-        "updatedDocuments": [
-          ".planning/ROADMAP.md",
-          ".planning/STATE.md"
-        ],
-        "phaseClosures": {
-          "24.4": "CANCELLED",
-          "24.5": "COMPLETE",
-          "24.6": "COMPLETE",
-          "24.7": "COMPLETE",
-          "24.8": "COMPLETE"
-        },
-        "status": "COMPLETED"
-      }
-    }
-  ],
+  "updatedAt": 1780141482704,
   "trajectories": {
     "traj_thinking_001": {
       "id": "traj_thinking_001",
@@ -118,6 +91,123 @@
       ],
       "createdAt": 1779230083863,
       "updatedAt": 1779232610624
+    },
+    "traj-ses_18ae5c564ffe1zWaJUgh4VEvDb": {
+      "id": "traj-ses_18ae5c564ffe1zWaJUgh4VEvDb",
+      "rootSessionId": "ses_18ae5c564ffe1zWaJUgh4VEvDb",
+      "sessionId": "ses_18ae5c564ffe1zWaJUgh4VEvDb",
+      "parentTrajectoryId": "traj-ses_18aea7437ffeq9t8BNqNPsf6gV",
+      "status": "active",
+      "evidenceRefs": [
+        "session-tracker:delegation:delegate-task:ses_18ae5c564ffe1zWaJUgh4VEvDb",
+        "session-tracker:child-json:ses_18ae5c564ffe1zWaJUgh4VEvDb",
+        "agent-work-contract:awc-ses_18ae5c564ffe1zWaJUgh4VEvDb",
+        "session-tracker:idle:ses_18ae5c564ffe1zWaJUgh4VEvDb"
+      ],
+      "checkpoints": [],
+      "events": [
+        {
+          "eventId": "event-4524fd69-ff76-4a89-8311-68af32683b71",
+          "eventType": "delegation_dispatch",
+          "summary": "delegate-task delegation to gsd-planner:",
+          "evidenceRefs": [
+            "session-tracker:child-json:ses_18ae5c564ffe1zWaJUgh4VEvDb"
+          ],
+          "createdAt": 1780081113870
+        },
+        {
+          "eventId": "event-1aca1e2e-5c2c-43e7-86fe-06e00fac6a17",
+          "eventType": "delegation_dispatch",
+          "summary": "delegate-task delegation to gsd-planner:",
+          "evidenceRefs": [
+            "session-tracker:child-json:ses_18ae5c564ffe1zWaJUgh4VEvDb"
+          ],
+          "createdAt": 1780081228767
+        },
+        {
+          "eventId": "event-8082b6af-f12c-41d4-9337-b17f3f51e49b",
+          "eventType": "delegation_completed",
+          "summary": "Child session ses_18ae5c564ffe1zWaJUgh4VEvDb completed",
+          "evidenceRefs": [
+            "session-tracker:idle:ses_18ae5c564ffe1zWaJUgh4VEvDb"
+          ],
+          "createdAt": 1780081935132
+        }
+      ],
+      "createdAt": 1780081113868,
+      "updatedAt": 1780081935132
+    },
+    "traj-ses_1875de040ffe5zgJAc7Tst5FTW": {
+      "id": "traj-ses_1875de040ffe5zgJAc7Tst5FTW",
+      "rootSessionId": "ses_1875de040ffe5zgJAc7Tst5FTW",
+      "sessionId": "ses_1875de040ffe5zgJAc7Tst5FTW",
+      "parentTrajectoryId": "traj-ses_18760d9fbffeURS40G0U3HfDGz",
+      "status": "active",
+      "evidenceRefs": [
+        "session-tracker:delegation:delegate-task:ses_1875de040ffe5zgJAc7Tst5FTW",
+        "session-tracker:child-json:ses_1875de040ffe5zgJAc7Tst5FTW",
+        "agent-work-contract:awc-ses_1875de040ffe5zgJAc7Tst5FTW",
+        "session-tracker:idle:ses_1875de040ffe5zgJAc7Tst5FTW"
+      ],
+      "checkpoints": [],
+      "events": [
+        {
+          "eventId": "event-24a248ee-5893-4a3a-b51e-e59ad38bfc1a",
+          "eventType": "delegation_dispatch",
+          "summary": "delegate-task delegation to gsd-phase-researcher:",
+          "evidenceRefs": [
+            "session-tracker:child-json:ses_1875de040ffe5zgJAc7Tst5FTW"
+          ],
+          "createdAt": 1780140351552
+        },
+        {
+          "eventId": "event-d5a340e1-622c-4d71-981d-e38e77008c8b",
+          "eventType": "delegation_completed",
+          "summary": "Child session ses_1875de040ffe5zgJAc7Tst5FTW completed",
+          "evidenceRefs": [
+            "session-tracker:idle:ses_1875de040ffe5zgJAc7Tst5FTW"
+          ],
+          "createdAt": 1780141272767
+        }
+      ],
+      "createdAt": 1780140351551,
+      "updatedAt": 1780141272767
+    },
+    "traj-ses_187580277ffeMbwv5KTLvNYbXW": {
+      "id": "traj-ses_187580277ffeMbwv5KTLvNYbXW",
+      "rootSessionId": "ses_187580277ffeMbwv5KTLvNYbXW",
+      "sessionId": "ses_187580277ffeMbwv5KTLvNYbXW",
+      "parentTrajectoryId": "traj-ses_18760d9fbffeURS40G0U3HfDGz",
+      "status": "active",
+      "evidenceRefs": [
+        "session-tracker:delegation:delegate-task:ses_187580277ffeMbwv5KTLvNYbXW",
+        "session-tracker:child-json:ses_187580277ffeMbwv5KTLvNYbXW",
+        "agent-work-contract:awc-ses_187580277ffeMbwv5KTLvNYbXW",
+        "session-tracker:idle:ses_187580277ffeMbwv5KTLvNYbXW"
+      ],
+      "checkpoints": [],
+      "events": [
+        {
+          "eventId": "event-0c82ef07-9c0e-4a7b-a5a6-20dfc57f0dcd",
+          "eventType": "delegation_dispatch",
+          "summary": "delegate-task delegation to gsd-planner:",
+          "evidenceRefs": [
+            "session-tracker:child-json:ses_187580277ffeMbwv5KTLvNYbXW"
+          ],
+          "createdAt": 1780140740380
+        },
+        {
+          "eventId": "event-adf025af-ddc9-47cd-af6c-3ac6ba153f40",
+          "eventType": "delegation_completed",
+          "summary": "Child session ses_187580277ffeMbwv5KTLvNYbXW completed",
+          "evidenceRefs": [
+            "session-tracker:idle:ses_187580277ffeMbwv5KTLvNYbXW"
+          ],
+          "createdAt": 1780141482704
+        }
+      ],
+      "createdAt": 1780140740377,
+      "updatedAt": 1780141482704
     }
   }
 }

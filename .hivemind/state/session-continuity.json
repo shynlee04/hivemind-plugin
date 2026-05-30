@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1780078624286,
+  "updatedAt": 1780145279777,
   "sessions": {
     "ses-parent-prompt-fail": {
       "sessionID": "ses-parent-prompt-fail",
@@ -10,8 +10,31 @@
         "description": "Recovered parent session notification queue",
         "delegation": null,
         "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294800
+        "pendingNotifications": [
+          {
+            "sessionID": "child-prompt-fail",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Failed to send prompt to child session",
+            "resultPreview": "Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 0ms. Summary preview: Failed to send prompt to child session",
+            "outputLink": "session://child-prompt-fail",
+            "duration": 0,
+            "elapsedHuman": "0ms",
+            "metadata": {
+              "delegationId": "60eb533d-4a36-4257-be84-136327edcb4b",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Failed to send prompt to child session"
+            },
+            "createdAt": 1780145269704,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780145269704
       }
     },
     "ses-parent-notify-fail": {
@@ -22,8 +45,30 @@
         "description": "Recovered parent session notification queue",
         "delegation": null,
         "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294805
+        "pendingNotifications": [
+          {
+            "sessionID": "child-notify-fail",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "completed",
+            "resultPreview": "task completed successfully",
+            "briefSummary": "Delegated work finished with terminal state completed after 15.0s. Summary preview: task completed successfully",
+            "outputLink": "session://child-notify-fail",
+            "duration": 15000,
+            "elapsedHuman": "15.0s",
+            "metadata": {
+              "delegationId": "2036888f-5d16-45b9-a86f-b0c41e5976da",
+              "terminalState": "completed",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "task completed successfully"
+            },
+            "createdAt": 1780145290074,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780145290074
       }
     },
     "ses-parent-pending-notify": {
@@ -34,8 +79,30 @@
         "description": "Parent orchestrator session",
         "delegation": null,
         "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294807
+        "pendingNotifications": [
+          {
+            "sessionID": "child-pending-notify",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "completed",
+            "resultPreview": "notification-first completion delivered",
+            "briefSummary": "Delegated work finished with terminal state completed after 15.0s. Summary preview: notification-first completion delivered",
+            "outputLink": "session://child-pending-notify",
+            "duration": 15000,
+            "elapsedHuman": "15.0s",
+            "metadata": {
+              "delegationId": "9db8b11f-a936-4522-b513-6d5b218db89c",
+              "terminalState": "completed",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "notification-first completion delivered"
+            },
+            "createdAt": 1780145290272,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780145290272
       }
     },
     "ses_parent": {
@@ -46,8 +113,31 @@
         "description": "Recovered parent session notification queue",
         "delegation": null,
         "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294809
+        "pendingNotifications": [
+          {
+            "sessionID": "fake-ses-1",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Failed to send prompt to child session",
+            "resultPreview": "Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 2ms. Summary preview: Failed to send prompt to child session",
+            "outputLink": "session://fake-ses-1",
+            "duration": 2,
+            "elapsedHuman": "2ms",
+            "metadata": {
+              "delegationId": "cdba1108-111c-49f4-8d3e-7c715e62a6d6",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Failed to send prompt to child session"
+            },
+            "createdAt": 1780145278662,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780145278663
       }
     },
     "ses_parent2": {
@@ -58,8 +148,31 @@
         "description": "Recovered parent session notification queue",
         "delegation": null,
         "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294812
+        "pendingNotifications": [
+          {
+            "sessionID": "fake-ses-1",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Failed to send prompt to child session",
+            "resultPreview": "Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 1ms. Summary preview: Failed to send prompt to child session",
+            "outputLink": "session://fake-ses-1",
+            "duration": 1,
+            "elapsedHuman": "1ms",
+            "metadata": {
+              "delegationId": "d1e17fa2-9638-47c4-aa4d-8baededcde71",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Failed to send prompt to child session"
+            },
+            "createdAt": 1780145278821,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780145278821
       }
     },
     "ses_cleanup": {
@@ -70,8 +183,31 @@
         "description": "Recovered parent session notification queue",
         "delegation": null,
         "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294814
+        "pendingNotifications": [
+          {
+            "sessionID": "fake-ses-1",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Failed to send prompt to child session",
+            "resultPreview": "Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 0ms. Summary preview: Failed to send prompt to child session",
+            "outputLink": "session://fake-ses-1",
+            "duration": 0,
+            "elapsedHuman": "0ms",
+            "metadata": {
+              "delegationId": "996e4320-180b-4ace-9678-2db23637c563",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Failed to send prompt to child session"
+            },
+            "createdAt": 1780145278824,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780145278824
       }
     },
     "ses_recovery": {
@@ -82,8 +218,31 @@
         "description": "Recovered parent session notification queue",
         "delegation": null,
         "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294816
+        "pendingNotifications": [
+          {
+            "sessionID": "fake-ses-1",
+            "description": "Delegation: researcher",
+            "agent": "researcher",
+            "status": "failed",
+            "error": "Failed to send prompt to child session",
+            "resultPreview": "Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 1ms. Summary preview: Failed to send prompt to child session",
+            "outputLink": "session://fake-ses-1",
+            "duration": 1,
+            "elapsedHuman": "1ms",
+            "metadata": {
+              "delegationId": "904d647e-0ec3-44c9-8546-27371a8813ae",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Failed to send prompt to child session"
+            },
+            "createdAt": 1780145279173,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780145279173
       }
     },
     "ses_concurrent": {
@@ -94,8 +253,53 @@
         "description": "Recovered parent session notification queue",
         "delegation": null,
         "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294818
+        "pendingNotifications": [
+          {
+            "sessionID": "fake-ses-1",
+            "description": "Delegation: researcher",
+            "agent": "researcher",
+            "status": "failed",
+            "error": "Failed to send prompt to child session",
+            "resultPreview": "Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 2ms. Summary preview: Failed to send prompt to child session",
+            "outputLink": "session://fake-ses-1",
+            "duration": 2,
+            "elapsedHuman": "2ms",
+            "metadata": {
+              "delegationId": "d2822800-2b0b-4edf-83dd-f8b975c776fb",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Failed to send prompt to child session"
+            },
+            "createdAt": 1780145279417,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          },
+          {
+            "sessionID": "fake-ses-2",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Failed to send prompt to child session",
+            "resultPreview": "Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 1ms. Summary preview: Failed to send prompt to child session",
+            "outputLink": "session://fake-ses-2",
+            "duration": 1,
+            "elapsedHuman": "1ms",
+            "metadata": {
+              "delegationId": "7e8295bd-53d2-453e-bdc8-96b7b2302ac3",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Failed to send prompt to child session"
+            },
+            "createdAt": 1780145279422,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780145279422
       }
     },
     "ses-parent-monitor-fail": {
@@ -106,38 +310,37 @@
         "description": "Recovered parent session notification queue",
         "delegation": null,
         "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294820
-      }
-    },
-    "ses-parent-tool": {
-      "sessionID": "ses-parent-tool",
-      "promptParams": {},
-      "metadata": {
-        "status": "running",
-        "description": "Recovered parent session notification queue",
-        "delegation": null,
-        "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078294822
-      }
-    },
-    "live-session-1780078582607": {
-      "sessionID": "live-session-1780078582607",
-      "promptParams": {},
-      "metadata": {
-        "status": "running",
-        "description": "Recovered parent session notification queue",
-        "delegation": null,
-        "constraints": [],
-        "pendingNotifications": [],
-        "updatedAt": 1780078624286
+        "pendingNotifications": [
+          {
+            "sessionID": "child-prompt-fail-monitor",
+            "description": "Delegation: builder",
+            "agent": "builder",
+            "status": "failed",
+            "error": "Failed to send prompt to child session",
+            "resultPreview": "Failed to send prompt to child session",
+            "briefSummary": "Delegated work finished with terminal state error after 2ms. Summary preview: Failed to send prompt to child session",
+            "outputLink": "session://child-prompt-fail-monitor",
+            "duration": 2,
+            "elapsedHuman": "2ms",
+            "metadata": {
+              "delegationId": "ee97384c-cd8b-4b83-88b5-63a74d477227",
+              "terminalState": "error",
+              "recoveryGuarantee": "resumable",
+              "summaryPreview": "Failed to send prompt to child session"
+            },
+            "createdAt": 1780145279776,
+            "delivered": false,
+            "retryCount": 0,
+            "maxRetries": 3
+          }
+        ],
+        "updatedAt": 1780145279776
       }
     }
   },
   "governance": {
     "rules": [],
     "violations": [],
-    "updatedAt": 1780073075826
+    "updatedAt": 1780145269704
   }
 }

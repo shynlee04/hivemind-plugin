@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_18776f71affevPr2t7tA1e2z21",
+  "lastUpdated": "2026-05-30T10:59:33.273Z",
+  "children": {
+    "ses_18776f6d6ffeOXjD4OPcD4EQL2": {
+      "sessionID": "ses_18776f6d6ffeOXjD4OPcD4EQL2",
+      "parentSessionID": "ses_18776f71affevPr2t7tA1e2z21",
+      "rootMainSessionID": "ses_18776f71affevPr2t7tA1e2z21",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-planner",
+      "createdAt": "2026-05-30T10:58:27.412Z",
+      "updatedAt": "2026-05-30T10:59:33.273Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_18776f6d6ffeOXjD4OPcD4EQL2.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

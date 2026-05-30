@@ -6,11 +6,11 @@
     "agentName": "gsd-phase-researcher",
     "model": "unknown",
     "tool": "task",
-    "description": "Continue spec-phase Round 3+",
+    "description": "Write SPEC.md for P25.5",
     "subagentType": "gsd-phase-researcher"
   },
   "created": "2026-05-29T18:36:08.719Z",
-  "updated": "2026-05-29T18:39:57.003Z",
+  "updated": "2026-05-29T18:46:27.618Z",
   "status": "completed",
   "mainAgent": {
     "name": "gsd-phase-researcher",
@@ -133,6 +133,48 @@
       "turn": 17,
       "actor": "gsd-phase-researcher",
       "content": "**Round 2 Scoring Update:**\n\n```\nAfter round 2:\n  Goal Clarity:        0.92  (min 0.75) ✓\n  Boundary Clarity:    0.90  (min 0.70) ✓\n  Constraint Clarity:  0.85  (min 0.65) ✓\n  Acceptance Criteria: 0.75  (min 0.70) ✓\n  Ambiguity: 0.13 (gate: ≤ 0.20) ✓\n```\n\n---\n\n**Round 3 — Boundary Keeper**\n\nLocking the perimeter:\n\n1. **Existing tests** — There are 34 trajectory tests and 20 contract tests from Phase 25. Should this phase REWRITE those tests to match the new design, or ADD new tests alongside them and mark old ones as deprecated?\n\n2. **Hook wiring** — You mentioned trajectory is created by a hook on phase spawn. Is the `tool.execute.before` hook for contract enforcement part of THIS phase, or is wiring it into the plugin lifecycle deferred to Phase 25.1 (Task Tool Integration)?\n\n3. **What does \"done\" look like?** Is the deliverable: (a) redesigned types + store operations + lifecycle, (b) all of (a) plus working tools registered in plugin.ts, or (c) all of (b) plus tests passing + typecheck clean?",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "gsd-phase-researcher",
+      "content": "Continue the gsd-spec-phase for Phase 25.5. Round 3 answers provided:\n\n## Round 3 Answers\n\n**Q1: Existing tests** — REWRITE them. Phase 25 and sub-phases (25.1-25.3) are flawed. Old tests deprecated. New tests match redesigned model.\n\n**Q2: Hook wiring** — Contract enforcement via `tool.execute.before` is part of THIS phase (P25.5). Core to redesign, not deferred.\n\n**Q3: What does \"done\" look like?** — Option (c): redesigned types + store operations + lifecycle + working tools registered in plugin.ts + tests passing + typecheck clean. Full end-to-end.\n\n## Continue interview\n\nGate passed (ambiguity 0.13). Continue with Round 4 (Failure Analyst) and subsequent rounds. Score ambiguity after each round.\n\nAfter all rounds, write SPEC.md to `.planning/phases/25.5-trajectory-contract-redesign/25.5-SPEC.md` with:\n- Goal, Background, Requirements (each with Current/Target/Acceptance)\n- Boundaries (in/out scope), Constraints, Acceptance Criteria\n- Ambiguity Report, Interview Log\n\n## Commit\n`spec(phase-25.5): trajectory + contract redesign — requirements locked`\n",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 19,
+      "actor": "gsd-phase-researcher",
+      "content": "Continue spec-phase Round 4+ and write SPEC",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 20,
+      "actor": "gsd-phase-researcher",
+      "content": "**Round 3 Scoring Update:**\n\n```\nAfter round 3:\n  Goal Clarity:        0.95  (min 0.75) ✓\n  Boundary Clarity:    0.95  (min 0.70) ✓\n  Constraint Clarity:  0.90  (min 0.65) ✓\n  Acceptance Criteria: 0.85  (min 0.70) ✓\n  Ambiguity: 0.08 (gate: ≤ 0.20) ✓\n```\n\n---\n\n**Round 4 — Failure Analyst**\n\nFinding edge cases that could invalidate requirements:\n\n1. **Contract enforcement race condition** — If two tools execute simultaneously and one modifies `allowedSurfaces` while the other is mid-execution, what should happen? Is there a locking mechanism, or is this \"best effort\" enforcement?\n\n2. **Trajectory persistence failure** — If `.hivemind/state/trajectory-ledger.json` is corrupted or missing, should the system (a) fail loudly and block the phase, or (b) create a fresh ledger and continue?\n\n3. **Backward compatibility** — After this redesign, if someone runs `hivemind-agent-work-create` with the OLD schema (including `pressureScore`/`pressureTier`/`pressureApproved` fields), what happens? Should it (a) reject with error, or (b) silently ignore those fields?",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "gsd-phase-researcher",
+      "content": "Continue the gsd-spec-phase for Phase 25.5. Round 4 answers provided:\n\n## Round 4 Answers\n\n**Q1: Contract enforcement race condition** — Best effort. Contracts are per-delegation and don't change during execution. No locking needed.\n\n**Q2: Trajectory persistence failure** — Create fresh ledger and continue. Don't block the phase. Log warning.\n\n**Q3: Backward compatibility** — Silently ignore `pressureScore`/`pressureTier`/`pressureApproved` fields. Don't break existing callers.\n\n## Scoring\n\n```\nAfter round 4:\n  Goal Clarity:        0.95  (min 0.75) ✓\n  Boundary Clarity:    0.95  (min 0.70) ✓\n  Constraint Clarity:  0.90  (min 0.65) ✓\n  Acceptance Criteria: 0.90  (min 0.70) ✓\n  Ambiguity: 0.07 (gate: ≤ 0.20) ✓\n```\n\nGate passed decisively. Write SPEC.md NOW.\n\n## SPEC.md Requirements (from all rounds)\n\n1. **Phase trajectory creation**: Trajectory created when phase spawns (per-PHASE, not per-delegation)\n2. **Delegation trajectory linking**: Delegation records linked to phase trajectory via jump links\n3. **Contract enforcement**: tool.execute.before checks scope.allowedSurfaces — blocks violations\n4. **Contract evidence gating**: completeContract requires proof when requiredProof is non-empty\n5. **Trajectory CRUD tool**: Orchestrator can create/update/query/read/modify trajectory\n6. **Progressive disclosure**: traverseTrajectory supports depth parameter (summary/detailed/full)\n7. **Trajectory lifecycle states**: planning→executing→verifying→completed→closed (event-based + manual)\n8. **Pressure removal**: All pressure integration removed from trajectory/contracts\n9. **Cross-session persistence**: Trajectory readable/writable from any session\n10. **Jump link format**: Standardized string references between trajectory and delegation-persistence\n11. **Backward compatibility**: Old schema fields (pressureScore etc.) silently ignored\n12. **Test rewrite**: All existing trajectory/contract tests rewritten for new design\n\n## Write SPEC.md to\n`.planning/phases/25.5-trajectory-contract-redesign/25.5-SPEC.md`\n\nFollow the spec template: Goal, Background, Requirements (each with Current/Target/Acceptance), Boundaries (in/out scope), Constraints, Acceptance Criteria, Ambiguity Report, Interview Log.\n\n## Commit\n`spec(phase-25.5): trajectory + contract redesign — 12 requirements locked`\n",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 22,
+      "actor": "gsd-phase-researcher",
+      "content": "Write SPEC.md for P25.5",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 23,
+      "actor": "gsd-phase-researcher",
+      "content": "---\n\n```\nSPEC.md written — 12 requirements locked.\n\n  Phase 25.5: Trajectory + Contract Redesign\n  Ambiguity: 0.07 (gate: ≤ 0.20)\n\n  Requirements:\n    1. Phase trajectory creation (per-PHASE, not per-delegation)\n    2. Delegation trajectory linking (jump links)\n    3. Contract enforcement (tool.execute.before surface check)\n    4. Contract evidence gating (requiredProof enforcement)\n    5. Trajectory CRUD tool (phase-level operations)\n    6. Progressive disclosure (summary/detailed/full)\n    7. Trajectory lifecycle states (5 states)\n    8. Pressure removal (all pressure integration gone)\n    9. Cross-session persistence\n    10. Jump link format (delegation:{childSessionID})\n    11. Backward compatibility (old fields silently ignored)\n    12. Test rewrite (all 54 tests rewritten)\n\n  File: .planning/phases/25.5-trajectory-contract-redesign/25.5-SPEC.md\n  Commit: 423f51fd\n\nNext: /gsd-discuss-phase 25.5\n  discuss-phase will detect SPEC.md and focus on implementation decisions only.\n```",
       "tools": [],
       "role": "assistant"
     }
@@ -398,7 +440,47 @@
         "capturedFrom": "task_tool_result",
         "taskID": "ses_18afa4b7bffeGWvLpGnGPOlSRM"
       }
+    },
+    {
+      "timestamp": "2026-05-29T18:44:55.142Z",
+      "type": "assistant_message",
+      "content": "**Round 3 Scoring Update:**\n\n```\nAfter round 3:\n  Goal Clarity:        0.95  (min 0.75) ✓\n  Boundary Clarity:    0.95  (min 0.70) ✓\n  Constraint Clarity:  0.90  (min 0.65) ✓\n  Acceptance Criteria: 0.85  (min 0.70) ✓\n  Ambiguity: 0.08 (gate: ≤ 0.20) ✓\n```\n\n---\n\n**Round 4 — Failure Analyst**\n\nFinding edge cases that could invalidate requirements:\n\n1. **Contract enforcement race condition** — If two tools execute simultaneously and one modifies `allowedSurfaces` while the other is mid-execution, what should happen? Is there a locking mechanism, or is this \"best effort\" enforcement?\n\n2. **Trajectory persistence failure** — If `.hivemind/state/trajectory-ledger.json` is corrupted or missing, should the system (a) fail loudly and block the phase, or (b) create a fresh ledger and continue?\n\n3. **Backward compatibility** — After this redesign, if someone runs `hivemind-agent-work-create` with the OLD schema (including `pressureScore`/`pressureTier`/`pressureApproved` fields), what happens? Should it (a) reject with error, or (b) silently ignore those fields?",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_18afa4b7bffeGWvLpGnGPOlSRM"
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:46:06.237Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_6be974149a554cc3a3a96966",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:46:17.484Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_e6b585b98de841fd8a801152",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:46:27.565Z",
+      "type": "assistant_message",
+      "content": "---\n\n```\nSPEC.md written — 12 requirements locked.\n\n  Phase 25.5: Trajectory + Contract Redesign\n  Ambiguity: 0.07 (gate: ≤ 0.20)\n\n  Requirements:\n    1. Phase trajectory creation (per-PHASE, not per-delegation)\n    2. Delegation trajectory linking (jump links)\n    3. Contract enforcement (tool.execute.before surface check)\n    4. Contract evidence gating (requiredProof enforcement)\n    5. Trajectory CRUD tool (phase-level operations)\n    6. Progressive disclosure (summary/detailed/full)\n    7. Trajectory lifecycle states (5 states)\n    8. Pressure removal (all pressure integration gone)\n    9. Cross-session persistence\n    10. Jump link format (delegation:{childSessionID})\n    11. Backward compatibility (old fields silently ignored)\n    12. Test rewrite (all 54 tests rewritten)\n\n  File: .planning/phases/25.5-trajectory-contract-redesign/25.5-SPEC.md\n  Commit: 423f51fd\n\nNext: /gsd-discuss-phase 25.5\n  discuss-phase will detect SPEC.md and focus on implementation decisions only.\n```",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_18afa4b7bffeGWvLpGnGPOlSRM"
+      }
     }
   ],
-  "lastMessage": "**Round 2 Scoring Update:**\n\n```\nAfter round 2:\n  Goal Clarity:        0.92  (min 0.75) ✓\n  Boundary Clarity:    0.90  (min 0.70) ✓\n  Constraint Clarity:  0.85  (min 0.65) ✓\n  Acceptance Criteria: 0.75  (min 0.70) ✓\n  Ambiguity: 0.13 (gate: ≤ 0.20) ✓\n```\n\n---\n\n**Round 3 — Boundary Keeper**\n\nLocking the perimeter:\n\n1. **Existing tests** — There are 34 trajectory tests and 20 contract tests from Phase 25. Should this phase REWRITE those tests to match the new design, or ADD new tests alongside them and mark old ones as deprecated?\n\n2. **Hook wiring** — You mentioned trajectory is created by a hook on phase spawn. Is the `tool.execute.before` hook for contract enforcement part of THIS phase, or is wiring it into the plugin lifecycle deferred to Phase 25.1 (Task Tool Integration)?\n\n3. **What does \"done\" look like?** Is the deliverable: (a) redesigned types + store operations + lifecycle, (b) all of (a) plus working tools registered in plugin.ts, or (c) all of (b) plus tests passing + typecheck clean?"
+  "lastMessage": "---\n\n```\nSPEC.md written — 12 requirements locked.\n\n  Phase 25.5: Trajectory + Contract Redesign\n  Ambiguity: 0.07 (gate: ≤ 0.20)\n\n  Requirements:\n    1. Phase trajectory creation (per-PHASE, not per-delegation)\n    2. Delegation trajectory linking (jump links)\n    3. Contract enforcement (tool.execute.before surface check)\n    4. Contract evidence gating (requiredProof enforcement)\n    5. Trajectory CRUD tool (phase-level operations)\n    6. Progressive disclosure (summary/detailed/full)\n    7. Trajectory lifecycle states (5 states)\n    8. Pressure removal (all pressure integration gone)\n    9. Cross-session persistence\n    10. Jump link format (delegation:{childSessionID})\n    11. Backward compatibility (old fields silently ignored)\n    12. Test rewrite (all 54 tests rewritten)\n\n  File: .planning/phases/25.5-trajectory-contract-redesign/25.5-SPEC.md\n  Commit: 423f51fd\n\nNext: /gsd-discuss-phase 25.5\n  discuss-phase will detect SPEC.md and focus on implementation decisions only.\n```"
 }

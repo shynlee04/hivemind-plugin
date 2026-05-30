@@ -1,0 +1,622 @@
+{
+  "sessionID": "ses_18ae9cd0affeS5hYxO3CxoKbfN",
+  "parentSessionID": "ses_18aea7437ffeq9t8BNqNPsf6gV",
+  "delegationDepth": 2,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "delegate-task",
+    "description": "",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-29T18:54:09.657Z",
+  "updated": "2026-05-29T18:58:12.784Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "<objective>\nResearch how to implement Phase 25.5: trajectory-contract-redesign\nAnswer: \"What do I need to know to PLAN this phase well?\"\n</objective>\n\n<required_reading>\nRead all files in <files_to_read> before any other actions.\n</required_reading>\n\n<files_to_read>\n- .planning/phases/25.5-trajectory-contract-redesign/25.5-CONTEXT.md (USER DECISIONS from /gsd-discuss-phase)\n- .planning/phases/25.5-trajectory-contract-redesign/25.5-SPEC.md (Locked requirements - 12 REQs)\n- .planning/REQUIREMENTS.md (Project requirements)\n- .planning/STATE.md (Project decisions and history)\n- .planning/codebase/ARCHITECTURE.md (System architecture)\n</files_to_read>\n\n<additional_context>\n**Phase description:** Redesign trajectory as a per-PHASE orchestrator mindmap (not per-delegation) and redesign agent-work-contracts as active governance tools with runtime enforcement via `tool.execute.before` hook (not passive records). Remove all pressure integration from both modules.\n\n**Phase requirement IDs (MUST address):** REQ-TRAJ-01 through REQ-TRAJ-07, REQ-CONT-01 through REQ-CONT-05 (12 total from SPEC.md)\n\n**Key decisions already locked (from CONTEXT.md):**\n- D-01 to D-05: Trajectory is PER-PHASE, phase-level ID format `traj-phase-{N}`, delegation linking via parentTrajectoryId\n- D-06 to D-08: Contract enforcement via tool.execute.before hook, hard block on allowedSurfaces violations\n- D-09 to D-13: Complete pressure removal from trajectory/contracts\n- D-14: CQRS pragmatism - hooks writing to trajectory/contracts is acceptable\n- D-15 to D-19: Orchestrator-driven trajectory creation (explicit tool call, not automatic)\n- D-20 to D-22: Jump links to delegation-persistence (delegation:{childSessionID} format)\n- D-23 to D-26: Hook wiring - hard block, specific error format\n- D-27 to D-30: Progressive disclosure - all 3 depth levels required now\n- D-31 to D-35: Lifecycle state transitions (both automatic and manual)\n- D-36 to D-39: Phase spawn detection - orchestrator explicit call\n- D-40 to D-42: System prompt injection via experimental.chat.system.transform\n- D-43 to D-44: Backward compatibility - old fields silently ignored\n\n**Current codebase targets:**\n- `src/task-management/trajectory/` — 4 files (types, store-operations, ledger, index) — REDESIGN\n- `src/features/agent-work-contracts/` — 6 files (types, operations, lifecycle, bounds, store, index) — REDESIGN\n- `src/tools/hivemind/hivemind-trajectory.ts` — UPDATE for phase-level operations\n- `src/tools/hivemind/hivemind-agent-work.ts` — UPDATE for pressure removal\n- `src/hooks/transforms/tool-before-guard.ts` — ADD contract enforcement\n- `src/schema-kernel/agent-work-contract.schema.ts` — UPDATE for pressure field removal\n- `src/schema-kernel/trajectory.schema.ts` — UPDATE for 5 lifecycle states\n\n**Project instructions:** Read ./AGENTS.md if exists — follow project-specific guidelines\n**Project skills:** Check .opencode/skills/ directory — read SKILL.md files, research should account for project skill patterns\n\n**TDD Mode:** ENABLED — research should identify test patterns and testing strategies for the 54 test rewrites\n</additional_context>\n\n<output>\nWrite to: .planning/phases/25.5-trajectory-contract-redesign/25.5-RESEARCH.md\n</output>\n\nYou are the subagent gsd-phase-researcher. You must fulfill this prompt within boundaries. Your role is to research the technical domain and produce a comprehensive RESEARCH.md that the planner will consume. Do not implement — only research and document findings.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll start by reading all required files to understand the phase context, then systematically research the technical domain.\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Now let me read the current source files that are redesign targets, plus the OpenCode SDK hook types and config.\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Now let me read the schemas, hook infrastructure, tools, and check the OpenCode SDK for hook types.\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Now let me check the OpenCode SDK hook types, existing tests, and config:\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Let me check the OpenCode SDK hook types and the existing test counts:\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Let me get the SDK hook type details and check the plugin.ts registration pattern:\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Let me check the knowledge graph and the deep architecture research:\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Let me check how system prompt injection currently works in plugin.ts and the delegation-persistence for jump link context:\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Let me check the system.transform hook implementation pattern:\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Now I have comprehensive understanding of the codebase. Let me write the RESEARCH.md:\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Now I have all the context needed. Let me write the comprehensive RESEARCH.md:\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Now let me commit the research document:\n\n",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** 25.5 - trajectory-contract-redesign\n**Confidence:** HIGH\n\n### Key Findings\n- **No new packages needed.** All redesign uses existing project dependencies (zod, vitest, @opencode-ai/plugin SDK).\n- **Hook infrastructure exists.** `tool.execute.before` chain in `tool-before-guard.ts` and `experimental.chat.system.transform` in `core-hooks.ts` are proven patterns — contract enforcement and system prompt injection wire into existing chains.\n- **Agent name resolution is the critical gap.** The `tool.execute.before` hook receives `sessionID` but not agent name. Resolution requires delegation state lookup (`getDelegationMeta(sessionID)`). Sessions without delegation records skip enforcement gracefully (D-26).\n- **54 tests need 1:1 rewrite.** 34 trajectory tests (4 files) + 20 contract tests (2 files). Strategy: rewrite for new API first, flag new scenarios as follow-up.\n- **Pressure removal is surgical.** Remove `detectRuntimePressure` import + calls from `operations.ts`, keep pressure fields in Zod schema as `.optional()` for backward compat (D-43/D-44), strip in operation layer.\n\n### File Created\n`.planning/phases/25.5-trajectory-contract-redesign/25.5-RESEARCH.md`\n\n### Confidence Assessment\n| Area | Level | Reason |\n|------|-------|--------|\n| Standard Stack | HIGH | No new packages — all existing project dependencies verified in codebase |\n| Architecture | HIGH | All patterns derived from direct source code analysis of 16 files + SDK types |\n| Pitfalls | HIGH | 6 pitfalls identified from code analysis, not training data |\n\n### Open Questions\n1. **Agent name resolution robustness** — sessions without delegation records skip enforcement\n2. **Trajectory event type strings** for automatic transitions — need constant definitions\n3. **Contract enforcement scope** for non-file tools (bash) — recommend file-modifying tools only\n\n### Ready for Planning\nResearch complete. Planner can now create PLAN.md files.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-29T18:54:09.717Z",
+      "type": "tool_call",
+      "content": "Tool: delegate-task — delegation initiated",
+      "metadata": {
+        "tool": "delegate-task",
+        "callID": "call_317099b408374c55867f054c",
+        "phase": "dispatch",
+        "description": "Task delegation initiated",
+        "subagentType": "gsd-phase-researcher"
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:18.215Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_6141952b83ca42eaa1417d0b",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/25.5-trajectory-contract-redesign/25.5-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:18.490Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_14a8599c3561420fa72784cd",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/25.5-trajectory-contract-redesign/25.5-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:18.671Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_8079f2eaef9f4cd4b9c15377",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/REQUIREMENTS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:18.997Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_69c1d943b733477896e98411",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:19.092Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_8ebaf1855cbe4e0aa524b0a1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/codebase/ARCHITECTURE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:23.782Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_4b583aa50f73437aa67b66f1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:24.016Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_b41e0e6ca1e94c62a02abab8",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/store-operations.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:24.226Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_541f709e1f42478f87123c78",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/ledger.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:24.408Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_d62123ec8b2f42f997a7e4d0",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:24.646Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_23738fff97324655862c7221",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:24.861Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_79220ad12f2a4d76856cba7c",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/operations.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:25.094Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_0de7ce6403d645729f16b927",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/lifecycle.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:25.340Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_1aa2e78550a443508707a2de",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/bounds.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:28.821Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_55e13886067f4aadb8d4abc9",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/trajectory.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:29.008Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_22f077c58b9e4ee19c071a6c",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/agent-work-contract.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:29.223Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_98cec27e45f04ef6bc928e2b",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/transforms/tool-before-guard.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:29.457Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_68d32c93fabd42bcada77e2d",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-trajectory.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:54:29.719Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_c840cffdf3864eea8e366e7f",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-agent-work.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:04.736Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_a545f3c542f84c8c9ff12220",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:04.956Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_cfc687d1cdd544c98d060d84",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/store.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:05.160Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_cea01d1d4db244a084899346",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/config.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:05.636Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_6b2e42697ae84f20b27196e7",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:09.072Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_27537aa76fc04573baeffd68",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:09.526Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_def6bd27c30b4d349c73c885",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:10.093Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_e1f378f0bff542b0b12a16ce",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:13.316Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_e0e9bd5e5aef40b0a8e1620d",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/node_modules/@opencode-ai/plugin/dist/index.d.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:13.761Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_962fbc03aff94cff88dfe162",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:14.091Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_3723dceb663941169aef0fc7",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:17.434Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_197090cfed5140c7926a5085",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:17.882Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_3b4688050fed4f3fb3d33c0e",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/research/deep-architecture-research-2026-05-29.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:18.263Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_59a5ddeff0514459951f7400",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/guards/tool-guard-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:21.959Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_f5ef721ee5324b679f7eb976",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:22.315Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_9adc10193f1c497c8e364d8b",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/delegation-persistence.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:55:22.693Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_0a12e46148f641348840b615",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:56:29.932Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_d915cc72629b47bda9f9cc82",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/core-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:56:30.284Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_58f4bf758f4940cb909bb574",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/guards/governance-block.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:56:37.936Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_295a8fb275a44f8893aafb6f",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/core-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:57:47.107Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_9bffe9593fdf46f5a2893b4d",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-29T18:58:06.981Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_20f11f9f98d645cda94bebe3",
+        "input": {},
+        "output": {}
+      }
+    }
+  ],
+  "lastMessage": "## RESEARCH COMPLETE\n\n**Phase:** 25.5 - trajectory-contract-redesign\n**Confidence:** HIGH\n\n### Key Findings\n- **No new packages needed.** All redesign uses existing project dependencies (zod, vitest, @opencode-ai/plugin SDK).\n- **Hook infrastructure exists.** `tool.execute.before` chain in `tool-before-guard.ts` and `experimental.chat.system.transform` in `core-hooks.ts` are proven patterns — contract enforcement and system prompt injection wire into existing chains.\n- **Agent name resolution is the critical gap.** The `tool.execute.before` hook receives `sessionID` but not agent name. Resolution requires delegation state lookup (`getDelegationMeta(sessionID)`). Sessions without delegation records skip enforcement gracefully (D-26).\n- **54 tests need 1:1 rewrite.** 34 trajectory tests (4 files) + 20 contract tests (2 files). Strategy: rewrite for new API first, flag new scenarios as follow-up.\n- **Pressure removal is surgical.** Remove `detectRuntimePressure` import + calls from `operations.ts`, keep pressure fields in Zod schema as `.optional()` for backward compat (D-43/D-44), strip in operation layer.\n\n### File Created\n`.planning/phases/25.5-trajectory-contract-redesign/25.5-RESEARCH.md`\n\n### Confidence Assessment\n| Area | Level | Reason |\n|------|-------|--------|\n| Standard Stack | HIGH | No new packages — all existing project dependencies verified in codebase |\n| Architecture | HIGH | All patterns derived from direct source code analysis of 16 files + SDK types |\n| Pitfalls | HIGH | 6 pitfalls identified from code analysis, not training data |\n\n### Open Questions\n1. **Agent name resolution robustness** — sessions without delegation records skip enforcement\n2. **Trajectory event type strings** for automatic transitions — need constant definitions\n3. **Contract enforcement scope** for non-file tools (bash) — recommend file-modifying tools only\n\n### Ready for Planning\nResearch complete. Planner can now create PLAN.md files."
+}
