@@ -4,6 +4,7 @@ import {
   attachTrajectoryEvidence,
   checkpointTrajectory,
   closeTrajectory,
+  createPhaseTrajectory,
   eventTrajectory,
   inspectTrajectoryLedger,
   traverseTrajectory,
@@ -31,7 +32,7 @@ export function createHivemindTrajectoryTool(projectRoot: string): ReturnType<ty
   return tool({
     description: "Inspect and update the Hivemind trajectory ledger without mutating continuity, delegation, journal, or document evidence authorities.",
     args: {
-      action: s.string().describe("Action: inspect, traverse, attach, checkpoint, event, or close"),
+      action: s.string().describe("Action: inspect, traverse, attach, checkpoint, event, close, or create"),
       trajectoryId: s.string().optional().describe("Trajectory ID to inspect, traverse, attach, checkpoint, event, or close"),
       rootSessionId: s.string().optional().describe("Root session ID for traversal or trajectory creation"),
       sessionId: s.string().optional().describe("Concrete session ID represented by the trajectory"),
@@ -42,6 +43,9 @@ export function createHivemindTrajectoryTool(projectRoot: string): ReturnType<ty
       summary: s.string().optional().describe("Bounded human-readable summary"),
       evidenceRef: s.string().optional().describe("Single evidence reference"),
       evidenceRefs: s.array(s.string()).optional().describe("Evidence references to journal, delegation, continuity, or doc artifacts"),
+      phaseNumber: s.string().optional().describe("Phase number for create action (e.g., '25.5')"),
+      phaseName: s.string().optional().describe("Optional phase name for create action"),
+      depth: s.string().optional().describe("Progressive disclosure depth: summary, detailed, or full"),
     },
     async execute(rawArgs: TrajectoryToolInput, _context: ToolContext): Promise<string> {
       try {
@@ -65,10 +69,23 @@ export function createHivemindTrajectoryTool(projectRoot: string): ReturnType<ty
  */
 export function executeTrajectoryToolAction(projectRoot: string, args: TrajectoryToolInput): unknown {
   switch (args.action) {
+    case "create":
+      return createPhaseTrajectory({
+        projectRoot,
+        phaseNumber: args.phaseNumber!,
+        rootSessionId: args.rootSessionId!,
+        phaseName: args.phaseName,
+      })
     case "inspect":
       return inspectTrajectoryLedger({ projectRoot, trajectoryId: args.trajectoryId })
     case "traverse":
-      return traverseTrajectory({ projectRoot, rootSessionId: args.rootSessionId, sessionId: args.sessionId, trajectoryId: args.trajectoryId })
+      return traverseTrajectory({
+        projectRoot,
+        rootSessionId: args.rootSessionId,
+        sessionId: args.sessionId,
+        trajectoryId: args.trajectoryId,
+        depth: args.depth,
+      })
     case "attach":
       return attachTrajectoryEvidence({
         projectRoot,

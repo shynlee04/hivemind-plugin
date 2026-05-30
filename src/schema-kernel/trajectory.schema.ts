@@ -3,7 +3,7 @@ import { z } from "zod"
 /**
  * Zod schema for supported `hivemind-trajectory` actions.
  */
-export const TrajectoryActionSchema = z.enum(["inspect", "traverse", "attach", "checkpoint", "event", "close"])
+export const TrajectoryActionSchema = z.enum(["inspect", "traverse", "attach", "checkpoint", "event", "close", "create"])
 
 /**
  * Zod schema for trajectory tool input.
@@ -20,6 +20,11 @@ export const TrajectoryToolInputSchema = z.object({
   summary: z.string().min(1).optional(),
   evidenceRef: z.string().min(1).optional(),
   evidenceRefs: z.array(z.string().min(1)).optional(),
+  // Phase-level trajectory fields
+  phaseNumber: z.union([z.number(), z.string()]).optional(),
+  phaseName: z.string().optional(),
+  // Progressive disclosure depth
+  depth: z.enum(["summary", "detailed", "full"]).optional(),
 })
 
 /**
@@ -67,6 +72,9 @@ export function parseTrajectoryToolInput(rawInput: unknown): TrajectoryToolInput
   const parsed = TrajectoryToolInputSchema.parse(rawInput)
   if (["attach", "checkpoint", "event", "close"].includes(parsed.action) && !parsed.trajectoryId) {
     throw new Error("trajectoryId is required")
+  }
+  if (parsed.action === "create" && !parsed.phaseNumber) {
+    throw new Error("phaseNumber is required for create")
   }
   if (parsed.action === "checkpoint" && !parsed.summary) {
     throw new Error("summary is required for checkpoint")
