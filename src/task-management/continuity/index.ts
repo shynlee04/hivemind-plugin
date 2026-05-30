@@ -27,7 +27,8 @@ export function getCanonicalStateDir(projectRoot?: string): string {
 
 export function getLegacyStateDir(projectRoot?: string): string {
   const root = projectRoot || process.cwd()
-  return resolve(root, ".opencode", "state", "hivemind")
+  const LEGACY_STATE_DIR = resolve(root, ".opencode", "state", "hivemind")
+  return LEGACY_STATE_DIR
 }
 
 function getEnvPath(name: string): string | undefined {
@@ -455,7 +456,7 @@ export function getContinuityStoragePath(projectRoot?: string): string {
 }
 
 export function getGovernancePersistenceState(projectRoot?: string): GovernancePersistenceState {
-  return cloneGovernanceState(ensureStoreLoaded(projectRoot).governance ?? emptyStore(projectRoot).governance!)
+  return cloneGovernanceState(ensureStoreLoaded(projectRoot).governance ?? emptyStore().governance!)
 }
 
 export function recordGovernancePersistenceState(state: GovernancePersistenceState, projectRoot?: string): GovernancePersistenceState {

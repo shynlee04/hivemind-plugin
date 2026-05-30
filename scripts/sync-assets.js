@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, rmSync, cpSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // ── Mode detection ──────────────────────────────────────────────────────────
 const installMode = process.argv.slice(2).includes("--mode=install");
@@ -7,7 +8,7 @@ const logPrefix = installMode ? "[postinstall]" : "[Harness Build]";
 
 // ── Dual-root resolution ──────────────────────────────────────────────────
 const stage = {
-  sourceRoot: process.cwd(),
+  sourceRoot: dirname(dirname(fileURLToPath(import.meta.url))),
   consumerRoot: installMode
     ? (process.env.INIT_CWD ?? process.cwd())
     : process.cwd(),

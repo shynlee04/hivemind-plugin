@@ -74,15 +74,52 @@ export function persistDelegations(delegations: Delegation[]): void {
     console.error(`[Harness] persistDelegations: failed to read existing delegations, overwriting: ${error}`)
   }
 
-  // Merge: incoming overrides/updates existing by id, preserving others
-  const mergedMap = new Map<string, Delegation>()
-  for (const d of existing) {
-    mergedMap.set(d.id, d)
-  }
+  // Merge: incoming overrides/updates existing by id, preserving others.
+  // We identify the caller's subsystem to prevent bringing back pruned terminal delegations.
+  const incomingMap = new Map(delegations.map(d => [d.id, d]))
+  const mergedList: Delegation[] = []
+
+  const isV2Caller = delegations.some(d => d.v2 || d.id.startsWith("dt-"))
+  const isV1Caller = delegations.some(d => !d.v2 && !d.id.startsWith("dt-"))
+  const isEmptyCaller = delegations.length === 0
+
   for (const d of delegations) {
-    mergedMap.set(d.id, d)
+    mergedList.push(d)
   }
-  const mergedList = Array.from(mergedMap.values())
+
+  for (const d of existing) {
+    if (incomingMap.has(d.id)) {
+      continue
+    }
+
+    const isV2 = d.v2 || d.id.startsWith("dt-")
+    const isTerminal = d.status === "completed" || d.status === "error" || d.status === "timeout"
+
+    if (isTerminal) {
+      if (isV2Caller && isV2) {
+        // v2 coordinator pruned this v2 terminal delegation, do not merge back
+        continue
+      }
+      if (isV1Caller && !isV2) {
+        // v1 runtime pruned this v1 terminal delegation, do not merge back
+        continue
+      }
+      if (isEmptyCaller) {
+        // If incoming is empty, check if it's a single-subsystem environment (e.g. tests)
+        const diskHasV2 = existing.some(x => x.v2 || x.id.startsWith("dt-"))
+        const diskHasV1 = existing.some(x => !x.v2 && !x.id.startsWith("dt-"))
+
+        if (diskHasV1 && !diskHasV2 && !isV2) {
+          continue
+        }
+        if (diskHasV2 && !diskHasV1 && isV2) {
+          continue
+        }
+      }
+    }
+
+    mergedList.push(d)
+  }
 
   // Atomic write: write to temp file first, then rename to prevent
   // corrupt reads if the process crashes mid-write. Use a unique temp file
