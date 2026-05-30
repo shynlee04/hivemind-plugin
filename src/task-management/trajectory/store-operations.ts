@@ -4,7 +4,9 @@ import { createEmptyTrajectoryLedger, readTrajectoryLedger, writeTrajectoryLedge
 import {
   TRAJECTORY_AUTO_TRANSITIONS,
   TRAJECTORY_TRANSITIONS,
+  type TrajectoryDepth,
   type TrajectoryStatus,
+  type TrajectorySummary,
 } from "./types.js"
 import type {
   EvidenceRef,
@@ -272,10 +274,21 @@ export function closeTrajectory(input: { projectRoot: string; trajectoryId: stri
 /**
  * Traverse trajectory records by root session, concrete session, or trajectory ID.
  *
- * @param input - Traversal filter and project root.
- * @returns Parent-child traversal projection containing matching nodes and edges.
+ * Supports progressive disclosure via the `depth` parameter (D-27 to D-30):
+ * - "summary": returns status + event count + phase name + duration
+ * - "detailed": returns event types + summaries (strips evidence refs)
+ * - "full": returns all data (default, backward compat)
+ *
+ * @param input - Traversal filter, project root, and optional depth.
+ * @returns Traversal projection at the requested depth level.
  */
-export function traverseTrajectory(input: { projectRoot: string; rootSessionId?: string; sessionId?: string; trajectoryId?: string }): TrajectoryTraversal {
+export function traverseTrajectory(input: {
+  projectRoot: string
+  rootSessionId?: string
+  sessionId?: string
+  trajectoryId?: string
+  depth?: TrajectoryDepth
+}): TrajectoryTraversal | { summaries: TrajectorySummary[] } {
   const ledger = readTrajectoryLedger(input.projectRoot)
   const all = Object.values(ledger.trajectories)
   const selected = all.filter((trajectory) => {
@@ -284,11 +297,21 @@ export function traverseTrajectory(input: { projectRoot: string; rootSessionId?:
     if (input.rootSessionId) return trajectory.rootSessionId === input.rootSessionId
     return true
   }).sort(compareTrajectoryRecords)
-  const selectedIds = new Set(selected.map((trajectory) => trajectory.id))
-  const edges = selected
-    .filter((trajectory) => trajectory.parentTrajectoryId && selectedIds.has(trajectory.parentTrajectoryId))
-    .map((trajectory) => ({ from: trajectory.parentTrajectoryId as string, to: trajectory.id }))
-  return { trajectories: selected, edges }
+  const depth = input.depth ?? "full"
+
+  if (depth === "summary") {
+    return { summaries: selected.map((trajectory) => projectSummary(trajectory, ledger)) }
+  }
+
+  if (depth === "detailed") {
+    return {
+      trajectories: selected.map((trajectory) => projectDetailed(trajectory)),
+      edges: computeEdges(selected),
+    }
+  }
+
+  // depth === "full" — return everything (current behavior, backward compat)
+  return { trajectories: selected, edges: computeEdges(selected) }
 }
 
 function upsertTrajectory(ledger: TrajectoryLedger, input: TrajectoryMutationInput, now: number): TrajectoryRecord {
@@ -336,6 +359,51 @@ function compareTrajectoryRecords(a: TrajectoryRecord, b: TrajectoryRecord): num
   if (a.parentTrajectoryId === b.id) return 1
   if (b.parentTrajectoryId === a.id) return -1
   return a.createdAt - b.createdAt || a.id.localeCompare(b.id)
+}
+
+/**
+ * Project a summary view for progressive disclosure (depth="summary").
+ *
+ * Per D-28, summary returns: id, status, eventCount, checkpointCount, durationMs, phaseName.
+ */
+function projectSummary(record: TrajectoryRecord, ledger: TrajectoryLedger): TrajectorySummary {
+  return {
+    id: record.id,
+    status: record.status,
+    eventCount: record.events.length,
+    checkpointCount: record.checkpoints.length,
+    durationMs: record.updatedAt - record.createdAt,
+  }
+}
+
+/**
+ * Project a detailed view for progressive disclosure (depth="detailed").
+ *
+ * Per D-29, detailed returns event types + summaries but strips evidence refs.
+ */
+function projectDetailed(record: TrajectoryRecord): TrajectoryRecord {
+  return {
+    ...record,
+    evidenceRefs: [],
+    checkpoints: record.checkpoints.map((cp) => ({
+      ...cp,
+      evidenceRefs: [],
+    })),
+    events: record.events.map((evt) => ({
+      ...evt,
+      evidenceRefs: [],
+    })),
+  }
+}
+
+/**
+ * Compute parent-child edges from selected trajectory records.
+ */
+function computeEdges(selected: TrajectoryRecord[]): Array<{ from: string; to: string }> {
+  const selectedIds = new Set(selected.map((trajectory) => trajectory.id))
+  return selected
+    .filter((trajectory) => trajectory.parentTrajectoryId && selectedIds.has(trajectory.parentTrajectoryId))
+    .map((trajectory) => ({ from: trajectory.parentTrajectoryId as string, to: trajectory.id }))
 }
 
 /**

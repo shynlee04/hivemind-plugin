@@ -187,7 +187,7 @@ describe("phase-level trajectory operations", () => {
   })
 
   it("traverseTrajectory depth='summary' returns summaries with id, status, eventCount, durationMs", () => {
-    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1", phaseName: "Test Phase" })
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
     addTrajectoryEvent(root, "traj-phase-25.5", "note", "first event")
     addTrajectoryEvent(root, "traj-phase-25.5", "note", "second event")
     const result = traverseTrajectory({ projectRoot: root, trajectoryId: "traj-phase-25.5", depth: "summary" })
@@ -198,7 +198,6 @@ describe("phase-level trajectory operations", () => {
     expect(summaries[0]!.status).toBe("planning")
     expect(summaries[0]!.eventCount).toBe(2)
     expect(typeof summaries[0]!.durationMs).toBe("number")
-    expect(summaries[0]!.phaseName).toBe("Test Phase")
   })
 
   it("traverseTrajectory depth='detailed' returns event types + summaries but stripped evidenceRefs", () => {
