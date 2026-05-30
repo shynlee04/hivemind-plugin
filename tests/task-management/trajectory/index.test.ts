@@ -22,5 +22,8 @@ describe("trajectory index re-exports", () => {
     expect(typeof trajectoryIndex.closeTrajectory).toBe("function")
     expect(typeof trajectoryIndex.traverseTrajectory).toBe("function")
     expect(typeof trajectoryIndex.createTrajectoryLedger).toBe("function")
+    expect(typeof trajectoryIndex.createPhaseTrajectory).toBe("function")
+    expect(typeof trajectoryIndex.transitionTrajectory).toBe("function")
+    expect(typeof trajectoryIndex.addTrajectoryEvent).toBe("function")
   })
 })

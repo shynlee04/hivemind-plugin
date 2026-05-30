@@ -114,4 +114,45 @@ describe("trajectory ledger", () => {
     expect(typeof ledger.updatedAt).toBe("number")
     expect(ledger.updatedAt).toBeGreaterThan(0)
   })
+
+  it("persists phase-level trajectory with traj-phase-{N} ID format", () => {
+    const ledger = createEmptyTrajectoryLedger()
+    ledger.trajectories["traj-phase-25.5"] = {
+      id: "traj-phase-25.5",
+      rootSessionId: "ses-root",
+      sessionId: null,
+      parentTrajectoryId: null,
+      status: "planning",
+      evidenceRefs: [],
+      checkpoints: [],
+      events: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+    writeTrajectoryLedger(root, ledger)
+    const readBack = readTrajectoryLedger(root)
+    expect(readBack.trajectories["traj-phase-25.5"]).toBeDefined()
+    expect(readBack.trajectories["traj-phase-25.5"]!.status).toBe("planning")
+  })
+
+  it("handles jump links in delegation:{childSessionID} format", () => {
+    const ledger = createEmptyTrajectoryLedger()
+    ledger.trajectories["traj-phase-25.5"] = {
+      id: "traj-phase-25.5",
+      rootSessionId: "ses-root",
+      sessionId: null,
+      parentTrajectoryId: null,
+      status: "planning",
+      evidenceRefs: ["delegation:ses_child_123"],
+      checkpoints: [],
+      events: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+    writeTrajectoryLedger(root, ledger)
+    const readBack = readTrajectoryLedger(root)
+    const refs = readBack.trajectories["traj-phase-25.5"]!.evidenceRefs
+    expect(refs).toContain("delegation:ses_child_123")
+    expect(refs[0]).toMatch(/^delegation:/)
+  })
 })
