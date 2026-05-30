@@ -25,7 +25,7 @@ export async function validateAgentExists(agent: string, client: OpenCodeClient)
     })
     return agentNames.includes(agent)
   } catch {
-    return false // Fallback if API fails
+    return false // API unreachable — do not allow dispatch with unvalidated agent
   }
 }
 
