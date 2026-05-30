@@ -36,6 +36,8 @@ import { createDelegationEventObserver, createSessionEntryEventObserver, createS
 // createSessionJourneyEventObserver — REMOVED in CP-ST-03; session-tracker is canonical.
 import { createToolExecuteAfterHook } from "./hooks/transforms/tool-after-composer.js"
 import { createToolBeforeGuard } from "./hooks/transforms/tool-before-guard.js"
+import { getActiveContractByAgent } from "./features/agent-work-contracts/store.js"
+import { getDelegationMeta } from "./shared/state.js"
 import { createChatMessageCapture } from "./hooks/transforms/chat-message-capture.js"
 import { createToolAfterWorkflow } from "./hooks/transforms/tool-after-workflow.js"
 import { createSessionEntryConsumer } from "./hooks/observers/session-entry-consumer.js"
@@ -541,6 +543,15 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
             extra: { error: err instanceof Error ? err.message : String(err) },
           },
         })
+      },
+      // Contract enforcement: third step in guard chain (P25.5 D-06)
+      contractEnforcement: {
+        getActiveContractByAgent,
+        resolveAgentName: (sessionID: string) => {
+          const meta = getDelegationMeta(sessionID)
+          return meta?.agent
+        },
+        projectRoot: projectDirectory,
       },
     }),
     // chat.message: session tracker captures messages and delegation observes child output.
