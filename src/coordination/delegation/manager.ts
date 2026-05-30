@@ -7,6 +7,7 @@ import type { DelegationCoordinator, DispatchParams } from "./coordinator.js"
 import { DelegationManager as RuntimeDelegationManager } from "./manager-runtime.js"
 import type { DelegationMonitor } from "./monitor.js"
 import type { NotificationRouter } from "./notification-router.js"
+import type { DelegationStateMachine } from "./state-machine.js"
 import type { Delegation, DelegationResult } from "./types.js"
 
 type NativeTask = (params: { agent: string; prompt: string; disabledTools: string[] }) => Promise<unknown>
@@ -28,6 +29,7 @@ export type DelegationManagerOptions = {
   ptyManager?: PtyManager | null
   runtimePolicy?: RuntimePolicy
   sendPromptAsync?: (sessionId: string, prompt: string) => Promise<void>
+  stateMachine?: DelegationStateMachine
 }
 
 export type DelegationControlRequest = {
@@ -58,6 +60,7 @@ export class DelegationManager {
         notificationRouter: options.notificationRouter,
         ptyManager: options.ptyManager,
         runtimePolicy: options.runtimePolicy,
+        stateMachine: options.stateMachine,
       })
     } else if (!options.coordinator || !options.lifecycle) {
       throw new Error("[Harness] DelegationManager requires a client when v2 modules are not injected.")
@@ -136,18 +139,8 @@ export class DelegationManager {
 
   /** List delegations, optionally filtered by parent session. */
   listDelegations(sessionId?: string): Delegation[] {
-    const v2List = this.options.lifecycle?.list() ?? []
-    const v1List = this.runtime?.getAllDelegations() ?? []
-    
-    // Concatenate and dedup by id, prioritizing v2 over v1 if ids overlap
-    const map = new Map<string, Delegation>()
-    for (const d of v1List) {
-      map.set(d.id, d)
-    }
-    for (const d of v2List) {
-      map.set(d.id, d)
-    }
-    const delegations = Array.from(map.values())
+    // Single source: lifecycle and runtime share the same state machine after consolidation.
+    const delegations = this.options.lifecycle?.list() ?? this.runtime?.getAllDelegations() ?? []
     return sessionId ? delegations.filter((delegation) => delegation.parentSessionId === sessionId) : delegations
   }
 
@@ -324,28 +317,16 @@ export class DelegationManager {
       return true
     }
 
-    // Consolidated check across both in-memory stores (v2 lifecycle & v1 runtime)
-    const all = [
-      ...(this.options.lifecycle?.list() ?? []),
-      ...(this.runtime?.getAllDelegations() ?? [])
-    ]
-    const byId = new Map<string, Delegation>()
-    for (const d of all) {
-      byId.set(d.id, d)
-    }
+    // Single source: lifecycle and runtime share the same state machine.
+    const all = this.options.lifecycle?.list() ?? this.runtime?.getAllDelegations() ?? []
+    const byId = new Map(all.map((d) => [d.id, d] as const))
 
     const getDelegationIdForSession = (sessionId: string): string | undefined => {
-      if (this.runtime) {
-        return this.runtime.delegationsBySession.get(sessionId)
-      }
-      if (this.options.lifecycle) {
-        const found = (this.options.lifecycle.list() ?? []).find(d => {
-          const childId = this.options.lifecycle!.getChildSessionId(d.id)
-          return childId === sessionId
-        })
-        return found?.id
-      }
-      return undefined
+      // Prefer runtime's direct session→delegation map (same state machine as lifecycle).
+      const fromRuntime = this.runtime?.delegationsBySession.get(sessionId)
+      if (fromRuntime) return fromRuntime
+      // Fallback: scan lifecycle for a delegation whose childSessionId matches.
+      return (this.options.lifecycle?.list() ?? []).find((d) => this.options.lifecycle!.getChildSessionId(d.id) === sessionId)?.id
     }
 
     let currentDelegationId = getDelegationIdForSession(callerSessionId)
