@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1780141482704,
+  "updatedAt": 1780153670748,
   "trajectories": {
     "traj_thinking_001": {
       "id": "traj_thinking_001",
@@ -208,6 +208,104 @@
       ],
       "createdAt": 1780140740377,
       "updatedAt": 1780141482704
+    },
+    "traj-phase-40": {
+      "id": "traj-phase-40",
+      "rootSessionId": "orchestrator-L0",
+      "sessionId": null,
+      "parentTrajectoryId": null,
+      "status": "planning",
+      "evidenceRefs": [
+        ".planning/ROADMAP.md"
+      ],
+      "checkpoints": [],
+      "events": [
+        {
+          "eventId": "event-p40-creation",
+          "eventType": "phase_trajectory_created",
+          "summary": "Phase 40 trajectory created for public ship readiness. 7 sub-phases (40.01-40.07). Package name: hivemind-3.0. Previous direct plan creation flagged as constitution violation.",
+          "evidenceRefs": [
+            ".planning/ROADMAP.md"
+          ],
+          "createdAt": 1780152723121
+        },
+        {
+          "eventId": "event-p40-4001-gate-passed",
+          "eventType": "verification:pass",
+          "summary": "P40.01 plan gate PASSED. First sub-phase cleared for execution. Sequential gate enforcement holds.",
+          "evidenceRefs": [
+            "plan-checker:PASS"
+          ],
+          "createdAt": 1780153592468
+        }
+      ],
+      "createdAt": 1780152723121,
+      "updatedAt": 1780153670748
+    },
+    "traj-phase-40.01": {
+      "id": "traj-phase-40.01",
+      "rootSessionId": "orchestrator-L0",
+      "sessionId": null,
+      "parentTrajectoryId": "traj-phase-40",
+      "status": "executing",
+      "evidenceRefs": [
+        ".planning/phases/P40-public-ship-readiness/40.01-RESEARCH.md",
+        ".planning/phases/P40-public-ship-readiness/40.01-PLAN.md",
+        "plan-checker:PASS"
+      ],
+      "checkpoints": [
+        {
+          "checkpointId": "chk-p4001-research-complete",
+          "summary": "P40.01 RESEARCH.md produced. 3 fire-and-forget paths traced to shared root cause: setTimeout(async()=>...,50) wrapping SDK dispatch. Deferred-promise fix recommended.",
+          "evidenceRefs": [
+            ".planning/phases/P40-public-ship-readiness/40.01-RESEARCH.md"
+          ],
+          "createdAt": 1780153128193
+        },
+        {
+          "checkpointId": "chk-p4001-plan-passed",
+          "summary": "P40.01 PLAN.md passed gsd-plan-checker verification. All 7 checklist items PASS. 1 advisory (non-blocking). Ready for execution.",
+          "evidenceRefs": [
+            ".planning/phases/P40-public-ship-readiness/40.01-PLAN.md"
+          ],
+          "createdAt": 1780153592468
+        }
+      ],
+      "events": [
+        {
+          "eventId": "event-p4001-creation",
+          "eventType": "phase_trajectory_created",
+          "summary": "P40.01 sub-trajectory: Fix 3 fire-and-forget dispatch paths. Must route through proper GSD workflow with work contracts.",
+          "evidenceRefs": [],
+          "createdAt": 1780152723121
+        },
+        {
+          "eventId": "event-p4001-research-done",
+          "eventType": "execution:complete",
+          "summary": "Research delegation returned. 3 paths investigated, shared root cause identified, RESEARCH.md committed as 8ae2b15a.",
+          "evidenceRefs": [
+            ".planning/phases/P40-public-ship-readiness/40.01-RESEARCH.md"
+          ],
+          "createdAt": 1780153128193
+        },
+        {
+          "eventId": "event-p4001-plan-verified",
+          "eventType": "verification:pass",
+          "summary": "Plan checker PASS. 2 tasks, 4 files, deadlock protection preserved. Proceed to execution.",
+          "evidenceRefs": [
+            "plan-checker:PASS"
+          ],
+          "createdAt": 1780153592468
+        },
+        {
+          "eventId": "event-p4001-execution-start",
+          "eventType": "execution:start",
+          "summary": "Transitioning to execution. Plan passed gate. Delegating to gsd-executor.",
+          "createdAt": 1780153670748
+        }
+      ],
+      "createdAt": 1780152723121,
+      "updatedAt": 1780153670748
     }
   }
 }

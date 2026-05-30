@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_18773c333ffeheRO5lJXdOi34C",
-  "lastUpdated": "2026-05-30T12:47:12.077Z",
+  "lastUpdated": "2026-05-30T13:36:16.673Z",
   "hierarchy": {
     "root": "ses_18773c333ffeheRO5lJXdOi34C",
     "children": {
@@ -76,7 +76,7 @@
     "glob": 10,
     "question": 10,
     "skill": 2,
-    "bash": 17,
+    "bash": 18,
     "grep": 4,
     "edit": 19,
     "execute-slash-command": 4,

@@ -7,13 +7,13 @@ steps: 100
 color: "#8B5CF6"
 permission:
   read:
-    "*": deny
+    "*": ask
   edit:
-    "*": deny
+    "*": ask
   write:
-    "*": deny
+    "*": ask
   bash:
-    "*": deny
+    "*": ask
     git *: allow
     node *: allow
     npx *: allow
@@ -439,7 +439,10 @@ If a delegation returns without file-based artifacts, the gate FAILS automatical
   </step>
 
   <step name="assess_session_runtime" priority="normal">
-  Check session runtime context: read session continuity for interrupted sessions, use `session-tracker` for active context, `hivemind-trajectory` for delegation depth, `hivemind-pressure` for runtime pressure tier. Check: delegation depth (max 3), current pressure tier, pending notifications, command routing. Commands can be dispatched programmatically via execute-slash-command following the CQRS pattern (hivemind-command-engine for discovery → execute-slash-command for execution).
+  Check session runtime context for path decision and stacking inputs:
+  - Call `delegation-status({ action: "find-stackable" })` to discover completed, failed, or active sessions for stacking/resuming.
+  - If a stackable session exists for the target agent, prepare to use its session ID in `task_id` for stacking.
+  - Read session continuity for interrupted sessions, use `session-tracker` for active context, `hivemind-trajectory` for delegation depth, `hivemind-pressure` for runtime pressure tier. Check: delegation depth (max 3), current pressure tier, pending notifications, command routing. Commands can be dispatched programmatically via execute-slash-command following the CQRS pattern (hivemind-command-engine for discovery → execute-slash-command for execution).
   </step>
 
   <step name="form_landscape" priority="high">
@@ -475,7 +478,12 @@ If a delegation returns without file-based artifacts, the gate FAILS automatical
   </step>
 
   <step name="dispatch_work" priority="normal">
-  Dispatch with structured context: task description, domain classification, path type, scope boundaries, output format, artifact requirements (must produce disk files), gate expectations, cross-lineage notes, session ID, delegation metadata.
+  Dispatch to delegation target using native `task` tool (do not use `delegate-task` as it is on maintenance):
+  - Use `task(description="<task>", subagent_type="<target-agent>", prompt="<structured-context>", task_id="<stackable-session-id>")`
+  - STACKING: If `delegation-status` returned a stackable/resumable session for the target agent, pass that session ID as `task_id`. This attaches the subagent run as a child of the parent session and preserves execution context.
+  - GEOMETRY: Stacking is linear. For parallel tasks, you MUST spawn separate sessions (no shared `task_id` or stacking). For sequential tasks, either stack them or explicitly reference preceding wave output artifacts.
+  - YIELD CONTROL: The native `task` tool is synchronous and blocking. You MUST yield control and wait for the response of the current task before dispatching another. Do NOT launch multiple `task` calls in parallel in one turn.
+  - Include in prompt: task description, domain classification, path type, scope boundaries, output format, artifact requirements (must produce disk files), gate expectations, cross-lineage notes, session ID, delegation metadata.
   </step>
 
   <step name="monitor_delegation" priority="normal">
