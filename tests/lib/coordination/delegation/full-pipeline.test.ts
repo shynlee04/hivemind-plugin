@@ -7,13 +7,11 @@ import { DelegationDispatcher } from "../../../../src/coordination/delegation/di
 import { DelegationLifecycle } from "../../../../src/coordination/delegation/lifecycle.js"
 import { DelegationMonitor } from "../../../../src/coordination/delegation/monitor.js"
 import { NotificationRouter } from "../../../../src/coordination/delegation/notification-router.js"
-import { DelegationRetryHandler } from "../../../../src/coordination/delegation/retry-handler.js"
 import { SlotManager } from "../../../../src/coordination/delegation/slot-manager.js"
 import type { Delegation, DelegationStatus } from "../../../../src/coordination/delegation/types.js"
 
 function createPipelineHarness() {
   const records = new Map<string, Delegation>()
-  const persisted: Delegation[][] = []
   const notifications: unknown[] = []
   const injections: string[] = []
   const lifecycle = new DelegationLifecycle({
@@ -53,9 +51,8 @@ function createPipelineHarness() {
     return { notification, parentSessionId: records.get(notification.delegationId)?.parentSessionId ?? "parent" }
   })
   const detector = new CompletionDetector(5)
-  const retryHandler = new DelegationRetryHandler({ persist: (delegations) => { persisted.push(delegations) }, wait: async () => undefined })
-  coordinator = new DelegationCoordinator({ dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler })
-  return { coordinator, detector, lifecycle, notifications, persisted, records, route, slotManager }
+  coordinator = new DelegationCoordinator({ dispatcher, monitor, notificationRouter, lifecycle, detector })
+  return { coordinator, detector, lifecycle, notifications, records, route, slotManager }
 }
 
 describe("delegation v2 full pipeline", () => {
@@ -69,7 +66,6 @@ describe("delegation v2 full pipeline", () => {
     expect(harness.lifecycle.getStatus(result.delegationId)?.status).toBe("completed")
     expect(harness.notifications).toHaveLength(1)
     await expect(harness.slotManager.acquire("parent-1", "agent:builder", { acquireTimeoutMs: 20 })).resolves.toMatchObject({ queueKey: "agent:builder" })
-    expect(harness.persisted.at(-1)?.[0]?.status).toBe("completed")
   })
 
   it("marks timeout through coordinator cleanup", async () => {

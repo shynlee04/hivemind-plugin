@@ -2,7 +2,6 @@ import type { DelegationDispatcher, PreflightParams, PreflightResult } from "./d
 import type { DelegationLifecycle } from "./lifecycle.js"
 import type { DelegationMonitor } from "./monitor.js"
 import type { NotificationRouter } from "./notification-router.js"
-import type { DelegationRetryHandler } from "./retry-handler.js"
 import type { PeriodicNotifier } from "./periodic-notifier.js"
 import type { Delegation, DelegationNotification, DelegationResult, DelegationSignalSource, DelegationStatus } from "./types.js"
 import type { SlotHandle } from "./slot-manager.js"
@@ -106,7 +105,6 @@ export interface DelegationCoordinatorDeps {
     unwatch: (delegationId: string) => void
     watchDualSignal: (delegationId: string, childSessionId: string, callback: (result: DelegationResult) => void) => void
   }
-  retryHandler: Pick<DelegationRetryHandler, "persistWithRetry">
   periodicNotifier?: Pick<PeriodicNotifier, "deregister" | "register">
   onChildSessionCreated?: (childSessionId: string, parentSessionId: string) => void
   client?: OpenCodeClient
@@ -153,7 +151,7 @@ export class DelegationCoordinator {
     const delegationId = this.createDelegationId()
     const record = this.createRecord(delegationId, params, preflight.queueKey)
     this.active.set(delegationId, { record, slotHandle: preflight.slotHandle })
-    this.deps.lifecycle.register?.(record)
+    this.deps.lifecycle.register?.(record, true)
 
     this.deps.lifecycle.transition(delegationId, "dispatched")
     this.deps.notificationRouter.register(delegationId, params.parentSessionId)
@@ -258,6 +256,9 @@ export class DelegationCoordinator {
     record.evidenceLevel = record.toolCallCount > 0 && record.messageCount > 0
       ? "message-and-tool"
       : record.toolCallCount > 0 ? "tool" : record.messageCount > 0 ? "message" : "status-only"
+    // Propagate updates back to lifecycle/state machine — the state machine clones on
+    // registerDelegation, so active-map mutation alone does not update the stored record.
+    this.deps.lifecycle.register?.(record, false)
   }
 
   /** Record a runtime message observation for a tracked child session. */
@@ -347,6 +348,8 @@ export class DelegationCoordinator {
     this.delegationByChildSession.delete(active.record.childSessionId)
     active.record.childSessionId = childSessionId
     this.delegationByChildSession.set(childSessionId, delegationId)
+    // Propagate to lifecycle/state machine so reads via getStatus() see the real child session ID.
+    this.deps.lifecycle.register?.(active.record, false)
   }
 
   private getDelegationIdForChildSession(childSessionId: string): string | undefined {
@@ -466,7 +469,6 @@ export class DelegationCoordinator {
     this.deps.notificationRouter.deregister(delegationId)
     this.active.delete(delegationId)
     this.delegationByChildSession.delete(active.record.childSessionId)
-    void this.deps.retryHandler.persistWithRetry(this.deps.lifecycle.list?.() ?? [...this.active.values()].map((entry) => entry.record))
   }
 
   private findRecord(delegationId: string): Delegation | undefined {
@@ -489,6 +491,9 @@ export class DelegationCoordinator {
       record.executionState = "confirmed"
       record.firstActionAt ??= Date.now()
     }
+    // Propagate merged completion result back to lifecycle/state machine so reads
+    // via getStatus() see evidence, result, and execution state.
+    this.deps.lifecycle.register?.(record, false)
   }
 
   private handleChildSessionTerminal(childSessionId: string, status: DelegationStatus, errorMessage?: string): void {

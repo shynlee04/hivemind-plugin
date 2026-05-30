@@ -20,11 +20,11 @@ import { DelegationManager } from "./coordination/delegation/manager.js"
 import { DelegationMonitor } from "./coordination/delegation/monitor.js"
 import { NotificationRouter } from "./coordination/delegation/notification-router.js"
 import { PeriodicNotifier } from "./coordination/delegation/periodic-notifier.js"
-import { DelegationRetryHandler } from "./coordination/delegation/retry-handler.js"
 import { createSdkChildSessionStarter } from "./coordination/delegation/sdk-child-session-starter.js"
 import { SlotManager } from "./coordination/delegation/slot-manager.js"
+import { DelegationStateMachine } from "./coordination/delegation/state-machine.js"
 
-import type { Delegation, DelegationNotificationType, DelegationStatus } from "./coordination/delegation/types.js"
+import type { Delegation, DelegationNotificationType } from "./coordination/delegation/types.js"
 import { appendTuiPrompt, sendPromptAsync as sdkSendPromptAsync, getSessionMessageCount, abortSession, type OpenCodeClient } from "./shared/session-api.js"
 import { asString, getNestedValue } from "./shared/helpers.js"
 import { taskState } from "./shared/state.js"
@@ -270,7 +270,9 @@ export interface DelegationModuleSetup {
  * @returns Delegation modules shared by tools, plugin setup, and integration tests.
  */
 export function setupDelegationModules(options: DelegationModuleSetupOptions): DelegationModuleSetup {
-  const records = new Map<string, Delegation>()
+  // Single shared state machine — backs both v2 coordinator (via DelegationLifecycle)
+  // and v1 runtime adapter (passed through the facade to RuntimeDelegationManager).
+  const stateMachine = new DelegationStateMachine({ client: options.client })
   const slotManager = new SlotManager()
   const agentResolver = new AgentResolver({ client: options.client, projectRoot: options.projectDirectory })
   const dispatcher = new DelegationDispatcher({ agentResolver, slotManager })
@@ -288,24 +290,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   })
   let coordinatorRef: DelegationCoordinator | undefined
   let periodicNotifierRef: PeriodicNotifier | undefined
-  const lifecycle = new DelegationLifecycle({
-    get: (delegationId) => records.get(delegationId),
-    getAll: () => Array.from(records.values()),
-    registerDelegation: (delegation) => { records.set(delegation.id, delegation) },
-    transition: (delegationId, status) => {
-      const record = records.get(delegationId)
-      if (!record || record.status === status) return false
-      record.status = status
-      return true
-    },
-    transitionToTerminal: (delegationId: string, status: DelegationStatus, error?: string) => {
-      const record = records.get(delegationId)
-      if (!record) return
-      record.status = status
-      record.completedAt = Date.now()
-      if (error !== undefined) record.error = error
-    },
-  })
+  const lifecycle = new DelegationLifecycle(stateMachine)
   const monitor = new DelegationMonitor({
     getDelegationRecord: (delegationId) => lifecycle.getStatus(delegationId),
     getStatus: (delegationId) => lifecycle.getStatus(delegationId)?.status ?? "dispatched",
@@ -332,7 +317,6 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     },
     onFirstActionDeadline: (delegationId, elapsedSeconds) => coordinatorRef?.markExecutionUnconfirmed(delegationId, elapsedSeconds),
   })
-  const retryHandler = new DelegationRetryHandler({ persist: options.persistDelegations })
   const periodicNotifier = new PeriodicNotifier(
     {
       cadenceMs: 30_000,
@@ -350,7 +334,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const childSessionStarter = typeof options.client?.session === "object"
     ? createSdkChildSessionStarter(options.client)
     : undefined
-  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, retryHandler, periodicNotifier, onChildSessionCreated: options.onChildSessionCreated, client: options.client })
+  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, periodicNotifier, onChildSessionCreated: options.onChildSessionCreated, client: options.client })
   coordinatorRef = coordinator
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
     coordinator,
@@ -362,6 +346,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
     sendPromptAsync: (sessionId, prompt) => sdkSendPromptAsync(options.client, sessionId, {
       parts: [{ type: "text", text: prompt }],
     }),
+    stateMachine,
   })
   return { coordinator, delegationManager, detector, lifecycle, notificationRouter, periodicNotifier, slotManager, monitor }
 }

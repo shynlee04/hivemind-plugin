@@ -17,9 +17,10 @@ export class DelegationLifecycle {
    * Register a newly prepared delegation before status transitions begin.
    *
    * @param delegation - Prepared delegation record created by the coordinator.
+   * @param scheduleSafetyCeiling - When true, arm the 30-minute safety ceiling timer.
    */
-  register(delegation: Delegation): void {
-    this.stateMachine.registerDelegation?.(delegation, false)
+  register(delegation: Delegation, scheduleSafetyCeiling?: boolean): void {
+    this.stateMachine.registerDelegation?.(delegation, scheduleSafetyCeiling ?? false)
   }
 
   /**

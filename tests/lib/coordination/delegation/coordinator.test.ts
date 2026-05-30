@@ -64,11 +64,7 @@ function createDeps() {
       callbacksByDetector.set(delegationId, callback)
     }),
   }
-  const retryHandler = {
-    persistWithRetry: vi.fn().mockResolvedValue(true),
-  }
-
-  return { detector, dispatcher, lifecycle, monitor, notificationRouter, retryHandler, slotHandle }
+  return { detector, dispatcher, lifecycle, monitor, notificationRouter, slotHandle }
 }
 
 // Import Zod schema and extraction functions for unit testing
@@ -271,7 +267,6 @@ describe("DelegationCoordinator", () => {
     expect(deps.notificationRouter.route).toHaveBeenCalledWith(expect.objectContaining({ delegationId: dispatched.delegationId, type: "success" }))
     expect(deps.notificationRouter.deregister).toHaveBeenCalledWith(dispatched.delegationId)
     expect(deps.slotHandle.release).toHaveBeenCalledOnce()
-    expect(deps.retryHandler.persistWithRetry).toHaveBeenCalled()
   })
 
   it("extracts completion evidence into the parent-facing result payload", async () => {
@@ -325,18 +320,6 @@ describe("DelegationCoordinator", () => {
     expect(deps.detector.unwatch).toHaveBeenCalledWith(dispatched.delegationId)
     expect(deps.notificationRouter.deregister).toHaveBeenCalledWith(dispatched.delegationId)
     expect(deps.slotHandle.release).toHaveBeenCalledOnce()
-  })
-
-  it("persists all lifecycle records instead of only currently active records", async () => {
-    const deps = createDeps()
-    const existing = { id: "dt-existing", status: "completed" }
-    deps.lifecycle.list.mockReturnValue([existing])
-    const coordinator = new DelegationCoordinator(deps)
-    const dispatched = await coordinator.dispatch(baseDispatchParams)
-
-    coordinator.handleCompletion(dispatched.delegationId, { delegationId: dispatched.delegationId, status: "completed" })
-
-    expect(deps.retryHandler.persistWithRetry).toHaveBeenCalledWith(expect.arrayContaining([existing]))
   })
 
   it("maps hook session events to the matching child delegation", async () => {
