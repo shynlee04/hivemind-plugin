@@ -36,6 +36,29 @@ const baseContract = {
   },
 }
 
+const contractWithRequiredProof = {
+  owner: { agent: "test-agent", sessionId: "ses_parent" },
+  scope: {
+    taskBoundary: "Test evidence gating",
+    allowedSurfaces: ["src/test"],
+    dependencies: [],
+    nonGoals: [],
+  },
+  evidence: {
+    requiredProof: ["focused vitest", "typecheck passed"],
+    minimumEvidenceLevel: "L2_AUTOMATED_TEST" as const,
+    verificationCommands: [],
+    blockedStateRules: [],
+  },
+  compaction: {
+    briefing: "test briefing",
+    summary: "test summary",
+    anchors: [],
+    reinjectionPayload: "test payload",
+    sourceRefs: [],
+  },
+}
+
 function createInput(projectRoot: string) {
   return {
     projectRoot,
@@ -164,5 +187,86 @@ describe("agent work contract lifecycle", () => {
 
     const cancelled = cancelContract(root, created.id, "scope changed")
     expect(cancelled.evidence.blockedStateRules).toContain("cancelled: scope changed")
+  })
+})
+
+describe("contract evidence gating", () => {
+  let root: string
+
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), "agent-work-contract-evidence-"))
+  })
+
+  afterEach(() => {
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  function createInputWithProof(projectRoot: string) {
+    return {
+      projectRoot,
+      ...contractWithRequiredProof,
+    }
+  }
+
+  it("completeContract with empty requiredProof and no proof → succeeds", () => {
+    const created = createAgentWorkContract(createInput(root))
+    startContract(root, created.id)
+    const result = completeContract(root, created.id)
+    expect(result.status).toBe("completed")
+  })
+
+  it("completeContract with non-empty requiredProof and NO proof → throws", () => {
+    const created = createAgentWorkContract(createInputWithProof(root))
+    startContract(root, created.id)
+    expect(() => completeContract(root, created.id)).toThrow("[Harness] contract")
+    expect(() => completeContract(root, created.id)).toThrow("requires proof before completion")
+  })
+
+  it("completeContract with non-empty requiredProof and proof provided → succeeds", () => {
+    const created = createAgentWorkContract(createInputWithProof(root))
+    startContract(root, created.id)
+    const result = completeContract(root, created.id, "all tests passed")
+    expect(result.status).toBe("completed")
+  })
+
+  it("completeContract transitions status to completed", () => {
+    const created = createAgentWorkContract(createInputWithProof(root))
+    startContract(root, created.id)
+    const result = completeContract(root, created.id, "proof provided")
+    expect(result.status).toBe("completed")
+  })
+
+  it("transitionContract from created→running succeeds", () => {
+    const created = createAgentWorkContract(createInput(root))
+    const running = startContract(root, created.id)
+    expect(running.status).toBe("running")
+  })
+
+  it("transitionContract from running→completed succeeds", () => {
+    const created = createAgentWorkContract(createInputWithProof(root))
+    startContract(root, created.id)
+    const result = completeContract(root, created.id, "proof provided")
+    expect(result.status).toBe("completed")
+  })
+
+  it("transitionContract from running→blocked succeeds", () => {
+    const created = createAgentWorkContract(createInput(root))
+    startContract(root, created.id)
+    const result = blockContract(root, created.id, "blocking reason")
+    expect(result.status).toBe("blocked")
+  })
+
+  it("transitionContract from running→cancelled succeeds", () => {
+    const created = createAgentWorkContract(createInput(root))
+    startContract(root, created.id)
+    const result = cancelContract(root, created.id, "scope changed")
+    expect(result.status).toBe("cancelled")
+  })
+
+  it("transitionContract from completed→running throws (invalid transition)", () => {
+    const created = createAgentWorkContract(createInput(root))
+    startContract(root, created.id)
+    completeContract(root, created.id)
+    expect(() => startContract(root, created.id)).toThrow("[Harness]")
   })
 })

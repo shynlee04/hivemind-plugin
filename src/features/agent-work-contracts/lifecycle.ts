@@ -55,18 +55,37 @@ export function blockContract(projectRoot: string, contractId: string, reason: s
 /**
  * Transition a contract from running→completed.
  *
+ * Evidence gating: if contract.evidence.requiredProof is non-empty, a proof
+ * string must be provided. Throws with a descriptive error listing required proofs.
+ *
  * @param projectRoot - Trusted project root.
  * @param contractId - Contract to transition.
- * @param proof - Optional completion proof.
+ * @param proof - Required completion proof (mandatory when requiredProof is non-empty).
  * @returns Updated contract.
- * @throws {Error} When the contract doesn't exist or the transition is invalid.
+ * @throws {Error} When the contract doesn't exist, the transition is invalid,
+ * or requiredProof is non-empty and no proof provided.
  */
 export function completeContract(projectRoot: string, contractId: string, proof?: string) {
-  const contract = transitionContract(projectRoot, contractId, "completed")
-  if (proof) {
-    contract.evidence.requiredProof = [...contract.evidence.requiredProof, proof]
+  // Fetch first for evidence gate check (before transition)
+  const contract = getAgentWorkContract(projectRoot, contractId)
+  if (!contract) {
+    throw new Error(`[Harness] agent work contract not found: ${contractId}`)
   }
-  return upsertAgentWorkContract(projectRoot, contract)
+
+  // Evidence gating: require proof when requiredProof is non-empty (REQ-CONT-02)
+  if (contract.evidence.requiredProof.length > 0 && !proof) {
+    throw new Error(
+      `[Harness] contract ${contractId} requires proof before completion. ` +
+      `Required: ${contract.evidence.requiredProof.join(", ")}`
+    )
+  }
+
+  // Now do the transition
+  const updated = transitionContract(projectRoot, contractId, "completed")
+  if (proof) {
+    updated.evidence.requiredProof = [...updated.evidence.requiredProof, proof]
+  }
+  return upsertAgentWorkContract(projectRoot, updated)
 }
 
 /**
