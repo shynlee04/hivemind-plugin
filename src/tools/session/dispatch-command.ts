@@ -25,14 +25,14 @@ export async function validateAgentExists(agent: string, client: OpenCodeClient)
     })
     return agentNames.includes(agent)
   } catch {
-    return true // Fallback if API fails
+    return false // Fallback if API fails
   }
 }
 
 /**
  * Dispatches slash command prompt immediately.
  * Performs format and existence validation for optional agent override.
- * Returns { success: true } on completion, or { success: false, error: true, output } on failure.
+ * Returns { success: boolean, output?, error? } on completion.
  */
 export async function dispatchCommand(context: {
   client: OpenCodeClient
@@ -61,57 +61,61 @@ export async function dispatchCommand(context: {
   // returns before session.prompt() fires on the same session — prevents
   // reentrant deadlock. The tool's execute() handler must return before the
   // session can process new input.
-  setTimeout(async () => {
-    try {
-      if (subtask) {
-        // Subtask: session.prompt() with subtask part + agent
-        const parts = [{
-          type: "subtask",
-          agent,
-          description: description || "",
-          prompt: promptText,
-          parentSessionID: sessionID,
-          commandSource: commandSource || "user",
-        }]
-        const body: Record<string, unknown> = { parts }
-        if (agent) body.agent = agent
-        await client.session.prompt({
-          path: { id: sessionID },
-          body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
-          ...(directory ? { query: { directory } } : {}),
-        })
-      } else {
-        // Synthetic prompt: session.prompt() with text part + agent override
-        // This sends the expanded command body to the specified agent,
-        // which processes it as a user message. agent in body.agent tells
-        // the session to route to that agent.
-        const parts = [{ type: "text", text: promptText }]
-        const body: Record<string, unknown> = { parts }
-        if (agent) body.agent = agent
-        await client.session.prompt({
-          path: { id: sessionID },
-          body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
-          ...(directory ? { query: { directory } } : {}),
-        })
-
-        // After the target agent finishes processing, restore the original agent
-        // so the session doesn't permanently stay on the overridden agent.
-        if (restoreAgent && restoreAgent !== agent) {
+  return new Promise<{ success: boolean; output?: string; error?: boolean }>((resolve) => {
+    setTimeout(async () => {
+      try {
+        if (subtask) {
+          // Subtask: session.prompt() with subtask part + agent
+          const parts = [{
+            type: "subtask",
+            agent,
+            description: description || "",
+            prompt: promptText,
+            parentSessionID: sessionID,
+            commandSource: commandSource || "user",
+          }]
+          const body: Record<string, unknown> = { parts }
+          if (agent) body.agent = agent
           await client.session.prompt({
             path: { id: sessionID },
-            body: {
-              parts: [{ type: "text", text: "Continue." }],
-              agent: restoreAgent,
-            } as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
+            body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
             ...(directory ? { query: { directory } } : {}),
           })
-        }
-      }
-    } catch (caughtError: unknown) {
-      const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-      console.error(`[Harness] Slash command dispatch failed: ${message}`)
-    }
-  }, 50)
+        } else {
+          // Synthetic prompt: session.prompt() with text part + agent override
+          const parts = [{ type: "text", text: promptText }]
+          const body: Record<string, unknown> = { parts }
+          if (agent) body.agent = agent
+          await client.session.prompt({
+            path: { id: sessionID },
+            body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
+            ...(directory ? { query: { directory } } : {}),
+          })
 
-  return { success: true }
+          // After the target agent finishes processing, restore the original agent
+          if (restoreAgent && restoreAgent !== agent) {
+            try {
+              await client.session.prompt({
+                path: { id: sessionID },
+                body: {
+                  parts: [{ type: "text", text: "Continue." }],
+                  agent: restoreAgent,
+                } as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
+                ...(directory ? { query: { directory } } : {}),
+              })
+            } catch (restoreError) {
+              const msg = restoreError instanceof Error ? restoreError.message : String(restoreError)
+              resolve({ success: false, output: `Dispatch succeeded but agent restore failed: ${msg}`, error: true })
+              return
+            }
+          }
+        }
+        resolve({ success: true })
+      } catch (caughtError: unknown) {
+        const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+        console.error(`[Harness] Slash command dispatch failed: ${message}`)
+        resolve({ success: false, output: message, error: true })
+      }
+    }, 50)
+  })
 }

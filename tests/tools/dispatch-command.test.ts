@@ -55,7 +55,7 @@ describe("dispatch-command", () => {
     )
   })
 
-  it("defers dispatch and returns success immediately", async () => {
+  it("returns failure when session.prompt throws error", async () => {
     const errorClient = {
       app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
       session: {
@@ -64,15 +64,46 @@ describe("dispatch-command", () => {
       },
     }
     const result = await dispatchCommand({
-      client: errorClient,
+      client: errorClient as any,
       sessionID: "ses-123",
       agent: "gsd-executor",
-      commandName: "gsd-stats",
       promptText: "gsd-stats body",
     })
-    // Deferred dispatch: tool returns before session.command() fires
-    expect(result.success).toBe(true)
-    expect(result.error).toBeUndefined()
+    expect(result.success).toBe(false)
+    expect(result.error).toBe(true)
+    expect(result.output).toBe("Network error")
+  })
+
+  it("returns failure when agent restore fails", async () => {
+    const restoreErrorClient = {
+      app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
+      session: {
+        prompt: vi.fn()
+          .mockResolvedValueOnce({}) // first prompt (synthetic prompt) succeeds
+          .mockRejectedValueOnce(new Error("Restore failed")), // restore fails
+        command: vi.fn().mockResolvedValue({}),
+      },
+    }
+    const result = await dispatchCommand({
+      client: restoreErrorClient as any,
+      sessionID: "ses-123",
+      agent: "gsd-executor",
+      restoreAgent: "gsd-reviewer",
+      promptText: "run gsd-stats",
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toBe(true)
+    expect(result.output).toContain("agent restore failed: Restore failed")
+  })
+
+  it("validateAgentExists returns false on API failure", async () => {
+    const brokenClient = {
+      app: {
+        agents: vi.fn().mockRejectedValue(new Error("API failure")),
+      },
+    }
+    const result = await validateAgentExists("gsd-executor", brokenClient as any)
+    expect(result).toBe(false)
   })
 
   it("throws InvalidCommandError for invalid agent format in dispatch", async () => {

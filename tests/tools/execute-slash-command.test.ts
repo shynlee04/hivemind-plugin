@@ -274,8 +274,8 @@ Run with: $ARGUMENTS
       } as any,
     )
 
-    // Deferred dispatch returns success immediately; errors go to console.error
-    expect(result).toHaveProperty("error", false)
+    // Real SDK dispatch errors are now propagated back to the tool output
+    expect(result).toHaveProperty("error", true)
   })
 
   it("should dispatch to TUI prompt pipeline when no agent or subtask override", async () => {
