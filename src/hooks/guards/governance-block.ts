@@ -43,16 +43,29 @@ const EXPERTISE_INSTRUCTIONS: Record<string, string> = {
 }
 
 // ---------------------------------------------------------------------------
+// Trajectory & contract tool instructions for system prompt injection (P25.5)
+// ---------------------------------------------------------------------------
+
+const TRAJECTORY_INSTRUCTIONS = [
+  "When managing a phase, call createPhaseTrajectory to start tracking.",
+  "Use addTrajectoryEvent to record milestones.",
+  "Use traverseTrajectory to review progress.",
+  "When receiving a contract, check allowedSurfaces before modifying files.",
+  "Stay within scope.",
+]
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 /**
  * Builds the structured governance block string for system prompt injection.
  *
- * The output has three lines:
+ * The output has three lines + optional trajectory/contract instructions:
  * 1. `--- Governance ---` header
  * 2. Instruction line combining mode, expertise, and language directives
  * 3. Field:value context line (only when `profile` is provided)
+ * 4. (P25.5) Trajectory and contract tool instructions (only when `config` is provided)
  *
  * @param config  - Validated HivemindConfigs from the config subscriber.
  * @param profile - Optional resolved behavioral profile for field:value context.
@@ -88,6 +101,8 @@ export function buildGovernanceBlock(
   const instructionLine = `${modeInstruction} ${expertiseInstruction} ${languageInstruction}`
 
   // --- Line 3: Field:value context (optional) ---
+  const lines: string[] = [header, instructionLine]
+
   if (profile) {
     const m = profile.merged
     const fieldValues = [
@@ -95,10 +110,11 @@ export function buildGovernanceBlock(
       `decisionSpeed: ${m.decisionSpeed}`,
       `expertise: ${m.expertise}`,
     ]
-    const fieldsLine = fieldValues.join(" | ")
-
-    return `${header}\n${instructionLine}\n${fieldsLine}`
+    lines.push(fieldValues.join(" | "))
   }
 
-  return `${header}\n${instructionLine}`
+  // P25.5: Trajectory and contract tool instructions
+  lines.push("", ...TRAJECTORY_INSTRUCTIONS)
+
+  return lines.join("\n")
 }

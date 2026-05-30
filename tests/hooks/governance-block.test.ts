@@ -165,9 +165,11 @@ describe("buildGovernanceBlock", () => {
     expect(typeof result).toBe("string")
     expect(Array.isArray(result)).toBe(false)
     expect(result).toContain("\n")
-    // Verify there are exactly 2 newlines (3 lines: header, instruction, fields)
+    // Verify structure: header, instruction, fields, plus P25.5 trajectory/contract instructions
     const lines = result.split("\n").filter((l) => l.length > 0)
-    expect(lines.length).toBe(3)
+    expect(lines.length).toBe(8)
     expect(lines[0]).toBe("--- Governance ---")
+    // P25.5: trajectory instructions are appended (filtered removes empty line)
+    expect(lines[3]).toBe("When managing a phase, call createPhaseTrajectory to start tracking.")
   })
 })
