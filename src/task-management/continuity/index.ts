@@ -326,11 +326,13 @@ function persistStore(projectRoot?: string): void {
   // When false, state changes stay in-memory (batched).
   // NOTE: In-memory batching behavior is a lifecycle concern for CA-04.
   // For CA-03, we gate the write but keep the store updated in memory.
-  const config = getCachedConfig()
+  const config = projectRoot
+    ? getCachedConfig(projectRoot)
+    : getCachedConfig()
   const store = ensureStoreLoaded(projectRoot)
   store.updatedAt = Date.now()
   if (!config.atomic_commit) {
-    return  // Skip disk write — state remains in memory for later flush
+    return
   }
 
   const filePath = getContinuityFile(projectRoot)
