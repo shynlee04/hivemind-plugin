@@ -767,5 +767,59 @@ subtask: true
       },
     }))
   })
+
+  it("should dynamically override misaligned agent to prefix-aligned agent at runtime", async () => {
+    const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
+    const agentsMock = vi.fn().mockResolvedValue([
+      { name: "gsd-executor", description: "Executes plans atomically" },
+      { name: "hm-orchestrator", description: "Orchestration agent" },
+      { name: "build", description: "Universal build agent" },
+    ])
+    const client = {
+      session: { prompt: promptMock },
+      app: { agents: agentsMock },
+      tui: {
+        clearPrompt: vi.fn(),
+        appendPrompt: vi.fn(),
+        submitPrompt: vi.fn(),
+      },
+    } as unknown as PluginInput["client"]
+
+    const projectRoot = await createProjectWithCommand(
+      "gsd-misaligned-cmd",
+      `---
+description: "Misaligned agent test command"
+agent: hm-orchestrator
+subtask: true
+---
+Verify prefix override.
+`,
+    )
+
+    const tool = createExecuteSlashCommandTool(client)
+    const result = await tool.execute(
+      { command: "gsd-misaligned-cmd" },
+      {
+        sessionID: "ses_override",
+        agent: "hm-build",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+        abort: new AbortController().signal,
+        ask: vi.fn(),
+        messageID: "msg_override",
+      } as any,
+    )
+    await flushDeferred()
+
+    expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
+      body: expect.objectContaining({
+        agent: "gsd-executor", // Should be aligned dynamically!
+      }),
+    }))
+    expect(result.metadata).toMatchObject({
+      agent: "gsd-executor",
+    })
+  })
 })
 

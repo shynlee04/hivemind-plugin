@@ -208,7 +208,6 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         const commandBundle = resolveResult.commandBundle!
 
         // Stage 2: Resolve agent from intent if none explicitly provided
-        // NOTE: selectAgent result is metadata ONLY — does NOT change the dispatch path
         let suggestedAgent: string | undefined
         if (!overrideAgent && !commandBundle?.agent && client && typeof client.app?.agents === "function") {
           const rawAgents = await getAppAgents(client)
@@ -218,13 +217,39 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             return { name: obj.name || obj.id || "", description: obj.description }
           }).filter((a) => a.name.length > 0)
           const agentResult = await selectAgent(executionArgs.command, normalizedAgents)
-          if (agentResult.agent && !agentResult.fallback) {
+          if (agentResult.agent) {
             suggestedAgent = agentResult.agent
           }
         }
 
         // Determine agent for dispatch: explicit > frontmatter > suggested
-        const resolvedAgent = overrideAgent || commandBundle?.agent || suggestedAgent
+        let resolvedAgent = overrideAgent || commandBundle?.agent || suggestedAgent
+
+        // Enforce lineage/prefix alignment (e.g. hm-* commands must pair with hm-* agents)
+        const prefixMatch = executionArgs.command.trim().replace(/^\//, "").match(/^([a-zA-Z0-9]+)-/)
+        const commandPrefix = prefixMatch ? prefixMatch[1].toLowerCase() : null
+
+        const FUNCTIONAL_VERBS = new Set([
+          "plan", "verify", "validate", "audit", "review", "debug", "fix", "spec", "write", "doc", "research", "run"
+        ])
+        const isLineagePrefix = commandPrefix && !FUNCTIONAL_VERBS.has(commandPrefix)
+
+        if (isLineagePrefix && resolvedAgent) {
+          const agentLower = resolvedAgent.toLowerCase()
+          const isAligned = agentLower.startsWith(commandPrefix + "-") || agentLower === commandPrefix
+          if (!isAligned && client && typeof client.app?.agents === "function") {
+            const rawAgents = await getAppAgents(client)
+            const normalizedAgents = rawAgents.map((a) => {
+              if (typeof a === "string") return { name: a, description: "" }
+              const obj = a as { name?: string; id?: string; description?: string }
+              return { name: obj.name || obj.id || "", description: obj.description }
+            }).filter((a) => a.name.length > 0)
+            const agentResult = await selectAgent(executionArgs.command, normalizedAgents)
+            if (agentResult.agent) {
+              resolvedAgent = agentResult.agent
+            }
+          }
+        }
 
         // Validate agent format & existence if agent is used
         if (resolvedAgent) {
@@ -318,7 +343,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
 
         const shouldDispatchSubtask = subtaskParam ?? commandBundle?.subtask === true
         if (shouldDispatchSubtask) {
-          const subtaskAgent = overrideAgent || commandBundle.agent
+          const subtaskAgent = resolvedAgent
           if (!subtaskAgent) {
             return {
               output: describeError(new InvalidCommandError(`command has subtask: true but no agent was provided or defined in frontmatter`)),
