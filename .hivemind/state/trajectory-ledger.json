@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1780153670748,
+  "updatedAt": 1780154584887,
   "trajectories": {
     "traj_thinking_001": {
       "id": "traj_thinking_001",
@@ -237,21 +237,34 @@
             "plan-checker:PASS"
           ],
           "createdAt": 1780153592468
+        },
+        {
+          "eventId": "event-p40-4001-complete",
+          "eventType": "execution:complete",
+          "summary": "P40.01 COMPLETED. 3 fire-and-forget paths fixed. Ready to proceed to P40.02.",
+          "evidenceRefs": [
+            "commit:15c1ba8b"
+          ],
+          "createdAt": 1780154584887
         }
       ],
       "createdAt": 1780152723121,
-      "updatedAt": 1780153670748
+      "updatedAt": 1780154584887
     },
     "traj-phase-40.01": {
       "id": "traj-phase-40.01",
       "rootSessionId": "orchestrator-L0",
       "sessionId": null,
       "parentTrajectoryId": "traj-phase-40",
-      "status": "executing",
+      "status": "completed",
       "evidenceRefs": [
         ".planning/phases/P40-public-ship-readiness/40.01-RESEARCH.md",
         ".planning/phases/P40-public-ship-readiness/40.01-PLAN.md",
-        "plan-checker:PASS"
+        "plan-checker:PASS",
+        "execution:2976-tests-pass",
+        "typecheck:clean",
+        "grep-gates:all-pass",
+        "commit:15c1ba8b"
       ],
       "checkpoints": [
         {
@@ -269,6 +282,15 @@
             ".planning/phases/P40-public-ship-readiness/40.01-PLAN.md"
           ],
           "createdAt": 1780153592468
+        },
+        {
+          "checkpointId": "chk-p4001-execution-complete",
+          "summary": "P40.01 execution complete. 2,976 tests pass. dispatchCommand returns real Promise. session.command deferred-promise. All 3 fire-and-forget paths fixed.",
+          "evidenceRefs": [
+            "commit:15c1ba8b",
+            "tests:2976-pass"
+          ],
+          "createdAt": 1780154584887
         }
       ],
       "events": [
@@ -302,10 +324,19 @@
           "eventType": "execution:start",
           "summary": "Transitioning to execution. Plan passed gate. Delegating to gsd-executor.",
           "createdAt": 1780153670748
+        },
+        {
+          "eventId": "event-p4001-execution-done",
+          "eventType": "execution:complete",
+          "summary": "Execution verified. 2976 tests pass, typecheck clean, grep gates satisfied. All 3 paths fixed.",
+          "evidenceRefs": [
+            "execution:2976-tests-pass"
+          ],
+          "createdAt": 1780154584887
         }
       ],
       "createdAt": 1780152723121,
-      "updatedAt": 1780153670748
+      "updatedAt": 1780154584887
     }
   }
 }
