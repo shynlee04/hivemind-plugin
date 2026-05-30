@@ -6,7 +6,7 @@
 **Status:** Active (Gap-Refined Cluster Restructuring)
 **Current phase:** P23.4 (GAP-02) — D→A Integration Gate Verification (P23.3 PASSED—deferred; Phase 24 COMPLETE—retroactive)
 **Phase 23.2:** ✅ COMPLETE — all 5 session-tracker bugs fixed
-**Total phases:** 62 (29 mainline + 8 gap + 10 workstream + 7 historical + 8 concerns)
+**Total phases:** 64 (31 mainline + 8 gap + 10 workstream + 7 historical + 8 concerns)
 **CODE VERIFIED (2026-05-29):** See `.planning/research/phase24-*-2026-05-29.md` and `.planning/research/code-truth-*-2026-05-29.md` for full corrections. Key deltas: 42 agents (not 89), 34 skills (not 123), 118 commands (not 106/19), 106 workflows, 8 files >500 LOC (not 1), 7 dead gov refs, 6 empty phase dirs (now RESOLVED — retroactive governance applied 2026-05-29).
 **MVP minimum:** ✅ P23.3 (PASSED—deferred) → ✅ P24 (COMPLETE) → ✅ P24.1+P24.2 (COMPLETE) → ✅ P24.7+P24.8 (COMPLETE) → P30 → P36
 **Dependency order:** Phase 0 Governance Baseline → Cluster D (Coordination) → A (Agent) + C (Commands) → P25→P25.1→P25.2→P25.3→P26→B (Documents) → E/F (Primitives/Bootstrap) → G (Routing) → H (Hooks) → I (Auto-loop/PTY) → J (Schema/Config, parallel) → K (Cleanup) → L (Verification)
@@ -136,6 +136,14 @@ Every phase must explicitly trace through these protocols:
 - [ ] **P36 (Cluster L): Integration Verification** — Full regression, dist rebuild, smoke tests [GSD-reval: NO] [Arch-src: N/A - verification only] [UAT: full suite pass]
 - [ ] **P37: Fix sync-oss.yml** (DEFERRED) [GSD-reval: NO]
 - [ ] **P38: Package .opencode/ Primitives** (DEFERRED) [GSD-reval: NO]
+- [ ] **P39: Integration Completion & Hardening** — Finish all remaining in-progress work across P23-P38. Fix all test failures and typecheck errors. Run spec/pattern/design compliance audit across all code. E2E integration verification with OpenCode runtime. Zero known tech debt pass. **Plans:** 5 plans in 4 waves. [GSD-reval: NO] [Arch-src: N/A - verification + cross-cutting] [UAT: full suite pass, typecheck clean, E2E dispatch working]
+  **Plans:**
+  - [ ] 39-01-PLAN.md — Wave 1: Performance Optimization (C4) — JSON.parse memoization, async FS, timer cleanup, async exec
+  - [ ] 39-02-PLAN.md — Wave 1: Error Handling & Code Quality (C5) — typed extraction, scoped env, empty catch sweep
+  - [ ] 39-03-PLAN.md — Wave 2: Architectural Refactoring (C6) — DelegationStatusReader, domain-grouped plugin.ts
+  - [ ] 39-04-PLAN.md — Wave 3: Dependency Cleanup (C8) + Primitives Packaging (P38) — dep categories, SDK validation, sync check
+  - [ ] 39-05-PLAN.md — Wave 4: Integration Verification & Compliance Audit — regression, audit, E2E smoke test, state update
+- [ ] **P40: Public Ship Readiness** — GitHub polish (README, LICENSE, CONTRIBUTING, CI badges). npm package prep (package.json exports, publish workflow, .npmignore). Community-facing documentation. Final build + smoke test. Repo open-sourced. [GSD-reval: NO] [Arch-src: N/A - docs + config only] [UAT: npm publish dry-run, GitHub public repo verified]
 
 ---
 
@@ -618,6 +626,21 @@ Plans:
 
 - [x] Phase 20 direct execution — dependency cleanup completed in `38e0bd8f`; progress/state manifests updated in `b3875fd6`. Evidence: `package.json`/`package-lock.json` dependency cleanup, `.planning/STATE.md` focus advanced to Phase 21, `AGENTS.md` current phase context updated.
 
+### Phase 39: Integration Completion & Hardening — Core Stability
+
+**Goal:** As a project maintainer, I want to fix all test failures and typecheck errors and ensure the build succeeds, so that the codebase has a solid foundation before deeper audits.
+**Mode:** mvp
+**Requirements:** TBD
+**Depends on:** P36, P37, P38
+**Plans:** 5 plans (4 Waves)
+
+### Phase 40: Public Ship Readiness
+
+**Goal:** Polish GitHub repo (README, LICENSE, CONTRIBUTING, CI badges), finalize npm package exports and publish workflow, audit `.gitignore`/`.npmignore`, write community-facing documentation, and run final build + smoke test for public open-source release.
+**Requirements:** TBD
+**Depends on:** P39
+**Plans:** TBD
+
 ---
 
 ### Completed Historical Phases (13-16)
@@ -703,7 +726,7 @@ Plans:
 
 ## Cluster-Based Hard Restructuring (Reordered 2026-05-25 — Gap-Refined)
 
-26 mainline phases (P21-P38) + 8 gap phases (P23.3-P23.10) following owner's 3-group framework with cluster dependency ordering: **D → A + C → P25 → P26 → B → E/F → G → H → I → J (parallel) → K → L**. Based on 16 research artifacts (6,621 LOC), 6 deep-analysis cluster reports, production session evidence (16,053 LOC), and phase-reordering analysis (4 critical violations). 8 integration gate phases (GAP-01 through GAP-08) added to verify cross-cluster compatibility before downstream consumption.
+28 mainline phases (P21-P40) + 8 gap phases (P23.3-P23.10) following owner's 3-group framework with cluster dependency ordering: **D → A + C → P25 → P26 → B → E/F → G → H → I → J (parallel) → K → L**. Based on 16 research artifacts (6,621 LOC), 6 deep-analysis cluster reports, production session evidence (16,053 LOC), and phase-reordering analysis (4 critical violations). 8 integration gate phases (GAP-01 through GAP-08) added to verify cross-cluster compatibility before downstream consumption.
 
 **Phase 23.2 Status:** ✅ COMPLETE — all 5 session-tracker bugs fixed (assistant text extraction, compaction summary, tool attribution race, hierarchy manifest, actor metadata). See `.planning/phases/P23.2/` for execution evidence.
 
