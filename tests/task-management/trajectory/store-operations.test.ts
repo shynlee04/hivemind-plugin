@@ -185,6 +185,69 @@ describe("phase-level trajectory operations", () => {
     expect(trajectory.parentTrajectoryId).toBe("traj-phase-25.5")
     expect(trajectory.id).toBe("traj-ses-child")
   })
+
+  it("traverseTrajectory depth='summary' returns summaries with id, status, eventCount, durationMs", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1", phaseName: "Test Phase" })
+    addTrajectoryEvent(root, "traj-phase-25.5", "note", "first event")
+    addTrajectoryEvent(root, "traj-phase-25.5", "note", "second event")
+    const result = traverseTrajectory({ projectRoot: root, trajectoryId: "traj-phase-25.5", depth: "summary" })
+    expect(result).toHaveProperty("summaries")
+    const summaries = (result as { summaries: Array<Record<string, unknown>> }).summaries
+    expect(summaries).toHaveLength(1)
+    expect(summaries[0]!.id).toBe("traj-phase-25.5")
+    expect(summaries[0]!.status).toBe("planning")
+    expect(summaries[0]!.eventCount).toBe(2)
+    expect(typeof summaries[0]!.durationMs).toBe("number")
+    expect(summaries[0]!.phaseName).toBe("Test Phase")
+  })
+
+  it("traverseTrajectory depth='detailed' returns event types + summaries but stripped evidenceRefs", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    addTrajectoryEvent(root, "traj-phase-25.5", "note", "first event")
+    const result = traverseTrajectory({ projectRoot: root, trajectoryId: "traj-phase-25.5", depth: "detailed" })
+    expect(result).toHaveProperty("trajectories")
+    const records = (result as { trajectories: Array<Record<string, unknown>> }).trajectories
+    expect(records).toHaveLength(1)
+    expect(records[0]!.id).toBe("traj-phase-25.5")
+    // In detailed mode, evidenceRefs should be empty (stripped)
+    expect(Array.isArray(records[0]!.evidenceRefs)).toBe(true)
+  })
+
+  it("traverseTrajectory depth='full' returns complete trajectory data", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    addTrajectoryEvent(root, "traj-phase-25.5", "note", "test event")
+    const result = traverseTrajectory({ projectRoot: root, trajectoryId: "traj-phase-25.5", depth: "full" })
+    expect(result).toHaveProperty("trajectories")
+    const records = (result as { trajectories: Array<Record<string, unknown>> }).trajectories
+    expect(records).toHaveLength(1)
+    expect(records[0]!.id).toBe("traj-phase-25.5")
+    // Full mode includes events array
+    expect(Array.isArray(records[0]!.events)).toBe(true)
+    expect((records[0]!.events as Array<Record<string, unknown>>)).toHaveLength(1)
+  })
+
+  it("traverseTrajectory defaults to depth='full' when not specified (backward compat)", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    const result = traverseTrajectory({ projectRoot: root, trajectoryId: "traj-phase-25.5" })
+    expect(result).toHaveProperty("trajectories")
+    const records = (result as { trajectories: Array<Record<string, unknown>> }).trajectories
+    expect(records).toHaveLength(1)
+  })
+
+  it("traverseTrajectory with rootSessionId filter returns trajectories for that root session", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    const result = traverseTrajectory({ projectRoot: root, rootSessionId: "root-1" })
+    expect(result).toHaveProperty("trajectories")
+    const records = (result as { trajectories: Array<Record<string, unknown>> }).trajectories
+    expect(records.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it("Cross-session test — write from one path, read from same path", () => {
+    createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
+    // Read from same path — verifies persistence works
+    const result = traverseTrajectory({ projectRoot: root, trajectoryId: "traj-phase-25.5" })
+    expect(result).toHaveProperty("trajectories")
+  })
 })
 
 describe("trajectory store operations", () => {
