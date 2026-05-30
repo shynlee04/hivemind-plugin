@@ -104,6 +104,7 @@ export class DelegationManager {
 
   /** Forward session-error events to the runtime adapter and v2 coordinator. */
   handleSessionError(sessionId: string, error?: unknown): void {
+    this.runtime?.handleSessionError(sessionId, error)
     this.options.coordinator?.handleSessionError?.(sessionId, error)
   }
 
@@ -135,7 +136,18 @@ export class DelegationManager {
 
   /** List delegations, optionally filtered by parent session. */
   listDelegations(sessionId?: string): Delegation[] {
-    const delegations = this.options.lifecycle?.list() ?? this.runtime?.getAllDelegations() ?? []
+    const v2List = this.options.lifecycle?.list() ?? []
+    const v1List = this.runtime?.getAllDelegations() ?? []
+    
+    // Concatenate and dedup by id, prioritizing v2 over v1 if ids overlap
+    const map = new Map<string, Delegation>()
+    for (const d of v1List) {
+      map.set(d.id, d)
+    }
+    for (const d of v2List) {
+      map.set(d.id, d)
+    }
+    const delegations = Array.from(map.values())
     return sessionId ? delegations.filter((delegation) => delegation.parentSessionId === sessionId) : delegations
   }
 

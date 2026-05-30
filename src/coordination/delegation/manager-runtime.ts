@@ -295,6 +295,22 @@ export class DelegationManager {
     this.state.transitionToTerminal(delegationId, "error", "Delegated session deleted before completion")
   }
 
+  handleSessionError(sessionId: string, error?: unknown): void {
+    const delegationId = this.state.getDelegationIdForSession(sessionId)
+    if (!delegationId) return
+    const delegation = this.state.get(delegationId)
+    if (!delegation) {
+      this.state.cleanupTracking(delegationId, sessionId)
+      return
+    }
+    const message = error instanceof Error
+      ? error.message
+      : error
+        ? String(error)
+        : "Delegated session encountered an error"
+    this.state.transitionToTerminal(delegationId, "error", message)
+  }
+
   async recoverPending(): Promise<void> {
     for (const persistedDelegation of readPersistedDelegations()) {
       const delegation = { ...persistedDelegation }

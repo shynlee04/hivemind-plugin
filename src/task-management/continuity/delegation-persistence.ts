@@ -64,12 +64,32 @@ export function persistDelegations(delegations: Delegation[]): void {
 
   const filePath = getDelegationsFilePath()
   mkdirSync(dirname(filePath), { recursive: true })
+
+  // Read existing persisted delegations to perform read-merge-write
+  let existing: Delegation[] = []
+  try {
+    existing = readPersistedDelegations()
+  } catch (error) {
+    // If the file is corrupt or doesn't exist, log and proceed with incoming only
+    console.error(`[Harness] persistDelegations: failed to read existing delegations, overwriting: ${error}`)
+  }
+
+  // Merge: incoming overrides/updates existing by id, preserving others
+  const mergedMap = new Map<string, Delegation>()
+  for (const d of existing) {
+    mergedMap.set(d.id, d)
+  }
+  for (const d of delegations) {
+    mergedMap.set(d.id, d)
+  }
+  const mergedList = Array.from(mergedMap.values())
+
   // Atomic write: write to temp file first, then rename to prevent
   // corrupt reads if the process crashes mid-write. Use a unique temp file
   // per write so overlapping persistence calls cannot consume each other's
   // temp file before renameSync runs.
   const tmpFile = `${filePath}.${process.pid}.${randomUUID()}.tmp`
-  const redactedDelegations = redactBoundaryFields(delegations, {
+  const redactedDelegations = redactBoundaryFields(mergedList, {
     redactFieldNames: ["result", "error", "fallbackReason"],
   })
   writeFileSync(tmpFile, `${JSON.stringify(redactedDelegations, null, 2)}\n`, "utf-8")
