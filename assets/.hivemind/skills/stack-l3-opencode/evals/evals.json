@@ -1,0 +1,24 @@
+{
+  "skill": "stack-opencode",
+  "version": "2026-04-29",
+  "scenarios": [
+    {
+      "id": "eval-1",
+      "scenario": "Agent is creating a new OpenCode tool and needs to validate the Zod schema design",
+      "expected_behavior": "Skill's Zod reliability matrix shows z.string/number/boolean → ✅ Reliable, z.transform/refine/lazy → ❌ Silent failure",
+      "pass_condition": "Agent avoids using z.transform()/z.refine()/z.lazy() in tool schema based on the reliability matrix"
+    },
+    {
+      "id": "eval-2",
+      "scenario": "Agent tries to await context.ask() and gets unexpected behavior (returns Effect, not Promise)",
+      "expected_behavior": "Skill's gotcha #2 documents: 'context.ask() returns Effect, not Promise — await does nothing; use Effect.runPromise()'",
+      "pass_condition": "Agent finds gotcha #2 and replaces await with Effect.runPromise() pattern"
+    },
+    {
+      "id": "eval-3",
+      "scenario": "Agent needs to decide whether to implement a feature as a tool or a hook",
+      "expected_behavior": "Skill's tool vs hook decision tree correctly routes based on LLM visibility, behavior modification, observation, and lifecycle events",
+      "pass_condition": "Agent follows decision tree and correctly selects tool or hook based on feature requirements"
+    }
+  ]
+}

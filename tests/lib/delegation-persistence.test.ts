@@ -1,0 +1,204 @@
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+
+import type { Delegation } from "../../src/shared/types.js"
+
+function makeDelegation(id: string): Delegation {
+  return {
+    id,
+    parentSessionId: `parent-${id}`,
+    childSessionId: `child-${id}`,
+    agent: "builder",
+    status: "dispatched",
+    createdAt: Date.now(),
+    lastMessageCount: 0,
+    stablePollCount: 0,
+    lastMessageCountChangeAt: Date.now(),
+    executionMode: "sdk",
+    workingDirectory: process.cwd(),
+    queueKey: "agent:builder",
+    nestingDepth: 1,
+  }
+}
+
+describe("delegation persistence", () => {
+  let stateDir: string
+  let previousStateDir: string | undefined
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.doUnmock("node:fs")
+    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+    stateDir = mkdtempSync(join(tmpdir(), "delegation-persistence-"))
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+  })
+
+  afterEach(() => {
+    vi.doUnmock("node:fs")
+    vi.resetModules()
+    if (previousStateDir === undefined) {
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+    } else {
+      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
+    }
+    rmSync(stateDir, { recursive: true, force: true })
+  })
+
+  it("does not throw ENOENT when persistence writes overlap the same target file", async () => {
+    let nestedPersist: ((delegations: Delegation[]) => void) | undefined
+    let triggeredNestedWrite = false
+
+    vi.doMock("node:fs", async () => {
+      const actual = await vi.importActual<typeof import("node:fs")>("node:fs")
+      return {
+        ...actual,
+        writeFileSync: vi.fn<typeof actual.writeFileSync>((...args) => {
+          actual.writeFileSync(...args)
+          const [file] = args
+          const filePath = String(file)
+          if (!triggeredNestedWrite && filePath.includes("delegations.json") && filePath.endsWith(".tmp")) {
+            triggeredNestedWrite = true
+            nestedPersist?.([makeDelegation("nested")])
+          }
+        }),
+      }
+    })
+
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
+    nestedPersist = persistence.persistDelegations
+
+    expect(() => persistence.persistDelegations([makeDelegation("outer")])).not.toThrow()
+
+    const persisted = JSON.parse(readFileSync(persistence.getDelegationsFilePath(), "utf-8")) as Delegation[]
+    expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]))
+  })
+
+  it("quarantines corrupt delegations.json and throws a visible harness error", async () => {
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
+    writeFileSync(persistence.getDelegationsFilePath(), "NOT VALID JSON {{{", "utf-8")
+
+    expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\]/)
+    expect(existsSync(persistence.getDelegationsFilePath())).toBe(false)
+    expect(readdirSync(stateDir).some((name) => name.startsWith("delegations.json.corrupt-"))).toBe(true)
+  })
+
+  it("reports non-array delegations.json as invalid persisted shape", async () => {
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
+    writeFileSync(persistence.getDelegationsFilePath(), JSON.stringify({ invalid: true }), "utf-8")
+
+    expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\].*array/)
+  })
+
+  it("normalizes invalid persisted status values to explicit error metadata", async () => {
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
+    writeFileSync(
+      persistence.getDelegationsFilePath(),
+      `${JSON.stringify([{ ...makeDelegation("invalid-status"), status: "unknown-success" }])}\n`,
+      "utf-8",
+    )
+
+    const delegations = persistence.readPersistedDelegations()
+    expect(delegations[0]).toEqual(expect.objectContaining({
+      status: "error",
+      terminalKind: "error",
+      error: expect.stringContaining("Invalid persisted delegation status"),
+    }))
+  })
+
+  it("redacts delegation result, error, and fallbackReason while preserving operational identifiers", async () => {
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
+    persistence.persistDelegations([
+      {
+        ...makeDelegation("redacted"),
+        parentSessionId: "ses-parent-redacted",
+        childSessionId: "ses-child-redacted",
+        queueKey: "category:command",
+        ptySessionId: "pty-redacted",
+        result: "OPENAI_API_KEY=sk-test-123",
+        error: "Authorization: Bearer abc.def.ghi",
+        fallbackReason: "PASSWORD=hunter2",
+      },
+    ])
+
+    const raw = readFileSync(persistence.getDelegationsFilePath(), "utf-8")
+    expect(raw).toContain("OPENAI_API_KEY=[REDACTED:API_KEY]")
+    expect(raw).toContain("Authorization: Bearer [REDACTED:TOKEN]")
+    expect(raw).toContain("PASSWORD=[REDACTED:PASSWORD]")
+    expect(raw).toContain("ses-parent-redacted")
+    expect(raw).toContain("ses-child-redacted")
+    expect(raw).toContain("category:command")
+    expect(raw).toContain("pty-redacted")
+    expect(raw).not.toContain("sk-test-123")
+    expect(raw).not.toContain("abc.def.ghi")
+    expect(raw).not.toContain("hunter2")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// G-4: Delegation persistence is unconditional (commit_docs gate removed)
+// ---------------------------------------------------------------------------
+
+describe("delegation persistence unconditional (G-4)", () => {
+  let stateDir: string
+  let previousStateDir: string | undefined
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.doUnmock("node:fs")
+    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+    stateDir = mkdtempSync(join(tmpdir(), "delegation-unconditional-"))
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+  })
+
+  afterEach(() => {
+    vi.doUnmock("node:fs")
+    vi.resetModules()
+    if (previousStateDir === undefined) {
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+    } else {
+      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
+    }
+    rmSync(stateDir, { recursive: true, force: true })
+  })
+
+  it("persists delegation data regardless of commit_docs config (G-4)", async () => {
+    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/config/subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(
+        HivemindConfigsSchema.parse({ commit_docs: false, workflow: { use_worktrees: false } }),
+      ),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
+    const filePath = persistence.getDelegationsFilePath()
+
+    persistence.persistDelegations([makeDelegation("del-g4-test")])
+
+    // File MUST be written to disk even when commit_docs is false
+    expect(existsSync(filePath)).toBe(true)
+    const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
+    expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: "del-g4-test" })]))
+  })
+
+  it("writes to disk with default config (default behavior)", async () => {
+    const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/config/subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(getDefaultConfigs()),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
+    const filePath = persistence.getDelegationsFilePath()
+
+    persistence.persistDelegations([makeDelegation("del-commit-defaults")])
+
+    // File should exist on disk regardless of config
+    expect(existsSync(filePath)).toBe(true)
+  })
+})

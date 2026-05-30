@@ -1,43 +1,65 @@
-# Build artifacts
+# Dependencies
 node_modules/
+
+# Build output
 dist/
-*.log
-.DS_Store
-.env
-.env.local
 coverage/
+*.tsbuildinfo
 
+# Logs
+*.log
+npm-debug.log*
 
+# Environment files
+.env
+!.env.*
 
-# Git worktrees
-.worktrees/
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
 
-# Development artifacts - INTERNAL ONLY
-.planning/
-.plan/
-.hivemind/
-.opencode/
-.cursor/
-.iflow/
-.crush/
-.beads/
-tasks/
-session-*.md
-*.tmp.txt
-test_output*.txt
-
-# IDE/Agent configs - USER LOCAL
+# IDE-managed skill sync artifacts (not project deliverables)
+.trae/
+.windsurf/
 .agent/
 .agents/
+.codex/
+.github/skills/
 .claude/
-.kilocode/
-.qoder/
-.windsurf/
+.codexdisabled/
+!.hivemind/
+!package-lock.json
 
-# Internal documentation - NOT FOR PUBLIC
-AGENT_RULES.md
-AGENTS.md
+# Runtime state
+!.opencode/
+.harness/
 
-# Backup files
+# Hivemind runtime state — gitignored (per Q6 + WS1-01-SPEC §7)
+.hivemind/state/
+.hivemind/event-tracker/
+.hivemind/journal/
+.hivemind/lineage/
+.hivemind/daily-notes/
+.hivemind/hm-brain/
+.hivemind/delegation-managements/
+.hivemind/task-managements/
+.hivemind/runtime/
+.hivemind/artifacts/
+.hivemind/sidecar/
+.hivemind/logs/
+.hivemind/poor-prompts/
+.hivemind/uat/
+
+# Hivemind committed — project config + structure (NOT gitignored)
+# configs.json, manifests/, hf-brain/, registries/, onboarding/, .gitkeep, README.md
+
+# Temporary files
 *.bak
 *.bak.*
+*.tmp
+*.backup
+*.backup*
+
+.qwen/
+gha-creds-*.json

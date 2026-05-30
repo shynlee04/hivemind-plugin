@@ -1,0 +1,32 @@
+{
+  "name": "@json-render/react",
+  "version": "0.18.x",
+  "coreVersion": "0.18.x",
+  "maintainer": "Vercel Labs",
+  "repository": "vercel-labs/json-render",
+  "repositoryUrl": "https://github.com/vercel-labs/json-render",
+  "docsUrl": "https://json-render.dev",
+  "npmPackage": "https://www.npmjs.com/package/@json-render/react",
+  "context7Id": "/vercel-labs/json-render",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "zod": "^4.0.0"
+  },
+  "ecosystemPackages": {
+    "@json-render/core": "Schemas, catalogs, AI prompts, dynamic props, SpecStream utilities",
+    "@json-render/react": "React renderer, contexts, hooks",
+    "@json-render/shadcn": "36 pre-built shadcn/ui components (Radix UI + Tailwind CSS)",
+    "@json-render/devtools-react": "Inspector panel (tree-shakes to null in production)",
+    "@json-render/mcp": "MCP Apps integration",
+    "@json-render/zustand": "Zustand state adapter",
+    "@json-render/redux": "Redux state adapter",
+    "@json-render/jotai": "Jotai state adapter",
+    "@json-render/xstate": "XState state adapter"
+  },
+  "repomixOutputId": "95e78f364ae7683e",
+  "repomixOutputPath": "/var/folders/xq/pq0b7jpn75s3l6d0pzpyw2380000gn/T/repomix/mcp-outputs/1PKsCi/repomix-output.xml",
+  "repomixTotalFiles": 54,
+  "repomixTotalTokens": 131347,
+  "analysisDate": "2026-04-28"
+}

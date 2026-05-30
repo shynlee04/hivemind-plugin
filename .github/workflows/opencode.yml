@@ -1,0 +1,31 @@
+name: opencode
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  opencode:
+    if: |
+      contains(github.event.comment.body, '/oc') ||
+      contains(github.event.comment.body, '/opencode')
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+       - name: Checkout repository
+         uses: actions/checkout@v6
+         with:
+           fetch-depth: 1
+           persist-credentials: true
+
+       - name: Run OpenCode
+         uses: anomalyco/opencode/github@latest
+         env:
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+         with:
+          model: zai-coding-plan/glm-5.1
+          # share: true
+          # github_token:ithub_pat_11BZXQNEI03BNeBkdOTTjW_LkI1avnB1SshOY7jN3fGBef2tHKmrLoYaKmSrEWCfF8DHJYTEDKDcRjGFE8

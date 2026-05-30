@@ -1,0 +1,46 @@
+{
+  "skill": "hm-l3-tool-capability-matrix",
+  "version": "2026-04-30-initial",
+  "scenarios": [
+    {
+      "name": "determine L2 researcher permissions",
+      "prompt": "What tools should an hm-l2-researcher agent have? I'm configuring a new agent for deep research tasks.",
+      "expected": [
+        "read: allow",
+        "edit: ask",
+        "write: ask",
+        "glob: allow",
+        "grep: allow",
+        "webfetch: allow",
+        "bash restricted to git+node+npx",
+        "task: ask",
+        "hm lineage STRICT boundary"
+      ]
+    },
+    {
+      "name": "cross-lineage violation check",
+      "prompt": "My hm agent needs to create a new skill. Can I just add configure-primitive to its permissions?",
+      "expected": [
+        "No",
+        "route to hf-orchestrator",
+        "hm STRICT cannot access hf tools",
+        "configure-primitive is hf lineage only",
+        "cross-lineage delegation hf→hm only"
+      ]
+    },
+    {
+      "name": "what tools are available for web research",
+      "prompt": "I need to do web research. What tools are available for searching and fetching web content?",
+      "expected": [
+        "webfetch",
+        "websearch",
+        "Brave Search",
+        "Tavily",
+        "Exa",
+        "tavily_search",
+        "brave_web_search",
+        "exa_web_search_exa"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "stack_name": "opencode",
+  "packages": ["@opencode-ai/sdk", "@opencode-ai/plugin"],
+  "version": "1.14.28",
+  "source_repo": "https://github.com/sst/opencode",
+  "source_paths": ["packages/sdk/js/src/", "packages/plugin/src/"],
+  "ingest_date": "2026-04-28",
+  "ingest_tools": ["deepwiki", "context7", "github-api"],
+  "last_validated": "2026-04-28",
+  "update_command": "scripts/update.sh",
+  "tags": ["sdk", "plugin", "typescript", "session", "tools", "hooks", "delegation", "zod", "effect"],
+  "repomix_status": "TIMEOUT — repo too large for repomix download; source fetched via GitHub API instead",
+  "source_files": {
+    "plugin": {
+      "index.ts": { "size_bytes": 8785, "sha": "71a3278cbb074604270945fe061f18ffa7faa05a" },
+      "tool.ts": { "size_bytes": 1080, "sha": "3105bf534bef6065b0f9b775b5c724d8e6019675" },
+      "shell.ts": { "size_bytes": 3055, "sha": "56733fdb3c27ccea2d108a43674d6fa6fa569e0a" },
+      "tui.ts": { "size_bytes": 12359, "sha": "1c57a71ab31557e16a0c62d38238d16266242e2a" },
+      "example.ts": { "size_bytes": 397, "sha": "9d7e178a96a18a9a23ed16c87967705e15007bc5" },
+      "example-workspace.ts": { "size_bytes": 849, "sha": "9253284507ffb01ccb6249a8b93ba6c0bd40340d" }
+    },
+    "sdk": {
+      "index.ts": { "size_bytes": 453, "sha": "d044f5ad66e49daa401a74a44a19fc46dbd9d2c3" },
+      "client.ts": { "size_bytes": 1581, "sha": "05f46382523c468816824dede4872c204891625b" },
+      "server.ts": { "size_bytes": 3128, "sha": "2d1ab29fc92880f2f5a35375f26012b3725a8dcd" },
+      "process.ts": { "size_bytes": 1048, "sha": "3111b424aa18e41623b6b13e9f9b3e1dbe7b265c" },
+      "gen/sdk.gen.ts": { "size_bytes": 34677, "sha": "5e3e67e1c03080d0e31c8ca362a8e9293ffe1324" },
+      "gen/types.gen.ts": { "size_bytes": 68342, "sha": "8eefe5bfe985f30de4f3fc41020a56f6ab11ac00" }
+    }
+  }
+}

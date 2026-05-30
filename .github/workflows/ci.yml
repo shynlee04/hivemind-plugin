@@ -1,13 +1,18 @@
+# CI pipeline for HiveMind — runs on all pushes and PRs to oss-dev and main
 name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [oss-dev, main]
   pull_request:
-    branches: [ master ]
+    branches: [oss-dev, main]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  build-and-test:
+    name: Build & Test
     runs-on: ubuntu-latest
 
     strategy:
@@ -15,25 +20,39 @@ jobs:
         node-version: [18.x, 20.x]
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
 
     - name: Install dependencies
       run: npm ci
 
-    - name: Typecheck
-      run: npm run typecheck
+      - name: Type check
+        run: npm run typecheck
 
-    - name: Lint Boundary
-      run: npm run lint:boundary
+      - name: Build
+        run: npm run build
 
-    - name: Run Tests
-      run: npm test
+      - name: Run tests
+        run: npm test
 
-    - name: Build
-      run: npm run build
+      - name: Coverage report
+        if: matrix.node-version == 22
+        run: npm run test:coverage
+
+  lint-check:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck

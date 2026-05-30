@@ -1,0 +1,491 @@
+import { CommandDelegationHandler } from "../command-delegation/handler.js"
+import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "../concurrency/queue.js"
+import type { CompletionDetector } from "../completion/detector.js"
+import { readPersistedDelegations } from "../../task-management/continuity/delegation-persistence.js"
+import {
+  buildDelegationResult,
+  DelegationStateMachine,
+} from "./state-machine.js"
+import type { PtyManager } from "../../features/background-command/pty/pty-manager.js"
+import { SdkDelegationHandler } from "../sdk-delegation/handler.js"
+import { getAppAgents } from "../../shared/app-api.js"
+import { sendPromptAsync, type OpenCodeClient } from "../../shared/session-api.js"
+import { DEFAULT_RUNTIME_POLICY, resolveConcurrencyForKey } from "../../shared/runtime-policy.js"
+import { getCachedConfig } from "../../config/subscriber.js"
+import { enrichAgentFromPrimitives, parsePermissionRecord, parseToolBooleans } from "../spawner/agent-primitive-policy.js"
+import { resolveParentWorkingDirectory } from "../spawner/parent-directory.js"
+import { spawnDelegatedSession } from "../spawner/session-creator.js"
+import { buildSdkSpawnRequest, type DelegateParams, type ValidatedAgent } from "../spawner/spawn-request-builder.js"
+import {
+  type CommandDelegationParams,
+  type Delegation,
+  type DelegationResult,
+  type RuntimePolicy,
+  MAX_DELEGATION_DEPTH,
+} from "../../shared/types.js"
+import type { BehavioralOverrides } from "../../routing/behavioral-profile/types.js"
+import type { DelegationMonitor } from "./monitor.js"
+import type { NotificationRouter } from "./notification-router.js"
+
+type QueueContext = { provider?: string; model?: string; agent?: string }
+
+interface DelegationManagerOptions {
+  ptyManager?: PtyManager | null
+  runtimePolicy?: RuntimePolicy
+  monitor?: Pick<DelegationMonitor, "start">
+  notificationRouter?: Pick<NotificationRouter, "register">
+}
+
+const DEFAULT_MANAGER_RUNTIME_POLICY: RuntimePolicy = {
+  ...DEFAULT_RUNTIME_POLICY,
+  trustedRuntime: {
+    ...DEFAULT_RUNTIME_POLICY.trustedRuntime,
+    builtinAsyncBackgroundChildSessions: true,
+  },
+}
+
+function resolveAcquireArgs(policy: RuntimePolicy, queueKey: string): { limit?: number; acquireTimeoutMs?: number } {
+  const concurrency = resolveConcurrencyForKey(policy, queueKey)
+  return {
+    limit: concurrency.limit === DEFAULT_RUNTIME_POLICY.concurrency.globalLimit ? undefined : concurrency.limit,
+    acquireTimeoutMs: concurrency.acquireTimeoutMs,
+  }
+}
+
+/**
+ * Build the OpenCode prompt-time tool map for delegated sessions.
+ *
+ * @param allowedTools - Tool IDs inherited from the resolved spawn policy.
+ * @returns A prompt-compatible tool allow/ask map with recursive delegation disabled.
+ */
+function buildDelegationPromptTools(allowedTools: readonly string[]): Record<string, boolean> {
+  return {
+    ...Object.fromEntries(allowedTools.map((toolName) => [toolName, true])),
+    "delegate-task": false,
+    task: false,
+  }
+}
+
+/**
+ * Public dispatch + concurrency entry point for SDK and command delegations.
+ *
+ * In-memory storage, terminal-state transitions, timer machinery, and pruning
+ * live in {@link DelegationStateMachine} (see `delegation-state-machine.ts`).
+ * `DelegationManager` composes one instance and forwards reads/writes through
+ * it, keeping this module focused on dispatch, concurrency, agent validation,
+ * and recovery wiring.
+ */
+export class DelegationManager {
+  private readonly state: DelegationStateMachine
+  private readonly semaphore = new DelegationConcurrencyQueue()
+  private readonly commandHandler: CommandDelegationHandler
+  private readonly sdkHandler: SdkDelegationHandler
+  private readonly runtimePolicy: RuntimePolicy
+  private readonly monitor: Pick<DelegationMonitor, "start"> | undefined
+  private readonly notificationRouter: Pick<NotificationRouter, "register"> | undefined
+  private completionDetector: CompletionDetector | undefined
+
+  constructor(
+    private readonly client: OpenCodeClient,
+    options: DelegationManagerOptions = {},
+  ) {
+    this.runtimePolicy = options.runtimePolicy ?? DEFAULT_MANAGER_RUNTIME_POLICY
+    this.monitor = options.monitor
+    this.notificationRouter = options.notificationRouter
+    this.state = new DelegationStateMachine({
+      client,
+      clearExternalTimers: (id) => {
+        this.sdkHandler.clearTimers(id)
+        this.commandHandler.clearTimers(id)
+      },
+    })
+    const dm = this
+    this.commandHandler = new CommandDelegationHandler(options.ptyManager ?? null, {
+      getDelegation: (id) => dm.state.get(id),
+      registerDelegation: (d, s) => dm.state.registerDelegation(d, s),
+      persistAllDelegations: () => dm.state.persistAll(),
+      buildResult: (d) => buildDelegationResult(d),
+      cleanupTracking: (id, sid) => dm.state.cleanupTracking(id, sid),
+      onTerminal: (id, terminalState, err, terminalDetail) => dm.state.transitionToTerminal(id, terminalState, err, terminalDetail),
+    })
+    this.sdkHandler = new SdkDelegationHandler(client, {
+      getDelegation: (id) => dm.state.get(id),
+      persistAllDelegations: () => dm.state.persistAll(),
+      cleanupTracking: (id, sid) => dm.state.cleanupTracking(id, sid),
+      scheduleSafetyCeiling: (d) => dm.state.scheduleSafetyCeiling(d),
+      onSessionIdle: (sid) => dm.handleSessionIdle(sid),
+      onTerminal: (id, terminalState, err) => dm.state.transitionToTerminal(id, terminalState, err),
+      // Phase 36.1 R-COMPLETION-DETECTOR-05: lazy accessor avoids the
+      // circular construction order in plugin.ts (lifecycle manager is
+      // built *after* DelegationManager and *takes* DelegationManager as
+      // an arg). The plugin sets the detector via setCompletionDetector()
+      // once the lifecycle manager exists.
+      getCompletionDetector: () => dm.completionDetector,
+    })
+  }
+
+  /**
+   * Wires the lifecycle-owned `CompletionDetector` after construction.
+   *
+   * Phase 36.1: invoked from the plugin composition root once the
+   * lifecycle manager has been instantiated, completing the dual-signal
+   * completion path. Idempotent — later calls overwrite the previous
+   * reference, which is safe because the detector is treated as a
+   * lifelong singleton owned by the lifecycle manager.
+   *
+   * @param detector - The lifecycle-owned detector instance.
+   */
+  setCompletionDetector(detector: CompletionDetector): void {
+    this.completionDetector = detector
+  }
+
+  /**
+   * Applies behavioral profile guardrail to concurrency.
+   * Only TIGHTENS — never loosens beyond workspace runtime policy.
+   *
+   * **API surface for Phase WS-4** (auto-intent/workflow router): This method
+   * is intentionally NOT called from `dispatch()` yet. The WS-4 phase will wire
+   * the resolved behavioral profile into the dispatch path, calling this method
+   * to adjust concurrency limits before `semaphore.acquire()`. Until then, the
+   * method is exposed so the integration surface exists and is tested.
+   *
+   * @param guardrailLevel - The behavioral guardrail level from the resolved profile
+   * @returns Adjusted concurrency limit (undefined = no adjustment)
+   * @see D-12 in CA-02-CONTEXT.md
+   */
+  applyBehavioralGuardrail(guardrailLevel: BehavioralOverrides["guardrailLevel"]): number | undefined {
+    if (guardrailLevel === "strict") {
+      // strict: cap concurrent delegations to 1
+      return 1
+    }
+    // moderate, minimal: no adjustment — respect runtime policy as-is
+    return undefined
+  }
+
+  private resolveNestingDepth(parentSessionId: string): number {
+    const parentDelegationId = this.state.getDelegationIdForSession(parentSessionId)
+    if (!parentDelegationId) return 1
+    const parentDelegation = this.state.get(parentDelegationId)
+    return (parentDelegation?.nestingDepth ?? 0) + 1
+  }
+
+  async dispatch(params: DelegateParams): Promise<DelegationResult> {
+    // CA-03: parallelization toggle gate (D-14)
+    // When false, delegations are sequential — concurrency limit clamped to 1.
+    const config = getCachedConfig()
+    const parallelizationEnabled = config.parallelization
+
+    const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
+    if (nestingDepth > MAX_DELEGATION_DEPTH) {
+      throw new Error(
+        `[Harness] Maximum delegation nesting depth (${MAX_DELEGATION_DEPTH}) exceeded. ` +
+        `Current depth: ${nestingDepth}. Use result retrieval pattern instead of further delegation.`,
+      )
+    }
+    const workingDirectory = resolveParentWorkingDirectory({
+      contextDirectory: params.workingDirectory,
+      worktree: params.worktree,
+    })
+    const agent = await this.validateAgent(params.agent, workingDirectory)
+    const canonicalContext = this.buildCanonicalQueueContext(agent, params)
+    const acquireQueueKey = buildDelegationQueueKey(canonicalContext)
+    const spawnQueueKey = buildDelegationQueueKey(canonicalContext)
+    if (spawnQueueKey !== acquireQueueKey) {
+      throw new Error("[Harness] Canonical delegation queue-key drift detected.")
+    }
+    const concurrency = resolveAcquireArgs(this.runtimePolicy, acquireQueueKey)
+    // CA-03 (D-14): When parallelization is false, force sequential dispatch
+    const effectiveLimit = parallelizationEnabled ? concurrency.limit : 1
+    const release = await this.semaphore.acquire(acquireQueueKey, effectiveLimit, concurrency.acquireTimeoutMs)
+    try {
+      const child = await spawnDelegatedSession({
+        client: this.client as never,
+        request: buildSdkSpawnRequest(params, agent, workingDirectory),
+      })
+
+      const delegation: Delegation = {
+        id: crypto.randomUUID(),
+        parentSessionId: params.parentSessionId,
+        childSessionId: child.childSessionId,
+        agent: agent.name,
+        status: "dispatched",
+        createdAt: Date.now(),
+        lastMessageCount: 0,
+        stablePollCount: 0,
+        lastMessageCountChangeAt: Date.now(),
+        nestingDepth,
+        executionMode: "sdk",
+        workingDirectory,
+        queueKey: acquireQueueKey,
+      }
+      this.state.registerDelegation(delegation, true)
+      this.state.persistAll()
+      this.notificationRouter?.register(delegation.id, params.parentSessionId)
+      try {
+        const promptBody = {
+          parts: [{ type: "text", text: params.prompt }],
+          agent: agent.name,
+          tools: buildDelegationPromptTools(child.allowedTools),
+        }
+        // Phase 46.1 R-ALWAYS-ASYNC-01..03 (audit 2026-04-30, Finding 3
+        // VALIDATED): always dispatch the child via sendPromptAsync. The
+        // previous code branched on
+        //   this.runtimePolicy.trustedRuntime.builtinAsyncBackgroundChildSessions
+        // and silently downgraded to the synchronous sendPrompt path when
+        // the flag was false — including the *default* policy case. That
+        // turned every "background" delegation into a foreground call that
+        // blocked the parent until the child responded, which is the
+        // opposite of what `run_in_background: true` is supposed to mean.
+        // The legacy flag is kept on RuntimePolicy for backwards-compat
+        // with on-disk policy YAML, but is no longer consulted here.
+        await sendPromptAsync(this.client, delegation.childSessionId, promptBody)
+        this.state.transition(delegation.id, "running")
+        this.monitor?.start(delegation.id, params.parentSessionId)
+      } catch {
+        this.state.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
+        return buildDelegationResult(this.state.get(delegation.id) ?? delegation)
+      }
+      return buildDelegationResult(this.state.get(delegation.id) ?? delegation)
+    } finally {
+      release()
+    }
+  }
+
+  async dispatchCommand(params: CommandDelegationParams): Promise<DelegationResult> {
+    const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
+    if (nestingDepth > MAX_DELEGATION_DEPTH) {
+      throw new Error(
+        `[Harness] Maximum delegation nesting depth (${MAX_DELEGATION_DEPTH}) exceeded. ` +
+        `Current depth: ${nestingDepth}. Use result retrieval pattern instead of further delegation.`,
+      )
+    }
+    const queueContext = this.buildCommandQueueContext(params)
+    const queueKey = buildDelegationQueueKey(queueContext)
+    const concurrency = resolveAcquireArgs(this.runtimePolicy, queueKey)
+    const release = await this.semaphore.acquire(queueKey, concurrency.limit, concurrency.acquireTimeoutMs)
+    try {
+      return await this.commandHandler.dispatchCommand(params, queueKey, nestingDepth)
+    } finally {
+      release()
+    }
+  }
+
+  handleSessionIdle(sessionId: string): void {
+    const delegationId = this.state.getDelegationIdForSession(sessionId)
+    if (!delegationId) return
+    const delegation = this.state.get(delegationId)
+    if (!delegation || delegation.executionMode !== "sdk") return
+    if (delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout") return
+    if (delegation.status === "dispatched") {
+      this.state.transition(delegationId, "running")
+    }
+    if (!this.sdkHandler.isPolling(delegationId)) {
+      this.sdkHandler.scheduleStabilityPoll(delegationId)
+    }
+  }
+
+  handleSessionDeleted(sessionId: string): void {
+    const delegationId = this.state.getDelegationIdForSession(sessionId)
+    if (!delegationId) return
+    const delegation = this.state.get(delegationId)
+    if (!delegation) {
+      this.state.cleanupTracking(delegationId, sessionId)
+      return
+    }
+    this.state.transitionToTerminal(delegationId, "error", "Delegated session deleted before completion")
+  }
+
+  async recoverPending(): Promise<void> {
+    for (const persistedDelegation of readPersistedDelegations()) {
+      const delegation = { ...persistedDelegation }
+      this.state.hydrateFromPersistence(delegation)
+      if (delegation.status !== "running" && delegation.status !== "dispatched") continue
+      if (delegation.executionMode === "sdk") {
+        this.state.trackSession(delegation.childSessionId, delegation.id)
+        await this.sdkHandler.recoverSdkDelegation(delegation)
+        continue
+      }
+      if (delegation.executionMode === "pty" && delegation.ptySessionId) {
+        this.commandHandler.recoverPtyDelegation(delegation)
+        continue
+      }
+      this.state.transitionToTerminal(
+        delegation.id,
+        "error",
+        "[Harness] Headless command delegation cannot be recovered after restart",
+        {
+          terminalKind: "non-resumable-after-restart",
+          explicitCancellation: false,
+        },
+      )
+    }
+  }
+
+  getStatus(delegationId: string): Delegation | undefined {
+    return this.state.get(delegationId)
+  }
+
+  getAllDelegations(): Delegation[] {
+    return this.state.getAll()
+  }
+
+  /**
+   * Check whether a caller session is in the recorded owner lineage for a delegation.
+   *
+   * @param callerSessionId - Session ID from the current OpenCode tool context.
+   * @param delegation - Target delegation record from memory or persisted storage.
+   * @returns True only for direct owners or explicitly recorded parent/child lineage.
+   */
+  canSessionAccessDelegation(callerSessionId: string | undefined, delegation: Delegation | undefined): boolean {
+    if (!callerSessionId || !delegation) {
+      return false
+    }
+    if (delegation.parentSessionId === callerSessionId) {
+      return true
+    }
+
+    // Walk up the delegation chain: find the recorded delegation for the caller,
+    // then check if any ancestor delegation's childSessionId matches the target's
+    // parentSessionId, or vice versa.
+    let currentDelegationId = this.state.getDelegationIdForSession(callerSessionId)
+    const visited = new Set<string>()
+
+    while (currentDelegationId && !visited.has(currentDelegationId)) {
+      visited.add(currentDelegationId)
+
+      if (currentDelegationId === delegation.id) {
+        return true
+      }
+
+      const currentDelegation = this.state.get(currentDelegationId)
+      if (!currentDelegation) break
+
+      // Check if the current delegation is the parent or child of the target
+      if (currentDelegation.childSessionId === delegation.parentSessionId) {
+        return true
+      }
+      if (currentDelegation.parentSessionId === delegation.childSessionId) {
+        return true
+      }
+
+      // Walk up to the parent of this delegation
+      currentDelegationId = this.state.getDelegationIdForSession(currentDelegation.parentSessionId)
+    }
+
+    return false
+  }
+
+  /**
+   * Return only active delegations visible to the caller's recorded lineage.
+   *
+   * @param callerSessionId - Session ID from the current OpenCode tool context.
+   * @returns In-memory delegation records visible to that caller.
+   */
+  getVisibleDelegationsForSession(callerSessionId: string): Delegation[] {
+    return this.state.getAll().filter((delegation) => this.canSessionAccessDelegation(callerSessionId, delegation))
+  }
+
+  /**
+   * Find the active delegation that owns a PTY session ID.
+   *
+   * @param ptySessionId - PTY session ID from `run-background-command` input.
+   * @returns The backing delegation when the PTY session is recorded.
+   */
+  getDelegationForPtySession(ptySessionId: string): Delegation | undefined {
+    return this.state.findByPtySession(ptySessionId)
+  }
+
+  /**
+   * Mark a delegation as user-cancelled via its PTY session id and return its
+   * resulting {@link DelegationResult}, or `undefined` when the PTY session is
+   * not recognised.
+   */
+  markCommandCancellationForPtySession(ptySessionId: string): DelegationResult | undefined {
+    return this.state.markCommandCancellationForPtySession(ptySessionId)
+  }
+
+  /**
+   * Remove terminal delegations older than `maxAgeMs` from the in-memory store
+   * and re-persist. Forwarded to {@link DelegationStateMachine.pruneCompletedDelegations}.
+   */
+  pruneCompletedDelegations(maxAgeMs?: number): number {
+    return this.state.pruneCompletedDelegations(maxAgeMs)
+  }
+
+  private async validateAgent(agent: string, projectRoot: string): Promise<ValidatedAgent> {
+    let agents: Array<Record<string, unknown>> | undefined
+
+    try {
+      agents = (await getAppAgents(this.client)).filter(
+        (entry): entry is Record<string, unknown> => !!entry && typeof entry === "object" && !Array.isArray(entry),
+      )
+    } catch (error) {
+      // R-AGENT-01: OpenCode server's /agent endpoint occasionally returns agents
+      // with missing required string fields, causing SDK Zod validation errors
+      // ("expected string, received undefined"). We gracefully degrade to
+      // unvalidated agent acceptance rather than blocking all delegation.
+      const message = error instanceof Error ? error.message : String(error)
+      if (message.includes("expected string, received undefined")) {
+        void this.client.app?.log?.({
+          body: {
+            service: "delegation",
+            level: "warn",
+            message: `[Harness] Agent list validation skipped — server returned agents with missing fields. Proceeding with unvalidated agent "${agent}".`,
+          },
+        })
+        return enrichAgentFromPrimitives({ name: agent }, projectRoot)
+      }
+      throw error
+    }
+
+    const validAgents = (agents ?? []).map((e) => ({
+      name: typeof e.name === "string" ? e.name : "",
+      provider: typeof e.provider === "string" ? e.provider : undefined,
+      model: typeof e.model === "string" ? e.model : undefined,
+      description: typeof e.description === "string" ? e.description : undefined,
+      permission: parsePermissionRecord(e.permission),
+      tools: parseToolBooleans(e.tools),
+    })).filter((e) => e.name.length > 0)
+    const names = validAgents.map((e) => e.name)
+    if (!names.includes(agent)) {
+      throw new Error(`[Harness] Invalid agent: "${agent}". Available: [${names.join(", ")}]`)
+    }
+    return enrichAgentFromPrimitives(validAgents.find((e) => e.name === agent) ?? { name: agent }, projectRoot)
+  }
+
+  private buildCanonicalQueueContext(agent: ValidatedAgent, params: DelegateParams): QueueContext {
+    return {
+      provider: params.provider ?? agent.provider,
+      model: params.model ?? agent.model,
+      agent: agent.name,
+    }
+  }
+
+  private buildCommandQueueContext(params: CommandDelegationParams): QueueContext {
+    return {
+      provider: params.queueContext?.provider,
+      model: params.queueContext?.model,
+      agent: params.queueContext?.agent,
+    }
+  }
+
+  /** @internal Test compatibility — proxies to SdkDelegationHandler's timer map */
+  get stabilityTimers(): Map<string, NodeJS.Timeout> {
+    return this.sdkHandler.getTimerMap()
+  }
+
+  /** @internal Test compatibility — proxies to the underlying state machine's delegation map */
+  get delegations(): Map<string, Delegation> {
+    return this.state.delegations
+  }
+
+  /** @internal Test compatibility — proxies to the underlying state machine's session map */
+  get delegationsBySession(): Map<string, string> {
+    return this.state.delegationsBySession
+  }
+
+  /** @internal Test compatibility — proxies to the underlying state machine's safety timer map */
+  get safetyTimers(): Map<string, NodeJS.Timeout> {
+    return this.state.safetyTimers
+  }
+}

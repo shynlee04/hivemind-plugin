@@ -1,0 +1,24 @@
+{
+  "skill": "stack-vitest",
+  "version": "2026-04-29",
+  "scenarios": [
+    {
+      "id": "eval-1",
+      "scenario": "Agent needs to mock an external SDK module for a unit test",
+      "expected_behavior": "Skill provides vi.mock() API reference with hoisting behavior, factory pattern, and path resolution notes",
+      "pass_condition": "Agent retrieves correct vi.mock() syntax and factory pattern from references/api/mocking.md"
+    },
+    {
+      "id": "eval-2",
+      "scenario": "Agent needs to run tests with coverage and see which files are covered",
+      "expected_behavior": "Skill's CLI commands show 'npx vitest run --coverage' and configuration section notes V8 provider and src/**/*.ts coverage",
+      "pass_condition": "Agent runs correct coverage command and understands coverage scope from project setup section"
+    },
+    {
+      "id": "eval-3",
+      "scenario": "Agent migrating from Jest needs to understand API compatibility",
+      "expected_behavior": "Skill's key facts note ~95% API compatibility and jest.fn() → vi.fn() mapping",
+      "pass_condition": "Agent identifies Jest→Vitest mapping and loads ecosystem routing to hm-test-driven-execution for TDD workflow"
+    }
+  ]
+}
