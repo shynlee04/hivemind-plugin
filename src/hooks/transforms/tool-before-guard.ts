@@ -1,5 +1,8 @@
 
 
+import type { AgentWorkContract } from "../../features/agent-work-contracts/types.js"
+import { createContractEnforcementHook } from "./contract-enforcement.js"
+
 /**
  * Dependencies for the tool-before-guard transform (AC-18).
  *
@@ -7,11 +10,18 @@
  *  - toolGuardHook: the tool.execute.before guard (toolGuardHooks["tool.execute.before"])
  *  - sessionTracker: SessionTracker instance for proactive child discovery
  *  - logWarn: optional logging callback
+ *  - contractEnforcement: optional deps for contract enforcement (Plan 06 wires these)
  */
 export interface ToolBeforeGuardDeps {
   toolGuardHook: (input: unknown, output: unknown) => Promise<void>
   sessionTracker: { handleToolExecuteBefore(params: { sessionID: string; callID: string; subagentType: string; description: string; taskId?: string; tool?: string }): Promise<void> }
   logWarn?: (message: string, error: unknown) => void
+  /** Optional contract enforcement deps. When provided, contract enforcement is added as third step. */
+  contractEnforcement?: {
+    getActiveContractByAgent: (projectRoot: string, agentName: string) => AgentWorkContract | undefined
+    resolveAgentName: (sessionID: string) => string | undefined
+    projectRoot: string
+  }
 }
 
 /**
@@ -30,6 +40,16 @@ export interface ToolBeforeGuardDeps {
 export function createToolBeforeGuard(
   deps: ToolBeforeGuardDeps,
 ): (input: unknown, output: unknown) => Promise<void> {
+  // Build contract enforcement hook lazily if deps provided (Plan 06 wires these)
+  const contractHook = deps.contractEnforcement
+    ? createContractEnforcementHook({
+        projectRoot: deps.contractEnforcement.projectRoot,
+        getActiveContractByAgent: deps.contractEnforcement.getActiveContractByAgent,
+        resolveAgentName: deps.contractEnforcement.resolveAgentName,
+        logWarn: deps.logWarn ? (msg) => deps.logWarn?.(msg, undefined) : undefined,
+      })
+    : null
+
   return async (input, output) => {
     // Run existing tool guard logic first (circuit breaker, budget, governance)
     await deps.toolGuardHook(input, output)
@@ -64,6 +84,20 @@ export function createToolBeforeGuard(
       }
     } catch (err) {
       deps.logWarn?.("[Harness] Session tracker: tool.execute.before hook failed", err)
+    }
+
+    // Contract enforcement: third step in guard chain (when deps provided — Plan 06 wires from plugin.ts)
+    // Best-effort: enforcement errors are caught and logged — never block tool execution
+    if (contractHook) {
+      try {
+        await contractHook(input, output)
+      } catch (err) {
+        // Re-throw contract violations (they ARE the enforcement mechanism per D-23)
+        if (err instanceof Error && err.message.startsWith("[Harness] contract violation")) {
+          throw err
+        }
+        deps.logWarn?.("[Harness] Contract enforcement: tool.execute.before hook failed", err)
+      }
     }
   }
 }
