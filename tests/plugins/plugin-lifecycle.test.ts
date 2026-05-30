@@ -318,12 +318,18 @@ describe("plugin lifecycle wiring", () => {
       },
     })
 
+    const runAutoLoop = async (options: { dispatcher: (prompt: string, attempt: number) => Promise<unknown> }) => {
+      await options.dispatcher("test prompt", 1)
+      return { status: "exhausted" as const, iterations: 1 }
+    }
+
     const hooks = createSessionHooks({
       client: client as never,
       lifecycleManager: lifecycleManager as never,
       stateManager: new TaskStateManager(),
       autoLoopConfig: { backoffMs: 25 },
       sleep: () => new Promise<void>((resolve) => { releaseSleep = resolve }),
+      runAutoLoop,
     })
 
     const idlePromise = hooks.event({ event: { type: "session.idle", sessionID: "ses-auto-loop-terminal" } })
