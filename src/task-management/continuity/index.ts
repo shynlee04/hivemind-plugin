@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path"
 import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { redactBoundaryFields } from "../../shared/security/redaction.js"
 import { getCachedConfig } from "../../config/subscriber.js"
-import { getStoreCache, setStoreCache } from "./store-cache.js"
+import { getStoreCache, setStoreCache, getAllStoreCaches } from "./store-cache.js"
 import type {
   CapturedResult,
   CompactionCheckpointData,
@@ -19,16 +19,23 @@ import type {
 } from "../../shared/types.js"
 
 const CONTINUITY_VERSION = 1 as const
-const CANONICAL_STATE_DIR = resolve(process.cwd(), ".hivemind", "state")
-const LEGACY_STATE_DIR = resolve(process.cwd(), ".opencode", "state", "hivemind")
 
+export function getCanonicalStateDir(projectRoot?: string): string {
+  const root = projectRoot || process.cwd()
+  return resolve(root, ".hivemind", "state")
+}
+
+export function getLegacyStateDir(projectRoot?: string): string {
+  const root = projectRoot || process.cwd()
+  return resolve(root, ".opencode", "state", "hivemind")
+}
 
 function getEnvPath(name: string): string | undefined {
   const value = process.env[name]
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined
 }
 
-function resolveContinuityFilePath(): string {
+function resolveContinuityFilePath(projectRoot?: string): string {
   const explicitFile = getEnvPath("OPENCODE_HARNESS_CONTINUITY_FILE")
   if (explicitFile) {
     return resolve(explicitFile)
@@ -40,15 +47,15 @@ function resolveContinuityFilePath(): string {
   }
 
   // Q6: canonical path is always .hivemind/state/ for writes
-  return assertPathWithinRoot(CANONICAL_STATE_DIR, "session-continuity.json", "continuity state")
+  return assertPathWithinRoot(getCanonicalStateDir(projectRoot), "session-continuity.json", "continuity state")
 }
 
-function resolveLegacyFilePath(): string {
-  return resolve(LEGACY_STATE_DIR, "session-continuity.json")
+function resolveLegacyFilePath(projectRoot?: string): string {
+  return resolve(getLegacyStateDir(projectRoot), "session-continuity.json")
 }
 
-function getContinuityFile(): string {
-  return resolveContinuityFilePath()
+function getContinuityFile(projectRoot?: string): string {
+  return resolveContinuityFilePath(projectRoot)
 }
 
 /**
@@ -236,23 +243,24 @@ function cloneGovernanceState(state: GovernancePersistenceState): GovernancePers
 // Store I/O
 // ---------------------------------------------------------------------------
 
-function ensureStoreLoaded(): ContinuityStoreFile {
-  const cached = getStoreCache()
+function ensureStoreLoaded(projectRoot?: string): ContinuityStoreFile {
+  const filePath = getContinuityFile(projectRoot)
+  const cached = getStoreCache(filePath)
   if (cached) {
     return cached
   }
 
-  const loaded = loadStoreFromDisk()
-  setStoreCache(loaded)
+  const loaded = loadStoreFromDisk(projectRoot)
+  setStoreCache(filePath, loaded)
   return loaded
 }
 
-function loadStoreFromDisk(): ContinuityStoreFile {
-  const continuityFile = getContinuityFile()
+function loadStoreFromDisk(projectRoot?: string): ContinuityStoreFile {
+  const continuityFile = getContinuityFile(projectRoot)
 
   // Q6: try canonical path first, then legacy for backward compatibility
   const filePaths = [continuityFile]
-  const legacyFile = resolveLegacyFilePath()
+  const legacyFile = resolveLegacyFilePath(projectRoot)
   if (legacyFile !== continuityFile) {
     filePaths.push(legacyFile)
   }
@@ -300,28 +308,32 @@ function loadStoreFromDisk(): ContinuityStoreFile {
   return emptyStore()
 }
 
-function persistStore(): void {
+function writeStoreToDisk(filePath: string, store: ContinuityStoreFile): void {
+  mkdirSync(dirname(filePath), { recursive: true })
+  // Atomic write: write to temp file first, then rename to prevent
+  // corrupt reads if the process crashes mid-write.
+  const tmpFile = `${filePath}.${process.pid}.${randomUUID()}.tmp`
+  const redactedStore = redactBoundaryFields(store, {
+    redactFieldNames: ["prompt", "result", "error", "output", "resultSummary", "summary", "lastMessageOutput", "description"],
+  })
+  writeFileSync(tmpFile, `${JSON.stringify(redactedStore, null, 2)}\n`, "utf8")
+  renameSync(tmpFile, filePath)
+}
+
+function persistStore(projectRoot?: string): void {
   // CA-03: atomic_commit toggle gate (D-15)
   // When false, state changes stay in-memory (batched).
   // NOTE: In-memory batching behavior is a lifecycle concern for CA-04.
   // For CA-03, we gate the write but keep the store updated in memory.
   const config = getCachedConfig()
-  const store = ensureStoreLoaded()
+  const store = ensureStoreLoaded(projectRoot)
   store.updatedAt = Date.now()
   if (!config.atomic_commit) {
     return  // Skip disk write — state remains in memory for later flush
   }
 
-  const continuityFile = getContinuityFile()
-  mkdirSync(dirname(continuityFile), { recursive: true })
-  // Atomic write: write to temp file first, then rename to prevent
-  // corrupt reads if the process crashes mid-write.
-  const tmpFile = `${continuityFile}.${process.pid}.${randomUUID()}.tmp`
-  const redactedStore = redactBoundaryFields(store, {
-    redactFieldNames: ["prompt", "result", "error", "output", "resultSummary", "summary", "lastMessageOutput", "description"],
-  })
-  writeFileSync(tmpFile, `${JSON.stringify(redactedStore, null, 2)}\n`, "utf8")
-  renameSync(tmpFile, continuityFile)
+  const filePath = getContinuityFile(projectRoot)
+  writeStoreToDisk(filePath, store)
 }
 
 // ---------------------------------------------------------------------------
@@ -438,30 +450,49 @@ export function deleteSessionContinuity(sessionID: string): void {
   persistStore()
 }
 
-export function getContinuityStoragePath(): string {
-  return getContinuityFile()
+export function getContinuityStoragePath(projectRoot?: string): string {
+  return getContinuityFile(projectRoot)
 }
 
-export function getCanonicalStateDir(): string {
-  return CANONICAL_STATE_DIR
+export function getGovernancePersistenceState(projectRoot?: string): GovernancePersistenceState {
+  return cloneGovernanceState(ensureStoreLoaded(projectRoot).governance ?? emptyStore(projectRoot).governance!)
 }
 
-export function getLegacyStateDir(): string {
-  return LEGACY_STATE_DIR
-}
-
-export function getGovernancePersistenceState(): GovernancePersistenceState {
-  return cloneGovernanceState(ensureStoreLoaded().governance ?? emptyStore().governance!)
-}
-
-export function recordGovernancePersistenceState(state: GovernancePersistenceState): GovernancePersistenceState {
+export function recordGovernancePersistenceState(state: GovernancePersistenceState, projectRoot?: string): GovernancePersistenceState {
   const next = cloneGovernanceState({
     ...state,
     updatedAt: Date.now(),
   })
 
-  const store = ensureStoreLoaded()
+  const store = ensureStoreLoaded(projectRoot)
   store.governance = next
-  persistStore()
+  persistStore(projectRoot)
   return cloneGovernanceState(next)
+}
+
+export function flushAllStores(): void {
+  const caches = getAllStoreCaches()
+  for (const [filePath, store] of caches.entries()) {
+    try {
+      writeStoreToDisk(filePath, store)
+    } catch (err) {
+      console.error(`[Harness] Failed to flush store at ${filePath} during process exit: ${err}`)
+    }
+  }
+}
+
+if (typeof process !== "undefined" && !process.env.VITEST) {
+  process.on("exit", () => {
+    flushAllStores()
+  })
+
+  process.on("SIGINT", () => {
+    flushAllStores()
+    process.exit(130)
+  })
+
+  process.on("SIGTERM", () => {
+    flushAllStores()
+    process.exit(143)
+  })
 }

@@ -18,11 +18,11 @@
 import { readConfigs, getDefaultConfigs } from "../schema-kernel/hivemind-configs.schema.js"
 import type { HivemindConfigs } from "../schema-kernel/hivemind-configs.schema.js"
 
-/** Cached config value — `null` when cache is cold. */
-let cachedConfig: HivemindConfigs | null = null
+/** Cached configs map, keyed by projectRoot. */
+const configCache = new Map<string, HivemindConfigs>()
 
-/** Project root the cached config was loaded from. */
-let cachedProjectRoot: string | null = null
+/** Latest project root that was requested. */
+let lastProjectRoot: string | null = null
 
 /**
  * Reads configs from disk with caching. First call reads from disk,
@@ -39,17 +39,19 @@ let cachedProjectRoot: string | null = null
  * ```
  */
 export function getConfig(projectRoot: string): HivemindConfigs {
-  if (cachedConfig !== null && cachedProjectRoot === projectRoot) {
-    return cachedConfig
+  if (configCache.has(projectRoot)) {
+    return configCache.get(projectRoot)!
   }
-  cachedConfig = readConfigs(projectRoot)
-  cachedProjectRoot = projectRoot
-  return cachedConfig
+  const config = readConfigs(projectRoot)
+  configCache.set(projectRoot, config)
+  lastProjectRoot = projectRoot
+  return config
 }
 
 /**
  * Returns the cached config without disk read. Returns defaults if no cache.
  *
+ * @param projectRoot - Optional project root path.
  * @returns The cached config, or defaults if the cache is cold.
  *
  * @example
@@ -59,8 +61,14 @@ export function getConfig(projectRoot: string): HivemindConfigs {
  * console.log(cached.conversation_language) // "en"
  * ```
  */
-export function getCachedConfig(): HivemindConfigs {
-  return cachedConfig ?? getDefaultConfigs()
+export function getCachedConfig(projectRoot?: string): HivemindConfigs {
+  if (projectRoot && configCache.has(projectRoot)) {
+    return configCache.get(projectRoot)!
+  }
+  if (lastProjectRoot && configCache.has(lastProjectRoot)) {
+    return configCache.get(lastProjectRoot)!
+  }
+  return getDefaultConfigs()
 }
 
 /**
@@ -85,13 +93,22 @@ export function getFreshConfig(projectRoot: string): HivemindConfigs {
 /**
  * Invalidates the in-memory config cache. Next `getConfig()` reads from disk.
  *
+ * @param projectRoot - Optional project root to invalidate specifically.
+ *
  * @example
  * ```typescript
  * invalidateConfigCache()
  * const fresh = getConfig("/path/to/project") // reads from disk
  * ```
  */
-export function invalidateConfigCache(): void {
-  cachedConfig = null
-  cachedProjectRoot = null
+export function invalidateConfigCache(projectRoot?: string): void {
+  if (projectRoot) {
+    configCache.delete(projectRoot)
+    if (lastProjectRoot === projectRoot) {
+      lastProjectRoot = configCache.size > 0 ? Array.from(configCache.keys())[configCache.size - 1] : null
+    }
+  } else {
+    configCache.clear()
+    lastProjectRoot = null
+  }
 }
