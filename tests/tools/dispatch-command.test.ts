@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi, afterEach } from "vitest"
 import {
   validateAgentFormat,
   validateAgentExists,
@@ -7,6 +7,10 @@ import {
 import { InvalidCommandError, AgentNotFoundError } from "../../src/shared/errors/commands.js"
 
 describe("dispatch-command", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   const mockClient = {
     app: {
       agents: vi.fn().mockResolvedValue({
@@ -34,6 +38,14 @@ describe("dispatch-command", () => {
     expect(await validateAgentExists("fake-agent", mockClient)).toBe(false)
   })
 
+  it("validateAgentExists returns false when API call throws", async () => {
+    const failClient = {
+      app: { agents: vi.fn().mockRejectedValue(new Error("API unreachable")) },
+    }
+    const result = await validateAgentExists("gsd-executor", failClient)
+    expect(result).toBe(false)
+  })
+
   it("dispatches synthetic prompt with agent override via session.prompt()", async () => {
     const result = await dispatchCommand({
       client: mockClient,
@@ -41,9 +53,8 @@ describe("dispatch-command", () => {
       agent: "gsd-executor",
       promptText: "run gsd-stats",
     })
+    // Deferred-promise: result resolves AFTER SDK call completes
     expect(result.success).toBe(true)
-    // Wait for deferred setTimeout(fn, 50) dispatch to fire
-    await new Promise<void>((resolve) => setTimeout(resolve, 60))
     expect(mockClient.session.prompt).toHaveBeenCalledWith(
       expect.objectContaining({
         path: { id: "ses-123" },
@@ -55,7 +66,31 @@ describe("dispatch-command", () => {
     )
   })
 
-  it("returns failure when session.prompt throws error", async () => {
+  it("resolves with { success: true } after successful SDK call via deferred promise", async () => {
+    vi.useFakeTimers()
+    const successClient = {
+      app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
+      session: {
+        prompt: vi.fn().mockResolvedValue({}),
+        command: vi.fn().mockResolvedValue({}),
+      },
+    }
+    const promise = dispatchCommand({
+      client: successClient,
+      sessionID: "ses-123",
+      agent: "gsd-executor",
+      promptText: "test",
+    })
+    // Promise should not be resolved yet (setTimeout hasn't fired)
+    await vi.advanceTimersByTimeAsync(50)
+    const result = await promise
+    expect(result.success).toBe(true)
+    expect(result.error).toBeUndefined()
+    expect(successClient.session.prompt).toHaveBeenCalled()
+  })
+
+  it("resolves with { success: false, error: true } after SDK error via deferred promise", async () => {
+    vi.useFakeTimers()
     const errorClient = {
       app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
       session: {
@@ -63,47 +98,46 @@ describe("dispatch-command", () => {
         command: vi.fn().mockRejectedValue(new Error("Network error")),
       },
     }
-    const result = await dispatchCommand({
-      client: errorClient as any,
+    const promise = dispatchCommand({
+      client: errorClient,
       sessionID: "ses-123",
       agent: "gsd-executor",
-      promptText: "gsd-stats body",
+      promptText: "test",
     })
+    await vi.advanceTimersByTimeAsync(50)
+    const result = await promise
     expect(result.success).toBe(false)
     expect(result.error).toBe(true)
-    expect(result.output).toBe("Network error")
+    expect(result.output).toContain("Network error")
   })
 
-  it("returns failure when agent restore fails", async () => {
-    const restoreErrorClient = {
+  it("resolves with failure when agent restore fails", async () => {
+    vi.useFakeTimers()
+    let callCount = 0
+    const partialFailClient = {
       app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
       session: {
-        prompt: vi.fn()
-          .mockResolvedValueOnce({}) // first prompt (synthetic prompt) succeeds
-          .mockRejectedValueOnce(new Error("Restore failed")), // restore fails
+        prompt: vi.fn().mockImplementation(() => {
+          callCount++
+          if (callCount === 1) return Promise.resolve({}) // First prompt succeeds
+          return Promise.reject(new Error("Restore failed")) // Restore fails
+        }),
         command: vi.fn().mockResolvedValue({}),
       },
     }
-    const result = await dispatchCommand({
-      client: restoreErrorClient as any,
+    const promise = dispatchCommand({
+      client: partialFailClient,
       sessionID: "ses-123",
       agent: "gsd-executor",
-      restoreAgent: "gsd-reviewer",
-      promptText: "run gsd-stats",
+      restoreAgent: "original-agent",
+      promptText: "test",
     })
+    await vi.advanceTimersByTimeAsync(50)
+    const result = await promise
     expect(result.success).toBe(false)
     expect(result.error).toBe(true)
-    expect(result.output).toContain("agent restore failed: Restore failed")
-  })
-
-  it("validateAgentExists returns false on API failure", async () => {
-    const brokenClient = {
-      app: {
-        agents: vi.fn().mockRejectedValue(new Error("API failure")),
-      },
-    }
-    const result = await validateAgentExists("gsd-executor", brokenClient as any)
-    expect(result).toBe(false)
+    expect(result.output).toContain("agent restore failed")
+    expect(result.output).toContain("Restore failed")
   })
 
   it("throws InvalidCommandError for invalid agent format in dispatch", async () => {
@@ -126,5 +160,35 @@ describe("dispatch-command", () => {
         promptText: "run gsd-stats",
       })
     ).rejects.toThrow(AgentNotFoundError)
+  })
+
+  it("requires vi.advanceTimersByTime to resolve — confirms 50ms deadlock prevention is preserved", async () => {
+    vi.useFakeTimers()
+    const successClient = {
+      app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
+      session: {
+        prompt: vi.fn().mockResolvedValue({}),
+        command: vi.fn().mockResolvedValue({}),
+      },
+    }
+    const promise = dispatchCommand({
+      client: successClient,
+      sessionID: "ses-123",
+      agent: "gsd-executor",
+      promptText: "test",
+    })
+    // Without advancing timers, the promise should NOT be settled yet
+    // Use Promise.race to verify it's still pending
+    const pending = Symbol("pending")
+    const raceResult = await Promise.race([
+      promise.then(() => "resolved"),
+      Promise.resolve(pending),
+    ])
+    expect(raceResult).toBe(pending)
+
+    // Now advance timers — it should resolve
+    await vi.advanceTimersByTimeAsync(50)
+    const result = await promise
+    expect(result.success).toBe(true)
   })
 })
