@@ -188,7 +188,7 @@ hm-* (STRICT). Only loads hm-* skills, gate-* quality triad skills, and stack-* 
 - Build execution, test running, or deployment
 - File system mutation outside `.hivemind/planning/**` allowed paths
 - Loading hf-* skills (hm STRICT binding)
-- Using delegate-task, delegation-status, run-background-command (deprecated/broken — use native `task` tool)
+- Using delegate-task (on maintenance — use native `task` tool instead) or running PTY background commands directly
 </scope>
 
 <context>
@@ -515,14 +515,16 @@ hivemind-power-on content (FIRST — already loaded as context) → lineage rout
   </step>
 
   <step name="assess_session_runtime" priority="normal">
-  Check session runtime context for path decision inputs:
+  Check session runtime context for path decision and stacking inputs:
+  - Call `delegation-status({ action: "find-stackable" })` to discover completed, failed, or active sessions for stacking/resuming.
+  - If a stackable session exists for the target agent, prepare to use its session ID in `task_id` for stacking.
   - Use `session-tracker` for active session context and continuity search
   - Use `hivemind-trajectory` for delegation depth and lineage
   - Use `hivemind-pressure` for runtime pressure tier
   - Use `hivemind-command-engine` for command routing discovery
   - Read `.hivemind/session-tracker/project-continuity.json` for cross-session index
   - Read `.hivemind/session-tracker/<sessionId>/session-continuity.json` for delegation hierarchy
-  Check: delegation depth (max 3), current pressure tier, aborted sessions, command routing.
+  Check: delegation depth (max 3), current pressure tier, aborted sessions, command routing, and stackable sessions.
   </step>
 
   <step name="form_landscape" priority="high">
@@ -589,14 +591,15 @@ hivemind-power-on content (FIRST — already loaded as context) → lineage rout
   </step>
 
   <step name="dispatch_work" priority="normal">
-  Dispatch to delegation target using native `task` tool (NOT delegate-task — deprecated/broken):
-  - Use `task(description="<task>", subagent_type="<target-agent>", prompt="<structured-context>")`
-  - Include in prompt: task description, path type, scope boundaries, output format with artifact requirements, gate expectations, session ID, delegation metadata
-  - For fast-path: dispatch directly to hm-l2-* or hm-l3-* specialist
-  - For coordinated-path: dispatch to hm-l1-coordinator with domain wave type
-  - For cross-lineage: dispatch to hf-l0-orchestrator with structured handoff
-  - Never use `delegate-task` (custom tool, not production-ready)
-  - Never use `delegation-status` (custom tool, not production-ready)
+  Dispatch to delegation target using native `task` tool (do not use `delegate-task` as it is on maintenance):
+  - Use `task(description="<task>", subagent_type="<target-agent>", prompt="<structured-context>", task_id="<stackable-session-id>")`
+  - STACKING: If `delegation-status` returned a stackable/resumable session for the target agent, pass that session ID as `task_id`. This attaches the subagent run as a child of the parent session and preserves execution context.
+  - GEOMETRY: Stacking is linear. For parallel tasks, you MUST spawn separate sessions (no shared `task_id` or stacking). For sequential tasks, either stack them or explicitly reference preceding wave output artifacts.
+  - YIELD CONTROL: The native `task` tool is synchronous and blocking. You MUST yield control and wait for the response of the current task before dispatching another. Do NOT launch multiple `task` calls in parallel in one turn.
+  - Include in prompt: task description, path type, scope boundaries, output format with artifact requirements, gate expectations, session ID, delegation metadata.
+  - For fast-path: dispatch directly to hm-l2-* or hm-l3-* specialist.
+  - For coordinated-path: dispatch to hm-l1-coordinator with domain wave type.
+  - For cross-lineage: dispatch to hf-l0-orchestrator with structured handoff.
   </step>
 
   <step name="monitor_delegation" priority="normal">
