@@ -1698,6 +1698,36 @@ Plans:
 
 **Source:** Runtime gap analysis identified 11 findings across 4 tiers during forensic investigation. Phase 39 completed internal hardening but did not address feature wiring gaps, integration conflicts, or end-user experience.
 
+**PACKAGE NAME:** `hivemind-3.0` (confirmed by owner 2026-05-30)
+
+**PROCESS VIOLATION ACKNOWLEDGED:** Initial 7 PLAN.md files were created directly by front-facing agent (violates constitution). All marked `status: draft-violated`. Each must be recreated through proper GSD workflow: research → context → spec → plan → gatekeeping.
+
+### GSD Routing Table
+
+| Phase | Slash Command | Specialist Agent | Artifacts Required | Gate |
+|-------|--------------|-----------------|-------------------|------|
+| P40.01 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
+| P40.02 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
+| P40.03 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
+| P40.04 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
+| P40.05 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
+| P40.06 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
+| P40.07 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
+
+### Sequential Gate Enforcement
+
+```
+P40.01 gate PASS → P40.02 research starts
+P40.02 gate PASS → P40.03 research starts
+P40.03 gate PASS → P40.04 research starts
+P40.04 gate PASS → P40.05 research starts
+P40.05 gate PASS → P40.06 research starts
+P40.06 gate PASS → P40.07 research starts
+P40.07 gate PASS → SHIP
+```
+
+NO phase starts research until the previous phase's plan passes `gsd-plan-checker`.
+
 ### Dependency Graph
 
 ```
