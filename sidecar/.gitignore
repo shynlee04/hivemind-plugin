@@ -1,6 +1,0 @@
-# Sidecar Next.js build artefacts (will be generated when SIDECAR-01/02 phases run npm install)
-.next/
-node_modules/
-out/
-*.tsbuildinfo
-next-env.d.ts

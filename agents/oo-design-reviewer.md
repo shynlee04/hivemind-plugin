@@ -1,1 +1,0 @@
-/tmp/arxitect/agents/oo-design-reviewer.md

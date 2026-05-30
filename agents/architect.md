@@ -1,1 +1,0 @@
-/tmp/arxitect/agents/architect.md
