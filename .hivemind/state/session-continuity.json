@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1780153857980,
+  "updatedAt": 1780153961509,
   "sessions": {
     "ses-parent-prompt-fail": {
       "sessionID": "ses-parent-prompt-fail",
@@ -112,19 +112,27 @@
     },
     "replay-test-parent": {
       "sessionID": "replay-test-parent",
+      "promptParams": {},
       "metadata": {
-        "pendingNotifications": [],
-        "constraints": [],
-        "delegation": null,
         "status": "running",
+        "description": "",
+        "delegation": null,
+        "constraints": [],
+        "pendingNotifications": [],
         "updatedAt": 1780153857980
-      },
-      "promptParams": {}
+      }
     }
   },
   "governance": {
     "rules": [],
-    "violations": [],
-    "updatedAt": 1780153608079
+    "violations": [
+      {
+        "ruleId": "rule-both",
+        "sessionID": "ses_admin",
+        "timestamp": 1780153961509,
+        "detail": "Rule rule-both triggered on tool write for session ses_admin"
+      }
+    ],
+    "updatedAt": 1780153961509
   }
 }

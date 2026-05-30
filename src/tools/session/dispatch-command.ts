@@ -30,9 +30,10 @@ export async function validateAgentExists(agent: string, client: OpenCodeClient)
 }
 
 /**
- * Dispatches slash command prompt immediately.
+ * Dispatches slash command prompt via deferred setTimeout.
  * Performs format and existence validation for optional agent override.
- * Returns { success: boolean, output?, error? } on completion.
+ * Returns a Promise that resolves with real success/failure after the SDK
+ * dispatch completes. The 50ms setTimeout delay prevents reentrant deadlock.
  */
 export async function dispatchCommand(context: {
   client: OpenCodeClient
@@ -58,9 +59,9 @@ export async function dispatchCommand(context: {
   }
 
   // Deferred dispatch: schedule on next macrotask (setTimeout) so the tool
-  // returns before session.prompt() fires on the same session — prevents
-  // reentrant deadlock. The tool's execute() handler must return before the
-  // session can process new input.
+  // yields before session.prompt() fires on the same session — prevents
+  // reentrant deadlock. The Promise wraps the setTimeout to capture the
+  // actual SDK outcome instead of returning premature { success: true }.
   return new Promise<{ success: boolean; output?: string; error?: boolean }>((resolve) => {
     setTimeout(async () => {
       try {
