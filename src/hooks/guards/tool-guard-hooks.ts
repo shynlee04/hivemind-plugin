@@ -5,7 +5,7 @@
  * enforce the session circuit breaker and tool budget, track per-session
  * stats, and inject harness metadata into tool outputs.
  *
- * Stripped in 14-01: governance-engine removed. Governance evaluation is no-op.
+ * Governance evaluation wired via evaluateGovernance() on tool.execute.before.
  */
 import {
   getSessionContinuity,
