@@ -1687,3 +1687,83 @@ Plans:
 - C6: Architectural Refactoring (P2)
 - C7: Test Coverage (P2)
 - C8: Dependency Cleanup (P2)
+
+---
+
+## Phase 40: Public Ship Readiness (2026-05-30)
+
+**Status:** Planned
+**Depends on:** Phase 39 (COMPLETE)
+**Blocking:** GitHub public release + npm publish
+
+**Source:** Runtime gap analysis identified 11 findings across 4 tiers during forensic investigation. Phase 39 completed internal hardening but did not address feature wiring gaps, integration conflicts, or end-user experience.
+
+### Dependency Graph
+
+```
+P40.01 (dispatch fixes) ──┐
+P40.02 (state unification) ──┤
+P40.03 (auto-loop wiring) ──┤── P40.07 (E2E verification) → SHIP
+P40.04 (governance wiring) ──┤
+P40.05 (state persistence) ──┤
+P40.06 (npm publishing) ─────┘
+```
+
+### Execution Order (Wave-Based)
+
+**Wave 1 — Runtime Fixes (P40.01 + P40.05, parallel-safe)**
+- P40.01: Fix fire-and-forget dispatch (5 tasks, P0)
+- P40.05: Fix state persistence & singletons (4 tasks, P1)
+
+**Wave 2 — Feature Wiring (P40.02 + P40.03 + P40.04, sequential)**
+- P40.02: Unify delegation state machines (5 tasks, P0) — depends on P40.01
+- P40.03: Wire auto-loop/ralph-loop (4 tasks, P1) — depends on P40.01 + P40.02
+- P40.04: Wire governance evaluation (4 tasks, P1) — depends on P40.02
+
+**Wave 3 — Ship Preparation (P40.06 + P40.07)**
+- P40.06: npm package publishing readiness (5 tasks, P0) — depends on P40.01 + P40.02
+- P40.07: E2E integration verification (5 tasks, P0) — depends on ALL above
+
+### Phase Entries
+
+#### P40.01: Fix Fire-and-Forget Dispatch & Silent Failures
+- **Severity:** P0 — runtime break
+- **Scope:** dispatch-command.ts, execute-slash-command.ts, manager.ts
+- **Problem:** 3 dispatch paths return success before SDK call completes. Errors swallowed in console.error. handleSessionError not forwarded to runtime adapter. validateAgentExists returns true on API failure.
+- **Delivers:** Await-based dispatch, error propagation to user, symmetric event forwarding
+
+#### P40.02: Unify Delegation State Machines
+- **Severity:** P0 — architecture conflict
+- **Scope:** manager-runtime.ts, coordinator.ts, manager.ts, continuity/index.ts
+- **Problem:** v1 (runtime) and v2 (coordinator) maintain separate delegation maps. Facade merges with fallback (lossy). handleSessionIdle forwards to both, handleSessionError only to coordinator.
+- **Delivers:** Unified delegation visibility, symmetric event forwarding, consistent status across tools
+
+#### P40.03: Wire Auto-Loop / Ralph-Loop to Hook Chain
+- **Severity:** P1 — feature not wired
+- **Scope:** auto-loop.ts, ralph-loop.ts, session-hooks.ts
+- **Problem:** Spawner primitives imported but never invoked. session-hooks uses simpler inline auto-loop.
+- **Delivers:** runAutoLoop triggered on delegation completion, runRalphLoop on delegation failure
+
+#### P40.04: Wire Governance Evaluation
+- **Severity:** P1 — feature not wired
+- **Scope:** tool-guard-hooks.ts, governance-engine/
+- **Problem:** Governance evaluation always returns empty arrays (stripped in 14-01). Configured rules ignored.
+- **Delivers:** Governance rules evaluated on tool execution, blocks/warnings/escalations functional
+
+#### P40.05: Fix State Persistence & Module-Level Singletons
+- **Severity:** P1 — state loss risk
+- **Scope:** continuity/index.ts, subscriber.ts
+- **Problem:** atomic_commit:false has no flush mechanism (state lost on restart). State dir resolved at import via process.cwd(). Singleton config cache breaks multi-project.
+- **Delivers:** Shutdown flush or always-persist, lazy state dir resolution, multi-project config cache
+
+#### P40.06: npm Package Publishing & Public Repo Readiness
+- **Severity:** P0 — ship blocker
+- **Scope:** package.json, dependencies, .npmignore, publish workflow
+- **Problem:** Name "hivemind" collides with existing npm package. bun-pty in wrong dependency class. Missing publishConfig.
+- **Delivers:** Unique package name, correct dependencies, publish CI workflow, verified package contents
+
+#### P40.07: End-to-End Integration Verification
+- **Severity:** P0 — ship gate
+- **Scope:** Integration tests, bootstrap verification, tool smoke tests
+- **Problem:** No test verifies the actual user experience (install → plugin loads → tools work → primitives copied).
+- **Delivers:** Simulated user install test, plugin registration E2E, tool smoke tests, bootstrap flow E2E, sync-oss verification
