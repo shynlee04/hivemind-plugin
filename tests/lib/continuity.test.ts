@@ -492,3 +492,112 @@ describe("atomic_commit toggle", () => {
     expect(existsSync(filePath)).toBe(true)
   })
 })
+
+// ---------------------------------------------------------------------------
+// flushAllStores + registerShutdownHandlers
+// ---------------------------------------------------------------------------
+
+describe("flushAllStores", () => {
+  let stateDir: string
+  let previousStateDir: string | undefined
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.doUnmock("node:fs")
+    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+    stateDir = mkdtempSync(join(tmpdir(), "continuity-flush-"))
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+  })
+
+  afterEach(() => {
+    vi.doUnmock("node:fs")
+    vi.resetModules()
+    if (previousStateDir === undefined) {
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+    } else {
+      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
+    }
+    rmSync(stateDir, { recursive: true, force: true })
+  })
+
+  it("writes all cached stores to disk", async () => {
+    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/config/subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(
+        HivemindConfigsSchema.parse({ atomic_commit: false, workflow: { use_worktrees: false } }),
+      ),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const continuity = await import("../../src/task-management/continuity/index.js")
+    const { resetStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
+    const filePath = continuity.getContinuityStoragePath()
+
+    continuity.recordSessionContinuity(makeRecord("ses-flush-1"))
+
+    expect(existsSync(filePath)).toBe(false)
+
+    continuity.flushAllStores()
+
+    expect(existsSync(filePath)).toBe(true)
+    const raw = readFileSync(filePath, "utf-8")
+    const parsed = JSON.parse(raw) as { sessions: Record<string, unknown> }
+    expect(parsed.sessions["ses-flush-1"]).toBeDefined()
+
+    resetStoreCache()
+  })
+
+  it("handles write errors gracefully and continues to next store", async () => {
+    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
+    vi.doMock("../../src/config/subscriber.js", () => ({
+      getConfig: vi.fn(),
+      getCachedConfig: vi.fn().mockReturnValue(
+        HivemindConfigsSchema.parse({ atomic_commit: false, workflow: { use_worktrees: false } }),
+      ),
+      invalidateConfigCache: vi.fn(),
+    }))
+
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    const { setStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
+
+    const invalidPath = "/nonexistent/deeply/nested/path/that/will/fail/session-continuity.json"
+    const validStore: import("../../src/shared/types.js").ContinuityStoreFile = {
+      version: 1,
+      updatedAt: Date.now(),
+      sessions: {},
+      governance: { rules: [], violations: [], updatedAt: Date.now() },
+    }
+    setStoreCache(invalidPath, validStore)
+
+    const continuity = await import("../../src/task-management/continuity/index.js")
+
+    continuity.recordSessionContinuity(makeRecord("ses-flush-err"))
+
+    expect(() => continuity.flushAllStores()).not.toThrow()
+
+    expect(consoleSpy).toHaveBeenCalled()
+    const errorMsg = consoleSpy.mock.calls.map((call) => String(call[0])).join(" ")
+    expect(errorMsg).toContain("[Harness]")
+
+    consoleSpy.mockRestore()
+  })
+
+  it("works with empty cache without error", async () => {
+    const { resetStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
+    resetStoreCache()
+
+    const continuity = await import("../../src/task-management/continuity/index.js")
+
+    expect(() => continuity.flushAllStores()).not.toThrow()
+  })
+})
+
+describe("registerShutdownHandlers", () => {
+  it("is exported as a callable function", async () => {
+    vi.resetModules()
+    const continuity = await import("../../src/task-management/continuity/index.js")
+    expect(typeof continuity.registerShutdownHandlers).toBe("function")
+  })
+})

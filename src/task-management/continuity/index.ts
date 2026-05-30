@@ -484,7 +484,8 @@ export function flushAllStores(): void {
   }
 }
 
-if (typeof process !== "undefined" && !process.env.VITEST) {
+export function registerShutdownHandlers(): void {
+  if (typeof process === "undefined") return
   process.on("exit", () => {
     flushAllStores()
   })
@@ -498,4 +499,8 @@ if (typeof process !== "undefined" && !process.env.VITEST) {
     flushAllStores()
     process.exit(143)
   })
+}
+
+if (typeof process !== "undefined" && !process.env.VITEST) {
+  registerShutdownHandlers()
 }
