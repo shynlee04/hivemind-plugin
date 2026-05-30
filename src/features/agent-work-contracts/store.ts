@@ -82,6 +82,24 @@ export function getAgentWorkContract(projectRoot: string, contractId: string): A
 }
 
 /**
+ * Find the first active contract for a given agent name.
+ *
+ * An active contract has status "running". Returns undefined when no
+ * matching contract is found (per D-26: no contract = no restriction).
+ *
+ * @param projectRoot - Trusted project root.
+ * @param agentName - Agent name to match.
+ * @returns Deep-cloned contract or undefined.
+ */
+export function getActiveContractByAgent(projectRoot: string, agentName: string): AgentWorkContract | undefined {
+  const store = readAgentWorkContracts(projectRoot)
+  const match = Object.values(store.contracts).find(
+    (contract) => contract.owner.agent === agentName && contract.status === "running",
+  )
+  return match ? cloneContract(match) : undefined
+}
+
+/**
  * Create an empty store payload.
  *
  * @returns Empty store with current timestamp.
