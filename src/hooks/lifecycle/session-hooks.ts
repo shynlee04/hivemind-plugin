@@ -153,62 +153,139 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
         return
       }
 
-      // Auto-loop for delegation packets
       if (continuity.metadata.delegationPacket) {
+        if (!deps.runAutoLoop) {
+          return
+        }
+
         const state = getAutoLoopState(autoLoopStates, sessionID)
         if (state.retryPending || state.exhausted) {
           return
         }
 
-        const messages = await getSessionMessages(client, sessionID)
-        const assistantText = extractAssistantText(messages)
-        if (assistantText.includes(autoLoopConfig.completionSignal)) {
-          autoLoopStates.delete(sessionID)
-          return
-        }
-
-        if (messages.length <= state.lastMessageCount) {
-          return
-        }
-
-        if (state.iterations >= autoLoopConfig.maxIterations) {
-          state.exhausted = true
-          stateManager.addWarning(
-            sessionID,
-            `[Harness] Reached max auto-loop iterations (${autoLoopConfig.maxIterations}) for session ${sessionID}`,
-          )
-          autoLoopStates.set(sessionID, state)
-          return
-        }
-
-        state.iterations += 1
-        state.lastMessageCount = messages.length
         state.retryPending = true
         autoLoopStates.set(sessionID, state)
 
+        let stateCleaned = false
+
         try {
-          await waitForRetry(autoLoopConfig.backoffMs, sleep)
-          if (terminalAutoLoopSessions.has(sessionID)) {
-            autoLoopStates.delete(sessionID)
-            return
-          }
-          await lifecycleManager.requestAutoLoopRetry({
-            sessionID,
-            promptText: buildAutoLoopPrompt({
-              iteration: state.iterations,
+          const result = await deps.runAutoLoop({
+            initialPrompt: buildAutoLoopPrompt({
+              iteration: state.iterations + 1,
               maxIterations: autoLoopConfig.maxIterations,
               completionSignal: autoLoopConfig.completionSignal,
-              description: continuity.metadata.description,
-              constraints: continuity.metadata.constraints,
-              assistantText,
+              description: continuity.metadata.description ?? "",
+              constraints: continuity.metadata.constraints ?? [],
+              assistantText: "",
             }),
+            maxIterations: 1,
+            dispatcher: async (prompt, _attempt) => {
+              await waitForRetry(autoLoopConfig.backoffMs, sleep)
+              if (terminalAutoLoopSessions.has(sessionID)) {
+                autoLoopStates.delete(sessionID)
+                stateCleaned = true
+                return { attempt: _attempt, sessionID }
+              }
+              await lifecycleManager.requestAutoLoopRetry({ sessionID, promptText: prompt })
+              return { attempt: _attempt, sessionID }
+            },
+            verifier: async (_result, _attempt) => {
+              const messages = await getSessionMessages(client, sessionID)
+              const assistantText = extractAssistantText(messages)
+              if (assistantText.includes(autoLoopConfig.completionSignal)) {
+                return { outcome: "completed" as const, result: _result }
+              }
+              return {
+                outcome: "needs_continuation" as const,
+                result: _result,
+                nextPrompt: buildAutoLoopPrompt({
+                  iteration: state.iterations + 1,
+                  maxIterations: autoLoopConfig.maxIterations,
+                  completionSignal: autoLoopConfig.completionSignal,
+                  description: continuity.metadata.description ?? "",
+                  constraints: continuity.metadata.constraints ?? [],
+                  assistantText,
+                }),
+              }
+            },
           })
+
+          if (result.status === "completed") {
+            autoLoopStates.delete(sessionID)
+            stateCleaned = true
+          } else if (result.status === "exhausted") {
+            state.iterations += 1
+            if (state.iterations >= autoLoopConfig.maxIterations) {
+              state.exhausted = true
+              stateManager.addWarning(
+                sessionID,
+                `[Harness] Reached max auto-loop iterations (${autoLoopConfig.maxIterations}) for session ${sessionID}`,
+              )
+            }
+          } else if (result.status === "failed") {
+            if (deps.runRalphLoop) {
+              try {
+                const ralphResult = await deps.runRalphLoop({
+                  initialResult: result,
+                  maxCorrectionCycles: 3,
+                  validator: async (_res, _cycle) => {
+                    const messages = await getSessionMessages(client, sessionID)
+                    const assistantText = extractAssistantText(messages)
+                    if (assistantText.includes(autoLoopConfig.completionSignal)) {
+                      return { outcome: "passed" as const }
+                    }
+                    return {
+                      outcome: "failed" as const,
+                      reason: result.error ?? "delegation failed",
+                      fixPrompt: buildAutoLoopPrompt({
+                        iteration: state.iterations + 1,
+                        maxIterations: autoLoopConfig.maxIterations,
+                        completionSignal: autoLoopConfig.completionSignal,
+                        description: continuity.metadata.description ?? "",
+                        constraints: continuity.metadata.constraints ?? [],
+                        assistantText,
+                      }),
+                    }
+                  },
+                  fixer: async (fixPrompt, _cycle) => {
+                    await lifecycleManager.requestAutoLoopRetry({ sessionID, promptText: fixPrompt })
+                    return result
+                  },
+                })
+
+                if (ralphResult.status === "passed") {
+                  autoLoopStates.delete(sessionID)
+                  stateCleaned = true
+                } else if (ralphResult.status === "exhausted") {
+                  const escalation = deps.escalationMessage
+                    ? deps.escalationMessage(ralphResult)
+                    : `[Harness] ralph-loop exhausted ${ralphResult.cycles} correction cycles for session ${sessionID}`
+                  stateManager.addWarning(sessionID, escalation)
+                } else if (ralphResult.status === "error") {
+                  stateManager.addWarning(
+                    sessionID,
+                    `[Harness] ralph-loop error for session ${sessionID}: ${ralphResult.errors.join("; ")}`,
+                  )
+                }
+              } catch (ralphError) {
+                const msg = ralphError instanceof Error ? ralphError.message : String(ralphError)
+                stateManager.addWarning(sessionID, `[Harness] ralph-loop threw: ${msg}`)
+              }
+            } else {
+              stateManager.addWarning(
+                sessionID,
+                `[Harness] Auto-loop failed for session ${sessionID}: ${result.error ?? "unknown error"}`,
+              )
+            }
+          }
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
-          stateManager.addWarning(sessionID, `[Harness] Auto-loop retry failed: ${message}`)
+          stateManager.addWarning(sessionID, `[Harness] Auto-loop dispatcher failed: ${message}`)
         } finally {
           state.retryPending = false
-          if (!terminalAutoLoopSessions.has(sessionID)) {
+          if (terminalAutoLoopSessions.has(sessionID) || stateCleaned) {
+            autoLoopStates.delete(sessionID)
+          } else {
             autoLoopStates.set(sessionID, state)
           }
         }
