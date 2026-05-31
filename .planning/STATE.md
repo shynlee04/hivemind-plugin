@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-30T18:40:00.000Z"
+last_updated: "2026-05-31T11:12:03.916Z"
 progress:
-  total_phases: 47
+  total_phases: 48
   completed_phases: 17
-  total_plans: 107
-  completed_plans: 89
-  percent: 36
+  total_plans: 112
+  completed_plans: 96
+  percent: 35
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -529,3 +529,32 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 ### Next Step
 
 - **C8: Dependency Cleanup** (concerns 8.1-8.4) — or continue planned Group process
+
+---
+
+## P41-B: Schema changes + writer redirect — ✅ COMPLETE
+
+**Completed:** 2026-05-31  
+**Plan file:** `.planning/phases/P41-state-cluster-redesign/P41-B-PLAN.md`  
+**Summary:** `.planning/phases/P41-state-cluster-redesign/P41-B-SUMMARY.md`  
+**Commits:** 6 atomic commits
+
+### REQ Coverage
+
+| REQ | Description | Status | Evidence |
+|-----|-------------|--------|----------|
+| REQ-P41B-01 | pendingNotifications field on ChildSessionRecord | ✅ | Line 245 types.ts |
+| REQ-P41B-02 | 6 gap fields (queueKey, terminalKind, recoveryGuarantee, executionMode, compactionCheckpoint, lifecycle) | ✅ | Lines 247-257 types.ts |
+| REQ-P41B-03 | Governance persistence module at src/features/governance/persistence.ts | ✅ | 4 exported functions, atomic write pattern |
+| REQ-P41B-04 | Dual-write in persistDelegations() | ✅ | ChildWriter + HierarchyManifestWriter as fire-and-forget |
+| REQ-P41B-05 | Dual-write in recordSessionContinuity + patchSessionContinuity | ✅ | ChildWriter.createChildFile with lifecycle fields |
+| REQ-P41B-06 | `npm run typecheck && npm run test` | ✅ | 0 type errors, 3012/3012 tests pass |
+| REQ-P41B-07 | All tests pass | ✅ | 249/249 test files, 3012 pass, 2 skip |
+
+### Verification
+
+- **Full test suite:** 3012/3012 pass, 2 skipped (0 failures, 0 regressions)
+- **Type-check:** Clean (zero errors)
+- **249 test files:** All pass
+- **Governance evaluator:** Redirected to standalone governance-state.json
+- **Dual-write:** All 3 writer paths (persistDelegations, recordSessionContinuity, patchSessionContinuity) now write to session-tracker as fire-and-forget
