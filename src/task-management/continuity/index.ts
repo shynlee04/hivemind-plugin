@@ -328,18 +328,6 @@ export function getSessionContinuity(sessionID: string): SessionContinuityRecord
   return record ? cloneContinuityRecord(record) : undefined
 }
 
-export function getSessionToolProfile(sessionID: string): SessionContinuityRecord["toolProfile"] | undefined {
-  return getSessionContinuity(sessionID)?.toolProfile
-}
-
-export function getSessionPromptParams(sessionID: string): SessionContinuityRecord["promptParams"] | undefined {
-  return getSessionContinuity(sessionID)?.promptParams
-}
-
-export function getSessionContinuityMetadata(sessionID: string): SessionContinuityMetadata | undefined {
-  return getSessionContinuity(sessionID)?.metadata
-}
-
 export function recordSessionContinuity(record: SessionContinuityRecord): SessionContinuityRecord {
   const normalized = cloneContinuityRecord({
     ...record,
@@ -463,28 +451,6 @@ export function patchSessionContinuity(
   return cloneContinuityRecord(next)
 }
 
-export function patchSessionDelegationPacket(
-  sessionID: string,
-  patch: Partial<Omit<DelegationPacket, "id" | "createdAt" | "spec">>,
-): SessionContinuityRecord | undefined {
-  const currentPacket = ensureStoreLoaded().sessions[sessionID]?.metadata.delegationPacket
-  if (!currentPacket) {
-    return undefined
-  }
-
-  return patchSessionContinuity(sessionID, {
-    delegationPacket: {
-      ...currentPacket,
-      plan: patch.plan === undefined ? currentPacket.plan : patch.plan,
-      artifacts: patch.artifacts ? [...patch.artifacts] : [...currentPacket.artifacts],
-      commits: patch.commits ? [...patch.commits] : [...currentPacket.commits],
-      parentChain: patch.parentChain ? [...patch.parentChain] : [...currentPacket.parentChain],
-      status: patch.status ?? currentPacket.status,
-      updatedAt: Date.now(),
-    },
-  })
-}
-
 export function deleteSessionContinuity(sessionID: string): void {
   const store = ensureStoreLoaded()
   if (!store.sessions[sessionID]) {
@@ -499,29 +465,4 @@ export function getContinuityStoragePath(projectRoot?: string): string {
   return getContinuityFile(projectRoot)
 }
 
-export function getGovernancePersistenceState(projectRoot?: string): GovernancePersistenceState {
-  return cloneGovernanceState(ensureStoreLoaded(projectRoot).governance ?? emptyStore().governance!)
-}
 
-export function recordGovernancePersistenceState(_state: GovernancePersistenceState, _projectRoot?: string): GovernancePersistenceState {
-  console.warn(`[Harness] DEPRECATED: recordGovernancePersistenceState() is a no-op. Use writeGovernanceState() from governance/persistence.ts instead.`)
-  // Old behavior: writes to continuity store's governance field
-  // const next = cloneGovernanceState({ ...state, updatedAt: Date.now() })
-  // const store = ensureStoreLoaded(projectRoot)
-  // store.governance = next
-  // persistStore(projectRoot)
-  // return cloneGovernanceState(next)
-  return cloneGovernanceState({
-    rules: [],
-    violations: [],
-    updatedAt: Date.now(),
-  })
-}
-
-export function flushAllStores(): void {
-  // REQ-P41D-02: No flush to disk. In-memory cache is sufficient for current-process reads.
-}
-
-export function registerShutdownHandlers(): void {
-  // REQ-P41D-02: No process-exit flush. Session-tracker handles cross-restart persistence.
-}
