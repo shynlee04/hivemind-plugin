@@ -264,7 +264,7 @@ All 14 assumptions documented in `P41-C-ASSUMPTIONS.md`. All verified against cu
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 **None identified.** The SPEC is explicit and complete. All code paths were verified by reading the actual source files. The only potential unknown is whether `listSessionContinuity()` returns sessions that were created *only* through session-tracker (not written to old continuity file), but P41-B dual-write ensures all sessions are written to both — so enrichment will find tracker data for every session.
 
