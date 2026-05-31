@@ -1,4 +1,7 @@
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi, afterEach } from "vitest"
+import { mkdtempSync, rmSync } from "node:fs"
+import { join } from "node:path"
+import { tmpdir } from "node:os"
 
 vi.mock("../../src/task-management/lifecycle/index.js", () => ({
   createHarnessLifecycleManager: () => ({
@@ -45,23 +48,33 @@ vi.mock("../../src/routing/behavioral-profile/resolve-behavioral-profile.js", ()
 }))
 
 describe("bootstrap tool registration", () => {
+  let tempDir: string
+
+  afterEach(() => {
+    if (tempDir) {
+      try { rmSync(tempDir, { recursive: true, force: true }) } catch {}
+    }
+  })
+
   it("registers bootstrap-init and bootstrap-recover on the plugin tool registry", async () => {
+    tempDir = mkdtempSync(join(tmpdir(), "bootstrap-test-"))
     const { HarnessControlPlane } = await import("../../src/plugin.js")
-    const plugin = await HarnessControlPlane({ client: {}, directory: process.cwd() } as never)
+    const plugin = await HarnessControlPlane({ client: {}, directory: tempDir } as never)
     expect(Object.keys(plugin.tool ?? {})).toEqual(expect.arrayContaining(["bootstrap-init", "bootstrap-recover"]))
   }, 15_000)
 
   it("rejects invalid bootstrap tool scope before mutation", async () => {
+    tempDir = mkdtempSync(join(tmpdir(), "bootstrap-test-"))
     const { HarnessControlPlane } = await import("../../src/plugin.js")
-    const plugin = await HarnessControlPlane({ client: {}, directory: process.cwd() } as never)
+    const plugin = await HarnessControlPlane({ client: {}, directory: tempDir } as never)
 
     const initTool = plugin.tool?.["bootstrap-init"]
     const recoverTool = plugin.tool?.["bootstrap-recover"]
     expect(initTool).toBeDefined()
     expect(recoverTool).toBeDefined()
 
-    const initResult = JSON.parse(await initTool.execute({ projectRoot: process.cwd(), scope: "bogus", nonInteractive: true, config: {} }))
-    const recoverResult = JSON.parse(await recoverTool.execute({ projectRoot: process.cwd(), scope: "bogus" }))
+    const initResult = JSON.parse(await initTool.execute({ projectRoot: tempDir, scope: "bogus", nonInteractive: true, config: {} }))
+    const recoverResult = JSON.parse(await recoverTool.execute({ projectRoot: tempDir, scope: "bogus" }))
 
     expect(initResult.kind).toBe("error")
     expect(recoverResult.kind).toBe("error")

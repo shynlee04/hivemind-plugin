@@ -4,6 +4,8 @@ export type DelegationStatus =
   | "completed"   // Dual-signal confirmed completion, result extracted
   | "error"       // Error occurred (child session deleted, SDK error, etc.)
   | "timeout"     // Safety ceiling reached (MAX runtime, not a deadline)
+  | "aborted"     // Aborted by user or connection recovery failure
+  | "cancelled"   // Cancelled explicitly or because of connection drop
 
 export type DelegationSurface = "agent-delegation" | "command-process"
 

@@ -1,0 +1,36 @@
+{
+  "sessionID": "ses_parent_002",
+  "parentSessionID": "ses_parent_002",
+  "delegationDepth": 0,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T13:41:57.155Z",
+  "updated": "2026-05-31T14:07:37.472Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "pendingNotifications": [
+    {
+      "delegationId": "delg_101",
+      "agent": "builder",
+      "title": "Fail test",
+      "status": "completed",
+      "description": "Should fail",
+      "sessionID": "child_ses",
+      "createdAt": 1780236457439,
+      "delivered": false,
+      "retryCount": 0,
+      "maxRetries": 3
+    }
+  ],
+  "journey": []
+}

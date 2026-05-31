@@ -10,7 +10,7 @@
     "subagentType": ""
   },
   "created": "2026-05-31T12:13:04.102Z",
-  "updated": "2026-05-31T12:13:04.102Z",
+  "updated": "2026-05-31T15:45:53.445Z",
   "status": "active",
   "mainAgent": {
     "name": "",
@@ -26,17 +26,17 @@
       "status": "failed",
       "error": "Failed to send prompt to child session",
       "resultPreview": "Failed to send prompt to child session",
-      "briefSummary": "Delegated work finished with terminal state error after 0ms. Summary preview: Failed to send prompt to child session",
+      "briefSummary": "Delegated work finished with terminal state error after 1ms. Summary preview: Failed to send prompt to child session",
       "outputLink": "session://fake-ses-1",
-      "duration": 0,
-      "elapsedHuman": "0ms",
+      "duration": 1,
+      "elapsedHuman": "1ms",
       "metadata": {
-        "delegationId": "389388cb-e088-446c-b454-be2aa7a1f480",
+        "delegationId": "2fc1eb3c-c260-46c9-81dc-ab12fec1ebdb",
         "terminalState": "error",
         "recoveryGuarantee": "resumable",
         "summaryPreview": "Failed to send prompt to child session"
       },
-      "createdAt": 1780229584092,
+      "createdAt": 1780242353438,
       "delivered": false,
       "retryCount": 0,
       "maxRetries": 3
@@ -53,15 +53,16 @@
       "duration": 0,
       "elapsedHuman": "0ms",
       "metadata": {
-        "delegationId": "cdb7ecf3-b83a-4ea8-9601-32a010325617",
+        "delegationId": "c1cac401-f706-490f-973f-336dd0285410",
         "terminalState": "error",
         "recoveryGuarantee": "resumable",
         "summaryPreview": "Failed to send prompt to child session"
       },
-      "createdAt": 1780229584096,
+      "createdAt": 1780242353441,
       "delivered": false,
       "retryCount": 0,
       "maxRetries": 3
     }
-  ]
+  ],
+  "journey": []
 }

@@ -23,7 +23,9 @@ export function getDelegationsFilePath(): string {
 function buildChildRecordFromDelegation(d: Delegation): ChildSessionRecord {
   const status = d.status === "dispatched" || d.status === "running" ? "active"
     : d.status === "completed" ? "completed"
-    : "error" // timeout / error both map to error
+    : d.status === "aborted" ? "aborted"
+    : d.status === "cancelled" ? "cancelled"
+    : "error"
 
   return {
     sessionID: d.childSessionId,
@@ -178,6 +180,8 @@ export function readPersistedDelegations(): Delegation[] {
               let status: DelegationStatus = "running"
               if (childRecord.status === "completed") status = "completed"
               else if (childRecord.status === "error") status = "error"
+              else if (childRecord.status === "aborted") status = "aborted"
+              else if (childRecord.status === "cancelled") status = "cancelled"
 
               delegations.push({
                 id: childRecord.sessionID,

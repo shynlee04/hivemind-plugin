@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "rootMainSessionID": "ses_concurrent",
-  "lastUpdated": "2026-05-31T12:13:04.101Z",
+  "lastUpdated": "2026-05-31T15:45:53.453Z",
   "children": {
     "fake-ses-1": {
       "sessionID": "fake-ses-1",
@@ -10,28 +10,13 @@
       "delegationDepth": 1,
       "delegatedBy": "builder",
       "subagentType": "",
-      "createdAt": "2026-05-31T12:13:04.101Z",
-      "updatedAt": "2026-05-31T12:13:04.101Z",
+      "createdAt": "2026-05-31T15:45:53.453Z",
+      "updatedAt": "2026-05-31T15:45:53.453Z",
       "status": "active",
       "turnCount": 0,
       "childFile": "fake-ses-1.json"
     }
   },
   "totalChildren": 1,
-  "maxDepth": 1
-}fake-ses-2",
-      "parentSessionID": "ses_concurrent",
-      "rootMainSessionID": "ses_concurrent",
-      "delegationDepth": 1,
-      "delegatedBy": "researcher",
-      "subagentType": "",
-      "createdAt": "2026-05-31T12:13:04.101Z",
-      "updatedAt": "2026-05-31T12:13:04.101Z",
-      "status": "active",
-      "turnCount": 0,
-      "childFile": "fake-ses-2.json"
-    }
-  },
-  "totalChildren": 2,
   "maxDepth": 1
 }

@@ -247,6 +247,6 @@ export class CompletionDetector {
   }
 
   private isTerminalStatus(status: DelegationStatus): boolean {
-    return status === "completed" || status === "error" || status === "timeout"
+    return status === "completed" || status === "error" || status === "timeout" || status === "aborted" || status === "cancelled"
   }
 }

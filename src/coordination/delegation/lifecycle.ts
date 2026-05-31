@@ -60,7 +60,7 @@ export class DelegationLifecycle {
 
   /** Returns true for terminal delegation states. */
   isTerminal(status: DelegationStatus): boolean {
-    return status === "completed" || status === "error" || status === "timeout"
+    return status === "completed" || status === "error" || status === "timeout" || status === "aborted" || status === "cancelled"
   }
 
   /** Mark a delegation timed out. */
@@ -71,13 +71,13 @@ export class DelegationLifecycle {
 
   /** Mark a delegation aborted by the caller. */
   markAborted(delegationId: string): DelegationResult {
-    this.transitionTerminal(delegationId, "error", "[Harness] Delegation aborted")
+    this.transitionTerminal(delegationId, "aborted", "[Harness] Delegation aborted")
     return this.resultFor(delegationId)
   }
 
   /** Mark a delegation cancelled by the caller. */
   markCancelled(delegationId: string): DelegationResult {
-    this.transitionTerminal(delegationId, "error", "[Harness] Delegation cancelled")
+    this.transitionTerminal(delegationId, "cancelled", "[Harness] Delegation cancelled")
     return this.resultFor(delegationId)
   }
 

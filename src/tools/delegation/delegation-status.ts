@@ -121,7 +121,7 @@ async function renderDelegationV2(delegation: Delegation & { v2?: boolean; promp
   return { ...base, agent: delegation.agent, childMessageCount, elapsedHuman: formatElapsed(elapsedMs), elapsedMs, escalationLevel: deps.getEscalationLevel?.(delegation.id) ?? null, progressPct: calculateProgressPct(delegation, elapsedMs), prompt: delegation.prompt, signals: { actionCount: delegation.actionCount ?? 0, messageCount: delegation.messageCount ?? childMessageCount ?? 0, toolCallCount: delegation.toolCallCount ?? 0 } }
 }
 
-const VALID_DELEGATION_STATUSES: ReadonlySet<string> = new Set(["dispatched", "running", "completed", "error", "timeout"])
+const VALID_DELEGATION_STATUSES: ReadonlySet<string> = new Set(["dispatched", "running", "completed", "error", "timeout", "aborted", "cancelled"])
 
 /** Runtime validation for DelegationStatus — rejects unknown status strings. */
 function validateDelegationStatus(raw: string): DelegationStatus {
@@ -403,7 +403,18 @@ async function mergeAllDelegations(
   for (const record of allRecords) {
     const existing = byId.get(record.id)
     if (existing) {
-      byId.set(record.id, {
+      const isManagerRecord = managerDelegations.some((d) => d.id === record.id)
+      byId.set(record.id, isManagerRecord ? {
+        ...existing,
+        ...record,
+        messageCount: record.messageCount ?? existing.messageCount,
+        toolCallCount: record.toolCallCount ?? existing.toolCallCount,
+        actionCount: record.actionCount ?? existing.actionCount,
+        finalMessageExcerpt: record.finalMessageExcerpt || existing.finalMessageExcerpt,
+        result: record.result || existing.result,
+        error: record.error || existing.error,
+        completedAt: record.completedAt || existing.completedAt,
+      } : {
         ...record,
         ...existing,
         messageCount: existing.messageCount ?? record.messageCount,
@@ -416,6 +427,16 @@ async function mergeAllDelegations(
       })
     } else {
       byId.set(record.id, record)
+    }
+  }
+
+  const managerActiveIds = new Set(managerDelegations.map((d) => d.id))
+  for (const delegation of byId.values()) {
+    if (!managerActiveIds.has(delegation.id)) {
+      if (delegation.status === "dispatched" || delegation.status === "running") {
+        delegation.status = "cancelled"
+        delegation.terminalKind = "cancelled"
+      }
     }
   }
 
@@ -471,17 +492,31 @@ export function createDelegationStatusTool(
             // ignore
           }
 
-          if (delegation && trackerDel) {
-            delegation = {
+          const initialDelegation = delegation
+          if (initialDelegation && trackerDel) {
+            const isManagerRecord = delegationManager.getStatus(initialDelegation.id) !== undefined ||
+              delegationManager.getAllDelegations().some((d) => d.id === initialDelegation.id)
+
+            delegation = isManagerRecord ? {
               ...trackerDel,
-              ...delegation,
-              messageCount: delegation.messageCount ?? trackerDel.messageCount,
-              toolCallCount: delegation.toolCallCount ?? trackerDel.toolCallCount,
-              actionCount: delegation.actionCount ?? trackerDel.actionCount,
-              finalMessageExcerpt: delegation.finalMessageExcerpt || trackerDel.finalMessageExcerpt,
-              result: delegation.result || trackerDel.result,
-              error: delegation.error || trackerDel.error,
-              completedAt: delegation.completedAt || trackerDel.completedAt,
+              ...initialDelegation,
+              messageCount: initialDelegation.messageCount ?? trackerDel.messageCount,
+              toolCallCount: initialDelegation.toolCallCount ?? trackerDel.toolCallCount,
+              actionCount: initialDelegation.actionCount ?? trackerDel.actionCount,
+              finalMessageExcerpt: initialDelegation.finalMessageExcerpt || trackerDel.finalMessageExcerpt,
+              result: initialDelegation.result || trackerDel.result,
+              error: initialDelegation.error || trackerDel.error,
+              completedAt: initialDelegation.completedAt || trackerDel.completedAt,
+            } : {
+              ...initialDelegation,
+              ...trackerDel,
+              messageCount: trackerDel.messageCount ?? initialDelegation.messageCount,
+              toolCallCount: trackerDel.toolCallCount ?? initialDelegation.toolCallCount,
+              actionCount: trackerDel.actionCount ?? delegationManager.getAllDelegations().find(d => d.id === initialDelegation.id)?.actionCount ?? trackerDel.actionCount,
+              finalMessageExcerpt: trackerDel.finalMessageExcerpt || initialDelegation.finalMessageExcerpt,
+              result: trackerDel.result || initialDelegation.result,
+              error: trackerDel.error || initialDelegation.error,
+              completedAt: trackerDel.completedAt || initialDelegation.completedAt,
             }
           } else if (trackerDel) {
             delegation = trackerDel
@@ -489,6 +524,16 @@ export function createDelegationStatusTool(
 
           if (!delegation) {
             return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
+          }
+
+          const isManagerActive = delegationManager.getStatus(delegation.id) !== undefined ||
+            delegationManager.getAllDelegations().some((d) => d.id === delegation.id)
+
+          if (!isManagerActive) {
+            if (delegation.status === "dispatched" || delegation.status === "running") {
+              delegation.status = "cancelled"
+              delegation.terminalKind = "cancelled"
+            }
           }
 
           if (!(await canAccessDelegation(projectRoot, context.sessionID, delegation, delegationManager))) {

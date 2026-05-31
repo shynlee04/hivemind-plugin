@@ -552,6 +552,16 @@ export class SessionTracker {
 
       await this.cleanupOrphanedTmpFiles()
       await this.cleanupOrphanDirectories()
+      const staleRemoved = await this.projectIndexWriter.cleanupStaleEntries()
+      if (staleRemoved > 0) {
+        void this.client.app?.log?.({
+          body: {
+            service: "session-tracker",
+            level: "info",
+            message: `[Harness] Session tracker: cleaned ${staleRemoved} stale entries from project-continuity.json`,
+          },
+        })
+      }
       await this.projectContinuityChecker.ensureCompleteness()
 
       void this.client.tui?.showToast?.({

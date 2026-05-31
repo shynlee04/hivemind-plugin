@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+  "lastUpdated": "2026-05-31T20:10:56.351Z",
+  "children": {
+    "ses_18064fed0ffe6bJgq6xiIUsb6t": {
+      "sessionID": "ses_18064fed0ffe6bJgq6xiIUsb6t",
+      "parentSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+      "rootMainSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-plan-checker",
+      "subagentType": "gsd-plan-checker",
+      "createdAt": "2026-05-31T20:01:06.105Z",
+      "updatedAt": "2026-05-31T20:01:06.105Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_18064fed0ffe6bJgq6xiIUsb6t.json"
+    },
+    "ses_1805fcf91ffebS6rrQGBF4Xw6J": {
+      "sessionID": "ses_1805fcf91ffebS6rrQGBF4Xw6J",
+      "parentSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+      "rootMainSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-doc-writer",
+      "createdAt": "2026-05-31T20:01:06.189Z",
+      "updatedAt": "2026-05-31T20:05:15.711Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1805fcf91ffebS6rrQGBF4Xw6J.json"
+    },
+    "ses_1805bcc1dffe4qTJQ1SWTS22sP": {
+      "sessionID": "ses_1805bcc1dffe4qTJQ1SWTS22sP",
+      "parentSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+      "rootMainSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-plan-checker",
+      "createdAt": "2026-05-31T20:05:28.351Z",
+      "updatedAt": "2026-05-31T20:07:49.753Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1805bcc1dffe4qTJQ1SWTS22sP.json"
+    },
+    "ses_18056ca5bffehmJysJGtDNnxTP": {
+      "sessionID": "ses_18056ca5bffehmJysJGtDNnxTP",
+      "parentSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+      "rootMainSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-05-31T20:10:56.351Z",
+      "updatedAt": "2026-05-31T20:10:56.351Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_18056ca5bffehmJysJGtDNnxTP.json"
+    }
+  },
+  "totalChildren": 4,
+  "maxDepth": 1
+}

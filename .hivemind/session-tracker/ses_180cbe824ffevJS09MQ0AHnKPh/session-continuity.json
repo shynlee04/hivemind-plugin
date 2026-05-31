@@ -1,0 +1,46 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+  "lastUpdated": "2026-05-31T20:10:56.327Z",
+  "hierarchy": {
+    "root": "ses_180cbe824ffevJS09MQ0AHnKPh",
+    "children": {
+      "ses_18064fed0ffe6bJgq6xiIUsb6t": {
+        "file": "ses_18064fed0ffe6bJgq6xiIUsb6t.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      },
+      "ses_1805fcf91ffebS6rrQGBF4Xw6J": {
+        "file": "ses_1805fcf91ffebS6rrQGBF4Xw6J.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-doc-writer",
+        "children": {}
+      },
+      "ses_1805bcc1dffe4qTJQ1SWTS22sP": {
+        "file": "ses_1805bcc1dffe4qTJQ1SWTS22sP.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      },
+      "ses_18056ca5bffehmJysJGtDNnxTP": {
+        "file": "ses_18056ca5bffehmJysJGtDNnxTP.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {
+    "task": 3,
+    "read": 3,
+    "edit": 6,
+    "bash": 2,
+    "sequential-thinking_sequentialthinking": 1
+  }
+}

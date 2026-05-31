@@ -1,8 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { mkdtempSync, rmSync, existsSync } from "node:fs"
+import { join } from "node:path"
+import { tmpdir } from "node:os"
 
 import { DelegationManager } from "../../src/coordination/delegation/manager.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 import { createDelegateTaskTool, DelegateTaskInputSchema } from "../../src/tools/delegation/delegate-task.js"
+
+let tempDir: string | undefined
+let prevStateDir: string | undefined
+beforeEach(() => {
+  prevStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+  tempDir = mkdtempSync(join(tmpdir(), "delegate-task-test-"))
+  process.env.OPENCODE_HARNESS_STATE_DIR = tempDir
+})
+afterEach(() => {
+  if (tempDir && existsSync(tempDir)) { rmSync(tempDir, { recursive: true, force: true }) }
+  if (prevStateDir === undefined) { delete process.env.OPENCODE_HARNESS_STATE_DIR } else { process.env.OPENCODE_HARNESS_STATE_DIR = prevStateDir }
+})
 
 const mockCtx = {
   sessionID: "parent-session",

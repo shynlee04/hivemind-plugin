@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "rootMainSessionID": "ses_cleanup",
-  "lastUpdated": "2026-05-31T12:13:03.575Z",
+  "lastUpdated": "2026-05-31T15:45:52.916Z",
   "children": {
     "fake-ses-1": {
       "sessionID": "fake-ses-1",
@@ -10,8 +10,8 @@
       "delegationDepth": 1,
       "delegatedBy": "builder",
       "subagentType": "",
-      "createdAt": "2026-05-31T12:13:03.575Z",
-      "updatedAt": "2026-05-31T12:13:03.575Z",
+      "createdAt": "2026-05-31T15:45:52.916Z",
+      "updatedAt": "2026-05-31T15:45:52.916Z",
       "status": "active",
       "turnCount": 0,
       "childFile": "fake-ses-1.json"

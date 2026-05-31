@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     include: ['tests/**/*.test.ts', 'eval/**/*.test.ts'],
+    setupFiles: ['vitest.setup.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],

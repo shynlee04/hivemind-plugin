@@ -2762,13 +2762,23 @@ describe("behavioral tests", () => {
     }
   }
 
-  let tempDir: string
-  beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "dm-behavioral-"))
-  })
-  afterEach(() => {
+let tempDir: string | undefined
+let prevStateDir: string | undefined
+beforeEach(() => {
+  prevStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+  tempDir = mkdtempSync(join(tmpdir(), "dm-behavioral-"))
+  process.env.OPENCODE_HARNESS_STATE_DIR = tempDir
+})
+afterEach(() => {
+  if (tempDir && existsSync(tempDir)) {
     rmSync(tempDir, { recursive: true, force: true })
-  })
+  }
+  if (prevStateDir === undefined) {
+    delete process.env.OPENCODE_HARNESS_STATE_DIR
+  } else {
+    process.env.OPENCODE_HARNESS_STATE_DIR = prevStateDir
+  }
+})
 
   it("dispatch creates session and delegates via stateful client", async () => {
     vi.spyOn(sessionApi, "sendPrompt").mockResolvedValue("ok")

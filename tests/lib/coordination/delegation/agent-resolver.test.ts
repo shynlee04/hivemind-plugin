@@ -1,10 +1,15 @@
 import { AgentResolver } from "../../../../src/coordination/delegation/agent-resolver.js"
+import { mkdtempSync } from "node:fs"
+import { join } from "node:path"
+import { tmpdir } from "node:os"
+
+const tempDir = mkdtempSync(join(tmpdir(), "agent-resolver-test-"))
 
 describe("AgentResolver", () => {
   it("validates that the requested agent exists in the app registry", async () => {
     const resolver = new AgentResolver({
       client: { app: { agents: async () => ({ agents: [{ name: "gsd-executor", tools: { read: true } }] }) } },
-      projectRoot: process.cwd(),
+      projectRoot: tempDir,
     })
 
     await expect(resolver.resolve("gsd-executor")).resolves.toMatchObject({ name: "gsd-executor" })
@@ -14,7 +19,7 @@ describe("AgentResolver", () => {
   it("resolves a permission profile from agent primitive metadata", async () => {
     const resolver = new AgentResolver({
       client: { app: { agents: async () => ({ agents: [{ name: "gsd-executor", tools: { read: true, edit: true } }] }) } },
-      projectRoot: process.cwd(),
+      projectRoot: tempDir,
     })
 
     const agent = await resolver.resolve("gsd-executor")
@@ -30,7 +35,7 @@ describe("AgentResolver", () => {
   it("disables recursive delegation tools for resolved agents", () => {
     const resolver = new AgentResolver({
       client: { app: { agents: async () => ({ agents: [] }) } },
-      projectRoot: process.cwd(),
+      projectRoot: tempDir,
     })
 
     expect(resolver.buildDisabledTools()).toEqual({ "delegate-task": false, task: false })

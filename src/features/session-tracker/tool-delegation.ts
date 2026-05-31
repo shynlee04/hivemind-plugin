@@ -344,7 +344,7 @@ export class ToolDelegation {
     // as both a journey entry AND a turn. OpenCode fires chat.message for the parent
     // session (not the child), so child assistant responses are never captured by the
     // child-recorder. We must capture them here from the delegation result.
-    const taskResult = extractTaskResult(output.output, childSessionID)
+    const taskResult = input.tool === "delegate-task" ? undefined : extractTaskResult(output.output, childSessionID)
     if (taskResult) {
       // Journey entry for audit trail
       await this.childWriter.appendJourneyEntry(input.sessionID, childSessionID, {

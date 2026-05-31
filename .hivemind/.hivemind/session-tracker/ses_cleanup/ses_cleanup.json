@@ -10,7 +10,7 @@
     "subagentType": ""
   },
   "created": "2026-05-31T11:59:29.767Z",
-  "updated": "2026-05-31T12:13:03.575Z",
+  "updated": "2026-05-31T15:45:52.738Z",
   "status": "active",
   "mainAgent": {
     "name": "",
@@ -31,12 +31,12 @@
       "duration": 0,
       "elapsedHuman": "0ms",
       "metadata": {
-        "delegationId": "d1157322-9737-497f-bb8c-c2b8b9405671",
+        "delegationId": "bba014bb-d3ed-481d-b0d0-892266f9edd2",
         "terminalState": "error",
         "recoveryGuarantee": "resumable",
         "summaryPreview": "Failed to send prompt to child session"
       },
-      "createdAt": 1780229583353,
+      "createdAt": 1780242352738,
       "delivered": false,
       "retryCount": 0,
       "maxRetries": 3

@@ -1,12 +1,11 @@
 # Phase P44: Tool Intelligence & Capability Layer - Research
-**Researched:** 2026-06-01
-> **Remediated 2026-06-01:** Updated tool count 25→31, added existing implementation section, fixed test root cause. Original research date: 2026-05-31.
+**Researched:** 2026-05-31
 **Domain:** Runtime tool capability resolution and delegation permission intelligence
 **Confidence:** HIGH
 
 ## Summary
 
-Phase P44 introduces a compaction-safe capability gate that gives the governance engine and spawner accurate, real-time tool intelligence at every enforcement point. The harness registers **31 tools** (24 harness + 7 built-in) in `src/plugin.ts`, but `spawn-request-builder.ts` only recognizes 7 OpenCode built-in tools (`WRITE_CAPABLE_TOOLS`) via name-matching. Fourteen harness tools are invisible at the delegation boundary, and 30 of 31 `hm-*` agents declare zero tool permissions in frontmatter — only `permission:` blocks exist (which map to OpenCode built-ins, not harness tools). When context compaction runs, whatever tool intelligence an agent's profile carried evaporates silently.
+Phase P44 introduces a compaction-safe capability gate that gives the governance engine and spawner accurate, real-time tool intelligence at every enforcement point. The harness registers **25 tools** in `src/plugin.ts`, but `spawn-request-builder.ts` only recognizes 7 OpenCode built-in tools (`WRITE_CAPABLE_TOOLS`) via name-matching. Fourteen harness tools are invisible at the delegation boundary, and 30 of 31 `hm-*` agents declare zero tool permissions in frontmatter — only `permission:` blocks exist (which map to OpenCode built-ins, not harness tools). When context compaction runs, whatever tool intelligence an agent's profile carried evaporates silently.
 
 **Primary recommendation:** Add a static `ToolCapabilityMap` in `src/features/capability-gate/` (event-sourced ledger pattern), wire it into `resolveDelegationPermissionProfile()` in the spawner, and thread capability context into `tool-guard-hooks.ts` → `evaluateGovernance()`. Migrate all 31 agent frontmatter to declare `tools:` alongside `permission:`. Fix SPEC path errata before implementation starts. Zero external dependencies — pure TypeScript.
 
@@ -30,7 +29,7 @@ Phase P44 introduces a compaction-safe capability gate that gives the governance
 
 | ID | Description | Research Support |
 |----|-------------|------------------|
-| REQ-P44-01 | Introduce `ToolCapabilityMap` classifying all 31 tools (24 harness + 7 built-in) | `grep` against `src/plugin.ts` returned 24 harness + 7 built-in = 31 total — 14 have zero delegation-boundary visibility today |
+| REQ-P44-01 | Introduce `ToolCapabilityMap` classifying all 25 harness tools | `grep` against `src/plugin.ts` returned 25 distinct tool names — 14 have zero delegation-boundary visibility today |
 | REQ-P44-02 | Wire capability map into `resolveDelegationPermissionProfile()` | Verified `spawn-request-builder.ts:28-29,73-85` — only 7-tool `WRITE_CAPABLE_TOOLS` set is considered |
 | REQ-P44-03 | Add capability-aware evaluation to tool guard hooks | Verified `tool-guard-hooks.ts` calls `evaluateGovernance()` with zero capability context for 14 orphaned tools |
 | REQ-P44-04 | Agent frontmatter `tools:` field migration | All 31 `hm-*` agents lack `tools:`; `ValidatedAgent.tools` field exists (line 12 of spawn-request-builder.ts) but is never populated |
@@ -59,7 +58,7 @@ Phase P44 introduces a compaction-safe capability gate that gives the governance
 ### Alternatives Considered
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
-| Static frozen `ToolCapabilityMap` | Dynamic event-sourced registry | 31 tools (24 harness + 7 built-in) unchanging — static frozen map is sufficient and matches "no external deps" constraint |
+| Static frozen `ToolCapabilityMap` | Dynamic event-sourced registry | 25 tools unchanging — static frozen map is sufficient and matches "no external deps" constraint |
 | Agent `tools:` frontmatter field | Runtime inference from `permission:` block | `permission:` already maps to OpenCode built-ins, not harness tools; explicit `tools:` is cleaner |
 | New guard hook system | Extend existing `evaluateGovernance()` | Hook point already exists in `tool-guard-hooks.ts` |
 
@@ -96,7 +95,7 @@ Spawn Request Builder (src/coordination/spawner/spawn-request-builder.ts)
   │  toolsFromAgentMetadata()
   │         │
   │         ▼
-  │  ToolCapabilityMap (NEW) ──► Classifies 31 tools (24 harness + 7 built-in)
+  │  ToolCapabilityMap (NEW) ──► Classifies 25 harness tools
   │         │                   into capability categories
   │         ▼
   │  WRITE_CAPABLE_TOOLS (existing, 7 tools — frozen)
@@ -123,18 +122,16 @@ GovernanceEngine.evaluateGovernance()
 ```
 src/features/capability-gate/
 ├── index.ts            # Public API: getToolCapabilityMap(), classifyTool()
-├── capability-map.ts   # ToolCapabilityMap class with 31 classifications
+├── capability-map.ts   # ToolCapabilityMap class with 25 classifications
 └── types.ts            # ToolCategory enum, ToolCapabilityRecord type
 tests/features/capability-gate/
 ├── capability-map.test.ts   # Unit: classifications, frozen map integrity
 └── integration.test.ts      # Integration: spawner + guard hooks paths
 ```
 
-> **Agent frontmatter source-of-truth:** `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-*.md` → reflected to `.opencode/agents/hm-*.md` via `scripts/sync-assets.js`. All tool declaration edits MUST be made in the source-of-truth path.
-
 ### Pattern 1: Static Tool Capability Classification (Frozen Map)
 
-**What:** A constant `Map<string, ToolCategory>` covering all 31 tools (24 harness + 7 built-in).
+**What:** A constant `Map<string, ToolCategory>` covering all 25 harness-registered tools.
 
 **When to use:** Delegation resolution time and governance evaluation time.
 
@@ -244,14 +241,14 @@ const result = evaluateGovernance(toolName, sessionId, rules, { category });
 
 - **Hardcoding tool lists in multiple places:** `WRITE_CAPABLE_TOOLS` and `READ_ONLY_TOOLS` in `spawn-request-builder.ts:28-29` are currently the only harness-tool lists. The capability map must replace or derive from these — never duplicate them.
 - **Breaking existing delegation behavior:** Agents without a `tools:` declaration MUST continue receiving the same sets as today. Additivity only.
-- **Runtime capability discovery:** Don't build a dynamic registry. The 31 tools are static, known at compile time. Discovery is over-engineering.
+- **Runtime capability discovery:** Don't build a dynamic registry. The 25 tools are static, known at compile time. Discovery is over-engineering.
 - **Category explosion:** More than 5–6 categories is brittle. Goal is informed delegation, not micro-management.
 
 ## Don't Hand-Roll
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| Tool capability classification | Custom inference engine | `ReadonlyMap<string, ToolCategory>` | 31 tools, unchanging — frozen map is simplest correct solution |
+| Tool capability classification | Custom inference engine | `ReadonlyMap<string, ToolCategory>` | 25 tools, unchanging — frozen map is simplest correct solution |
 | Permission profile logic | Complex branching rules | Extend existing `resolveDelegationPermissionProfile()` | Already handles name-heuristics + permission blocks; capability is additive |
 | Tool blocking decisions | New guard hook system | Extend existing `evaluateGovernance()` with capability context | Hook point already exists; just add one parameter |
 
@@ -331,7 +328,7 @@ private toDispatchParams(params: DelegateParams): DispatchParams {
 ## State of the Art
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
-| Name-heuristic tool resolution (7-tool `WRITE_CAPABLE_TOOLS`) | → Capability-map resolution (31 tools, additive) | This phase | Delegation decisions informed by actual harness capabilities |
+| Name-heuristic tool resolution (7-tool `WRITE_CAPABLE_TOOLS`) | → Capability-map resolution (25+ tools, additive) | This phase | Delegation decisions informed by actual harness capabilities |
 | Agent `permission:` only | → Add `tools:` to frontmatter | This phase | Explicit tool opt-in replaces implicit name matching |
 | `evaluateGovernance()` rule-based only | → Receives capability context | This phase | Governance engine can block/warn by capability category |
 
@@ -341,15 +338,13 @@ private toDispatchParams(params: DelegateParams): DispatchParams {
 ## Assumptions Log
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
-| A1 | 31 tools (24 harness + 7 built-in) is the complete set — no tools registered outside `src/plugin.ts` | Standard Stack | A newly-added tool would be invisible to the capability map until updated |
+| A1 | 25 harness tools is the complete set — no tools registered outside `src/plugin.ts` | Standard Stack | A newly-added tool would be invisible to the capability map until updated |
 | A2 | `ValidatedAgent.tools` field (line 12 of `spawn-request-builder.ts`) is the intended extension point for agent tool declarations | Architecture Patterns | If wrong, need a different extension mechanism (e.g., new top-level `capabilities:` block) |
 | A3 | Static frozen `ToolCapabilityMap` is sufficient — no runtime capability discovery required | Don't Hand-Roll | If tools are added without updating the map, they silently fall back to `read-only` (degraded, not broken) |
 | A4 | All 31 `hm-*` agents can declare `tools:` in frontmatter without breaking existing `ValidatedAgent` parsing | Phase Requirements | If `tools:` field is rejected somewhere in the parser chain, migration plan needs to change |
 | A5 | `evaluateGovernance()` accepts an optional capability context object without ABI changes | Architecture Patterns | If it has a fixed signature, the integration approach must change (e.g., pass as a session-level lookup instead) |
 
 **If this table is non-empty:** The planner MUST gate A1–A5 assumptions as `checkpoint:human-verify` tasks before install/implementation, OR confirm each assumption against source before committing the plan.
-
-> **Full assumptions analysis (2026-06-01):** Found 26 assumptions total: 18 VERIFIED, 6 ASSUMED, 1 WRONG, 1 needs research. See assumptions analysis report for details.
 
 ## Open Questions
 
@@ -359,7 +354,7 @@ private toDispatchParams(params: DelegateParams): DispatchParams {
    - Recommendation: Default deny delegate tools in child sessions; require explicit `tools:` declaration. This is least-privilege-by-default.
 
 2. **How many agents need `tools:` migration in P44 vs subsequent phases?**
-   - What we know: 10 of 31 tools appear in some `permission:` blocks; 14 tools are fully orphaned.
+   - What we know: 10 of 25 harness tools appear in some `permission:` blocks; 14 tools are fully orphaned.
    - What's unclear: Whether all 31 agents need explicit `tools:` or a subset can defer.
    - Recommendation: Migrate all 31 agents to declare `tools:` in P44 — mechanical, low-risk, prevents future drift. ~100 LOC estimate.
 
@@ -367,11 +362,6 @@ private toDispatchParams(params: DelegateParams): DispatchParams {
    - What we know: Module max is 500 LOC.
    - What's unclear: Whether bundle size matters for the capability-gate module.
    - Recommendation: `ReadonlyMap<string, ToolCategory>` is zero-cost at runtime (Map lookup). Bundle relevance is negligible — the module is only imported at delegation + guard time.
-
- 4. **Bootstrap seeding for CapabilityGate?**
-    - SPEC REQ-P44-03 requires CapabilityGate seeding during bootstrap. The bootstrap flow is in `src/features/bootstrap/`.
-    - What's unclear: Whether the bootstrap hook exists and where to inject seeding.
-    - Recommendation: Research should verify the bootstrap module's hook surface and identify the injection point before planning.
 
 ## Environment Availability
 
@@ -398,7 +388,7 @@ private toDispatchParams(params: DelegateParams): DispatchParams {
 ### Phase Requirements → Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| REQ-P44-01 | `ToolCapabilityMap` classifies all 31 tools (24 harness + 7 built-in) | unit | `npx vitest run tests/features/capability-gate/capability-map.test.ts -t "classifies"` | ✅ EXISTS but FAILING — import path error + wrong expected count (25 vs 31). Wave 0 task: fix import path, update expected count to 31, add assertions for 6 missing tools |
+| REQ-P44-01 | `ToolCapabilityMap` classifies all 25 harness tools | unit | `npx vitest run tests/features/capability-gate/capability-map.test.ts -t "classifies"` | ❌ Wave 0 |
 | REQ-P44-02 | `resolveDelegationPermissionProfile` uses capability map | unit | `npx vitest run tests/features/capability-gate/integration.test.ts -t "permission"` | ❌ Wave 0 |
 | REQ-P44-03 | Tool guard hooks receive capability context | unit | `npx vitest run tests/features/capability-gate/integration.test.ts -t "guard"` | ❌ Wave 0 |
 | REQ-P44-04 | Agent frontmatter `tools:` parsed correctly | unit | `npx vitest run tests/features/capability-gate/capability-map.test.ts -t "frontmatter"` | ❌ Wave 0 |
@@ -411,12 +401,12 @@ private toDispatchParams(params: DelegateParams): DispatchParams {
 - **Phase gate:** Full suite green before `/gsd-verify-work`
 
 ### Wave 0 Gaps
-- [ ] `tests/features/capability-gate/capability-map.test.ts` — EXISTS but FAILING (import path + wrong count). Fix first.
+- [ ] `tests/features/capability-gate/capability-map.test.ts` — covers REQ-P44-01, REQ-P44-04
 - [ ] `tests/features/capability-gate/integration.test.ts` — covers REQ-P44-02, REQ-P44-03
-- [x] `src/features/capability-gate/` directory — EXISTS (111 LOC index.ts + types.ts)
-- [x] `src/features/capability-gate/index.ts` — EXISTS: CapabilityGate class + TOOL_CAPABILITY_MAP
-- [x] `src/features/capability-gate/types.ts` — EXISTS: ToolCategory, ToolCapabilityRecord, CapabilityMutationEvent
-- [x] `tests/features/capability-gate/` — EXISTS (test directory present)
+- [ ] `src/features/capability-gate/` directory — new feature module
+- [ ] `src/features/capability-gate/index.ts` — public API surface
+- [ ] `src/features/capability-gate/types.ts` — exported types
+- [ ] `tests/features/capability-gate/` — test directory
 
 ## Security Domain
 
@@ -450,7 +440,7 @@ private toDispatchParams(params: DelegateParams): DispatchParams {
 
 ## Sources
 ### Primary (HIGH confidence)
-- `src/plugin.ts` — 31 tool registrations verified via `grep -c` + `grep -o` (24 distinct harness kebab-case tool names + 7 built-in = 31 total)
+- `src/plugin.ts` — 25 tool registrations verified via `grep -c` + `grep -o` (24 distinct kebab-case tool names parsed from buildTool calls)
 - `src/coordination/spawner/spawn-request-builder.ts` — lines 28-29 (constants), 73-85 (resolveDelegationPermissionProfile), 91-121 (permission filtering logic)
 - `src/hooks/guards/tool-guard-hooks.ts` — `evaluateGovernance()` call, zero capability context
 - `src/coordination/delegation/manager.ts` — `toDispatchParams()` lines 387-389, no capability info carried forward
@@ -470,5 +460,5 @@ private toDispatchParams(params: DelegateParams): DispatchParams {
 - Pitfalls: HIGH — hazards derived from actual codebase gaps, not theoretical concerns
 - Orphaned tool set: HIGH — 14 orphaned tools cross-referenced via plugin.ts + agent frontmatter grep
 
-**Research date:** 2026-06-01 (remediated)
+**Research date:** 2026-05-31
 **Valid until:** 2026-06-30 (stable domain — tool registrations change infrequently; re-verify if plugin.ts changes)

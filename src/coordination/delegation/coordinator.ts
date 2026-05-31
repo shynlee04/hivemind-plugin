@@ -377,22 +377,22 @@ export class DelegationCoordinator {
 
   /** Aborts an active delegation and releases all coordinator-owned resources. */
   abortDelegation(delegationId: string, reason = "[Harness] Delegation aborted"): DelegationResult {
-    const result: DelegationResult = { delegationId, error: reason, status: "error", terminalKind: "cancelled", explicitCancellation: true }
+    const result: DelegationResult = { delegationId, error: reason, status: "aborted", terminalKind: "cancelled", explicitCancellation: true }
     this.deps.periodicNotifier?.deregister(delegationId)
-    this.deps.lifecycle.transition(delegationId, "error")
+    this.deps.lifecycle.transition(delegationId, "aborted")
     this.deps.monitor.onCompletion(delegationId)
     this.routeTerminal(delegationId, "failure", reason)
-    this.cleanup(delegationId, "error", result)
+    this.cleanup(delegationId, "aborted", result)
     return result
   }
 
   /** Cancels tracking for an active delegation without asserting child termination. */
   cancelDelegation(delegationId: string, reason = "[Harness] Delegation cancelled"): DelegationResult {
-    const result: DelegationResult = { delegationId, error: reason, status: "error", terminalKind: "cancelled", explicitCancellation: true }
-    this.deps.lifecycle.transition(delegationId, "error")
+    const result: DelegationResult = { delegationId, error: reason, status: "cancelled", terminalKind: "cancelled", explicitCancellation: true }
+    this.deps.lifecycle.transition(delegationId, "cancelled")
     this.deps.monitor.onCompletion(delegationId)
     this.routeTerminal(delegationId, "failure", reason)
-    this.cleanup(delegationId, "error", result)
+    this.cleanup(delegationId, "cancelled", result)
     return result
   }
 

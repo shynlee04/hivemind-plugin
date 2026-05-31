@@ -18,6 +18,8 @@ const STACKABLE_STATUSES: ReadonlySet<DelegationStatus> = new Set<DelegationStat
   "completed",
   "error",
   "timeout",
+  "aborted",
+  "cancelled",
 ])
 
 /** Statuses that indicate a session is still active and can be resumed in-place. */

@@ -1,5 +1,5 @@
 /**
- * Handles `session.deleted` — marks the session status as "completed".
+ * Handles `session.deleted` — marks the session status as "cancelled" for child sessions.
  *
  * REQ-C6-01: Extracted from EventCapture god module. This handler
  * processes session.deleted events for both child and main sessions.
@@ -26,10 +26,10 @@ export class SessionDeletedHandler {
         if (!(await this.deps.childWriter.childFileExists(childRoute.parentID, sessionID))) {
           return
         }
-        await this.deps.childWriter.updateChildStatus(childRoute.parentID, sessionID, "completed")
-        await this.deps.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
+        await this.deps.childWriter.updateChildStatus(childRoute.parentID, sessionID, "cancelled")
+        await this.deps.sessionIndexWriter.updateChildStatus(childRoute.rootMainID, sessionID, "cancelled")
         if (this.deps.manifestWriter) {
-          await this.deps.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "completed")
+          await this.deps.manifestWriter.updateChildStatus(childRoute.rootMainID, sessionID, "cancelled")
         }
 
         let parsedAgentName: string | undefined

@@ -183,6 +183,8 @@ export function delegationStatusToHarnessStatus(status: DelegationStatus): Harne
     completed: "completed",
     error: "error",
     timeout: "error", // no "timeout" value in HarnessStatus
+    aborted: "cancelled",
+    cancelled: "cancelled",
   }
   return map[status]
 }

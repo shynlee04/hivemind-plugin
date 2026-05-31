@@ -477,14 +477,17 @@ Plans:
 **Goal:** Introduce a compaction-safe capability gate that provides the governance engine and spawner with accurate, real-time tool intelligence at every enforcement point — without requiring external policy engines or runtime dependencies beyond existing harness infrastructure.
 **Requirements:** REQ-P44-01 through REQ-P44-06 (from P44-SPEC.md)
 **Depends on:** Phase 39 (Integration Completion & Hardening)
-**Plans:** 0 plans
+**Plans:** 4 plans
 **LOC Budget:** ~300 new LOC across 6 modules
 **SPEC:** `.planning/phases/P44-tool-intelligence-capability-layer/P44-SPEC.md`
 **Research:** `.planning/research/tool-intelligence-patterns-research-2026-05-31.md`
 **Audit:** `.hivemind/audits/tool-lifecycle-wiring-audit-2026-05-31.md`
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase P44 to break down)
+- [ ] P44-01-PLAN.md — Wave 1: Capability Gate Module (REQ-P44-01) — ToolCategory enum + CapabilityGate class + 25-tool frozen map + unit tests
+- [ ] P44-02-PLAN.md — Wave 2: Agent Frontmatter + Orphaned Tools (REQ-P44-02, REQ-P44-03) — 31 agent tools: declarations, 11 orphaned tools assigned
+- [ ] P44-03-PLAN.md — Wave 2: JIT Tool Injection at Delegation Boundary (REQ-P44-04) — spawn-request-builder wired to CapabilityGate
+- [ ] P44-04-PLAN.md — Wave 2: Hook Enforcement + Mutation Events (REQ-P44-05, REQ-P44-06) — tool-guard-hooks capability check + session-tracker event type
 
 ## Planned Workstreams (Blocked on Core Architecture)
 

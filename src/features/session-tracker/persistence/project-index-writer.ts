@@ -10,7 +10,7 @@
  * @module session-tracker/persistence/project-index-writer
  */
 
-import { readFile } from "node:fs/promises"
+import { readFile, access } from "node:fs/promises"
 import { resolve } from "node:path"
 import {
   atomicWriteJson,
@@ -149,6 +149,54 @@ export class ProjectIndexWriter {
       const index = this.createDefault()
       await atomicWriteJson(filePath, index)
     })
+  }
+
+  /**
+   * Removes stale entries from the project index whose directories
+   * no longer exist on disk.
+   *
+   * This prevents the respawn cycle: tests write entries to
+   * project-continuity.json, cleanup removes directories but not entries,
+   * then initialize() reads stale entries and recreates directories.
+   *
+   * Best-effort: individual failures are silently skipped.
+   *
+   * @returns Number of stale entries removed.
+   */
+  async cleanupStaleEntries(): Promise<number> {
+    let removedCount = 0
+
+    await this.enqueueWrite(async () => {
+      const index = await this.readIndex()
+      const now = new Date().toISOString()
+      const trackerRoot = sessionTrackerRoot(this.projectRoot)
+      let mutated = false
+
+      for (const [sessionID] of Object.entries(index.sessions)) {
+        // Check if the session directory exists on disk
+        const dirPath = resolve(trackerRoot, sessionID)
+        try {
+          await access(dirPath)
+          // Directory exists — keep the entry
+        } catch {
+          // Directory missing — remove stale entry
+          delete index.sessions[sessionID]
+          index.chronologicalOrder = index.chronologicalOrder.filter(
+            (id) => id !== sessionID,
+          )
+          mutated = true
+          removedCount++
+        }
+      }
+
+      if (mutated) {
+        index.lastUpdated = now
+        const filePath = this.getIndexPath()
+        await atomicWriteJson(filePath, index)
+      }
+    })
+
+    return removedCount
   }
 
   /**
