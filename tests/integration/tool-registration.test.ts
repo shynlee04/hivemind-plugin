@@ -125,8 +125,8 @@ describe("Tool Registration Smoke Tests", () => {
       projectDirectory: tmpdir,
     })
 
-    it("returns exactly 8 tools", () => {
-      expect(Object.keys(tools)).toHaveLength(8)
+    it("returns exactly 9 tools", () => {
+      expect(Object.keys(tools)).toHaveLength(9)
     })
 
     it("has correct tool keys", () => {
@@ -138,6 +138,7 @@ describe("Tool Registration Smoke Tests", () => {
       expect(tools).toHaveProperty("hivemind-session-view")
       expect(tools).toHaveProperty("hivemind-agent-work-create")
       expect(tools).toHaveProperty("hivemind-agent-work-export")
+      expect(tools).toHaveProperty("session-delegation-query")
     })
 
     it("each tool has description string and execute function", () => {
@@ -192,7 +193,7 @@ describe("Tool Registration Smoke Tests", () => {
   })
 
   describe("aggregate counts", () => {
-    it("total tool count across all groups is 24", () => {
+    it("total tool count across all groups is 25", () => {
       const delegation = registerDelegationTools({
         delegationManager: makeMockDelegationManager() as any,
         hivemindConfig: {} as any,
@@ -211,14 +212,14 @@ describe("Tool Registration Smoke Tests", () => {
 
       expect(Object.keys(delegation).length).toBe(3)
       expect(Object.keys(session).length).toBe(7)
-      expect(Object.keys(hivemind).length).toBe(8)
+      expect(Object.keys(hivemind).length).toBe(9)
       expect(Object.keys(config).length).toBe(6)
       expect(
         Object.keys(delegation).length +
           Object.keys(session).length +
           Object.keys(hivemind).length +
           Object.keys(config).length,
-      ).toBe(24)
+      ).toBe(25)
     })
   })
 })

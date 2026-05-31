@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "parent-1",
+  "lastUpdated": "2026-05-31T12:12:57.812Z",
+  "children": {
+    "child-integration": {
+      "sessionID": "child-integration",
+      "parentSessionID": "parent-1",
+      "rootMainSessionID": "parent-1",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:12:53.480Z",
+      "updatedAt": "2026-05-31T12:12:53.480Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "child-integration.json"
+    },
+    "child-hook": {
+      "sessionID": "child-hook",
+      "parentSessionID": "parent-1",
+      "rootMainSessionID": "parent-1",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:12:53.214Z",
+      "updatedAt": "2026-05-31T12:12:53.214Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "child-hook.json"
+    },
+    "child-e2e": {
+      "sessionID": "child-e2e",
+      "parentSessionID": "parent-1",
+      "rootMainSessionID": "parent-1",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:12:57.812Z",
+      "updatedAt": "2026-05-31T12:12:57.812Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "child-e2e.json"
+    }
+  },
+  "totalChildren": 3,
+  "maxDepth": 1
+}

@@ -1,0 +1,24 @@
+{
+  "sessionID": "dt-1780227060634-06nm5a",
+  "parentSessionID": "parent-c",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "critic",
+    "model": "",
+    "tool": "task",
+    "description": "three",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T11:31:00.634Z",
+  "updated": "2026-05-31T11:31:00.674Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "critic",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:critic:c",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
+}

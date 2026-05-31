@@ -1,0 +1,24 @@
+{
+  "sessionID": "dt-1780228828964-llutai",
+  "parentSessionID": "parent-c",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "critic",
+    "model": "",
+    "tool": "task",
+    "description": "three",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T12:00:28.964Z",
+  "updated": "2026-05-31T12:00:28.969Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "critic",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:critic:c",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
+}

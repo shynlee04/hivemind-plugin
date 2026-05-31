@@ -16,7 +16,6 @@
  * @module task-management/continuity/continuity-reader
  */
 
-import type { ChildSessionRecord } from "../../features/session-tracker/types.js"
 import type { SessionContinuityRecord } from "../../shared/types.js"
 import { resolveSessionFile } from "../../tools/session/session-resolver.js"
 

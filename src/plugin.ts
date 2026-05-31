@@ -68,6 +68,7 @@ import { createHivemindCommandEngineTool } from "./tools/hivemind/hivemind-comma
 import { createSessionTrackerTool } from "./tools/session/session-tracker.js"
 import { createSessionHierarchyTool } from "./tools/session/session-hierarchy.js"
 import { createSessionContextTool } from "./tools/session/session-context.js"
+import { createSessionDelegationQueryTool } from "./tools/session/session-delegation-query.js"
 import { createHivemindSessionViewTool } from "./tools/hivemind/hivemind-session-view.js"
 import { loadRuntimePolicy } from "./shared/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy.js"
@@ -170,6 +171,7 @@ export function registerHivemindTools(deps: HivemindToolDeps): Record<string, Re
     "hivemind-session-view": createHivemindSessionViewTool(deps.projectDirectory),
     "hivemind-agent-work-create": createHivemindAgentWorkCreateTool(deps.projectDirectory),
     "hivemind-agent-work-export": createHivemindAgentWorkExportTool(deps.projectDirectory),
+    "session-delegation-query": createSessionDelegationQueryTool(deps.projectDirectory),
   }
 }
 
@@ -360,7 +362,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     body: {
       service: "hivemind",
       level: "info",
-      message: "[Harness] Hivemind plugin loaded — registering 23 custom tools",
+      message: "[Harness] Hivemind plugin loaded — registering 25 custom tools",
     },
   })
 

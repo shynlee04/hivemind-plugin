@@ -63,7 +63,7 @@ describe("Domain-grouped plugin tool registration", () => {
   })
 
   describe("registerHivemindTools", () => {
-    it("should return 8 hivemind tools", () => {
+    it("should return 9 hivemind tools", () => {
       const tools = registerHivemindTools(mockHivemindDeps)
       const keys = Object.keys(tools)
       expect(keys).toContain("hivemind-doc")
@@ -74,7 +74,8 @@ describe("Domain-grouped plugin tool registration", () => {
       expect(keys).toContain("hivemind-session-view")
       expect(keys).toContain("hivemind-agent-work-create")
       expect(keys).toContain("hivemind-agent-work-export")
-      expect(keys.length).toBe(8)
+      expect(keys).toContain("session-delegation-query")
+      expect(keys.length).toBe(9)
     })
   })
 
@@ -93,13 +94,13 @@ describe("Domain-grouped plugin tool registration", () => {
   })
 
   describe("All tools registered", () => {
-    it("should have exactly 24 tools when all domain functions are merged", () => {
+    it("should have exactly 25 tools when all domain functions are merged", () => {
       const delegation = registerDelegationTools(mockDelegationDeps)
       const session = registerSessionTools(mockSessionDeps)
       const hivemind = registerHivemindTools(mockHivemindDeps)
       const config = registerConfigTools(mockConfigDeps)
       const all = { ...delegation, ...session, ...hivemind, ...config }
-      expect(Object.keys(all).length).toBe(24)
+      expect(Object.keys(all).length).toBe(25)
     })
   })
 })

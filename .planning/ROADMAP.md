@@ -1812,3 +1812,11 @@ P40.06 (npm publishing) ─────┘
 - **Scope:** delegations.json unique fields, session-continuity.json unique fields, session-tracker schema, affected tools/agents/hooks
 - **Problem:** Cannot consolidate until we know exactly what data is unique to each file, where it maps in session-tracker, and what tools read/write it
 - **Delivers:** SPEC.md with falsifiable requirements, RESEARCH.md with complete field mapping, identified affected tools/agents
+- [ ] **P41-D: Delete Old Files, Make Old Writers No-Ops, Remove Dead Code**
+  - **Severity:** P1 — final teardown
+  - **Scope:** Make `persistDelegations()` no-op (keep session-tracker dual-write), make `persistStore()`/`flushAllStores()`/`registerShutdownHandlers()` no-ops (keep in-memory cache), remove 8 dead exports from continuity/index.ts, delete `.hivemind/state/delegations.json` and `session-continuity.json` via one-shot migration, update tests
+  - **Depends on:** P41-B, P41-C
+  - **Plans:** 3 plans in 2 waves
+  - Wave 1: Plan 01 (delegation-persistence.ts no-op + empty reader), Plan 02 (continuity/index.ts no-op writers + dead exports removal)
+  - Wave 2: Plan 03 (one-shot file deletion in plugin.ts + test updates)
+  - **Plans created:** ✅ 3 plans

@@ -1,0 +1,25 @@
+{
+  "sessionID": "pty:pty-delete-on-terminate",
+  "parentSessionID": "ses-parent-tool",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "command-runner",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T11:31:04.287Z",
+  "updated": "2026-05-31T11:31:04.287Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "command-runner",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "default",
+  "terminalKind": "cancelled",
+  "recoveryGuarantee": "best-effort",
+  "executionMode": "pty"
+}

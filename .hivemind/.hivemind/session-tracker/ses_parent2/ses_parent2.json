@@ -1,0 +1,46 @@
+{
+  "sessionID": "ses_parent2",
+  "parentSessionID": "ses_parent2",
+  "delegationDepth": 0,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T11:59:29.765Z",
+  "updated": "2026-05-31T12:13:03.353Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "pendingNotifications": [
+    {
+      "sessionID": "fake-ses-1",
+      "description": "Delegation: builder",
+      "agent": "builder",
+      "status": "failed",
+      "error": "Failed to send prompt to child session",
+      "resultPreview": "Failed to send prompt to child session",
+      "briefSummary": "Delegated work finished with terminal state error after 0ms. Summary preview: Failed to send prompt to child session",
+      "outputLink": "session://fake-ses-1",
+      "duration": 0,
+      "elapsedHuman": "0ms",
+      "metadata": {
+        "delegationId": "335535d5-169f-40b8-af9f-a4aef959b692",
+        "terminalState": "error",
+        "recoveryGuarantee": "resumable",
+        "summaryPreview": "Failed to send prompt to child session"
+      },
+      "createdAt": 1780229583351,
+      "delivered": false,
+      "retryCount": 0,
+      "maxRetries": 3
+    }
+  ],
+  "journey": []
+}

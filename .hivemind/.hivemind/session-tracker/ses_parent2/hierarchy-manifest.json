@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_parent2",
+  "lastUpdated": "2026-05-31T12:13:03.353Z",
+  "children": {
+    "fake-ses-1": {
+      "sessionID": "fake-ses-1",
+      "parentSessionID": "ses_parent2",
+      "rootMainSessionID": "ses_parent2",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:13:03.353Z",
+      "updatedAt": "2026-05-31T12:13:03.353Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "fake-ses-1.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

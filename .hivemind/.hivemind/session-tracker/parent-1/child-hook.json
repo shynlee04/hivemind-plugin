@@ -1,0 +1,25 @@
+{
+  "sessionID": "child-hook",
+  "parentSessionID": "parent-1",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "builder",
+    "model": "",
+    "tool": "task",
+    "description": "build",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T11:31:00.785Z",
+  "updated": "2026-05-31T12:12:53.177Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "builder",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:builder",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": []
+}

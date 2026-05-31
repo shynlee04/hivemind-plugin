@@ -1,0 +1,25 @@
+{
+  "sessionID": "fake-ses-1",
+  "parentSessionID": "ses_cleanup",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "builder",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T11:31:11.588Z",
+  "updated": "2026-05-31T12:13:03.353Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "builder",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:builder",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": []
+}

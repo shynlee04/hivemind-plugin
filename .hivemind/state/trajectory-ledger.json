@@ -727,9 +727,9 @@
     "traj-P41-C": {
       "id": "traj-P41-C",
       "phaseRef": "P41-C",
-      "status": "executing",
+      "status": "completed",
       "createdAt": 1780225977110,
-      "updatedAt": 1780226693120,
+      "updatedAt": 1780227214492,
       "evidenceRefs": [],
       "events": [
         {
@@ -749,6 +749,44 @@
           "eventType": "execution:start",
           "summary": "Plan checked PASS (warnings fixed). Executing 5 tasks.",
           "createdAt": 1780226693120
+        },
+        {
+          "eventId": "ev-p41c-done",
+          "eventType": "execution:complete",
+          "summary": "P41-C DONE. 5 readers updated. 3023 tests pass.",
+          "createdAt": 1780227214492
+        }
+      ]
+    },
+    "traj-P41-D": {
+      "id": "traj-P41-D",
+      "phaseRef": "P41-D",
+      "status": "completed",
+      "createdAt": 1780229039225,
+      "updatedAt": 1780229039225,
+      "evidenceRefs": [],
+      "events": [
+        {
+          "eventId": "ev-p41d-done",
+          "eventType": "execution:complete",
+          "summary": "P41-D DONE. Files deleted, tests updated.",
+          "createdAt": 1780229039225
+        }
+      ]
+    },
+    "traj-P41-E": {
+      "id": "traj-P41-E",
+      "phaseRef": "P41-E",
+      "status": "specing",
+      "createdAt": 1780229039225,
+      "updatedAt": 1780229039225,
+      "evidenceRefs": [],
+      "events": [
+        {
+          "eventId": "ev-p41e-init",
+          "eventType": "trajectory:created",
+          "summary": "P41-E: Progressive disclosure tool for delegation history + session metadata",
+          "createdAt": 1780229039225
         }
       ]
     }

@@ -1,0 +1,24 @@
+{
+  "sessionID": "dt-1780228828963-bc454t",
+  "parentSessionID": "parent-a",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "builder",
+    "model": "",
+    "tool": "task",
+    "description": "one",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T12:00:28.963Z",
+  "updated": "2026-05-31T12:00:28.965Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "builder",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:builder:a",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
+}

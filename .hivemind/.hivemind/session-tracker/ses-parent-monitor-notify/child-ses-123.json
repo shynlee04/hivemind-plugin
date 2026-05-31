@@ -1,0 +1,25 @@
+{
+  "sessionID": "child-ses-123",
+  "parentSessionID": "ses-parent-monitor-notify",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "builder",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T11:10:59.683Z",
+  "updated": "2026-05-31T12:13:04.314Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "builder",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:builder",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": []
+}

@@ -1,0 +1,25 @@
+{
+  "sessionID": "child-e2e",
+  "parentSessionID": "parent-1",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "builder",
+    "model": "",
+    "tool": "task",
+    "description": "build",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T11:10:51.840Z",
+  "updated": "2026-05-31T11:31:04.974Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "builder",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:builder",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": []
+}

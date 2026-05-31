@@ -100,7 +100,7 @@ describe("Hook Registration Completeness", () => {
     expect(typeof result.tool).toBe("object")
 
     const toolKeys = Object.keys(result.tool)
-    expect(toolKeys.length).toBe(24)
+    expect(toolKeys.length).toBe(25)
 
     for (const [key, toolDef] of Object.entries(result.tool)) {
       expect(typeof (toolDef as any).description).toBe("string")

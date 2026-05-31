@@ -1,0 +1,100 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "parent-b",
+  "lastUpdated": "2026-05-31T12:12:53.212Z",
+  "children": {
+    "dt-1780227060634-7l9ifz": {
+      "sessionID": "dt-1780227060634-7l9ifz",
+      "parentSessionID": "parent-b",
+      "rootMainSessionID": "parent-b",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T11:31:01.186Z",
+      "updatedAt": "2026-05-31T11:31:01.186Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780227060634-7l9ifz.json"
+    },
+    "dt-1780228757791-fs58co": {
+      "sessionID": "dt-1780228757791-fs58co",
+      "parentSessionID": "parent-b",
+      "rootMainSessionID": "parent-b",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T11:59:17.866Z",
+      "updatedAt": "2026-05-31T11:59:17.866Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780228757791-fs58co.json"
+    },
+    "dt-1780228828963-glrk45": {
+      "sessionID": "dt-1780228828963-glrk45",
+      "parentSessionID": "parent-b",
+      "rootMainSessionID": "parent-b",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:00:29.029Z",
+      "updatedAt": "2026-05-31T12:00:29.029Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780228828963-glrk45.json"
+    },
+    "dt-1780228894460-ixm3j6": {
+      "sessionID": "dt-1780228894460-ixm3j6",
+      "parentSessionID": "parent-b",
+      "rootMainSessionID": "parent-b",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:01:34.554Z",
+      "updatedAt": "2026-05-31T12:01:34.554Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780228894460-ixm3j6.json"
+    },
+    "dt-1780228937392-ftsysl": {
+      "sessionID": "dt-1780228937392-ftsysl",
+      "parentSessionID": "parent-b",
+      "rootMainSessionID": "parent-b",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:02:17.470Z",
+      "updatedAt": "2026-05-31T12:02:17.470Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780228937392-ftsysl.json"
+    },
+    "dt-1780229460762-dxs599": {
+      "sessionID": "dt-1780229460762-dxs599",
+      "parentSessionID": "parent-b",
+      "rootMainSessionID": "parent-b",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:11:00.852Z",
+      "updatedAt": "2026-05-31T12:11:00.852Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780229460762-dxs599.json"
+    },
+    "dt-1780229573110-kcv16p": {
+      "sessionID": "dt-1780229573110-kcv16p",
+      "parentSessionID": "parent-b",
+      "rootMainSessionID": "parent-b",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:12:53.212Z",
+      "updatedAt": "2026-05-31T12:12:53.212Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780229573110-kcv16p.json"
+    }
+  },
+  "totalChildren": 7,
+  "maxDepth": 1
+}

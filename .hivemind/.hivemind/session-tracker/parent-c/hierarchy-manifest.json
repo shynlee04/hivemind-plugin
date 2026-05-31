@@ -1,0 +1,100 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "parent-c",
+  "lastUpdated": "2026-05-31T12:12:53.213Z",
+  "children": {
+    "dt-1780227060634-06nm5a": {
+      "sessionID": "dt-1780227060634-06nm5a",
+      "parentSessionID": "parent-c",
+      "rootMainSessionID": "parent-c",
+      "delegationDepth": 1,
+      "delegatedBy": "critic",
+      "subagentType": "",
+      "createdAt": "2026-05-31T11:31:01.188Z",
+      "updatedAt": "2026-05-31T11:31:01.188Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780227060634-06nm5a.json"
+    },
+    "dt-1780228757791-6433kf": {
+      "sessionID": "dt-1780228757791-6433kf",
+      "parentSessionID": "parent-c",
+      "rootMainSessionID": "parent-c",
+      "delegationDepth": 1,
+      "delegatedBy": "critic",
+      "subagentType": "",
+      "createdAt": "2026-05-31T11:59:17.866Z",
+      "updatedAt": "2026-05-31T11:59:17.866Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780228757791-6433kf.json"
+    },
+    "dt-1780228828964-llutai": {
+      "sessionID": "dt-1780228828964-llutai",
+      "parentSessionID": "parent-c",
+      "rootMainSessionID": "parent-c",
+      "delegationDepth": 1,
+      "delegatedBy": "critic",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:00:29.029Z",
+      "updatedAt": "2026-05-31T12:00:29.029Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780228828964-llutai.json"
+    },
+    "dt-1780228894460-90vsez": {
+      "sessionID": "dt-1780228894460-90vsez",
+      "parentSessionID": "parent-c",
+      "rootMainSessionID": "parent-c",
+      "delegationDepth": 1,
+      "delegatedBy": "critic",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:01:34.555Z",
+      "updatedAt": "2026-05-31T12:01:34.555Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780228894460-90vsez.json"
+    },
+    "dt-1780228937392-z98497": {
+      "sessionID": "dt-1780228937392-z98497",
+      "parentSessionID": "parent-c",
+      "rootMainSessionID": "parent-c",
+      "delegationDepth": 1,
+      "delegatedBy": "critic",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:02:17.470Z",
+      "updatedAt": "2026-05-31T12:02:17.470Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780228937392-z98497.json"
+    },
+    "dt-1780229460762-o5bnh8": {
+      "sessionID": "dt-1780229460762-o5bnh8",
+      "parentSessionID": "parent-c",
+      "rootMainSessionID": "parent-c",
+      "delegationDepth": 1,
+      "delegatedBy": "critic",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:11:00.852Z",
+      "updatedAt": "2026-05-31T12:11:00.852Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780229460762-o5bnh8.json"
+    },
+    "dt-1780229573111-lifjdj": {
+      "sessionID": "dt-1780229573111-lifjdj",
+      "parentSessionID": "parent-c",
+      "rootMainSessionID": "parent-c",
+      "delegationDepth": 1,
+      "delegatedBy": "critic",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:12:53.213Z",
+      "updatedAt": "2026-05-31T12:12:53.213Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "dt-1780229573111-lifjdj.json"
+    }
+  },
+  "totalChildren": 7,
+  "maxDepth": 1
+}

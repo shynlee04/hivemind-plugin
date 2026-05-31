@@ -1,0 +1,67 @@
+{
+  "sessionID": "ses_concurrent",
+  "parentSessionID": "ses_concurrent",
+  "delegationDepth": 0,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T12:13:04.102Z",
+  "updated": "2026-05-31T12:13:04.102Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "pendingNotifications": [
+    {
+      "sessionID": "fake-ses-1",
+      "description": "Delegation: builder",
+      "agent": "builder",
+      "status": "failed",
+      "error": "Failed to send prompt to child session",
+      "resultPreview": "Failed to send prompt to child session",
+      "briefSummary": "Delegated work finished with terminal state error after 0ms. Summary preview: Failed to send prompt to child session",
+      "outputLink": "session://fake-ses-1",
+      "duration": 0,
+      "elapsedHuman": "0ms",
+      "metadata": {
+        "delegationId": "389388cb-e088-446c-b454-be2aa7a1f480",
+        "terminalState": "error",
+        "recoveryGuarantee": "resumable",
+        "summaryPreview": "Failed to send prompt to child session"
+      },
+      "createdAt": 1780229584092,
+      "delivered": false,
+      "retryCount": 0,
+      "maxRetries": 3
+    },
+    {
+      "sessionID": "fake-ses-2",
+      "description": "Delegation: researcher",
+      "agent": "researcher",
+      "status": "failed",
+      "error": "Failed to send prompt to child session",
+      "resultPreview": "Failed to send prompt to child session",
+      "briefSummary": "Delegated work finished with terminal state error after 0ms. Summary preview: Failed to send prompt to child session",
+      "outputLink": "session://fake-ses-2",
+      "duration": 0,
+      "elapsedHuman": "0ms",
+      "metadata": {
+        "delegationId": "cdb7ecf3-b83a-4ea8-9601-32a010325617",
+        "terminalState": "error",
+        "recoveryGuarantee": "resumable",
+        "summaryPreview": "Failed to send prompt to child session"
+      },
+      "createdAt": 1780229584096,
+      "delivered": false,
+      "retryCount": 0,
+      "maxRetries": 3
+    }
+  ]
+}

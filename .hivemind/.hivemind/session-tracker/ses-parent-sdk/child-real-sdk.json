@@ -1,0 +1,25 @@
+{
+  "sessionID": "child-real-sdk",
+  "parentSessionID": "ses-parent-sdk",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "builder",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T11:10:44.257Z",
+  "updated": "2026-05-31T12:12:49.048Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "builder",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "provider:anthropic:model:claude-3-5-sonnet",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": []
+}

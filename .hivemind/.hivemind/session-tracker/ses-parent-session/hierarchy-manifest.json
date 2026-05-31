@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses-parent-session",
+  "lastUpdated": "2026-05-31T12:12:49.557Z",
+  "children": {
+    "child-real-queue": {
+      "sessionID": "child-real-queue",
+      "parentSessionID": "ses-parent-session",
+      "rootMainSessionID": "ses-parent-session",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:12:49.557Z",
+      "updatedAt": "2026-05-31T12:12:49.557Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "child-real-queue.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

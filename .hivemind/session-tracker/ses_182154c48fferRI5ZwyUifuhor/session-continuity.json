@@ -1,0 +1,15 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_182154c48fferRI5ZwyUifuhor",
+  "lastUpdated": "2026-05-31T12:11:59.032Z",
+  "hierarchy": {
+    "root": "ses_182154c48fferRI5ZwyUifuhor",
+    "children": {}
+  },
+  "turnCount": 5,
+  "toolSummary": {
+    "glob": 3,
+    "read": 5,
+    "execute-slash-command": 1
+  }
+}

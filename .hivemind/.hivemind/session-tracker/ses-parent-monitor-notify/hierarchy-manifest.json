@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses-parent-monitor-notify",
+  "lastUpdated": "2026-05-31T12:13:04.317Z",
+  "children": {
+    "child-ses-123": {
+      "sessionID": "child-ses-123",
+      "parentSessionID": "ses-parent-monitor-notify",
+      "rootMainSessionID": "ses-parent-monitor-notify",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:13:04.317Z",
+      "updatedAt": "2026-05-31T12:13:04.317Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "child-ses-123.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

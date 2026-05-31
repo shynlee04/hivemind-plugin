@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses-parent-sdk",
+  "lastUpdated": "2026-05-31T12:12:49.055Z",
+  "children": {
+    "child-real-sdk": {
+      "sessionID": "child-real-sdk",
+      "parentSessionID": "ses-parent-sdk",
+      "rootMainSessionID": "ses-parent-sdk",
+      "delegationDepth": 1,
+      "delegatedBy": "builder",
+      "subagentType": "",
+      "createdAt": "2026-05-31T12:12:49.055Z",
+      "updatedAt": "2026-05-31T12:12:49.055Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "child-real-sdk.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

@@ -1,0 +1,25 @@
+{
+  "sessionID": "fake-ses-1",
+  "parentSessionID": "ses_recovery",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "researcher",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-05-31T11:31:12.039Z",
+  "updated": "2026-05-31T12:13:03.780Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "researcher",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:researcher",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": []
+}
