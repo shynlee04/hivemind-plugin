@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-31T14:17:45.914Z"
+last_updated: "2026-05-31T20:20:26Z"
 progress:
-  total_phases: 49
+  total_phases: 50
   completed_phases: 17
   total_plans: 112
-  completed_plans: 96
-  percent: 35
+  completed_plans: 97
+  percent: 87
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-31
-**Last advance:** P42 — Tmux Visual Orchestration — Fork Extension (3 plans). Commit `40b2ce03`.
+**Last advance:** P44-01 — Fix capability-map test & deduplicate constants (2 commits). Commits `59901351`, `c2369357`.
 **Completed:**
 
 - P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write
