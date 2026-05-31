@@ -3,11 +3,10 @@ phase: P44-tool-intelligence-capability-layer
 plan: 04
 type: execute
 wave: 2
-depends_on: ["P44-01"]
+depends_on: ["P44-01", "P44-02"]
 files_modified:
   - src/hooks/guards/tool-guard-hooks.ts
   - src/task-management/lifecycle/index.ts
-  - .opencode/agents/hm-*.md
 autonomous: true
 requirements:
   - REQ-P44-05
@@ -19,6 +18,22 @@ must_haves:
     - "Hook enforcement applies to all 31 tools via capabilityGate"
     - "Capability state is re-derivable from event log after compaction"
     - "No external policy engine or runtime dependency added"
+  artifacts:
+    - path: src/hooks/guards/tool-guard-hooks.ts
+      provides: Capability check before tool execution via resolveToolsForAgent
+    - path: src/task-management/lifecycle/index.ts
+      provides: CAPABILITY_MUTATION event type and emission on grant/revoke
+    - path: tests/hooks/guards/tool-guard-hooks.capability.test.ts
+      provides: Integration tests for hook enforcement (blocked, allowed, event emission)
+    - path: tests/features/capability-gate/e2e-smoke.test.ts
+      provides: End-to-end smoke test verifying resolveToolsForAgent and mutation replay
+  key_links:
+    - from: src/hooks/guards/tool-guard-hooks.ts
+      to: src/features/capability-gate/index.ts
+      via: import CapabilityGate and resolveToolsForAgent for runtime enforcement
+    - from: src/task-management/lifecycle/index.ts
+      to: src/features/capability-gate/index.ts
+      via: emit CAPABILITY_MUTATION event on grantCapability/revokeCapability callbacks
 ---
 
 # P44-04: Hook Enforcement + Mutation Events
@@ -92,24 +107,26 @@ survives agent profile compaction and context pruning.
 
 ---
 
-### Task 4: Documentation + Smoke Test
+### Task 4: E2E Smoke Test + Verification (P44-02 frontmatter verified, not mutated)
 **Type:** auto  
-**Files:** `.opencode/agents/hm-*.md`
+**Files:** `tests/features/capability-gate/e2e-smoke.test.ts` (new)
 
-1. Add `tools:` section to all 31 hm-* agents (if not already present from P44-02)
-2. Add inline comment explaining capability gate behavior
-3. Run `npm run typecheck` — must pass
-4. Run `npm test` — must pass (existing + new tests)
-5. Create `tests/features/capability-gate/e2e-smoke.test.ts` (new):
-   - Spin up real `CapabilityGate`
-   - Verify `resolveToolsForAgent('hm-l0-orchestrator')` returns expected tools
-   - Verify `resolveToolsForAgent('unknown-agent')` returns category defaults
-   - Verify mutation event replay rebuilds state correctly
+> **NOTE:** Agent frontmatter `tools:` declarations are owned by P44-02. This task does NOT modify `.opencode/agents/hm-*.md`. It only verifies P44-02's work is present.
+
+1. Create `tests/features/capability-gate/e2e-smoke.test.ts`:
+   - Verify `resolveToolsForAgent('hm-l0-orchestrator')` returns all 31 tools
+   - Verify `resolveToolsForAgent('hf-l2-skill-builder')` returns Config + Read category tools only
+   - Verify `resolveToolsForAgent('unknown-agent')` returns READ_ONLY_TOOLS default
+   - Verify mutation event replay rebuilds state correctly (grant 3, revoke 1, check final state)
+2. Run `npm run typecheck` — must pass
+3. Run `npm test` — must pass (existing + new tests)
+4. Verify P44-02 frontmatter: `grep -l "tools:" .opencode/agents/hm-*.md | wc -l` should be ≥ 31
 
 **Verification:**
 - [ ] typecheck PASS
 - [ ] npm test PASS
 - [ ] e2e smoke test PASS
+- [ ] All 31 hm-* agents have `tools:` frontmatter (P44-02 verification)
 
 ---
 

@@ -66,52 +66,28 @@ The following code already exists and is correct:
 
 ## Wave 1: Fix Failing Test (LOC: ~20)
 
-### Task 1.1: Fix import path in capability-map.test.ts
+### Task 1: Fix capability-map.test.ts — import path, tool count, missing assertions
 **File:** `tests/features/capability-gate/capability-map.test.ts`
 **Action:** FIX
-**LOC:** ~5
-**What:** Change import path from `../src/features/capability-gate/index.ts` to `../../src/features/capability-gate/index.js` (or whatever resolves correctly from `tests/features/capability-gate/` to `src/features/capability-gate/`).
-**Done when:** `npx vitest run tests/features/capability-gate/capability-map.test.ts` no longer shows "Cannot find module" error.
-
-### Task 1.2: Update expected tool count from 25 to 31
-**File:** `tests/features/capability-gate/capability-map.test.ts`
-**Action:** FIX
-**LOC:** ~2
-**What:** In the "classifies all 25 harness tools (map size)" test, change `.toBe(25)` to `.toBe(31)`. Update the test description string to match. Update the "remaining 4" test to "remaining 10" since there are now 10 session-category tools beyond the 14 orphaned + 7 built-in = 21 → 31 - 21 = 10.
-**Done when:** Test assertion matches actual map size of 31.
-
-### Task 1.3: Add assertions for 6 missing tools
-**File:** `tests/features/capability-gate/capability-map.test.ts`
-**Action:** FIX
-**LOC:** ~13
-**What:** The test currently asserts 14 orphaned tools + 7 built-ins + 4 session tools = 25. But the map has 31 entries. The 6 missing tools are: `session-delegation-query`, `hivemind-agent-work-create`, `hivemind-agent-work-export`, `hivemind-sdk-supervisor`, `session-patch`, `prompt-skim`. Add these to the "remaining" test block (which should now cover all 10 non-orphaned, non-built-in tools: `session-tracker`, `session-hierarchy`, `session-context`, `session-journal-export`, `session-delegation-query`, `hivemind-agent-work-create`, `hivemind-agent-work-export`, `hivemind-sdk-supervisor`, `session-patch`, `prompt-skim`).
+**LOC:** ~20
+**What:**
+1. Fix import path from `../src/features/capability-gate/index.ts` to `../../src/features/capability-gate/index.js` (resolve correctly from `tests/features/capability-gate/`)
+2. Change `.toBe(25)` to `.toBe(31)` in map size assertion
+3. Update "remaining 4" test to "remaining 10" (31 - 14 orphaned - 7 built-in = 10)
+4. Add assertions for 6 missing tools: `session-delegation-query`, `hivemind-agent-work-create`, `hivemind-agent-work-export`, `hivemind-sdk-supervisor`, `session-patch`, `prompt-skim`
 **Done when:** `npx vitest run tests/features/capability-gate/capability-map.test.ts` — all assertions pass, map size = 31, all tools accounted for.
 
 ## Wave 2: Deduplicate Constants (LOC: ~15)
 
-### Task 2.1: Remove WRITE_CAPABLE_TOOLS / READ_ONLY_TOOLS / WRITE_TOOLS from spawn-request-builder.ts
-**File:** `src/coordination/spawner/spawn-request-builder.ts`
+### Task 2: Remove duplicated constants from spawn-request-builder and import from capability-gate
+**Files:** `src/coordination/spawner/spawn-request-builder.ts`, `tests/coordination/spawner/` (if exists)
 **Action:** MODIFY
-**LOC:** ~5 (net deletion)
-**What:** Delete lines 28-30 (the local `READ_ONLY_TOOLS`, `WRITE_CAPABLE_TOOLS`, `WRITE_TOOLS` constants). These are identical duplicates of what `capability-gate/index.ts` already exports. Replace with import:
-```typescript
-import { READ_ONLY_TOOLS, WRITE_CAPABLE_TOOLS, WRITE_TOOLS } from "../../features/capability-gate/index.js";
-```
-**Done when:** `grep -c "const READ_ONLY_TOOLS" src/coordination/spawner/spawn-request-builder.ts` returns 0. `npm run typecheck` passes.
-
-### Task 2.2: Verify all spawn-request-builder references resolve
-**File:** `src/coordination/spawner/spawn-request-builder.ts`
-**Action:** VERIFY (no code change expected)
-**LOC:** 0
-**What:** Confirm that lines 78-79 (usage of `READ_ONLY_TOOLS`), line 80 (usage of `WRITE_TOOLS`), lines 91/99 (usage of `WRITE_CAPABLE_TOOLS`) all resolve via the new import. If any test imports these constants from spawn-request-builder, update those imports too.
-**Done when:** `npm run typecheck` passes. `npm test` passes.
-
-### Task 2.3: Update tests that reference old spawn-request-builder constants
-**File:** `tests/coordination/spawner/` (if exists)
-**Action:** MODIFY
-**LOC:** ~10
-**What:** Search for any test files that import `READ_ONLY_TOOLS`, `WRITE_CAPABLE_TOOLS`, or `WRITE_TOOLS` from `spawn-request-builder`. If found, update imports to come from `capability-gate/index` or keep importing from spawn-request-builder (which now re-exports from capability-gate). Add a grep check in verification.
-**Done when:** `grep -rn "from.*spawn-request-builder.*READ_ONLY" tests/` returns empty or imports resolve correctly. `npm test` passes.
+**LOC:** ~15
+**What:**
+1. Delete lines 28-30 in spawn-request-builder.ts (local `READ_ONLY_TOOLS`, `WRITE_CAPABLE_TOOLS`, `WRITE_TOOLS` constants)
+2. Replace with import: `import { READ_ONLY_TOOLS, WRITE_CAPABLE_TOOLS, WRITE_TOOLS } from "../../features/capability-gate/index.js";`
+3. Update any test files that import these constants from spawn-request-builder to use capability-gate source
+**Done when:** `grep -c "const READ_ONLY_TOOLS" src/coordination/spawner/spawn-request-builder.ts` returns 0. `npm run typecheck` passes. `npm test` passes.
 
 ## Verification
 
