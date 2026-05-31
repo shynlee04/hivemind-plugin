@@ -1,0 +1,21 @@
+# Internal governance and meta-builder — 90 MB, not for consumers
+assets/.hivemind/
+assets/.hivefiver-meta-builder/
+
+# Source maps — ~3 MB, consumers don't need them for 0.x
+*.map
+
+# Development-only directories
+.planning/
+.hivemind/
+.hivefiver-meta-builder/
+tests/
+docs/
+
+# CI/CD
+.github/
+
+# Config files not needed at runtime
+vitest.config.ts
+tsconfig.json
+*.tsbuildinfo
