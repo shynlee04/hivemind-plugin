@@ -1800,3 +1800,15 @@ P40.06 (npm publishing) ─────┘
 - **Delivers:** Simulated user install test, plugin registration E2E, tool smoke tests, bootstrap flow E2E, sync-oss verification
 - **Status:** ✅ COMPLETE (2026-05-31) — 23 integration tests, 24 tools verified, 8+ hooks verified, typecheck 0 errors, 3,013 tests pass, build clean, 2.3 MB pack with zero internal leaks
 - **Commits:** `c0f8475f` (tool tests), `8a694c3e` (hook tests), `c3cc9134` (summary)
+
+---
+
+### Phase 41: State Cluster Consolidation (2026-05-31)
+
+**Goal:** Merge delegations.json + session-continuity.json into session-tracker per-session files, eliminate standalone files. These 2 files contain only test artifacts, grow unbounded, and have no progressive disclosure mechanism for agents. The session-tracker already tracks 117 real sessions with per-session files — the right pattern.
+
+#### P41-A: Investigate Field Mapping + Affected Tools
+- **Severity:** P1 — foundation for all consolidation
+- **Scope:** delegations.json unique fields, session-continuity.json unique fields, session-tracker schema, affected tools/agents/hooks
+- **Problem:** Cannot consolidate until we know exactly what data is unique to each file, where it maps in session-tracker, and what tools read/write it
+- **Delivers:** SPEC.md with falsifiable requirements, RESEARCH.md with complete field mapping, identified affected tools/agents
