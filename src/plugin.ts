@@ -468,6 +468,46 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     }
   })()
 
+  // One-shot migration: remove legacy .hivemind/state/delegations.json and session-continuity.json (P41-D D-02, D-03)
+  void (async () => {
+    const sentinelPath = join(projectDirectory, ".hivemind", "state", "delegations-migration-done")
+    const delegationsPath = join(projectDirectory, ".hivemind", "state", "delegations.json")
+    const continuityPath = join(projectDirectory, ".hivemind", "state", "session-continuity.json")
+    try {
+      if (existsSync(sentinelPath)) return
+      let deletedAny = false
+      if (existsSync(delegationsPath)) {
+        rmSync(delegationsPath, { force: true })
+        deletedAny = true
+      }
+      if (existsSync(continuityPath)) {
+        rmSync(continuityPath, { force: true })
+        deletedAny = true
+      }
+      if (deletedAny) {
+        const stateDir = join(projectDirectory, ".hivemind", "state")
+        if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true })
+        writeFileSync(sentinelPath, new Date().toISOString(), "utf-8")
+        void client.app?.log?.({
+          body: {
+            service: "migration",
+            level: "info",
+            message: "[Harness] P41-D: removed legacy .hivemind/state/delegations.json and session-continuity.json",
+          },
+        })
+      }
+    } catch (err) {
+      void client.app?.log?.({
+        body: {
+          service: "migration",
+          level: "warn",
+          message: "[Harness] P41-D: legacy file migration failed",
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
+  })()
+
   const sessionEntryObserverFactory = createSessionEntryEventObserver()
   const sessionIsMainObserverFactory = createSessionIsMainObserver()
 
