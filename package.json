@@ -1,5 +1,5 @@
 {
-  "name": "hivemind-opencode",
+  "name": "hivemind-3.0",
   "version": "0.1.0",
   "description": "HiveMind — Runtime composition engine for multi-agent orchestration, session continuity, and compounding intelligence in OpenCode",
   "type": "module",
@@ -95,5 +95,9 @@
   "engines": {
     "node": ">=20.0.0",
     "opencode": ">=1.15.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
