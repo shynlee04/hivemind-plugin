@@ -98,76 +98,8 @@ export function persistDelegations(delegations: Delegation[]): void {
   // The gate was a CA-03 design error: commit_docs controls git commits, not delegation persistence.
   //
   // If opt-out is needed in future, add a separate `persist_delegations` config field.
-
-  const filePath = getDelegationsFilePath()
-  mkdirSync(dirname(filePath), { recursive: true })
-
-  // Read existing persisted delegations to perform read-merge-write
-  let existing: Delegation[] = []
-  try {
-    existing = readPersistedDelegations()
-  } catch (error) {
-    // If the file is corrupt or doesn't exist, log and proceed with incoming only
-    console.error(`[Harness] persistDelegations: failed to read existing delegations, overwriting: ${error}`)
-  }
-
-  // Merge: incoming overrides/updates existing by id, preserving others.
-  // We identify the caller's subsystem to prevent bringing back pruned terminal delegations.
-  const incomingMap = new Map(delegations.map(d => [d.id, d]))
-  const mergedList: Delegation[] = []
-
-  const isV2Caller = delegations.some(d => d.v2 || d.id.startsWith("dt-"))
-  const isV1Caller = delegations.some(d => !d.v2 && !d.id.startsWith("dt-"))
-  const isEmptyCaller = delegations.length === 0
-
-  for (const d of delegations) {
-    mergedList.push(d)
-  }
-
-  for (const d of existing) {
-    if (incomingMap.has(d.id)) {
-      continue
-    }
-
-    const isV2 = d.v2 || d.id.startsWith("dt-")
-    const isTerminal = d.status === "completed" || d.status === "error" || d.status === "timeout"
-
-    if (isTerminal) {
-      if (isV2Caller && isV2) {
-        // v2 coordinator pruned this v2 terminal delegation, do not merge back
-        continue
-      }
-      if (isV1Caller && !isV2) {
-        // v1 runtime pruned this v1 terminal delegation, do not merge back
-        continue
-      }
-      if (isEmptyCaller) {
-        // If incoming is empty, check if it's a single-subsystem environment (e.g. tests)
-        const diskHasV2 = existing.some(x => x.v2 || x.id.startsWith("dt-"))
-        const diskHasV1 = existing.some(x => !x.v2 && !x.id.startsWith("dt-"))
-
-        if (diskHasV1 && !diskHasV2 && !isV2) {
-          continue
-        }
-        if (diskHasV2 && !diskHasV1 && isV2) {
-          continue
-        }
-      }
-    }
-
-    mergedList.push(d)
-  }
-
-  // Atomic write: write to temp file first, then rename to prevent
-  // corrupt reads if the process crashes mid-write. Use a unique temp file
-  // per write so overlapping persistence calls cannot consume each other's
-  // temp file before renameSync runs.
-  const tmpFile = `${filePath}.${process.pid}.${randomUUID()}.tmp`
-  const redactedDelegations = redactBoundaryFields(mergedList, {
-    redactFieldNames: ["result", "error", "fallbackReason"],
-  })
-  writeFileSync(tmpFile, `${JSON.stringify(redactedDelegations, null, 2)}\n`, "utf-8")
-  renameSync(tmpFile, filePath)
+  //
+  // REQ-P41D-01: No delegations.json file I/O. Session-tracker is canonical.
 
   // --- P41-B: Dual-write to session-tracker (fire-and-forget, best-effort) ---
   try {
