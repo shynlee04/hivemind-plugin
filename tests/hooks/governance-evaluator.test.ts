@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { evaluateGovernance } from "../../src/features/governance-engine/evaluator.js"
 import type { GovernanceRule } from "../../src/shared/types.js"
-import { getGovernancePersistenceState, recordGovernancePersistenceState } from "../../src/task-management/continuity/index.js"
+import { readGovernanceState, writeGovernanceState } from "../../src/features/governance/persistence.js"
 
 describe("evaluateGovernance", () => {
   beforeEach(() => {
-    // Reset violations in persistence state before each test
-    const state = getGovernancePersistenceState()
+    // Reset violations in governance persistence before each test
+    const state = readGovernanceState()
     state.violations = []
-    recordGovernancePersistenceState(state)
+    writeGovernanceState(state)
   })
 
   it("returns no blocks/warnings/escalations when rules are empty", () => {
@@ -33,7 +33,7 @@ describe("evaluateGovernance", () => {
     expect(result.blocked).toBe(false)
     expect(result.blocks).toHaveLength(0)
 
-    const state = getGovernancePersistenceState()
+    const state = readGovernanceState()
     expect(state.violations).toHaveLength(0)
   })
 
@@ -51,7 +51,7 @@ describe("evaluateGovernance", () => {
     expect(result.blocked).toBe(true)
     expect(result.blocks).toContain("Rule rule-block-read triggered on tool read for session ses_test")
 
-    const state = getGovernancePersistenceState()
+    const state = readGovernanceState()
     expect(state.violations).toHaveLength(1)
     expect(state.violations[0].ruleId).toBe("rule-block-read")
     expect(state.violations[0].sessionID).toBe("ses_test")
@@ -71,7 +71,7 @@ describe("evaluateGovernance", () => {
     expect(result.blocked).toBe(false)
     expect(result.warnings).toContain("Rule rule-warn-write triggered on tool write for session ses_test")
 
-    const state = getGovernancePersistenceState()
+    const state = readGovernanceState()
     expect(state.violations).toHaveLength(1)
     expect(state.violations[0].ruleId).toBe("rule-warn-write")
   })
@@ -94,7 +94,7 @@ describe("evaluateGovernance", () => {
       escalation: { channel: "slack", priority: "high" },
     })
 
-    const state = getGovernancePersistenceState()
+    const state = readGovernanceState()
     expect(state.violations).toHaveLength(1)
     expect(state.violations[0].escalation).toEqual({ channel: "slack", priority: "high" })
   })
@@ -121,7 +121,7 @@ describe("evaluateGovernance", () => {
     result = evaluateGovernance("write", "ses_admin", rules)
     expect(result.blocked).toBe(true)
 
-    const state = getGovernancePersistenceState()
+    const state = readGovernanceState()
     expect(state.violations).toHaveLength(1)
   })
 })

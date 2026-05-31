@@ -1,6 +1,5 @@
 import type { GovernanceRule, GovernanceViolation } from "../../shared/types.js"
-import { getGovernancePersistenceState } from "../../task-management/continuity/index.js"
-import { writeGovernanceState } from "../governance/persistence.js"
+import { readGovernanceState, writeGovernanceState } from "../governance/persistence.js"
 
 export interface EvaluationResult {
   blocked: boolean
@@ -95,7 +94,7 @@ export function evaluateGovernance(
 
   if (matchedViolations.length > 0) {
     try {
-      const state = getGovernancePersistenceState()
+      const state = readGovernanceState()
       state.violations.push(...matchedViolations)
       writeGovernanceState(state)
     } catch (err) {

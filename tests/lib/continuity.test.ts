@@ -448,32 +448,9 @@ describe("atomic_commit toggle", () => {
     expect(existsSync(filePath)).toBe(false)
   })
 
-  it("propagates projectRoot to getCachedConfig when called via recordGovernancePersistenceState", async () => {
-    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    const mockGetCachedConfig = vi.fn().mockReturnValue(
-      HivemindConfigsSchema.parse({ atomic_commit: true, workflow: { use_worktrees: false } }),
-    )
-    vi.doMock("../../src/config/subscriber.js", () => ({
-      getConfig: vi.fn(),
-      getCachedConfig: mockGetCachedConfig,
-      invalidateConfigCache: vi.fn(),
-    }))
-
-    const continuity = await import("../../src/task-management/continuity/index.js")
-
-    const customRoot = mkdtempSync(join(tmpdir(), "continuity-prop-"))
-    process.env.OPENCODE_HARNESS_STATE_DIR = join(customRoot, "state")
-    try {
-      continuity.recordGovernancePersistenceState(
-        { rules: [], violations: [], updatedAt: Date.now() },
-        customRoot,
-      )
-
-      expect(mockGetCachedConfig).toHaveBeenCalledWith(customRoot)
-    } finally {
-      rmSync(customRoot, { recursive: true, force: true })
-    }
-  })
+  // P41-B: recordGovernancePersistenceState is deprecated as a no-op.
+  // Governance state now writes to standalone governance-state.json via writeGovernanceState().
+  // This test is removed — the old projectRoot propagation no longer applies.
 
   it("writes to disk with default config (atomic_commit defaults to true)", async () => {
     const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
