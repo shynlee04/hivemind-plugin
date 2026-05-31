@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-31T11:12:03.916Z"
+last_updated: "2026-05-31T11:32:37.613Z"
 progress:
   total_phases: 48
   completed_phases: 17
@@ -17,7 +17,8 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-31
-**Last advance:** P40.07 — Terminal ship gate: 23 integration tests (24 tools + 8+ hooks), typecheck 0 errors, 3,013 tests pass, build clean, 2.3 MB pack with zero internal leaks
+**Last advance:** P41-C — Update 5 readers to prefer session-tracker: continuity-reader.ts, merge order flip, hivemind-session-view redirect, hook enrichment
+**Current focus:** Phase 42 — (next phase after P41 cluster redesign)
 **Current focus:** Phase 39 — Integration Completion & Hardening: fix 18 timeout test failures, execute C6/C7/C8, GSD re-validation, compliance audit
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
 **Phase 24.5:** ✅ COMPLETE — 4 broken workflow step paths fixed (commit `158a9d66`). Typecheck clean.
