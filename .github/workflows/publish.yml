@@ -1,0 +1,43 @@
+name: Publish to npm
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (skip actual publish)'
+        required: false
+        default: 'true'
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Verify package contents
+        run: |
+          PACKED_SIZE=$(npm pack --dry-run 2>&1 | grep "package size" | grep -oP '\d+(\.\d+)?' | head -1)
+          echo "Packed size: ${PACKED_SIZE} MB"
+          npm pack --dry-run 2>&1 | grep -c "assets/.hivemind/" && exit 1 || true
+          npm pack --dry-run 2>&1 | grep -c "\.map" | grep -qv "^0$" && exit 1 || true
+      - name: Dry run publish
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' }}
+        run: npm publish --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish to npm
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'false') }}
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
