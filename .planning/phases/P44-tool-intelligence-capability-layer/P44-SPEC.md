@@ -13,19 +13,19 @@
 
 ## Problem Statement
 
-The Hivemind harness registers 31 tools via `TOOL_CAPABILITY_MAP` in `src/features/capability-gate/`, but the spawner (`spawn-request-builder.ts`) still only recognizes the 7-item hardcoded `WRITE_CAPABLE_TOOLS` set. 30 of 31 `hm-*` agents declare zero tool permissions in frontmatter. When an agent's profile is compacted (context pruning), tool intelligence evaporates entirely, causing silent permission escalation or denial at runtime.
+The Hivemind harness registers 31 tools via `TOOL_CAPABILITY_MAP` in `src/features/capability-gate/`, but the spawner (`spawn-request-builder.ts`) still only recognizes the 7-item hardcoded `WRITE_CAPABLE_TOOLS` set. The primary OpenCode delegation method, native `task`, is not represented as a first-class capability. Native OpenCode `permission:` rules only express `allow`, `ask`, or `deny`; they do not encode Hivemind's conditional tool-use intelligence: whether a tool is correct for this agent, at this point in the workflow, with this session hierarchy, after this sequence of events. When an agent's profile is compacted (context pruning), tool intelligence evaporates entirely, causing silent permission escalation, denial, or wrong-tool usage at runtime.
 
-The tool-guard-hooks (`src/hooks/guards/tool-guard-hooks.ts`) already call `evaluateGovernance` on `tool.execute.before`, but the governance engine has no capability context — it cannot make informed allow/deny decisions based on per-agent tool allowlists.
+The tool-guard-hooks (`src/hooks/guards/tool-guard-hooks.ts`) already run on `tool.execute.before`, but the governance engine has no capability context — it cannot make informed allow/block decisions based on agent role, native `task` usage, parent/child session depth, stacking state, recent tool sequence, active work contract, or trajectory.
 
 **Implementation status (2026-06-01):** REQ-P44-01 is ~70% complete — `CapabilityGate` class and `TOOL_CAPABILITY_MAP` exist (139 LOC, 31 tools classified into 6 categories). However, the module is NOT yet wired into `spawn-request-builder.ts`, `tool-guard-hooks.ts`, or `session-tracker`. The remaining 5 requirements are NOT started.
 
-**Impact:** Delegation safety is illusory. The spawner cannot enforce the principle of least privilege because the capability gate is not wired into any enforcement point.
+**Impact:** Delegation safety is illusory. The spawner cannot enforce least privilege, and the hook layer cannot explain or correct wrong tool choices because Hivemind has no event-based tool intelligence plane.
 
 ---
 
 ## Goal
 
-Wire the existing **CapabilityGate** module into the spawner, tool guard hooks, and session-tracker — completing the capability enforcement pipeline from classification to runtime denial. Standardize all 31 `hm-*` agent frontmatter with explicit `tools:` declarations.
+Wire the existing **CapabilityGate** module into the spawner and add a Hivemind-owned **Tool Intelligence Engine** on the `tool.execute.before` event path. Native OpenCode `task` must be a first-class delegation capability. Static agent metadata is only a bootstrap hint; runtime tool decisions must be conditional, just-in-time, event-based, and independent of OpenCode's native `permission:` plane.
 
 ---
 
@@ -33,17 +33,19 @@ Wire the existing **CapabilityGate** module into the spawner, tool guard hooks, 
 
 ### In Scope
 1. **Capability gate module completion** (`src/features/capability-gate/`) — fix failing test, add bootstrap seeding
-2. **spawn-request-builder enhancement** — JIT tool injection from CapabilityGate
-3. **tool-guard-hooks integration** — capability-aware governance evaluation
-4. **session-tracker extension** — capability mutation event type
-5. **Agent frontmatter standardization** — tool declarations for 30 hm-* agents
-6. **Orphaned tool assignment** — verify all 31 tools in TOOL_CAPABILITY_MAP are covered
+2. **spawn-request-builder enhancement** — SDK child-session prompt tool injection from CapabilityGate
+3. **native `task` intelligence** — first-class capability and event-based guard coverage for OpenCode's primary subagent dispatch path
+4. **tool-guard-hooks integration** — ToolIntelligenceEngine evaluates each tool call before execution
+5. **session-tracker extension** — capability decision and mutation event types
+6. **Static Hivemind seed profiles** — programmatic agent/tool baseline outside OpenCode `permission:` and deprecated `tools:` authority
 
 ### Out of Scope
 - External policy engine (OPA, Casbin) integration
 - Capability revocation UI or dashboard
 - Cross-session capability inheritance between independent delegation trees
-- Runtime capability negotiation protocol (future: agent requests tool, governor approves)
+- Broad runtime capability marketplace or UI-driven negotiation flow
+- Dependency on OpenCode native `permission:` as the intelligence authority
+- Mechanical migration to deprecated agent frontmatter `tools:` fields
 - `hf-*` agent frontmatter changes (already have proper permissions per audit)
 - GSD agent/skill/command changes (developer tooling, not shipped)
 
@@ -83,68 +85,73 @@ Wire the existing **CapabilityGate** module into the spawner, tool guard hooks, 
 
 ---
 
-### REQ-P44-02: Static Baseline — Agent Frontmatter Declarations (NOT STARTED)
+### REQ-P44-02: Static Baseline — Hivemind Capability Seed Profiles (NOT STARTED)
 
-**What:** All 31 `hm-*` agents declare their required tool set in frontmatter `tools:` field.
+**What:** Hivemind owns a programmatic static baseline that maps agent roles and tool categories to capability hints. This baseline is not OpenCode `permission:` and is not deprecated `tools:` frontmatter. It is a bootstrap seed for CapabilityGate and ToolIntelligenceEngine, not the final runtime authority.
 
-**Current:** 30/31 `hm-*` agents have empty or missing `tools:` declarations. `hm-l0-orchestrator` has a markdown bullet "- **Runtime tools:** ..." but not a proper YAML frontmatter `tools:` field. Audit confirms this in Section 3 (Agent Permission Coverage).
+**Current:** `CapabilityGate.resolveToolsForAgent()` uses name heuristics for `l0-orchestrator`, `l1-coordinator`, `l2`, and `hf-*`. Native `task` is not represented. Agent primitive `permission:` blocks exist in some files but are only OpenCode substrate rules and must not drive Hivemind intelligence.
 
-**Target:** Every `hm-*` agent `.md` file has an explicit YAML `tools:` list in frontmatter matching the tools its implementation actually uses (verified against CapabilityGate category routing).
+**Target:** A source-backed Hivemind seed profile maps each supported agent tier/role to baseline tool categories and required delegation capabilities, including native `task`. CapabilityGate can resolve from this seed without reading OpenCode-native permission state.
 
 **Acceptance Criteria:**
-- [ ] AC-02a: All 31 `hm-*` agents have non-empty `tools:` frontmatter field
-- [ ] AC-02b: No agent declares a tool not present in `TOOL_CAPABILITY_MAP`
-- [ ] AC-02c: Every tool in `TOOL_CAPABILITY_MAP` appears in at least one agent's `tools:` list
-- [ ] AC-02d: Changes are made in `.hivefiver-meta-builder/agents-lab/active/refactoring/` (source of truth), then reflected to `.opencode/agents/`
+- [ ] AC-02a: Native `task` exists in `TOOL_CAPABILITY_MAP` with category `Delegate` and source `built-in`
+- [ ] AC-02b: Hivemind seed profiles cover all 31 current capability-map tools plus native `task`
+- [ ] AC-02c: Seed profiles do not use `permission: deny` or deprecated `tools:` as the authority
+- [ ] AC-02d: Unknown agents fall back to read-only baseline plus contextual guidance, not silent broad access
+- [ ] AC-02e: Tests prove every mapped tool name exists in `TOOL_CAPABILITY_MAP`
 
 ---
 
-### REQ-P44-03: Orphaned Tool Assignment Verification (NOT STARTED)
+### REQ-P44-03: Tool Coverage and Native Delegation Assignment Verification (NOT STARTED)
 
-**What:** Verify all 31 tools in `TOOL_CAPABILITY_MAP` are covered by at least one agent's frontmatter declaration.
+**What:** Verify all capability-map tools, including native `task`, are assigned to at least one Hivemind seed profile and that each assignment has a role-based rationale.
 
 **Current:** `TOOL_CAPABILITY_MAP` has 31 tools classified into 6 categories. The original audit identified 11 orphaned tools. Some are now categorized in `TOOL_CAPABILITY_MAP` but none are referenced from any agent frontmatter.
 
-**Target:** Each tool in `TOOL_CAPABILITY_MAP` appears in at least one agent's declared tool set, with documented rationale.
+**Target:** Each tool in `TOOL_CAPABILITY_MAP` appears in at least one Hivemind-owned seed profile, with documented rationale. Native `task` must be assigned to front-facing or explicitly delegated governance roles only; child recursion requires JIT grant logic.
 
 **Acceptance Criteria:**
-- [ ] AC-03a: Zero orphaned tools remain (all 31 `TOOL_CAPABILITY_MAP` tools appear in ≥1 agent's tool set)
+- [ ] AC-03a: Zero orphaned tools remain (all capability-map tools, including native `task`, appear in >=1 seed profile)
 - [ ] AC-03b: Assignment rationale documented in SPEC appendix
 - [ ] AC-03c: No tool is assigned to an agent that cannot meaningfully use it
+- [ ] AC-03d: Native `task` assignment is not treated as equivalent to wrapper `delegate-task` or `execute-slash-command`
 
 ---
 
-### REQ-P44-04: JIT Tool Injection at Delegation Boundary (NOT STARTED)
+### REQ-P44-04: SDK Child-Session Tool Injection at Delegation Boundary (NOT STARTED)
 
 **What:** `spawn-request-builder.ts` resolves effective tool set from `CapabilityGate` instead of hardcoded `WRITE_CAPABLE_TOOLS`.
 
 **Current:** `resolveDelegationPermissionProfile` constructs permission profile from `WRITE_CAPABLE_TOOLS` constant (7 items) only. Zero references to `CapabilityGate` or `TOOL_CAPABILITY_MAP` in `spawn-request-builder.ts` (verified by grep).
 
-**Target:** `resolveDelegationPermissionProfile` calls `capabilityGate.resolveToolsForAgent(agentName)` to build the `allowedTools` set. Falls back to category-based defaults if capability gate returns empty. `WRITE_CAPABLE_TOOLS` constant retained as the ultimate fallback.
+**Target:** `resolveDelegationPermissionProfile` calls `capabilityGate.resolveToolsForAgent(agentName)` to build the SDK child-session `allowedTools` set. Falls back to category-based defaults if capability gate returns empty. `WRITE_CAPABLE_TOOLS` constant retained as the ultimate fallback. This requirement covers SDK child-session prompt-time tools only and does not claim native OpenCode `task` enforcement.
 
 **Acceptance Criteria:**
-- [ ] AC-04a: Delegation to an agent with declared tools produces exactly those tools (no more, no less)
+- [ ] AC-04a: Delegation to an agent with explicit Hivemind seed profile produces profile tools merged with safe SDK baseline
 - [ ] AC-04b: Delegation to an agent without declared tools produces category-based defaults
 - [ ] AC-04c: `WRITE_CAPABLE_TOOLS` constant is last-resort fallback, not primary source
 - [ ] AC-04d: Change is ≤ 80 LOC in `spawn-request-builder.ts`
 - [ ] AC-04e: All existing delegation tests pass unmodified
+- [ ] AC-04f: SDK child sessions continue to disable recursive native `task` and `delegate-task` unless a later ToolIntelligenceEngine JIT grant explicitly permits it
 
 ---
 
-### REQ-P44-05: Hook-Based Capability Enforcement (NOT STARTED)
+### REQ-P44-05: Event-Based Tool Intelligence Enforcement (NOT STARTED)
 
-**What:** `tool-guard-hooks.ts` consults `CapabilityGate` before allowing tool execution.
+**What:** `tool-guard-hooks.ts` calls a Hivemind ToolIntelligenceEngine before allowing tool execution. The engine evaluates the current tool call using CapabilityGate baseline, session hierarchy, parent/child depth, pending dispatch registry, recent tool sequence, active contract/trajectory when available, and tool arguments.
 
 **Current:** `tool.execute.before` hook calls `evaluateGovernance()` which checks session circuit breaker and tool budget, but has zero capability context (verified by grep — no `CapabilityGate` or `capability` references in `tool-guard-hooks.ts`).
 
-**Target:** The `tool.execute.before` handler queries `CapabilityGate.resolveToolsForAgent(currentAgent)` and adds the result to the governance context passed to `evaluateGovernance()`. If the tool is not in the resolved set, governance evaluation returns DENY.
+**Target:** The `tool.execute.before` handler builds a bounded ToolIntelligenceEvent and asks ToolIntelligenceEngine for an `allow`, `warn`, `block`, or `needs_jit_grant` decision. Blocking must return meaningful context: agent/session, tool, reason, correct tool to use, whether stacking is required, and next action. Native `task` must be handled as the primary delegation path, not as an ordinary custom tool.
 
 **Acceptance Criteria:**
-- [ ] AC-05a: Tool execution by an agent not authorized for that tool returns structured denial (not exception)
-- [ ] AC-05b: Denial message includes agent name, tool name, and reason ("not in capability set")
-- [ ] AC-05c: Governance evaluation receives capability context as additional input
+- [ ] AC-05a: Tool execution by an agent using the wrong tool returns a structured contextual block
+- [ ] AC-05b: Block message includes agent name, session ID, tool name, reason, correct tool, stacking guidance when relevant, and next action
+- [ ] AC-05c: Native `task` is allowed for front-facing orchestration when dispatch context is valid
 - [ ] AC-05d: Existing governance checks (circuit breaker, tool budget) continue to function
-- [ ] AC-05e: Hook changes are ≤ 40 LOC
+- [ ] AC-05e: Child sessions are blocked from recursive native `task` unless a JIT grant exists
+- [ ] AC-05f: `delegate-task` is blocked for code/artifact edits with guidance to use native `task`
+- [ ] AC-05g: Hook changes stay small by delegating decision logic to a feature module
 
 ---
 
@@ -154,13 +161,14 @@ Wire the existing **CapabilityGate** module into the spawner, tool guard hooks, 
 
 **Current:** `CapabilityMutationEvent` type exists in `src/features/capability-gate/types.ts`. `grantCapability` and `revokeCapability` accept an `emitCapabilityEvent` callback. BUT: No `capability_mutation` event type in `src/features/session-tracker/types.ts` (verified by grep). The callback is optional and nothing provides it at runtime.
 
-**Target:** A new event type `capability_mutation` is added to the session event stream in session-tracker. The `CapabilityGate` constructor receives an emitter wired to session-tracker at plugin initialization.
+**Target:** New event types record capability mutations and tool intelligence decisions in session-tracker. The `CapabilityGate` constructor receives an emitter wired to session-tracker at plugin initialization. ToolIntelligenceEngine emits decision events for allow/warn/block/needs_jit_grant, including native `task` dispatch attempts.
 
 **Acceptance Criteria:**
 - [ ] AC-06a: Every grant/revoke produces a session-tracker event
-- [ ] AC-06b: Events are queryable via existing session-tracker APIs
-- [ ] AC-06c: On harness restart, capability state is re-seeded from frontmatter + replayed mutation events
-- [ ] AC-06d: Event type extension is ≤ 30 LOC across types.ts and relevant hooks
+- [ ] AC-06b: Every ToolIntelligenceEngine block/warn decision produces a queryable event
+- [ ] AC-06c: Events are queryable via existing session-tracker APIs
+- [ ] AC-06d: On harness restart, capability state is re-seeded from Hivemind seed profiles + replayed mutation events
+- [ ] AC-06e: Event type extension is scoped and tested without broad lifecycle rewrites
 - [ ] AC-06e: Existing session-tracker tests pass unmodified
 
 ---

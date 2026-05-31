@@ -1,0 +1,746 @@
+{
+  "sessionID": "ses_1803363f6ffeGQSyzHKs8KCXlD",
+  "parentSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "P44 native task research",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-31T20:49:36.287Z",
+  "updated": "2026-05-31T20:53:14.906Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are the subagent Name: gsd-phase-researcher role: research and plan-gap auditor. You are being delegated by the front-facing orchestrator. Do NOT modify files. Your task is to audit P44 plans and source for whether CapabilityGate is wired to the true native OpenCode `task` tool path, and research better architecture approaches for conditional, just-in-time, event-based tool intelligence that does NOT depend on OpenCode's static permission allow/ask/deny plane.\n\n## User intent to preserve\nThe user does NOT want Hivemind tool intelligence to depend on OpenCode native permission frontmatter because native permission only supports deny/ask/allow and lacks intelligence. They want a Hivemind-owned tool intelligence plane that is conditional, just-in-time, granular, event-based, front-facing-agent-centered, supports chaining/stacking/governance, tracks pairs/order/loops/hierarchy of tool use across parent and child sessions, and returns meaningful contextual guidance when blocking incorrect tool use.\n\n## Scope\nRead-only only. Inspect:\n- `.planning/phases/P44-tool-intelligence-capability-layer/*.md`\n- `src/coordination/spawner/*`\n- `src/coordination/delegation/*`\n- `src/hooks/guards/*`\n- `src/hooks/transforms/*`\n- `src/features/capability-gate/*`\n- `src/features/session-tracker/**` if needed\n- `src/tools/delegation/*`\n\n## Research questions\n1. Which P44 plans currently wire CapabilityGate to SDK child-session delegation, native task tool, delegate-task, execute-slash-command, and hook guard paths?\n2. Is there any P44 plan that explicitly wires the true native OpenCode `task` tool? If not, state the exact gap.\n3. In current source, where can Hivemind observe native `task` tool calls? Look for hook/event capture paths (PreToolUse/PostToolUse equivalents, tool capture, pending dispatch registry, session tracker).\n4. Propose 3 architecture options for a Hivemind-owned tool intelligence plane independent of OpenCode native permission. Include tradeoffs.\n5. Recommend the best option for P44 and list exact plan changes needed for P44-02/P44-03/P44-04, including how blocks should return meaningful context when the wrong tool is used.\n\n## Output format\nReturn concise but specific Markdown:\n- Verdict\n- Plan coverage matrix\n- Source hook point findings with file:line references\n- 3 architecture options\n- Recommendation\n- Required changes to P44 plans\n- Risks/unknowns\n\nDo not edit files. Do not run tests. Use grep/glob/read only.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I am **subagent Name: gsd-phase-researcher**, role: research and plan-gap auditor. I will stay read-only, use only grep/glob/read-style inspection, and return a concise audit with file:line evidence.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: skill",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: glob, glob, glob, glob, glob, glob, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: grep, grep",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Tools: grep, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Tools: glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "Tools: grep",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "Tools: grep",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "## Verdict\n\nP44 is **not wired to the true native OpenCode `task` tool path**.\n\nCurrent P44 plans wire CapabilityGate mainly to:\n\n- SDK child-session delegation via `spawn-request-builder.ts`\n- harness `delegate-task`\n- harness `execute-slash-command`\n- hook guard path `tool.execute.before`\n\nBut the **native OpenCode `task` tool itself is absent from `TOOL_CAPABILITY_MAP`**, absent from P44 requirements, and absent from P44 tests. This is the exact gap: **P44 governs Hivemind’s wrapper/tool layer, but not the native `task` dispatch primitive that front-facing agents actually use for subagents.**\n\nSource confirms Hivemind can observe native `task` events through hooks, so this is fixable without depending on OpenCode’s static permission allow/ask/deny plane.\n\n---\n\n## Plan Coverage Matrix\n\n| Path | P44 Coverage | Evidence | Gap |\n|---|---:|---|---|\n| `CapabilityGate` map | Partial | `src/features/capability-gate/index.ts:10-42` has 31 tools | No `task` entry |\n| SDK child-session delegation | Covered | P44-03 wires `resolveDelegationPermissionProfile` to CapabilityGate; source already imports/calls it at `spawn-request-builder.ts:2-5,102-104` | Only controls SDK prompt-time tools, not native parent `task` usage |\n| Native OpenCode `task` tool | **Not covered** | P44 grep has no meaningful native-task plan; source observes `task` in hooks | No capability category, no policy, no tests |\n| `delegate-task` | Covered | Map entry at `capability-gate/index.ts:18`; P44-03 tests reference it at `P44-03-PLAN.md:107-108` | Current source disables `delegate-task` in SDK children at `sdk-child-session-starter.ts:64-69` |\n| `execute-slash-command` | Covered as tool | Map entry at `capability-gate/index.ts:17`; registered in `plugin.ts:148-157` | Subtask path tracked separately, not unified with native task intelligence |\n| Hook guard | Planned | P44-04 requires `tool-guard-hooks.ts` check at `P44-04-PLAN.md:54-63` | If implemented literally, native `task` will block because not in CapabilityGate |\n| Session tracker / pending dispatch | Existing observation path | `tool-before-guard.ts:57-82`, `session-tracker/index.ts:312-318`, `tool-delegation.ts:88-117` | Observation is not yet used for intelligent gating |\n\n---\n\n## Source Hook Point Findings\n\n### Native `task` can be observed before execution\n\n- `src/hooks/transforms/tool-before-guard.ts:57-82`\n  - Detects `toolName === \"task\" || toolName === \"delegate-task\"`.\n  - Extracts `subagent_type`, `description`, `task_id`.\n  - Calls `sessionTracker.handleToolExecuteBefore(...)`.\n\n### Pending dispatch registry already records native task attempts\n\n- `src/features/session-tracker/tool-delegation.ts:88-117`\n  - Registers pending dispatch with parent session, callID, subagentType, tool name.\n  - Starts child-session polling.\n\n### Native `task` can be observed after execution\n\n- `src/features/session-tracker/index.ts:312-316`\n  - On `tool.execute.after`, if `input.tool === \"task\" || \"delegate-task\"`, records child task delegation.\n\n### Tool capture has native task-specific handling\n\n- `src/features/session-tracker/capture/tool-capture.ts:126-135`\n  - Switch handles `\"task\"` specially.\n- `src/features/session-tracker/capture/tool-capture.ts:218-235`\n  - Extracts `description`, `subagent_type`, and child `task_id`.\n\n### SDK child sessions intentionally disable recursive native task\n\n- `src/coordination/delegation/sdk-child-session-starter.ts:64-69`\n  - `buildDelegationPromptTools()` sets:\n    - `\"delegate-task\": false`\n    - `task: false`\n\n### CapabilityGate does not know native task\n\n- `src/features/capability-gate/index.ts:10-42`\n  - Contains `execute-slash-command` and `delegate-task`.\n  - Does **not** contain `task`.\n\n---\n\n## 3 Architecture Options\n\n### Option 1 — Add `task` to CapabilityGate as a first-class native tool\n\nAdd `task` to `TOOL_CAPABILITY_MAP` under `Delegate`, then make P44-04’s hook guard check it like any other tool.\n\n**Pros**\n- Smallest change.\n- Uses existing hook path.\n- Makes native `task` visible to Hivemind.\n\n**Cons**\n- Still mostly static.\n- Does not fully encode ordering, parent/child hierarchy, stacking, loops, or front-facing-agent-only delegation rules.\n- Risks treating `task` like a simple tool when it is actually a session-spawning control-plane action.\n\n---\n\n### Option 2 — Hivemind Tool Intelligence Engine on `tool.execute.before`\n\nCreate a Hivemind-owned intelligence layer that evaluates every tool call event using:\n\n- current session ID\n- current agent\n- tool name\n- tool args\n- parent/child hierarchy\n- pending dispatch registry\n- session tracker history\n- delegation depth\n- previous tool sequence\n- active work contract / trajectory\n- runtime policy\n\nCapabilityGate becomes the static baseline, but the **Tool Intelligence Engine** makes conditional JIT decisions.\n\nExample decisions:\n\n- front-facing agent may call native `task`\n- child session may not call native `task` unless explicitly granted\n- `task` must include `subagent_type`\n- retry must stack on existing session if available\n- `delegate-task` cannot be used for code edits\n- `execute-slash-command --subtask` blocked inside child session\n- repeated `task → task → task` loops require guidance\n- wrong delegation tool returns contextual correction\n\n**Pros**\n- Matches user intent exactly.\n- Independent of OpenCode native permission plane.\n- Event-based, conditional, granular, and hierarchy-aware.\n- Can return meaningful contextual block messages.\n\n**Cons**\n- More design work than Option 1.\n- Needs clear rule schema and tests.\n- Must avoid overbuilding into a general policy engine.\n\n---\n\n### Option 3 — Route all delegation through Hivemind wrapper tools only\n\nBlock native `task` and require all delegation through `delegate-task` or `execute-slash-command`.\n\n**Pros**\n- Hivemind controls every dispatch path.\n- Easier to track with existing delegation manager.\n\n**Cons**\n- Conflicts with current project guidance that native `task` is preferred for code/artifact work.\n- Loses native OpenCode visibility/control benefits.\n- Does not satisfy “true native task path” requirement.\n- High behavior regression risk.\n\n---\n\n## Recommendation\n\nUse **Option 2**, with a narrow P44 implementation: **Tool Intelligence Engine as a pre-tool event guard**, backed by CapabilityGate but not limited to frontmatter or OpenCode permission.\n\nBest architecture:\n\n```text\ntool.execute.before\n  -> ToolBeforeGuard\n    -> ToolIntelligenceEngine.evaluate(event)\n      -> CapabilityGate static baseline\n      -> SessionTracker hierarchy/history\n      -> PendingDispatchRegistry\n      -> Work contract / trajectory context\n      -> JIT grant/block/guidance decision\n```\n\nCapabilityGate should answer: “Is this tool generally in this agent’s capability universe?”\n\nToolIntelligenceEngine should answer: “Is this tool call correct **right now**, from this agent, in this session, with these args, given hierarchy/order/loop/governance context?”\n\nThis preserves the user intent: Hivemind owns intelligence; OpenCode permission remains only a coarse substrate.\n\n---\n\n## Required Changes to P44 Plans\n\n### P44-02 changes\n\nCurrent P44-02 treats agent frontmatter `tools:` as authoritative baseline.\n\nRequired change:\n\n- Reword P44-02 so `tools:` is **static hint / bootstrap seed**, not enforcement authority.\n- Add native `task` to the coverage audit if Hivemind intends to reason about native task.\n- Add explicit rule: frontmatter must not be the only source of capability truth.\n\nAdd to P44-02 success criteria:\n\n```md\n- `tools:` frontmatter is a static bootstrap seed only; runtime authorization is decided by Hivemind Tool Intelligence Engine.\n- Native `task` is tracked as a first-class delegate capability even though it is not a Hivemind custom tool.\n```\n\n---\n\n### P44-03 changes\n\nCurrent P44-03 covers SDK child-session prompt tool injection.\n\nRequired change:\n\n- Keep SDK child-session allowlist wiring.\n- Add explicit test that SDK child sessions still hard-deny recursive native `task` unless a future JIT grant exists.\n- Do not claim P44-03 covers native task. It only covers SDK prompt-time tools.\n\nAdd test expectation:\n\n```md\nSDK child sessions must produce prompt tools with:\n- `task: false`\n- `delegate-task: false`\nunless ToolIntelligenceEngine grants an explicit delegation continuation.\n```\n\nSource anchor: `src/coordination/delegation/sdk-child-session-starter.ts:64-69`.\n\n---\n\n### P44-04 changes\n\nP44-04 is the main plan that must change.\n\nReplace simple “CapabilityGate includes toolName” check with:\n\n```text\nToolIntelligenceEngine.evaluateToolCall({\n  sessionID,\n  agentName,\n  toolName,\n  args,\n  callID,\n  hierarchy,\n  pendingDispatches,\n  activeContract,\n  recentToolSequence\n})\n```\n\nRequired block response behavior:\n\nWhen wrong tool is used, return/throw a meaningful Harness block message with:\n\n- blocked tool\n- current agent/session\n- reason\n- correct tool to use\n- whether stacking is required\n- if relevant, suggested next action\n\nExample:\n\n```text\n[Harness] Tool intelligence blocked native task dispatch.\n\nAgent: hm-l2-code-fixer\nTool: task\nReason: child sessions may not spawn further subagents unless explicitly granted.\nUse instead: return a handoff to the parent orchestrator, or request a JIT delegation grant.\nContext: current session is delegation depth=2; recursive native task would create unmanaged hierarchy.\n```\n\nFor front-facing misuse:\n\n```text\n[Harness] Tool intelligence blocked delegate-task.\n\nAgent: hm-l0-orchestrator\nTool: delegate-task\nReason: code/artifact modifications require native task for user-visible execution.\nUse instead: task({ subagent_type: \"hm-l2-code-fixer\", ... })\n```\n\nAdd tests for:\n\n1. front-facing agent allowed to use native `task`\n2. child agent blocked from native `task`\n3. `task_id` stacking allowed when policy permits\n4. `delegate-task` blocked for code-editing intent\n5. `execute-slash-command --subtask` blocked inside child session\n6. block message includes contextual remediation\n\n---\n\n## Risks / Unknowns\n\n- **OpenCode hook block semantics:** current `tool.execute.before` hook returns `Promise<void>` and blocks by throwing (`tool-guard-hooks.ts:92-115,127-130`). If OpenCode supports structured pre-tool block output, P44 should use that; otherwise use a typed Harness error with rich message.\n- **Agent name resolution:** `tool-guard-hooks.ts` currently has sessionID/toolName, but not clearly current agent. Existing `getDelegationMeta(sessionID)` can resolve child specialist metadata at `tool-guard-hooks.ts:68-69`; parent/front-facing agent resolution may need SDK/session metadata.\n- **CapabilityGate grants are not used by `resolveToolsForAgent`:** current `grantCapability()` stores grants, but `resolveToolsForAgent()` ignores session-scoped grants (`capability-gate/index.ts:53-77` vs grants at `79-110`). JIT grants need a session-aware resolver.\n- **P44-04 lifecycle target may be wrong:** plan says mutation events in `src/task-management/lifecycle/index.ts`, but session-tracker event capture is under `src/features/session-tracker/**`. Better wire capability events to session-tracker/event journal, not lifecycle alone.\n- **Current P44-03 source may over-grant:** `resolveDelegationPermissionProfile()` unions explicit tools and category defaults (`spawn-request-builder.ts:102-106`), so “agent with declared tools produces exactly those tools” is not true if CapabilityGate adds category tools.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "gsd-phase-researcher",
+      "content": "## Verdict\n\nP44 is **not wired to the true native OpenCode `task` tool path**.\n\nCurrent P44 plans wire CapabilityGate mainly to:\n\n- SDK child-session delegation via `spawn-request-builder.ts`\n- harness `delegate-task`\n- harness `execute-slash-command`\n- hook guard path `tool.execute.before`\n\nBut the **native OpenCode `task` tool itself is absent from `TOOL_CAPABILITY_MAP`**, absent from P44 requirements, and absent from P44 tests. This is the exact gap: **P44 governs Hivemind’s wrapper/tool layer, but not the native `task` dispatch primitive that front-facing agents actually use for subagents.**\n\nSource confirms Hivemind can observe native `task` events through hooks, so this is fixable without depending on OpenCode’s static permission allow/ask/deny plane.\n\n---\n\n## Plan Coverage Matrix\n\n| Path | P44 Coverage | Evidence | Gap |\n|---|---:|---|---|\n| `CapabilityGate` map | Partial | `src/features/capability-gate/index.ts:10-42` has 31 tools | No `task` entry |\n| SDK child-session delegation | Covered | P44-03 wires `resolveDelegationPermissionProfile` to CapabilityGate; source already imports/calls it at `spawn-request-builder.ts:2-5,102-104` | Only controls SDK prompt-time tools, not native parent `task` usage |\n| Native OpenCode `task` tool | **Not covered** | P44 grep has no meaningful native-task plan; source observes `task` in hooks | No capability category, no policy, no tests |\n| `delegate-task` | Covered | Map entry at `capability-gate/index.ts:18`; P44-03 tests reference it at `P44-03-PLAN.md:107-108` | Current source disables `delegate-task` in SDK children at `sdk-child-session-starter.ts:64-69` |\n| `execute-slash-command` | Covered as tool | Map entry at `capability-gate/index.ts:17`; registered in `plugin.ts:148-157` | Subtask path tracked separately, not unified with native task intelligence |\n| Hook guard | Planned | P44-04 requires `tool-guard-hooks.ts` check at `P44-04-PLAN.md:54-63` | If implemented literally, native `task` will block because not in CapabilityGate |\n| Session tracker / pending dispatch | Existing observation path | `tool-before-guard.ts:57-82`, `session-tracker/index.ts:312-318`, `tool-delegation.ts:88-117` | Observation is not yet used for intelligent gating |\n\n---\n\n## Source Hook Point Findings\n\n### Native `task` can be observed before execution\n\n- `src/hooks/transforms/tool-before-guard.ts:57-82`\n  - Detects `toolName === \"task\" || toolName === \"delegate-task\"`.\n  - Extracts `subagent_type`, `description`, `task_id`.\n  - Calls `sessionTracker.handleToolExecuteBefore(...)`.\n\n### Pending dispatch registry already records native task attempts\n\n- `src/features/session-tracker/tool-delegation.ts:88-117`\n  - Registers pending dispatch with parent session, callID, subagentType, tool name.\n  - Starts child-session polling.\n\n### Native `task` can be observed after execution\n\n- `src/features/session-tracker/index.ts:312-316`\n  - On `tool.execute.after`, if `input.tool === \"task\" || \"delegate-task\"`, records child task delegation.\n\n### Tool capture has native task-specific handling\n\n- `src/features/session-tracker/capture/tool-capture.ts:126-135`\n  - Switch handles `\"task\"` specially.\n- `src/features/session-tracker/capture/tool-capture.ts:218-235`\n  - Extracts `description`, `subagent_type`, and child `task_id`.\n\n### SDK child sessions intentionally disable recursive native task\n\n- `src/coordination/delegation/sdk-child-session-starter.ts:64-69`\n  - `buildDelegationPromptTools()` sets:\n    - `\"delegate-task\": false`\n    - `task: false`\n\n### CapabilityGate does not know native task\n\n- `src/features/capability-gate/index.ts:10-42`\n  - Contains `execute-slash-command` and `delegate-task`.\n  - Does **not** contain `task`.\n\n---\n\n## 3 Architecture Options\n\n### Option 1 — Add `task` to CapabilityGate as a first-class native tool\n\nAdd `task` to `TOOL_CAPABILITY_MAP` under `Delegate`, then make P44-04’s hook guard check it like any other tool.\n\n**Pros**\n- Smallest change.\n- Uses existing hook path.\n- Makes native `task` visible to Hivemind.\n\n**Cons**\n- Still mostly static.\n- Does not fully encode ordering, parent/child hierarchy, stacking, loops, or front-facing-agent-only delegation rules.\n- Risks treating `task` like a simple tool when it is actually a session-spawning control-plane action.\n\n---\n\n### Option 2 — Hivemind Tool Intelligence Engine on `tool.execute.before`\n\nCreate a Hivemind-owned intelligence layer that evaluates every tool call event using:\n\n- current session ID\n- current agent\n- tool name\n- tool args\n- parent/child hierarchy\n- pending dispatch registry\n- session tracker history\n- delegation depth\n- previous tool sequence\n- active work contract / trajectory\n- runtime policy\n\nCapabilityGate becomes the static baseline, but the **Tool Intelligence Engine** makes conditional JIT decisions.\n\nExample decisions:\n\n- front-facing agent may call native `task`\n- child session may not call native `task` unless explicitly granted\n- `task` must include `subagent_type`\n- retry must stack on existing session if available\n- `delegate-task` cannot be used for code edits\n- `execute-slash-command --subtask` blocked inside child session\n- repeated `task → task → task` loops require guidance\n- wrong delegation tool returns contextual correction\n\n**Pros**\n- Matches user intent exactly.\n- Independent of OpenCode native permission plane.\n- Event-based, conditional, granular, and hierarchy-aware.\n- Can return meaningful contextual block messages.\n\n**Cons**\n- More design work than Option 1.\n- Needs clear rule schema and tests.\n- Must avoid overbuilding into a general policy engine.\n\n---\n\n### Option 3 — Route all delegation through Hivemind wrapper tools only\n\nBlock native `task` and require all delegation through `delegate-task` or `execute-slash-command`.\n\n**Pros**\n- Hivemind controls every dispatch path.\n- Easier to track with existing delegation manager.\n\n**Cons**\n- Conflicts with current project guidance that native `task` is preferred for code/artifact work.\n- Loses native OpenCode visibility/control benefits.\n- Does not satisfy “true native task path” requirement.\n- High behavior regression risk.\n\n---\n\n## Recommendation\n\nUse **Option 2**, with a narrow P44 implementation: **Tool Intelligence Engine as a pre-tool event guard**, backed by CapabilityGate but not limited to frontmatter or OpenCode permission.\n\nBest architecture:\n\n```text\ntool.execute.before\n  -> ToolBeforeGuard\n    -> ToolIntelligenceEngine.evaluate(event)\n      -> CapabilityGate static baseline\n      -> SessionTracker hierarchy/history\n      -> PendingDispatchRegistry\n      -> Work contract / trajectory context\n      -> JIT grant/block/guidance decision\n```\n\nCapabilityGate should answer: “Is this tool generally in this agent’s capability universe?”\n\nToolIntelligenceEngine should answer: “Is this tool call correct **right now**, from this agent, in this session, with these args, given hierarchy/order/loop/governance context?”\n\nThis preserves the user intent: Hivemind owns intelligence; OpenCode permission remains only a coarse substrate.\n\n---\n\n## Required Changes to P44 Plans\n\n### P44-02 changes\n\nCurrent P44-02 treats agent frontmatter `tools:` as authoritative baseline.\n\nRequired change:\n\n- Reword P44-02 so `tools:` is **static hint / bootstrap seed**, not enforcement authority.\n- Add native `task` to the coverage audit if Hivemind intends to reason about native task.\n- Add explicit rule: frontmatter must not be the only source of capability truth.\n\nAdd to P44-02 success criteria:\n\n```md\n- `tools:` frontmatter is a static bootstrap seed only; runtime authorization is decided by Hivemind Tool Intelligence Engine.\n- Native `task` is tracked as a first-class delegate capability even though it is not a Hivemind custom tool.\n```\n\n---\n\n### P44-03 changes\n\nCurrent P44-03 covers SDK child-session prompt tool injection.\n\nRequired change:\n\n- Keep SDK child-session allowlist wiring.\n- Add explicit test that SDK child sessions still hard-deny recursive native `task` unless a future JIT grant exists.\n- Do not claim P44-03 covers native task. It only covers SDK prompt-time tools.\n\nAdd test expectation:\n\n```md\nSDK child sessions must produce prompt tools with:\n- `task: false`\n- `delegate-task: false`\nunless ToolIntelligenceEngine grants an explicit delegation continuation.\n```\n\nSource anchor: `src/coordination/delegation/sdk-child-session-starter.ts:64-69`.\n\n---\n\n### P44-04 changes\n\nP44-04 is the main plan that must change.\n\nReplace simple “CapabilityGate includes toolName” check with:\n\n```text\nToolIntelligenceEngine.evaluateToolCall({\n  sessionID,\n  agentName,\n  toolName,\n  args,\n  callID,\n  hierarchy,\n  pendingDispatches,\n  activeContract,\n  recentToolSequence\n})\n```\n\nRequired block response behavior:\n\nWhen wrong tool is used, return/throw a meaningful Harness block message with:\n\n- blocked tool\n- current agent/session\n- reason\n- correct tool to use\n- whether stacking is required\n- if relevant, suggested next action\n\nExample:\n\n```text\n[Harness] Tool intelligence blocked native task dispatch.\n\nAgent: hm-l2-code-fixer\nTool: task\nReason: child sessions may not spawn further subagents unless explicitly granted.\nUse instead: return a handoff to the parent orchestrator, or request a JIT delegation grant.\nContext: current session is delegation depth=2; recursive native task would create unmanaged hierarchy.\n```\n\nFor front-facing misuse:\n\n```text\n[Harness] Tool intelligence blocked delegate-task.\n\nAgent: hm-l0-orchestrator\nTool: delegate-task\nReason: code/artifact modifications require native task for user-visible execution.\nUse instead: task({ subagent_type: \"hm-l2-code-fixer\", ... })\n```\n\nAdd tests for:\n\n1. front-facing agent allowed to use native `task`\n2. child agent blocked from native `task`\n3. `task_id` stacking allowed when policy permits\n4. `delegate-task` blocked for code-editing intent\n5. `execute-slash-command --subtask` blocked inside child session\n6. block message includes contextual remediation\n\n---\n\n## Risks / Unknowns\n\n- **OpenCode hook block semantics:** current `tool.execute.before` hook returns `Promise<void>` and blocks by throwing (`tool-guard-hooks.ts:92-115,127-130`). If OpenCode supports structured pre-tool block output, P44 should use that; otherwise use a typed Harness error with rich message.\n- **Agent name resolution:** `tool-guard-hooks.ts` currently has sessionID/toolName, but not clearly current agent. Existing `getDelegationMeta(sessionID)` can resolve child specialist metadata at `tool-guard-hooks.ts:68-69`; parent/front-facing agent resolution may need SDK/session metadata.\n- **CapabilityGate grants are not used by `resolveToolsForAgent`:** current `grantCapability()` stores grants, but `resolveToolsForAgent()` ignores session-scoped grants (`capability-gate/index.ts:53-77` vs grants at `79-110`). JIT grants need a session-aware resolver.\n- **P44-04 lifecycle target may be wrong:** plan says mutation events in `src/task-management/lifecycle/index.ts`, but session-tracker event capture is under `src/features/session-tracker/**`. Better wire capability events to session-tracker/event journal, not lifecycle alone.\n- **Current P44-03 source may over-grant:** `resolveDelegationPermissionProfile()` unions explicit tools and category defaults (`spawn-request-builder.ts:102-106`), so “agent with declared tools produces exactly those tools” is not true if CapabilityGate adds category tools.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-31T20:49:45.287Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_hnuCmw020VHC3CKBBHis5ojn",
+        "input": {
+          "name": "gsd-research-phase"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:49:50.449Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_GjeyRqRKLpwwRRD0IzCn5kNk",
+        "input": {
+          "name": "subagent-delegation-patterns"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:01.035Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_yXfPDZh9Kmpkar3gx2CjXXbN",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:01.080Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_gen49hvfMtDFsTrmpAE8etiM",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:01.096Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_QU0fKpUFSwRCIjx8TJFqeuIA",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:01.174Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_5dNFzwOopumwZvXNKDp4wfY5",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:01.310Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_dzwTYgxJmyA0DCWzjaAH1o4f",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:01.316Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_hho3GWSc1zVQUThUvswwwZvl",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:01.327Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_ndz5xih1EBP0bXJO7hLCSLqc",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:10.329Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_dHKo3CEa0IPK53B8QggZpRDv",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:10.505Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_47yFTH0rJHAABpfbycaaP3eC",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:19.987Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_mvNUwqNh5exGrkADLoJGGP4v",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P44-tool-intelligence-capability-layer/P44-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:20.073Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_RY0EgpWqkdVkwoQaJs7VhXyG",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P44-tool-intelligence-capability-layer/P44-02-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:20.084Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_VsRmLsLd4C3fuBeTziiycOQB",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P44-tool-intelligence-capability-layer/P44-03-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:20.178Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_AzcMSMTxyy2gOopcwWGO6P6J",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P44-tool-intelligence-capability-layer/P44-04-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:29.078Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_1Q0dHmOWeC3ScO89sasv2o1Y",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P44-tool-intelligence-capability-layer/P44-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:29.184Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_VjL3aDBMYWAZcr623hccz4w8",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P44-tool-intelligence-capability-layer/RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:29.189Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_B7kOAIwZ7fBGiN7j2wlOfHme",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/capability-gate/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:29.312Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_OZJJgh15Fb9oXjuNDm38Dok0",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/capability-gate/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:38.260Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_E7YZn1II88RC23PcrHWUshXx",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/guards/tool-guard-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:38.362Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_FHcm3qFGaU1xLAkcD458K7Rf",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/transforms/tool-before-guard.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:38.440Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_jTl3Z1HtWKr0HiUzdCLAm3ZW",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/transforms/tool-after-workflow.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:38.560Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_u5jKyyuZxTP1VQd5h1rvnNcN",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/transforms/tool-after-composer.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:38.605Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_6Oz1wVQvk6cvOPh9Nj1KBX0Z",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/transforms/chat-message-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:47.357Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_6imVGaQAuecWsMyttt7C6w0Y",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:47.377Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_K9rh10SA5jmNsiRa6yvsHIhL",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:47.419Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_90qT1aKeRl533pzUQ4XBUNeT",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/persistence/pending-dispatch-registry.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:55.805Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_mPcPx2yB2Co5Sz0Ymw7ShH0j",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:55.889Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_vgfkCBqIb5PGlpTuHkgxSk1o",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:55.909Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_DC6EJpshkHxcrPVuA3OGqUvP",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/tool-delegation.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:50:55.946Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_xNnNP0InbhbWHQblDHs3Ibdp",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/tool-delegation-utils.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:05.114Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_YKNMBt77pyf2xRRedbObrTDS",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/spawner/spawn-request-builder.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:05.200Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_gOs5J1tLPUfrHOy27yn8gd7d",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/sdk-child-session-starter.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:05.231Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_c3WLnFiSftRuKM2EZEh3xSt7",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/coordinator.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:05.365Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_IeKpOKL1Si6UKytE079XClcv",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegate-task.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:05.371Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_WspoJpjsm4FvLhDadfhybuoO",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:11.945Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_9GvXq8g23jMFAEzCIR8f9nrp",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:18.255Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_DHeBOmelShYrDPm8bV0EUThs",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:27.380Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_Nrv8OqtWIxs9B8iG6rfn9BuZ",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/tool-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:27.483Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_E36E3pCU3SsOdTlmjvzxYhd5",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/capture/event-capture.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:27.502Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_SERnEs62EHq2fbXZzjZEMYyc",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/guards/governance-block.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:27.558Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_8MqghqssHHglZVtYLUa2Ngli",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/governance-engine/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:35.534Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_cRZwSdjsmjFaaVCn2v8VqAWc",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/governance-engine/evaluator.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:44.948Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_3eJzz5Y24lqOH0tpE558So5N",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P44-tool-intelligence-capability-layer/P44-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:51:55.312Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_AwEVFN40OVebG0fr6rKhVXop",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:52:02.441Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_PSOpjMZD8rpxrSRMu7DvzoMQ",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T20:53:14.865Z",
+      "type": "assistant_message",
+      "content": "## Verdict\n\nP44 is **not wired to the true native OpenCode `task` tool path**.\n\nCurrent P44 plans wire CapabilityGate mainly to:\n\n- SDK child-session delegation via `spawn-request-builder.ts`\n- harness `delegate-task`\n- harness `execute-slash-command`\n- hook guard path `tool.execute.before`\n\nBut the **native OpenCode `task` tool itself is absent from `TOOL_CAPABILITY_MAP`**, absent from P44 requirements, and absent from P44 tests. This is the exact gap: **P44 governs Hivemind’s wrapper/tool layer, but not the native `task` dispatch primitive that front-facing agents actually use for subagents.**\n\nSource confirms Hivemind can observe native `task` events through hooks, so this is fixable without depending on OpenCode’s static permission allow/ask/deny plane.\n\n---\n\n## Plan Coverage Matrix\n\n| Path | P44 Coverage | Evidence | Gap |\n|---|---:|---|---|\n| `CapabilityGate` map | Partial | `src/features/capability-gate/index.ts:10-42` has 31 tools | No `task` entry |\n| SDK child-session delegation | Covered | P44-03 wires `resolveDelegationPermissionProfile` to CapabilityGate; source already imports/calls it at `spawn-request-builder.ts:2-5,102-104` | Only controls SDK prompt-time tools, not native parent `task` usage |\n| Native OpenCode `task` tool | **Not covered** | P44 grep has no meaningful native-task plan; source observes `task` in hooks | No capability category, no policy, no tests |\n| `delegate-task` | Covered | Map entry at `capability-gate/index.ts:18`; P44-03 tests reference it at `P44-03-PLAN.md:107-108` | Current source disables `delegate-task` in SDK children at `sdk-child-session-starter.ts:64-69` |\n| `execute-slash-command` | Covered as tool | Map entry at `capability-gate/index.ts:17`; registered in `plugin.ts:148-157` | Subtask path tracked separately, not unified with native task intelligence |\n| Hook guard | Planned | P44-04 requires `tool-guard-hooks.ts` check at `P44-04-PLAN.md:54-63` | If implemented literally, native `task` will block because not in CapabilityGate |\n| Session tracker / pending dispatch | Existing observation path | `tool-before-guard.ts:57-82`, `session-tracker/index.ts:312-318`, `tool-delegation.ts:88-117` | Observation is not yet used for intelligent gating |\n\n---\n\n## Source Hook Point Findings\n\n### Native `task` can be observed before execution\n\n- `src/hooks/transforms/tool-before-guard.ts:57-82`\n  - Detects `toolName === \"task\" || toolName === \"delegate-task\"`.\n  - Extracts `subagent_type`, `description`, `task_id`.\n  - Calls `sessionTracker.handleToolExecuteBefore(...)`.\n\n### Pending dispatch registry already records native task attempts\n\n- `src/features/session-tracker/tool-delegation.ts:88-117`\n  - Registers pending dispatch with parent session, callID, subagentType, tool name.\n  - Starts child-session polling.\n\n### Native `task` can be observed after execution\n\n- `src/features/session-tracker/index.ts:312-316`\n  - On `tool.execute.after`, if `input.tool === \"task\" || \"delegate-task\"`, records child task delegation.\n\n### Tool capture has native task-specific handling\n\n- `src/features/session-tracker/capture/tool-capture.ts:126-135`\n  - Switch handles `\"task\"` specially.\n- `src/features/session-tracker/capture/tool-capture.ts:218-235`\n  - Extracts `description`, `subagent_type`, and child `task_id`.\n\n### SDK child sessions intentionally disable recursive native task\n\n- `src/coordination/delegation/sdk-child-session-starter.ts:64-69`\n  - `buildDelegationPromptTools()` sets:\n    - `\"delegate-task\": false`\n    - `task: false`\n\n### CapabilityGate does not know native task\n\n- `src/features/capability-gate/index.ts:10-42`\n  - Contains `execute-slash-command` and `delegate-task`.\n  - Does **not** contain `task`.\n\n---\n\n## 3 Architecture Options\n\n### Option 1 — Add `task` to CapabilityGate as a first-class native tool\n\nAdd `task` to `TOOL_CAPABILITY_MAP` under `Delegate`, then make P44-04’s hook guard check it like any other tool.\n\n**Pros**\n- Smallest change.\n- Uses existing hook path.\n- Makes native `task` visible to Hivemind.\n\n**Cons**\n- Still mostly static.\n- Does not fully encode ordering, parent/child hierarchy, stacking, loops, or front-facing-agent-only delegation rules.\n- Risks treating `task` like a simple tool when it is actually a session-spawning control-plane action.\n\n---\n\n### Option 2 — Hivemind Tool Intelligence Engine on `tool.execute.before`\n\nCreate a Hivemind-owned intelligence layer that evaluates every tool call event using:\n\n- current session ID\n- current agent\n- tool name\n- tool args\n- parent/child hierarchy\n- pending dispatch registry\n- session tracker history\n- delegation depth\n- previous tool sequence\n- active work contract / trajectory\n- runtime policy\n\nCapabilityGate becomes the static baseline, but the **Tool Intelligence Engine** makes conditional JIT decisions.\n\nExample decisions:\n\n- front-facing agent may call native `task`\n- child session may not call native `task` unless explicitly granted\n- `task` must include `subagent_type`\n- retry must stack on existing session if available\n- `delegate-task` cannot be used for code edits\n- `execute-slash-command --subtask` blocked inside child session\n- repeated `task → task → task` loops require guidance\n- wrong delegation tool returns contextual correction\n\n**Pros**\n- Matches user intent exactly.\n- Independent of OpenCode native permission plane.\n- Event-based, conditional, granular, and hierarchy-aware.\n- Can return meaningful contextual block messages.\n\n**Cons**\n- More design work than Option 1.\n- Needs clear rule schema and tests.\n- Must avoid overbuilding into a general policy engine.\n\n---\n\n### Option 3 — Route all delegation through Hivemind wrapper tools only\n\nBlock native `task` and require all delegation through `delegate-task` or `execute-slash-command`.\n\n**Pros**\n- Hivemind controls every dispatch path.\n- Easier to track with existing delegation manager.\n\n**Cons**\n- Conflicts with current project guidance that native `task` is preferred for code/artifact work.\n- Loses native OpenCode visibility/control benefits.\n- Does not satisfy “true native task path” requirement.\n- High behavior regression risk.\n\n---\n\n## Recommendation\n\nUse **Option 2**, with a narrow P44 implementation: **Tool Intelligence Engine as a pre-tool event guard**, backed by CapabilityGate but not limited to frontmatter or OpenCode permission.\n\nBest architecture:\n\n```text\ntool.execute.before\n  -> ToolBeforeGuard\n    -> ToolIntelligenceEngine.evaluate(event)\n      -> CapabilityGate static baseline\n      -> SessionTracker hierarchy/history\n      -> PendingDispatchRegistry\n      -> Work contract / trajectory context\n      -> JIT grant/block/guidance decision\n```\n\nCapabilityGate should answer: “Is this tool generally in this agent’s capability universe?”\n\nToolIntelligenceEngine should answer: “Is this tool call correct **right now**, from this agent, in this session, with these args, given hierarchy/order/loop/governance context?”\n\nThis preserves the user intent: Hivemind owns intelligence; OpenCode permission remains only a coarse substrate.\n\n---\n\n## Required Changes to P44 Plans\n\n### P44-02 changes\n\nCurrent P44-02 treats agent frontmatter `tools:` as authoritative baseline.\n\nRequired change:\n\n- Reword P44-02 so `tools:` is **static hint / bootstrap seed**, not enforcement authority.\n- Add native `task` to the coverage audit if Hivemind intends to reason about native task.\n- Add explicit rule: frontmatter must not be the only source of capability truth.\n\nAdd to P44-02 success criteria:\n\n```md\n- `tools:` frontmatter is a static bootstrap seed only; runtime authorization is decided by Hivemind Tool Intelligence Engine.\n- Native `task` is tracked as a first-class delegate capability even though it is not a Hivemind custom tool.\n```\n\n---\n\n### P44-03 changes\n\nCurrent P44-03 covers SDK child-session prompt tool injection.\n\nRequired change:\n\n- Keep SDK child-session allowlist wiring.\n- Add explicit test that SDK child sessions still hard-deny recursive native `task` unless a future JIT grant exists.\n- Do not claim P44-03 covers native task. It only covers SDK prompt-time tools.\n\nAdd test expectation:\n\n```md\nSDK child sessions must produce prompt tools with:\n- `task: false`\n- `delegate-task: false`\nunless ToolIntelligenceEngine grants an explicit delegation continuation.\n```\n\nSource anchor: `src/coordination/delegation/sdk-child-session-starter.ts:64-69`.\n\n---\n\n### P44-04 changes\n\nP44-04 is the main plan that must change.\n\nReplace simple “CapabilityGate includes toolName” check with:\n\n```text\nToolIntelligenceEngine.evaluateToolCall({\n  sessionID,\n  agentName,\n  toolName,\n  args,\n  callID,\n  hierarchy,\n  pendingDispatches,\n  activeContract,\n  recentToolSequence\n})\n```\n\nRequired block response behavior:\n\nWhen wrong tool is used, return/throw a meaningful Harness block message with:\n\n- blocked tool\n- current agent/session\n- reason\n- correct tool to use\n- whether stacking is required\n- if relevant, suggested next action\n\nExample:\n\n```text\n[Harness] Tool intelligence blocked native task dispatch.\n\nAgent: hm-l2-code-fixer\nTool: task\nReason: child sessions may not spawn further subagents unless explicitly granted.\nUse instead: return a handoff to the parent orchestrator, or request a JIT delegation grant.\nContext: current session is delegation depth=2; recursive native task would create unmanaged hierarchy.\n```\n\nFor front-facing misuse:\n\n```text\n[Harness] Tool intelligence blocked delegate-task.\n\nAgent: hm-l0-orchestrator\nTool: delegate-task\nReason: code/artifact modifications require native task for user-visible execution.\nUse instead: task({ subagent_type: \"hm-l2-code-fixer\", ... })\n```\n\nAdd tests for:\n\n1. front-facing agent allowed to use native `task`\n2. child agent blocked from native `task`\n3. `task_id` stacking allowed when policy permits\n4. `delegate-task` blocked for code-editing intent\n5. `execute-slash-command --subtask` blocked inside child session\n6. block message includes contextual remediation\n\n---\n\n## Risks / Unknowns\n\n- **OpenCode hook block semantics:** current `tool.execute.before` hook returns `Promise<void>` and blocks by throwing (`tool-guard-hooks.ts:92-115,127-130`). If OpenCode supports structured pre-tool block output, P44 should use that; otherwise use a typed Harness error with rich message.\n- **Agent name resolution:** `tool-guard-hooks.ts` currently has sessionID/toolName, but not clearly current agent. Existing `getDelegationMeta(sessionID)` can resolve child specialist metadata at `tool-guard-hooks.ts:68-69`; parent/front-facing agent resolution may need SDK/session metadata.\n- **CapabilityGate grants are not used by `resolveToolsForAgent`:** current `grantCapability()` stores grants, but `resolveToolsForAgent()` ignores session-scoped grants (`capability-gate/index.ts:53-77` vs grants at `79-110`). JIT grants need a session-aware resolver.\n- **P44-04 lifecycle target may be wrong:** plan says mutation events in `src/task-management/lifecycle/index.ts`, but session-tracker event capture is under `src/features/session-tracker/**`. Better wire capability events to session-tracker/event journal, not lifecycle alone.\n- **Current P44-03 source may over-grant:** `resolveDelegationPermissionProfile()` unions explicit tools and category defaults (`spawn-request-builder.ts:102-106`), so “agent with declared tools produces exactly those tools” is not true if CapabilityGate adds category tools.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1803363f6ffeGQSyzHKs8KCXlD"
+      }
+    }
+  ],
+  "lastMessage": "## Verdict\n\nP44 is **not wired to the true native OpenCode `task` tool path**.\n\nCurrent P44 plans wire CapabilityGate mainly to:\n\n- SDK child-session delegation via `spawn-request-builder.ts`\n- harness `delegate-task`\n- harness `execute-slash-command`\n- hook guard path `tool.execute.before`\n\nBut the **native OpenCode `task` tool itself is absent from `TOOL_CAPABILITY_MAP`**, absent from P44 requirements, and absent from P44 tests. This is the exact gap: **P44 governs Hivemind’s wrapper/tool layer, but not the native `task` dispatch primitive that front-facing agents actually use for subagents.**\n\nSource confirms Hivemind can observe native `task` events through hooks, so this is fixable without depending on OpenCode’s static permission allow/ask/deny plane.\n\n---\n\n## Plan Coverage Matrix\n\n| Path | P44 Coverage | Evidence | Gap |\n|---|---:|---|---|\n| `CapabilityGate` map | Partial | `src/features/capability-gate/index.ts:10-42` has 31 tools | No `task` entry |\n| SDK child-session delegation | Covered | P44-03 wires `resolveDelegationPermissionProfile` to CapabilityGate; source already imports/calls it at `spawn-request-builder.ts:2-5,102-104` | Only controls SDK prompt-time tools, not native parent `task` usage |\n| Native OpenCode `task` tool | **Not covered** | P44 grep has no meaningful native-task plan; source observes `task` in hooks | No capability category, no policy, no tests |\n| `delegate-task` | Covered | Map entry at `capability-gate/index.ts:18`; P44-03 tests reference it at `P44-03-PLAN.md:107-108` | Current source disables `delegate-task` in SDK children at `sdk-child-session-starter.ts:64-69` |\n| `execute-slash-command` | Covered as tool | Map entry at `capability-gate/index.ts:17`; registered in `plugin.ts:148-157` | Subtask path tracked separately, not unified with native task intelligence |\n| Hook guard | Planned | P44-04 requires `tool-guard-hooks.ts` check at `P44-04-PLAN.md:54-63` | If implemented literally, native `task` will block because not in CapabilityGate |\n| Session tracker / pending dispatch | Existing observation path | `tool-before-guard.ts:57-82`, `session-tracker/index.ts:312-318`, `tool-delegation.ts:88-117` | Observation is not yet used for intelligent gating |\n\n---\n\n## Source Hook Point Findings\n\n### Native `task` can be observed before execution\n\n- `src/hooks/transforms/tool-before-guard.ts:57-82`\n  - Detects `toolName === \"task\" || toolName === \"delegate-task\"`.\n  - Extracts `subagent_type`, `description`, `task_id`.\n  - Calls `sessionTracker.handleToolExecuteBefore(...)`.\n\n### Pending dispatch registry already records native task attempts\n\n- `src/features/session-tracker/tool-delegation.ts:88-117`\n  - Registers pending dispatch with parent session, callID, subagentType, tool name.\n  - Starts child-session polling.\n\n### Native `task` can be observed after execution\n\n- `src/features/session-tracker/index.ts:312-316`\n  - On `tool.execute.after`, if `input.tool === \"task\" || \"delegate-task\"`, records child task delegation.\n\n### Tool capture has native task-specific handling\n\n- `src/features/session-tracker/capture/tool-capture.ts:126-135`\n  - Switch handles `\"task\"` specially.\n- `src/features/session-tracker/capture/tool-capture.ts:218-235`\n  - Extracts `description`, `subagent_type`, and child `task_id`.\n\n### SDK child sessions intentionally disable recursive native task\n\n- `src/coordination/delegation/sdk-child-session-starter.ts:64-69`\n  - `buildDelegationPromptTools()` sets:\n    - `\"delegate-task\": false`\n    - `task: false`\n\n### CapabilityGate does not know native task\n\n- `src/features/capability-gate/index.ts:10-42`\n  - Contains `execute-slash-command` and `delegate-task`.\n  - Does **not** contain `task`.\n\n---\n\n## 3 Architecture Options\n\n### Option 1 — Add `task` to CapabilityGate as a first-class native tool\n\nAdd `task` to `TOOL_CAPABILITY_MAP` under `Delegate`, then make P44-04’s hook guard check it like any other tool.\n\n**Pros**\n- Smallest change.\n- Uses existing hook path.\n- Makes native `task` visible to Hivemind.\n\n**Cons**\n- Still mostly static.\n- Does not fully encode ordering, parent/child hierarchy, stacking, loops, or front-facing-agent-only delegation rules.\n- Risks treating `task` like a simple tool when it is actually a session-spawning control-plane action.\n\n---\n\n### Option 2 — Hivemind Tool Intelligence Engine on `tool.execute.before`\n\nCreate a Hivemind-owned intelligence layer that evaluates every tool call event using:\n\n- current session ID\n- current agent\n- tool name\n- tool args\n- parent/child hierarchy\n- pending dispatch registry\n- session tracker history\n- delegation depth\n- previous tool sequence\n- active work contract / trajectory\n- runtime policy\n\nCapabilityGate becomes the static baseline, but the **Tool Intelligence Engine** makes conditional JIT decisions.\n\nExample decisions:\n\n- front-facing agent may call native `task`\n- child session may not call native `task` unless explicitly granted\n- `task` must include `subagent_type`\n- retry must stack on existing session if available\n- `delegate-task` cannot be used for code edits\n- `execute-slash-command --subtask` blocked inside child session\n- repeated `task → task → task` loops require guidance\n- wrong delegation tool returns contextual correction\n\n**Pros**\n- Matches user intent exactly.\n- Independent of OpenCode native permission plane.\n- Event-based, conditional, granular, and hierarchy-aware.\n- Can return meaningful contextual block messages.\n\n**Cons**\n- More design work than Option 1.\n- Needs clear rule schema and tests.\n- Must avoid overbuilding into a general policy engine.\n\n---\n\n### Option 3 — Route all delegation through Hivemind wrapper tools only\n\nBlock native `task` and require all delegation through `delegate-task` or `execute-slash-command`.\n\n**Pros**\n- Hivemind controls every dispatch path.\n- Easier to track with existing delegation manager.\n\n**Cons**\n- Conflicts with current project guidance that native `task` is preferred for code/artifact work.\n- Loses native OpenCode visibility/control benefits.\n- Does not satisfy “true native task path” requirement.\n- High behavior regression risk.\n\n---\n\n## Recommendation\n\nUse **Option 2**, with a narrow P44 implementation: **Tool Intelligence Engine as a pre-tool event guard**, backed by CapabilityGate but not limited to frontmatter or OpenCode permission.\n\nBest architecture:\n\n```text\ntool.execute.before\n  -> ToolBeforeGuard\n    -> ToolIntelligenceEngine.evaluate(event)\n      -> CapabilityGate static baseline\n      -> SessionTracker hierarchy/history\n      -> PendingDispatchRegistry\n      -> Work contract / trajectory context\n      -> JIT grant/block/guidance decision\n```\n\nCapabilityGate should answer: “Is this tool generally in this agent’s capability universe?”\n\nToolIntelligenceEngine should answer: “Is this tool call correct **right now**, from this agent, in this session, with these args, given hierarchy/order/loop/governance context?”\n\nThis preserves the user intent: Hivemind owns intelligence; OpenCode permission remains only a coarse substrate.\n\n---\n\n## Required Changes to P44 Plans\n\n### P44-02 changes\n\nCurrent P44-02 treats agent frontmatter `tools:` as authoritative baseline.\n\nRequired change:\n\n- Reword P44-02 so `tools:` is **static hint / bootstrap seed**, not enforcement authority.\n- Add native `task` to the coverage audit if Hivemind intends to reason about native task.\n- Add explicit rule: frontmatter must not be the only source of capability truth.\n\nAdd to P44-02 success criteria:\n\n```md\n- `tools:` frontmatter is a static bootstrap seed only; runtime authorization is decided by Hivemind Tool Intelligence Engine.\n- Native `task` is tracked as a first-class delegate capability even though it is not a Hivemind custom tool.\n```\n\n---\n\n### P44-03 changes\n\nCurrent P44-03 covers SDK child-session prompt tool injection.\n\nRequired change:\n\n- Keep SDK child-session allowlist wiring.\n- Add explicit test that SDK child sessions still hard-deny recursive native `task` unless a future JIT grant exists.\n- Do not claim P44-03 covers native task. It only covers SDK prompt-time tools.\n\nAdd test expectation:\n\n```md\nSDK child sessions must produce prompt tools with:\n- `task: false`\n- `delegate-task: false`\nunless ToolIntelligenceEngine grants an explicit delegation continuation.\n```\n\nSource anchor: `src/coordination/delegation/sdk-child-session-starter.ts:64-69`.\n\n---\n\n### P44-04 changes\n\nP44-04 is the main plan that must change.\n\nReplace simple “CapabilityGate includes toolName” check with:\n\n```text\nToolIntelligenceEngine.evaluateToolCall({\n  sessionID,\n  agentName,\n  toolName,\n  args,\n  callID,\n  hierarchy,\n  pendingDispatches,\n  activeContract,\n  recentToolSequence\n})\n```\n\nRequired block response behavior:\n\nWhen wrong tool is used, return/throw a meaningful Harness block message with:\n\n- blocked tool\n- current agent/session\n- reason\n- correct tool to use\n- whether stacking is required\n- if relevant, suggested next action\n\nExample:\n\n```text\n[Harness] Tool intelligence blocked native task dispatch.\n\nAgent: hm-l2-code-fixer\nTool: task\nReason: child sessions may not spawn further subagents unless explicitly granted.\nUse instead: return a handoff to the parent orchestrator, or request a JIT delegation grant.\nContext: current session is delegation depth=2; recursive native task would create unmanaged hierarchy.\n```\n\nFor front-facing misuse:\n\n```text\n[Harness] Tool intelligence blocked delegate-task.\n\nAgent: hm-l0-orchestrator\nTool: delegate-task\nReason: code/artifact modifications require native task for user-visible execution.\nUse instead: task({ subagent_type: \"hm-l2-code-fixer\", ... })\n```\n\nAdd tests for:\n\n1. front-facing agent allowed to use native `task`\n2. child agent blocked from native `task`\n3. `task_id` stacking allowed when policy permits\n4. `delegate-task` blocked for code-editing intent\n5. `execute-slash-command --subtask` blocked inside child session\n6. block message includes contextual remediation\n\n---\n\n## Risks / Unknowns\n\n- **OpenCode hook block semantics:** current `tool.execute.before` hook returns `Promise<void>` and blocks by throwing (`tool-guard-hooks.ts:92-115,127-130`). If OpenCode supports structured pre-tool block output, P44 should use that; otherwise use a typed Harness error with rich message.\n- **Agent name resolution:** `tool-guard-hooks.ts` currently has sessionID/toolName, but not clearly current agent. Existing `getDelegationMeta(sessionID)` can resolve child specialist metadata at `tool-guard-hooks.ts:68-69`; parent/front-facing agent resolution may need SDK/session metadata.\n- **CapabilityGate grants are not used by `resolveToolsForAgent`:** current `grantCapability()` stores grants, but `resolveToolsForAgent()` ignores session-scoped grants (`capability-gate/index.ts:53-77` vs grants at `79-110`). JIT grants need a session-aware resolver.\n- **P44-04 lifecycle target may be wrong:** plan says mutation events in `src/task-management/lifecycle/index.ts`, but session-tracker event capture is under `src/features/session-tracker/**`. Better wire capability events to session-tracker/event journal, not lifecycle alone.\n- **Current P44-03 source may over-grant:** `resolveDelegationPermissionProfile()` unions explicit tools and category defaults (`spawn-request-builder.ts:102-106`), so “agent with declared tools produces exactly those tools” is not true if CapabilityGate adds category tools."
+}

@@ -51,29 +51,29 @@ export class CapabilityGate {
   }
 
   resolveToolsForAgent(agentName: string): string[] {
-    const normalized = agentName.toLowerCase();
+    const normalized = agentName.toLowerCase()
     if (normalized.includes("l0-orchestrator") || normalized.includes("l1-coordinator")) {
-      return Array.from(TOOL_CAPABILITY_MAP.keys());
+      return Array.from(TOOL_CAPABILITY_MAP.keys())
     }
     if (normalized.includes("l2")) {
       const sessionReadWrite = Array.from(TOOL_CAPABILITY_MAP.entries())
-        .filter(([, record]) => ["Session", "Read", "Write"].includes(record.category))
-        .map(([name]) => name);
+        .filter(([, record]) => [ToolCategory.Session, ToolCategory.Read, ToolCategory.Write].includes(record.category))
+        .map(([name]) => name)
       if (normalized.includes("verifier") || normalized.includes("auditor")) {
         const govern = Array.from(TOOL_CAPABILITY_MAP.entries())
           .filter(([, record]) => record.category === ToolCategory.Govern)
-          .map(([name]) => name);
-        return [...sessionReadWrite, ...govern];
+          .map(([name]) => name)
+        return [...sessionReadWrite, ...govern]
       }
-      return sessionReadWrite;
+      return sessionReadWrite
     }
     if (normalized.includes("hf-")) {
       const configRead = Array.from(TOOL_CAPABILITY_MAP.entries())
-        .filter(([, record]) => ["Config", "Read"].includes(record.category))
-        .map(([name]) => name);
-      return configRead;
+        .filter(([, record]) => [ToolCategory.Config, ToolCategory.Read].includes(record.category))
+        .map(([name]) => name)
+      return configRead
     }
-    return [...this.readOnlyTools];
+    return [...this.readOnlyTools]
   }
 
   grantCapability(sessionId: string, agentName: string, toolName: string): void {

@@ -1,6 +1,8 @@
 import { generateSessionTitle } from "../../shared/session-naming.js"
-import { READ_ONLY_TOOLS, WRITE_CAPABLE_TOOLS, WRITE_TOOLS } from "../../features/capability-gate/index.js"
+import { READ_ONLY_TOOLS, WRITE_CAPABLE_TOOLS, WRITE_TOOLS, TOOL_CAPABILITY_MAP, CapabilityGate } from "../../features/capability-gate/index.js"
 import type { DelegationSpawnRequest } from "./spawner-types.js"
+
+const capabilityGate = new CapabilityGate()
 
 type PrimitivePermission = Record<string, unknown>
 
@@ -55,8 +57,33 @@ export function buildSdkSpawnRequest(
 }
 
 /**
+ * Merge multiple tool arrays into a deduplicated set, filtering to only
+ * known tools registered in TOOL_CAPABILITY_MAP. Falls back to
+ * WRITE_CAPABLE_TOOLS when the resulting set is empty.
+ *
+ * @param sets - Variable number of tool name arrays to merge.
+ * @returns Deduplicated array of valid tool names.
+ */
+function mergeToolSets(...sets: (readonly string[] | undefined)[]): readonly string[] {
+  const merged = new Set<string>()
+  for (const set of sets) {
+    if (set) {
+      for (const tool of set) {
+        if (TOOL_CAPABILITY_MAP.has(tool)) {
+          merged.add(tool)
+        }
+      }
+    }
+  }
+  return merged.size > 0 ? Array.from(merged) : [...WRITE_CAPABLE_TOOLS]
+}
+
+/**
  * Derive the least-privilege delegated tool profile from selected agent
- * primitive metadata and task intent.
+ * primitive metadata, capability gate resolution, and task intent.
+ *
+ * Resolution order: explicit metadata → capability gate → intent → fallback.
+ * The capability gate is additive — its tools are unioned with explicit metadata.
  *
  * @param params - User delegation request details used for task-intent checks.
  * @param agent - Selected OpenCode agent metadata from live or local primitive data.
@@ -73,8 +100,10 @@ export function resolveDelegationPermissionProfile(
   agent?: ValidatedAgent,
 ): DelegationSpawnRequest["permissionProfile"] {
   const explicitTools = agent ? toolsFromAgentMetadata(agent) : undefined
+  const capabilityTools = agent?.name ? capabilityGate.resolveToolsForAgent(agent.name) : undefined
+  const mergedTools = mergeToolSets(explicitTools, capabilityTools)
   const intentTools = isReviewOnlyTask(params, agent) ? READ_ONLY_TOOLS : undefined
-  const tools = explicitTools ?? intentTools ?? READ_ONLY_TOOLS
+  const tools = mergedTools.length > 0 ? mergedTools : (intentTools ?? READ_ONLY_TOOLS)
   const writeCapable = tools.some((toolName) => WRITE_TOOLS.has(toolName))
   return {
     mode: writeCapable ? "write-capable" : (isReviewOnlyTask(params, agent) ? "review-only" : "read-only"),

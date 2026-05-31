@@ -3,55 +3,53 @@ phase: P44-tool-intelligence-capability-layer
 plan: 02
 type: execute
 wave: 2
-depends_on: []
+depends_on: ["P44-01"]
 files_modified:
-  - .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l0-orchestrator/hm-l0-orchestrator.md
-  - .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l1-coordinator/hm-l1-coordinator.md
-  - .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-*/hm-l2-*.md
-  - .opencode/agents/hm-l0-orchestrator.md
-  - .opencode/agents/hm-l1-coordinator.md
-  - .opencode/agents/hm-l2-*/hm-l2-*.md
+  - src/features/capability-gate/index.ts
+  - src/features/capability-gate/types.ts
+  - src/features/capability-gate/agent-capability-profiles.ts
+  - tests/features/capability-gate/capability-map.test.ts
 autonomous: true
 requirements:
   - REQ-P44-02
   - REQ-P44-03
 must_haves:
   truths:
-    - "All 31 hm-* agents declare tools: in frontmatter (non-empty, all entries valid tool names)"
-    - "11 orphaned tools are assigned to at least one agent category"
-    - "Every registered tool from src/plugin.ts appears in >=1 agent's tools: list"
-    - "Changes made in .hivefiver-meta-builder/ then reflected to .opencode/agents/"
+    - "Native OpenCode task is represented as a first-class Delegate capability"
+    - "Hivemind capability seed profiles are programmatic source, not OpenCode permission: or deprecated tools: authority"
+    - "No plan task adds permission: deny or relies on deny/ask/allow as the intelligence plane"
+    - "Every capability-map tool is assigned to at least one Hivemind seed profile"
+    - "Unknown agents retain read-only fallback with contextual guidance"
   artifacts:
-    - path: .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l0-orchestrator/hm-l0-orchestrator.md
-      provides: tools: declaration for L0 orchestrator
-      contains: "tools:"
-    - path: .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l1-coordinator/hm-l1-coordinator.md
-      provides: tools: declaration for L1 coordinator
-      contains: "tools:"
-    - path: .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-*/hm-l2-*.md
-      provides: tools: declarations for all 29 L2 agents
-      contains: "tools:"
+    - path: src/features/capability-gate/agent-capability-profiles.ts
+      provides: Programmatic static seed profiles for Hivemind-owned tool intelligence
+      contains: "task"
+    - path: src/features/capability-gate/index.ts
+      provides: CapabilityGate seeded from Hivemind profiles and native task in TOOL_CAPABILITY_MAP
+      contains: "TOOL_CAPABILITY_MAP"
+    - path: tests/features/capability-gate/capability-map.test.ts
+      provides: Coverage tests proving native task and zero orphaned capability-map tools
   key_links:
-    - from: .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md
-      to: .opencode/agents/hm-*/*.md
-      via: sync-assets.js copies source to deployed agents
-      pattern: sync-assets
-    - from: each agent's tools: field
-      to: CapabilityGate.TOOL_CAPABILITY_MAP
-      via: tool name must exist in capability map keys
-      pattern: capability-gate
+    - from: src/features/capability-gate/agent-capability-profiles.ts
+      to: src/features/capability-gate/index.ts
+      via: CapabilityGate resolves from Hivemind seed profiles
+      pattern: "AGENT_CAPABILITY_PROFILES"
+    - from: native OpenCode task
+      to: ToolCategory.Delegate
+      via: task is the primary subagent dispatch path
+      pattern: "[\"task\""
 ---
 
 <objective>
-Migrate all 31 hm-* agent frontmatter files from zero/nil tools: declarations to explicit tool allowlists, and assign the 11 orphaned tools to agent categories per the SPEC Appendix assignment plan. Source of truth is .hivefiver-meta-builder/; changes must be reflected to .opencode/agents/.
+Replace the deprecated frontmatter `tools:` migration plan with a Hivemind-owned static capability seed layer. The seed layer is programmatic, testable, and independent of OpenCode's native `permission:` plane. It gives CapabilityGate a durable baseline while leaving final runtime decisions to the ToolIntelligenceEngine in P44-04.
 </objective>
 
 <purpose>
-REQ-P44-02 and REQ-P44-03 are data migration requirements — no new runtime logic. REQ-P44-02 ensures every hm-* agent declares its tool set so CapabilityGate.resolveToolsForAgent has authoritative input. REQ-P44-03 closes the orphaned tool gap by mapping 11 tools that appear in plugin.ts but nowhere in agent frontmatter or category routing. Both are prerequisites for REQ-P44-04 to produce meaningful allowlists.
+The previous P44-02 plan was invalid because it treated `tools:` as the capability authority and implied that OpenCode `permission:` could encode Hivemind intelligence. The user explicitly rejected that model. P44-02 now creates static Hivemind seed profiles only: they answer "which tools are generally relevant for this role?" They do not answer "is this tool correct right now?" Runtime correctness is owned by P44-04.
 </purpose>
 
 <output>
-All 31 hm-* agent .md files in .hivefiver-meta-builder/ updated with non-empty tools: declarations. 11 orphaned tools assigned per SPEC Appendix. .opencode/agents/ files synchronized via direct copy (not sync-assets.js run) to ensure atomic control. Verification script confirms zero orphaned tools remain.
+CapabilityGate has native `task` in the capability map and resolves role baseline tools from Hivemind seed profiles. All tool names in every profile exist in `TOOL_CAPABILITY_MAP`. Zero orphaned tools remain. No `.opencode/agents/**` or `.hivefiver-meta-builder/**` agent files are modified by this plan.
 </output>
 
 <execution_context>
@@ -62,133 +60,97 @@ All 31 hm-* agent .md files in .hivefiver-meta-builder/ updated with non-empty t
 <context>
 @.planning/phases/P44-tool-intelligence-capability-layer/P44-SPEC.md
 @.planning/phases/P44-tool-intelligence-capability-layer/RESEARCH.md
-@.planning/REQUIREMENTS.md
-@src/features/capability-gate/index.ts (created in P44-01)
+@src/features/capability-gate/index.ts
+@src/features/capability-gate/types.ts
+@tests/features/capability-gate/capability-map.test.ts
 </context>
-
-<note>
-Source-of-truth for agent frontmatter: `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-*.md` → reflected to `.opencode/agents/`. All edits MUST target source-of-truth first, then copy to deployed path. Do NOT create agent files from scratch — UPDATE existing files only.
-</note>
 
 <tasks>
 <task type="auto">
-  <name>Task 1: Audit current hm-* agent frontmatter — identify which 30 agents lack tools: declarations</name>
+  <name>Task 1: Add native task to the capability map</name>
   <files>
-    .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md
-    .opencode/agents/hm-*/*.md
-  </files>
-  <read_first>
-    @src/features/capability-gate/index.ts — TOOL_CAPABILITY_MAP keys to use as the validated tool name set
-    @.planning/phases/P44-tool-intelligence-capability-layer/P44-SPEC.md lines 232-246 — Orphaned Tool Assignment Plan (exact mapping table)
-    @.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l0-orchestrator/hm-l0-orchestrator.md — existing frontmatter to confirm current tools: state
-    @.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l1-coordinator/hm-l1-coordinator.md — existing frontmatter
-  </read_first>
-  <action>
-    Run two grep commands: (1) `grep -L '^tools:' .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md` to list all source agents missing tools: field. (2) `grep -c '^tools:' .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md` to count which already have it. Report the exact list of 30 missing agents + the 1 agent that already has tools:. Also grep for the 11 orphaned tool names across all agent frontmatter: `grep -l 'hivemind_sdk_supervisor\|hivemind_session_view\|hivemind_trajectory\|hivemind_pressure\|hivemind_doc\|hivemind_command_engine\|hivemind_agent_work_create\|hivemind_agent_work_export\|repomix' .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md` — this confirms which agents already reference these tools in permission: blocks. Do NOT modify files in this task.
-  </action>
-  <verify>
-    <automated>bash -c 'echo "Missing tools: $(grep -L "^tools:" .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md 2>/dev/null | wc -l | tr -d " ")"; echo "Has tools: $(grep -c "^tools:" .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md 2>/dev/null | grep -v ":0$" | wc -l | tr -d " ")"'</automated>
-  </verify>
-  <done>
-    Audit output shows exactly 30 agents lacking tools: declarations, 1 agent with existing declaration. 11 orphaned tool references in permission: blocks identified for migration to tools: fields.
-  </done>
-</task>
-
-<task type="auto">
-  <name>Task 2: Write tools: declarations to all 31 hm-* source agents per SPEC Appendix mapping</name>
-  <files>
-    .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l0-orchestrator/hm-l0-orchestrator.md
-    .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l1-coordinator/hm-l1-coordinator.md
-    .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l2-*/hm-l2-*.md
-  </files>
-  <read_first>
-    @src/features/capability-gate/index.ts — TOOL_CAPABILITY_MAP keys: use ONLY these exact kebab-case names in tools: lists
-    @.planning/phases/P44-tool-intelligence-capability-layer/P44-SPEC.md lines 232-246 — Orphaned Tool Assignment Plan (authoritative mapping)
-    @.hivefiver-meta-builder/agents-lab/active/refactoring/hm-l0-orchestrator/hm-l0-orchestrator.md — existing frontmatter structure (permission: field format) to mirror
-  </read_first>
-  <action>
-    For each of the 31 hm-* agent .md files in .hivefiver-meta-builder/agents-lab/active/refactoring/, write or update the tools: frontmatter field. Rules: (1) If tools: already exists, update its value to match the SPEC Appendix mapping. (2) If tools: is missing, insert `tools:` after the permission: line (or as the last frontmatter field) with appropriate true/false values. (3) Use ONLY tool names that exist as keys in TOOL_CAPABILITY_MAP — never declare a tool not in the capability map (AC-02b). (4) SPEC Appendix assignments are authoritative for the 11 orphaned tools: hivemind_sdk_supervisor -> all hm-* agents (l0, l1, l2); hivemind_session_view -> hm-l0-orchestrator, hm-l1-coordinator; hivemind_trajectory -> hm-l0-orchestrator, hm-verifier; hivemind_pressure -> hm-l0-orchestrator; hivemind_doc -> hm-doc-writer, hm-verifier, hm-phase-researcher; hivemind_command_engine -> hm-l0-orchestrator, hm-l1-coordinator; hivemind_agent_work_create -> hm-l0-orchestrator, hm-planner; hivemind_agent_work_export -> hm-verifier, hm-shipper; repomix_* (repomix_pack_remote, repomix_grep_repomix_output, repomix_read_repomix_output) -> hm-codebase-mapper, hm-phase-researcher. (5) For agents not in the orphaned tool mapping, assign tools based on their role: orchestrators/coordinators get Govern + Delegate + Session + Config + read/write; l2 specialists get Session + Read + Write + their domain tools; verifier/shipper get Govern + Session + Read. (6) Format: `tools: { tool-name: true, another-tool: true }` — list only true entries (omit false entries). After all 31 source files are updated, copy the complete updated .md files to the matching paths in .opencode/agents/ (direct copy, do not run sync-assets.js).
-  </action>
-  <verify>
-    <automated>bash -c 'echo "Source agents with tools:"; grep -c "^tools:" .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md 2>/dev/null | grep -v ":0$" | wc -l | tr -d " "; echo "Deployed agents with tools:"; grep -c "^tools:" .opencode/agents/hm-*/*.md 2>/dev/null | grep -v ":0$" | wc -l | tr -d " "'</automated>
-  </verify>
-  <done>
-    31 agents in .hivefiver-meta-builder/ have non-empty tools: declarations. 31 agents in .opencode/agents/ have matching tools: declarations. All declared tool names exist in TOOL_CAPABILITY_MAP. 11 orphaned tools are assigned to >=1 agent.
-  </done>
-</task>
-
-<task type="auto">
-  <name>Task 3: Verification — cross-check all declared tools against TOOL_CAPABILITY_MAP + confirm zero orphans</name>
-  <files>
-    .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md
-    .opencode/agents/hm-*/*.md
     src/features/capability-gate/index.ts
+    tests/features/capability-gate/capability-map.test.ts
   </files>
   <read_first>
-    @src/features/capability-gate/index.ts — TOOL_CAPABILITY_MAP keys (ground truth)
-    @.planning/phases/P44-tool-intelligence-capability-layer/P44-SPEC.md lines 232-246 — Orphaned Tool Assignment Plan (rationale reference)
+    @src/features/capability-gate/index.ts -- current TOOL_CAPABILITY_MAP, READ_ONLY_TOOLS, WRITE_CAPABLE_TOOLS, resolveToolsForAgent
+    @tests/features/capability-gate/capability-map.test.ts -- current expectations for built-ins and tool count
   </read_first>
   <action>
-    Run a verification script that: (1) extracts all tool names from every tools: field in .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md, (2) cross-references each name against TOOL_CAPABILITY_MAP keys in src/features/capability-gate/index.ts, (3) fails if any declared tool name is absent from the map (AC-02b violation), (4) confirms all 31 tools (24 harness + 7 built-in) appear in >=1 agent's tools: list, (5) confirms the 11 orphaned tools (hivemind_sdk_supervisor, hivemind_session_view, hivemind_trajectory, hivemind_pressure, hivemind_doc, hivemind_command_engine, hivemind_agent_work_create, hivemind_agent_work_export, repomix_pack_remote, repomix_grep_repomix_output, repomix_read_repomix_output) each appear in >=1 agent's tools: field (AC-03a). Also verify grep -c tool references in .opencode/agents/hm-*/*.md matches .hivefiver-meta-builder/ count, confirming sync. Report any mismatches. No file modifications in this task.
+    Add `task` to `TOOL_CAPABILITY_MAP` with category `ToolCategory.Delegate`, source `built-in`, and a description that identifies it as OpenCode's native subagent dispatch tool. Do not add `task` to `WRITE_CAPABLE_TOOLS`; SDK child sessions remain controlled separately in P44-03. Update tests to expect native task as first-class capability-map coverage.
   </action>
   <verify>
-    <automated>bash -c 'node -e "
-      const fs = require("fs");
-      const mapSrc = fs.readFileSync("src/features/capability-gate/index.ts","utf8");
-      const mapKeys = [...mapSrc.matchAll(/\"([^\"]+)\":\s*\{/g)].map(m=>m[1]);
-      const agents = fs.readdirSync(".hivefiver-meta-builder/agents-lab/active/refactoring/").filter(d=>d.startsWith("hm-"));
-      let declared = new Set();
-      let missing = [];
-      for (const agent of agents) {
-        const content = fs.readFileSync(`.hivefiver-meta-builder/agents-lab/active/refactoring/${agent}/${agent}.md`,"utf8");
-        const match = content.match(/^tools:\s*\{(.+)\}/m);
-        if (match) {
-          const tools = match[1].split(",").map(t=>t.split(":")[0].trim().replace(/['\"]/g,""));
-          for (const t of tools) {
-            if (!mapKeys.includes(t)) missing.push(t);
-            declared.add(t);
-          }
-        }
-      }
-      console.log("Declared unique tools:", declared.size);
-      console.log("Missing from map:", missing.length, missing.slice(0,5));
-      process.exit(missing.length > 0 ? 1 : 0);
-    "</automated>
+    <automated>npx vitest run tests/features/capability-gate/capability-map.test.ts --reporter=verbose</automated>
   </verify>
   <done>
-    Verification script exits 0.     Declared unique tools >= 31 (24 harness + 7 built-in). Missing from map = 0. All 11 orphaned tools confirmed assigned. .opencode/agents/ count matches .hivefiver-meta-builder/ count.
+    Native task is present in TOOL_CAPABILITY_MAP and classified as Delegate. Tests prove the total capability-map tool count includes task.
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 2: Create Hivemind agent capability seed profiles</name>
+  <files>
+    src/features/capability-gate/agent-capability-profiles.ts
+    src/features/capability-gate/index.ts
+    src/features/capability-gate/types.ts
+  </files>
+  <read_first>
+    @src/features/capability-gate/index.ts -- existing role heuristic in resolveToolsForAgent
+    @src/features/capability-gate/types.ts -- ToolCategory and exported types
+  </read_first>
+  <action>
+    Create a small programmatic seed profile map. Suggested shape: `{ id, match, categories, tools, rationale }`. Include profiles for front-facing orchestrators/coordinators, L2 implementation specialists, verifier/auditor/reviewer agents, research/doc agents, hf meta-builder agents, and unknown fallback. The profile data must not reference OpenCode `permission:` or deprecated `tools:`. It may use role/name matchers only as bootstrap classification until stronger metadata exists.
+  </action>
+  <verify>
+    <automated>npm run typecheck</automated>
+  </verify>
+  <done>
+    Capability seed profiles compile and are imported by CapabilityGate without circular dependencies.
+  </done>
+</task>
+
+<task type="auto">
+  <name>Task 3: Resolve tools from seed profiles and prove zero orphaned tools</name>
+  <files>
+    src/features/capability-gate/index.ts
+    tests/features/capability-gate/capability-map.test.ts
+  </files>
+  <read_first>
+    @src/features/capability-gate/agent-capability-profiles.ts -- profile structure and mapping
+    @src/features/capability-gate/index.ts -- CapabilityGate implementation
+  </read_first>
+  <action>
+    Replace the hardcoded role branching inside `resolveToolsForAgent()` with profile-based resolution. Add tests that iterate all seed profile tools and fail if any tool is missing from `TOOL_CAPABILITY_MAP`. Add tests that every capability-map tool is covered by at least one seed profile. Keep unknown agents read-only.
+  </action>
+  <verify>
+    <automated>npx vitest run tests/features/capability-gate/capability-map.test.ts --reporter=verbose</automated>
+    <automated>npm run typecheck</automated>
+  </verify>
+  <done>
+    Zero orphaned capability-map tools remain, native task included. Unknown agents still resolve to read-only baseline.
   </done>
 </task>
 </tasks>
 
 <threat_model>
-## Trust Boundaries
-| Boundary | Description |
-|----------|-------------|
-| .hivefiver-meta-builder/ -> .opencode/agents/ | Sync boundary: source-of-truth must propagate to deployment copy |
-| agent frontmatter tools: -> CapabilityGate | Untrusted agent-declared tools filtered through TOOL_CAPABILITY_MAP before use |
-
-## STRIDE Threat Register
 | Threat ID | Category | Component | Disposition | Mitigation Plan |
 |-----------|----------|-----------|-------------|-----------------|
-| T-P44-04 | Tampering | Agent frontmatter tools: field contains invalid tool names | mitigate | CapabilityGate resolveToolsForAgent filters through TOOL_CAPABILITY_MAP.has(name) -- unknown names silently dropped (AC-02b enforced by verification script) |
-| T-P44-05 | Elevation of Privilege | Agent declares tool it should not have | accept | CapabilityGate fallback returns READ_ONLY_TOOLS for unknown agents; only explicit role-matched agents get broader sets |
-| T-P44-06 | Denial of Service | Sync drift between .hivefiver-meta-builder/ and .opencode/agents/ | mitigate | Plan uses direct copy (not sync-assets.js) to ensure atomic control; verification script checks both directories match |
-| T-P44-SC | Tampering | npm/pip/cargo installs | mitigate | slopcheck + blocking human checkpoint for [ASSUMED]/[SUS] |
+| T-P44-02-01 | Elevation of Privilege | Static seed profiles over-grant tools | mitigate | Seed profiles are baseline only; P44-04 ToolIntelligenceEngine performs JIT runtime decisions |
+| T-P44-02-02 | Tampering | Profile references unknown tool | mitigate | Tests fail when profile tool is absent from TOOL_CAPABILITY_MAP |
+| T-P44-02-03 | Denial of Service | Native task treated like unrestricted recursive delegation | mitigate | P44-02 only classifies native task; P44-04 blocks recursive task unless JIT grant exists |
 </threat_model>
 
 <verification>
-- grep -c '^tools:' .hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md | grep -v ':0$' | wc -l == 31
-- grep -c '^tools:' .opencode/agents/hm-*/*.md | grep -v ':0$' | wc -l == 31
-- Verification script exits 0 (zero tool names missing from TOOL_CAPABILITY_MAP)
-- npm run typecheck -- clean
-- All 11 orphaned tool names appear in >=1 agent tools: field
+- `npx vitest run tests/features/capability-gate/capability-map.test.ts --reporter=verbose`
+- `npm run typecheck`
+- Grep gate: `grep -R "^tools:" .planning/phases/P44-tool-intelligence-capability-layer/P44-02-PLAN.md` returns no dependency on deprecated tools frontmatter
+- Grep gate: no new `permission: deny` is introduced by this plan
 </verification>
 
 <success_criteria>
-REQ-P44-02 satisfied: 31/31 hm-* agents have non-empty tools: frontmatter field in both .hivefiver-meta-builder/ and .opencode/agents/. REQ-P44-03 satisfied: 11 orphaned tools assigned per SPEC Appendix, zero orphaned tools remain (AC-03a), assignment rationale documented by SPEC Appendix reference. AC-02a, AC-02b, AC-02c, AC-03a, AC-03b, AC-03c all verified.
+REQ-P44-02 and REQ-P44-03 pass when CapabilityGate has native `task`, Hivemind seed profiles cover every capability-map tool, no profile tool is invalid, unknown agents remain read-only, and no OpenCode-native permission plane is treated as the source of Hivemind tool intelligence.
 </success_criteria>
 
 <output>
-Create .planning/phases/P44-tool-intelligence-capability-layer/P44-02-SUMMARY.md when done
+Create `.planning/phases/P44-tool-intelligence-capability-layer/P44-02-SUMMARY.md` when done.
 </output>
