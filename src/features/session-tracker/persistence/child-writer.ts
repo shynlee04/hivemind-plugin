@@ -225,6 +225,11 @@ export class ChildWriter {
       next.catch((err) => {
         // Error already propagated via throw at line 221+ and enters retry queue.
         // This catch prevents unhandled rejection while still logging for observability.
+        // P41-G: Suppress console.warn for ENOENT (child file missing) — already handled
+        // by per-method try-catch; this catch only fires when an unexpected error occurs.
+        if (err && typeof err === "object" && "code" in err && (err as Record<string, unknown>).code === "ENOENT") {
+          return
+        }
         console.warn(
           `[Harness] ChildWriter queue: write failed for "${queueKey}" (enqueued to retry queue):`,
           err instanceof Error ? err.message : String(err),
@@ -440,7 +445,7 @@ export class ChildWriter {
    * @param status - The new status value (e.g. "completed", "error").
    * @returns Promise that resolves when the status is updated.
    *
-   * @throws If the child file does not exist.
+   * Silently no-ops when the child file does not exist (ENOENT is caught).
    */
   async updateChildStatus(
     parentSessionID: string,
@@ -451,7 +456,13 @@ export class ChildWriter {
     return this.enqueueWrite(
       `${writeParent}/${childSessionID}`,
       async () => {
-        const record = await this.readChildFile(writeParent, childSessionID)
+        let record: ChildSessionRecord
+        try {
+          record = await this.readChildFile(writeParent, childSessionID)
+        } catch {
+          // Child file doesn't exist — nothing to update
+          return
+        }
         // Status precedence: terminal states ("completed", "error") must NOT
         // be overwritten by non-terminal states ("idle", "active"). This
         // prevents the race where session.idle fires after
@@ -477,7 +488,7 @@ export class ChildWriter {
    * @param turn - The turn record to append.
    * @returns Promise that resolves when the turn is appended.
    *
-   * @throws If the child file does not exist.
+   * Silently no-ops when the child file does not exist (ENOENT is caught).
    */
   async appendChildTurn(
     parentSessionID: string,
@@ -488,7 +499,13 @@ export class ChildWriter {
     return this.enqueueWrite(
       `${writeParent}/${childSessionID}`,
       async () => {
-        const record = await this.readChildFile(writeParent, childSessionID)
+        let record: ChildSessionRecord
+        try {
+          record = await this.readChildFile(writeParent, childSessionID)
+        } catch {
+          // Child file doesn't exist — nothing to append
+          return
+        }
         // Auto-assign one-based turn number from current turns length
         turn.turn = record.turns.length + 1
         record.turns.push(turn)
@@ -526,7 +543,7 @@ export class ChildWriter {
    * @param entry - The journey entry to append.
    * @returns Promise that resolves when the entry is appended.
    *
-   * @throws If the child file does not exist.
+   * Silently no-ops when the child file does not exist (ENOENT is caught).
    */
   async appendJourneyEntry(
     parentSessionID: string,
@@ -537,7 +554,13 @@ export class ChildWriter {
     return this.enqueueWrite(
       `${writeParent}/${childSessionID}`,
       async () => {
-        const record = await this.readChildFile(writeParent, childSessionID)
+        let record: ChildSessionRecord
+        try {
+          record = await this.readChildFile(writeParent, childSessionID)
+        } catch {
+          // Child file doesn't exist — nothing to append
+          return
+        }
         if (!record.journey) {
           record.journey = []
         }
