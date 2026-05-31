@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-31T11:52:00.000Z"
+last_updated: "2026-05-31T19:30:00.000Z"
 progress:
   total_phases: 48
   completed_phases: 17
@@ -17,11 +17,14 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-31
-**Last advance:** P41-D-03 — Delete delegations.json + session-continuity.json + update tests. Commit `c0eeb343`.
+**Last advance:** P41-G — Fix ChildWriter ENOENT/TUI leak. Commit `b912d716`.
 **Completed:**
+
 - P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write
 - P41-D-02 — No-op persistStore + 8 dead exports removed
 - P41-D-03 — One-shot migration + test updates for no-op behavior
+- P41-G — Fix ChildWriter ENOENT/TUI leak: 3 methods guard readChildFile with try-catch, enqueueWrite suppresses console.warn for ENOENT
+
 **Current focus:** Phase 42 — (next phase after P41 cluster redesign)
 **Current focus:** Phase 39 — Integration Completion & Hardening: fix 18 timeout test failures, execute C6/C7/C8, GSD re-validation, compliance audit
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
@@ -564,3 +567,28 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 - **249 test files:** All pass
 - **Governance evaluator:** Redirected to standalone governance-state.json
 - **Dual-write:** All 3 writer paths (persistDelegations, recordSessionContinuity, patchSessionContinuity) now write to session-tracker as fire-and-forget
+
+---
+
+## P41-G: Fix ChildWriter ENOENT/TUI leak — ✅ COMPLETE
+
+**Completed:** 2026-05-31  
+**Summary:** `.planning/phases/P41-state-cluster-redesign/P41-G-SUMMARY.md`  
+**Commits:** 2 atomic commits (`b912d716`, `5e62de14`)
+
+### REQ Coverage
+
+| REQ | Description | Status | Evidence |
+|-----|-------------|--------|----------|
+| REQ-P41G-01 | `updateChildStatus` wraps `readChildFile` in try-catch, ENOENT → silent return | ✅ | `child-writer.ts:459-465` |
+| REQ-P41G-02 | `appendChildTurn` wraps `readChildFile` in try-catch, ENOENT → silent return | ✅ | `child-writer.ts:502-508` |
+| REQ-P41G-03 | `appendJourneyEntry` wraps `readChildFile` in try-catch, ENOENT → silent return | ✅ | `child-writer.ts:557-563` |
+| REQ-P41G-04 | `enqueueWrite` catch handler suppresses `console.warn` for ENOENT errors | ✅ | `child-writer.ts:230-232` |
+| REQ-P41G-05 | 3000+ tests pass, typecheck clean | ✅ | 3003/3009 pass (4 pre-existing); typecheck clean |
+
+### Verification
+
+- **Type-check:** Clean (zero errors)
+- **Full test suite:** 3003/3009 pass, 2 skipped (4 pre-existing failures in `session-journal-export.test.ts` and `delegation-status.test.ts`)
+- **child-writer.test.ts:** 28/28 all pass
+- **Fix pattern:** Follows existing `backfillChildMetadata()` / `backfillChildTurns()` ENOENT guard pattern
