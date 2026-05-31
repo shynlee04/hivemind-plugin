@@ -1,139 +1,255 @@
-# Phase P44: Tool Intelligence Capability Layer — Specification
+# Phase P44: Tool Intelligence & Capability Layer — Specification
 
-**Created:** 2026-05-31
-**Ambiguity score:** 0.14
-**Requirements:** 7 locked
-
-## Goal
-
-The harness resolves agent tool capabilities from static frontmatter declarations AND runtime context (delegation depth, session phase, governance rules), making all 25 harness tools visible at the delegation boundary and enforcing capability-grant/revoke through the existing hooks middleware — so that every delegated child session receives exactly the tools its agent is authorized to use, no more and no less.
-
-## Background
-
-### Current state (verified by audit)
-
-The harness registers 25 tools via 4 domain functions in `plugin.ts:128-198`. All 25 are available to the root session through OpenCode's `tool` object. However:
-
-1. **Spawner blind spot:** `spawn-request-builder.ts:29` defines `WRITE_CAPABLE_TOOLS` as only 7 OpenCode built-in tools (`read`, `edit`, `write`, `bash`, `glob`, `grep`, `execute-slash-command`). The 24 harness-specific tools (`delegate-task`, `hivemind-doc`, `configure-primitive`, etc.) are invisible at the delegation boundary. Source: audit Section 4.2.
-
-2. **Agent frontmatter gap:** 30 of 31 `hm-*` agents have ZERO `permission:` declarations in their frontmatter. Only `hm-l0-orchestrator` has explicit permissions. All 11 `hf-*` agents have proper permissions. Source: audit Section 5.
-
-3. **No runtime grant/revoke:** The `tool-guard-hooks.ts` (`tool.execute.before`) enforces circuit breakers, tool budgets, and governance blocks — but cannot conditionally GRANT tools based on session state. It can only block or allow what the spawner already injected. Source: `tool-guard-hooks.ts:73-183`.
-
-4. **Orphaned tools:** 11 of 25 registered tools are never referenced in any agent `.md` file (audit Section 5.3). These include `prompt-skim`, `prompt-analyze`, `bootstrap-init`, `bootstrap-recover`, `validate-restart`, `configure-primitive`, `session-journal-export`, `session-context`, `session-delegation-query`, `hivemind-agent-work-create`, `hivemind-agent-work-export`.
-
-5. **Compaction fragility:** Agent context is subject to LLM compaction. If tool intelligence lives only in the agent's loaded prompt context, compaction prunes it, leaving delegated sessions with degraded tool access. Source: research artifact Section 5 (Pitfall 3).
-
-### Why this matters now
-
-Phase 39.8 introduced `execute-slash-command` in child sessions. As delegation depth increases (L0→L1→L2→L3), the gap between "tools the agent knows about" and "tools the spawner injects" widens. Without a capability layer, every new tool added to the harness must be manually wired into `WRITE_CAPABLE_TOOLS` and every agent that needs it must have its frontmatter updated — a scaling failure.
-
-## Requirements
-
-1. **Capability type system**: A shared type system defines capability sets, policy rules, and mutation events that all capability-aware modules consume.
-   - Current: No capability types exist — `spawn-request-builder.ts` uses ad-hoc string arrays (`WRITE_CAPABLE_TOOLS`, review/read-only tool lists)
-   - Target: `src/shared/capability-types.ts` exports `CapabilitySet`, `CapabilityPolicyRule`, `CapabilityMutationEvent`, and `ResolvedCapabilityProfile` types; consumed by `spawn-request-builder.ts`, `tool-guard-hooks.ts`, and agent-primitive-policy
-   - Acceptance: Typecheck passes; `CapabilitySet` type is importable from `src/shared/capability-types.ts`; `ResolvedCapabilityProfile` includes `tools: readonly string[]`, `mode: DelegationPermissionProfile["mode"]`, `source: "frontmatter" | "runtime" | "default"`
-
-2. **Spawner capability resolution**: The spawner resolves the full set of tools an agent may access by merging frontmatter declarations with harness tool registry, instead of using a hardcoded 7-tool list.
-   - Current: `spawn-request-builder.ts:29` has `WRITE_CAPABLE_TOOLS` = 7 built-in strings; `resolveDelegationPermissionProfile()` never consults the harness tool registry; 24 harness tools are invisible
-   - Target: `resolveDelegationPermissionProfile()` accepts a `harnessTools: readonly string[]` parameter and merges frontmatter-declared tools with available harness tools; `WRITE_CAPABLE_TOOLS` becomes `DEFAULT_WRITE_TOOLS` (fallback only, not the ceiling)
-   - Acceptance: Test case: agent with `permission: { "delegate-task": "allow" }` receives `delegate-task` in its resolved tool list (currently impossible); all 25 registered tool names are resolvable when included in agent frontmatter
-
-3. **Capability-gate hook middleware**: A new hook module evaluates capability policies at `tool.execute.before` time, granting or revoking tool access based on runtime session state.
-   - Current: `tool-guard-hooks.ts` enforces budget/circuit-breaker/governance but has no concept of capability grant/revoke; it can only block what the spawner already denied
-   - Target: `src/hooks/guards/capability-gate.ts` exports `createCapabilityGateHooks()` that produces `tool.execute.before` middleware; evaluates `CapabilityPolicyRule[]` against session context (delegation depth, lifecycle phase, parent trajectory); can throw `[Harness] Tool not granted for this session` to revoke mid-session
-   - Acceptance: Test case: a policy rule `{ tool: "delegate-task", maxDepth: 1, grant: false }` causes a depth-2 delegation to be blocked when calling `delegate-task`; test case: no policy rules → all spawner-injected tools pass through (zero overhead for unpolicy'd agents)
-
-4. **Agent frontmatter capability baseline**: All 31 `hm-*` agents declare their required tools in frontmatter `permission:` blocks, establishing the static capability baseline.
-   - Current: 30/31 `hm-*` agents have no `permission:` declarations; spawner falls back to read-only for all of them
-   - Target: Each `hm-*` agent `.md` has a `permission:` block listing at minimum the tools it uses; agents that need write access (e.g., `hm-l2-executor`, `hm-l2-code-fixer`) declare write-capable tools; read-only agents (e.g., `hm-l2-auditor`, `hm-l2-verifier`) declare read tools only
-   - Acceptance: `grep -c "^permission:" .opencode/agents/hm-*.md` returns ≥ 31 (one per agent); no `hm-*` agent falls back to the read-only default when it needs write tools
-
-5. **Capability mutation events**: Every capability grant or revocation is recorded as a `CapabilityMutationEvent` in the session tracker, enabling audit and recovery.
-   - Current: Session tracker records tool call counts but not capability changes; no event type for "tool X was granted" or "tool Y was revoked"
-   - Target: `tool.execute.before` capability gate emits `CapabilityMutationEvent { type: "grant" | "revoke", tool, sessionID, reason, timestamp }` to the session tracker; events are queryable via `session-tracker` tool
-   - Acceptance: After a capability-gate revocation, querying session tracker for the session returns a mutation event with `type: "revoke"`, the tool name, and a reason string
-
-6. **Compaction-safe capability persistence**: The resolved capability set for a session is persisted in the continuity store so that agent context compaction does not lose tool intelligence.
-   - Current: Continuity store has `toolProfile` field but it is populated from delegation metadata only at creation time; it is not refreshed when capabilities change mid-session
-   - Target: `resolvedCapabilities` field added to continuity `toolProfile`; updated on every capability mutation event; on session recovery, `resolvedCapabilities` is re-read from continuity store rather than re-resolved from scratch (which would lose runtime grants/revokes)
-   - Acceptance: Test: session created → capability granted → context compaction simulated (continuity re-read) → granted tool is still in `resolvedCapabilities` without re-resolution
-
-7. **Harness tool registry**: A canonical list of all harness-registered tools is available at runtime, replacing the need to hardcode tool names in the spawner.
-   - Current: No registry exists — `plugin.ts` registers 25 tools via spread but does not export their names; spawner cannot discover what tools exist
-   - Target: `plugin.ts` (or a dedicated `src/shared/harness-tools.ts`) exports `HARNESS_TOOL_NAMES: readonly string[]` containing all 25 registered tool names; spawner and capability gate consume this list
-   - Acceptance: `HARNESS_TOOL_NAMES.length === 25`; every tool name in `HARNESS_TOOL_NAMES` matches a tool registered in `plugin.ts`; adding a new tool to `plugin.ts` registration requires updating `HARNESS_TOOL_NAMES` (type-level enforcement or test-level enforcement)
-
-## Boundaries
-
-**In scope:**
-- Capability type system (`capability-types.ts`) — shared types for all capability modules
-- Spawner capability resolution extension (`spawn-request-builder.ts`) — merge frontmatter + harness tools
-- Capability-gate hook middleware (`capability-gate.ts`) — runtime grant/revoke evaluation
-- Agent frontmatter updates — add `permission:` blocks to all 31 `hm-*` agents
-- Capability mutation events — extend session tracker event schema
-- Compaction-safe persistence — extend continuity `toolProfile` with `resolvedCapabilities`
-- Harness tool registry — export canonical list from `plugin.ts` or new module
-- Unit tests for all new modules
-- Integration test: full delegation chain with capability enforcement
-
-**Out of scope:**
-- **Policy engine / Cedar / OPA integration** — future enhancement; this phase uses simple rule evaluation in TypeScript. Reason: YAGNI; the capability-gate hook is the extension point for future engines.
-- **Chain validation (R6 from research)** — validating multi-step tool chains before execution. Reason: requires tool-call DAG modeling; deferred to a future phase.
-- **Hot-reload of policy rules (R8 from research)** — dynamic policy update without harness restart. Reason: config recompile already provides this indirectly; not needed for MVP.
-- **Governance rule migration** — existing `hivemindConfig.governance.rules` in `tool-guard-hooks.ts` stays as-is; capability gate is additive, not a replacement. Reason: backward compatibility; governance rules and capability policies serve different purposes.
-- **`hf-*` agent frontmatter changes** — all 11 `hf-*` agents already have proper permissions. Reason: no gap to close.
-- **Sidecar/dashboard UI** — capability visualization in the Q2 sidecar. Reason: sidecar is a separate deliverable (Q2).
-
-## Constraints
-
-- **New code footprint:** ≤ 400 LOC across all new files (target ~300). The research artifact estimates ~200-300 LOC for core logic. Agent frontmatter updates are non-code (YAML headers).
-- **No external dependencies:** Capability evaluation is pure TypeScript — no Cedar, OPA, or external policy engine. Reason: the harness npm package must remain zero-runtime-dependency.
-- **Backward compatibility:** Existing tests in `tests/lib/spawner/spawn-request-builder.test.ts` must continue to pass without modification to their assertions. The new `harnessTools` parameter in `resolveDelegationPermissionProfile()` is optional with a default that preserves current behavior.
-- **Hook ordering:** The capability-gate hook runs AFTER the existing tool-guard hooks (budget/circuit-breaker/governance) — it is additive, not a replacement. Both hooks are registered in `plugin.ts` and execute in registration order.
-- **Agent frontmatter convention:** `permission:` blocks use the existing OpenCode convention: `{ toolName: "allow" | "ask" | false }`. No new permission syntax is introduced.
-- **CQRS compliance:** Capability mutation events are write-side (hooks produce them); capability queries are read-side (spawner/continuity reads them). No hook directly reads capability state from `.hivemind/` — it reads from the in-memory `TaskStateManager`.
-
-## Acceptance Criteria
-
-- [ ] `src/shared/capability-types.ts` exists and exports `CapabilitySet`, `CapabilityPolicyRule`, `CapabilityMutationEvent`, `ResolvedCapabilityProfile` types
-- [ ] `HARNESS_TOOL_NAMES` exported with exactly 25 tool names matching `plugin.ts` registration
-- [ ] `resolveDelegationPermissionProfile()` accepts optional `harnessTools` parameter; when agent frontmatter includes `"delegate-task": "allow"`, the resolved profile contains `"delegate-task"`
-- [ ] `capability-gate.ts` hook blocks a tool call when a policy rule denies it for the current session depth
-- [ ] `capability-gate.ts` hook passes through all tools when no policy rules are configured (zero overhead)
-- [ ] All 31 `hm-*` agents have `permission:` blocks in their frontmatter (grep verification)
-- [ ] Capability mutation events appear in session tracker output after grant/revoke
-- [ ] `resolvedCapabilities` persists in continuity store and survives a simulated re-read
-- [ ] All existing tests in `tests/lib/spawner/spawn-request-builder.test.ts` pass without modification
-- [ ] `npm run typecheck` passes
-- [ ] `npm test` passes (all 2,900+ tests green)
-- [ ] New module LOC ≤ 400 (excluding agent frontmatter and tests)
-
-## Ambiguity Report
-
-| Dimension          | Score | Min  | Status | Notes                                              |
-|--------------------|-------|------|--------|----------------------------------------------------|
-| Goal Clarity       | 0.90  | 0.75 | ✓      | Specific: 25 tools visible, frontmatter-enforced   |
-| Boundary Clarity   | 0.92  | 0.70 | ✓      | 6 explicit out-of-scope items with reasons          |
-| Constraint Clarity | 0.82  | 0.65 | ✓      | LOC budget, CQRS compliance, backward compat        |
-| Acceptance Criteria| 0.88  | 0.70 | ✓      | 12 pass/fail checkboxes, all falsifiable            |
-| **Ambiguity**      | 0.14  | ≤0.20| ✓      |                                                    |
-
-## Interview Log
-
-| Round | Perspective     | Question summary                                    | Decision locked                                                       |
-|-------|-----------------|-----------------------------------------------------|-----------------------------------------------------------------------|
-| 1     | Researcher      | What tool intelligence exists today?                | 25 registered, 7 visible to spawner, 30/31 hm-* agents have no perms |
-| 2     | Simplifier      | Minimum viable capability layer?                    | Types + spawner fix + gate hook + frontmatter = MVP (R1,R2,R3,R5)    |
-| 3     | Boundary Keeper | What's NOT this phase?                              | Policy engine, chain validation, hot-reload, sidecar UI excluded      |
-| 4     | Failure Analyst | What breaks on compaction?                          | Tool intelligence lost → persist in continuity store (R9 partial)     |
-| auto  | Auto-selected   | Architecture choice?                                | Event-Sourced Capability Ledger (research recommendation, confidence HIGH) |
-| auto  | Auto-selected   | Policy rule format?                                 | TypeScript rules in `CapabilityPolicyRule` type — no external engine  |
-| auto  | Auto-selected   | Which agents get frontmatter updates?               | 31 hm-* only (hf-* already complete)                                 |
+**Phase:** P44
+**Status:** DRAFT
+**Author:** hm-phase-researcher (auto-mode, ambiguity 0.14)
+**Date:** 2026-05-31
+**Confidence:** HIGH
+**Research:** `.planning/research/tool-intelligence-patterns-research-2026-05-31.md`
+**Audit:** `.hivemind/audits/tool-lifecycle-wiring-audit-2026-05-31.md`
 
 ---
 
-*Phase: P44-tool-intelligence-capability-layer*
-*Spec created: 2026-05-31*
-*Next step: /gsd-discuss-phase P44 — implementation decisions (file layout, hook registration order, policy rule schema, agent frontmatter content)*
+## Problem Statement
+
+The Hivemind harness registers 25 tools via `src/plugin.ts`, but only 7 are recognized at the delegation boundary (`WRITE_CAPABLE_TOOLS` in `spawn-request-builder.ts`). 30 of 31 `hm-*` agents declare zero tool permissions in frontmatter. 11 tools are orphaned — never referenced by any agent or enforcement point. When an agent's profile is compacted (context pruning), tool intelligence evaporates entirely, causing silent permission escalation or denial at runtime.
+
+The tool-guard-hooks (`src/hooks/guards/tool-guard-hooks.ts`) already call `evaluateGovernance` on `tool.execute.before`, but the governance engine has incomplete data — it cannot make informed allow/deny decisions for 18 of 25 registered tools.
+
+**Impact:** Delegation safety is illusory. The spawner cannot enforce the principle of least privilege because it lacks a capability ledger that survives compaction.
+
+---
+
+## Goal
+
+Introduce a **compaction-safe capability gate** that provides the governance engine and spawner with accurate, real-time tool intelligence at every enforcement point — without requiring external policy engines or runtime dependencies beyond existing harness infrastructure.
+
+---
+
+## Scope
+
+### In Scope
+1. **Capability gate module** (`src/features/capability-gate/`) — event-sourced capability ledger
+2. **spawn-request-builder enhancement** — JIT tool injection from capability state
+3. **tool-guard-hooks integration** — capability-aware governance evaluation
+4. **session-tracker extension** — capability mutation event type
+5. **Agent frontmatter standardization** — tool declarations for 30 hm-* agents
+6. **Orphaned tool assignment** — 11 unassigned tools mapped to agent categories
+
+### Out of Scope
+- External policy engine (OPA, Casbin) integration
+- Capability revocation UI or dashboard
+- Cross-session capability inheritance between independent delegation trees
+- Runtime capability negotiation protocol (future: agent requests tool, governor approves)
+- `hf-*` agent frontmatter changes (already have proper permissions per audit)
+- GSD agent/skill/command changes (developer tooling, not shipped)
+
+---
+
+## Architectural Constraints
+
+| Constraint | Source | Rationale |
+|------------|--------|-----------|
+| Must fit CQRS model | `ARCHITECTURE.md` 9-surface | Write-side: tool registration hooks; Read-side: capability queries |
+| Must not exceed 300 LOC new | Project target ~5000 LOC | Capability gate is a leaf feature, not a framework |
+| Must survive compaction | Research finding | Agent profile compaction strips frontmatter; capability must persist outside it |
+| Must use existing hooks | `tool-guard-hooks.ts` | No new hook registration — extend existing `tool.execute.before` path |
+| Must not add npm dependencies | Package philosophy | Pure TypeScript, zero external deps |
+| Must not break existing tests | 2,963 tests passing | Regression gate is mandatory |
+| `.opencode/` for primitives only | AGENTS.md Q6 | Capability state lives in `.hivemind/`, never `.opencode/` |
+
+---
+
+## Requirements
+
+### REQ-P44-01: Capability Gate Module
+
+**What:** A new feature module that maintains an in-memory capability ledger, seeded from agent frontmatter at bootstrap and updated via hook events at runtime.
+
+**Current:** No capability ledger exists. `spawn-request-builder.ts` hardcodes `WRITE_CAPABLE_TOOLS` (7 tools) and `resolveDelegationPermissionProfile` resolves against only that set.
+
+**Target:** `src/features/capability-gate/index.ts` (~120 LOC) exports `CapabilityGate` class with:
+- `resolveToolsForAgent(agentName: string): string[]` — returns effective tool set
+- `grantCapability(sessionId: string, agentName: string, toolName: string): void`
+- `revokeCapability(sessionId: string, agentName: string, toolName: string): void`
+- `getCapabilitySnapshot(): CapabilitySnapshot` — for session-tracker persistence
+
+**Acceptance Criteria:**
+- AC-01a: `CapabilityGate` resolves all 25 registered tools (not just 7 built-ins)
+- AC-01b: Resolution falls back to category-based defaults when agent has no frontmatter declarations
+- AC-01c: In-memory state is re-derivable from frontmatter + event log (survives process restart via session-tracker)
+- AC-01d: Module has zero external dependencies
+- AC-01e: Module is ≤ 150 LOC
+
+---
+
+### REQ-P44-02: Static Baseline — Agent Frontmatter Declarations
+
+**What:** All 31 `hm-*` agents declare their required tool set in frontmatter `tools:` field. Today only `hm-l0-orchestrator` declares tools.
+
+**Current:** 30/31 `hm-*` agents have empty or missing `tools:` declarations. Audit confirms this in Section 3 (Agent Permission Coverage).
+
+**Target:** Every `hm-*` agent `.md` file has an explicit `tools:` list matching the tools its implementation actually uses (verified against tool-guard-hooks call patterns).
+
+**Acceptance Criteria:**
+- AC-02a: All 31 `hm-*` agents have non-empty `tools:` frontmatter field
+- AC-02b: No agent declares a tool not registered in `src/plugin.ts`
+- AC-02c: Every tool referenced in agent category routing appears in at least one agent's `tools:` list
+- AC-02d: Changes are made in `.hivefiver-meta-builder/agents-lab/active/refactoring/` (source of truth), then reflected to `.opencode/agents/`
+
+---
+
+### REQ-P44-03: Orphaned Tool Assignment
+
+**What:** 11 registered tools currently unassigned to any agent category get mapped.
+
+**Current:** Audit Section 2 identifies 11 orphaned tools: `hivemind_sdk_supervisor`, `hivemind_session_view`, `hivemind_trajectory`, `hivemind_pressure`, `hivemind_doc`, `hivemind_command_engine`, `hivemind_agent_work_create`, `hivemind_agent_work_export`, `repomix_*` (3 tools). These are registered in `plugin.ts` but never appear in any agent frontmatter or category routing.
+
+**Target:** Each orphaned tool is assigned to one or more agent categories with documented rationale.
+
+**Acceptance Criteria:**
+- AC-03a: Zero orphaned tools remain (all 25 registered tools appear in ≥1 agent's tool set)
+- AC-03b: Assignment rationale documented in SPEC appendix
+- AC-03c: No tool is assigned to an agent that cannot meaningfully use it
+
+---
+
+### REQ-P44-04: JIT Tool Injection at Delegation Boundary
+
+**What:** `spawn-request-builder.ts` resolves effective tool set from `CapabilityGate` instead of hardcoded `WRITE_CAPABLE_TOOLS`.
+
+**Current:** `resolveDelegationPermissionProfile` at line ~67 constructs permission profile from `WRITE_CAPABLE_TOOLS` constant (7 items). It never consults capability state.
+
+**Target:** `resolveDelegationPermissionProfile` calls `capabilityGate.resolveToolsForAgent(agentName)` to build the `allowedTools` set. Falls back to category-based defaults if capability gate returns empty. `WRITE_CAPABLE_TOOLS` constant retained as the ultimate fallback.
+
+**Acceptance Criteria:**
+- AC-04a: Delegation to an agent with declared tools produces exactly those tools (no more, no less)
+- AC-04b: Delegation to an agent without declared tools produces category-based defaults
+- AC-04c: `WRITE_CAPABLE_TOOLS` constant is last-resort fallback, not primary source
+- AC-04d: Change is ≤ 80 LOC in `spawn-request-builder.ts`
+- AC-04e: All existing delegation tests pass unmodified
+
+---
+
+### REQ-P44-05: Hook-Based Capability Enforcement
+
+**What:** `tool-guard-hooks.ts` consults `CapabilityGate` before allowing tool execution.
+
+**Current:** `tool.execute.before` hook calls `evaluateGovernance()` which checks session circuit breaker and tool budget, but has no concept of per-agent tool allowlists.
+
+**Target:** The `tool.execute.before` handler queries `CapabilityGate.resolveToolsForAgent(currentAgent)` and adds the result to the governance context passed to `evaluateGovernance()`. If the tool is not in the resolved set, governance evaluation returns DENY.
+
+**Acceptance Criteria:**
+- AC-05a: Tool execution by an agent not authorized for that tool returns structured denial (not exception)
+- AC-05b: Denial message includes agent name, tool name, and reason ("not in capability set")
+- AC-05c: Governance evaluation receives capability context as additional input
+- AC-05d: Existing governance checks (circuit breaker, tool budget) continue to function
+- AC-05e: Hook changes are ≤ 40 LOC
+
+---
+
+### REQ-P44-06: Capability Mutation Event Tracking
+
+**What:** Grant/revoke operations emit events to session-tracker for persistence and audit.
+
+**Current:** `SessionRecord` in `src/features/session-tracker/types.ts` has no capability mutation fields.
+
+**Target:** A new event type `capability_mutation` is added to the session event stream. Fields: `{ agentName, toolName, action: "grant" | "revoke", sessionId, timestamp }`. The `CapabilityGate.grantCapability` and `revokeCapability` methods emit this event.
+
+**Acceptance Criteria:**
+- AC-06a: Every grant/revoke produces a session-tracker event
+- AC-06b: Events are queryable via existing session-tracker APIs
+- AC-06c: On harness restart, capability state is re-seeded from frontmatter + replayed mutation events
+- AC-06d: Event type extension is ≤ 30 LOC across types.ts and relevant hooks
+- AC-06e: Existing session-tracker tests pass unmodified
+
+---
+
+## Requirement Traceability
+
+| Req ID | Research Section | Audit Section | Source Files | LOC Budget |
+|--------|-----------------|---------------|--------------|------------|
+| REQ-P44-01 | §4 Event-Sourced Capability Model | §1 Tool Registry | NEW: `src/features/capability-gate/` | ~120 |
+| REQ-P44-02 | §3 Frontmatter as Static Baseline | §3 Agent Permission Coverage | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md` | ~30 files |
+| REQ-P44-03 | §3 Orphaned Tool Analysis | §2 Tool Coverage Matrix | Same as REQ-02 + routing config | ~0 (config only) |
+| REQ-P44-04 | §5 JIT Injection Pattern | §4 Spawner Enforcement | `src/coordination/delegation/spawn-request-builder.ts` | ~80 |
+| REQ-P44-05 | §5 Hook-Based Enforcement | §5 Hook Coverage | `src/hooks/guards/tool-guard-hooks.ts` | ~40 |
+| REQ-P44-06 | §4 Mutation Event Tracking | §6 Session Tracker | `src/features/session-tracker/types.ts` + hooks | ~30 |
+
+**Total estimated new LOC:** ~300 (within project target)
+
+---
+
+## Dependency Map
+
+```
+REQ-P44-01 (capability gate module)
+├── REQ-P44-04 (spawn-request-builder JIT injection) — depends on 01
+├── REQ-P44-05 (hook enforcement) — depends on 01
+└── REQ-P44-06 (mutation events) — depends on 01
+REQ-P44-02 (agent frontmatter) — independent, parallel
+REQ-P44-03 (orphaned tools) — depends on 02 completion for full coverage
+```
+
+**Execution order:** 01 → {04, 05, 06} in parallel → 02 → 03
+
+---
+
+## Risks
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|------------|
+| Over-tightening causes false denials | MEDIUM | HIGH | Fallback to category defaults; deny logs but doesn't crash |
+| Frontmatter drift after agent edits | HIGH | LOW | Capability gate re-seeds on bootstrap; frontmatter is baseline only |
+| Performance impact of per-tool lookups | LOW | MEDIUM | In-memory Map — O(1) resolution, no I/O |
+| 30 agent files touched simultaneously | MEDIUM | LOW | Atomic commit per agent; test gate after batch |
+
+---
+
+## Validation Gates
+
+### Gate 1: Unit Tests (per requirement)
+- Each AC has a corresponding test case
+- All tests run via `npx vitest run tests/`
+- Target: ≥ 95% line coverage for `capability-gate/`
+
+### Gate 2: Integration Test
+- End-to-end delegation with capability check: spawn agent → verify tool set → attempt unauthorized tool → verify denial
+- Test file: `tests/features/capability-gate.integration.test.ts`
+
+### Gate 3: Regression
+- All 2,963 existing tests pass
+- `npm run typecheck` clean
+- `npm run build` clean
+
+### Gate 4: Audit Re-Run
+- Re-run tool lifecycle wiring audit
+- Verify: 0 orphaned tools, 31/31 agents with tool declarations, 25/25 tools at delegation boundary
+
+---
+
+## Appendix: Orphaned Tool Assignment Plan
+
+| Tool | Proposed Agent Category | Rationale |
+|------|------------------------|-----------|
+| `hivemind_sdk_supervisor` | all hm-* (l0, l1, l2) | SDK health checks are universal |
+| `hivemind_session_view` | hm-l0-orchestrator, hm-l1-coordinator | Session visibility for orchestrators |
+| `hivemind_trajectory` | hm-l0-orchestrator, hm-verifier | Trajectory tracking for orchestration + verification |
+| `hivemind_pressure` | hm-l0-orchestrator | Pressure classification is orchestration concern |
+| `hivemind_doc` | hm-doc-writer, hm-verifier, hm-phase-researcher | Document intelligence for doc-oriented agents |
+| `hivemind_command_engine` | hm-l0-orchestrator, hm-l1-coordinator | Command discovery/routing for coordinators |
+| `hivemind_agent_work_create` | hm-l0-orchestrator, hm-planner | Work contracts for planning agents |
+| `hivemind_agent_work_export` | hm-verifier, hm-shipper | Work export for verification/shipping |
+| `repomix_*` (3 tools) | hm-codebase-mapper, hm-phase-researcher | Codebase analysis agents |
+
+---
+
+## Downstream Consumers
+
+| Consumer | How They Use This SPEC |
+|----------|----------------------|
+| `gsd-plan-phase` | Generates PLAN.md with tasks mapped to REQ-P44-* |
+| `gsd-execute-phase` | Waves derived from dependency map |
+| `gate-l3-spec-compliance` | Bidirectional traceability REQ ↔ code |
+| `gate-l3-evidence-truth` | AC verification at phase gate |
+| `hm-code-reviewer` | Checks code against AC acceptance criteria |
