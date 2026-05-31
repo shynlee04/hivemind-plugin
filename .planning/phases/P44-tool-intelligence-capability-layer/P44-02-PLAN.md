@@ -3,7 +3,7 @@ phase: P44-tool-intelligence-capability-layer
 plan: 02
 type: execute
 wave: 2
-depends_on: ["P44-01"]
+depends_on: []
 files_modified:
   - .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l0-orchestrator/hm-l0-orchestrator.md
   - .hivefiver-meta-builder/agents-lab/active/refactoring/hm-l1-coordinator/hm-l1-coordinator.md

@@ -3,10 +3,10 @@ phase: P44-tool-intelligence-capability-layer
 plan: 03
 type: execute
 wave: 2
-depends_on: ["P44-01", "P44-02"]
+depends_on: ["P44-01"]
 files_modified:
   - src/coordination/spawner/spawn-request-builder.ts
-  - tests/lib/spawn-request-builder.test.ts
+  - tests/lib/spawner/spawn-request-builder.test.ts
 autonomous: true
 requirements:
   - REQ-P44-04
@@ -22,7 +22,7 @@ must_haves:
     - path: src/coordination/spawner/spawn-request-builder.ts
       provides: resolveDelegationPermissionProfile wired to CapabilityGate resolveToolsForAgent
       contains: "resolveToolsForAgent"
-    - path: tests/lib/spawn-request-builder.test.ts
+    - path: tests/lib/spawner/spawn-request-builder.test.ts
       provides: Unit tests for capability-aware permission resolution covering AC-04a through AC-04e
       min_lines: 10
   key_links:
@@ -58,7 +58,7 @@ src/coordination/spawner/spawn-request-builder.ts updated with CapabilityGate in
 @.planning/phases/P44-tool-intelligence-capability-layer/RESEARCH.md
 @src/features/capability-gate/index.ts (created in P44-01)
 @src/coordination/spawner/spawn-request-builder.ts
-@tests/lib/spawn-request-builder.test.ts
+@tests/lib/spawner/spawn-request-builder.test.ts
 </context>
 
 <tasks>
@@ -95,24 +95,24 @@ src/coordination/spawner/spawn-request-builder.ts updated with CapabilityGate in
 <task type="auto">
   <name>Task 2: Add unit tests for capability-aware permission resolution (AC-04a through AC-04e)</name>
   <files>
-    tests/lib/spawn-request-builder.test.ts
+    tests/lib/spawner/spawn-request-builder.test.ts
   </files>
   <read_first>
-    @tests/lib/spawn-request-builder.test.ts -- existing test patterns and describe blocks to determine where to insert new tests
+    @tests/lib/spawner/spawn-request-builder.test.ts -- existing test patterns and describe blocks to determine where to insert new tests
     @src/coordination/spawner/spawner-types.ts -- DelegationSpawnRequest type and permissionProfile shape
     @src/features/capability-gate/index.ts -- TOOL_CAPABILITY_MAP keys to use in test assertions
   </read_first>
   <action>
-    Add 5 new test cases to tests/lib/spawn-request-builder.test.ts:
+    Add 5 new test cases to tests/lib/spawner/spawn-request-builder.test.ts:
     1. "AC-04a: agent with tools: declaration produces exactly those tools" -- call resolveDelegationPermissionProfile with agent = { name: "test-agent", tools: { "delegate-task": true, "hivemind-session-view": true } }, assert result.tools includes "delegate-task" and "hivemind-session-view" AND the built-in tools from WRITE_CAPABLE_TOOLS that are in TOOL_CAPABILITY_MAP. Assert result.tools does NOT include tools not declared by the agent and not in WRITE_CAPABLE_TOOLS (e.g., "hivemind-pressure" should not appear if not declared).
     2. "AC-04b: agent without tools: declaration gets category-based defaults" -- call resolveDelegationPermissionProfile with agent = { name: "unknown-agent" } (no tools field), assert result.tools contains only tools that CapabilityGate returns for "unknown-agent" role (read-only: read, glob, grep). Assert result.tools does NOT contain harness tools like "delegate-task".
     3. "AC-04c: WRITE_CAPABLE_TOOLS is ultimate fallback when both explicit and capability tools are empty" -- call resolveDelegationPermissionProfile with agent = { name: "empty-tools-agent", tools: {} }, assert result.tools includes WRITE_CAPABLE_TOOLS items.
     4. "AC-04d: change is within 80 LOC budget" -- run `git diff --stat src/coordination/spawner/spawn-request-builder.ts` or `wc -l` before/after; assert net added lines <= 80. (This test can be a bash command in the test file or a separate verification step.)
     5. "AC-04e: existing delegation tests pass unmodified" -- this is verified by running the full test suite; add a comment-only test case noting this requirement is enforced by the full-suite run in Task 3.
-    Run ONLY the new tests first to confirm they pass: `npx vitest run tests/lib/spawn-request-builder.test.ts -t "capability" --reporter=verbose`.
+    Run ONLY the new tests first to confirm they pass: `npx vitest run tests/lib/spawner/spawn-request-builder.test.ts -t "capability" --reporter=verbose`.
   </action>
   <verify>
-    <automated>npx vitest run tests/lib/spawn-request-builder.test.ts -t "capability" --reporter=verbose 2>&1 | tail -10</automated>
+    <automated>npx vitest run tests/lib/spawner/spawn-request-builder.test.ts -t "capability" --reporter=verbose 2>&1 | tail -10</automated>
   </verify>
   <done>
     All 5 new capability-related test cases pass. The pattern "capability" matches all new tests by name.
@@ -123,16 +123,16 @@ src/coordination/spawner/spawn-request-builder.ts updated with CapabilityGate in
   <name>Task 3: Full regression run -- confirm zero existing test failures introduced by change</name>
   <files>
     src/coordination/spawner/spawn-request-builder.ts
-    tests/lib/spawn-request-builder.test.ts
+    tests/lib/spawner/spawn-request-builder.test.ts
   </files>
   <read_first>
-    @tests/lib/spawn-request-builder.test.ts -- run full file to check for regressions in existing tests
+    @tests/lib/spawner/spawn-request-builder.test.ts -- run full file to check for regressions in existing tests
   </read_first>
   <action>
-    Run the full spawn-request-builder test suite: `npx vitest run tests/lib/spawn-request-builder.test.ts --reporter=verbose 2>&1 | tail -20`. Confirm that ALL tests pass (new and existing). If any existing test fails, investigate: the failure must be due to the capability gate integration (not a pre-existing bug). Fix by adjusting the merge logic to preserve backward compatibility. Also run: `bash -c 'wc -l src/coordination/spawner/spawn-request-builder.ts'` and compare to the pre-change baseline (read the file at the start of this task, record the line count, then compare after modifications). If net change > 80 LOC, refactor to merge helper to reduce LOC.
+    Run the full spawn-request-builder test suite: `npx vitest run tests/lib/spawner/spawn-request-builder.test.ts --reporter=verbose 2>&1 | tail -20`. Confirm that ALL tests pass (new and existing). If any existing test fails, investigate: the failure must be due to the capability gate integration (not a pre-existing bug). Fix by adjusting the merge logic to preserve backward compatibility. Also run: `bash -c 'wc -l src/coordination/spawner/spawn-request-builder.ts'` and compare to the pre-change baseline (read the file at the start of this task, record the line count, then compare after modifications). If net change > 80 LOC, refactor to merge helper to reduce LOC.
   </action>
   <verify>
-    <automated>npx vitest run tests/lib/spawn-request-builder.test.ts --reporter=verbose 2>&1 | grep -E "(PASS|FAIL)" | tail -5</automated>
+    <automated>npx vitest run tests/lib/spawner/spawn-request-builder.test.ts --reporter=verbose 2>&1 | grep -E "(PASS|FAIL)" | tail -5</automated>
     <automated>bash -c 'wc -l src/coordination/spawner/spawn-request-builder.ts'</automated>
   </verify>
   <done>
@@ -145,17 +145,17 @@ src/coordination/spawner/spawn-request-builder.ts updated with CapabilityGate in
   <files>
     src/coordination/spawner/spawn-request-builder.ts
     src/features/capability-gate/index.ts
-    tests/lib/spawn-request-builder.test.ts
+    tests/lib/spawner/spawn-request-builder.test.ts
   </files>
   <read_first>
-    @tests/lib/spawn-request-builder.test.ts -- full test file to understand existing integration test patterns
+    @tests/lib/spawner/spawn-request-builder.test.ts -- full test file to understand existing integration test patterns
     @src/coordination/spawner/spawn-request-builder.ts -- buildSdkSpawnRequest function that calls resolveDelegationPermissionProfile
   </read_first>
   <action>
-    Add an integration test to tests/lib/spawn-request-builder.test.ts (or create a new tests/features/capability-gate/spawner-integration.test.ts) that verifies the end-to-end flow: (1) Create a mock agent with name "hm-l0-orchestrator" and tools: { "hivemind-command-engine": true }, (2) Call buildSdkSpawnRequest with this agent, (3) Assert the returned DelegationSpawnRequest.permissionProfile.tools includes "hivemind-command-engine" AND "read" AND "edit" (built-ins from WRITE_CAPABLE_TOOLS), (4) Assert the result does NOT include "hivemind-pressure" if the agent did not declare it. (5) Call buildSdkSpawnRequest with agent = { name: "hm-l2-codebase-mapper" } (no tools: field), assert result.tools does not include harness-specific tools like "delegate-task". Run: `npx vitest run tests/lib/spawn-request-builder.test.ts --reporter=verbose`.
+    Add an integration test to tests/lib/spawner/spawn-request-builder.test.ts (or create a new tests/features/capability-gate/spawner-integration.test.ts) that verifies the end-to-end flow: (1) Create a mock agent with name "hm-l0-orchestrator" and tools: { "hivemind-command-engine": true }, (2) Call buildSdkSpawnRequest with this agent, (3) Assert the returned DelegationSpawnRequest.permissionProfile.tools includes "hivemind-command-engine" AND "read" AND "edit" (built-ins from WRITE_CAPABLE_TOOLS), (4) Assert the result does NOT include "hivemind-pressure" if the agent did not declare it. (5) Call buildSdkSpawnRequest with agent = { name: "hm-l2-codebase-mapper" } (no tools: field), assert result.tools does not include harness-specific tools like "delegate-task". Run: `npx vitest run tests/lib/spawner/spawn-request-builder.test.ts --reporter=verbose`.
   </action>
   <verify>
-    <automated>npx vitest run tests/lib/spawn-request-builder.test.ts --reporter=verbose 2>&1 | tail -8</automated>
+    <automated>npx vitest run tests/lib/spawner/spawn-request-builder.test.ts --reporter=verbose 2>&1 | tail -8</automated>
   </verify>
   <done>
     All tests pass including the new e2e integration test. AC-04a, AC-04b, AC-04c all verified with concrete test evidence.
@@ -180,7 +180,7 @@ src/coordination/spawner/spawn-request-builder.ts updated with CapabilityGate in
 </threat_model>
 
 <verification>
-- npx vitest run tests/lib/spawn-request-builder.test.ts -- all tests pass (new + existing)
+- npx vitest run tests/lib/spawner/spawn-request-builder.test.ts -- all tests pass (new + existing)
 - git diff --stat src/coordination/spawner/spawn-request-builder.ts OR wc -l diff -- net change <= 80 LOC
 - npm test -- zero new failures beyond the 4 pre-existing delegation-status/session-journal-export failures
 - npm run typecheck -- clean
