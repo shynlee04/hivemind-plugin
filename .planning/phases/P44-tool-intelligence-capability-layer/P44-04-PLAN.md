@@ -6,7 +6,6 @@ wave: 2
 depends_on: ["P44-01"]
 files_modified:
   - src/hooks/guards/tool-guard-hooks.ts
-  - src/coordination/spawner/spawn-request-builder.ts
   - src/task-management/lifecycle/index.ts
   - .opencode/agents/hm-*.md
 autonomous: true
