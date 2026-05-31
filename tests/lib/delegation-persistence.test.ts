@@ -47,52 +47,31 @@ describe("delegation persistence", () => {
     rmSync(stateDir, { recursive: true, force: true })
   })
 
-  it("does not throw ENOENT when persistence writes overlap the same target file", async () => {
-    let nestedPersist: ((delegations: Delegation[]) => void) | undefined
-    let triggeredNestedWrite = false
-
-    vi.doMock("node:fs", async () => {
-      const actual = await vi.importActual<typeof import("node:fs")>("node:fs")
-      return {
-        ...actual,
-        writeFileSync: vi.fn<typeof actual.writeFileSync>((...args) => {
-          actual.writeFileSync(...args)
-          const [file] = args
-          const filePath = String(file)
-          if (!triggeredNestedWrite && filePath.includes("delegations.json") && filePath.endsWith(".tmp")) {
-            triggeredNestedWrite = true
-            nestedPersist?.([makeDelegation("nested")])
-          }
-        }),
-      }
-    })
-
+  it("does not create delegations.json on disk (persistDelegations is no-op for file writes)", async () => {
     const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
-    nestedPersist = persistence.persistDelegations
 
     expect(() => persistence.persistDelegations([makeDelegation("outer")])).not.toThrow()
 
-    const persisted = JSON.parse(readFileSync(persistence.getDelegationsFilePath(), "utf-8")) as Delegation[]
-    expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]))
+    // No file created on disk (REQ-P41D-01)
+    expect(existsSync(persistence.getDelegationsFilePath())).toBe(false)
   })
 
-  it("quarantines corrupt delegations.json and throws a visible harness error", async () => {
+  it("returns empty array from readPersistedDelegations even if corrupt file exists on disk", async () => {
     const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     writeFileSync(persistence.getDelegationsFilePath(), "NOT VALID JSON {{{", "utf-8")
 
-    expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\]/)
-    expect(existsSync(persistence.getDelegationsFilePath())).toBe(false)
-    expect(readdirSync(stateDir).some((name) => name.startsWith("delegations.json.corrupt-"))).toBe(true)
+    // readPersistedDelegations returns [] regardless of file state (P41-D-01)
+    expect(persistence.readPersistedDelegations()).toEqual([])
   })
 
-  it("reports non-array delegations.json as invalid persisted shape", async () => {
+  it("returns empty array from readPersistedDelegations regardless of file content shape", async () => {
     const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     writeFileSync(persistence.getDelegationsFilePath(), JSON.stringify({ invalid: true }), "utf-8")
 
-    expect(() => persistence.readPersistedDelegations()).toThrow(/^\[Harness\].*array/)
+    expect(persistence.readPersistedDelegations()).toEqual([])
   })
 
-  it("normalizes invalid persisted status values to explicit error metadata", async () => {
+  it("returns empty array from readPersistedDelegations even with valid delegations on disk", async () => {
     const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     writeFileSync(
       persistence.getDelegationsFilePath(),
@@ -101,14 +80,10 @@ describe("delegation persistence", () => {
     )
 
     const delegations = persistence.readPersistedDelegations()
-    expect(delegations[0]).toEqual(expect.objectContaining({
-      status: "error",
-      terminalKind: "error",
-      error: expect.stringContaining("Invalid persisted delegation status"),
-    }))
+    expect(delegations).toEqual([])
   })
 
-  it("redacts delegation result, error, and fallbackReason while preserving operational identifiers", async () => {
+  it("does not persist delegations to delegations.json (file not created)", async () => {
     const persistence = await import("../../src/task-management/continuity/delegation-persistence.js")
     persistence.persistDelegations([
       {
@@ -123,17 +98,8 @@ describe("delegation persistence", () => {
       },
     ])
 
-    const raw = readFileSync(persistence.getDelegationsFilePath(), "utf-8")
-    expect(raw).toContain("OPENAI_API_KEY=[REDACTED:API_KEY]")
-    expect(raw).toContain("Authorization: Bearer [REDACTED:TOKEN]")
-    expect(raw).toContain("PASSWORD=[REDACTED:PASSWORD]")
-    expect(raw).toContain("ses-parent-redacted")
-    expect(raw).toContain("ses-child-redacted")
-    expect(raw).toContain("category:command")
-    expect(raw).toContain("pty-redacted")
-    expect(raw).not.toContain("sk-test-123")
-    expect(raw).not.toContain("abc.def.ghi")
-    expect(raw).not.toContain("hunter2")
+    // No file written to disk — persistence is no-op (P41-D-01)
+    expect(existsSync(persistence.getDelegationsFilePath())).toBe(false)
   })
 })
 
@@ -164,7 +130,7 @@ describe("delegation persistence unconditional (G-4)", () => {
     rmSync(stateDir, { recursive: true, force: true })
   })
 
-  it("persists delegation data regardless of commit_docs config (G-4)", async () => {
+  it("does not create delegations.json on disk regardless of commit_docs config (P41-D-01)", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
     vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
@@ -179,13 +145,11 @@ describe("delegation persistence unconditional (G-4)", () => {
 
     persistence.persistDelegations([makeDelegation("del-g4-test")])
 
-    // File MUST be written to disk even when commit_docs is false
-    expect(existsSync(filePath)).toBe(true)
-    const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
-    expect(persisted).toEqual(expect.arrayContaining([expect.objectContaining({ id: "del-g4-test" })]))
+    // File is NOT written to disk — persistDelegations no longer produces delegations.json
+    expect(existsSync(filePath)).toBe(false)
   })
 
-  it("writes to disk with default config (default behavior)", async () => {
+  it("does not create delegations.json with default config (persistStore is no-op)", async () => {
     const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
     vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
@@ -198,7 +162,7 @@ describe("delegation persistence unconditional (G-4)", () => {
 
     persistence.persistDelegations([makeDelegation("del-commit-defaults")])
 
-    // File should exist on disk regardless of config
-    expect(existsSync(filePath)).toBe(true)
+    // File is NOT created on disk (P41-D-01)
+    expect(existsSync(filePath)).toBe(false)
   })
 })
