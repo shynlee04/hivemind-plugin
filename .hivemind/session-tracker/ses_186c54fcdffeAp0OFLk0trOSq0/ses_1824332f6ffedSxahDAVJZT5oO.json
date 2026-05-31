@@ -1,0 +1,661 @@
+{
+  "sessionID": "ses_1824332f6ffedSxahDAVJZT5oO",
+  "parentSessionID": "ses_186c54fcdffeAp0OFLk0trOSq0",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "P41-C SPEC phase",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-31T11:13:05.828Z",
+  "updated": "2026-05-31T11:16:45.968Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "<objective>\nProduce SPEC.md for P41-C with falsifiable requirements.\n\n**Phase:** P41-C — Update readers to use session-tracker instead of old files\n**Mode:** --auto\n</objective>\n\n<context>\nP41-B just added dual-write (old files + session-tracker). Now P41-C updates readers to prefer session-tracker data, falling back to old files.\n\n**Key readers to update:**\n1. `delegation-status.ts` — reads delegations.json, also already has session-tracker fallback\n2. `hivemind-session-view.ts` — hardcoded path to delegations.json\n3. `plugin.ts` notification replay — reads session-continuity.json\n4. `hooks/session-hooks.ts` — reads session-continuity for lifecycle\n5. `hooks/guards/tool-guard-hooks.ts` — governance metadata injection\n\n**Strategy:** READER PREFERS SESSION-TRACKER, FALLS BACK TO OLD FILE. Don't remove old read paths yet (that's P41-D).\n</context>\n\n<output>\nWrite to: `.planning/phases/P41-state-cluster-redesign/P41-C-SPEC.md`\n\nRequirements numbered REQ-P41C-01 through REQ-P41C-N. Include acceptance criteria, boundaries, ambiguity score.\n\nReturn the FULL content.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: bash, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Now let me understand the session-tracker reader infrastructure:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Tools: grep",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "Now I have a complete understanding of all 5 reader files and their current patterns. Let me produce the SPEC.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": "Good — `HookDependencies` doesn't currently have `projectDirectory`. The SPEC's Assumptions Log correctly flags this in A2 (\"may need to be added\"). Let me update the SPEC to be more explicit about the `HookDependencies` change:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 25,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 26,
+      "actor": "unknown",
+      "content": "## SPEC Complete — P41-C\n\n**File:** `.planning/phases/P41-state-cluster-redesign/P41-C-SPEC.md` (517 lines)\n\n**7 requirements** covering all 5 readers and one new helper module:\n\n| Req | Reader | Change |\n|-----|--------|--------|\n| **REQ-P41C-01** | *(NEW)* `continuity-reader.ts` | Create `enrichContinuityWithTracker()` + `enrichContinuityListWithTracker()` — queries session-tracker child records for `lifecycle`/`pendingNotifications`/`compactionCheckpoint`, prefers tracker values over old-file values. Fire-and-forget, never throws. |\n| **REQ-P41C-02** | `delegation-status.ts` | Flip `mergeAllDelegations()` array order from `[tracker, persisted, manager]` to `[persisted, tracker, manager]` — session-tracker wins over delegations.json |\n| **REQ-P41C-03** | `hivemind-session-view.ts` | `readDelegationsForSession()` tries session-tracker hierarchy manifest first, falls back to hardcoded `delegations.json` path |\n| **REQ-P41C-04** | `plugin.ts` | `replayPendingDelegationNotifications()` enriches `listSessionContinuity()` output with session-tracker `pendingNotifications`; function gains optional `projectDirectory` parameter |\n| **REQ-P41C-05** | `session-hooks.ts` | `getSessionContinuity()` enriched via `enrichContinuityWithTracker()` in event + compacting hooks; `HookDependencies` gets `projectDirectory?: string` |\n| **REQ-P41C-06** | `tool-guard-hooks.ts` | `getSessionContinuity()` enriched in `tool.execute.after`; `ToolGuardDependencies` gets `projectRoot?: string` |\n| **REQ-P41C-07** | Gate | Typecheck + test suite must pass |\n\n**Ambiguity Score:** LOW — all reader code paths verified in codebase before writing spec. All decisions from P41-A carry forward.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-31T11:13:11.661Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_YknJ4v6nl8xFUpddT9ZS0662",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:11.706Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_6wDtTN7YtcxUV2uPqRhT2095",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:17.892Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Gn63cmvW6U8hWDwT8n504234",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P41-state-cluster-redesign/P41-B-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:17.898Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_83pzJG0bvbTs3GFH6dry2437",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P41-state-cluster-redesign/P41-B-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:17.906Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_CVvm3jl0kvsZBACC2guI1379",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P41-state-cluster-redesign/P41-A-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:25.104Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_QPZigWXow2vgWlQAuQxQ2708",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:31.104Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_3kJPJz8gDUvVjtyTzhij5924",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P41-state-cluster-redesign/P41-B-ASSUMPTIONS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:31.112Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_jWOyzHfKhhv6vBbUMBfV2488",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P41-state-cluster-redesign/P41-B-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:37.093Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_iBeBs3GMLBNPni3Vw2U25969",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:37.104Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_FA5XTD5IXm8evrVmS9z34378",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegation-status.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:43.158Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_31XBIE1jIbUkeGxeWcZb4060",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:43.166Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_ryDlZbjQ8OTgoich2YQd3968",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:43.183Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_o7gV8eldmzNU8LIbqWaZ9853",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:48.968Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_3a788CVu95whyzyrBzin9318",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-session-view.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:48.974Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_JUujIzDtBZrOswM89OjL3577",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/session-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:48.980Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_zEY9YQ8UubpyCxuc2Tvv7615",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/guards/tool-guard-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:13:54.883Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_1Uw4L5f3hb3tHP1AW2gp5955",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:01.870Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_fkjealiBw1D99wrm1jao2919",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:01.928Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_wvNY3E16fWLPHcZL9sCk8501",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:07.674Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_sn3VuhzAW1t1fKtcgwzP4497",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:07.724Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_sm4jo8A5LgRv4yOFJmwa6455",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:13.823Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_z0pVFZwRMdTcKcSfUIyo9200",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-resolver.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:13.872Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_tbhB3V6DMeFo2jmlfKpo9130",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:21.387Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_VmNlqRjKVJx2gBgawqIH8508",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:27.107Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ET_jBP7V4dBsOOqSzx4oocJ7939",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:32.657Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_k3sHHUgBmJa1ECJ0r3lU0694",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:38.236Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ET_krYQRrIr1cjHRdkfhCtA4285",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/readers/legacy-reader.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:44.342Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_DEJez061GDuzHLkAF3R78184",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:50.988Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ULlY8IqUXyx3wa3rfxts6572",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:14:50.995Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_bd1WSixEvyszmVYnIG2q5496",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:15:54.305Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_3HdsRPUxVeuUUPjuEU3M4394",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:16:00.148Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_YFuhwIQu3JzM1GgLHeG07069",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:16:09.994Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_eSE8j2LPlQVigszjxiYG3006",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:16:18.038Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_ET_b3vdX3kvFcti8Rj9REFN2459",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:16:24.730Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_rqkonOfXlRiI9NOpNtuQ0782",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:16:30.294Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_MNoOvVl8ceaOiQ0PPRjq0615",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P41-state-cluster-redesign/P41-C-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:16:36.681Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_99yzJ6XxDPO0uyYzJIu00846",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T11:16:45.913Z",
+      "type": "assistant_message",
+      "content": "## SPEC Complete — P41-C\n\n**File:** `.planning/phases/P41-state-cluster-redesign/P41-C-SPEC.md` (517 lines)\n\n**7 requirements** covering all 5 readers and one new helper module:\n\n| Req | Reader | Change |\n|-----|--------|--------|\n| **REQ-P41C-01** | *(NEW)* `continuity-reader.ts` | Create `enrichContinuityWithTracker()` + `enrichContinuityListWithTracker()` — queries session-tracker child records for `lifecycle`/`pendingNotifications`/`compactionCheckpoint`, prefers tracker values over old-file values. Fire-and-forget, never throws. |\n| **REQ-P41C-02** | `delegation-status.ts` | Flip `mergeAllDelegations()` array order from `[tracker, persisted, manager]` to `[persisted, tracker, manager]` — session-tracker wins over delegations.json |\n| **REQ-P41C-03** | `hivemind-session-view.ts` | `readDelegationsForSession()` tries session-tracker hierarchy manifest first, falls back to hardcoded `delegations.json` path |\n| **REQ-P41C-04** | `plugin.ts` | `replayPendingDelegationNotifications()` enriches `listSessionContinuity()` output with session-tracker `pendingNotifications`; function gains optional `projectDirectory` parameter |\n| **REQ-P41C-05** | `session-hooks.ts` | `getSessionContinuity()` enriched via `enrichContinuityWithTracker()` in event + compacting hooks; `HookDependencies` gets `projectDirectory?: string` |\n| **REQ-P41C-06** | `tool-guard-hooks.ts` | `getSessionContinuity()` enriched in `tool.execute.after`; `ToolGuardDependencies` gets `projectRoot?: string` |\n| **REQ-P41C-07** | Gate | Typecheck + test suite must pass |\n\n**Ambiguity Score:** LOW — all reader code paths verified in codebase before writing spec. All decisions from P41-A carry forward.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1824332f6ffedSxahDAVJZT5oO"
+      }
+    }
+  ],
+  "lastMessage": "## SPEC Complete — P41-C\n\n**File:** `.planning/phases/P41-state-cluster-redesign/P41-C-SPEC.md` (517 lines)\n\n**7 requirements** covering all 5 readers and one new helper module:\n\n| Req | Reader | Change |\n|-----|--------|--------|\n| **REQ-P41C-01** | *(NEW)* `continuity-reader.ts` | Create `enrichContinuityWithTracker()` + `enrichContinuityListWithTracker()` — queries session-tracker child records for `lifecycle`/`pendingNotifications`/`compactionCheckpoint`, prefers tracker values over old-file values. Fire-and-forget, never throws. |\n| **REQ-P41C-02** | `delegation-status.ts` | Flip `mergeAllDelegations()` array order from `[tracker, persisted, manager]` to `[persisted, tracker, manager]` — session-tracker wins over delegations.json |\n| **REQ-P41C-03** | `hivemind-session-view.ts` | `readDelegationsForSession()` tries session-tracker hierarchy manifest first, falls back to hardcoded `delegations.json` path |\n| **REQ-P41C-04** | `plugin.ts` | `replayPendingDelegationNotifications()` enriches `listSessionContinuity()` output with session-tracker `pendingNotifications`; function gains optional `projectDirectory` parameter |\n| **REQ-P41C-05** | `session-hooks.ts` | `getSessionContinuity()` enriched via `enrichContinuityWithTracker()` in event + compacting hooks; `HookDependencies` gets `projectDirectory?: string` |\n| **REQ-P41C-06** | `tool-guard-hooks.ts` | `getSessionContinuity()` enriched in `tool.execute.after`; `ToolGuardDependencies` gets `projectRoot?: string` |\n| **REQ-P41C-07** | Gate | Typecheck + test suite must pass |\n\n**Ambiguity Score:** LOW — all reader code paths verified in codebase before writing spec. All decisions from P41-A carry forward."
+}

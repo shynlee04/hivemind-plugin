@@ -1,0 +1,660 @@
+{
+  "sessionID": "ses_1828d1110ffeOhqwe4rR8S3if3",
+  "parentSessionID": "ses_186c54fcdffeAp0OFLk0trOSq0",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Trace production vs test code paths",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-05-31T09:52:24.835Z",
+  "updated": "2026-05-31T09:55:24.253Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a specialist subagent. Trace every code path that writes to delegations.json and session-continuity.json. Classify each as PRODUCTION or TEST-ONLY. Do NOT modify any files.\n\n## Hypothesis to Verify\n\nThe user believes `delegations.json` and `state/session-continuity.json` are ENTIRELY test artifacts — they contain zero real production data, and the code paths that write to them may only execute in test contexts.\n\n## Files to Read\n\n### For `delegations.json` writes:\n1. `src/task-management/continuity/delegation-persistence.ts` — `persistDelegations()` function\n2. `src/coordination/delegation/state-machine.ts` — who calls `persistDelegations()` and when\n3. `src/coordination/delegation/manager-runtime.ts` — `persistAll()` calls\n4. `src/coordination/delegation/lifecycle.ts` — `registerDelegation()` calls\n5. `src/coordination/delegation/manager.ts` — facade delegation calls\n6. `src/coordination/delegation/coordinator.ts` — coordinator calls\n7. `src/tools/delegation/delegate-task.ts` — the tool that triggers delegation\n8. `src/plugin.ts` — where delegation modules are wired\n9. `tests/integration/delegation-v2-integration.test.ts` — test that writes delegations\n10. `tests/lib/delegation-persistence.test.ts` — delegation persistence tests\n11. Any other test file that imports `persistDelegations` or `delegation-persistence`\n\n### For `session-continuity.json` writes:\n1. `src/task-management/continuity/index.ts` — `recordSessionContinuity()`, `patchSessionContinuity()`, `deleteSessionContinuity()`\n2. `src/plugin.ts` — where continuity is wired, what lifecycle hooks call it\n3. `src/hooks/session-hooks.ts` — session lifecycle hooks that call continuity\n4. `src/coordination/delegation/` — any files that write continuity records\n5. `tests/lib/continuity.test.ts` — continuity tests\n6. Any other test file that imports `recordSessionContinuity` or `patchSessionContinuity`\n\n## Analysis Method\n\nFor each write function, trace the call chain:\n```\nwriteFunction() at file:line\n  ← caller1() at file:line (PRODUCTION or TEST?)\n    ← caller2() at file:line (PRODUCTION or TEST?)\n```\n\nCreate a table:\n\n| File | Write Function | Production Callers | Test-Only Callers | Verdict |\n|------|---------------|-------------------|-------------------|---------|\n| delegations.json | persistDelegations() | ... | ... | PRODUCTION/TEST-ONLY |\n| session-continuity.json | recordSessionContinuity() | ... | ... | PRODUCTION/TEST-ONLY |\n\n## Output\n\nWrite to: `.planning/research/production-vs-test-code-paths-2026-05-31.md`\n\nAnswer definitively: If we delete these 2 files and restart the harness, will they be repopulated with real data?\n\nReturn the FULL content.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll systematically trace every write path for both files. Let me start by reading all the production source files in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Now let me read the remaining production files and all test files in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Let me find the session hooks and read the remaining critical files.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Now let me read the test files. Let me also find which test files reference persistence or continuity writes.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Now let me check the remaining test files and hook-based callers.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Let me check the additional test files that might write to these files.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Let me read the remaining production files that write to these files.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: read, grep",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Now I have all the data needed. Let me synthesize and write the report.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Let me do one final verification on the integration test that touches production path, and check the delegation-status test for env var setup.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "Now I have a complete picture. Let me write the comprehensive report.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "Tools: write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** N/A (standalone research — production vs test code path analysis)\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **HYPOTHESIS REFUTED.** `delegations.json` and `session-continuity.json` are **NOT** test artifacts. Both are actively written during production runtime.\n\n2. **`delegations.json`** is written by `DelegationStateMachine` during every delegation dispatch, status transition, terminal completion, safety ceiling timeout, PTY cancellation, and grace period event. Every `delegate-task` tool call triggers production writes through `persistDelegations()`.\n\n3. **`session-continuity.json`** is written by lifecycle hooks (`noteObservedActivity`, `cancelDelegatedSession`), notification queuing (`queuePendingNotification`), `persistPendingDelegationNotifications` in plugin.ts, and `registerShutdownHandlers` → `flushAllStores` on process exit.\n\n4. **If deleted and restarted, both files WILL be repopulated** with real data on the next delegation dispatch or lifecycle event.\n\n5. **One test pollution issue found:** `tests/integration/continuity-delegation-persistence.test.ts` writes `persistDelegations([])` to the **production** path at line 13 without any `OPENCODE_HARNESS_STATE_DIR` override.\n\n6. One dead export discovered: `deleteSessionContinuity()` — exported but never called in production code. `DelegationRetryHandler` class is also unwired.\n\n### File Created\n\n`.planning/research/production-vs-test-code-paths-2026-05-31.md`\n\n### Confidence Assessment\n\n| Area | Level | Reason |\n|------|-------|--------|\n| delegations.json writes | HIGH | Traced every production caller through the full call chain, confirmed in plugin.ts wiring |\n| session-continuity.json writes | HIGH | Traced 9+ production callers across 3 modules, confirmed shutdown handlers |\n| Test isolation | MEDIUM | Most tests use temp dirs or mocks; one integration test flags as not isolated |\n\n### Open Questions\n\n- `tests/integration/continuity-delegation-persistence.test.ts` at line 13 writes `persistDelegations([])` to the production path without `OPENCODE_HARNESS_STATE_DIR` set. This is a test pollution bug worth fixing.\n- Three test files (`plugin-lifecycle.test.ts`, `lifecycle-manager.test.ts`, `delegation-manager.test.ts`) were assumed isolated but not fully verified (A4).",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "gsd-phase-researcher",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** N/A (standalone research — production vs test code path analysis)\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **HYPOTHESIS REFUTED.** `delegations.json` and `session-continuity.json` are **NOT** test artifacts. Both are actively written during production runtime.\n\n2. **`delegations.json`** is written by `DelegationStateMachine` during every delegation dispatch, status transition, terminal completion, safety ceiling timeout, PTY cancellation, and grace period event. Every `delegate-task` tool call triggers production writes through `persistDelegations()`.\n\n3. **`session-continuity.json`** is written by lifecycle hooks (`noteObservedActivity`, `cancelDelegatedSession`), notification queuing (`queuePendingNotification`), `persistPendingDelegationNotifications` in plugin.ts, and `registerShutdownHandlers` → `flushAllStores` on process exit.\n\n4. **If deleted and restarted, both files WILL be repopulated** with real data on the next delegation dispatch or lifecycle event.\n\n5. **One test pollution issue found:** `tests/integration/continuity-delegation-persistence.test.ts` writes `persistDelegations([])` to the **production** path at line 13 without any `OPENCODE_HARNESS_STATE_DIR` override.\n\n6. One dead export discovered: `deleteSessionContinuity()` — exported but never called in production code. `DelegationRetryHandler` class is also unwired.\n\n### File Created\n\n`.planning/research/production-vs-test-code-paths-2026-05-31.md`\n\n### Confidence Assessment\n\n| Area | Level | Reason |\n|------|-------|--------|\n| delegations.json writes | HIGH | Traced every production caller through the full call chain, confirmed in plugin.ts wiring |\n| session-continuity.json writes | HIGH | Traced 9+ production callers across 3 modules, confirmed shutdown handlers |\n| Test isolation | MEDIUM | Most tests use temp dirs or mocks; one integration test flags as not isolated |\n\n### Open Questions\n\n- `tests/integration/continuity-delegation-persistence.test.ts` at line 13 writes `persistDelegations([])` to the production path without `OPENCODE_HARNESS_STATE_DIR` set. This is a test pollution bug worth fixing.\n- Three test files (`plugin-lifecycle.test.ts`, `lifecycle-manager.test.ts`, `delegation-manager.test.ts`) were assumed isolated but not fully verified (A4).",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-31T09:52:30.677Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_dJz9bJWP1vkGleA1pJc42543",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:36.432Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_o1FLMqnFzRzfl5JF4Czd0668",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/delegation-persistence.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:36.436Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_dyyXnBin0ziJceKTq2cu3227",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:36.441Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_cCOmMbJpN5JkcHWFMm4E3860",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/state-machine.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:36.446Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_sQ83axa66YskIE15EOB62654",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager-runtime.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:43.236Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_OBlc5iyS7wXQIgXtA4Ow3968",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:43.243Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_PAVKiFINadDOnf4AXTUA1466",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/coordinator.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:43.248Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_dZBJMNT5Tn2duLcKM6921143",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegate-task.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:43.253Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_UnZWoCL46Us6FEx4NZZI2717",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:49.721Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_wPjHimPZi7Syyy2NDD7n0564",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/lifecycle.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:49.728Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_W1vTxJtA5tWcWEz2Vbmx7844",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/dispatcher.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:49.750Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_Q6K7aVbFylFLD0on0kwr0409",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:55.208Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_C4Z5wGWP1A9B7GkIED3k9077",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/session-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:52:55.212Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_6sBsf7s0UIqfh8B0ruNT0110",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/core-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:01.821Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_J5gFNderYNqWQztjGMJ47916",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:01.833Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_wFG7LTUkFds1NGkUTbh52727",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:01.841Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_pxggAwVmJbXGODyXip6P5264",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:01.856Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_eVSp3QknlH6hu5QC0PM89508",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:08.314Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_LrpyGseE8psI5WKi8gh62161",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/delegation-persistence.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:08.319Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_Nza2z5Pc8oSJd7Gh3U935674",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/continuity.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:08.325Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Y9BFOCunEr2389qHMbIH7304",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/integration/continuity-delegation-persistence.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:08.341Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_cksDmwJMAfLhtvfddu1z9061",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/delegation-state-machine.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:15.593Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_m1NQNLKiZmC45XftOAtz7500",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/hooks/continuity.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:15.638Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_hz1sgZOTxyvETEMV1xEp4688",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:15.644Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_9dJTTHLUmbVtet0KKTy40567",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:22.481Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_b5bnHnr7Xb1bntREAzvy0674",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/integration/delegation-v2-integration.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:22.508Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_02_HUasNiOLr0pP6chxMvwU8010",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:22.523Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_YVj2M3jBiEMldshTaMjL9539",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:29.868Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_IUFntTBjyJ5noJLlpKF14736",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/lifecycle/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:29.872Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_kQFVMpokSffjO41Ofpkz2864",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/notification-handler.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:36.388Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Z4EtUhChgoFqTXsDyDCA8110",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/retry-handler.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:36.399Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_ohTEVKvvwmB4ODbXTHVv6861",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:58.122Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_tmpC7J5fLQsOE6Wnkft41509",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/config/validate-restart.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:53:58.135Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_L8LerWKdzLRRpJs50sZK5572",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:54:16.122Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_aaAofJvON85j4y6YV77d4423",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:54:22.774Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_v7U1kplqkedSQCpQhKF83182",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/tools/delegation-status.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:54:22.800Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_bjyQgPoq9gsVfI1d8q6a0318",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:54:32.364Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_xwLEDXYbuKSRnEFhuDHF4120",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:55:08.181Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_cfbryxOM6GLcT0sXKw551746",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:55:14.667Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_Itmw6gq784a4ECgJ1r3a7678",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:55:24.210Z",
+      "type": "assistant_message",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** N/A (standalone research — production vs test code path analysis)\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **HYPOTHESIS REFUTED.** `delegations.json` and `session-continuity.json` are **NOT** test artifacts. Both are actively written during production runtime.\n\n2. **`delegations.json`** is written by `DelegationStateMachine` during every delegation dispatch, status transition, terminal completion, safety ceiling timeout, PTY cancellation, and grace period event. Every `delegate-task` tool call triggers production writes through `persistDelegations()`.\n\n3. **`session-continuity.json`** is written by lifecycle hooks (`noteObservedActivity`, `cancelDelegatedSession`), notification queuing (`queuePendingNotification`), `persistPendingDelegationNotifications` in plugin.ts, and `registerShutdownHandlers` → `flushAllStores` on process exit.\n\n4. **If deleted and restarted, both files WILL be repopulated** with real data on the next delegation dispatch or lifecycle event.\n\n5. **One test pollution issue found:** `tests/integration/continuity-delegation-persistence.test.ts` writes `persistDelegations([])` to the **production** path at line 13 without any `OPENCODE_HARNESS_STATE_DIR` override.\n\n6. One dead export discovered: `deleteSessionContinuity()` — exported but never called in production code. `DelegationRetryHandler` class is also unwired.\n\n### File Created\n\n`.planning/research/production-vs-test-code-paths-2026-05-31.md`\n\n### Confidence Assessment\n\n| Area | Level | Reason |\n|------|-------|--------|\n| delegations.json writes | HIGH | Traced every production caller through the full call chain, confirmed in plugin.ts wiring |\n| session-continuity.json writes | HIGH | Traced 9+ production callers across 3 modules, confirmed shutdown handlers |\n| Test isolation | MEDIUM | Most tests use temp dirs or mocks; one integration test flags as not isolated |\n\n### Open Questions\n\n- `tests/integration/continuity-delegation-persistence.test.ts` at line 13 writes `persistDelegations([])` to the production path without `OPENCODE_HARNESS_STATE_DIR` set. This is a test pollution bug worth fixing.\n- Three test files (`plugin-lifecycle.test.ts`, `lifecycle-manager.test.ts`, `delegation-manager.test.ts`) were assumed isolated but not fully verified (A4).",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1828d1110ffeOhqwe4rR8S3if3"
+      }
+    }
+  ],
+  "lastMessage": "## RESEARCH COMPLETE\n\n**Phase:** N/A (standalone research — production vs test code path analysis)\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **HYPOTHESIS REFUTED.** `delegations.json` and `session-continuity.json` are **NOT** test artifacts. Both are actively written during production runtime.\n\n2. **`delegations.json`** is written by `DelegationStateMachine` during every delegation dispatch, status transition, terminal completion, safety ceiling timeout, PTY cancellation, and grace period event. Every `delegate-task` tool call triggers production writes through `persistDelegations()`.\n\n3. **`session-continuity.json`** is written by lifecycle hooks (`noteObservedActivity`, `cancelDelegatedSession`), notification queuing (`queuePendingNotification`), `persistPendingDelegationNotifications` in plugin.ts, and `registerShutdownHandlers` → `flushAllStores` on process exit.\n\n4. **If deleted and restarted, both files WILL be repopulated** with real data on the next delegation dispatch or lifecycle event.\n\n5. **One test pollution issue found:** `tests/integration/continuity-delegation-persistence.test.ts` writes `persistDelegations([])` to the **production** path at line 13 without any `OPENCODE_HARNESS_STATE_DIR` override.\n\n6. One dead export discovered: `deleteSessionContinuity()` — exported but never called in production code. `DelegationRetryHandler` class is also unwired.\n\n### File Created\n\n`.planning/research/production-vs-test-code-paths-2026-05-31.md`\n\n### Confidence Assessment\n\n| Area | Level | Reason |\n|------|-------|--------|\n| delegations.json writes | HIGH | Traced every production caller through the full call chain, confirmed in plugin.ts wiring |\n| session-continuity.json writes | HIGH | Traced 9+ production callers across 3 modules, confirmed shutdown handlers |\n| Test isolation | MEDIUM | Most tests use temp dirs or mocks; one integration test flags as not isolated |\n\n### Open Questions\n\n- `tests/integration/continuity-delegation-persistence.test.ts` at line 13 writes `persistDelegations([])` to the production path without `OPENCODE_HARNESS_STATE_DIR` set. This is a test pollution bug worth fixing.\n- Three test files (`plugin-lifecycle.test.ts`, `lifecycle-manager.test.ts`, `delegation-manager.test.ts`) were assumed isolated but not fully verified (A4)."
+}

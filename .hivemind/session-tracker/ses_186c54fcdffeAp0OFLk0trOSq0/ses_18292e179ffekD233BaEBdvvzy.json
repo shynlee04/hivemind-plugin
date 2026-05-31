@@ -1,0 +1,350 @@
+{
+  "sessionID": "ses_18292e179ffekD233BaEBdvvzy",
+  "parentSessionID": "ses_186c54fcdffeAp0OFLk0trOSq0",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-advisor-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Synthesize 4-file ontology model",
+    "subagentType": "gsd-advisor-researcher"
+  },
+  "created": "2026-05-31T09:46:03.803Z",
+  "updated": "2026-05-31T09:49:09.398Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-advisor-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a specialist subagent: Synthesize the conceptual ontology of 4 state files. Do NOT modify any files.\n\n## Context\n\nThe project has 4 state files under `.hivemind/state/` that were built in different phases by different developers. They lack a coherent conceptual model. We need to document what each IS, how they RELATE, and how to DEVELOP them into a coherent skeleton.\n\n## The 4 Files (with actual data shapes)\n\n### File 1: `delegations.json`\n```json\n[\n  {\n    \"id\": \"uuid\", \"parentSessionId\": \"ses_xxx\", \"childSessionId\": \"child-xxx\",\n    \"agent\": \"builder\", \"status\": \"running|completed|error\",\n    \"executionMode\": \"sdk\", \"surface\": \"agent-delegation\",\n    \"recoveryGuarantee\": \"resumable\", \"queueKey\": \"...\",\n    \"nestingDepth\": 1, \"explicitCancellation\": false,\n    \"lastMessageCount\": 0, \"stablePollCount\": 0,\n    \"gracePeriodExpiresAt\": 123456, \"completedAt\": null, \"error\": null\n  }\n]\n```\n- **Module:** `src/task-management/continuity/delegation-persistence.ts`\n- **Tools:** `delegate-task` writes, `recoverPending()` reads on startup\n- **Purpose:** Track delegation operations lifecycle (dispatch → poll → terminal)\n\n### File 2: `session-continuity.json` (state/)\n```json\n{\n  \"version\": 1, \"updatedAt\": 123,\n  \"sessions\": {\n    \"ses_xxx\": {\n      \"sessionID\": \"ses_xxx\",\n      \"metadata\": {\n        \"status\": \"running\", \"description\": \"...\",\n        \"pendingNotifications\": [],\n        \"delegation\": null, \"constraints\": [],\n        \"lifecycle\": {}, \"compactionCheckpoint\": null,\n        \"governance\": {}, \"delegationPacket\": null\n      }\n    }\n  },\n  \"governance\": {}\n}\n```\n- **Module:** `src/task-management/continuity/index.ts`\n- **Tools:** `recordSessionContinuity()`, `patchSessionContinuity()`, `deleteSessionContinuity()`\n- **Purpose:** Rich session metadata across restarts (notifications, lifecycle, governance)\n\n### File 3: `trajectory-ledger.json`\n```json\n{\n  \"version\": 1, \"updatedAt\": 123,\n  \"trajectories\": {\n    \"traj-phase-41.01\": {\n      \"id\": \"traj-phase-41.01\", \"phaseRef\": \"P41.01\",\n      \"status\": \"researching|planning|executing|completed\",\n      \"evidenceRefs\": [], \"events\": [{\"eventId\": \"...\", ...}]\n    }\n  }\n}\n```\n- **Module:** `src/task-management/trajectory/ledger.ts`\n- **Tools:** `hivemind-trajectory` (inspect, traverse, attach, checkpoint, event, close)\n- **Purpose:** Phase-level orchestration — track workflow progress across sessions\n\n### File 4: `agent-work-contracts.json`\n```json\n{\n  \"version\": 1, \"updatedAt\": 123,\n  \"contracts\": {\n    \"awc-p41.01-research\": {\n      \"id\": \"awc-p41.01-research\", \"status\": \"created|completed\",\n      \"owner\": {\"agent\": \"hm-orchestrator-L0\"},\n      \"scope\": {\"taskBoundary\": \"...\", \"allowedSurfaces\": [...], \"nonGoals\": [...]},\n      \"evidence\": {\"requiredProof\": [...], \"minimumEvidenceLevel\": \"L4_DOCUMENTED\"},\n      \"trajectoryId\": \"traj-phase-41.01\"\n    }\n  }\n}\n```\n- **Module:** `src/features/agent-work-contracts/`\n- **Tools:** `hivemind-agent-work-create`, `hivemind-agent-work-export`\n- **Purpose:** Bounded work agreements — define scope before delegating\n\n## Your Task\n\nWrite to: `.planning/research/state-file-ontology-2026-05-31.md`\n\nProduce a conceptual architecture document that answers:\n\n### 1. What is each file's ONTOLOGICAL category?\n\nDefine a 2x2 matrix:\n\n| | Runtime (what happened) | Governance (what should happen) |\n|---|---|---|\n| **Operation log** | `delegations.json` | `trajectory-ledger.json` |\n| **State snapshot** | `session-continuity.json` | `agent-work-contracts.json` |\n\nExplain why each belongs where.\n\n### 2. What is the data flow?\n\nASCII art showing:\n```\nAgent decides to work\n  → hivemind-agent-work-create writes contract (scope boundary)\n  → hivemind-trajectory event \"planning:start\" (phase tracking)\n  → delegate-task writes delegations.json (operation record)\n  → session lifecycle updates session-continuity.json (session metadata)\n  → hivemind-trajectory event \"execution:complete\" (phase tracking)\n  → agent-work-contract status=completed (scope closed)\n```\n\n### 3. What's the LINKAGE between them?\n\nShow how they reference each other:\n- `agent-work-contracts.json.trajectoryId` → `trajectory-ledger.json`\n- `delegations.json.parentSessionId` → `session-continuity.json.sessions`\n- `trajectory-ledger.json.events[*].evidenceRefs` → other files\n\n### 4. What's the skeleton phase structure?\n\nGiven the existing phase plan (P41.02-P41.08), what additional phases are needed to make these 4 files work as a COHERENT SYSTEM?\n\nSpecifically:\n- What's missing for cross-file transactions (contract+trajectory writes)?\n- What's missing for unified path resolution?\n- What's missing for flushAllStores coverage?\n- What's missing for boot-time initialization order?\n\nOutput a complete phase skeleton with each phase's objective, scope boundaries, and evidence criteria.\n\nReturn the FULL content.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Now let me read the existing ROADMAP and relevant source modules for the full picture:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Let me check the P41 phase definitions and the plugin.ts for the startup wiring:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Now I have all the data I need. Let me produce the ontology document.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Tools: write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Let me verify the output:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Document written at 439 lines. Here's the summary of what was produced:\n\n---\n\n**`state-file-ontology-2026-05-31.md`** written to `.planning/research/`. Contains:\n\n### 1. Ontological 2x2 Matrix\n- **`delegations.json`** — Runtime Operation Log (actual delegation lifecycle records)\n- **`session-continuity.json`** — Runtime State Snapshot (rich session metadata, notifications, lifecycle)\n- **`trajectory-ledger.json`** — Governance Operation Log (phase-level orchestration events)\n- **`agent-work-contracts.json`** — Governance State Snapshot (bounded work agreements)\n\n### 2. Data Flow (ASCII art)\nEnd-to-end sequence from \"agent decides to work\" through all 7 stages, with cross-file writes at each step. Key finding: **no cross-file atomicity** — each write is independently atomic but there is no rollback if the second of two coordinated writes fails.\n\n### 3. Cross-File Linkage Map\nTraced all explicit and implicit references:\n- `contract.trajectoryId` → `trajectory.id` (soft, validated by convention only)\n- `delegation.parentSessionId` → `session.id` (proven: 5 shared, 13 disjoint)\n- `pendingNotifications[].metadata.delegationId` → `delegations.json[].id` (**no referential integrity**)\n- `trajectory.evidenceRefs` → arbitrary string conventions (`dt-*`, `awc_*`)\n\n### 4. Skeleton Phase Structure\nIdentified **7 gaps** (G-01 through G-07) and proposed **6 new phases** (P41.02-P41.07):\n\n| Phase | Gap | Priority |\n|-------|-----|----------|\n| P41.02 — Cross-file transaction coordinator | G-01 (HIGH) | P2 |\n| P41.03 — Unified state path resolver | G-02 (MEDIUM) | P2 (foundation) |\n| P41.04 — flushAllStores coverage | G-03 (HIGH) | **P1** |\n| P41.05 — Boot-time init sequence audit | G-04, G-05 (HIGH) | **P1** |\n| P41.06 — Doctor health check extension | G-06 (LOW) | P3 |\n| P41.07 — Schema version contract | G-07 (LOW) | P3 |\n\nEach phase has: objective, scope boundaries, allowed surfaces, non-goals, key design, evidence criteria, and dependency links. **Execution priority: P41.05** (boot audit) and **P41.04** (flush coverage) should go first; P41.03 (path resolver) is the foundational refactor most subsequent phases depend on.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "gsd-advisor-researcher",
+      "content": "Document written at 439 lines. Here's the summary of what was produced:\n\n---\n\n**`state-file-ontology-2026-05-31.md`** written to `.planning/research/`. Contains:\n\n### 1. Ontological 2x2 Matrix\n- **`delegations.json`** — Runtime Operation Log (actual delegation lifecycle records)\n- **`session-continuity.json`** — Runtime State Snapshot (rich session metadata, notifications, lifecycle)\n- **`trajectory-ledger.json`** — Governance Operation Log (phase-level orchestration events)\n- **`agent-work-contracts.json`** — Governance State Snapshot (bounded work agreements)\n\n### 2. Data Flow (ASCII art)\nEnd-to-end sequence from \"agent decides to work\" through all 7 stages, with cross-file writes at each step. Key finding: **no cross-file atomicity** — each write is independently atomic but there is no rollback if the second of two coordinated writes fails.\n\n### 3. Cross-File Linkage Map\nTraced all explicit and implicit references:\n- `contract.trajectoryId` → `trajectory.id` (soft, validated by convention only)\n- `delegation.parentSessionId` → `session.id` (proven: 5 shared, 13 disjoint)\n- `pendingNotifications[].metadata.delegationId` → `delegations.json[].id` (**no referential integrity**)\n- `trajectory.evidenceRefs` → arbitrary string conventions (`dt-*`, `awc_*`)\n\n### 4. Skeleton Phase Structure\nIdentified **7 gaps** (G-01 through G-07) and proposed **6 new phases** (P41.02-P41.07):\n\n| Phase | Gap | Priority |\n|-------|-----|----------|\n| P41.02 — Cross-file transaction coordinator | G-01 (HIGH) | P2 |\n| P41.03 — Unified state path resolver | G-02 (MEDIUM) | P2 (foundation) |\n| P41.04 — flushAllStores coverage | G-03 (HIGH) | **P1** |\n| P41.05 — Boot-time init sequence audit | G-04, G-05 (HIGH) | **P1** |\n| P41.06 — Doctor health check extension | G-06 (LOW) | P3 |\n| P41.07 — Schema version contract | G-07 (LOW) | P3 |\n\nEach phase has: objective, scope boundaries, allowed surfaces, non-goals, key design, evidence criteria, and dependency links. **Execution priority: P41.05** (boot audit) and **P41.04** (flush coverage) should go first; P41.03 (path resolver) is the foundational refactor most subsequent phases depend on.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-05-31T09:47:21.886Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_eknLy846qIvDGiAoKtpt1036",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/state/session-continuity.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:21.891Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_H1r7o4YLdAVgiSiZyio62766",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/state/trajectory-ledger.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:21.896Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_CR1y9i9fSwKOFmjAxSm98752",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/state/agent-work-contracts.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:21.901Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_4l5nZLgkhpd1TetfPAIN0653",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/state/delegations.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:29.431Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_kJlXPOZ74W6P62jBZscf3152",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:29.436Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_HSeY65JU59C6UfJSkA2B9595",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/ledger.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:29.440Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_tZZvXRXAO745NMC2qa064250",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/delegation-persistence.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:29.444Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_cW538DNWiySFT1ey4pTi1811",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:29.460Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Mna2sQ26bJkrUnSELUYj4687",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:35.582Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_0xn3gLf3khcNonmFCHVq8993",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/store.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:35.586Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_3N7xMa8TKgO71OrYRykK3059",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/operations.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:35.590Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_8m3PZFqjIAK4g2w9uVld0344",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/store-operations.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:42.196Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_GY2WOyY93P8w2Cyk30m17304",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:42.222Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_wZtlqsmRDXW5YR2GgBWK8953",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:47.746Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_U56ZDW9ikkh7F9bmkj0G6449",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:47.753Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_vM2A46tkySMwyKLzZeiA7360",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/P41-state-cluster-hardening/41.01-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:47:55.266Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_hCnSkCuMAhKCVjMvd0N27770",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:48:52.793Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_q2ewqvVJUHqb1mSxiJyv6021",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:48:59.540Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_e1pXoB17MhF47PY1qRJx2041",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-05-31T09:49:09.365Z",
+      "type": "assistant_message",
+      "content": "Document written at 439 lines. Here's the summary of what was produced:\n\n---\n\n**`state-file-ontology-2026-05-31.md`** written to `.planning/research/`. Contains:\n\n### 1. Ontological 2x2 Matrix\n- **`delegations.json`** — Runtime Operation Log (actual delegation lifecycle records)\n- **`session-continuity.json`** — Runtime State Snapshot (rich session metadata, notifications, lifecycle)\n- **`trajectory-ledger.json`** — Governance Operation Log (phase-level orchestration events)\n- **`agent-work-contracts.json`** — Governance State Snapshot (bounded work agreements)\n\n### 2. Data Flow (ASCII art)\nEnd-to-end sequence from \"agent decides to work\" through all 7 stages, with cross-file writes at each step. Key finding: **no cross-file atomicity** — each write is independently atomic but there is no rollback if the second of two coordinated writes fails.\n\n### 3. Cross-File Linkage Map\nTraced all explicit and implicit references:\n- `contract.trajectoryId` → `trajectory.id` (soft, validated by convention only)\n- `delegation.parentSessionId` → `session.id` (proven: 5 shared, 13 disjoint)\n- `pendingNotifications[].metadata.delegationId` → `delegations.json[].id` (**no referential integrity**)\n- `trajectory.evidenceRefs` → arbitrary string conventions (`dt-*`, `awc_*`)\n\n### 4. Skeleton Phase Structure\nIdentified **7 gaps** (G-01 through G-07) and proposed **6 new phases** (P41.02-P41.07):\n\n| Phase | Gap | Priority |\n|-------|-----|----------|\n| P41.02 — Cross-file transaction coordinator | G-01 (HIGH) | P2 |\n| P41.03 — Unified state path resolver | G-02 (MEDIUM) | P2 (foundation) |\n| P41.04 — flushAllStores coverage | G-03 (HIGH) | **P1** |\n| P41.05 — Boot-time init sequence audit | G-04, G-05 (HIGH) | **P1** |\n| P41.06 — Doctor health check extension | G-06 (LOW) | P3 |\n| P41.07 — Schema version contract | G-07 (LOW) | P3 |\n\nEach phase has: objective, scope boundaries, allowed surfaces, non-goals, key design, evidence criteria, and dependency links. **Execution priority: P41.05** (boot audit) and **P41.04** (flush coverage) should go first; P41.03 (path resolver) is the foundational refactor most subsequent phases depend on.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_18292e179ffekD233BaEBdvvzy"
+      }
+    }
+  ],
+  "lastMessage": "Document written at 439 lines. Here's the summary of what was produced:\n\n---\n\n**`state-file-ontology-2026-05-31.md`** written to `.planning/research/`. Contains:\n\n### 1. Ontological 2x2 Matrix\n- **`delegations.json`** — Runtime Operation Log (actual delegation lifecycle records)\n- **`session-continuity.json`** — Runtime State Snapshot (rich session metadata, notifications, lifecycle)\n- **`trajectory-ledger.json`** — Governance Operation Log (phase-level orchestration events)\n- **`agent-work-contracts.json`** — Governance State Snapshot (bounded work agreements)\n\n### 2. Data Flow (ASCII art)\nEnd-to-end sequence from \"agent decides to work\" through all 7 stages, with cross-file writes at each step. Key finding: **no cross-file atomicity** — each write is independently atomic but there is no rollback if the second of two coordinated writes fails.\n\n### 3. Cross-File Linkage Map\nTraced all explicit and implicit references:\n- `contract.trajectoryId` → `trajectory.id` (soft, validated by convention only)\n- `delegation.parentSessionId` → `session.id` (proven: 5 shared, 13 disjoint)\n- `pendingNotifications[].metadata.delegationId` → `delegations.json[].id` (**no referential integrity**)\n- `trajectory.evidenceRefs` → arbitrary string conventions (`dt-*`, `awc_*`)\n\n### 4. Skeleton Phase Structure\nIdentified **7 gaps** (G-01 through G-07) and proposed **6 new phases** (P41.02-P41.07):\n\n| Phase | Gap | Priority |\n|-------|-----|----------|\n| P41.02 — Cross-file transaction coordinator | G-01 (HIGH) | P2 |\n| P41.03 — Unified state path resolver | G-02 (MEDIUM) | P2 (foundation) |\n| P41.04 — flushAllStores coverage | G-03 (HIGH) | **P1** |\n| P41.05 — Boot-time init sequence audit | G-04, G-05 (HIGH) | **P1** |\n| P41.06 — Doctor health check extension | G-06 (LOW) | P3 |\n| P41.07 — Schema version contract | G-07 (LOW) | P3 |\n\nEach phase has: objective, scope boundaries, allowed surfaces, non-goals, key design, evidence criteria, and dependency links. **Execution priority: P41.05** (boot audit) and **P41.04** (flush coverage) should go first; P41.03 (path resolver) is the foundational refactor most subsequent phases depend on."
+}

@@ -183,9 +183,12 @@ export function persistDelegations(delegations: Delegation[]): void {
       }
 
       const childRecord = buildChildRecordFromDelegation(d)
-      void childWriter.createChildFile(d.parentSessionId, d.childSessionId, childRecord)
+      childWriter.createChildFile(d.parentSessionId, d.childSessionId, childRecord).catch((err) => {
+        // Fire-and-forget: log, never throw — old sync path already wrote to delegations.json
+        console.error(`[Harness] persistDelegations dual-write (child file): ${err instanceof Error ? err.message : String(err)}`)
+      })
 
-      void manifestWriter.addChild({
+      manifestWriter.addChild({
         rootMainSessionID: d.parentSessionId, // fallback — correct for depth-1; regeneratable from continuity
         childSessionID: d.childSessionId,
         parentSessionID: d.parentSessionId,
@@ -193,6 +196,8 @@ export function persistDelegations(delegations: Delegation[]): void {
         delegatedBy: d.agent,
         subagentType: "",
         childFile: `${d.childSessionId}.json`,
+      }).catch((err) => {
+        console.error(`[Harness] persistDelegations dual-write (manifest): ${err instanceof Error ? err.message : String(err)}`)
       })
     }
   } catch (err) {

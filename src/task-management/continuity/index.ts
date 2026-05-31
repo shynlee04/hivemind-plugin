@@ -382,7 +382,7 @@ export function recordSessionContinuity(record: SessionContinuityRecord): Sessio
     try {
       const projectRoot = dirname(dirname(getContinuityFile()))
       const childWriter = new ChildWriter({ projectRoot })
-      void childWriter.createChildFile(record.sessionID, record.sessionID, {
+      childWriter.createChildFile(record.sessionID, record.sessionID, {
         sessionID: record.sessionID,
         parentSessionID: record.sessionID,
         delegationDepth: 0,
@@ -396,6 +396,8 @@ export function recordSessionContinuity(record: SessionContinuityRecord): Sessio
         lifecycle: record.metadata.lifecycle,
         pendingNotifications: record.metadata.pendingNotifications?.length ? record.metadata.pendingNotifications : undefined,
         compactionCheckpoint: record.metadata.compactionCheckpoint,
+      }).catch((err) => {
+        console.error(`[Harness] recordSessionContinuity dual-write error: ${err instanceof Error ? err.message : String(err)}`)
       })
     } catch (err) {
       console.error(`[Harness] recordSessionContinuity dual-write error: ${err instanceof Error ? err.message : String(err)}`)
@@ -459,7 +461,7 @@ export function patchSessionContinuity(
           const parentID = continuityRecord.metadata.delegation?.rootID ?? sessionID
           const fileExists = await childWriter.childFileExists(parentID, sessionID)
           if (!fileExists) return
-          void childWriter.createChildFile(parentID, sessionID, {
+          childWriter.createChildFile(parentID, sessionID, {
             sessionID,
             parentSessionID: parentID,
             delegationDepth: continuityRecord.metadata.delegation?.depth ?? 0,
@@ -473,6 +475,8 @@ export function patchSessionContinuity(
             lifecycle: patch.lifecycle,
             pendingNotifications: patch.pendingNotifications?.length ? patch.pendingNotifications : undefined,
             compactionCheckpoint: patch.compactionCheckpoint,
+          }).catch((err) => {
+            console.warn(`[Harness] patchSessionContinuity dual-write error for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`)
           })
         } catch (err) {
           console.warn(`[Harness] patchSessionContinuity dual-write: skipping session-tracker write for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`)

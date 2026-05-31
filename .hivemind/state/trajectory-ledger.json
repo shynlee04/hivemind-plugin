@@ -442,6 +442,316 @@
       ],
       "createdAt": 1780156291031,
       "updatedAt": 1780171536521
+    },
+    "traj-phase-40.03": {
+      "id": "traj-phase-40.03",
+      "parentId": "traj-phase-40",
+      "status": "completed",
+      "phase": "P40.03",
+      "scope": "Dead auto-loop detection and prevention",
+      "allowedSurfaces": [
+        "src/features/auto-loop/",
+        "src/routing/",
+        "src/shared/"
+      ],
+      "forbiddenSurfaces": [
+        ".opencode/"
+      ],
+      "evidenceRefs": [
+        ".planning/phases/P40-public-ship-readiness/40.03-RESEARCH.md",
+        "commit:f85615fc",
+        "commit:0babc2a1",
+        "commit:d9077b02",
+        "commit:6d3b033c"
+      ],
+      "checkpoints": [],
+      "events": [
+        {
+          "eventId": "ev-p4003-start",
+          "eventType": "research:start",
+          "summary": "Starting P40.03 research",
+          "createdAt": 1780171562220
+        },
+        {
+          "eventId": "ev-p4003-planning",
+          "eventType": "planning:start",
+          "summary": "Research committed (62ee1c70). Delegating plan to gsd-planner.",
+          "createdAt": 1780171865726
+        },
+        {
+          "eventId": "ev-p4003-executing",
+          "eventType": "execution:start",
+          "summary": "Plan verified (7/7 PASS). Executing.",
+          "createdAt": 1780172323938
+        },
+        {
+          "eventId": "ev-p4003-complete",
+          "eventType": "execution:complete",
+          "summary": "P40.03 DONE. Typecheck clean, 2985 tests pass, grep gates green. Auto-loop + ralph-loop wired to session-hooks.ts.",
+          "createdAt": 1780172877477
+        }
+      ],
+      "createdAt": 1780171562220,
+      "updatedAt": 1780172877477
+    },
+    "traj-phase-40.04": {
+      "id": "traj-phase-40.04",
+      "phaseRef": "P40.04",
+      "status": "completed",
+      "createdAt": 1780173146053,
+      "updatedAt": 1780173146053,
+      "evidenceRefs": [
+        ".planning/phases/P40-public-ship-readiness/40.04-RESEARCH.md",
+        "commit:23d20f91"
+      ],
+      "events": [
+        {
+          "eventId": "ev-p4004-init",
+          "eventType": "trajectory:created",
+          "summary": "P40.04 trajectory created",
+          "createdAt": 1780173146053
+        },
+        {
+          "eventId": "ev-p4004-complete",
+          "eventType": "execution:complete",
+          "summary": "NO-OP: governance already wired. Only stale comment fixed (23d20f91). Typecheck clean, 2985 tests pass.",
+          "createdAt": 1780173146053
+        }
+      ]
+    },
+    "traj-phase-40.05": {
+      "id": "traj-phase-40.05",
+      "phaseRef": "P40.05",
+      "status": "completed",
+      "createdAt": 1780173146053,
+      "updatedAt": 1780215191645,
+      "evidenceRefs": [
+        "commit:4ba16c9c",
+        "commit:fb9aac0d"
+      ],
+      "events": [
+        {
+          "eventId": "ev-p4005-init",
+          "eventType": "trajectory:created",
+          "summary": "P40.05 trajectory created for state dir flush on bootstrap",
+          "createdAt": 1780173146053
+        },
+        {
+          "eventId": "ev-p4005-planning",
+          "eventType": "planning:start",
+          "summary": "Research committed. Delegating plan to gsd-planner.",
+          "createdAt": 1780173372009
+        },
+        {
+          "eventId": "ev-p4005-executing",
+          "eventType": "execution:start",
+          "summary": "Plan committed (72b2f939). Executing.",
+          "createdAt": 1780173527005
+        },
+        {
+          "eventId": "ev-p4005-complete",
+          "eventType": "execution:complete",
+          "summary": "P40.05 DONE. Typecheck clean, 2990 tests pass. persistStore fix + flush tests + shutdown extraction.",
+          "createdAt": 1780215191645
+        }
+      ]
+    },
+    "traj-phase-40.06": {
+      "id": "traj-phase-40.06",
+      "phaseRef": "P40.06",
+      "status": "completed",
+      "createdAt": 1780215191645,
+      "updatedAt": 1780217514286,
+      "evidenceRefs": [
+        "commit:b299d6f7",
+        "commit:929f08db",
+        "commit:436d393b",
+        "commit:f8235d37"
+      ],
+      "events": [
+        {
+          "eventId": "ev-p4006-init",
+          "eventType": "trajectory:created",
+          "summary": "P40.06 trajectory created for npm package publishing readiness",
+          "createdAt": 1780215191645
+        },
+        {
+          "eventId": "ev-p4006-planning",
+          "eventType": "planning:start",
+          "summary": "Research committed. Delegating plan.",
+          "createdAt": 1780215630608
+        },
+        {
+          "eventId": "ev-p4006-executing",
+          "eventType": "execution:start",
+          "summary": "Plan committed (78f64c5c). Executing.",
+          "createdAt": 1780215836387
+        },
+        {
+          "eventId": "ev-p4006-complete",
+          "eventType": "execution:complete",
+          "summary": "P40.06 DONE. Package renamed to hivemind-3.0, bloat fixed (23.4MB→2.3MB), publish.yml added. Typecheck clean, 2989+ tests pass.",
+          "createdAt": 1780217514286
+        }
+      ]
+    },
+    "traj-phase-40.07": {
+      "id": "traj-phase-40.07",
+      "phaseRef": "P40.07",
+      "status": "completed",
+      "createdAt": 1780217514286,
+      "updatedAt": 1780219069062,
+      "evidenceRefs": [
+        "commit:c0f8475f",
+        "commit:8a694c3e",
+        "commit:c3cc9134"
+      ],
+      "events": [
+        {
+          "eventId": "ev-p4007-init",
+          "eventType": "trajectory:created",
+          "summary": "P40.07 trajectory created for E2E integration test",
+          "createdAt": 1780217514286
+        },
+        {
+          "eventId": "ev-p4007-planning",
+          "eventType": "planning:start",
+          "summary": "Research committed. Delegating plan.",
+          "createdAt": 1780217966368
+        },
+        {
+          "eventId": "ev-p4007-executing",
+          "eventType": "execution:start",
+          "summary": "Plan committed (211d4c46). Executing final phase.",
+          "createdAt": 1780218315946
+        },
+        {
+          "eventId": "ev-p4007-complete",
+          "eventType": "execution:complete",
+          "summary": "P40.07 DONE — SHIP GATE PASSED. 3013 tests, typecheck clean, 2.3MB pack. All P40 phases complete."
+        }
+      ]
+    },
+    "traj-phase-41.01": {
+      "id": "traj-phase-41.01",
+      "phaseRef": "P41.01",
+      "status": "researching",
+      "createdAt": 1780220083385,
+      "updatedAt": 1780220083385,
+      "evidenceRefs": [],
+      "events": [
+        {
+          "eventId": "ev-p4101-init",
+          "eventType": "trajectory:created",
+          "summary": "P41.01: Investigate state file redundancy vs session-tracker",
+          "createdAt": 1780220083385
+        }
+      ]
+    },
+    "traj-P41-A": {
+      "id": "traj-P41-A",
+      "phaseRef": "P41-A",
+      "status": "completed",
+      "createdAt": 1780222740657,
+      "updatedAt": 1780224637221,
+      "evidenceRefs": [
+        "commit:1843f58c"
+      ],
+      "events": [
+        {
+          "eventId": "ev-p41a-init",
+          "eventType": "trajectory:created",
+          "summary": "P41-A: Investigate merge of delegations.json + session-continuity.json into session-tracker",
+          "createdAt": 1780222740657
+        },
+        {
+          "eventId": "ev-p41a-spec",
+          "eventType": "spec:complete",
+          "summary": "SPEC passed ambiguity=0.111. Starting assumptions+research.",
+          "createdAt": 1780223090791
+        },
+        {
+          "eventId": "ev-p41a-research",
+          "eventType": "research:complete",
+          "summary": "SPEC(0.111)+ASSUMPTIONS(25 assumptions)+RESEARCH(650 lines) complete. Field mapping done. Routing planner.",
+          "createdAt": 1780223518016
+        },
+        {
+          "eventId": "ev-p41a-exec",
+          "eventType": "execution:start",
+          "summary": "Plan checked 7/7 PASS. Executing 4 tasks.",
+          "createdAt": 1780224378371
+        },
+        {
+          "eventId": "ev-p41a-done",
+          "eventType": "execution:complete",
+          "summary": "P41-A DONE. Zero data loss confirmed. SUMMARY.md produced for downstream.",
+          "createdAt": 1780224637221
+        }
+      ]
+    },
+    "traj-P41-B": {
+      "id": "traj-P41-B",
+      "phaseRef": "P41-B",
+      "status": "completed",
+      "createdAt": 1780224637221,
+      "updatedAt": 1780225977110,
+      "evidenceRefs": [],
+      "events": [
+        {
+          "eventId": "ev-p41b-init",
+          "eventType": "trajectory:created",
+          "summary": "P41-B: Add gap fields to session-tracker types + redirect writers",
+          "createdAt": 1780224637221
+        },
+        {
+          "eventId": "ev-p41b-research",
+          "eventType": "research:complete",
+          "summary": "SPEC+ASSUMPTIONS+RESEARCH done. 23 assumptions, 7 reqs, redirect plan mapped.",
+          "createdAt": 1780225088097
+        },
+        {
+          "eventId": "ev-p41b-exec",
+          "eventType": "execution:start",
+          "summary": "Plan checked 7/7 PASS. Executing 5 tasks.",
+          "createdAt": 1780225316500
+        },
+        {
+          "eventId": "ev-p41b-done",
+          "eventType": "execution:complete",
+          "summary": "P41-B DONE. 7 fields added, dual-write active, governance standalone. Typecheck+3012 tests pass.",
+          "createdAt": 1780225977110
+        }
+      ]
+    },
+    "traj-P41-C": {
+      "id": "traj-P41-C",
+      "phaseRef": "P41-C",
+      "status": "executing",
+      "createdAt": 1780225977110,
+      "updatedAt": 1780226693120,
+      "evidenceRefs": [],
+      "events": [
+        {
+          "eventId": "ev-p41c-init",
+          "eventType": "trajectory:created",
+          "summary": "P41-C: Update readers to use session-tracker instead of old files",
+          "createdAt": 1780225977110
+        },
+        {
+          "eventId": "ev-p41c-research",
+          "eventType": "research:complete",
+          "summary": "SPEC+ASSUMPTIONS+RESEARCH done. Readers analyzed.",
+          "createdAt": 1780226326894
+        },
+        {
+          "eventId": "ev-p41c-exec",
+          "eventType": "execution:start",
+          "summary": "Plan checked PASS (warnings fixed). Executing 5 tasks.",
+          "createdAt": 1780226693120
+        }
+      ]
     }
-  }
+  },
+  "phase40Completed": true
 }
