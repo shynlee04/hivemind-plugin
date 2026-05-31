@@ -26,3 +26,18 @@ export type CapabilityMutationEvent = {
   readonly sessionId: string;
   readonly timestamp: string;
 };
+
+export type AgentCapabilityProfileMatcher = {
+  readonly includes?: readonly string[];
+  readonly excludes?: readonly string[];
+};
+
+export type AgentCapabilityProfile = {
+  readonly id: string;
+  readonly match: AgentCapabilityProfileMatcher;
+  readonly categories: readonly ToolCategory[];
+  readonly tools: readonly string[];
+  readonly rationale: string;
+  readonly fallback?: boolean;
+  readonly guidance?: string;
+};

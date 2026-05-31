@@ -1,7 +1,9 @@
 import { ToolCategory, type ToolCapabilityRecord, type CapabilitySnapshot, type CapabilityMutationEvent } from "./types.js";
+import { resolveSeedProfileForAgent, resolveToolsForSeedProfile } from "./agent-capability-profiles.js";
 
 export { ToolCategory } from "./types.js";
-export type { ToolCapabilityRecord, CapabilitySnapshot, CapabilityMutationEvent } from "./types.js";
+export type { ToolCapabilityRecord, CapabilitySnapshot, CapabilityMutationEvent, AgentCapabilityProfile } from "./types.js";
+export { AGENT_CAPABILITY_PROFILES, UNKNOWN_AGENT_CAPABILITY_PROFILE, resolveSeedProfileForAgent, resolveToolsForSeedProfile } from "./agent-capability-profiles.js";
 
 export const READ_ONLY_TOOLS = ["read", "glob", "grep"] as const;
 export const WRITE_CAPABLE_TOOLS = ["read", "edit", "write", "bash", "glob", "grep", "execute-slash-command"] as const;
@@ -15,6 +17,7 @@ export const TOOL_CAPABILITY_MAP: ReadonlyMap<string, ToolCapabilityRecord> = ne
   ["glob", { category: ToolCategory.Read, description: "OpenCode built-in glob", source: "built-in" }],
   ["grep", { category: ToolCategory.Read, description: "OpenCode built-in grep", source: "built-in" }],
   ["execute-slash-command", { category: ToolCategory.Delegate, description: "OpenCode slash command runner", source: "built-in" }],
+  ["task", { category: ToolCategory.Delegate, description: "OpenCode native subagent dispatch tool", source: "built-in" }],
   ["delegate-task", { category: ToolCategory.Delegate, description: "Delegate work to child session", source: "harness" }],
   ["delegation-status", { category: ToolCategory.Delegate, description: "Poll delegation status", source: "harness" }],
   ["run-background-command", { category: ToolCategory.Delegate, description: "Run background shell command", source: "harness" }],
@@ -51,29 +54,10 @@ export class CapabilityGate {
   }
 
   resolveToolsForAgent(agentName: string): string[] {
-    const normalized = agentName.toLowerCase()
-    if (normalized.includes("l0-orchestrator") || normalized.includes("l1-coordinator")) {
-      return Array.from(TOOL_CAPABILITY_MAP.keys())
-    }
-    if (normalized.includes("l2")) {
-      const sessionReadWrite = Array.from(TOOL_CAPABILITY_MAP.entries())
-        .filter(([, record]) => [ToolCategory.Session, ToolCategory.Read, ToolCategory.Write].includes(record.category))
-        .map(([name]) => name)
-      if (normalized.includes("verifier") || normalized.includes("auditor")) {
-        const govern = Array.from(TOOL_CAPABILITY_MAP.entries())
-          .filter(([, record]) => record.category === ToolCategory.Govern)
-          .map(([name]) => name)
-        return [...sessionReadWrite, ...govern]
-      }
-      return sessionReadWrite
-    }
-    if (normalized.includes("hf-")) {
-      const configRead = Array.from(TOOL_CAPABILITY_MAP.entries())
-        .filter(([, record]) => [ToolCategory.Config, ToolCategory.Read].includes(record.category))
-        .map(([name]) => name)
-      return configRead
-    }
-    return [...this.readOnlyTools]
+    const profile = resolveSeedProfileForAgent(agentName);
+    if (profile.fallback) return [...this.readOnlyTools];
+    const tools = resolveToolsForSeedProfile(profile, TOOL_CAPABILITY_MAP);
+    return tools.length > 0 ? tools : [...this.readOnlyTools];
   }
 
   grantCapability(sessionId: string, agentName: string, toolName: string): void {
