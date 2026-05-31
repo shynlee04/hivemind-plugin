@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-05-31T11:32:37.613Z"
+last_updated: "2026-05-31T11:52:00.000Z"
 progress:
   total_phases: 48
   completed_phases: 17
   total_plans: 112
-  completed_plans: 96
+  completed_plans: 97
   percent: 35
 ---
 
@@ -17,7 +17,8 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-31
-**Last advance:** P41-C — Update 5 readers to prefer session-tracker: continuity-reader.ts, merge order flip, hivemind-session-view redirect, hook enrichment
+**Last advance:** P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write. Commit `3b8b64c2`.
+**Completed:** P41-D-02 — No-op persistStore + 8 dead exports removed
 **Current focus:** Phase 42 — (next phase after P41 cluster redesign)
 **Current focus:** Phase 39 — Integration Completion & Hardening: fix 18 timeout test failures, execute C6/C7/C8, GSD re-validation, compliance audit
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
@@ -364,6 +365,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-05-29** — **Phase 25 EXECUTION COMPLETE** — 6 plans in 4 waves executed. 34 trajectory tests (4 files), 20 contract tests (2 files). lifecycle.ts with state machine + 4 transition functions. bounds.ts unified constants. findContractsByTrajectory cross-linking. deriveSurface() verified at delegation-persistence.ts:22. Typecheck clean, 2844 tests pass, 0 regressions. TDD gate: test(...) before feat(...).
 - **2026-05-29** — **Phase 25.2 COMPLETE** — Trajectory Immutability Guard. All 4 mutation operations (eventTrajectory, attachTrajectoryEvidence, checkpointTrajectory, closeTrajectory) throw on closed trajectories. 7 new tests (T-01 through T-06), 2857 total pass. Inline guards, no shared helper. Read operations unaffected. Commit `7f14b58c`.
 - **2026-05-29** — **Phase 25.3 COMPLETE** — Pressure Authority Matrix Completion. All 24 plugin tools registered (was 16). 8 missing tools added: execute-slash-command, session-tracker, session-hierarchy, session-context, create-governance-session, bootstrap-init, bootstrap-recover, hivemind-session-view. Coverage test: 17 assertions. Commit `9ab529bb`.
+- **2026-05-31** — **P41-D-02 COMPLETE** — persistStore() no-op (no disk writes), flushAllStores() and registerShutdownHandlers() removed as dead exports. 8 dead exports removed: getSessionToolProfile, getSessionPromptParams, getSessionContinuityMetadata, patchSessionDelegationPacket, getGovernancePersistenceState, recordGovernancePersistenceState, flushAllStores, registerShutdownHandlers. Import cleanup: removed getCachedConfig, redactBoundaryFields, mkdirSync, writeFileSync, getAllStoreCaches, writeStoreToDisk. In-memory cache + session-tracker dual-write preserved. Typecheck clean. 2 atomic commits (9dbd0a5d, 1624d0fd).
 - **2026-05-29** — **Phases 25.1-25.3 INSERTED** — Task tool integration (CRITICAL), trajectory immutability guard (HIGH), pressure authority matrix completion (MEDIUM). System audit revealed trajectory and agent-work-contract modules work in isolation but are NOT wired into the delegation lifecycle. Native task tool bypasses both modules entirely. Research and verification completed by 3 sequential agents. Hook point verified at `src/features/session-tracker/tool-delegation.ts:227` — covers BOTH native task AND delegate-task tools.
 - **2026-05-29** — **Phase 24 parent governance + gap phase closure:**
   - P23.3 (GAP-01) ARCHIVED — PASSED (deferred) — requires live OpenCode L1 UAT, cannot run headless. Archive note at `.planning/phases/P23.3-archive.md`.
