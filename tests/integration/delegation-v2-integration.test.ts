@@ -1,3 +1,7 @@
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+
 import { createDelegateTaskTool } from "../../src/tools/delegation/delegate-task.js"
 import { createDelegationStatusTool } from "../../src/tools/delegation/delegation-status.js"
 import { AutoLoopEngine } from "../../src/features/auto-loop/index.js"
@@ -37,6 +41,18 @@ function createRuntimeClient() {
 }
 
 describe("delegation v2 plugin integration", () => {
+  let stateDir: string
+
+  beforeAll(() => {
+    stateDir = mkdtempSync(join(tmpdir(), "delegation-v2-integration-"))
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+  })
+
+  afterAll(() => {
+    delete process.env.OPENCODE_HARNESS_STATE_DIR
+    rmSync(stateDir, { recursive: true, force: true })
+  })
+
   it("starts delegate-task through the SDK child-session starter", async () => {
     const client = createRuntimeClient()
     const modules = setupDelegationModules({ client: client as never, persistDelegations: () => undefined, projectDirectory: "/tmp/project", recordCategoryGateask: () => true })
