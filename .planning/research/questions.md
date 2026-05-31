@@ -25,6 +25,34 @@
 ### Related Artifacts
 
 - `.planning/notes/tmux-integration-vision-2026-05-31.md`
+- `.planning/notes/tmux-implementation-strategy-2026-05-31.md`
 - `.planning/seeds/tmux-visual-orchestration-layer-2026-05-31.md`
+- `.planning/todos/pending/fork-opencode-tmux-audit.md`
 - `.planning/research/shell-pty-control-plane-research-2026-05-08.md`
 - `.planning/research/external-repo-survey-pty-background-delegation-2026-05-18.md`
+
+---
+
+## Hivemind-Tmux Integration Architecture
+
+**Date:** 2026-05-31
+**Source:** hm-explore follow-up session
+**Priority:** High
+**Decision:** Fork and extend `opencode-tmux`
+
+### Questions
+
+8. **Session-tracker ↔ Tmux pane synchronization** — How to keep Hivemind's session-tracker in sync with Tmux pane state? When a pane is killed manually, how does session-tracker know? When session-tracker cleans up a session, how does the pane close?
+
+9. **Orchestrator control flow** — What's the exact sequence when a human prompts the orchestrator to intervene in a Tmux session? Human says "steer session X" → orchestrator calls what? → Tmux receives what? → Subagent sees what?
+
+10. **Pane grid planning algorithm** — How to calculate optimal pane layout given N active subagents? What are the constraints (min pane size, aspect ratio, readability)?
+
+11. **OpenCode server mode requirement** — The fork requires OpenCode to run with `--port`. How does this affect Hivemind's deployment model? Is server mode the default, or opt-in?
+
+12. **Fallback architecture** — When Tmux is unavailable, what's the degradation path? Headless delegation only? Or partial visibility via other means?
+
+### New Related Artifacts
+
+- `.planning/notes/tmux-implementation-strategy-2026-05-31.md`
+- `.planning/todos/pending/fork-opencode-tmux-audit.md`
