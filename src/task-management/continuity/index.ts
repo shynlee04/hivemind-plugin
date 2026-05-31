@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, resolve } from "node:path"
 import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { redactBoundaryFields } from "../../shared/security/redaction.js"
+import { ChildWriter } from "../../features/session-tracker/persistence/child-writer.js"
 import { getCachedConfig } from "../../config/subscriber.js"
 import { getStoreCache, setStoreCache, getAllStoreCaches } from "./store-cache.js"
 import type {
@@ -375,6 +376,32 @@ export function recordSessionContinuity(record: SessionContinuityRecord): Sessio
 
   ensureStoreLoaded().sessions[record.sessionID] = normalized
   persistStore()
+
+  // --- P41-B: Dual-write to session-tracker (fire-and-forget) ---
+  if (record.sessionID.startsWith("ses_")) {
+    try {
+      const projectRoot = dirname(dirname(getContinuityFile()))
+      const childWriter = new ChildWriter({ projectRoot })
+      void childWriter.createChildFile(record.sessionID, record.sessionID, {
+        sessionID: record.sessionID,
+        parentSessionID: record.sessionID,
+        delegationDepth: 0,
+        delegatedBy: { agentName: "", model: "", tool: "", description: "", subagentType: "" },
+        created: new Date().toISOString(),
+        updated: new Date().toISOString(),
+        status: "active",
+        mainAgent: { name: "", model: "" },
+        turns: [],
+        children: [],
+        lifecycle: record.metadata.lifecycle,
+        pendingNotifications: record.metadata.pendingNotifications?.length ? record.metadata.pendingNotifications : undefined,
+        compactionCheckpoint: record.metadata.compactionCheckpoint,
+      })
+    } catch (err) {
+      console.error(`[Harness] recordSessionContinuity dual-write error: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
   return cloneContinuityRecord(normalized)
 }
 
@@ -418,6 +445,42 @@ export function patchSessionContinuity(
 
   store.sessions[sessionID] = next
   persistStore()
+
+  // --- P41-B: Dual-write to session-tracker (fire-and-forget) ---
+  if (sessionID.startsWith("ses_")) {
+    const hasLifecycleFields = patch.lifecycle || patch.pendingNotifications || patch.compactionCheckpoint
+    if (hasLifecycleFields) {
+      void (async () => {
+        try {
+          const projectRoot = dirname(dirname(getContinuityFile()))
+          const childWriter = new ChildWriter({ projectRoot })
+          const continuityRecord = store.sessions[sessionID]
+          if (!continuityRecord) return
+          const parentID = continuityRecord.metadata.delegation?.rootID ?? sessionID
+          const fileExists = await childWriter.childFileExists(parentID, sessionID)
+          if (!fileExists) return
+          void childWriter.createChildFile(parentID, sessionID, {
+            sessionID,
+            parentSessionID: parentID,
+            delegationDepth: continuityRecord.metadata.delegation?.depth ?? 0,
+            delegatedBy: { agentName: "", model: "", tool: "", description: "", subagentType: "" },
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+            status: "active",
+            mainAgent: { name: "", model: "" },
+            turns: [],
+            children: [],
+            lifecycle: patch.lifecycle,
+            pendingNotifications: patch.pendingNotifications?.length ? patch.pendingNotifications : undefined,
+            compactionCheckpoint: patch.compactionCheckpoint,
+          })
+        } catch (err) {
+          console.warn(`[Harness] patchSessionContinuity dual-write: skipping session-tracker write for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`)
+        }
+      })()
+    }
+  }
+
   return cloneContinuityRecord(next)
 }
 
