@@ -202,12 +202,12 @@ describe("updateChildStatus", () => {
     expect(parsed.mainAgent.name).toBe("Hm-L2-Investigator")
   })
 
-  it("propagates errors for non-existent child file (RC-5)", async () => {
-    // RC-5: Write errors are no longer swallowed — they propagate to callers
-    // and are enqueued to the retry queue for automatic retry.
+  it("silently no-ops for non-existent child file (P41-G)", async () => {
+    // P41-G: ENOENT errors are caught locally — method silently returns
+    // instead of propagating the error to the console.warn TUI leak.
     await expect(
       writer.updateChildStatus(parentSessionID, "ses_nonexistent12345", "completed"),
-    ).rejects.toThrow(/ENOENT/)
+    ).resolves.toBeUndefined()
   })
 })
 
