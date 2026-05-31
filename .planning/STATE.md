@@ -16,8 +16,8 @@ progress:
 
 # Hivemind — State
 
-**Last updated:** 2026-05-30
-**Last advance:** Phase 39 planning — 5 plans created across 3 waves, absorbing C6/C7/C8 concern remediation, GSD re-validation
+**Last updated:** 2026-05-31
+**Last advance:** P40.07 — Terminal ship gate: 23 integration tests (24 tools + 8+ hooks), typecheck 0 errors, 3,013 tests pass, build clean, 2.3 MB pack with zero internal leaks
 **Current focus:** Phase 39 — Integration Completion & Hardening: fix 18 timeout test failures, execute C6/C7/C8, GSD re-validation, compliance audit
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
 **Phase 24.5:** ✅ COMPLETE — 4 broken workflow step paths fixed (commit `158a9d66`). Typecheck clean.

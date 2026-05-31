@@ -1712,7 +1712,7 @@ Plans:
 | P40.04 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
 | P40.05 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
 | P40.06 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
-| P40.07 | `/gsd-plan-phase` | `gsd-phase-researcher` → `gsd-planner` | RESEARCH → SPEC → PLAN | `gsd-plan-checker` |
+| P40.07 | ✅ COMPLETE | Direct execution | test(P40.07-01) + test(P40.07-02) | c0f8475f, 8a694c3e, c3cc9134 |
 
 ### Sequential Gate Enforcement
 
@@ -1723,7 +1723,7 @@ P40.03 gate PASS → P40.04 research starts
 P40.04 gate PASS → P40.05 research starts
 P40.05 gate PASS → P40.06 research starts
 P40.06 gate PASS → P40.07 research starts
-P40.07 gate PASS → SHIP
+P40.07 gate PASS → ✅ SHIP (2026-05-31)
 ```
 
 NO phase starts research until the previous phase's plan passes `gsd-plan-checker`.
@@ -1737,6 +1737,7 @@ P40.03 (auto-loop wiring) ──┤── P40.07 (E2E verification) → SHIP
 P40.04 (governance wiring) ──┤
 P40.05 (state persistence) ──┤
 P40.06 (npm publishing) ─────┘
+✅ P40.07 COMPLETE — SHIP GATE PASSED
 ```
 
 ### Execution Order (Wave-Based)
@@ -1792,8 +1793,10 @@ P40.06 (npm publishing) ─────┘
 - **Problem:** Name "hivemind" collides with existing npm package. bun-pty in wrong dependency class. Missing publishConfig.
 - **Delivers:** Unique package name, correct dependencies, publish CI workflow, verified package contents
 
-#### P40.07: End-to-End Integration Verification
+#### P40.07: End-to-End Integration Verification ✅
 - **Severity:** P0 — ship gate
 - **Scope:** Integration tests, bootstrap verification, tool smoke tests
 - **Problem:** No test verifies the actual user experience (install → plugin loads → tools work → primitives copied).
 - **Delivers:** Simulated user install test, plugin registration E2E, tool smoke tests, bootstrap flow E2E, sync-oss verification
+- **Status:** ✅ COMPLETE (2026-05-31) — 23 integration tests, 24 tools verified, 8+ hooks verified, typecheck 0 errors, 3,013 tests pass, build clean, 2.3 MB pack with zero internal leaks
+- **Commits:** `c0f8475f` (tool tests), `8a694c3e` (hook tests), `c3cc9134` (summary)
