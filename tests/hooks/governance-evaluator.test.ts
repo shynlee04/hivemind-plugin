@@ -1,9 +1,30 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { afterAll, beforeAll, describe, it, expect, beforeEach } from "vitest"
 import { evaluateGovernance } from "../../src/features/governance-engine/evaluator.js"
 import type { GovernanceRule } from "../../src/shared/types.js"
 import { readGovernanceState, writeGovernanceState } from "../../src/features/governance/persistence.js"
+import { mkdtempSync, rmSync } from "node:fs"
+import { join } from "node:path"
+import { tmpdir } from "node:os"
 
 describe("evaluateGovernance", () => {
+  let stateDir: string
+  let previousStateDir: string | undefined
+
+  beforeAll(() => {
+    stateDir = mkdtempSync(join(tmpdir(), "hivemind-gov-test-"))
+    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+  })
+
+  afterAll(() => {
+    if (previousStateDir) {
+      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
+    } else {
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+    }
+    rmSync(stateDir, { recursive: true, force: true })
+  })
+
   beforeEach(() => {
     // Reset violations in governance persistence before each test
     const state = readGovernanceState()

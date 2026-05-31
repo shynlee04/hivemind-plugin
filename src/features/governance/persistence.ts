@@ -22,14 +22,31 @@ import type { GovernancePersistenceState } from "../../shared/types.js"
 // ---------------------------------------------------------------------------
 
 /**
+ * Resolves the state directory, honouring `OPENCODE_HARNESS_STATE_DIR` when set.
+ *
+ * Mirrors the env-var priority used by `resolveContinuityFilePath` in the
+ * continuity store so that tests (and callers) can isolate writes to a temp
+ * directory via the environment variable.
+ *
+ * @param projectRoot - Optional project root directory.
+ * @returns Absolute path to the state directory.
+ */
+function resolveStateDir(projectRoot?: string): string {
+  const envDir = process.env.OPENCODE_HARNESS_STATE_DIR?.trim()
+  if (envDir && envDir.length > 0) {
+    return resolve(envDir)
+  }
+  return getCanonicalStateDir(projectRoot)
+}
+
+/**
  * Resolves the absolute path to the governance state JSON file.
  *
  * @param projectRoot - Optional project root directory. Defaults to `process.cwd()`.
  * @returns Absolute path to `.hivemind/state/governance-state.json`.
  */
 export function getGovernanceStatePath(projectRoot?: string): string {
-  const stateDir = getCanonicalStateDir(projectRoot)
-  return resolve(stateDir, "governance-state.json")
+  return resolve(resolveStateDir(projectRoot), "governance-state.json")
 }
 
 // ---------------------------------------------------------------------------
