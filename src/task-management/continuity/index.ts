@@ -1,11 +1,9 @@
 import { randomUUID } from "node:crypto"
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
+import { existsSync, readFileSync, renameSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
-import { redactBoundaryFields } from "../../shared/security/redaction.js"
 import { ChildWriter } from "../../features/session-tracker/persistence/child-writer.js"
-import { getCachedConfig } from "../../config/subscriber.js"
-import { getStoreCache, setStoreCache, getAllStoreCaches } from "./store-cache.js"
+import { getStoreCache, setStoreCache } from "./store-cache.js"
 import type {
   CapturedResult,
   CompactionCheckpointData,
@@ -310,34 +308,11 @@ function loadStoreFromDisk(projectRoot?: string): ContinuityStoreFile {
   return emptyStore()
 }
 
-function writeStoreToDisk(filePath: string, store: ContinuityStoreFile): void {
-  mkdirSync(dirname(filePath), { recursive: true })
-  // Atomic write: write to temp file first, then rename to prevent
-  // corrupt reads if the process crashes mid-write.
-  const tmpFile = `${filePath}.${process.pid}.${randomUUID()}.tmp`
-  const redactedStore = redactBoundaryFields(store, {
-    redactFieldNames: ["prompt", "result", "error", "output", "resultSummary", "summary", "lastMessageOutput", "description"],
-  })
-  writeFileSync(tmpFile, `${JSON.stringify(redactedStore, null, 2)}\n`, "utf8")
-  renameSync(tmpFile, filePath)
-}
 
-function persistStore(projectRoot?: string): void {
-  // CA-03: atomic_commit toggle gate (D-15)
-  // When false, state changes stay in-memory (batched).
-  // NOTE: In-memory batching behavior is a lifecycle concern for CA-04.
-  // For CA-03, we gate the write but keep the store updated in memory.
-  const config = projectRoot
-    ? getCachedConfig(projectRoot)
-    : getCachedConfig()
-  const store = ensureStoreLoaded(projectRoot)
-  store.updatedAt = Date.now()
-  if (!config.atomic_commit) {
-    return
-  }
 
-  const filePath = getContinuityFile(projectRoot)
-  writeStoreToDisk(filePath, store)
+function persistStore(_projectRoot?: string): void {
+  // REQ-P41D-02: No disk write. In-memory store is kept for current-process reads.
+  // Session-tracker dual-write is handled by recordSessionContinuity/patchSessionContinuity.
 }
 
 // ---------------------------------------------------------------------------
@@ -544,33 +519,9 @@ export function recordGovernancePersistenceState(_state: GovernancePersistenceSt
 }
 
 export function flushAllStores(): void {
-  const caches = getAllStoreCaches()
-  for (const [filePath, store] of caches.entries()) {
-    try {
-      writeStoreToDisk(filePath, store)
-    } catch (err) {
-      console.error(`[Harness] Failed to flush store at ${filePath} during process exit: ${err}`)
-    }
-  }
+  // REQ-P41D-02: No flush to disk. In-memory cache is sufficient for current-process reads.
 }
 
 export function registerShutdownHandlers(): void {
-  if (typeof process === "undefined") return
-  process.on("exit", () => {
-    flushAllStores()
-  })
-
-  process.on("SIGINT", () => {
-    flushAllStores()
-    process.exit(130)
-  })
-
-  process.on("SIGTERM", () => {
-    flushAllStores()
-    process.exit(143)
-  })
-}
-
-if (typeof process !== "undefined" && !process.env.VITEST) {
-  registerShutdownHandlers()
+  // REQ-P41D-02: No process-exit flush. Session-tracker handles cross-restart persistence.
 }
