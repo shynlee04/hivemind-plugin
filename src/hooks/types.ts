@@ -58,4 +58,9 @@ export interface HookDependencies {
    * @see D-01, D-02, D-03 in BOOT-09-CONTEXT.md
    */
   isMainSession?: (sessionId: string) => boolean
+  /**
+   * Project root directory for resolving session-tracker files.
+   * Passed to continuity-reader enrichment helpers.
+   */
+  projectDirectory?: string
 }

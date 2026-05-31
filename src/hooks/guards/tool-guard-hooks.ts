@@ -11,6 +11,7 @@ import {
   getSessionContinuity,
   getContinuityStoragePath,
 } from "../../task-management/continuity/index.js"
+import { enrichContinuityWithTracker } from "../../task-management/continuity/continuity-reader.js"
 import { asString, getNestedValue, isObject, makeToolSignature } from "../../shared/helpers.js"
 import { DEFAULT_RUNTIME_POLICY, getRuntimePolicyForSession } from "../../shared/runtime-policy.js"
 import type { RuntimePolicy } from "../../shared/types.js"
@@ -30,6 +31,8 @@ export interface ToolGuardDependencies {
   lifecycleManager?: HarnessLifecycleManager
   runtimePolicy?: RuntimePolicy
   hivemindConfig?: HivemindConfigs
+  /** Project root directory for session-tracker file resolution. */
+  projectRoot?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -190,7 +193,10 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
 
       const stats = stateManager.getStats(sessionID)
       const delegation = getDelegationMeta(sessionID)
-      const continuity = getSessionContinuity(sessionID)
+      const rawContinuity = getSessionContinuity(sessionID)
+      const continuity = rawContinuity
+        ? await enrichContinuityWithTracker(rawContinuity, deps.projectRoot)
+        : undefined
       const lifecycle = lifecycleManager?.getLifecycleSnapshot(sessionID)
       const gov = lastGovResult.get(sessionID) ?? { warnings: [], escalations: [], blocks: [] }
       lastGovResult.delete(sessionID)

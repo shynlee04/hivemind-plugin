@@ -11,6 +11,7 @@ import {
   getContinuityStoragePath,
   getSessionContinuity,
 } from "../../task-management/continuity/index.js"
+import { enrichContinuityWithTracker } from "../../task-management/continuity/continuity-reader.js"
 import { asString, extractAssistantText, getNestedValue } from "../../shared/helpers.js"
 import {
   getEventSessionID,
@@ -148,7 +149,10 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
         return
       }
 
-      const continuity = getSessionContinuity(sessionID)
+      const rawContinuity = getSessionContinuity(sessionID)
+      const continuity = rawContinuity
+        ? await enrichContinuityWithTracker(rawContinuity, deps.projectDirectory)
+        : undefined
       if (!continuity) {
         return
       }
@@ -306,6 +310,8 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
       }
 
       const continuity = getSessionContinuity(sessionID)
+        ? await enrichContinuityWithTracker(getSessionContinuity(sessionID)!, deps.projectDirectory)
+        : undefined
       const lifecycle = lifecycleManager.getLifecycleSnapshot(sessionID)
       const autoLoopState = autoLoopStates.get(sessionID)
 
