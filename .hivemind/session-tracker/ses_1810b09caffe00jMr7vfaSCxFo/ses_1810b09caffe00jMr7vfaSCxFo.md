@@ -2578,3 +2578,47 @@ Let me run just the suspected tests and check after each.
 }
 ```
 
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "chatcmpl-tool-afcc2c4be50cba7f"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "chatcmpl-tool-88d938c83eec55ec"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "chatcmpl-tool-9acf5912e8ab31ea"
+}
+```
+
+
+## ASSISTANT (turn 21)
+
+Tests are now isolated thanks to the global `vitest.setup.ts`. The e2e tests pass and no new dirs spawn — the vitest setup correctly redirects all state writes to a temp directory. Let me commit the changes.
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "chatcmpl-tool-82f9cfd2a52002ae"
+}
+```
+
