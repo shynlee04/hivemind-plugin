@@ -55,35 +55,23 @@ describe("continuity persistence", () => {
     expect(readdirSync(stateDir).some((name) => name.startsWith("session-continuity.json.corrupt-"))).toBe(true)
   })
 
-  it("uses unique temp files for rapid overlapping continuity writes", async () => {
-    const tempPaths: string[] = []
-
-    vi.doMock("node:fs", async () => {
-      const actual = await vi.importActual<typeof import("node:fs")>("node:fs")
-      return {
-        ...actual,
-        writeFileSync: vi.fn<typeof actual.writeFileSync>((...args) => {
-          const filePath = String(args[0])
-          if (filePath.includes("session-continuity.json") && filePath.endsWith(".tmp")) {
-            tempPaths.push(basename(filePath))
-          }
-          actual.writeFileSync(...args)
-        }),
-      }
-    })
-
+  it("records continuity in memory without creating temp or final files", async () => {
     const continuity = await import("../../src/task-management/continuity/index.js")
     continuity.recordSessionContinuity(makeRecord("ses-one"))
     continuity.recordSessionContinuity(makeRecord("ses-two"))
 
-    expect(tempPaths).toHaveLength(2)
-    expect(new Set(tempPaths).size).toBe(2)
-    expect(tempPaths.every((name) => name !== "session-continuity.json.tmp")).toBe(true)
-    const parsed = JSON.parse(readFileSync(continuity.getContinuityStoragePath(), "utf-8")) as { sessions?: Record<string, unknown> }
-    expect(Object.keys(parsed.sessions ?? {})).toEqual(expect.arrayContaining(["ses-one", "ses-two"]))
+    // In-memory state is correct
+    const records = continuity.listSessionContinuity()
+    expect(records).toHaveLength(2)
+    expect(records.map((r) => r.sessionID)).toEqual(expect.arrayContaining(["ses-one", "ses-two"]))
+
+    // No .tmp files are created on disk (persistStore is no-op)
+    const dirContents = readdirSync(stateDir)
+    const tmpFiles = dirContents.filter((name) => name.includes("session-continuity") && name.endsWith(".tmp"))
+    expect(tmpFiles).toEqual([])
   })
 
-  it("redacts continuity text fields while preserving session identifiers", async () => {
+  it("records continuity in memory with session identifiers preserved", async () => {
     const continuity = await import("../../src/task-management/continuity/index.js")
     continuity.recordSessionContinuity({
       ...makeRecord("ses-redaction"),
@@ -93,28 +81,25 @@ describe("continuity persistence", () => {
       },
     })
 
-    const raw = readFileSync(continuity.getContinuityStoragePath(), "utf-8")
-    expect(raw).toContain("ses-redaction")
-    expect(raw).toContain("HIVEMIND_FAKE_TOKEN=[REDACTED:TOKEN]")
-    expect(raw).not.toContain("secret-value-1234567890")
+    // In-memory record has the raw description (redaction happens at session-tracker write layer)
+    const record = continuity.getSessionContinuity("ses-redaction")
+    expect(record?.sessionID).toBe("ses-redaction")
+    expect(record?.metadata.description).toContain("secret-value-1234567890")
+    expect(record?.metadata.description).toContain("HIVEMIND_FAKE_TOKEN")
   })
 
   /**
    * FRESH-INSTALL-RECOVERY-01 (Phase 38.1)
    *
-   * Locks the contract that on a clean install — no `.hivemind/state/`
-   * directory at all — the harness's first persistence write of each kind
-   * recursively creates the state directory and produces parseable JSON for
-   * both `session-continuity.json` and `delegations.json`. Closes the audit's
-   * Finding 5 follow-up after the original "no state files on disk" claim was
-   * refuted.
+   * Verifies that on a clean install — no `.hivemind/state/` directory at
+   * all — in-memory continuity works without producing state files on disk.
    *
-   * Also asserts HIVEMIND-ROOT-08: no `brain.json` artifact is produced on a
-   * fresh install.
+   * Also asserts HIVEMIND-ROOT-08: no `brain.json` artifact is produced.
+   *
+   * NOTE: With P41-D-01/D-02, persistStore and persistDelegations are no-ops.
+   * State state files are no longer created — session-tracker is canonical.
    */
-  it("creates session-continuity.json + delegations.json on a fresh install (no brain.json)", async () => {
-    // Point the state dir at a sub-path that does NOT exist yet, so this
-    // exercises the recursive-mkdir branch on first write.
+  it("works in-memory on a fresh install without creating state files (no brain.json)", async () => {
     const freshStateDir = join(stateDir, "nested", ".hivemind", "state")
     process.env.OPENCODE_HARNESS_STATE_DIR = freshStateDir
     expect(existsSync(freshStateDir)).toBe(false)
@@ -123,9 +108,13 @@ describe("continuity persistence", () => {
     const delegationPersistence = await import("../../src/task-management/continuity/delegation-persistence.js")
 
     continuity.recordSessionContinuity(makeRecord("ses-fresh-install"))
-    const continuityPath = continuity.getContinuityStoragePath()
-    expect(existsSync(continuityPath)).toBe(true)
-    expect(() => JSON.parse(readFileSync(continuityPath, "utf-8"))).not.toThrow()
+
+    // In-memory state works
+    const records = continuity.listSessionContinuity()
+    expect(records.map((r) => r.sessionID)).toContain("ses-fresh-install")
+
+    // No continuity file is created on disk (persistStore no-op)
+    expect(existsSync(continuity.getContinuityStoragePath())).toBe(false)
 
     const delegation: Delegation = {
       id: "deleg-fresh-install",
@@ -143,38 +132,31 @@ describe("continuity persistence", () => {
     }
     delegationPersistence.persistDelegations([delegation])
 
+    // No delegations file is created on disk (persistDelegations no-op for file writes)
     const delegationsPath = delegationPersistence.getDelegationsFilePath()
-    expect(existsSync(delegationsPath)).toBe(true)
-    const parsed = JSON.parse(readFileSync(delegationsPath, "utf-8")) as unknown
-    expect(Array.isArray(parsed)).toBe(true)
+    expect(existsSync(delegationsPath)).toBe(false)
+    expect(delegationPersistence.readPersistedDelegations()).toEqual([])
 
     // HIVEMIND-ROOT-08 — no `brain.json` should ever appear in canonical state.
     expect(existsSync(join(freshStateDir, "brain.json"))).toBe(false)
-    expect(readdirSync(freshStateDir)).not.toContain("brain.json")
   })
 
   // -------------------------------------------------------------------------
   // Recovery tests — restart rehydration, corrupt-file handling, atomic write
   // -------------------------------------------------------------------------
 
-  it("should rehydrate state from existing continuity file on restart", async () => {
-    // Phase 1: write records with first module instance
-    const continuity1 = await import("../../src/task-management/continuity/index.js")
-    continuity1.recordSessionContinuity(makeRecord("ses-rehydrate-1"))
-    continuity1.recordSessionContinuity(makeRecord("ses-rehydrate-2"))
-    const filePath = continuity1.getContinuityStoragePath()
-    expect(existsSync(filePath)).toBe(true)
+  it("should maintain in-memory continuity across consecutive writes (cross-instance handled by session-tracker)", async () => {
+    const continuity = await import("../../src/task-management/continuity/index.js")
+    continuity.recordSessionContinuity(makeRecord("ses-mem-1"))
+    continuity.recordSessionContinuity(makeRecord("ses-mem-2"))
 
-    // Phase 2: simulate restart — reset store cache so getStoreCache is undefined
-    const { resetStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
-    resetStoreCache()
-    const continuity2 = await import("../../src/task-management/continuity/index.js")
+    // In-memory state is maintained across writes
+    const ids = continuity.listSessionContinuity().map((r) => r.sessionID).sort()
+    expect(ids).toContain("ses-mem-1")
+    expect(ids).toContain("ses-mem-2")
 
-    // Verify state was rehydrated from disk
-    const records = continuity2.listSessionContinuity()
-    const ids = records.map((r) => r.sessionID).sort()
-    expect(ids).toContain("ses-rehydrate-1")
-    expect(ids).toContain("ses-rehydrate-2")
+    // No continuity file is produced on disk (persistStore is no-op)
+    expect(existsSync(continuity.getContinuityStoragePath())).toBe(false)
   })
 
   it("should handle corrupt continuity file by quarantining and throwing", async () => {
@@ -225,11 +207,10 @@ describe("continuity persistence", () => {
     expect(records).toEqual([])
   })
 
-  it("should preserve all delegation records across restart", async () => {
-    // Phase 1: create records with delegation metadata
-    const continuity1 = await import("../../src/task-management/continuity/index.js")
+  it("should preserve delegation metadata in memory across consecutive calls", async () => {
+    const continuity = await import("../../src/task-management/continuity/index.js")
     const baseRecord = makeRecord("ses-deleg-1")
-    continuity1.recordSessionContinuity({
+    continuity.recordSessionContinuity({
       ...baseRecord,
       metadata: {
         ...baseRecord.metadata,
@@ -255,7 +236,7 @@ describe("continuity persistence", () => {
     })
 
     const baseRecord2 = makeRecord("ses-deleg-2")
-    continuity1.recordSessionContinuity({
+    continuity.recordSessionContinuity({
       ...baseRecord2,
       metadata: {
         ...baseRecord2.metadata,
@@ -270,13 +251,8 @@ describe("continuity persistence", () => {
       },
     })
 
-    // Phase 2: simulate restart — reset store cache so cache is cold
-    const { resetStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
-    resetStoreCache()
-    const continuity2 = await import("../../src/task-management/continuity/index.js")
-
-    // Verify delegation metadata survived across restart
-    const rec1 = continuity2.getSessionContinuity("ses-deleg-1")
+    // Verify delegation metadata is preserved in-memory
+    const rec1 = continuity.getSessionContinuity("ses-deleg-1")
     expect(rec1?.metadata.delegation).toEqual({
       rootID: "root-abc",
       depth: 2,
@@ -290,12 +266,15 @@ describe("continuity persistence", () => {
     expect(rec1?.metadata.delegationPacket?.commits).toEqual(["abc123"])
     expect(rec1?.metadata.delegationPacket?.parentChain).toEqual(["root-abc", "parent-xyz"])
 
-    const rec2 = continuity2.getSessionContinuity("ses-deleg-2")
+    const rec2 = continuity.getSessionContinuity("ses-deleg-2")
     expect(rec2?.metadata.delegation?.rootID).toBe("root-def")
     expect(rec2?.metadata.delegation?.agent).toBe("reviewer")
+
+    // No file written to disk
+    expect(existsSync(continuity.getContinuityStoragePath())).toBe(false)
   })
 
-  it("should survive concurrent read/write without corruption", async () => {
+  it("should survive concurrent read/write in-memory without corruption", async () => {
     const continuity = await import("../../src/task-management/continuity/index.js")
 
     // Rapidly interleave writes and reads
@@ -308,15 +287,12 @@ describe("continuity persistence", () => {
       expect(record?.sessionID).toBe(id)
     }
 
-    // Final verification: all sessions present and file is valid JSON
+    // Final verification: all sessions present
     const allRecords = continuity.listSessionContinuity()
     const allIDs = allRecords.map((r) => r.sessionID).sort()
     for (const id of sessionIDs) {
       expect(allIDs).toContain(id)
     }
-
-    const raw = readFileSync(continuity.getContinuityStoragePath(), "utf-8")
-    expect(() => JSON.parse(raw)).not.toThrow()
   })
 
   it("should deep-clone on read to prevent mutation", async () => {
@@ -350,33 +326,26 @@ describe("continuity persistence", () => {
     expect(list2Item?.metadata.description).toBe(originalDescription)
   })
 
-  it("should not corrupt file on partial write — atomic write mechanism", async () => {
+  it("should maintain in-memory consistency across sequential writes (no file I/O)", async () => {
     const continuity = await import("../../src/task-management/continuity/index.js")
 
-    // Write initial data
-    continuity.recordSessionContinuity(makeRecord("ses-atomic-1"))
-    const filePath = continuity.getContinuityStoragePath()
+    // Write in-memory data
+    continuity.recordSessionContinuity(makeRecord("ses-mem-atomic-1"))
+    continuity.recordSessionContinuity(makeRecord("ses-mem-atomic-2"))
+    continuity.recordSessionContinuity(makeRecord("ses-mem-atomic-3"))
 
-    // Verify initial state is valid JSON
-    const raw1 = readFileSync(filePath, "utf-8")
-    const parsed1 = JSON.parse(raw1) as { sessions: Record<string, unknown> }
-    expect(parsed1.sessions["ses-atomic-1"]).toBeDefined()
+    // Verify all records are accessible in-memory
+    const allRecords = continuity.listSessionContinuity()
+    const allIDs = allRecords.map((r) => r.sessionID)
+    expect(allIDs).toContain("ses-mem-atomic-1")
+    expect(allIDs).toContain("ses-mem-atomic-2")
+    expect(allIDs).toContain("ses-mem-atomic-3")
 
-    // Write more data — atomic write (tmp + rename) should ensure consistency
-    continuity.recordSessionContinuity(makeRecord("ses-atomic-2"))
-    continuity.recordSessionContinuity(makeRecord("ses-atomic-3"))
-
-    // Verify final state is valid JSON with all sessions
-    const raw2 = readFileSync(filePath, "utf-8")
-    const parsed2 = JSON.parse(raw2) as { sessions: Record<string, unknown> }
-    expect(parsed2.sessions["ses-atomic-1"]).toBeDefined()
-    expect(parsed2.sessions["ses-atomic-2"]).toBeDefined()
-    expect(parsed2.sessions["ses-atomic-3"]).toBeDefined()
-
-    // No leftover .tmp files
+    // No leftover .tmp files or continuity files on disk
     const dirContents = readdirSync(stateDir)
     const tmpFiles = dirContents.filter((name) => name.endsWith(".tmp"))
     expect(tmpFiles).toEqual([])
+    expect(existsSync(continuity.getContinuityStoragePath())).toBe(false)
   })
 })
 
@@ -407,7 +376,7 @@ describe("atomic_commit toggle", () => {
     rmSync(stateDir, { recursive: true, force: true })
   })
 
-  it("writes to disk when atomic_commit is true (default)", async () => {
+  it("does not write to disk regardless of atomic_commit config (persistStore is no-op)", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
     vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
@@ -420,16 +389,13 @@ describe("atomic_commit toggle", () => {
     const continuity = await import("../../src/task-management/continuity/index.js")
     const filePath = continuity.getContinuityStoragePath()
 
-    continuity.recordSessionContinuity(makeRecord("ses-atomic-true"))
+    continuity.recordSessionContinuity(makeRecord("ses-atomic-noop"))
 
-    // File should exist on disk
-    expect(existsSync(filePath)).toBe(true)
-    const raw = readFileSync(filePath, "utf-8")
-    const parsed = JSON.parse(raw) as { sessions: Record<string, unknown> }
-    expect(parsed.sessions["ses-atomic-true"]).toBeDefined()
+    // No file should be created on disk — persistStore is no-op (P41-D-01)
+    expect(existsSync(filePath)).toBe(false)
   })
 
-  it("skips disk write when atomic_commit is false", async () => {
+  it("does not write to disk when atomic_commit is false", async () => {
     const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
     vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
@@ -444,15 +410,11 @@ describe("atomic_commit toggle", () => {
 
     continuity.recordSessionContinuity(makeRecord("ses-atomic-false"))
 
-    // No file should be created on disk when atomic_commit is false
+    // No file should be created on disk
     expect(existsSync(filePath)).toBe(false)
   })
 
-  // P41-B: recordGovernancePersistenceState is deprecated as a no-op.
-  // Governance state now writes to standalone governance-state.json via writeGovernanceState().
-  // This test is removed — the old projectRoot propagation no longer applies.
-
-  it("writes to disk with default config (atomic_commit defaults to true)", async () => {
+  it("does not write to disk with default config", async () => {
     const { getDefaultConfigs } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
     vi.doMock("../../src/config/subscriber.js", () => ({
       getConfig: vi.fn(),
@@ -465,116 +427,9 @@ describe("atomic_commit toggle", () => {
 
     continuity.recordSessionContinuity(makeRecord("ses-atomic-defaults"))
 
-    // File should exist on disk (atomic_commit defaults to true)
-    expect(existsSync(filePath)).toBe(true)
-  })
-})
-
-// ---------------------------------------------------------------------------
-// flushAllStores + registerShutdownHandlers
-// ---------------------------------------------------------------------------
-
-describe("flushAllStores", () => {
-  let stateDir: string
-  let previousStateDir: string | undefined
-
-  beforeEach(() => {
-    vi.resetModules()
-    vi.doUnmock("node:fs")
-    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
-    stateDir = mkdtempSync(join(tmpdir(), "continuity-flush-"))
-    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
-  })
-
-  afterEach(() => {
-    vi.doUnmock("node:fs")
-    vi.resetModules()
-    if (previousStateDir === undefined) {
-      delete process.env.OPENCODE_HARNESS_STATE_DIR
-    } else {
-      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
-    }
-    rmSync(stateDir, { recursive: true, force: true })
-  })
-
-  it("writes all cached stores to disk", async () => {
-    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/config/subscriber.js", () => ({
-      getConfig: vi.fn(),
-      getCachedConfig: vi.fn().mockReturnValue(
-        HivemindConfigsSchema.parse({ atomic_commit: false, workflow: { use_worktrees: false } }),
-      ),
-      invalidateConfigCache: vi.fn(),
-    }))
-
-    const continuity = await import("../../src/task-management/continuity/index.js")
-    const { resetStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
-    const filePath = continuity.getContinuityStoragePath()
-
-    continuity.recordSessionContinuity(makeRecord("ses-flush-1"))
-
+    // No file should be created on disk (persistStore is no-op)
     expect(existsSync(filePath)).toBe(false)
-
-    continuity.flushAllStores()
-
-    expect(existsSync(filePath)).toBe(true)
-    const raw = readFileSync(filePath, "utf-8")
-    const parsed = JSON.parse(raw) as { sessions: Record<string, unknown> }
-    expect(parsed.sessions["ses-flush-1"]).toBeDefined()
-
-    resetStoreCache()
-  })
-
-  it("handles write errors gracefully and continues to next store", async () => {
-    const { HivemindConfigsSchema } = await import("../../src/schema-kernel/hivemind-configs.schema.js")
-    vi.doMock("../../src/config/subscriber.js", () => ({
-      getConfig: vi.fn(),
-      getCachedConfig: vi.fn().mockReturnValue(
-        HivemindConfigsSchema.parse({ atomic_commit: false, workflow: { use_worktrees: false } }),
-      ),
-      invalidateConfigCache: vi.fn(),
-    }))
-
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-
-    const { setStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
-
-    const invalidPath = "/nonexistent/deeply/nested/path/that/will/fail/session-continuity.json"
-    const validStore: import("../../src/shared/types.js").ContinuityStoreFile = {
-      version: 1,
-      updatedAt: Date.now(),
-      sessions: {},
-      governance: { rules: [], violations: [], updatedAt: Date.now() },
-    }
-    setStoreCache(invalidPath, validStore)
-
-    const continuity = await import("../../src/task-management/continuity/index.js")
-
-    continuity.recordSessionContinuity(makeRecord("ses-flush-err"))
-
-    expect(() => continuity.flushAllStores()).not.toThrow()
-
-    expect(consoleSpy).toHaveBeenCalled()
-    const errorMsg = consoleSpy.mock.calls.map((call) => String(call[0])).join(" ")
-    expect(errorMsg).toContain("[Harness]")
-
-    consoleSpy.mockRestore()
-  })
-
-  it("works with empty cache without error", async () => {
-    const { resetStoreCache } = await import("../../src/task-management/continuity/store-cache.js")
-    resetStoreCache()
-
-    const continuity = await import("../../src/task-management/continuity/index.js")
-
-    expect(() => continuity.flushAllStores()).not.toThrow()
   })
 })
 
-describe("registerShutdownHandlers", () => {
-  it("is exported as a callable function", async () => {
-    vi.resetModules()
-    const continuity = await import("../../src/task-management/continuity/index.js")
-    expect(typeof continuity.registerShutdownHandlers).toBe("function")
-  })
-})
+
