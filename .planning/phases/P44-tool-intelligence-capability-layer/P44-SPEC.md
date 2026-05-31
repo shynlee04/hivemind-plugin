@@ -1,10 +1,11 @@
 # Phase P44: Tool Intelligence & Capability Layer — Specification
 
 **Phase:** P44
-**Status:** DRAFT
-**Author:** hm-phase-researcher (auto-mode, ambiguity 0.14)
-**Date:** 2026-05-31
-**Confidence:** HIGH
+**Status:** LOCKED
+**Created:** 2026-05-31
+**Updated:** 2026-05-31
+**Ambiguity score:** 0.11 (gate: ≤ 0.20)
+**Requirements:** 6 locked
 **Research:** `.planning/research/tool-intelligence-patterns-research-2026-05-31.md`
 **Audit:** `.hivemind/audits/tool-lifecycle-wiring-audit-2026-05-31.md`
 
@@ -55,7 +56,7 @@ Introduce a **compaction-safe capability gate** that provides the governance eng
 | Must survive compaction | Research finding | Agent profile compaction strips frontmatter; capability must persist outside it |
 | Must use existing hooks | `tool-guard-hooks.ts` | No new hook registration — extend existing `tool.execute.before` path |
 | Must not add npm dependencies | Package philosophy | Pure TypeScript, zero external deps |
-| Must not break existing tests | 2,963 tests passing | Regression gate is mandatory |
+| Must not break existing tests | 3,034 tests passing (3,028 pass, 4 pre-existing failures in delegation-status/session-journal-export) | Regression gate is mandatory |
 | `.opencode/` for primitives only | AGENTS.md Q6 | Capability state lives in `.hivemind/`, never `.opencode/` |
 
 ---
@@ -172,7 +173,7 @@ Introduce a **compaction-safe capability gate** that provides the governance eng
 | REQ-P44-01 | §4 Event-Sourced Capability Model | §1 Tool Registry | NEW: `src/features/capability-gate/` | ~120 |
 | REQ-P44-02 | §3 Frontmatter as Static Baseline | §3 Agent Permission Coverage | `.hivefiver-meta-builder/agents-lab/active/refactoring/hm-*/*.md` | ~30 files |
 | REQ-P44-03 | §3 Orphaned Tool Analysis | §2 Tool Coverage Matrix | Same as REQ-02 + routing config | ~0 (config only) |
-| REQ-P44-04 | §5 JIT Injection Pattern | §4 Spawner Enforcement | `src/coordination/delegation/spawn-request-builder.ts` | ~80 |
+| REQ-P44-04 | §5 JIT Injection Pattern | §4 Spawner Enforcement | `src/coordination/spawner/spawn-request-builder.ts` | ~80 |
 | REQ-P44-05 | §5 Hook-Based Enforcement | §5 Hook Coverage | `src/hooks/guards/tool-guard-hooks.ts` | ~40 |
 | REQ-P44-06 | §4 Mutation Event Tracking | §6 Session Tracker | `src/features/session-tracker/types.ts` + hooks | ~30 |
 
@@ -218,7 +219,7 @@ REQ-P44-03 (orphaned tools) — depends on 02 completion for full coverage
 - Test file: `tests/features/capability-gate.integration.test.ts`
 
 ### Gate 3: Regression
-- All 2,963 existing tests pass
+- All 3,034 existing tests pass (4 pre-existing failures in delegation-status/session-journal-export must not worsen)
 - `npm run typecheck` clean
 - `npm run build` clean
 
@@ -253,3 +254,57 @@ REQ-P44-03 (orphaned tools) — depends on 02 completion for full coverage
 | `gate-l3-spec-compliance` | Bidirectional traceability REQ ↔ code |
 | `gate-l3-evidence-truth` | AC verification at phase gate |
 | `hm-code-reviewer` | Checks code against AC acceptance criteria |
+
+---
+
+## Ambiguity Report
+
+**Mode:** `--auto` (non-interactive, agent selects recommended defaults)
+
+| Dimension | Weight | Score (0–1) | Weighted | Notes |
+|-----------|--------|-------------|----------|-------|
+| Goal Clarity | 0.35 | 0.90 | 0.315 | SPEC has precise measurable goal with quantified problem (25 tools, 7 recognized, 11 orphaned) |
+| Boundary Clarity | 0.25 | 0.92 | 0.230 | Explicit in/out of scope with reasoning; 5 out-of-scope items documented |
+| Constraint Clarity | 0.20 | 0.85 | 0.170 | 7 architectural constraints with sources; LOC budget per requirement |
+| Acceptance Criteria | 0.20 | 0.88 | 0.176 | 28 pass/fail ACs across 6 requirements; all falsifiable |
+
+**Composite clarity:** 0.891
+**Ambiguity score:** 0.11 (= 1.0 − 0.891)
+**Gate result:** PASS (0.11 ≤ 0.20 threshold)
+
+### Dimension-by-dimension assessment
+
+**Goal Clarity (0.90):** The goal — compaction-safe capability gate — is unambiguous. The problem is quantified (25 tools registered, 7 recognized, 11 orphaned, 30/31 agents without declarations). The target state is measurable (all 25 tools classified, all 31 agents with declarations, capability survives compaction). Minor gap: "compaction" is not formally defined in terms of which compaction mechanism strips frontmatter — the research doc fills this gap.
+
+**Boundary Clarity (0.92):** Six items in scope, six items out of scope with explicit rationale. The boundary between "agent frontmatter standardization" (in scope for hm-*) and "hf-* agent frontmatter changes" (out of scope) is clear. The "no external policy engine" boundary is well-stated. Minor gap: the relationship between `.hivefiver-meta-builder/` (source of truth) and `.opencode/agents/` (deployment copy) could be more explicit in the boundary — AC-02d covers it but the scope section does not.
+
+**Constraint Clarity (0.85):** Seven constraints with authoritative sources (ARCHITECTURE.md, AGENTS.md, existing test count). LOC budgets per requirement sum to ~300. The CQRS alignment is stated but the specific write-side/read-side surface mapping is in RESEARCH.md, not directly in the constraint table. This means a planner must cross-reference RESEARCH to fully understand the CQRS constraint.
+
+**Acceptance Criteria (0.88):** 28 ACs, all falsifiable. Each requirement has 3–5 ACs with measurable outcomes. Strong coverage of the "what" (behavior). Minor gap: some ACs measure LOC budget (AC-01e: ≤150 LOC, AC-04d: ≤80 LOC) which is a planning constraint rather than a behavioral requirement — these are fine as guardrails but should not be confused with functional correctness criteria.
+
+---
+
+## Interview Log
+
+**Mode:** `--auto` — interview skipped (ambiguity 0.11 ≤ 0.20 gate)
+
+| # | Standard Question | Auto-Answered | Rationale |
+|---|-------------------|---------------|-----------|
+| 1 | Is the goal precise enough for a developer to implement without asking questions? | YES | 6 requirements with 28 ACs; problem is quantified |
+| 2 | Are boundaries clear — what is explicitly NOT in this phase? | YES | 6 out-of-scope items with rationale |
+| 3 | Are constraints documented with their source authority? | YES | 7 constraints sourced from ARCHITECTURE.md, AGENTS.md |
+| 4 | Are acceptance criteria falsifiable (pass/fail, not subjective)? | YES | 28 ACs all measurable; LOC budgets are guardrails |
+| 5 | Is the dependency/ordering between requirements clear? | YES | Dependency map with explicit execution order |
+
+**Skipped questions:** None — all dimensions meet their minimum thresholds.
+
+---
+
+## Errata (2026-05-31 update)
+
+| Location | Original | Corrected | Reason |
+|----------|----------|-----------|--------|
+| REQ-P44-04 traceability | `src/coordination/delegation/spawn-request-builder.ts` | `src/coordination/spawner/spawn-request-builder.ts` | Path verified against codebase |
+| Constraint #6 | "2,963 tests passing" | "3,034 tests passing (4 pre-existing failures)" | Current test suite count |
+| Gate 3 | "All 2,963 existing tests pass" | "All 3,034 existing tests pass (4 pre-existing failures must not worsen)" | Current test suite count |
+| Header | Author/Confidence fields | Phase status/metadata fields | Align with spec template format |
