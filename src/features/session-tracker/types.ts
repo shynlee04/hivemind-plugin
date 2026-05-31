@@ -9,6 +9,13 @@
  */
 
 // ---------------------------------------------------------------------------
+// Imports for P41-B gap fields
+// ---------------------------------------------------------------------------
+
+import type { PendingNotification, CompactionCheckpointData, SessionLifecycleState } from "../../shared/types.js"
+import type { DelegationRecoveryGuarantee, DelegationTerminalKind } from "../../coordination/delegation/types.js"
+
+// ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
 
@@ -233,6 +240,21 @@ export interface ChildSessionRecord {
   lastMessage?: string
   /** Journey array — records tool calls, results, and assistant messages. CP-ST-05-01. */
   journey?: JourneyEntry[]
+  // 7 new optional gap fields (P41-B)
+  /** Pending notifications for this session (from continuity store). REF: REQ-P41B-01 */
+  pendingNotifications?: PendingNotification[]
+  /** Queue key for slot-managed delegation (from delegation record). REF: REQ-P41B-02 */
+  queueKey?: string
+  /** How the delegation terminated (from delegation record). REF: REQ-P41B-02 */
+  terminalKind?: DelegationTerminalKind
+  /** Recovery guarantee level (from delegation record). REF: REQ-P41B-02 */
+  recoveryGuarantee?: DelegationRecoveryGuarantee
+  /** How the child session was dispatched (from delegation record). REF: REQ-P41B-02 */
+  executionMode?: "sdk" | "pty" | "headless"
+  /** Compaction checkpoint data (from continuity store). REF: REQ-P41B-02 */
+  compactionCheckpoint?: CompactionCheckpointData
+  /** Session lifecycle state (from continuity store). REF: REQ-P41B-02 */
+  lifecycle?: SessionLifecycleState
 }
 
 /**
