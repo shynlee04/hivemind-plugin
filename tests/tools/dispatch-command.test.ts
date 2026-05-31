@@ -47,14 +47,16 @@ describe("dispatch-command", () => {
   })
 
   it("dispatches synthetic prompt with agent override via session.prompt()", async () => {
+    vi.useFakeTimers()
+    mockClient.session.prompt.mockClear()
     const result = await dispatchCommand({
       client: mockClient,
       sessionID: "ses-123",
       agent: "gsd-executor",
       promptText: "run gsd-stats",
     })
-    // Deferred-promise: result resolves AFTER SDK call completes
     expect(result.success).toBe(true)
+    await vi.advanceTimersByTimeAsync(50)
     expect(mockClient.session.prompt).toHaveBeenCalledWith(
       expect.objectContaining({
         path: { id: "ses-123" },
@@ -75,22 +77,20 @@ describe("dispatch-command", () => {
         command: vi.fn().mockResolvedValue({}),
       },
     }
-    const promise = dispatchCommand({
+    const result = await dispatchCommand({
       client: successClient,
       sessionID: "ses-123",
       agent: "gsd-executor",
       promptText: "test",
     })
-    // Promise should not be resolved yet (setTimeout hasn't fired)
-    await vi.advanceTimersByTimeAsync(50)
-    const result = await promise
     expect(result.success).toBe(true)
-    expect(result.error).toBeUndefined()
+    await vi.advanceTimersByTimeAsync(50)
     expect(successClient.session.prompt).toHaveBeenCalled()
   })
 
-  it("resolves with { success: false, error: true } after SDK error via deferred promise", async () => {
+  it("resolves with { success: true } and logs SDK error via deferred promise", async () => {
     vi.useFakeTimers()
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
     const errorClient = {
       app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
       session: {
@@ -98,21 +98,21 @@ describe("dispatch-command", () => {
         command: vi.fn().mockRejectedValue(new Error("Network error")),
       },
     }
-    const promise = dispatchCommand({
+    const result = await dispatchCommand({
       client: errorClient,
       sessionID: "ses-123",
       agent: "gsd-executor",
       promptText: "test",
     })
+    expect(result.success).toBe(true)
     await vi.advanceTimersByTimeAsync(50)
-    const result = await promise
-    expect(result.success).toBe(false)
-    expect(result.error).toBe(true)
-    expect(result.output).toContain("Network error")
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Network error"))
+    consoleErrorSpy.mockRestore()
   })
 
-  it("resolves with failure when agent restore fails", async () => {
+  it("resolves with { success: true } and logs failure when agent restore fails", async () => {
     vi.useFakeTimers()
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
     let callCount = 0
     const partialFailClient = {
       app: { agents: vi.fn().mockResolvedValue({ agents: [{ id: "gsd-executor" }] }) },
@@ -125,19 +125,17 @@ describe("dispatch-command", () => {
         command: vi.fn().mockResolvedValue({}),
       },
     }
-    const promise = dispatchCommand({
+    const result = await dispatchCommand({
       client: partialFailClient,
       sessionID: "ses-123",
       agent: "gsd-executor",
       restoreAgent: "original-agent",
       promptText: "test",
     })
+    expect(result.success).toBe(true)
     await vi.advanceTimersByTimeAsync(50)
-    const result = await promise
-    expect(result.success).toBe(false)
-    expect(result.error).toBe(true)
-    expect(result.output).toContain("agent restore failed")
-    expect(result.output).toContain("Restore failed")
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Agent restore failed"))
+    consoleErrorSpy.mockRestore()
   })
 
   it("throws InvalidCommandError for invalid agent format in dispatch", async () => {

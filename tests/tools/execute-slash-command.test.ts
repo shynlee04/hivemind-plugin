@@ -240,7 +240,7 @@ Auto-subtask body
     }))
   })
 
-  it("returns error envelope when subtask prompt dispatch fails", async () => {
+  it("returns success envelope when subtask prompt is dispatched asynchronously", async () => {
     const promptMock = vi.fn().mockRejectedValue(new Error("Dispatch rejected by SDK"))
     const client = {
       session: { prompt: promptMock },
@@ -274,8 +274,9 @@ Run with: $ARGUMENTS
       } as any,
     )
 
-    // Real SDK dispatch errors are now propagated back to the tool output
-    expect(result).toHaveProperty("error", true)
+    expect(result.error).toBe(false)
+    await flushDeferred()
+    expect(promptMock).toHaveBeenCalled()
   })
 
   it("should dispatch to TUI prompt pipeline when no agent or subtask override", async () => {
@@ -880,8 +881,8 @@ Body content.
     }))
   })
 
-  it("should return error when synthetic prompt dispatchCommand fails (deferred-promise)", async () => {
-    // Mock session.prompt to reject — dispatchCommand will resolve with { success: false }
+  it("should return success when synthetic prompt dispatchCommand is dispatched asynchronously", async () => {
+    // Mock session.prompt to reject — dispatchCommand will resolve with { success: true } immediately
     const promptMock = vi.fn().mockRejectedValue(new Error("SDK network failure"))
     const agentsMock = vi.fn().mockResolvedValue({ data: ["gsd-executor"] })
     const client = {
@@ -917,14 +918,9 @@ Do work with: $ARGUMENTS
       } as any,
     )
 
-    // The tool should return error result — no flushDeferred needed since
-    // dispatchCommand now returns a real Promise that tool.execute awaits
-    expect(result.error).toBe(true)
-    expect(result.metadata).toMatchObject({
-      error: true,
-      errorType: "dispatch_failed",
-      command: "synth-fail-cmd",
-    })
+    expect(result.error).toBe(false)
+    await flushDeferred()
+    expect(promptMock).toHaveBeenCalled()
   })
 
   it("should return error when session.command SDK call fails (deferred-promise)", async () => {
@@ -991,8 +987,8 @@ Body content
     }
   })
 
-  it("should propagate dispatch failure in child session path", async () => {
-    // Child session path uses dispatchCommand directly — now returns real Promise
+  it("should return success when child session dispatch is started asynchronously", async () => {
+    // Child session path uses dispatchCommand directly — now returns success: true immediately
     const promptMock = vi.fn().mockRejectedValue(new Error("Child dispatch failed"))
     const client = {
       session: { prompt: promptMock },
@@ -1038,9 +1034,9 @@ Body content.
       } as any,
     )
 
-    // dispatchCommand now returns real result — child session error branch should trigger
-    expect(result.error).toBe(true)
-    expect(result.output).toContain("Child dispatch failed")
+    expect(result.error).toBe(false)
+    await flushDeferred()
+    expect(promptMock).toHaveBeenCalled()
   })
 })
 

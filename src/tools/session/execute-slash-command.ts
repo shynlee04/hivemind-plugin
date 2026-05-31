@@ -509,38 +509,22 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         // use session.command() with agent override instead of the TUI pipeline.
         // This ensures the command runs under the correct agent.
         if (resolvedAgent) {
-          const commandResult = await new Promise<{ success: boolean; output?: string; error?: boolean }>((resolve) => {
-            setTimeout(async () => {
-              try {
-                await client.session.command({
-                  path: { id: ctx.sessionID },
-                  body: {
-                    command: commandBundle.name,
-                    arguments: validated.arguments ?? "",
-                    agent: resolvedAgent,
-                  },
-                  ...(ctx.directory ? { query: { directory: ctx.directory } } : {}),
-                })
-                resolve({ success: true })
-              } catch (caughtError: unknown) {
-                const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-                console.error(`[Harness] session.command dispatch failed: ${message}`)
-                resolve({ success: false, output: message, error: true })
-              }
-            }, 50)
-          })
-
-          if (!commandResult.success) {
-            return {
-              output: commandResult.output ?? `Failed to dispatch ${cmdDisplay} via SDK command API`,
-              metadata: {
-                error: true,
-                errorType: "dispatch_failed",
-                command: args.command,
-              },
-              error: true,
-            } as ToolResult
-          }
+          setTimeout(async () => {
+            try {
+              await client.session.command({
+                path: { id: ctx.sessionID },
+                body: {
+                  command: commandBundle.name,
+                  arguments: validated.arguments ?? "",
+                  agent: resolvedAgent,
+                },
+                ...(ctx.directory ? { query: { directory: ctx.directory } } : {}),
+              })
+            } catch (caughtError: unknown) {
+              const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+              console.error(`[Harness] session.command dispatch failed: ${message}`)
+            }
+          }, 50)
 
           return {
             output: [

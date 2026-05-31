@@ -59,64 +59,60 @@ export async function dispatchCommand(context: {
   }
 
   // Deferred dispatch: schedule on next macrotask (setTimeout) so the tool
-  // yields before session.prompt() fires on the same session — prevents
-  // reentrant deadlock. The Promise wraps the setTimeout to capture the
-  // actual SDK outcome instead of returning premature { success: true }.
-  return new Promise<{ success: boolean; output?: string; error?: boolean }>((resolve) => {
-    setTimeout(async () => {
-      try {
-        if (subtask) {
-          // Subtask: session.prompt() with subtask part + agent
-          const parts = [{
-            type: "subtask",
-            agent,
-            description: description || "",
-            prompt: promptText,
-            parentSessionID: sessionID,
-            commandSource: commandSource || "user",
-          }]
-          const body: Record<string, unknown> = { parts }
-          if (agent) body.agent = agent
-          await client.session.prompt({
-            path: { id: sessionID },
-            body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
-            ...(directory ? { query: { directory } } : {}),
-          })
-        } else {
-          // Synthetic prompt: session.prompt() with text part + agent override
-          const parts = [{ type: "text", text: promptText }]
-          const body: Record<string, unknown> = { parts }
-          if (agent) body.agent = agent
-          await client.session.prompt({
-            path: { id: sessionID },
-            body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
-            ...(directory ? { query: { directory } } : {}),
-          })
+  // yields immediately and frees the session before session.prompt() is called.
+  // We resolve immediately with success: true.
+  setTimeout(async () => {
+    try {
+      if (subtask) {
+        // Subtask: session.prompt() with subtask part + agent
+        const parts = [{
+          type: "subtask",
+          agent,
+          description: description || "",
+          prompt: promptText,
+          parentSessionID: sessionID,
+          commandSource: commandSource || "user",
+        }]
+        const body: Record<string, unknown> = { parts }
+        if (agent) body.agent = agent
+        await client.session.prompt({
+          path: { id: sessionID },
+          body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
+          ...(directory ? { query: { directory } } : {}),
+        })
+      } else {
+        // Synthetic prompt: session.prompt() with text part + agent override
+        const parts = [{ type: "text", text: promptText }]
+        const body: Record<string, unknown> = { parts }
+        if (agent) body.agent = agent
+        await client.session.prompt({
+          path: { id: sessionID },
+          body: body as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
+          ...(directory ? { query: { directory } } : {}),
+        })
 
-          // After the target agent finishes processing, restore the original agent
-          if (restoreAgent && restoreAgent !== agent) {
-            try {
-              await client.session.prompt({
-                path: { id: sessionID },
-                body: {
-                  parts: [{ type: "text", text: "Continue." }],
-                  agent: restoreAgent,
-                } as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
-                ...(directory ? { query: { directory } } : {}),
-              })
-            } catch (restoreError) {
-              const msg = restoreError instanceof Error ? restoreError.message : String(restoreError)
-              resolve({ success: false, output: `Dispatch succeeded but agent restore failed: ${msg}`, error: true })
-              return
-            }
+        // After the target agent finishes processing, restore the original agent
+        if (restoreAgent && restoreAgent !== agent) {
+          try {
+            await client.session.prompt({
+              path: { id: sessionID },
+              body: {
+                parts: [{ type: "text", text: "Continue." }],
+                agent: restoreAgent,
+              } as Parameters<OpenCodeClient["session"]["prompt"]>[0]["body"],
+              ...(directory ? { query: { directory } } : {}),
+            })
+          } catch (restoreError) {
+            const msg = restoreError instanceof Error ? restoreError.message : String(restoreError)
+            console.error(`[Harness] Agent restore failed: ${msg}`)
           }
         }
-        resolve({ success: true })
-      } catch (caughtError: unknown) {
-        const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-        console.error(`[Harness] Slash command dispatch failed: ${message}`)
-        resolve({ success: false, output: message, error: true })
       }
-    }, 50)
-  })
+    } catch (caughtError: unknown) {
+      const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+      console.error(`[Harness] Slash command dispatch failed: ${message}`)
+    }
+  }, 50)
+
+  return { success: true }
 }
