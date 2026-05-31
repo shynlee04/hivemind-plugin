@@ -461,16 +461,19 @@ export function getGovernancePersistenceState(projectRoot?: string): GovernanceP
   return cloneGovernanceState(ensureStoreLoaded(projectRoot).governance ?? emptyStore().governance!)
 }
 
-export function recordGovernancePersistenceState(state: GovernancePersistenceState, projectRoot?: string): GovernancePersistenceState {
-  const next = cloneGovernanceState({
-    ...state,
+export function recordGovernancePersistenceState(_state: GovernancePersistenceState, _projectRoot?: string): GovernancePersistenceState {
+  console.warn(`[Harness] DEPRECATED: recordGovernancePersistenceState() is a no-op. Use writeGovernanceState() from governance/persistence.ts instead.`)
+  // Old behavior: writes to continuity store's governance field
+  // const next = cloneGovernanceState({ ...state, updatedAt: Date.now() })
+  // const store = ensureStoreLoaded(projectRoot)
+  // store.governance = next
+  // persistStore(projectRoot)
+  // return cloneGovernanceState(next)
+  return cloneGovernanceState({
+    rules: [],
+    violations: [],
     updatedAt: Date.now(),
   })
-
-  const store = ensureStoreLoaded(projectRoot)
-  store.governance = next
-  persistStore(projectRoot)
-  return cloneGovernanceState(next)
 }
 
 export function flushAllStores(): void {

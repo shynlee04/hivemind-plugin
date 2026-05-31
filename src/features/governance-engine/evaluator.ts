@@ -1,5 +1,6 @@
 import type { GovernanceRule, GovernanceViolation } from "../../shared/types.js"
-import { getGovernancePersistenceState, recordGovernancePersistenceState } from "../../task-management/continuity/index.js"
+import { getGovernancePersistenceState } from "../../task-management/continuity/index.js"
+import { writeGovernanceState } from "../governance/persistence.js"
 
 export interface EvaluationResult {
   blocked: boolean
@@ -96,7 +97,7 @@ export function evaluateGovernance(
     try {
       const state = getGovernancePersistenceState()
       state.violations.push(...matchedViolations)
-      recordGovernancePersistenceState(state)
+      writeGovernanceState(state)
     } catch (err) {
       console.error(`[Harness] Failed to record governance violations: ${err}`)
     }
