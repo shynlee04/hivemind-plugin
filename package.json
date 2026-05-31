@@ -9,8 +9,15 @@
   },
   "files": [
     "dist",
+    "!dist/**/*.map",
     "bin",
-    "assets",
+    "assets/agent-instructions",
+    "assets/agents",
+    "assets/commands",
+    "assets/references",
+    "assets/skills",
+    "assets/templates",
+    "assets/workflows",
     "scripts",
     ".hivemind/configs.schema.json"
   ],
