@@ -17,8 +17,11 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-31
-**Last advance:** P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write. Commit `3b8b64c2`.
-**Completed:** P41-D-02 — No-op persistStore + 8 dead exports removed
+**Last advance:** P41-D-03 — Delete delegations.json + session-continuity.json + update tests. Commit `c0eeb343`.
+**Completed:**
+- P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write
+- P41-D-02 — No-op persistStore + 8 dead exports removed
+- P41-D-03 — One-shot migration + test updates for no-op behavior
 **Current focus:** Phase 42 — (next phase after P41 cluster redesign)
 **Current focus:** Phase 39 — Integration Completion & Hardening: fix 18 timeout test failures, execute C6/C7/C8, GSD re-validation, compliance audit
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
