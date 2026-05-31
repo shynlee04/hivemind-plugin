@@ -1,4 +1,5 @@
 import { generateSessionTitle } from "../../shared/session-naming.js"
+import { READ_ONLY_TOOLS, WRITE_CAPABLE_TOOLS, WRITE_TOOLS } from "../../features/capability-gate/index.js"
 import type { DelegationSpawnRequest } from "./spawner-types.js"
 
 type PrimitivePermission = Record<string, unknown>
@@ -25,9 +26,6 @@ type DelegateParams = {
 
 export type { ValidatedAgent, DelegateParams }
 
-const READ_ONLY_TOOLS = ["read", "glob", "grep"] as const
-const WRITE_CAPABLE_TOOLS = ["read", "edit", "write", "bash", "glob", "grep", "execute-slash-command"] as const
-const WRITE_TOOLS = new Set(["edit", "write", "bash", "execute-slash-command"])
 const REVIEW_MARKERS = ["review", "critic", "audit", "verify", "research", "inspect", "read-only"]
 
 /**
