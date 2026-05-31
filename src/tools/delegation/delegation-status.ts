@@ -397,7 +397,7 @@ async function mergeAllDelegations(
   const trackerChildren = await getSessionTrackerChildren(projectRoot, sessionID)
 
   const byId = new Map<string, Delegation>()
-  const allRecords = [...trackerChildren, ...persisted, ...managerDelegations]
+  const allRecords = [...persisted, ...trackerChildren, ...managerDelegations]
 
   for (const record of allRecords) {
     const existing = byId.get(record.id)
