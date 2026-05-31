@@ -65,8 +65,31 @@ async function readSessionData(projectRoot: string, sessionId: string): Promise<
   }
 }
 
-/** Read delegations for a session from state/delegations.json. */
+/** Read delegations for a session — tries session-tracker first, falls back to delegations.json. */
 async function readDelegationsForSession(projectRoot: string, sessionId: string): Promise<Record<string, unknown>[]> {
+  // Try session-tracker first
+  try {
+    const resolved = await resolveSessionFile(projectRoot, sessionId)
+    if (resolved) {
+      if (resolved.type === "main") {
+        const raw = await readFile(resolved.manifestPath, "utf-8")
+        const manifest = JSON.parse(raw) as { children?: Record<string, unknown> }
+        if (manifest.children) {
+          const childEntries = Object.entries(manifest.children)
+            .filter(([, meta]) => (meta as Record<string, unknown>).parentSessionID === sessionId)
+            .map(([id, meta]) => ({ id, childSessionId: id, ...(meta as Record<string, unknown>) }))
+            .slice(0, 20)
+          if (childEntries.length > 0) return childEntries
+        }
+      } else if (resolved.type === "child" && resolved.childRecord) {
+        return [resolved.childRecord as unknown as Record<string, unknown>]
+      }
+    }
+  } catch {
+    /* fall through to legacy */
+  }
+
+  // Fallback: read from delegations.json
   try {
     const delegationsPath = resolve(projectRoot, ".hivemind", "state", "delegations.json")
     const raw = await readFile(delegationsPath, "utf-8")
