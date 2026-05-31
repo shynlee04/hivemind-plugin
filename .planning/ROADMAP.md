@@ -460,6 +460,32 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 
 ---
 
+### Phase 43: Tmux Co-Pilot Model — Orchestrator Intervention
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 42
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 43 to break down)
+
+---
+
+### Phase P44: Tool Intelligence & Capability Layer
+
+**Goal:** Introduce a compaction-safe capability gate that provides the governance engine and spawner with accurate, real-time tool intelligence at every enforcement point — without requiring external policy engines or runtime dependencies beyond existing harness infrastructure.
+**Requirements:** REQ-P44-01 through REQ-P44-06 (from P44-SPEC.md)
+**Depends on:** Phase 39 (Integration Completion & Hardening)
+**Plans:** 0 plans
+**LOC Budget:** ~300 new LOC across 6 modules
+**SPEC:** `.planning/phases/P44-tool-intelligence-capability-layer/P44-SPEC.md`
+**Research:** `.planning/research/tool-intelligence-patterns-research-2026-05-31.md`
+**Audit:** `.hivemind/audits/tool-lifecycle-wiring-audit-2026-05-31.md`
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase P44 to break down)
+
 ## Planned Workstreams (Blocked on Core Architecture)
 
 ### Agent Workflows (WS-AW)

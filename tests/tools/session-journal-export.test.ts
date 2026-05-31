@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -59,8 +59,56 @@ function withStateStore<T>(callback: () => Promise<T>): Promise<T> {
     nestingDepth: 1,
   }]
 
+  const trackerParentDir = join(dir, ".hivemind", "session-tracker", "ses-parent")
+  mkdirSync(trackerParentDir, { recursive: true })
+
+  const manifest = {
+    version: "1.0",
+    rootMainSessionID: "ses-parent",
+    lastUpdated: new Date().toISOString(),
+    children: {
+      "ses-child": {
+        sessionID: "ses-child",
+        parentSessionID: "ses-parent",
+        rootMainSessionID: "ses-parent",
+        delegationDepth: 1,
+        delegatedBy: "gsd-executor",
+        subagentType: "",
+        createdAt: "2026-05-31T16:00:00.000Z",
+        updatedAt: "2026-05-31T16:00:00.000Z",
+        status: "completed",
+        turnCount: 0,
+        childFile: "ses-child.json"
+      }
+    },
+    totalChildren: 1,
+    maxDepth: 1
+  }
+
+  const childRecord = {
+    sessionID: "ses-child",
+    parentSessionID: "ses-parent",
+    delegationDepth: 1,
+    delegatedBy: {
+      agentName: "gsd-executor",
+      model: "",
+      tool: "task",
+      description: "",
+      subagentType: ""
+    },
+    created: "2026-05-31T16:00:00.000Z",
+    updated: "2026-05-31T16:00:00.000Z",
+    status: "completed",
+    mainAgent: { name: "gsd-executor", model: "" },
+    turns: [],
+    children: [],
+    lastMessage: "RAW CONTINUITY JSON BLOB SHOULD NOT APPEAR"
+  }
+
   writeFileSync(join(dir, "session-continuity.json"), `${JSON.stringify(continuity, null, 2)}\n`, "utf-8")
   writeFileSync(join(dir, "delegations.json"), `${JSON.stringify(delegations, null, 2)}\n`, "utf-8")
+  writeFileSync(join(trackerParentDir, "hierarchy-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf-8")
+  writeFileSync(join(trackerParentDir, "ses-child.json"), `${JSON.stringify(childRecord, null, 2)}\n`, "utf-8")
 
   return callback().finally(() => {
     if (previous === undefined) {

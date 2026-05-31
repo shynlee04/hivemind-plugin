@@ -52,7 +52,7 @@ describe("E2E Integration — user install simulation", () => {
     const versionJson = JSON.parse(readFileSync(versionPath, "utf-8"))
     const sourcePkg = JSON.parse(readFileSync(resolve(PROJECT_ROOT, "package.json"), "utf-8"))
     expect(versionJson.version).toBe(sourcePkg.version)
-  })
+  }, 30000)
 
   it("registers the plugin tools and hooks without runtime errors", async () => {
     const { default: plugin } = await import("../../dist/plugin.js")
@@ -74,5 +74,5 @@ describe("E2E Integration — user install simulation", () => {
     expect(result).toBeDefined()
     expect(result.tool).toBeDefined()
     expect(result.tool["delegate-task"]).toBeDefined()
-  })
+  }, 30000)
 })

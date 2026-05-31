@@ -1,6 +1,7 @@
 import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 import { readFile } from "node:fs/promises"
+import { dirname } from "node:path"
 
 import { readPersistedDelegations } from "../../task-management/continuity/delegation-persistence.js"
 import { redactTextSecrets } from "../../shared/security/redaction.js"
@@ -427,7 +428,7 @@ export function createDelegationStatusTool(
 ): ReturnType<typeof tool> {
   const s = tool.schema
   const readPersisted = deps.readPersisted ?? (deps.lifecycle ? () => [] : readPersistedDelegations)
-  const projectRoot = deps.projectRoot ?? process.cwd()
+  const projectRoot = deps.projectRoot ?? (process.env.OPENCODE_HARNESS_STATE_DIR ? dirname(dirname(process.env.OPENCODE_HARNESS_STATE_DIR)) : process.cwd())
 
   return tool({
     description:
@@ -567,7 +568,7 @@ export function createDelegationStatusTool(
 }
 
 async function renderList(args: DelegationStatusInput, sessionID: string, manager: ManagerLike, readPersisted: () => Delegation[], deps: StatusDeps): Promise<string> {
-  const projectRoot = deps.projectRoot ?? process.cwd()
+  const projectRoot = deps.projectRoot ?? (process.env.OPENCODE_HARNESS_STATE_DIR ? dirname(dirname(process.env.OPENCODE_HARNESS_STATE_DIR)) : process.cwd())
   const all = await mergeAllDelegations(projectRoot, sessionID, manager, readPersisted)
 
   const accessible = []
@@ -605,7 +606,7 @@ async function renderList(args: DelegationStatusInput, sessionID: string, manage
 
 async function handleControl(args: DelegationStatusInput, callerSessionId: string, manager: ManagerLike, readPersisted: () => Delegation[], deps: StatusDeps): Promise<string> {
   if (!args.delegationId || !args.control) return renderToolResult(error("[Harness] control action requires delegationId and control"))
-  const projectRoot = deps.projectRoot ?? process.cwd()
+  const projectRoot = deps.projectRoot ?? (process.env.OPENCODE_HARNESS_STATE_DIR ? dirname(dirname(process.env.OPENCODE_HARNESS_STATE_DIR)) : process.cwd())
 
   let delegation = (manager.getStatus(args.delegationId)
     ?? manager.getAllDelegations().find((d) => d.childSessionId === args.delegationId)
@@ -682,7 +683,7 @@ async function handleFindStackable(
   readPersisted: () => Delegation[],
   deps: StatusDeps,
 ): Promise<string> {
-  const projectRoot = deps.projectRoot ?? process.cwd()
+  const projectRoot = deps.projectRoot ?? (process.env.OPENCODE_HARNESS_STATE_DIR ? dirname(dirname(process.env.OPENCODE_HARNESS_STATE_DIR)) : process.cwd())
   const all = await mergeAllDelegations(projectRoot, sessionID, manager, readPersisted)
 
   const accessible = []

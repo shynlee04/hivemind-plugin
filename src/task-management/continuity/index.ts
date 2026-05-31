@@ -343,7 +343,7 @@ export function recordSessionContinuity(record: SessionContinuityRecord): Sessio
   // --- P41-B: Dual-write to session-tracker (fire-and-forget) ---
   if (record.sessionID.startsWith("ses_")) {
     try {
-      const projectRoot = dirname(dirname(getContinuityFile()))
+      const projectRoot = dirname(dirname(dirname(getContinuityFile())))
       const childWriter = new ChildWriter({ projectRoot })
       childWriter.createChildFile(record.sessionID, record.sessionID, {
         sessionID: record.sessionID,
@@ -417,7 +417,7 @@ export function patchSessionContinuity(
     if (hasLifecycleFields) {
       void (async () => {
         try {
-          const projectRoot = dirname(dirname(getContinuityFile()))
+          const projectRoot = dirname(dirname(dirname(getContinuityFile())))
           const childWriter = new ChildWriter({ projectRoot })
           const continuityRecord = store.sessions[sessionID]
           if (!continuityRecord) return

@@ -67,10 +67,11 @@ export class HierarchyManifestWriter {
     delegatedBy: string
     subagentType: string
     childFile: string
+    status?: string
   }): Promise<void> {
     const manifest = await this.loadManifest(params.rootMainSessionID)
     const now = new Date().toISOString()
-
+ 
     const entry: HierarchyManifestChild = {
       sessionID: params.childSessionID,
       parentSessionID: params.parentSessionID,
@@ -80,16 +81,16 @@ export class HierarchyManifestWriter {
       subagentType: params.subagentType,
       createdAt: now,
       updatedAt: now,
-      status: "active",
+      status: params.status ?? "active",
       turnCount: 0,
       childFile: params.childFile,
     }
-
+ 
     manifest.children[params.childSessionID] = entry
     manifest.totalChildren = Object.keys(manifest.children).length
     manifest.maxDepth = Math.max(manifest.maxDepth, params.delegationDepth)
     manifest.lastUpdated = now
-
+ 
     await this.writeManifest(params.rootMainSessionID, manifest)
   }
 

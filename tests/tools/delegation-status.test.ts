@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs"
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -9,7 +9,7 @@ import { persistDelegations } from "../../src/task-management/continuity/delegat
 import { createDelegationStatusTool } from "../../src/tools/delegation/delegation-status.js"
 
 const mockCtx = {
-  sessionID: "parent-session",
+  sessionID: "ses_parent_session",
   agent: "builder",
   directory: process.cwd(),
   worktree: process.cwd(),
@@ -23,10 +23,11 @@ function parseResult(raw: string): Record<string, unknown> {
 }
 
 function makeDelegation(overrides: Partial<Delegation> = {}): Delegation {
+  const id = overrides.id ?? "ses_child_001"
   return {
-    id: "del-001",
-    parentSessionId: "parent-session",
-    childSessionId: "child-session",
+    id,
+    parentSessionId: "ses_parent_session",
+    childSessionId: id,
     agent: "builder",
     status: "running",
     createdAt: Date.now(),
@@ -62,12 +63,18 @@ function createManagerStub(delegations: Delegation[] = []): ManagerStub {
 
 describe("delegation-status tool", () => {
   let previousStateDir: string | undefined
+  let tempProjectRoot: string
   let stateDir: string
 
   beforeEach(() => {
     previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
-    stateDir = mkdtempSync(join(tmpdir(), "delegation-status-"))
+    tempProjectRoot = mkdtempSync(join(tmpdir(), "delegation-status-project-"))
+    stateDir = join(tempProjectRoot, ".hivemind", "state")
     process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+
+    const parentSessionDir = join(tempProjectRoot, ".hivemind", "session-tracker", "ses_parent_session")
+    mkdirSync(parentSessionDir, { recursive: true })
+    writeFileSync(join(parentSessionDir, "ses_parent_session.md"), "# Mock Parent Session\n", "utf-8")
   })
 
   afterEach(() => {
@@ -77,7 +84,7 @@ describe("delegation-status tool", () => {
     } else {
       process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
     }
-    rmSync(stateDir, { recursive: true, force: true })
+    rmSync(tempProjectRoot, { recursive: true, force: true })
   })
 
   // ---------------------------------------------------------------------------
@@ -85,18 +92,18 @@ describe("delegation-status tool", () => {
   // ---------------------------------------------------------------------------
 
   it("returns delegation status when given valid delegationId", async () => {
-    const delegation = makeDelegation({ id: "del-001", status: "running" })
+    const delegation = makeDelegation({ id: "ses_child_001", status: "running" })
     const manager = createManagerStub([delegation])
     const tool = createDelegationStatusTool(manager as never)
 
-    const raw = await tool.execute({ delegationId: "del-001" } as never, mockCtx)
+    const raw = await tool.execute({ delegationId: "ses_child_001" } as never, mockCtx)
     const result = parseResult(raw)
 
     expect(result.kind).toBe("success")
-    expect(manager.getStatus).toHaveBeenCalledWith("del-001")
+    expect(manager.getStatus).toHaveBeenCalledWith("ses_child_001")
     const data = result.data as Record<string, unknown>
     expect(data.status).toBe("running")
-    expect(data.delegationId).toBe("del-001")
+    expect(data.delegationId).toBe("ses_child_001")
   })
 
   it("returns error when delegationId not found", async () => {
@@ -114,7 +121,7 @@ describe("delegation-status tool", () => {
     const manager = createManagerStub([makeDelegation()])
     const tool = createDelegationStatusTool(manager as never)
 
-    const raw = await tool.execute({ delegationId: "del-001" } as never, { ...mockCtx, sessionID: undefined })
+    const raw = await tool.execute({ delegationId: "ses_child_001" } as never, { ...mockCtx, sessionID: undefined })
     const result = parseResult(raw)
 
     expect(result.kind).toBe("error")
@@ -123,10 +130,10 @@ describe("delegation-status tool", () => {
   })
 
   it("returns auditable access denied for foreign delegation lookup", async () => {
-    const manager = createManagerStub([makeDelegation({ parentSessionId: "foreign-parent" })])
+    const manager = createManagerStub([makeDelegation({ parentSessionId: "ses_foreign_parent" })])
     const tool = createDelegationStatusTool(manager as never)
 
-    const raw = await tool.execute({ delegationId: "del-001" } as never, mockCtx)
+    const raw = await tool.execute({ delegationId: "ses_child_001" } as never, mockCtx)
     const result = parseResult(raw)
 
     expect(result.kind).toBe("error")
@@ -136,21 +143,23 @@ describe("delegation-status tool", () => {
   it("falls back to persisted terminal delegation when memory has been cleaned up", async () => {
     persistDelegations([
       makeDelegation({
-        id: "del-persisted",
+        id: "ses_persisted",
         status: "completed",
         result: "persisted result",
         completedAt: Date.now(),
       }),
     ])
+    await new Promise((resolve) => setTimeout(resolve, 500))
     const manager = createManagerStub([])
     const tool = createDelegationStatusTool(manager as never)
 
-    const raw = await tool.execute({ delegationId: "del-persisted" } as never, mockCtx)
+    const raw = await tool.execute({ delegationId: "ses_persisted" } as never, mockCtx)
     const result = parseResult(raw)
     const data = result.data as Record<string, unknown>
 
+    console.log("[DEBUG TEST RESULT]", result)
     expect(result.kind).toBe("success")
-    expect(data.delegationId).toBe("del-persisted")
+    expect(data.delegationId).toBe("ses_persisted")
     expect(data.status).toBe("completed")
     expect(data.result).toBe("persisted result")
   })
@@ -331,8 +340,8 @@ describe("delegation-status tool", () => {
 
   it("lists only caller-visible delegations", async () => {
     const delegations = [
-      makeDelegation({ id: "del-owned", parentSessionId: "parent-session" }),
-      makeDelegation({ id: "del-foreign", parentSessionId: "foreign-session" }),
+      makeDelegation({ id: "ses_owned", parentSessionId: "ses_parent_session" }),
+      makeDelegation({ id: "ses_foreign", parentSessionId: "ses_foreign_session" }),
     ]
     const manager = createManagerStub(delegations)
     const tool = createDelegationStatusTool(manager as never)
@@ -340,7 +349,7 @@ describe("delegation-status tool", () => {
     const raw = await tool.execute({} as never, mockCtx)
     const result = parseResult(raw)
 
-    expect((result.data as Array<{ delegationId?: string }>).map((entry) => entry.delegationId)).toEqual(["del-owned"])
+    expect((result.data as Array<{ delegationId?: string }>).map((entry) => entry.delegationId)).toEqual(["ses_owned"])
   })
 
   it("handles empty delegation list", async () => {
@@ -363,7 +372,7 @@ describe("delegation-status tool", () => {
     // caller could see.
     const delegations = [
       makeDelegation({
-        id: "del-leak-1",
+        id: "ses_leak_1",
         status: "completed",
         result: "OPENAI_API_KEY=sk-leak-list-1",
         error: "Authorization: Bearer leak.list.1",
@@ -371,7 +380,7 @@ describe("delegation-status tool", () => {
         completedAt: Date.now(),
       }),
       makeDelegation({
-        id: "del-leak-2",
+        id: "ses_leak_2",
         status: "completed",
         result: "GITHUB_TOKEN=ghp-leak-list-2",
         completedAt: Date.now(),
@@ -395,8 +404,8 @@ describe("delegation-status tool", () => {
     expect(raw).not.toContain("leakpw1")
     expect(raw).not.toContain("ghp-leak-list-2")
     // delegationId is the public field, id should not appear (renderDelegation rename)
-    expect(data[0]?.delegationId).toBe("del-leak-1")
-    expect(data[1]?.delegationId).toBe("del-leak-2")
+    expect(data[0]?.delegationId).toBe("ses_leak_1")
+    expect(data[1]?.delegationId).toBe("ses_leak_2")
   })
 
   it("filters by status when status parameter provided", async () => {
@@ -418,28 +427,30 @@ describe("delegation-status tool", () => {
   })
 
   it("merges active memory records with persisted terminal records for list filters", async () => {
-    const active = makeDelegation({ id: "del-active", status: "running" })
+    const active = makeDelegation({ id: "ses_active", status: "running" })
     const persistedTerminal = makeDelegation({
-      id: "del-persisted-terminal",
+      id: "ses_persisted_terminal",
       status: "completed",
       result: "done from disk",
       completedAt: Date.now(),
     })
     persistDelegations([active, persistedTerminal])
+    await new Promise((resolve) => setTimeout(resolve, 500))
     const manager = createManagerStub([active])
     const tool = createDelegationStatusTool(manager as never)
 
     const allRaw = await tool.execute({} as never, mockCtx)
     const allResult = parseResult(allRaw)
+
     expect((allResult.data as Array<{ delegationId?: string }>).map((d) => d.delegationId)).toEqual(
-      expect.arrayContaining(["del-active", "del-persisted-terminal"]),
+      expect.arrayContaining(["ses_active", "ses_persisted_terminal"]),
     )
 
     const filteredRaw = await tool.execute({ status: "completed" } as never, mockCtx)
     const filteredResult = parseResult(filteredRaw)
     const filtered = filteredResult.data as Array<{ delegationId?: string }>
     expect(filtered).toHaveLength(1)
-    expect(filtered[0]?.delegationId).toBe("del-persisted-terminal")
+    expect(filtered[0]?.delegationId).toBe("ses_persisted_terminal")
   })
 
   it("returns empty list when filter matches no delegations", async () => {
@@ -517,6 +528,26 @@ describe("delegation-status tool", () => {
 })
 
 describe("contract-based tests", () => {
+  let previousStateDir: string | undefined
+  let tempProjectRoot: string
+  let stateDir: string
+
+  beforeEach(() => {
+    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+    tempProjectRoot = mkdtempSync(join(tmpdir(), "delegation-status-contract-"))
+    stateDir = join(tempProjectRoot, ".hivemind", "state")
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+  })
+
+  afterEach(() => {
+    if (previousStateDir === undefined) {
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+    } else {
+      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
+    }
+    rmSync(tempProjectRoot, { recursive: true, force: true })
+  })
+
   it("returns delegation status for known ID", async () => {
     const delegation = makeDelegation({ id: "del_known", status: "running", agent: "builder" })
     const manager = createManagerStub([delegation])

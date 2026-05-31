@@ -1,11 +1,12 @@
-import { dirname, join } from "node:path"
+import { readdirSync, readFileSync, existsSync } from "node:fs"
+import { dirname, join, resolve } from "node:path"
 
 import { getContinuityStoragePath } from "./index.js"
 
 import { ChildWriter } from "../../features/session-tracker/persistence/child-writer.js"
 import { HierarchyManifestWriter } from "../../features/session-tracker/persistence/hierarchy-manifest.js"
-import type { ChildSessionRecord } from "../../features/session-tracker/types.js"
-import type { Delegation } from "../../shared/types.js"
+import type { ChildSessionRecord, HierarchyManifest } from "../../features/session-tracker/types.js"
+import type { Delegation, DelegationStatus, DelegationTerminalKind } from "../../shared/types.js"
 
 function getDelegationStoreDirectory(): string {
   return dirname(getContinuityStoragePath())
@@ -41,6 +42,7 @@ function buildChildRecordFromDelegation(d: Delegation): ChildSessionRecord {
     mainAgent: { name: d.agent, model: "" },
     turns: [],
     children: [],
+    lastMessage: d.result ?? d.error,
     // 7 new gap fields (P41-B)
     queueKey: d.queueKey || undefined,
     terminalKind: d.terminalKind,
@@ -61,7 +63,7 @@ export function persistDelegations(delegations: Delegation[]): void {
   // --- P41-B: Dual-write to session-tracker (fire-and-forget, best-effort) ---
   try {
     const storeDir = getDelegationStoreDirectory()
-    const projectRoot = dirname(storeDir) // parent of the .hivemind/state directory
+    const projectRoot = dirname(dirname(storeDir)) // grandparent of the .hivemind/state directory (real project root)
     const childWriter = new ChildWriter({ projectRoot })
     const manifestWriter = new HierarchyManifestWriter({ projectRoot })
 
@@ -85,6 +87,7 @@ export function persistDelegations(delegations: Delegation[]): void {
         delegatedBy: d.agent,
         subagentType: "",
         childFile: `${d.childSessionId}.json`,
+        status: d.status,
       }).catch((err) => {
         console.error(`[Harness] persistDelegations dual-write (manifest): ${err instanceof Error ? err.message : String(err)}`)
       })
@@ -97,5 +100,124 @@ export function persistDelegations(delegations: Delegation[]): void {
 
 export function readPersistedDelegations(): Delegation[] {
   // REQ-P41D-01: No delegations.json reads. Session-tracker is canonical.
-  return []
+  try {
+    const storeDir = getDelegationStoreDirectory()
+    const projectRoot = storeDir.includes(".hivemind") ? dirname(dirname(storeDir)) : storeDir
+    const trackerRoot = resolve(projectRoot, ".hivemind", "session-tracker")
+    if (!existsSync(trackerRoot)) {
+      return []
+    }
+
+    const delegations: Delegation[] = []
+    const rootDirs = readdirSync(trackerRoot, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && e.name.startsWith("ses"))
+      .map((e) => e.name)
+
+    const seenIds = new Set<string>()
+
+    for (const rootId of rootDirs) {
+      const manifestPath = resolve(trackerRoot, rootId, "hierarchy-manifest.json")
+      if (existsSync(manifestPath)) {
+        try {
+          const raw = readFileSync(manifestPath, "utf-8")
+          const manifest = JSON.parse(raw) as HierarchyManifest
+          if (manifest.children) {
+            for (const [childId, child] of Object.entries(manifest.children)) {
+              if (seenIds.has(childId)) continue
+              seenIds.add(childId)
+              delegations.push({
+                id: childId,
+                parentSessionId: child.parentSessionID,
+                childSessionId: childId,
+                agent: child.subagentType ?? "unknown",
+                status: child.status as DelegationStatus,
+                createdAt: new Date(child.createdAt).getTime(),
+                completedAt: child.status !== "active" && child.updatedAt ? new Date(child.updatedAt).getTime() : undefined,
+                executionMode: "sdk",
+                surface: "agent-delegation",
+                recoveryGuarantee: "resumable",
+                workingDirectory: projectRoot,
+                ptySessionId: undefined,
+                fallbackReason: undefined,
+                queueKey: "",
+                nestingDepth: child.delegationDepth ?? 1,
+                terminalKind: child.status !== "active" ? (child.status as DelegationTerminalKind) : undefined,
+                terminationSignal: undefined,
+                explicitCancellation: false,
+                lastMessageCount: 0,
+                stablePollCount: 0,
+              })
+            }
+          }
+        } catch {
+          // ignore manifest error, check files directly
+        }
+      }
+
+      // Also scan direct child JSON files to be safe
+      try {
+        const files = readdirSync(resolve(trackerRoot, rootId), { withFileTypes: true })
+        for (const file of files) {
+          if (file.isFile() && file.name.endsWith(".json") && file.name !== "hierarchy-manifest.json" && file.name !== "session-continuity.json") {
+            const childId = file.name.slice(0, -5)
+            if (seenIds.has(childId)) continue
+            seenIds.add(childId)
+            const filePath = resolve(trackerRoot, rootId, file.name)
+            try {
+              const raw = readFileSync(filePath, "utf-8")
+              const childRecord = JSON.parse(raw) as ChildSessionRecord
+              
+              let result: string | undefined
+              let error: string | undefined
+              if (childRecord.status === "completed") {
+                result = childRecord.lastMessage
+              } else if (childRecord.status === "error") {
+                error = childRecord.lastMessage
+              }
+
+              let status: DelegationStatus = "running"
+              if (childRecord.status === "completed") status = "completed"
+              else if (childRecord.status === "error") status = "error"
+
+              delegations.push({
+                id: childRecord.sessionID,
+                parentSessionId: childRecord.parentSessionID,
+                childSessionId: childRecord.sessionID,
+                agent: childRecord.mainAgent?.name ?? childRecord.delegatedBy?.subagentType ?? "unknown",
+                status,
+                result,
+                error,
+                createdAt: new Date(childRecord.created).getTime(),
+                completedAt: childRecord.status !== "active" ? new Date(childRecord.updated).getTime() : undefined,
+                executionMode: childRecord.delegatedBy?.tool === "task" ? "sdk" : "headless",
+                surface: "agent-delegation",
+                recoveryGuarantee: "resumable",
+                workingDirectory: projectRoot,
+                ptySessionId: undefined,
+                fallbackReason: undefined,
+                queueKey: "",
+                nestingDepth: childRecord.delegationDepth,
+                terminalKind: childRecord.status !== "active" ? (childRecord.status as DelegationTerminalKind) : undefined,
+                terminationSignal: undefined,
+                explicitCancellation: false,
+                messageCount: childRecord.turns.length,
+                actionCount: childRecord.turns.reduce((acc, t) => acc + (t.tools?.length ?? 0), 0),
+                finalMessageExcerpt: childRecord.lastMessage,
+                lastMessageCount: childRecord.turns.length,
+                stablePollCount: 0,
+              })
+            } catch {
+              // ignore
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    return delegations
+  } catch (err) {
+    return []
+  }
 }

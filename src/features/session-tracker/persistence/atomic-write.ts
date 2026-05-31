@@ -34,7 +34,7 @@ export async function atomicWriteJson(
   filePath: string,
   data: unknown,
 ): Promise<void> {
-  const tmpPath = `${filePath}.tmp.${Date.now()}`
+  const tmpPath = `${filePath}.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 10)}`
   const content = JSON.stringify(data, null, 2)
   await ensureDirectory(dirname(filePath))
   await writeFile(tmpPath, content, "utf-8")
@@ -75,7 +75,7 @@ export async function atomicAppendMarkdown(
   filePath: string,
   content: string,
 ): Promise<void> {
-  const tmpPath = `${filePath}.tmp.${Date.now()}`
+  const tmpPath = `${filePath}.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 10)}`
   let existing = ""
 
   try {
