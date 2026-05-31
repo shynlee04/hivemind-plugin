@@ -77,6 +77,7 @@ import { SessionTracker } from "./features/session-tracker/index.js"
 import { getConfig, getFreshConfig } from "./config/subscriber.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
 import { getSessionContinuity, listSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./task-management/continuity/index.js"
+import { enrichContinuityListWithTracker } from "./task-management/continuity/continuity-reader.js"
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
 import type { RuntimePolicy } from "./shared/types.js"
 
@@ -411,7 +412,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // while the parent session was ended. Best-effort: does not block plugin init.
   // This runs AFTER hydrateFromContinuity so continuity records are available,
   // but fires-and-forgets so it never blocks the plugin.
-  void replayPendingDelegationNotifications(client)
+  void replayPendingDelegationNotifications(client, projectDirectory)
 
   // Phase 36.1 R-COMPLETION-DETECTOR-05: complete the dual-signal completion
   // wiring. The lifecycle manager *owns* the CompletionDetector (it receives
@@ -626,9 +627,12 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
  *
  * @param client - OpenCode SDK client for TUI operations.
  */
-export async function replayPendingDelegationNotifications(client: OpenCodeClient): Promise<void> {
+export async function replayPendingDelegationNotifications(client: OpenCodeClient, projectDirectory?: string): Promise<void> {
   const allSessions = listSessionContinuity()
-  for (const record of Object.values(allSessions)) {
+  const sessionRecords = projectDirectory
+    ? await enrichContinuityListWithTracker(Object.values(allSessions), projectDirectory)
+    : Object.values(allSessions)
+  for (const record of sessionRecords) {
     const pending = record.metadata.pendingNotifications ?? []
     if (pending.length === 0) continue
     const sessionId = record.sessionID
