@@ -436,7 +436,6 @@ describe("DelegationManager", () => {
         prompt: "persist queue key",
       })
 
-      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
       const expectedQueueKey = buildDelegationQueueKey({
         provider: "anthropic",
         model: "claude-3-5-sonnet",
@@ -444,7 +443,6 @@ describe("DelegationManager", () => {
         category: "implementation",
       })
 
-      expect(persisted[0]?.queueKey).toBe(expectedQueueKey)
       expect(manager.getStatus(result.delegationId)?.queueKey).toBe(expectedQueueKey)
       expect(result.queueKey).toBe(expectedQueueKey)
     })
@@ -479,35 +477,25 @@ describe("DelegationManager", () => {
       )
     })
 
-    it("persists delegation to disk BEFORE sending prompt (write-then-send ordering)", async () => {
+    it("stores delegation in memory BEFORE sending prompt (write-then-send ordering, no file I/O)", async () => {
       const client = createMockClient()
       const promptSpy = client.session.promptAsync.mockImplementation(async (...args: unknown[]) => {
-        const filePath = getDelegationsFile(stateDir)
-        expect(existsSync(filePath)).toBe(true)
-        const persisted = JSON.parse(readFileSync(filePath, "utf-8")) as Delegation[]
-        expect(persisted).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              parentSessionId: "ses-parent-persist",
-              childSessionId: "child-ses-123",
-              agent: "builder",
-            }),
-          ]),
-        )
+        // In-memory state is populated before prompt is sent
         return args
       })
       const manager = new DelegationManager(client as never)
 
-      await manager.dispatch({
+      const result = await manager.dispatch({
         parentSessionId: "ses-parent-persist",
         agent: "builder",
         prompt: "persist first",
       })
 
       expect(promptSpy).toHaveBeenCalled()
+      expect(manager.getStatus(result.delegationId)?.parentSessionId).toBe("ses-parent-persist")
     })
 
-    it("records truthful execution metadata on the in-memory and persisted delegation record", async () => {
+    it("records truthful execution metadata on the in-memory delegation record", async () => {
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
@@ -518,7 +506,6 @@ describe("DelegationManager", () => {
       })
 
       const delegation = manager.getStatus(result.delegationId)
-      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
 
       expect(delegation).toEqual(expect.objectContaining({
         executionMode: "sdk",
@@ -528,15 +515,6 @@ describe("DelegationManager", () => {
       }))
       expect(delegation?.ptySessionId).toBeUndefined()
       expect(delegation?.explicitCancellation).toBe(false)
-      expect(persisted).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          id: result.delegationId,
-          executionMode: "sdk",
-          surface: "agent-delegation",
-          recoveryGuarantee: "resumable",
-          workingDirectory: expect.any(String),
-        }),
-      ]))
     })
 
     it("records sdk execution metadata truthfully for agent dispatches without PTY session state", async () => {
@@ -560,7 +538,6 @@ describe("DelegationManager", () => {
       })
 
       const delegation = manager.getStatus(result.delegationId)
-      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
 
       expect(result.executionMode).toBe("sdk")
       expect(result.surface).toBe("agent-delegation")
@@ -574,14 +551,6 @@ describe("DelegationManager", () => {
       }))
       expect(delegation?.ptySessionId).toBeUndefined()
       expect(delegation?.explicitCancellation).toBe(false)
-      expect(persisted).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          id: result.delegationId,
-          executionMode: "sdk",
-          surface: "agent-delegation",
-          recoveryGuarantee: "resumable",
-        }),
-      ]))
     })
 
     it("dispatchCommand uses canonical queue governance and records real PTY session state", async () => {
@@ -1243,7 +1212,7 @@ describe("DelegationManager", () => {
       expect(manager.getStatus(result.delegationId)?.status).toBe("timeout")
     })
 
-    it("handleSessionDeleted marks delegation as error, clears safety timer, persists, cleans up", async () => {
+    it("handleSessionDeleted marks delegation as error, clears safety timer, cleans up", async () => {
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-deleted" } })
       const manager = new DelegationManager(client as never)
@@ -1260,7 +1229,6 @@ describe("DelegationManager", () => {
       expect(manager.getStatus(result.delegationId)?.error).toBe("Delegated session deleted before completion")
       expect(manager.getStatus(result.delegationId)?.completedAt).toBeDefined()
       expect(getInternals(manager).delegationsBySession.has("child-deleted")).toBe(false)
-      expect(existsSync(getDelegationsFile(stateDir))).toBe(true)
       expect(getInternals(manager).safetyTimers.has(result.delegationId)).toBe(false)
     })
 
@@ -1420,51 +1388,64 @@ describe("DelegationManager", () => {
       expect(all[0]?.status).toBe("completed")
     })
 
-    it("persistence write happens before result extraction to avoid race conditions", async () => {
+    it("stores delegation in memory without writing delegations.json (no-op file persistence)", async () => {
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-order" } })
       client.session.promptAsync.mockImplementation(async () => {
-        const filePath = getDelegationsFile(stateDir)
-        expect(existsSync(filePath)).toBe(true)
+        // No delegations.json should be created on disk
         return undefined
       })
       const manager = new DelegationManager(client as never)
 
-      await manager.dispatch({
+      const result = await manager.dispatch({
         parentSessionId: "ses-parent-order",
         agent: "builder",
         prompt: "ordered",
       })
 
-      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
-      expect(persisted[0]?.childSessionId).toBe("child-order")
+      // In-memory state is correct
+      const delegation = manager.getStatus(result.delegationId)
+      expect(delegation?.childSessionId).toBe("child-order")
+
+      // No file was created on disk (P41-D-01)
+      const filePath = getDelegationsFile(stateDir)
+      expect(existsSync(filePath)).toBe(false)
     })
 
-    it("writes delegations to delegations.json with valid JSON array", async () => {
+    it("stores delegation in memory without delegations.json file on disk", async () => {
       const manager = new DelegationManager(createMockClient() as never)
 
-      await manager.dispatch({
+      const result = await manager.dispatch({
         parentSessionId: "ses-parent-file",
         agent: "builder",
         prompt: "file please",
       })
 
+      // In-memory state is valid
+      expect(manager.getStatus(result.delegationId)).toBeDefined()
+
+      // No file created on disk
       const filePath = getDelegationsFile(stateDir)
-      expect(existsSync(filePath)).toBe(true)
-      const parsed = JSON.parse(readFileSync(filePath, "utf-8"))
-      expect(Array.isArray(parsed)).toBe(true)
+      expect(existsSync(filePath)).toBe(false)
     })
   })
 
   // ---------------------------------------------------------------------------
-  // recovery
+  // recovery (from delegations.json) — P41-D: readPersistedDelegations returns []
   // ---------------------------------------------------------------------------
 
   describe("recovery", () => {
-    it("normalizes persisted delegations that predate queueKey with an empty-string default", async () => {
+    it("recoverPending is a no-op when readPersistedDelegations returns empty", async () => {
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
+      await manager.recoverPending()
+
+      expect(manager.getAllDelegations()).toHaveLength(0)
+    })
+
+    it("ignores delegations.json on disk — readPersistedDelegations returns []", async () => {
+      // Write fixture directly to disk (simulates a pre-existing file)
       writeFileSync(
         getDelegationsFile(stateDir),
         `${JSON.stringify([
@@ -1484,179 +1465,13 @@ describe("DelegationManager", () => {
         "utf-8",
       )
 
-      await manager.recoverPending()
-
-      expect(manager.getStatus("legacy-del-1")?.queueKey).toBe("")
+      // verify file exists but reader returns empty
+      const { readPersistedDelegations } = await import("../../src/task-management/continuity/delegation-persistence.js")
+      expect(readPersistedDelegations()).toEqual([])
     })
 
-    it("normalizes legacy agent-history headless records to sdk without rewriting real command fallback records", () => {
-      writeFileSync(
-        getDelegationsFile(stateDir),
-        `${JSON.stringify([
-          {
-            id: "legacy-agent-record",
-            parentSessionId: "ses-parent-legacy",
-            childSessionId: "ses-child-legacy",
-            agent: "builder",
-            status: "completed",
-            createdAt: Date.now(),
-            executionMode: "headless",
-            workingDirectory: "/tmp/legacy-agent",
-            queueKey: "agent:builder",
-          },
-          {
-            id: "real-command-fallback",
-            parentSessionId: "ses-parent-command",
-            childSessionId: "ses-child-command",
-            agent: "command-runner",
-            status: "error",
-            createdAt: Date.now(),
-            executionMode: "headless",
-            workingDirectory: "/tmp/command-fallback",
-            queueKey: "category:implementation",
-            fallbackReason: "PTY unavailable in current environment",
-          },
-        ], null, 2)}\n`,
-        "utf-8",
-      )
-
-      const delegations = readPersistedDelegations()
-
-      expect(delegations.find((entry) => entry.id === "legacy-agent-record")?.executionMode).toBe("sdk")
-      expect(delegations.find((entry) => entry.id === "real-command-fallback")?.executionMode).toBe("headless")
-    })
-
-    it("normalizes invalid status values to 'error' instead of passing through unchecked", () => {
-      writeFileSync(
-        getDelegationsFile(stateDir),
-        `${JSON.stringify([
-          {
-            id: "invalid-status-record",
-            parentSessionId: "ses-parent-invalid",
-            childSessionId: "child-invalid",
-            agent: "builder",
-            status: "unknown-garbage-status",
-            createdAt: Date.now(),
-            executionMode: "sdk",
-            workingDirectory: "/tmp/invalid-status",
-            queueKey: "agent:builder",
-          },
-          {
-            id: "valid-status-record",
-            parentSessionId: "ses-parent-valid",
-            childSessionId: "child-valid",
-            agent: "builder",
-            status: "completed",
-            createdAt: Date.now(),
-            executionMode: "sdk",
-            workingDirectory: "/tmp/valid-status",
-            queueKey: "agent:builder",
-          },
-        ])}\n`,
-        "utf-8",
-      )
-
-      const delegations = readPersistedDelegations()
-
-      // Invalid status is normalized to "error" instead of being cast blindly
-      expect(delegations.find((entry) => entry.id === "invalid-status-record")?.status).toBe("error")
-      // Valid statuses pass through unchanged
-      expect(delegations.find((entry) => entry.id === "valid-status-record")?.status).toBe("completed")
-    })
-
-    it("assigns truthful surface and recovery defaults when normalizing legacy persisted records", () => {
-      writeFileSync(
-        getDelegationsFile(stateDir),
-        `${JSON.stringify([
-          {
-            id: "legacy-sdk-record",
-            parentSessionId: "ses-parent-sdk",
-            childSessionId: "ses-child-sdk",
-            agent: "builder",
-            status: "completed",
-            createdAt: Date.now(),
-            workingDirectory: "/tmp/legacy-sdk",
-            queueKey: "agent:builder",
-          },
-          {
-            id: "legacy-pty-record",
-            parentSessionId: "ses-parent-pty",
-            childSessionId: "pty-child",
-            agent: "command-runner",
-            status: "running",
-            createdAt: Date.now(),
-            executionMode: "pty",
-            workingDirectory: "/tmp/legacy-pty",
-            ptySessionId: "pty-session-legacy",
-            queueKey: "category:command",
-          },
-          {
-            id: "legacy-headless-record",
-            parentSessionId: "ses-parent-headless",
-            childSessionId: "headless-child",
-            agent: "command-runner",
-            status: "error",
-            createdAt: Date.now(),
-            executionMode: "headless",
-            workingDirectory: "/tmp/legacy-headless",
-            fallbackReason: "PTY unavailable in current environment",
-            queueKey: "category:command",
-          },
-        ], null, 2)}\n`,
-        "utf-8",
-      )
-
-      const delegations = readPersistedDelegations()
-
-      expect(delegations.find((entry) => entry.id === "legacy-sdk-record")).toEqual(expect.objectContaining({
-        executionMode: "sdk",
-        surface: "agent-delegation",
-        recoveryGuarantee: "resumable",
-      }))
-      expect(delegations.find((entry) => entry.id === "legacy-pty-record")).toEqual(expect.objectContaining({
-        executionMode: "pty",
-        surface: "command-process",
-        recoveryGuarantee: "best-effort",
-      }))
-      expect(delegations.find((entry) => entry.id === "legacy-headless-record")).toEqual(expect.objectContaining({
-        executionMode: "headless",
-        surface: "command-process",
-        recoveryGuarantee: "non-resumable-after-restart",
-      }))
-    })
-
-    it("hydrates terminal-detail placeholders on normalized persisted delegations", () => {
-      writeFileSync(
-        getDelegationsFile(stateDir),
-        `${JSON.stringify([
-          {
-            id: "legacy-terminal-record",
-            parentSessionId: "ses-parent-terminal",
-            childSessionId: "ses-child-terminal",
-            agent: "builder",
-            status: "completed",
-            createdAt: Date.now(),
-            executionMode: "sdk",
-            workingDirectory: "/tmp/legacy-terminal",
-            queueKey: "agent:builder",
-          },
-        ], null, 2)}\n`,
-        "utf-8",
-      )
-
-      const delegation = readPersistedDelegations().find((entry) => entry.id === "legacy-terminal-record")
-
-      expect(delegation).toBeDefined()
-      expect(delegation).toHaveProperty("terminalKind")
-      expect(delegation).toHaveProperty("terminationSignal")
-      expect(delegation).toHaveProperty("explicitCancellation")
-      expect(delegation?.terminalKind).toBeUndefined()
-      expect(delegation?.terminationSignal).toBeUndefined()
-      expect(delegation?.explicitCancellation).toBe(false)
-    })
-
-    it("restores running delegations from disk and re-registers them", async () => {
-      const now = Date.now()
+    it("recoverPending returns without error when delegations.json has fixture data (reader returns [])", async () => {
+      // Write fixture data that would have been recovered in P41-C era
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
         {
           id: "delegation-running",
@@ -1664,222 +1479,21 @@ describe("DelegationManager", () => {
           childSessionId: "child-running",
           agent: "builder",
           status: "running",
-          createdAt: now,
+          createdAt: Date.now(),
           safetyCeilingMs: 60_000,
           lastMessageCount: 2,
           stablePollCount: 1,
         },
       ], null, 2))
-      const client = createMockClient()
-      client.session.status.mockResolvedValue({ data: { "child-running": { type: "busy" } } })
-      const manager = new DelegationManager(client as never)
 
-      await manager.recoverPending()
-
-      expect(manager.getStatus("delegation-running")?.status).toBe("running")
-      expect(getInternals(manager).delegationsBySession.get("child-running")).toBe("delegation-running")
-    })
-
-    it("reconciles persisted SDK recovery non-destructively and clears stale recovery errors", async () => {
-      const now = Date.now()
-      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
-        {
-          id: "delegation-recovery-proof",
-          parentSessionId: "parent-recovery-proof",
-          childSessionId: "child-recovery-proof",
-          agent: "builder",
-          status: "running",
-          createdAt: now,
-          safetyCeilingMs: 60_000,
-          lastMessageCount: 2,
-          stablePollCount: 1,
-          lastMessageCountChangeAt: now,
-          executionMode: "sdk",
-          recoveryGuarantee: "resumable",
-          surface: "agent-delegation",
-          workingDirectory: "/tmp/recovery-proof",
-          queueKey: "agent:builder",
-          error: "[Harness] Delegation unverified after restart; recovery will retry through safety ceiling.",
-        },
-      ], null, 2))
-      const client = createMockClient()
-      client.session.status.mockResolvedValue({ data: { "child-recovery-proof": { type: "busy" } } })
-      const manager = new DelegationManager(client as never)
-
-      await manager.recoverPending()
-
-      expect(client.session.status).toHaveBeenCalledOnce()
-      expect(client.session.create).not.toHaveBeenCalled()
-      expect(client.session.prompt).not.toHaveBeenCalled()
-      expect(client.session.promptAsync).not.toHaveBeenCalled()
-      expect(client.session.abort).not.toHaveBeenCalled()
-      expect(manager.getStatus("delegation-recovery-proof")).toEqual(expect.objectContaining({
-        status: "running",
-        executionMode: "sdk",
-        recoveryGuarantee: "resumable",
-        error: undefined,
-      }))
-      expect(getInternals(manager).delegationsBySession.get("child-recovery-proof")).toBe("delegation-recovery-proof")
-
-      // On-disk persistence is handled by the shared state machine's transition path.
-      // After recovery, in-memory state is correct (error cleared by clearStaleRecoveryError).
-      // The on-disk delegation retains the original error until the next transition persists.
-      expect(manager.getStatus("delegation-recovery-proof")?.error).toBeUndefined()
-    })
-
-    it("finalizes delegations whose sessions went idle while down via dual-signal", async () => {
-      vi.useFakeTimers()
-      const now = Date.now()
-      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
-        {
-          id: "delegation-idle",
-          parentSessionId: "parent-idle",
-          childSessionId: "child-idle",
-          agent: "critic",
-          status: "running",
-          createdAt: now,
-          safetyCeilingMs: 60_000,
-          lastMessageCount: 0,
-          stablePollCount: 0,
-        },
-      ], null, 2))
-      const client = createMockClient()
-      client.session.status.mockResolvedValue({ data: { "child-idle": { type: "idle" } } })
-      client.session.messages.mockResolvedValue({
-        data: [{ role: "assistant", parts: [{ type: "text", text: "recovered result" }] }],
-      })
-      const manager = new DelegationManager(client as never)
-
-      await manager.recoverPending()
-      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_BASE_MS * STABLE_POLLS_REQUIRED)
-
-      expect(manager.getStatus("delegation-idle")?.status).toBe("completed")
-      expect(manager.getStatus("delegation-idle")?.result).toBe("recovered result")
-    })
-
-    it("marks delegations as error if child session not found", async () => {
-      const now = Date.now()
-      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
-        {
-          id: "delegation-missing",
-          parentSessionId: "parent-missing",
-          childSessionId: "child-missing",
-          agent: "builder",
-          status: "running",
-          createdAt: now,
-          safetyCeilingMs: 60_000,
-          lastMessageCount: 0,
-          stablePollCount: 0,
-        },
-      ], null, 2))
-      const client = createMockClient()
-      client.session.status.mockResolvedValue({ data: {} })
-      const manager = new DelegationManager(client as never)
-
-      await manager.recoverPending()
-
-      expect(manager.getStatus("delegation-missing")?.status).toBe("running")
-      expect(manager.getStatus("delegation-missing")?.error).toContain("unverified after restart")
-    })
-
-    it("marks unrecoverable headless delegations with non-resumable-after-restart terminal detail", async () => {
-      const now = Date.now()
-      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
-        {
-          id: "delegation-headless-unrecoverable",
-          parentSessionId: "parent-headless",
-          childSessionId: "headless:delegation-headless-unrecoverable",
-          agent: "builder",
-          status: "running",
-          createdAt: now,
-          safetyCeilingMs: 60_000,
-          lastMessageCount: 0,
-          stablePollCount: 0,
-          executionMode: "headless",
-          fallbackReason: "[Harness] PTY runtime unavailable in current environment",
-          workingDirectory: "/tmp/headless-unrecoverable",
-          queueKey: "category:command",
-        },
-      ], null, 2))
       const client = createMockClient()
       const manager = new DelegationManager(client as never)
 
       await manager.recoverPending()
 
-      expect(manager.getStatus("delegation-headless-unrecoverable")).toEqual(expect.objectContaining({
-        status: "error",
-        recoveryGuarantee: "non-resumable-after-restart",
-        terminalKind: "non-resumable-after-restart",
-        explicitCancellation: false,
-      }))
-    })
-
-    it("surfaces corrupted JSON file visibly during recovery", async () => {
-      writeFileSync(getDelegationsFile(stateDir), "NOT VALID JSON {{{")
-
-      const client = createMockClient()
-      const manager = new DelegationManager(client as never)
-
-      await expect(manager.recoverPending()).rejects.toThrow(/^\[Harness\]/)
+      // No delegations are recovered (reader returns [])
       expect(manager.getAllDelegations()).toHaveLength(0)
-    })
-
-    it("handles empty delegations.json — returns empty array", async () => {
-      writeFileSync(getDelegationsFile(stateDir), "[]")
-
-      const client = createMockClient()
-      const manager = new DelegationManager(client as never)
-
-      await expect(manager.recoverPending()).resolves.toBeUndefined()
-      expect(manager.getAllDelegations()).toHaveLength(0)
-    })
-
-    it("skips non-running delegations during recovery", async () => {
-      const now = Date.now()
-      writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
-        {
-          id: "delegation-completed",
-          parentSessionId: "parent-completed",
-          childSessionId: "child-completed",
-          agent: "builder",
-          status: "completed",
-          createdAt: now,
-          safetyCeilingMs: 60_000,
-          lastMessageCount: 0,
-          stablePollCount: 3,
-          result: "already done",
-          completedAt: now + 1000,
-        },
-      ], null, 2))
-      const client = createMockClient()
-      const manager = new DelegationManager(client as never)
-
-      await manager.recoverPending()
-
-      // Completed delegation should be loaded into memory but NOT register session tracking
-      expect(manager.getStatus("delegation-completed")?.status).toBe("completed")
-      expect(getInternals(manager).delegationsBySession.has("child-completed")).toBe(false)
-      // Should NOT call session.status for completed delegations
-      expect(client.session.status).not.toHaveBeenCalled()
-    })
-
-    it("surfaces non-array JSON content as invalid persisted shape", async () => {
-      writeFileSync(getDelegationsFile(stateDir), JSON.stringify({ not: "an array" }))
-
-      const client = createMockClient()
-      const manager = new DelegationManager(client as never)
-
-      await expect(manager.recoverPending()).rejects.toThrow(/^\[Harness\].*array/)
-      expect(manager.getAllDelegations()).toHaveLength(0)
-    })
-
-    it("handles missing delegations.json file gracefully", async () => {
-      // Don't create the file at all
-      const client = createMockClient()
-      const manager = new DelegationManager(client as never)
-
-      await expect(manager.recoverPending()).resolves.toBeUndefined()
-      expect(manager.getAllDelegations()).toHaveLength(0)
+      expect(manager.getStatus("delegation-running")).toBeUndefined()
     })
   })
 
@@ -2277,7 +1891,7 @@ describe("DelegationManager", () => {
       expect(manager.getStatus("del-5min")).toBeUndefined()
     })
 
-    it("syncs persisted state after pruning", () => {
+    it("prunes delegation from in-memory state (no delegations.json sync)", () => {
       const manager = new DelegationManager(createMockClient() as never)
 
       injectDelegation(manager, {
@@ -2287,17 +1901,10 @@ describe("DelegationManager", () => {
         completedAt: Date.now() - DEFAULT_PRUNE_MAX_AGE_MS - 1000,
       })
 
-      // Force initial persistence
-      const internals = getInternals(manager)
-      writeFileSync(
-        getDelegationsFile(stateDir),
-        JSON.stringify(Array.from(internals.delegations.values())),
-      )
-
       manager.pruneCompletedDelegations()
 
-      const persisted = JSON.parse(readFileSync(getDelegationsFile(stateDir), "utf-8")) as Delegation[]
-      expect(persisted.find((d) => d.id === "del-persist-sync")).toBeUndefined()
+      // In-memory state is pruned
+      expect(manager.getStatus("del-persist-sync")).toBeUndefined()
     })
 
     it("cleans up delegationsBySession tracking for pruned entries", () => {
@@ -2566,8 +2173,7 @@ describe("DelegationManager", () => {
   // ---------------------------------------------------------------------------
 
   describe("dual-mode dispatch recovery edge cases", () => {
-    it("recovers dispatched-state SDK delegation and routes to sdk handler", async () => {
-      const now = Date.now()
+    it("does not recover SDK delegation from delegations.json (readPersistedDelegations returns [])", async () => {
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
         {
           id: "del-dispatched-sdk",
@@ -2575,7 +2181,7 @@ describe("DelegationManager", () => {
           childSessionId: "child-dispatched-sdk",
           agent: "builder",
           status: "dispatched",
-          createdAt: now,
+          createdAt: Date.now(),
           safetyCeilingMs: 60_000,
           lastMessageCount: 0,
           stablePollCount: 0,
@@ -2590,16 +2196,12 @@ describe("DelegationManager", () => {
 
       await manager.recoverPending()
 
-      const delegation = manager.getStatus("del-dispatched-sdk")
-      expect(delegation).toBeDefined()
-      expect(delegation?.status).toBe("dispatched")
-      expect(delegation?.executionMode).toBe("sdk")
-      expect(getInternals(manager).delegationsBySession.get("child-dispatched-sdk")).toBe("del-dispatched-sdk")
-      expect(client.session.status).toHaveBeenCalled()
+      // No delegation recovered (reader returns [])
+      expect(manager.getStatus("del-dispatched-sdk")).toBeUndefined()
+      expect(manager.getAllDelegations()).toHaveLength(0)
     })
 
-    it("recovers dispatched-state PTY delegation and routes to command handler", async () => {
-      const now = Date.now()
+    it("does not recover PTY delegation from delegations.json (readPersistedDelegations returns [])", async () => {
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
         {
           id: "del-dispatched-pty",
@@ -2607,7 +2209,7 @@ describe("DelegationManager", () => {
           childSessionId: "pty:pty-session-dispatched",
           agent: "command-runner",
           status: "dispatched",
-          createdAt: now,
+          createdAt: Date.now(),
           safetyCeilingMs: 60_000,
           lastMessageCount: 0,
           stablePollCount: 0,
@@ -2618,32 +2220,15 @@ describe("DelegationManager", () => {
         },
       ], null, 2))
       const client = createMockClient()
-      const manager = createManager(client, {
-        ptyManager: {
-          isSupported: () => true,
-          spawn: vi.fn(),
-          getSession: vi.fn().mockReturnValue({
-            id: "pty-session-dispatched",
-            mode: "pty",
-            cwd: "/tmp/dispatched-pty",
-            startedAt: now,
-            pid: 9999,
-          }),
-          terminate: vi.fn().mockResolvedValue(undefined),
-        },
-      })
+      const manager = createManager(client)
 
       await manager.recoverPending()
 
-      const delegation = manager.getStatus("del-dispatched-pty")
-      expect(delegation).toBeDefined()
-      expect(delegation?.status).toBe("dispatched")
-      expect(delegation?.executionMode).toBe("pty")
-      expect(delegation?.ptySessionId).toBe("pty-session-dispatched")
+      // No PTY delegation recovered
+      expect(manager.getStatus("del-dispatched-pty")).toBeUndefined()
     })
 
-    it("dead-PTY delegation on recovery falls back to error with descriptive message", async () => {
-      const now = Date.now()
+    it("does not recover dead-PTY delegation from delegations.json (readPersistedDelegations returns [])", async () => {
       writeFileSync(getDelegationsFile(stateDir), JSON.stringify([
         {
           id: "del-dead-pty",
@@ -2651,7 +2236,7 @@ describe("DelegationManager", () => {
           childSessionId: "pty:pty-session-dead",
           agent: "command-runner",
           status: "running",
-          createdAt: now,
+          createdAt: Date.now(),
           safetyCeilingMs: 60_000,
           lastMessageCount: 0,
           stablePollCount: 0,
@@ -2662,25 +2247,12 @@ describe("DelegationManager", () => {
         },
       ], null, 2))
       const client = createMockClient()
-      const manager = createManager(client, {
-        ptyManager: {
-          isSupported: () => true,
-          spawn: vi.fn(),
-          getSession: vi.fn().mockReturnValue(undefined),
-          terminate: vi.fn().mockResolvedValue(undefined),
-        },
-      })
+      const manager = new DelegationManager(client as never)
 
       await manager.recoverPending()
 
-      const delegation = manager.getStatus("del-dead-pty")
-      expect(delegation).toBeDefined()
-      expect(delegation?.status).toBe("error")
-      // Phase 16.2.1 R-PTY-03-AMENDED — recovery is now honest about
-      // non-resumability instead of emitting "session not found".
-      expect(delegation?.error).toContain("non-resumable-after-restart")
-      expect(delegation?.terminalKind).toBe("non-resumable-after-restart")
-      expect(delegation?.completedAt).toBeDefined()
+      // No dead-PTY delegation recovered
+      expect(manager.getStatus("del-dead-pty")).toBeUndefined()
     })
 
     it("dead-PTY on dispatch degrades to headless with fallbackReason recorded", async () => {
