@@ -46,6 +46,9 @@ import { createDelegationConsumer } from "./hooks/observers/delegation-consumer.
 import { createSessionTrackerConsumer } from "./hooks/observers/session-tracker-consumer.js"
 import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.js"
 import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
+import { createTmuxIntegrationIfSupported } from "./features/tmux/integration.js"
+import { createTmuxEventObserver } from "./features/tmux/observers.js"
+import type { EnrichedSessionEvent } from "./features/tmux/observers.js"
 import { createGovernanceSessionTool } from "./features/governance-engine/index.js"
 import { createPromptSkimTool } from "./tools/prompt/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt/prompt-analyze/index.js"
@@ -92,6 +95,7 @@ interface DelegationToolDeps {
   delegationManager: DelegationManager
   hivemindConfig: HivemindConfigs
   ptyManager: ReturnType<typeof createPtyManagerIfSupported> extends Promise<infer T> ? T : never
+  tmuxIntegration?: Awaited<ReturnType<typeof createTmuxIntegrationIfSupported>>
   client: OpenCodeClient
   monitor: { getEscalationLevel: (id: string) => string | null }
   projectDirectory: string
@@ -373,6 +377,16 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const hivemindConfig: HivemindConfigs = getConfig(projectDirectory)
   const ptyManager = await createPtyManagerIfSupported()
 
+  // Tmux integration: optional visual orchestration layer.
+  // REQUIRES: OpenCode server mode to be enabled via opencode.json:
+  //   "server": { "port": <port> }
+  // Without server.port, PluginInput.serverUrl is empty and the fork plugin
+  // cannot construct attach URLs for spawned panes.
+  // See .planning/phases/42-tmux-visual-orchestration-layer-fork-extension/42-RESEARCH.md
+  // for the rationale: in-plugin auto-init is impossible (plugin runs inside
+  // an already-started OpenCode process). Auto-init wrapper deferred to Phase 43.
+  const tmuxIntegration = await createTmuxIntegrationIfSupported(projectDirectory)
+
   // Session tracker: typed owning module for session knowledge capture.
   // Created before delegation modules so it can wire into child session creation
   // for delegate-task SDK-dispatched sessions.
@@ -552,7 +566,20 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
           const lmc = sessionTracker.getLastMessageCapture()
           lmc?.handleEvent(event as Record<string, unknown>)
         }
-      }],
+      }, ...(tmuxIntegration
+        ? [createTmuxEventObserver({
+            onSessionCreated: async (_enriched: EnrichedSessionEvent) => {
+              // Hivemind-side metadata enrichment
+              // In current Phase 42, this is a placeholder that logs/records
+              // the enriched event for future Phase 43 co-pilot integration.
+              // The fork plugin receives un-enriched events from OpenCode and
+              // handles pane lifecycle independently.
+              // Phase 43 will wire Hivemind's enriched events into fork's
+              // SessionManager for copilot-aware pane spawning.
+              void _enriched // intentional: enriched event for future use
+            },
+          })]
+        : [])],
     }),
     ...sessionReadHooks,
     // tool.execute.before: combined guard + session-tracker detection.
