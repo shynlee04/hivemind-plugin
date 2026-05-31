@@ -64,12 +64,12 @@ describe("SessionDeletedHandler", () => {
     handler = new SessionDeletedHandler(deps)
   })
 
-  it("should update child status to completed for child sessions", async () => {
+  it("should update child status to cancelled for child sessions", async () => {
     vi.mocked(getSession).mockResolvedValue({ parentID: "parent-1" } as any)
 
     await handler.handle("child-deleted-1")
 
-    expect(deps.childWriter.updateChildStatus).toHaveBeenCalledWith("parent-1", "child-deleted-1", "completed")
+    expect(deps.childWriter.updateChildStatus).toHaveBeenCalledWith("parent-1", "child-deleted-1", "cancelled")
   })
 
   it("should complete main session and clean up cache", async () => {

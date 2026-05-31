@@ -84,7 +84,7 @@ describe("delegation v2 full pipeline", () => {
     const result = await harness.coordinator.dispatch({ agent: "builder", currentDepth: 0, parentSessionId: "parent-1", queueKey: "agent:builder", surface: "agent-delegation" })
     const abortResult = harness.lifecycle.markAborted(result.delegationId)
 
-    expect(abortResult).toMatchObject({ delegationId: result.delegationId, status: "error" })
+    expect(abortResult).toMatchObject({ delegationId: result.delegationId, status: "aborted" })
     expect(harness.lifecycle.getStatus(result.delegationId)?.error).toContain("aborted")
   })
 

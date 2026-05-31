@@ -139,12 +139,12 @@ describe("EventCapture — child session routing (DEFECT-08)", () => {
       expect(mockUpdateChildStatusCw).toHaveBeenCalledWith(
         "ses_parent7777777777ef",
         "ses_child6666666666cd",
-        "completed",
+        "cancelled",
       )
       expect(mockUpdateChildStatusSiw).toHaveBeenCalledWith(
         "ses_parent7777777777ef",
         "ses_child6666666666cd",
-        "completed",
+        "cancelled",
       )
     })
   })

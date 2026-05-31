@@ -42,11 +42,13 @@ const DEFAULT_SAFETY_CEILING_MS = 30 * 60 * 1000
  * Terminal states (`completed`, `error`, `timeout`) cannot transition further.
  */
 export const VALID_DELEGATION_TRANSITIONS: Record<DelegationStatus, DelegationStatus[]> = {
-  dispatched: ["running", "completed", "error", "timeout"],
-  running: ["completed", "error", "timeout"],
+  dispatched: ["running", "completed", "error", "timeout", "aborted", "cancelled"],
+  running: ["completed", "error", "timeout", "aborted", "cancelled"],
   completed: [],
   error: [],
   timeout: [],
+  aborted: [],
+  cancelled: [],
 }
 
 /**
@@ -372,7 +374,7 @@ export class DelegationStateMachine {
    */
   pruneCompletedDelegations(maxAgeMs: number = DEFAULT_PRUNE_MAX_AGE_MS): number {
     const now = Date.now()
-    const terminalStatuses: ReadonlySet<DelegationStatus> = new Set(["completed", "error", "timeout"])
+    const terminalStatuses: ReadonlySet<DelegationStatus> = new Set(["completed", "error", "timeout", "aborted", "cancelled"])
     const toPrune: string[] = []
 
     for (const [id, delegation] of this.delegations) {

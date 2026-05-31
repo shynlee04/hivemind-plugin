@@ -66,36 +66,44 @@ describe("delegation-state-machine (pure helpers)", () => {
   // --- VALID_DELEGATION_TRANSITIONS ---
 
   describe("VALID_DELEGATION_TRANSITIONS", () => {
-    it("should list all 5 delegation statuses as keys", () => {
+    it("should list all 7 delegation statuses as keys", () => {
       const statuses = Object.keys(VALID_DELEGATION_TRANSITIONS)
-      expect(statuses).toHaveLength(5)
+      expect(statuses).toHaveLength(7)
       expect(statuses).toContain("dispatched")
       expect(statuses).toContain("running")
       expect(statuses).toContain("completed")
       expect(statuses).toContain("error")
       expect(statuses).toContain("timeout")
+      expect(statuses).toContain("aborted")
+      expect(statuses).toContain("cancelled")
     })
 
     it("should mark all terminal statuses as having no outgoing transitions", () => {
       expect(VALID_DELEGATION_TRANSITIONS.completed).toEqual([])
       expect(VALID_DELEGATION_TRANSITIONS.error).toEqual([])
       expect(VALID_DELEGATION_TRANSITIONS.timeout).toEqual([])
+      expect(VALID_DELEGATION_TRANSITIONS.aborted).toEqual([])
+      expect(VALID_DELEGATION_TRANSITIONS.cancelled).toEqual([])
     })
 
-    it("should allow dispatched to transition to running, completed, error, and timeout", () => {
+    it("should allow dispatched to transition to running, completed, error, timeout, aborted, and cancelled", () => {
       expect(VALID_DELEGATION_TRANSITIONS.dispatched).toEqual([
         "running",
         "completed",
         "error",
         "timeout",
+        "aborted",
+        "cancelled",
       ])
     })
 
-    it("should allow running to transition to completed, error, and timeout", () => {
+    it("should allow running to transition to completed, error, timeout, aborted, and cancelled", () => {
       expect(VALID_DELEGATION_TRANSITIONS.running).toEqual([
         "completed",
         "error",
         "timeout",
+        "aborted",
+        "cancelled",
       ])
     })
   })

@@ -46,6 +46,7 @@ function createHarness(record = activeRecord()) {
     getEscalationLevel,
     lifecycle,
     now: () => now,
+    projectRoot: "/tmp/nonexistent-test-root-" + Math.random().toString(36).slice(2, 10),
     terminateChild,
   })
   return { coordinator, getChildMessageCount, getEscalationLevel, lifecycle, manager, terminateChild, tool }
