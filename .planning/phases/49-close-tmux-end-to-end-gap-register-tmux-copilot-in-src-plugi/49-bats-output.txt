@@ -1,0 +1,4 @@
+1..3
+ok 1 scenario 1 — clean fast-forward: non-pinned upstream commit merges
+ok 2 scenario 2 — three-way merge conflict: both sides modify same non-pinned file
+ok 3 scenario 3 — pinned file conflict: upstream modifies session-manager.ts
