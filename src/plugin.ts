@@ -73,6 +73,7 @@ import { createSessionHierarchyTool } from "./tools/session/session-hierarchy.js
 import { createSessionContextTool } from "./tools/session/session-context.js"
 import { createSessionDelegationQueryTool } from "./tools/session/session-delegation-query.js"
 import { createHivemindSessionViewTool } from "./tools/hivemind/hivemind-session-view.js"
+import { tmuxCopilotTool } from "./tools/tmux-copilot.js"
 import { loadRuntimePolicy } from "./shared/runtime-policy.js"
 import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy.js"
 import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
@@ -662,6 +663,10 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       ...registerConfigTools({
         projectDirectory,
       }),
+      // Phase 49 (REQ-04): wire the pre-constructed tmuxCopilotTool directly
+      // into the plugin tool spread. It is exported as a `tool()` instance
+      // (not a factory) so it requires no per-call dependency plumbing.
+      "tmux-copilot": tmuxCopilotTool,
     },
     // Auto-persist workflow state after configure-primitive calls with workflow params.
     // Best-effort: failures are silently ignored — does not affect the tool call result.
