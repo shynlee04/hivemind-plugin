@@ -379,7 +379,7 @@ describe("SessionManager", () => {
       expect(spawnPane).toHaveBeenCalledTimes(2);
 
       // The respawned spawnPane call MUST include the original hivemindMeta
-      const secondCall = spawnPane.mock.calls[1]?.[0] as any;
+      const secondCall = (spawnPane.mock.calls[1] as any)?.[0];
       expect(secondCall?.hivemindMeta).toEqual(meta);
       await mgr.cleanup();
     });
@@ -398,7 +398,7 @@ describe("SessionManager", () => {
 
       // The respawned pane's description must be the formatted label,
       // proving hivemindMeta propagated through the agentLabelFormat path.
-      const secondCall = spawnPane.mock.calls[1]?.[0] as any;
+      const secondCall = (spawnPane.mock.calls[1] as any)?.[0];
       expect(secondCall?.description).toBe("[gsd-researcher·ses_abc123]");
       await mgr.cleanup();
     });
@@ -413,7 +413,7 @@ describe("SessionManager", () => {
       await mgr.onSessionStatus(mkStatus("s1", "busy") as any);
 
       expect(spawnPane).toHaveBeenCalledTimes(2);
-      const secondCall = spawnPane.mock.calls[1]?.[0] as any;
+      const secondCall = (spawnPane.mock.calls[1] as any)?.[0];
       // No meta was ever provided; respawn must not invent one
       expect(secondCall?.hivemindMeta).toBeUndefined();
       await mgr.cleanup();
@@ -431,7 +431,7 @@ describe("SessionManager", () => {
       await mgr.onSessionStatus(mkStatus("s1", "idle") as any);
       await mgr.onSessionStatus(mkStatus("s1", "busy") as any);
 
-      const secondCall = spawnPane.mock.calls[1]?.[0] as any;
+      const secondCall = (spawnPane.mock.calls[1] as any)?.[0];
       expect(secondCall?.sessionId).toBe("s1");
       expect(secondCall?.hivemindMeta).toEqual(meta);
       expect(secondCall?.directory).toBe("/custom/dir");
