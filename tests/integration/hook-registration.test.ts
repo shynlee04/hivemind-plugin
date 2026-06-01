@@ -83,7 +83,7 @@ describe("Hook Registration Completeness", () => {
     }
   })
 
-  it("tool object contains 24 tool entries", async () => {
+  it("tool object contains 26 tool entries", async () => {
     const mockClient = {
       app: { log: async () => {} },
       session: { prompt: async () => {}, list: async () => [] },
@@ -100,7 +100,7 @@ describe("Hook Registration Completeness", () => {
     expect(typeof result.tool).toBe("object")
 
     const toolKeys = Object.keys(result.tool)
-    expect(toolKeys.length).toBe(25)
+    expect(toolKeys.length).toBe(26)
 
     for (const [key, toolDef] of Object.entries(result.tool)) {
       expect(typeof (toolDef as any).description).toBe("string")

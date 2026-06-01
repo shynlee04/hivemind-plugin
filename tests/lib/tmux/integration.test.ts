@@ -305,7 +305,17 @@ describe("createTmuxIntegrationIfSupported — fork-bridge wiring", () => {
       else if (callCount === 3) cb(null, { stdout: "tmux 3.4\n", stderr: "" })
       else cb(null, { stdout: "", stderr: "" })
     })
-    existsSyncMock.mockReturnValue(false)
+    // P49-03: integration factory guards adapter wiring behind
+    // existsSync(join(projectDirectory, "node_modules/@hivemind/opencode-tmux")).
+    // Default the fork package path to present (true) so the wiring branch
+    // is reachable in tests; other existsSync callers (port-file detection,
+    // state-dir detection) still get false and fall back as before.
+    existsSyncMock.mockImplementation((p: unknown) => {
+      if (typeof p === "string" && p.includes("node_modules/@hivemind/opencode-tmux")) {
+        return true
+      }
+      return false
+    })
   }
 
   beforeEach(() => {
