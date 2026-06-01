@@ -161,8 +161,20 @@ export async function createTmuxIntegrationIfSupported(
 
     // Phase 43 wiring: register the fork adapter with the bridge. Replace-only
     // semantics from the bridge handle HMR-style re-init safely.
+    //
+    // D-04: existsSync-based detection (not import-based). The fork package
+    // is OPTIONAL — if package.json declares it but install failed (peer-dep
+    // mismatch, native binding missing), the import chain may resolve but the
+    // on-disk package is absent. existsSync on the package directory is the
+    // runtime truth. When the package is absent, skip fork-bridge registration
+    // — the integration still works (tmux pane commands) but tmux-copilot
+    // tool calls will return {available: false, reason: "fork-not-wired"}
+    // (P43-02's graceful-unavailable contract).
+    const FORK_PACKAGE_DIR = "node_modules/@hivemind/opencode-tmux";
     if (forkSessionManager !== undefined && forkSessionManager !== null) {
-      setForkSessionManager(forkSessionManager);
+      if (existsSync(join(projectDirectory, FORK_PACKAGE_DIR))) {
+        setForkSessionManager(forkSessionManager);
+      }
     }
 
     return {
