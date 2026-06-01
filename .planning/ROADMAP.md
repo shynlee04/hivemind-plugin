@@ -1855,12 +1855,13 @@ P40.06 (npm publishing) ─────┘
 ### Phase 45: Vendor Sync Script (2026-06-01)
 
 **Goal:** Provide `scripts/sync-fork.sh` to pull upstream changes from the preserved `shynlee04/opencode-tmux` GitHub fork into the vendored `opencode-tmux/` directory (commit `7dc30d95` resolved the broken gitlink). The script performs a 3-way merge that preserves Hivemind-specific surface changes (runtime injection boundary, tmux-copilot tool) while propagating upstream patches and features. Must be idempotent and support a `--dry-run` mode that previews the merge without writing. Shell test suite covers three scenarios: clean fast-forward, three-way merge success, and conflicting Hivemind-pinned files (must abort with clear error, never silently overwrite Hivemind changes).
-**Requirements**: TBD
+**Requirements**: REQ-01, REQ-02, REQ-03, REQ-04, REQ-05
 **Depends on:** Phase 43
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 45 to break down)
+- [ ] 45-01-PLAN.md — Create `scripts/sync-fork.sh` with temp remote, merge-tree conflict detection, dry-run, pinned file protection
+- [ ] 45-02-PLAN.md — Install bats, create `tests/scripts/sync-fork.bats` test suite with 3 scenarios (fast-forward, 3-way merge, conflict abort)
 
 ---
 
