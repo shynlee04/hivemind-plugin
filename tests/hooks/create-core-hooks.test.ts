@@ -5,6 +5,7 @@ import type { HookDependencies } from "../../src/hooks/types.js"
 import type { ResolvedBehavioralProfile } from "../../src/routing/behavioral-profile/types.js"
 import type { IntakeResult } from "../../src/routing/session-entry/intake-gate.js"
 import { HivemindConfigsSchema } from "../../src/schema-kernel/hivemind-configs.schema.js"
+import { taskState } from "../../src/shared/state.js"
 
 function createFakeLifecycleManager() {
   return {
@@ -911,11 +912,12 @@ describe("createCoreHooks", () => {
       const output: Record<string, unknown> = {}
       await hooks["system.transform"]({ sessionID: "ses_lang_order" }, output)
       const system = output.system as string[]
-      expect(system.length).toBe(4) // lang + gov + intake + behavioral
+      expect(system.length).toBe(5) // lang + gov + intake + behavioral + agent profile
       expect(system[0]).toContain("--- Language Governance ---")
       expect(system[1]).toContain("--- Governance ---")
       expect(system[2]).toContain("Session intake context:")
       expect(system[3]).toContain("Behavioral profile context:")
+      expect(system[4]).toContain("--- Agent Profile: hm-l0-orchestrator ---")
     })
 
     it("Test 10: no language block when hivemindConfig is undefined", async () => {
@@ -996,6 +998,89 @@ describe("createCoreHooks", () => {
       const system = output.system as string[]
       expect(system[0]).toContain("--- Governance ---")
       expect(system[0]).not.toContain("--- Language Governance ---")
+    })
+  })
+
+  describe("specialist agent profile injection", () => {
+    it("dynamically loads and injects the specialist agent profile instructions on every turn", async () => {
+      const fs = await import("node:fs")
+      const path = await import("node:path")
+
+      const projectRoot = process.cwd()
+      const agentDir = path.join(projectRoot, ".opencode", "agents")
+      const mockAgentPath = path.join(agentDir, "mock-specialist.md")
+
+      // Ensure agent directory exists
+      fs.mkdirSync(agentDir, { recursive: true })
+
+      // Write a mock agent primitive definition
+      const mockContent = [
+        "---",
+        "name: mock-specialist",
+        "description: Mock Specialist Agent",
+        "---",
+        "This is the behavior contract body of the mock-specialist agent.",
+      ].join("\n")
+
+      fs.writeFileSync(mockAgentPath, mockContent, "utf-8")
+
+      try {
+        const deps: Partial<HookDependencies> = {
+          lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+          getIntake: () => undefined,
+          getBehavioralProfile: () => undefined,
+          projectDirectory: projectRoot,
+          stateManager: taskState,
+        }
+
+        // 1. Set delegation metadata to mock-specialist
+        taskState.setDelegationMeta("ses_agent_test", {
+          agent: "mock-specialist",
+          rootID: "ses_agent_test",
+          depth: 1,
+          queueKey: "q_test",
+        })
+
+        const hooks = createCoreHooks(deps as HookDependencies)
+        const output: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID: "ses_agent_test" }, output)
+
+        const system = output.system as string[]
+        expect(system).toBeDefined()
+
+        // Verify that the specialist profile header and body are injected
+        const profileBlock = system.find((s) => s.includes("--- Agent Profile: mock-specialist ---"))
+        expect(profileBlock).toBeDefined()
+        expect(profileBlock).toContain("This is the behavior contract body of the mock-specialist agent.")
+      } finally {
+        // Clean up the mock agent file
+        if (fs.existsSync(mockAgentPath)) {
+          fs.rmSync(mockAgentPath, { force: true })
+        }
+      }
+    })
+
+    it("falls back to hm-l0-orchestrator for main sessions and injects its profile", async () => {
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => undefined,
+        getBehavioralProfile: () => undefined,
+        projectDirectory: process.cwd(),
+        isMainSession: (id) => id === "ses_main_test",
+        stateManager: taskState,
+      }
+
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_main_test" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+
+      // Verify that hm-l0-orchestrator profile is injected
+      const profileBlock = system.find((s) => s.includes("--- Agent Profile: hm-l0-orchestrator ---"))
+      expect(profileBlock).toBeDefined()
+      expect(profileBlock).toContain("# hm-orchestrator")
     })
   })
 })

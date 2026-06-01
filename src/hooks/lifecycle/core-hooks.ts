@@ -11,11 +11,16 @@
  * (NOT `system.transform`). Both are returned for backward compatibility with tests,
  * but only `experimental.chat.system.transform` is dispatched by the OpenCode runtime.
  */
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 import { asString, getNestedValue, isObject } from "../../shared/helpers.js"
 import { getEventSessionID } from "../../shared/session-api.js"
 import { classifyHookEffect } from "../composition/cqrs-boundary.js"
 import { buildGovernanceBlock } from "../guards/governance-block.js"
 import type { HookDependencies } from "../types.js"
+import { loadPrimitive } from "../../features/bootstrap/primitive-loader.js"
+import { getSessionContinuity } from "../../task-management/continuity/index.js"
+import { getDelegationMeta } from "../../shared/state.js"
 
 // ---------------------------------------------------------------------------
 // Hook return shape
@@ -147,6 +152,71 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
         ;(output.system as string[]).push(behavioralLines.join("\n"))
       }
     }
+
+    // Dynamic, non-prunable specialist agent profile injection
+    const agentName = resolveAgentNameForSession(sessionID, deps)
+    if (agentName) {
+      const projectRoot = deps.projectDirectory ?? process.cwd()
+      const pathsToTry = [
+        join(projectRoot, ".opencode", "agents", `${agentName}.md`),
+        join(projectRoot, ".opencode", "agent", `${agentName}.md`),
+      ]
+      let agentFile: string | undefined = undefined
+      for (const p of pathsToTry) {
+        if (existsSync(p)) {
+          agentFile = p
+          break
+        }
+      }
+
+      if (agentFile) {
+        try {
+          const loadResult = await loadPrimitive(agentFile, "agent")
+          if (loadResult.success && "body" in loadResult.data) {
+            const agentBody = loadResult.data.body
+            if (agentBody && agentBody.trim().length > 0) {
+              ;(output.system as string[]).push(
+                `--- Agent Profile: ${agentName} ---\n${agentBody}`,
+              )
+            }
+          }
+        } catch {
+          // Best-effort
+        }
+      }
+    }
+  }
+
+  /** Resolves the active agent name for the session. */
+  function resolveAgentNameForSession(
+    sessionID: string,
+    deps: HookDependencies,
+  ): string | undefined {
+    // 1. Try to get it from delegation metadata in state
+    const delegationMeta = deps.stateManager?.getDelegationMeta?.(sessionID) ?? getDelegationMeta(sessionID)
+    if (delegationMeta?.agent) {
+      return delegationMeta.agent
+    }
+
+    // 2. Try to get it from session continuity
+    try {
+      const continuity = getSessionContinuity(sessionID)
+      if (continuity?.promptParams?.agent) {
+        return continuity.promptParams.agent
+      }
+      if (continuity?.metadata?.delegation?.agent) {
+        return continuity.metadata.delegation.agent
+      }
+    } catch {
+      // Ignore
+    }
+
+    // 3. Fallback to main session strategist
+    if (deps.isMainSession?.(sessionID)) {
+      return "hm-l0-orchestrator"
+    }
+
+    return undefined
   }
 
   return {
