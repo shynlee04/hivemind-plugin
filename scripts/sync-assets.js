@@ -52,6 +52,7 @@ const PRIMITIVE_MAP = {
   workflows: join(stage.consumerRoot, ".opencode", "workflows"),
   references: join(stage.consumerRoot, ".opencode", "references"),
   templates: join(stage.consumerRoot, ".opencode", "templates"),
+  rules: join(stage.consumerRoot, ".opencode", "rules"),
 };
 
 
