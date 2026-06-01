@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-06-01T05:12:44.306Z"
+last_updated: "2026-06-01T14:04:27.254Z"
 progress:
-  total_phases: 50
+  total_phases: 54
   completed_phases: 17
-  total_plans: 112
-  completed_plans: 96
-  percent: 34
+  total_plans: 118
+  completed_plans: 99
+  percent: 31
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-05-31
-**Last advance:** P44-01 — Fix capability-map test & deduplicate constants (2 commits). Commits `59901351`, `c2369357`.
+**Last advance:** P44-04 — capability-layer completion (commit `f47485b1`, 2026-06-01T05:11:46Z). Note: prior STATE text said P44-01 (stale 3 plans behind). **Current planned phase:** P49 (tmux-e2e-completion, added 2026-06-01, depends on P42/P43/P45).
 **Completed:**
 
 - P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write
@@ -386,6 +386,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
   - P24.7 **COMPLETE** — sync-assets.js fixed with backup, conflict detection, and command/ mirror (commit `e901fa91`); 118 commands in both directories; typecheck + tests clean
   - P24.8 **COMPLETE** — `--mode=install` flag with non-destructive merge, dual-root resolution, version drift optimization, postinstall hook (commit `8861bf16`); typecheck + tests clean
 - Phase 43 added: Tmux Co-Pilot Model — Orchestrator Intervention
+- **2026-06-01** — **Phase 49 added**: tmux-e2e-completion — close tmux end-to-end gap. Bundle: register tmux-copilot in plugin.ts, replace noop fork session manager, wire co-pilot intervention, add BATS to CI, run BATS suite (P45 45-02), close P42 (VERIFICATION + UAT) + P43 (re-verify REQ-05) + P45 45-01 (SUMMARY) paperwork gaps. **Depends on**: Phase 42, Phase 43, Phase 45. **Source**: gsd-verifier + hm-architect synthesis `.hivemind/planning/tmux-phases-42-43-45-status-2026-06-01.md` + commit `f40ff92a`. **Gate condition**: L1 runtime proof (vitest 2,963 tests) + BATS 3/3 pass + tmux-copilot `grep` match in `src/plugin.ts` + `buildNoopForkSessionManager` removed.
 
 ### Key Restructuring Decisions
 

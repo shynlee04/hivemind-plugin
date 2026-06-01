@@ -138,6 +138,7 @@ Every phase must explicitly trace through these protocols:
 - [ ] **P38: Package .opencode/ Primitives** (DEFERRED) [GSD-reval: NO]
 - [ ] **P39: Integration Completion & Hardening — Ship Readiness** — Resolve ALL 80+ ongoing phases: verify 40 complete phases have E2E evidence, complete 23 partial phases with code delivery, absorb 39 not-started phases. Fix 19 test timeouts. Fix sync-oss.yml to whitelist only public-safe artifacts (exclude GSD/OMO). Complete C4-C7 concern implementations. Align language governance (vi/en). Absorb P36-P38. **Plans:** 7 waves (Core Stability → Sync-OSS → Partials → Absorb Empty → Verify Complete → Governance → E2E). [GSD-reval: YES - partial] [UAT: full suite pass, typecheck clean, E2E dispatch working, OSS sync verified leak-free]
   **Plans:**
+
   - [ ] 39-01-PLAN.md — Wave 1: Performance Optimization (C4) — JSON.parse memoization, async FS, timer cleanup, async exec
   - [ ] 39-02-PLAN.md — Wave 1: Error Handling & Code Quality (C5) — typed extraction, scoped env, empty catch sweep
   - [ ] 39-03-PLAN.md — Wave 2: Architectural Refactoring (C6) — DelegationStatusReader, domain-grouped plugin.ts
@@ -468,6 +469,7 @@ The meta-concept migration workstream ports hm-*, hf-*, gate-*, and stack-* agen
 **Plans:** 0 plans
 
 Plans:
+
 - [ ] TBD (run /gsd-plan-phase 43 to break down)
 
 ---
@@ -484,6 +486,7 @@ Plans:
 **Audit:** `.hivemind/audits/tool-lifecycle-wiring-audit-2026-05-31.md`
 
 Plans:
+
 - [ ] P44-01-PLAN.md — Wave 1: Capability Gate Module (REQ-P44-01) — ToolCategory enum + CapabilityGate class + 25-tool frozen map + unit tests
 - [ ] P44-02-PLAN.md — Wave 2: Agent Frontmatter + Orphaned Tools (REQ-P44-02, REQ-P44-03) — 31 agent tools: declarations, 11 orphaned tools assigned
 - [ ] P44-03-PLAN.md — Wave 2: JIT Tool Injection at Delegation Boundary (REQ-P44-04) — spawn-request-builder wired to CapabilityGate
@@ -1335,6 +1338,7 @@ Plans:
 **Goal:** Add comprehensive tests to trajectory module (0→15-30 tests), implement agent-work-contract lifecycle state machine, unify compaction bounds, establish bidirectional cross-linking, investigate deriveSurface() — all TDD-first.
 **Depends on:** Phase 23, 24, 24.1, 24.2, 24.3, 24.4, 24.5, 24.6
 **Plans:** 6 plans in 4 waves
+
 - [x] 25-01-PLAN.md — Trajectory RED tests (Wave 1, TDD, 34 tests across 4 files)
 - [x] 25-02-PLAN.md — Unified bounds + deriveSurface investigation (Wave 1, parallel)
 - [x] 25-03-PLAN.md — Contract lifecycle state machine (Wave 2, TDD, 15 tests)
@@ -1628,17 +1632,20 @@ These 8 phases address code quality, type safety, performance, and architectural
 - [x] **C3 (Concerns): Module Decomposition & Promise Patterns** — Fix: 8 files >500 LOC (event-capture.ts 1062 LOC highest); fragile promise chain in ChildWriter.enqueueWrite [Arch-src: YES - src/features/session-tracker/event-capture.ts, src/task-management/continuity/child-writer.ts, src/features/session-tracker/index.ts] [UAT: all files ≤500 LOC, ChildWriter.enqueueWrite uses async/await with proper error propagation, typecheck clean]
 - [ ] **C4 (Concerns): Performance Optimization** — Fix: repeated JSON.parse without memoization in delegation-status.ts; synchronous FS in bootstrap-init tool; unbounded timer accumulation in completion detector; execSync blocking in governance session creation [Arch-src: YES - src/coordination/delegation/delegation-status.ts, src/tools/bootstrap/bootstrap-init.ts, src/coordination/completion/detector.ts, src/tools/governance/create-governance-session.ts] [UAT: JSON.parse results cached/memoized, bootstrap-init uses async fs, completion detector clears timers on terminal state, governance session uses async exec]
   **Plans:** 3 plans in 3 waves
+
   - [ ] C4-01-PLAN.md — Wave 0: Test scaffold for pruneStaleTimers (detector-stability-prune.test.ts)
   - [ ] C4-02-PLAN.md — Wave 1: pruneStaleTimers (REQ-03) + hierarchy-manifest cache (REQ-01)
   - [ ] C4-03-PLAN.md — Wave 2: execFile async (REQ-04) + async FS in bootstrapInit (REQ-02)
 - [ ] **C5 (Concerns): Error Handling & Code Quality** — Fix: coordinator.ts triple-fallback error extraction; env propagation risks in create-governance-session.ts and doctor.ts; verify empty catch blocks (already addressed by C1-C4). **Plans:** 3 plans  
   Plans:
+
   - [ ] C5-01-PLAN.md — coordinator.ts typed SdkMessageShape extraction (REQ-02)
   - [ ] C5-02-PLAN.md — Scoped env for create-governance-session.ts + doctor.ts comment (REQ-03, REQ-04)
   - [ ] C5-03-PLAN.md — Verify zero empty catch blocks (REQ-01 — already satisfied)
 - [ ] **C6 (Concerns): Architectural Refactoring** — Fix: session-tracker god module — extract event handlers into dedicated classes; dual persistence format dependency — create DelegationStatusReader interface; plugin.ts monolithic composition — group tool registrations by domain [Arch-src: YES - src/features/session-tracker/, src/coordination/delegation/delegation-status.ts, src/plugin.ts] [UAT: session-tracker event handlers extracted to ≤3 dedicated classes, DelegationStatusReader interface abstracts persistence format, plugin.ts tool registrations grouped by domain with ≤150 LOC per group]
   **Plans:** 5 plans
   Plans:
+
   - [ ] 01-01-PLAN.md — TDD test scaffolds for all 3 requirements (Wave 0)
   - [ ] 01-02-PLAN.md — REQ-C6-01: Extract event handlers from EventCapture god module (Wave 1)
   - [ ] 01-03-PLAN.md — REQ-C6-02: DelegationStatusReader interface + Zod-validated readers (Wave 1)
@@ -1772,57 +1779,67 @@ P40.06 (npm publishing) ─────┘
 ### Execution Order (Wave-Based)
 
 **Wave 1 — Runtime Fixes (P40.01 + P40.05, parallel-safe)**
+
 - P40.01: Fix fire-and-forget dispatch (5 tasks, P0)
 - P40.05: Fix state persistence & singletons (4 tasks, P1)
 
 **Wave 2 — Feature Wiring (P40.02 + P40.03 + P40.04, sequential)**
+
 - P40.02: Unify delegation state machines (5 tasks, P0) — depends on P40.01
 - P40.03: Wire auto-loop/ralph-loop (4 tasks, P1) — depends on P40.01 + P40.02
 - P40.04: Wire governance evaluation (4 tasks, P1) — depends on P40.02
 
 **Wave 3 — Ship Preparation (P40.06 + P40.07)**
+
 - P40.06: npm package publishing readiness (5 tasks, P0) — depends on P40.01 + P40.02
 - P40.07: E2E integration verification (5 tasks, P0) — depends on ALL above
 
 ### Phase Entries
 
 #### P40.01: Fix Fire-and-Forget Dispatch & Silent Failures
+
 - **Severity:** P0 — runtime break
 - **Scope:** dispatch-command.ts, execute-slash-command.ts, manager.ts
 - **Problem:** 3 dispatch paths return success before SDK call completes. Errors swallowed in console.error. handleSessionError not forwarded to runtime adapter. validateAgentExists returns true on API failure.
 - **Delivers:** Await-based dispatch, error propagation to user, symmetric event forwarding
 
 #### P40.02: Unify Delegation State Machines
+
 - **Severity:** P0 — architecture conflict
 - **Scope:** manager-runtime.ts, coordinator.ts, manager.ts, continuity/index.ts
 - **Problem:** v1 (runtime) and v2 (coordinator) maintain separate delegation maps. Facade merges with fallback (lossy). handleSessionIdle forwards to both, handleSessionError only to coordinator.
 - **Delivers:** Unified delegation visibility, symmetric event forwarding, consistent status across tools
 
 #### P40.03: Wire Auto-Loop / Ralph-Loop to Hook Chain
+
 - **Severity:** P1 — feature not wired
 - **Scope:** auto-loop.ts, ralph-loop.ts, session-hooks.ts
 - **Problem:** Spawner primitives imported but never invoked. session-hooks uses simpler inline auto-loop.
 - **Delivers:** runAutoLoop triggered on delegation completion, runRalphLoop on delegation failure
 
 #### P40.04: Wire Governance Evaluation
+
 - **Severity:** P1 — feature not wired
 - **Scope:** tool-guard-hooks.ts, governance-engine/
 - **Problem:** Governance evaluation always returns empty arrays (stripped in 14-01). Configured rules ignored.
 - **Delivers:** Governance rules evaluated on tool execution, blocks/warnings/escalations functional
 
 #### P40.05: Fix State Persistence & Module-Level Singletons
+
 - **Severity:** P1 — state loss risk
 - **Scope:** continuity/index.ts, subscriber.ts
 - **Problem:** atomic_commit:false has no flush mechanism (state lost on restart). State dir resolved at import via process.cwd(). Singleton config cache breaks multi-project.
 - **Delivers:** Shutdown flush or always-persist, lazy state dir resolution, multi-project config cache
 
 #### P40.06: npm Package Publishing & Public Repo Readiness
+
 - **Severity:** P0 — ship blocker
 - **Scope:** package.json, dependencies, .npmignore, publish workflow
 - **Problem:** Name "hivemind" collides with existing npm package. bun-pty in wrong dependency class. Missing publishConfig.
 - **Delivers:** Unique package name, correct dependencies, publish CI workflow, verified package contents
 
 #### P40.07: End-to-End Integration Verification ✅
+
 - **Severity:** P0 — ship gate
 - **Scope:** Integration tests, bootstrap verification, tool smoke tests
 - **Problem:** No test verifies the actual user experience (install → plugin loads → tools work → primitives copied).
@@ -1837,6 +1854,7 @@ P40.06 (npm publishing) ─────┘
 **Goal:** Merge delegations.json + session-continuity.json into session-tracker per-session files, eliminate standalone files. These 2 files contain only test artifacts, grow unbounded, and have no progressive disclosure mechanism for agents. The session-tracker already tracks 117 real sessions with per-session files — the right pattern.
 
 #### P41-A: Investigate Field Mapping + Affected Tools
+
 - **Severity:** P1 — foundation for all consolidation
 - **Scope:** delegations.json unique fields, session-continuity.json unique fields, session-tracker schema, affected tools/agents/hooks
 - **Problem:** Cannot consolidate until we know exactly what data is unique to each file, where it maps in session-tracker, and what tools read/write it
@@ -1860,6 +1878,7 @@ P40.06 (npm publishing) ─────┘
 **Plans:** 2 plans
 
 Plans:
+
 - [ ] 45-01-PLAN.md — Create `scripts/sync-fork.sh` with temp remote, merge-tree conflict detection, dry-run, pinned file protection
 - [ ] 45-02-PLAN.md — Install bats, create `tests/scripts/sync-fork.bats` test suite with 3 scenarios (fast-forward, 3-way merge, conflict abort)
 
@@ -1873,6 +1892,7 @@ Plans:
 **Plans:** 0 plans
 
 Plans:
+
 - [ ] TBD (run /gsd-plan-phase 46 to break down)
 
 ---
@@ -1885,7 +1905,25 @@ Plans:
 **Plans:** 0 plans
 
 Plans:
+
 - [ ] TBD (run /gsd-plan-phase 47 to break down)
+
+### Phase 49: tmux-e2e-completion (2026-06-01)
+
+**Goal:** Close the runtime gap for tmux end-to-end: register `tmux-copilot` tool in `src/plugin.ts`, replace `buildNoopForkSessionManager()` no-op stub with real SessionManager wiring, wire co-pilot intervention, add BATS to CI workflow, run BATS suite, write P42 VERIFICATION + UAT + P45 45-01 SUMMARY to close W007/W009 paperwork gaps. Absorbs and supersedes the documentation gap from P42/P43/P45.
+**Requirements**: TBD
+**Depends on:** Phase 42, Phase 43, Phase 45
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] 49-01: Register `tmuxCopilotTool` in `src/plugin.ts` (~5 LOC import + tools array)
+- [ ] 49-02: Replace `buildNoopForkSessionManager()` with real SessionManager wiring
+- [ ] 49-03: Wire co-pilot intervention in `src/plugin.ts`
+- [ ] 49-04: Add BATS to `.github/workflows/ci.yml` (~3 LOC)
+- [ ] 49-05: Run BATS suite, capture output (3/3 pass evidence)
+- [ ] 49-06: Write P42 VERIFICATION.md + UAT.md + P45 45-01 SUMMARY.md
+- [ ] 49-07: gsd-verify-work for P43 with stricter REQ-05
 
 ---
 
@@ -1897,4 +1935,5 @@ Plans:
 **Plans:** 0 plans
 
 Plans:
+
 - [ ] TBD (run /gsd-plan-phase 48 to break down)
