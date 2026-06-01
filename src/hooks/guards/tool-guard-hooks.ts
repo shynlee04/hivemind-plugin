@@ -21,6 +21,7 @@ import type { TaskStateManager } from "../../shared/state.js"
 import { getDelegationMeta } from "../../shared/state.js"
 import { classifyHookEffect } from "../composition/cqrs-boundary.js"
 import { evaluateGovernance } from "../../features/governance-engine/index.js"
+import { getToolIntelligenceEngine, renderGuidance } from "../../features/tool-intelligence/index.js"
 
 // ---------------------------------------------------------------------------
 // Dependency shape
@@ -114,6 +115,44 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
         )
       }
 
+      // Tool Intelligence Engine (P44-04): Hivemind-owned runtime decisions.
+      // Evaluates tool calls using session hierarchy, agent role, and tool args.
+      // Runs AFTER budget/circuit-breaker, BEFORE governance rules.
+      const delegation = getDelegationMeta(sessionID)
+      const agentName = delegation?.agent ?? "unknown"
+      const tiEngine = getToolIntelligenceEngine()
+      const recentToolNames = Object.entries(stats.byTool)
+        .flatMap(([tool, count]) => Array(count).fill(tool))
+        .slice(-10)
+      const tiEvent = {
+        sessionID,
+        agentName,
+        toolName,
+        args: (isObject(rawArgs) ? rawArgs : {}) as Record<string, unknown>,
+        callID: `${sessionID}-${toolName}-${stats.total}`,
+        delegationDepth: delegation?.depth ?? 0,
+        isChildSession: (delegation?.depth ?? 0) > 0,
+        recentToolSequence: recentToolNames,
+      }
+      const tiDecision = tiEngine.evaluateToolCall(tiEvent)
+
+      if (tiDecision.kind === "block" || tiDecision.kind === "needs_jit_grant") {
+        const guidanceText = tiDecision.guidance
+          ? renderGuidance(tiDecision.guidance)
+          : tiDecision.reason
+        stateManager.addWarning(
+          sessionID,
+          `Tool intelligence ${tiDecision.kind}: ${tiDecision.reason}`,
+        )
+        throw new Error(
+          `[Harness] Tool intelligence ${tiDecision.kind}: ${tiDecision.reason}\n${guidanceText}`,
+        )
+      }
+
+      if (tiDecision.kind === "warn" && tiDecision.guidance) {
+        stateManager.addWarning(sessionID, `Tool intelligence warn: ${tiDecision.reason}`)
+      }
+
       // Governance rules check
       const depsHivemindConfig = deps.hivemindConfig as HivemindConfigs | undefined
       if (depsHivemindConfig?.governance?.rules) {
@@ -201,6 +240,24 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
       const gov = lastGovResult.get(sessionID) ?? { warnings: [], escalations: [], blocks: [] }
       lastGovResult.delete(sessionID)
 
+      // Re-evaluate tool intelligence decision for metadata (non-blocking, for observability)
+      const delegationAfter = getDelegationMeta(sessionID)
+      const agentNameAfter = delegationAfter?.agent ?? "unknown"
+      const tiEngineAfter = getToolIntelligenceEngine()
+      const recentToolNamesAfter = Object.entries(stats?.byTool ?? {})
+        .flatMap(([tool, count]) => Array(count).fill(tool))
+        .slice(-10)
+      const tiDecisionAfter = tiEngineAfter.evaluateToolCall({
+        sessionID,
+        agentName: agentNameAfter,
+        toolName: asString(getNestedValue(input, ["tool"])) ?? "unknown",
+        args: {},
+        callID: `${sessionID}-after`,
+        delegationDepth: delegationAfter?.depth ?? 0,
+        isChildSession: (delegationAfter?.depth ?? 0) > 0,
+        recentToolSequence: recentToolNamesAfter,
+      })
+
       output.metadata = {
         ...(isObject(output.metadata) ? output.metadata : {}),
         _harness: {
@@ -217,6 +274,13 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
           lifecycle,
           routing: continuity?.metadata.route,
           governance: gov,
+          toolIntelligence: {
+            kind: tiDecisionAfter.kind,
+            reason: tiDecisionAfter.reason,
+            toolCategory: tiDecisionAfter.toolCategory,
+            fromCapabilityBaseline: tiDecisionAfter.fromCapabilityBaseline,
+            timestamp: tiDecisionAfter.timestamp,
+          },
           continuityStorage: getContinuityStoragePath(),
           continuity: continuity
             ? {
