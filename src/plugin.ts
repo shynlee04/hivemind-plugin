@@ -48,7 +48,7 @@ import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.j
 import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
 import { createTmuxIntegrationIfSupported } from "./features/tmux/integration.js"
 import { createTmuxEventObserver } from "./features/tmux/observers.js"
-import type { EnrichedSessionEvent } from "./features/tmux/observers.js"
+import type { ForkSessionManager } from "./features/tmux/observers.js"
 import { createGovernanceSessionTool } from "./features/governance-engine/index.js"
 import { createPromptSkimTool } from "./tools/prompt/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt/prompt-analyze/index.js"
@@ -199,7 +199,27 @@ export function registerConfigTools(deps: ConfigToolDeps): Record<string, Return
 
 /** Return true only for notification types that should append to the parent TUI. */
 function shouldAppendParentTuiNotification(type: DelegationNotificationType): boolean {
-  return type === "success" || type === "failure" || type === "timeout"
+  return type === "success" || type === "failure" || type === "timeout";
+}
+
+/**
+ * Build a no-op ForkSessionManager for builds where the fork package is not
+ * present. The observer enriches `session.created` events with delegation
+ * metadata and dispatches them here; in this build we discard the enriched
+ * event. Production builds (with the fork package) construct a real
+ * SessionManager and call `setForkSessionManager(adapter)` from the fork's
+ * plugin entry — Hivemind's bridge then dispatches to the real manager.
+ *
+ * Phase 43 (REQ-05): runtime-injection boundary.
+ */
+function buildNoopForkSessionManager(): ForkSessionManager {
+  return {
+    onSessionCreated: async (_enriched) => {
+      // No-op in Hivemind-only builds. The enriched event still flows through
+      // the observer's metadata lookup pipeline (delegationMeta, lastMessage
+      // capture, etc.) — only the dispatch is a no-op.
+    },
+  };
 }
 
 function extractHookSessionId(input: unknown): string | undefined {
@@ -387,6 +407,11 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // an already-started OpenCode process). Auto-init wrapper deferred to Phase 43.
   const tmuxIntegration = await createTmuxIntegrationIfSupported(projectDirectory)
 
+  // Phase 43 (REQ-05): factory-level wiring lands here in the fork's plugin
+  // entry, where a real SessionManager is constructed. In this build, the
+  // fork package is not present, so we leave the bridge unset and use a
+  // no-op ForkSessionManager stub for the observer's dispatch target.
+
   // Session tracker: typed owning module for session knowledge capture.
   // Created before delegation modules so it can wire into child session creation
   // for delegate-task SDK-dispatched sessions.
@@ -567,18 +592,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
           lmc?.handleEvent(event as Record<string, unknown>)
         }
       }, ...(tmuxIntegration
-        ? [createTmuxEventObserver({
-            onSessionCreated: async (_enriched: EnrichedSessionEvent) => {
-              // Hivemind-side metadata enrichment
-              // In current Phase 42, this is a placeholder that logs/records
-              // the enriched event for future Phase 43 co-pilot integration.
-              // The fork plugin receives un-enriched events from OpenCode and
-              // handles pane lifecycle independently.
-              // Phase 43 will wire Hivemind's enriched events into fork's
-              // SessionManager for copilot-aware pane spawning.
-              void _enriched // intentional: enriched event for future use
-            },
-          })]
+        ? [createTmuxEventObserver(buildNoopForkSessionManager())]
         : [])],
     }),
     ...sessionReadHooks,
