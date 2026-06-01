@@ -25,18 +25,35 @@ import { renderToolResult } from "../shared/tool-helpers.js"
 // ---------------------------------------------------------------------------
 
 /**
- * Exported so Hivemind can layer future authorization checks on top of
- * the tool's runtime gate. The set of agent names that may invoke the
- * tool. Add new orchestrator tiers here.
+ * Single source of truth for orchestrator-tier agents permitted to invoke
+ * this tool. Each entry pairs an agent name with its permission tier. Both
+ * `REQUIRES_PERMISSIONS` (tier list, exported for future harness-level
+ * enforcement layers) and `ORCHESTRATOR_AGENT_NAMES` (the runtime gate
+ * set) are derived from this table so adding a new orchestrator-tier agent
+ * only requires updating one place.
+ *
+ * Add a new orchestrator-tier agent by appending an entry here — no other
+ * change is required.
  */
-export const REQUIRES_PERMISSIONS = ["orchestrator"] as const
+const ORCHESTRATOR_AGENTS = [
+  { name: "hm-l0-orchestrator", tier: "orchestrator" },
+  { name: "hm-orchestrator", tier: "orchestrator" },
+  { name: "hf-l0-orchestrator", tier: "orchestrator" },
+  { name: "hf-l1-coordinator", tier: "orchestrator" },
+] as const
 
-const ORCHESTRATOR_AGENT_NAMES = new Set<string>([
-  "hm-l0-orchestrator",
-  "hm-orchestrator",
-  "hf-l0-orchestrator",
-  "hf-l1-coordinator",
-])
+/**
+ * Exported so Hivemind can layer future authorization checks on top of
+ * the tool's runtime gate. Derived from ORCHESTRATOR_AGENTS — do NOT
+ * hardcode tier names here directly.
+ */
+export const REQUIRES_PERMISSIONS = [
+  ...new Set(ORCHESTRATOR_AGENTS.map((a) => a.tier)),
+] as const
+
+const ORCHESTRATOR_AGENT_NAMES = new Set<string>(
+  ORCHESTRATOR_AGENTS.map((a) => a.name),
+)
 
 // ---------------------------------------------------------------------------
 // Zod schema — discriminated union of 4 actions
