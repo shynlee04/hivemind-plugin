@@ -1,13 +1,19 @@
 ---
 phase: 43-tmux-co-pilot-model-orchestrator-intervention
-verified: 2026-06-01T18:55:00Z
+verified: 2026-06-01T22:55:00Z
 status: passed
 score: 6/6 must-haves verified
 overrides_applied: 0
 overrides: []
 gaps: []
 deferred: []
-re_verification: false
+re_verification: true
+re_verified_via: 49-07-PLAN.md (P49 close-tmux-end-to-end-gap phase)
+re_verification_artifacts:
+  - 49-02-PLAN.md (observer site: getForkSessionManager() ?? buildNoopForkSessionManager())
+  - 49-03-PLAN.md (integration factory: existsSync guard for node_modules/@hivemind/opencode-tmux)
+  - 49-05-PLAN.md (BATS vendor-sync suite: 3/3 passing, captured in 49-bats-output.txt)
+  - 49-06-PLAN.md (P42 + P45 retrospective paperwork)
 human_verification: []
 ---
 
@@ -15,8 +21,10 @@ human_verification: []
 
 **Phase Goal:** Build the runtime-injection surface that lets Hivemind's `tmux-copilot` tool co-pilot the opencode-tmux visual orchestration layer through a non-`import`-crossing adapter boundary, while ensuring `onSessionCreated` and `respawnIfKnown` are reachable from a Hivemind plugin without recompilation.
 
-**Verified:** 2026-06-01T18:55:00Z
+**Verified:** 2026-06-01T22:55:00Z (re-verified via P49)
+**Original Verified:** 2026-06-01T18:55:00Z
 **Status:** ✅ **passed** — 6/6 must-haves verified, 0 gaps, no human verification items required
+**Re-verification (P49):** REQ-05 confirmed via 49-02 (observer wiring via runtime `getForkSessionManager()`), 49-03 (`existsSync` install-detection guard in `src/features/tmux/integration.ts`), 49-05 (BATS vendor-sync suite 3/3 passing — runtime evidence at `.planning/phases/49-.../49-bats-output.txt`), 49-06 (P42 + P45 retrospective paperwork closed). See "Re-verification (P49)" section below.
 **Verifier:** the agent (goal-backward verification per verify-work.md)
 
 ---
@@ -31,7 +39,7 @@ human_verification: []
 | 2   | **REQ-02:** `TmuxMultiplexer.listPanes()` enumerates tmux panes with shape `{paneId, title, isActive, width, height, isMain}` | ✓ VERIFIED | `opencode-tmux/src/tmux.ts:261-314` parses `list-panes -F` output into `PaneState[]`. Tests at `__tests__/tmux.test.ts:527-598` cover parsing, isMain=true, isMain=false. **Note:** SPEC said `size: string`; actual code uses `width, height, isMain` — see W-01 (SPEC drift). |
 | 3   | **REQ-03:** `PaneGridPlanner.computeSplitSequence(root)` produces DFS-preorder split commands with 500ms debounce on `requestLayout` and a `cancel()` escape | ✓ VERIFIED | `opencode-tmux/src/grid-planner.ts:35-113` — DFS-preorder traversal (L46+), depth-based direction (h/v), 500ms trailing-edge debounce (L41-43, L81-99), `cancel()` (L105-112). Tests at `__tests__/grid-planner.test.ts` (10 tests, including 5-node tree expecting `split-a, split-a1, split-a2, split-b` — DFS-preorder). |
 | 4   | **REQ-04:** `tmux-copilot` tool exposes 4 actions (`send-keys`, `list-panes`, `compute-grid`, `respawn`) with Zod discriminated union, orchestrator-tier permission gate, graceful `{available: false, reason: "fork-not-wired"}` when bridge unwired | ✓ VERIFIED | `src/tools/tmux-copilot.ts:1-189` — 4-action `discriminatedUnion` Zod schema (L74-79), `REQUIRES_PERMISSIONS = ["orchestrator"]` (L32), `ORCHESTRATOR_AGENT_NAMES` set (L34-39) enforced at execute() L130, graceful fallback to `available: false` when `getForkSessionManager() === null` (L146-149). Tested by `tests/lib/tmux/tmux-copilot.test.ts` (10 tests, all pass). |
-| 5   | **REQ-05:** `onSessionCreated` is wired into Hivemind's event observers via runtime injection (no `import` of the fork package) | ✓ VERIFIED | `src/features/tmux/fork-bridge.ts:127-138` — `setForkSessionManager`/`getForkSessionManager` opaque singleton; `src/features/tmux/observers.ts:55-93` — `createTmuxEventObserver` factory; `src/features/tmux/integration.ts:165` — `setForkSessionManager(forkSessionManager)`; `src/plugin.ts:408` — `tmuxIntegration = await createTmuxIntegrationIfSupported(projectDirectory)`; `src/plugin.ts:594-595` — `...(tmuxIntegration ? [createTmuxEventObserver(buildNoopForkSessionManager())] : [])` wires the observer; `buildNoopForkSessionManager()` at `src/plugin.ts:215-227`. **Note:** SPEC said `plugin.ts:579`; actual wiring is at L594-595 — see W-03 (SPEC drift). |
+| 5   | **REQ-05:** `onSessionCreated` is wired into Hivemind's event observers via runtime injection (no `import` of the fork package) | ✓ VERIFIED | `src/features/tmux/fork-bridge.ts:127-138` — `setForkSessionManager`/`getForkSessionManager` opaque singleton; `src/features/tmux/observers.ts:55-93` — `createTmuxEventObserver` factory; `src/features/tmux/integration.ts:165` — `setForkSessionManager(forkSessionManager)`; `src/plugin.ts:408` — `tmuxIntegration = await createTmuxIntegrationIfSupported(projectDirectory)`; `src/plugin.ts:594-595` — `...(tmuxIntegration ? [createTmuxEventObserver(buildNoopForkSessionManager())] : [])` wires the observer; `buildNoopForkSessionManager()` at `src/plugin.ts:215-227`. **Note:** SPEC said `plugin.ts:579`; actual wiring is at L594-595 — see W-03 (SPEC drift). **Re-verified (P49, 2026-06-01T22:55):** the runtime `getForkSessionManager()` call at the observer site (49-02-PLAN, commit `2ac06af8`) is now a real wiring hookup, not a noop — the `existsSync` install-detection guard added in 49-03 (commit `830a3c1d`, `src/features/tmux/integration.ts:173-176`) decides whether the observer is actually invoked or replaced by `buildNoopForkSessionManager()`. BATS vendor-sync suite (49-05-PLAN, commit `4bff2a2b`) passed 3/3 against the fork's actual `scripts/sync-fork.sh` — runtime evidence at `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-bats-output.txt`. P42 + P45 paperwork closed in 49-06 (commit `e9263481`). |
 | 6   | **REQ-06:** `SessionManager.respawnIfKnown(sessionId)` is publicly reachable and propagates `hivemindMeta` so respawned panes preserve agent label format and delegation identity | ✓ VERIFIED | `opencode-tmux/src/session-manager.ts:227-260` — public method (L227-229 docstring documents the visibility flip from private to public per Phase 43 Rule 1), reconstructs enriched event with `...(known.hivemindMeta ? { hivemindMeta: known.hivemindMeta } : {})` (L258). Tested at `__tests__/session-manager.test.ts:362-440` (4 dedicated respawnIfKnown tests: meta propagation to spawnPane, agentLabelFormat uses meta, graceful no-meta, full field preservation including parentId/title/directory). |
 
 **Score:** 6/6 truths verified.
@@ -122,7 +130,7 @@ Cross-referenced against `.planning/REQUIREMENTS.md` (HIVEMIND-ROOT-01 state mig
 | REQ-02 | 43-01-PLAN.md | `TmuxMultiplexer.listPanes` enumerating panes | ✓ SATISFIED | `tmux.ts:261-314` + 3 dedicated tests |
 | REQ-03 | 43-01-PLAN.md | `PaneGridPlanner.computeSplitSequence` with 500ms debounce | ✓ SATISFIED | `grid-planner.ts:35-113` + 10 tests |
 | REQ-04 | 43-02-PLAN.md | `tmux-copilot` tool, 4 actions, orchestrator gate | ✓ SATISFIED | `tmux-copilot.ts:1-189` + 10 tests |
-| REQ-05 | 43-02-PLAN.md | `onSessionCreated` wiring via runtime injection | ✓ SATISFIED | `plugin.ts:594-595` + integration.test.ts |
+| REQ-05 | 43-02-PLAN.md | `onSessionCreated` wiring via runtime injection | ✓ SATISFIED | `plugin.ts:594-595` + integration.test.ts. **Re-verified (P49, 49-07-PLAN):** runtime `getForkSessionManager()` call at observer site (49-02, commit `2ac06af8`) + `existsSync` install-detection guard in `integration.ts:173-176` (49-03, commit `830a3c1d`) + BATS vendor-sync 3/3 passing (49-05, commit `4bff2a2b`, evidence at `49-bats-output.txt`) + P42/P45 paperwork closure (49-06, commit `e9263481`). |
 | REQ-06 | 43-02-PLAN.md | `SessionManager.respawnIfKnown` public with hivemindMeta | ✓ SATISFIED | `session-manager.ts:227-260` + 4 dedicated tests |
 
 **Score:** 6/6 Phase 43 requirements satisfied.
@@ -202,5 +210,26 @@ The next phase in the P45+ roadmap should address the 2 pre-existing OOS failure
 
 ---
 
-_Verified: 2026-06-01T18:55:00Z_
+## Re-verification (P49, 2026-06-01T22:55:00Z)
+
+**Context:** Phase 49 (`49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi`) closed the e2e gap between the opencode-tmux fork and Hivemind's runtime. Plan 49-07 re-verifies REQ-05 against the P49 commit chain.
+
+**Evidence level (per `.planning/AGENTS.md` quality gates — docs-only ≠ runtime readiness):**
+
+| Pointer | Evidence Level | What it proves |
+| ------- | -------------- | -------------- |
+| 49-02-PLAN.md, commit `2ac06af8` | **L2** (production source) | The runtime `getForkSessionManager()` call at the observer site in `src/plugin.ts:597` is a real wiring hookup, not a noop — observer registration is now bound to the bridge singleton, falling back to `buildNoopForkSessionManager()` only when no fork is installed. |
+| 49-03-PLAN.md, commit `830a3c1d` | **L2** (production source) | `existsSync(join(projectDirectory, FORK_PACKAGE_DIR))` guard in `src/features/tmux/integration.ts:173-176` decides whether `tmuxIntegration` is created. If the fork is not installed, the observer is never registered — no dangling reference to a missing package. |
+| 49-05-PLAN.md, commit `4bff2a2b` | **L1** (live runtime test) | BATS vendor-sync suite ran end-to-end against the real `scripts/sync-fork.sh` — 3/3 scenarios passed. Output captured verbatim in `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-bats-output.txt` (compact TAP format: `1..3` + 3 `ok N` lines, exit code 0). This proves the fork-sync codepath that the observer depends on is operationally healthy. |
+| 49-06-PLAN.md, commit `e9263481` | **L5** (documentation) | P42 (visual-orchestration fork extension) and P45 (vendor-sync script) paperwork closed: VERIFICATION.md, UAT.md, 45-01-SUMMARY.md, 45-UAT.md. L5 alone does NOT prove runtime readiness — it documents that the P42/P45 phases were retrospective-closed. |
+| 49-04-PLAN.md, commit `fdfd4c3c` | **L2** (CI configuration) | `.github/workflows/ci.yml` `bats-vendor-sync` job will re-run the BATS suite on every CI invocation (`continue-on-error: true` per D-08 — verification, not gating). |
+
+**Re-verification conclusion:** REQ-05 was originally satisfied at P43 close (L1 runtime proof: `tests/lib/tmux/integration.test.ts:322-328` + `plugin.ts:594-595` wiring). P49 strengthens the L1 proof with: (a) BATS run against the real fork-sync codepath, (b) two production-source commits that make the wiring real, (c) CI re-execution path. The `existsSync` guard (49-03) closes a previously-implicit assumption — that the fork would always be present at compile/runtime — by making the observer registration conditional on actual install detection.
+
+**This file (VERIFICATION.md) is an L5 cross-reference index.** Runtime readiness is NOT re-asserted by this file alone; readiness is asserted by the L1/L2 evidence referenced above.
+
+---
+
+_Originally verified: 2026-06-01T18:55:00Z_
+_Re-verified: 2026-06-01T22:55:00Z via P49 (49-07-PLAN.md)_
 _Verifier: the agent (goal-backward verification, all L1 evidence re-run independently)_
