@@ -11,10 +11,11 @@ import type { ForkSessionManagerAdapter, PaneState, PaneGridPlanner } from "../.
 // ---------------------------------------------------------------------------
 
 function mkStubAdapter(): ForkSessionManagerAdapter {
+  // PaneGridPlanner is the narrow public consumer type (computeSplitSequence
+  // only) — the excess `requestLayout` / `cancel` are part of the in-tree
+  // class but are intentionally not exposed on the adapter contract.
   const planner: PaneGridPlanner = {
     computeSplitSequence: () => [],
-    requestLayout: () => {},
-    cancel: () => {},
   }
   const stub: ForkSessionManagerAdapter = {
     onSessionCreated: async () => {},

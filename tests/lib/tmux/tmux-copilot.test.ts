@@ -21,11 +21,11 @@ const exec = async (rawArgs: unknown, context = { sessionID: "sess-1", agent: "h
 // ---------------------------------------------------------------------------
 
 function mkStubAdapter(overrides: Partial<ForkSessionManagerAdapter> = {}): ForkSessionManagerAdapter {
+  // PaneGridPlanner is the narrow public consumer type — only
+  // computeSplitSequence is exposed on the adapter contract.
   const planner = {
     computeSplitSequence: (root: PaneTreeNode) =>
       root.children?.map((c) => ({ parentPaneId: root.id, direction: "h" as const })) ?? [],
-    requestLayout: () => {},
-    cancel: () => {},
   }
   const stub: ForkSessionManagerAdapter = {
     onSessionCreated: async () => {},

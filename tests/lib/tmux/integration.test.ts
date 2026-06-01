@@ -42,10 +42,11 @@ const { setForkSessionManager, getForkSessionManager } = await import(
 // ---------------------------------------------------------------------------
 
 function mkStubAdapter(): import("../../../src/features/tmux/fork-bridge.js").ForkSessionManagerAdapter {
+  // PaneGridPlanner is the narrow public consumer type — only
+  // computeSplitSequence is exposed on the adapter contract. The internal
+  // requestLayout / cancel methods are not part of the public view.
   const planner = {
     computeSplitSequence: () => [],
-    requestLayout: () => {},
-    cancel: () => {},
   }
   return {
     onSessionCreated: async () => {},

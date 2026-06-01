@@ -62,11 +62,29 @@ export interface PaneState {
 }
 
 /**
- * Mirror of fork's `PaneGridPlanner` (opencode-tmux/src/grid-planner.ts).
- * Exposes the public surface the tool needs: `computeSplitSequence`.
+ * Public consumer-facing surface of the fork's `PaneGridPlanner`
+ * (opencode-tmux/src/grid-planner.ts). The only method the `tmux-copilot`
+ * tool needs is `computeSplitSequence`. The `requestLayout` (debounced) and
+ * `cancel` (debounce-clear) methods are part of the in-tree class
+ * implementation but are intentionally NOT exposed on the public adapter
+ * contract — they are not called from outside the planner itself.
+ *
+ * Wide→narrow assignment is safe at the call site because the fork's
+ * concrete planner always implements all three methods; TypeScript's
+ * structural subtyping allows the wide implementation to be returned from
+ * `createPaneGridPlanner(): PaneGridPlanner` without a cast.
  */
 export interface PaneGridPlanner {
   computeSplitSequence: (root: PaneTreeNode) => SplitCommand[]
+}
+
+/**
+ * Internal full surface of the fork's `PaneGridPlanner`. Exported for
+ * documentation and for any future in-tree replacement class that needs
+ * to implement the wider interface. Not returned by the adapter contract
+ * — see {@link PaneGridPlanner} for the public consumer view.
+ */
+export interface PaneGridPlannerInternal extends PaneGridPlanner {
   requestLayout: (root: PaneTreeNode, onComputed: (commands: SplitCommand[]) => void) => void
   cancel: () => void
 }
