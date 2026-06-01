@@ -1,0 +1,118 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_182154c48fferRI5ZwyUifuhor",
+  "lastUpdated": "2026-06-01T12:28:23.906Z",
+  "hierarchy": {
+    "root": "ses_182154c48fferRI5ZwyUifuhor",
+    "children": {
+      "ses_17d9eacf5ffeXIAiHIhYFQdmHL": {
+        "file": "ses_17d9eacf5ffeXIAiHIhYFQdmHL.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_17d9eaa94ffebgthbwtLLJBvHZ": {
+        "file": "ses_17d9eaa94ffebgthbwtLLJBvHZ.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_17d96375affewPuml6bFqJGzW2": {
+        "file": "ses_17d96375affewPuml6bFqJGzW2.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-assumptions-analyzer",
+        "children": {}
+      },
+      "ses_17d8aa448ffe16WAJg3emUUkBp": {
+        "file": "ses_17d8aa448ffe16WAJg3emUUkBp.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_17d78d9dcffelWwjRV1lnrhyPY": {
+        "file": "ses_17d78d9dcffelWwjRV1lnrhyPY.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      },
+      "ses_17d70a470ffeNmgmqVonK3Ospf": {
+        "file": "ses_17d70a470ffeNmgmqVonK3Ospf.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_17d47fc55ffeo5Es04NzYd8noC": {
+        "file": "ses_17d47fc55ffeo5Es04NzYd8noC.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_17d3df438ffeOwSMPSEfdOuAGu": {
+        "file": "ses_17d3df438ffeOwSMPSEfdOuAGu.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_17cfe5b8affe5hKbt9HEFNL8A6": {
+        "file": "ses_17cfe5b8affe5hKbt9HEFNL8A6.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-integration-checker",
+        "children": {}
+      },
+      "ses_17cfdbb9dffeeoiv6eeGGJ5R3j": {
+        "file": "ses_17cfdbb9dffeeoiv6eeGGJ5R3j.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-verifier",
+        "children": {}
+      },
+      "ses_17cf1dcdaffe1pmMcrXnBipKOt": {
+        "file": "ses_17cf1dcdaffe1pmMcrXnBipKOt.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_17cf18755ffeTMejp1qbL43h3A": {
+        "file": "ses_17cf18755ffeTMejp1qbL43h3A.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-security-auditor",
+        "children": {
+          "ses_17ceae096ffeVLlTu5GUSpjhlC": {
+            "file": "ses_17ceae096ffeVLlTu5GUSpjhlC.json",
+            "depth": 2,
+            "status": "active",
+            "delegatedBy": "gsd-security-auditor",
+            "children": {}
+          }
+        }
+      },
+      "ses_17ce4454bffeCK3TQyoNpJjXKN": {
+        "file": "ses_17ce4454bffeCK3TQyoNpJjXKN.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-roadmapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 50,
+  "toolSummary": {
+    "bash": 30,
+    "delegation-status": 2,
+    "execute-slash-command": 3,
+    "task": 12,
+    "question": 1,
+    "read": 1
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_17cf18755ffeTMejp1qbL43h3A",
+  "lastUpdated": "2026-06-01T12:08:40.194Z",
+  "children": {
+    "ses_17ceae096ffeVLlTu5GUSpjhlC": {
+      "sessionID": "ses_17ceae096ffeVLlTu5GUSpjhlC",
+      "parentSessionID": "ses_17cf18755ffeTMejp1qbL43h3A",
+      "rootMainSessionID": "ses_17cf18755ffeTMejp1qbL43h3A",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-security-auditor",
+      "subagentType": "",
+      "createdAt": "2026-06-01T12:08:40.194Z",
+      "updatedAt": "2026-06-01T12:08:40.194Z",
+      "status": "timeout",
+      "turnCount": 0,
+      "childFile": "ses_17ceae096ffeVLlTu5GUSpjhlC.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

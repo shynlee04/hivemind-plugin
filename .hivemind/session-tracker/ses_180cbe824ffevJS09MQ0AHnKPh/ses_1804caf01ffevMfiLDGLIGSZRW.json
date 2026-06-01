@@ -4,17 +4,17 @@
   "delegationDepth": 1,
   "delegatedBy": {
     "agentName": "gsd-executor",
-    "model": "unknown",
+    "model": "",
     "tool": "task",
-    "description": "Execute P44-02 plan (agent frontmatter)",
-    "subagentType": "gsd-executor"
+    "description": "",
+    "subagentType": ""
   },
   "created": "2026-05-31T20:21:58.675Z",
   "updated": "2026-05-31T20:28:23.011Z",
   "status": "completed",
   "mainAgent": {
     "name": "gsd-executor",
-    "model": "unknown"
+    "model": ""
   },
   "turns": [
     {
@@ -582,5 +582,8 @@
       }
     }
   ],
-  "lastMessage": "The 2 test failures are in `state-root-migration.test.ts` — a pre-existing issue unrelated to my agent file changes (I only modified `.md` frontmatter, no TypeScript source). Let me verify this is pre-existing:"
+  "lastMessage": "The 2 test failures are in `state-root-migration.test.ts` — a pre-existing issue unrelated to my agent file changes (I only modified `.md` frontmatter, no TypeScript source). Let me verify this is pre-existing:",
+  "terminalKind": "completed",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
 }

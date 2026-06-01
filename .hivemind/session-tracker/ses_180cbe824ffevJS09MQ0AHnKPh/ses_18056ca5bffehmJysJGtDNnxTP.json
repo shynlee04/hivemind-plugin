@@ -4,17 +4,17 @@
   "delegationDepth": 1,
   "delegatedBy": {
     "agentName": "gsd-executor",
-    "model": "unknown",
+    "model": "",
     "tool": "task",
-    "description": "Execute P44-01 plan (test fix + dedup)",
-    "subagentType": "gsd-executor"
+    "description": "",
+    "subagentType": ""
   },
   "created": "2026-05-31T20:10:56.313Z",
-  "updated": "2026-05-31T20:21:41.758Z",
-  "status": "completed",
+  "updated": "2026-06-01T12:08:40.171Z",
+  "status": "error",
   "mainAgent": {
     "name": "gsd-executor",
-    "model": "unknown"
+    "model": ""
   },
   "turns": [
     {
@@ -1328,5 +1328,7 @@
       }
     }
   ],
-  "lastMessage": "## PLAN COMPLETE\n\n**Plan:** P44-01\n**Tasks:** 2/2\n**SUMMARY:** `.planning/phases/P44-tool-intelligence-capability-layer/P44-01-SUMMARY.md`\n\n**Commits:**\n- `59901351`: fix(P44-01): fix capability-map test and re-export ToolCategory\n- `c2369357`: refactor(P44-01): deduplicate constants and fix capability-gate re-exports\n- `214e919c`: docs(P44-01): complete plan — fix capability-map test & deduplicate constants\n\n**Duration:** ~6 minutes\n\n**Results:**\n- All 7 capability-map tests pass (was 0/7 failing)\n- All 7 spawn-request-builder tests pass (unchanged)\n- Full suite: 3037 passed, 2 pre-existing failures in `state-root-migration.test.ts`\n- 3 duplicate constants eliminated, single source of truth in `capability-gate/index.ts`\n- `ToolCategory` enum now properly re-exported for downstream consumers"
+  "lastMessage": "## PLAN COMPLETE\n\n**Plan:** P44-01\n**Tasks:** 2/2\n**SUMMARY:** `.planning/phases/P44-tool-intelligence-capability-layer/P44-01-SUMMARY.md`\n\n**Commits:**\n- `59901351`: fix(P44-01): fix capability-map test and re-export ToolCategory\n- `c2369357`: refactor(P44-01): deduplicate constants and fix capability-gate re-exports\n- `214e919c`: docs(P44-01): complete plan — fix capability-map test & deduplicate constants\n\n**Duration:** ~6 minutes\n\n**Results:**\n- All 7 capability-map tests pass (was 0/7 failing)\n- All 7 spawn-request-builder tests pass (unchanged)\n- Full suite: 3037 passed, 2 pre-existing failures in `state-root-migration.test.ts`\n- 3 duplicate constants eliminated, single source of truth in `capability-gate/index.ts`\n- `ToolCategory` enum now properly re-exported for downstream consumers",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
 }

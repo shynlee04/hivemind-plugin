@@ -4,17 +4,17 @@
   "delegationDepth": 1,
   "delegatedBy": {
     "agentName": "gsd-executor",
-    "model": "unknown",
+    "model": "",
     "tool": "task",
-    "description": "P44-03: Wire CapabilityGate",
-    "subagentType": "gsd-executor"
+    "description": "",
+    "subagentType": ""
   },
   "created": "2026-05-31T20:32:13.346Z",
-  "updated": "2026-05-31T20:40:17.100Z",
+  "updated": "2026-05-31T20:40:17.078Z",
   "status": "completed",
   "mainAgent": {
     "name": "gsd-executor",
-    "model": "unknown"
+    "model": ""
   },
   "turns": [
     {
@@ -541,5 +541,8 @@
       }
     }
   ],
-  "lastMessage": "Now rebuild and verify:"
+  "lastMessage": "Now rebuild and verify:",
+  "terminalKind": "completed",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
 }

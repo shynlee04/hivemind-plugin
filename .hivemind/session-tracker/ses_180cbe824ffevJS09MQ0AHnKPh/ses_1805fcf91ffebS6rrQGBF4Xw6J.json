@@ -4,17 +4,17 @@
   "delegationDepth": 1,
   "delegatedBy": {
     "agentName": "gsd-doc-writer",
-    "model": "unknown",
+    "model": "",
     "tool": "task",
-    "description": "Fix P44 plan blockers from plan-check",
-    "subagentType": "gsd-doc-writer"
+    "description": "",
+    "subagentType": ""
   },
   "created": "2026-05-31T20:01:05.259Z",
-  "updated": "2026-05-31T20:05:15.758Z",
+  "updated": "2026-05-31T20:05:15.711Z",
   "status": "completed",
   "mainAgent": {
     "name": "gsd-doc-writer",
-    "model": "unknown"
+    "model": ""
   },
   "turns": [
     {
@@ -683,5 +683,8 @@
       }
     }
   ],
-  "lastMessage": "All 6 blockers + W1 dependency fix committed. Summary:\n\n| Blocker | Fix | File |\n|---------|-----|------|\n| **B1+B2+B6** | Trimmed P44-01 to 2 waves (~35 LOC), removed Waves 3-5 (belong to P44-03/04) | P44-01-PLAN.md |\n| **B3** | Replaced `canExecute(agentName, toolName)` with `resolveToolsForAgent(agentName).includes(toolName)` in Task 1 and Task 3 | P44-04-PLAN.md |\n| **B4** | Fixed test path `tests/lib/spawn-request-builder.test.ts` → `tests/lib/spawner/spawn-request-builder.test.ts` (all 18 occurrences) | P44-03-PLAN.md |\n| **B5** | Changed `\"all 25 tools\"` → `\"all 31 tools\"` in truths | P44-04-PLAN.md |\n| **W1** | P44-02: `depends_on: []`, P44-03: `depends_on: [\"P44-01\"]`, P44-04: `depends_on: [\"P44-01\"]` | P44-02/03/04 |"
+  "lastMessage": "All 6 blockers + W1 dependency fix committed. Summary:\n\n| Blocker | Fix | File |\n|---------|-----|------|\n| **B1+B2+B6** | Trimmed P44-01 to 2 waves (~35 LOC), removed Waves 3-5 (belong to P44-03/04) | P44-01-PLAN.md |\n| **B3** | Replaced `canExecute(agentName, toolName)` with `resolveToolsForAgent(agentName).includes(toolName)` in Task 1 and Task 3 | P44-04-PLAN.md |\n| **B4** | Fixed test path `tests/lib/spawn-request-builder.test.ts` → `tests/lib/spawner/spawn-request-builder.test.ts` (all 18 occurrences) | P44-03-PLAN.md |\n| **B5** | Changed `\"all 25 tools\"` → `\"all 31 tools\"` in truths | P44-04-PLAN.md |\n| **W1** | P44-02: `depends_on: []`, P44-03: `depends_on: [\"P44-01\"]`, P44-04: `depends_on: [\"P44-01\"]` | P44-02/03/04 |",
+  "terminalKind": "completed",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
 }
