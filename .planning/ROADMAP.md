@@ -1849,3 +1849,51 @@ P40.06 (npm publishing) ─────┘
   - Wave 1: Plan 01 (delegation-persistence.ts no-op + empty reader), Plan 02 (continuity/index.ts no-op writers + dead exports removal)
   - Wave 2: Plan 03 (one-shot file deletion in plugin.ts + test updates)
   - **Plans created:** ✅ 3 plans
+
+---
+
+### Phase 45: Vendor Sync Script (2026-06-01)
+
+**Goal:** Provide `scripts/sync-fork.sh` to pull upstream changes from the preserved `shynlee04/opencode-tmux` GitHub fork into the vendored `opencode-tmux/` directory (commit `7dc30d95` resolved the broken gitlink). The script performs a 3-way merge that preserves Hivemind-specific surface changes (runtime injection boundary, tmux-copilot tool) while propagating upstream patches and features. Must be idempotent and support a `--dry-run` mode that previews the merge without writing. Shell test suite covers three scenarios: clean fast-forward, three-way merge success, and conflicting Hivemind-pinned files (must abort with clear error, never silently overwrite Hivemind changes).
+**Requirements**: TBD
+**Depends on:** Phase 43
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 45 to break down)
+
+---
+
+### Phase 46: Build Pipeline (2026-06-01)
+
+**Goal:** Introduce `npm run build:tmux` to compile the vendored `opencode-tmux/` fork and integrate its output into Hivemind's `dist/` tree, and (optionally) expose it as the `@hivemind/opencode-tmux` subpath export in `package.json` if the monorepo split is taken. The build must type-check the cross-package boundary (runtime injection contracts between Hivemind's plugin layer and the fork's tool layer) so that contract drift fails the build. Tests verify (a) build artifacts exist at expected paths and are non-empty, and (b) a cross-package import smoke test loads the compiled module without runtime errors.
+**Requirements**: TBD
+**Depends on:** Phase 45
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 46 to break down)
+
+---
+
+### Phase 47: Install Documentation (2026-06-01)
+
+**Goal:** Author user-facing documentation covering the vendored tmux fork distribution: README.md sections on tmux prerequisites, the silent fallback behavior when tmux is absent, and a troubleshooting matrix for common install failures; INSTALL.md with detailed install steps and tmux detection commands; configuration reference documenting the `opencode-tmux.json` schema (specifically the `copilot: boolean` and `agentLabelFormat` keys); and migration notes for users on prior Hivemind versions. Tests: docs lint (markdown link check, broken-reference scan) plus JSON-schema validation of every `opencode-tmux.json` example block in the docs.
+**Requirements**: TBD
+**Depends on:** Phase 46
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 47 to break down)
+
+---
+
+### Phase 48: CI/CD Release Pipeline (2026-06-01)
+
+**Goal:** Stand up a GitHub Actions workflow that builds the vendored fork, runs the test suite, and publishes `@hivemind/opencode-tmux` to npm with version synchronization against the main `hivemind` package (no drift allowed between the two package versions on a release). Include a pre-release channel (`canary` dist-tag) for trunk-based publishing. Tests: a CI dry-run job that exercises the workflow against a fixture package and verifies the produced tarball contains the expected entry points and excludes source-only files; the publish job is gated on this verification.
+**Requirements**: TBD
+**Depends on:** Phase 46
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 48 to break down)
