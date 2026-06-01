@@ -166,8 +166,25 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
         try {
           const panes = await adapter.listPanes(input.mainPaneId)
           return renderToolResult({ panes })
-        } catch {
-          return renderToolResult({ available: false, reason: "tmux-not-installed" })
+        } catch (err) {
+          // Classify error kind so callers can distinguish installation
+          // problems (user-fixable) from transient tmux server issues
+          // (may be retryable) from genuine bugs.
+          const message = err instanceof Error ? err.message : String(err)
+          const code = (err as NodeJS.ErrnoException | null)?.code
+          const isNotInstalled = code === "ENOENT" || /enoent/i.test(message)
+          const isTimeout = code === "ETIMEDOUT" || /timeout/i.test(message)
+          if (isNotInstalled) {
+            return renderToolResult({ available: false, reason: "tmux-not-installed" })
+          }
+          if (isTimeout) {
+            return renderToolResult({ available: false, reason: "tmux-timeout" })
+          }
+          return renderToolResult({
+            available: false,
+            reason: "tmux-error",
+            error: { message },
+          })
         }
       }
       case "compute-grid": {
