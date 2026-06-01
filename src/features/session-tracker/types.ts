@@ -266,7 +266,7 @@ export interface JourneyEntry {
   /** ISO 8601 timestamp of the event. */
   timestamp: string
   /** Type of journey entry: tool_call, tool_result, assistant_message, session_compacted. */
-  type: "tool_call" | "tool_result" | "assistant_message" | "session_compacted"
+  type: "tool_call" | "tool_result" | "assistant_message" | "session_compacted" | "tool_intelligence_decision"
   /** Content or description of the event. */
   content: string
   /** Optional metadata (tool name, status, etc.). */
