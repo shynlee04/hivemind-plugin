@@ -9,6 +9,8 @@ import { promisify } from "node:util";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
+import { setForkSessionManager } from "./fork-bridge.js";
+import type { ForkSessionManagerAdapter } from "./fork-bridge.js";
 
 const execFileAsync = promisify(execFile);
 const PORT_FILE = ".hivemind/state/tmux-port.json";
@@ -123,9 +125,20 @@ export interface TmuxIntegration {
  * - Not running inside a tmux session (process.env.TMUX not set)
  * - opencode binary not found on PATH
  * - Any error occurs during detection
+ *
+ * If `forkSessionManager` is provided AND the integration is successfully
+ * created, registers the adapter via `setForkSessionManager(adapter)` so the
+ * tmux-copilot tool can dispatch actions to the fork. When the integration is
+ * not created (returns null), the bridge is left untouched (already null by
+ * default) — explicit `setForkSessionManager(null)` calls are unnecessary.
+ *
+ * Phase 43 (REQ-05): runtime-injection boundary. In production, the fork's
+ * plugin entry calls this factory with its own SessionManager cast to
+ * `ForkSessionManagerAdapter`. Tests pass a stub adapter.
  */
 export async function createTmuxIntegrationIfSupported(
   projectDirectory: string,
+  forkSessionManager?: ForkSessionManagerAdapter | null,
 ): Promise<TmuxIntegration | null> {
   try {
     // Step 1: Check tmux binary via which/where
@@ -145,6 +158,12 @@ export async function createTmuxIntegrationIfSupported(
 
     // Step 5: Get tmux version string
     const version = await getTmuxVersion(tmuxPath);
+
+    // Phase 43 wiring: register the fork adapter with the bridge. Replace-only
+    // semantics from the bridge handle HMR-style re-init safely.
+    if (forkSessionManager !== undefined && forkSessionManager !== null) {
+      setForkSessionManager(forkSessionManager);
+    }
 
     return {
       isAvailable: () => true,

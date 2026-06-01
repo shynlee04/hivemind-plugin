@@ -31,6 +31,32 @@ const {
   createTmuxIntegrationIfSupported,
 } = await import("../../../src/features/tmux/integration.js")
 
+// Import the bridge AFTER integration.ts so we can verify the wiring effect
+// in the same test process. setForkSessionManager mutates module state.
+const { setForkSessionManager, getForkSessionManager } = await import(
+  "../../../src/features/tmux/fork-bridge.js"
+)
+
+// ---------------------------------------------------------------------------
+// Stub adapter factory (matches ForkSessionManagerAdapter shape)
+// ---------------------------------------------------------------------------
+
+function mkStubAdapter(): import("../../../src/features/tmux/fork-bridge.js").ForkSessionManagerAdapter {
+  const planner = {
+    computeSplitSequence: () => [],
+    requestLayout: () => {},
+    cancel: () => {},
+  }
+  return {
+    onSessionCreated: async () => {},
+    respawnIfKnown: async () => null,
+    getMainPaneId: () => undefined,
+    sendKeys: async () => {},
+    listPanes: async () => [],
+    createPaneGridPlanner: () => planner,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Binary resolution
 // ---------------------------------------------------------------------------
@@ -259,5 +285,69 @@ describe("createTmuxIntegrationIfSupported", () => {
     expect(result!.opencodeBinaryPath).toBe("/usr/local/bin/opencode")
     expect(result!.serverUrl).toBeTypeOf("string")
     expect(result!.projectDirectory).toBe("/project")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Phase 43 (REQ-05): fork-bridge wiring via factory
+// ---------------------------------------------------------------------------
+
+describe("createTmuxIntegrationIfSupported — fork-bridge wiring", () => {
+  const origEnv = { ...process.env }
+  const stubAdapter = mkStubAdapter()
+
+  function mockAllChecksPass() {
+    let callCount = 0
+    execFileMock.mockImplementation((_cmd: string, _args: string[], cb: (err: Error | null, result: { stdout: string } | null) => void) => {
+      callCount++
+      if (callCount === 1) cb(null, { stdout: "/usr/bin/tmux\n", stderr: "" })
+      else if (callCount === 2) cb(null, { stdout: "/usr/local/bin/opencode\n", stderr: "" })
+      else if (callCount === 3) cb(null, { stdout: "tmux 3.4\n", stderr: "" })
+      else cb(null, { stdout: "", stderr: "" })
+    })
+    existsSyncMock.mockReturnValue(false)
+  }
+
+  beforeEach(() => {
+    process.env.TMUX = "/tmp/tmux-1000/default,1234,0"
+    setForkSessionManager(null) // reset state
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+    process.env = { ...origEnv }
+    setForkSessionManager(null) // reset state
+  })
+
+  it("does NOT touch the bridge when adapter argument is omitted (backward compat)", async () => {
+    mockAllChecksPass()
+    // Omitted → no wiring call
+    const result = await createTmuxIntegrationIfSupported("/project")
+    expect(result).not.toBeNull()
+    expect(getForkSessionManager()).toBeNull()
+  })
+
+  it("does NOT touch the bridge when adapter is explicitly null", async () => {
+    mockAllChecksPass()
+    const result = await createTmuxIntegrationIfSupported("/project", null)
+    expect(result).not.toBeNull()
+    expect(getForkSessionManager()).toBeNull()
+  })
+
+  it("registers adapter on bridge when integration is created and adapter provided", async () => {
+    mockAllChecksPass()
+    const result = await createTmuxIntegrationIfSupported("/project", stubAdapter)
+    expect(result).not.toBeNull()
+    expect(getForkSessionManager()).toBe(stubAdapter)
+  })
+
+  it("leaves bridge untouched when integration creation fails (tmux not found)", async () => {
+    execFileMock.mockImplementation((_cmd: string, _args: string[], cb: (err: Error) => void) => {
+      cb(new Error("not found"))
+    })
+    const result = await createTmuxIntegrationIfSupported("/project", stubAdapter)
+    expect(result).toBeNull()
+    // Adapter was NOT registered because the factory bailed before wiring
+    expect(getForkSessionManager()).toBeNull()
   })
 })
