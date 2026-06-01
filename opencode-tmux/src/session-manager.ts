@@ -224,7 +224,10 @@ export class SessionManager {
     }
   }
 
-  private async respawnIfKnown(sessionId: string): Promise<void> {
+  // Visibility: public so Hivemind's tmux-copilot tool (Phase 43, REQ-06) can
+  // invoke it through the fork-bridge adapter. Previously private; flipped
+  // to public by Phase 43 Rule 1 fix (the adapter type requires it).
+  async respawnIfKnown(sessionId: string): Promise<void> {
     if (this.sessions.has(sessionId)) return; // already tracked
     if (this.spawningSessions.has(sessionId)) return;
 
