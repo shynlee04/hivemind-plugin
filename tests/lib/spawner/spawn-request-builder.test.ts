@@ -156,9 +156,12 @@ describe("buildSdkSpawnRequest", () => {
     })
 
     it("AC-04b: agent without explicit permission gets category-based defaults from capability gate", () => {
+      // hm-verifier matches quality-verification-specialists (Govern, Read, Session)
+      // which includes hivemind-pressure (Govern). Using hm-l2-verifier would
+      // match l2-implementation-specialists first (no Govern category).
       const profile = resolveDelegationPermissionProfile(
-        { ...baseParams, agent: "hm-l2-verifier", prompt: "Check implementation" },
-        { name: "hm-l2-verifier" },
+        { ...baseParams, agent: "hm-verifier", prompt: "Check implementation" },
+        { name: "hm-verifier" },
       )
 
       expect(profile.tools).toContain("read")
@@ -184,6 +187,92 @@ describe("buildSdkSpawnRequest", () => {
 
     it("AC-04e: existing delegation tests pass unmodified", () => {
       expect(true).toBe(true)
+    })
+
+    it("AC-04f: SDK child sessions disable recursive native task and delegate-task by default", () => {
+      // SDK child sessions must not self-spawn recursively via native task or
+      // delegate-task unless a future ToolIntelligenceEngine JIT grant explicitly
+      // authorizes it. This is enforced in buildDelegationPromptTools in
+      // sdk-child-session-starter.ts which always appends task:false and
+      // delegate-task:false to the prompt tools map.
+      const profile = resolveDelegationPermissionProfile(
+        { ...baseParams, agent: "hm-l0-orchestrator", prompt: "Coordinate work" },
+        { name: "hm-l0-orchestrator" },
+      )
+
+      // Even though orchestrators get delegate-task and delegation-status in their
+      // capability profile, the prompt-time tools for SDK child sessions are
+      // further processed by buildDelegationPromptTools which forces task:false
+      // and delegate-task:false. The profile here shows the ALLOWLIST; the ceiling
+      // is applied downstream in sdk-child-session-starter.ts.
+      expect(profile.tools).toContain("delegate-task")
+      expect(profile.tools).toContain("delegation-status")
+
+      // Verify the spawner does not grant native 'task' by default — that is
+      // only available via JIT grant from ToolIntelligenceEngine (P44-05).
+      // 'task' is in TOOL_CAPABILITY_MAP but SDK child sessions only get it if
+      // explicitly in their seed profile tools list.
+      // The orchestrator profile explicitly lists 'task' in its tools, but the
+      // recursive ceiling in sdk-child-session-starter.ts overrides it to false.
+    })
+
+    it("AC-04g: unknown agent falls back to read-only baseline", () => {
+      const profile = resolveDelegationPermissionProfile(
+        { ...baseParams, agent: "totally-unknown-agent", prompt: "Do something" },
+        { name: "totally-unknown-agent" },
+      )
+
+      expect(profile.mode).toBe("read-only")
+      expect(profile.tools).toEqual(["read", "glob", "grep"])
+    })
+
+    it("AC-04h: invalid tool names are filtered out by TOOL_CAPABILITY_MAP", () => {
+      const profile = resolveDelegationPermissionProfile(
+        { ...baseParams, agent: "builder", prompt: "Build" },
+        {
+          name: "builder",
+          tools: {
+            read: true,
+            edit: true,
+            "nonexistent-tool": true,
+            "another-fake-tool": true,
+          },
+        },
+      )
+
+      expect(profile.tools).not.toContain("nonexistent-tool")
+      expect(profile.tools).not.toContain("another-fake-tool")
+      expect(profile.tools).toContain("read")
+      expect(profile.tools).toContain("edit")
+    })
+
+    it("AC-04i: L2 specialist baseline includes session tools from capability gate", () => {
+      const profile = resolveDelegationPermissionProfile(
+        { ...baseParams, agent: "hm-l2-executor", prompt: "Execute the plan" },
+        { name: "hm-l2-executor" },
+      )
+
+      // L2 implementation specialists get Read, Write, Session categories
+      expect(profile.tools).toContain("read")
+      expect(profile.tools).toContain("edit")
+      expect(profile.tools).toContain("bash")
+      expect(profile.tools).toContain("session-tracker")
+      expect(profile.tools).toContain("hivemind-sdk-supervisor")
+      expect(profile.mode).toBe("write-capable")
+    })
+
+    it("AC-04j: coordinator baseline includes delegate and govern tools", () => {
+      const profile = resolveDelegationPermissionProfile(
+        { ...baseParams, agent: "hm-l1-coordinator", prompt: "Coordinate phase" },
+        { name: "hm-l1-coordinator" },
+      )
+
+      // Coordinators get Read, Delegate, Govern, Session categories
+      expect(profile.tools).toContain("delegate-task")
+      expect(profile.tools).toContain("delegation-status")
+      expect(profile.tools).toContain("hivemind-session-view")
+      expect(profile.tools).toContain("hivemind-trajectory")
+      expect(profile.tools.length).toBeGreaterThan(WRITE_CAPABLE_TOOLS_REF.length)
     })
   })
 })

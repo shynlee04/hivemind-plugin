@@ -29,7 +29,20 @@ describe("AgentResolver", () => {
       prompt: "implement the slice",
     })
 
-    expect(profile).toEqual({ mode: "write-capable", tools: ["read", "edit", "glob", "grep", "execute-slash-command"] })
+    // With CapabilityGate integration (P44-03), gsd-executor matches the
+    // l2-implementation-specialists seed profile ("executor" is in the match list),
+    // so it receives additional Read, Write, and Session category tools beyond
+    // what the explicit permission metadata alone provides.
+    expect(profile.mode).toBe("write-capable")
+    expect(profile.tools).toContain("read")
+    expect(profile.tools).toContain("edit")
+    expect(profile.tools).toContain("glob")
+    expect(profile.tools).toContain("grep")
+    expect(profile.tools).toContain("execute-slash-command")
+    // CapabilityGate adds session tools for l2 implementation specialists
+    expect(profile.tools).toContain("session-tracker")
+    expect(profile.tools).toContain("hivemind-sdk-supervisor")
+    expect(profile.tools.length).toBeGreaterThan(5)
   })
 
   it("disables recursive delegation tools for resolved agents", () => {
