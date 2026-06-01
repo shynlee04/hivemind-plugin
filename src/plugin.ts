@@ -388,7 +388,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     body: {
       service: "hivemind",
       level: "info",
-      message: "[Harness] Hivemind plugin loaded — registering 25 custom tools",
+      message: "[Harness] Hivemind plugin loaded — registering 26 custom tools",
     },
   })
 
