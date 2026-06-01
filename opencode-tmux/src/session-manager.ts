@@ -30,6 +30,10 @@ interface KnownSession {
   parentId: string;
   title: string;
   directory: string;
+  // Hivemind delegation metadata captured from enriched event. Persisted
+  // here so respawnIfKnown can reconstruct the same pane identity
+  // (agent label, title format) after an idle close + busy re-open.
+  hivemindMeta?: { agent: string; delegationId: string; depth: number };
 }
 
 export class SessionManager {
@@ -80,7 +84,7 @@ export class SessionManager {
     // Extract Hivemind metadata if present (enriched event shape)
     const hivemindMeta = (event as EnrichedSessionEvent).hivemindMeta;
 
-    this.knownSessions.set(sessionId, { parentId, title, directory });
+    this.knownSessions.set(sessionId, { parentId, title, directory, hivemindMeta });
 
     if (this.isTrackedOrSpawning(sessionId)) {
       this.log.debug("session already tracked or spawning", { sessionId });
@@ -231,6 +235,10 @@ export class SessionManager {
     // Remove from closedSessions and spawnedSessions before re-spawning
     this.closedSessions.delete(sessionId);
     this.spawnedSessions.delete(sessionId);
+    // Reconstruct the enriched event: onSessionCreated reads
+    // `(event as EnrichedSessionEvent).hivemindMeta` so the respawn
+    // must carry the same metadata to preserve agent label format
+    // and the delegation identity stamped on the new pane.
     await this.onSessionCreated({
       type: "session.created",
       properties: {
@@ -244,7 +252,8 @@ export class SessionManager {
           time: { created: 0, updated: 0 },
         },
       },
-    });
+      ...(known.hivemindMeta ? { hivemindMeta: known.hivemindMeta } : {}),
+    } as Parameters<typeof this.onSessionCreated>[0]);
   }
 
   /**

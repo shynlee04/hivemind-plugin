@@ -359,6 +359,86 @@ describe("SessionManager", () => {
     });
   });
 
+  // ---- respawnIfKnown hivemindMeta propagation (Task 3 fix) ----
+  describe("respawnIfKnown() hivemindMeta propagation", () => {
+    const meta = { agent: "gsd-researcher", delegationId: "ses_abc123", depth: 2 };
+
+    it("respawn after idle close propagates original hivemindMeta to spawnPane", async () => {
+      const { mgr, spawnPane } = await buildManager();
+      // Initial create WITH hivemindMeta
+      const event = mkCreated("s1");
+      (event as any).hivemindMeta = meta;
+      await mgr.onSessionCreated(event as any);
+      expect(spawnPane).toHaveBeenCalledTimes(1);
+
+      // Close via idle
+      await mgr.onSessionStatus(mkStatus("s1", "idle") as any);
+
+      // Busy triggers respawn
+      await mgr.onSessionStatus(mkStatus("s1", "busy") as any);
+      expect(spawnPane).toHaveBeenCalledTimes(2);
+
+      // The respawned spawnPane call MUST include the original hivemindMeta
+      const secondCall = spawnPane.mock.calls[1]?.[0] as any;
+      expect(secondCall?.hivemindMeta).toEqual(meta);
+      await mgr.cleanup();
+    });
+
+    it("respawn after idle close uses agentLabelFormat with original hivemindMeta", async () => {
+      const { mgr, spawnPane } = await buildManager({
+        config: { agentLabelFormat: "[{agentType}·{delegationId}]" },
+      });
+      const event = mkCreated("s1");
+      (event as any).hivemindMeta = meta;
+      await mgr.onSessionCreated(event as any);
+
+      // Close + busy → respawn
+      await mgr.onSessionStatus(mkStatus("s1", "idle") as any);
+      await mgr.onSessionStatus(mkStatus("s1", "busy") as any);
+
+      // The respawned pane's description must be the formatted label,
+      // proving hivemindMeta propagated through the agentLabelFormat path.
+      const secondCall = spawnPane.mock.calls[1]?.[0] as any;
+      expect(secondCall?.description).toBe("[gsd-researcher·ses_abc123]");
+      await mgr.cleanup();
+    });
+
+    it("respawn without original hivemindMeta does not crash and passes no meta", async () => {
+      const { mgr, spawnPane } = await buildManager();
+      // Initial create WITHOUT hivemindMeta
+      await mgr.onSessionCreated(mkCreated("s1") as any);
+
+      // Close + busy → respawn
+      await mgr.onSessionStatus(mkStatus("s1", "idle") as any);
+      await mgr.onSessionStatus(mkStatus("s1", "busy") as any);
+
+      expect(spawnPane).toHaveBeenCalledTimes(2);
+      const secondCall = spawnPane.mock.calls[1]?.[0] as any;
+      // No meta was ever provided; respawn must not invent one
+      expect(secondCall?.hivemindMeta).toBeUndefined();
+      await mgr.cleanup();
+    });
+
+    it("respawn preserves parentId, title, and directory alongside hivemindMeta", async () => {
+      const { mgr, spawnPane } = await buildManager();
+      const event = mkCreated("s1", "parent-X");
+      (event as any).properties.info.title = "Custom Title";
+      (event as any).properties.info.directory = "/custom/dir";
+      (event as any).hivemindMeta = meta;
+      await mgr.onSessionCreated(event as any);
+
+      // Close + busy → respawn
+      await mgr.onSessionStatus(mkStatus("s1", "idle") as any);
+      await mgr.onSessionStatus(mkStatus("s1", "busy") as any);
+
+      const secondCall = spawnPane.mock.calls[1]?.[0] as any;
+      expect(secondCall?.sessionId).toBe("s1");
+      expect(secondCall?.hivemindMeta).toEqual(meta);
+      expect(secondCall?.directory).toBe("/custom/dir");
+      await mgr.cleanup();
+    });
+  });
+
   // ---- isServerRunning retry ----
   describe("isServerRunning()", () => {
     it("fetch called exactly 2 times when it always fails (maxAttempts=2)", async () => {
