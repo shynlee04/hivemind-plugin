@@ -156,7 +156,7 @@ describe("buildGovernanceBlock", () => {
     expect(result).not.toContain("expertise:")
   })
 
-  it("Test 8: output is a single string with line breaks as \\n", () => {
+  it("Test 8: output is a single string with line breaks as \n", () => {
     const config = createConfig()
     const profile = createProfile()
 
@@ -167,9 +167,9 @@ describe("buildGovernanceBlock", () => {
     expect(result).toContain("\n")
     // Verify structure: header, instruction, fields, plus P25.5 trajectory/contract instructions
     const lines = result.split("\n").filter((l) => l.length > 0)
-    expect(lines.length).toBe(8)
+    expect(lines.length).toBe(11)
     expect(lines[0]).toBe("--- Governance ---")
     // P25.5: trajectory instructions are appended (filtered removes empty line)
-    expect(lines[3]).toBe("When managing a phase, call createPhaseTrajectory to start tracking.")
+    expect(lines[3]).toBe("Obey the universal rules in `.opencode/rules/universal-rules.md` and your specific agent instruction profile at all times. These are non-prunable and must be strictly followed.")
   })
 })

@@ -7,13 +7,13 @@ steps: 100
 color: "#8B5CF6"
 permission:
   read:
-    "*": deny
+    "*"*": ask
   edit:
-    "*": deny
+    "*"*": ask
   write:
-    "*": deny
+    "*"*": ask
   bash:
-    "*": deny
+    "*"*": ask
     git *: allow
     node *: allow
     npx *: allow

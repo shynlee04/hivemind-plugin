@@ -1082,5 +1082,35 @@ describe("createCoreHooks", () => {
       expect(profileBlock).toBeDefined()
       expect(profileBlock).toContain("# hm-orchestrator")
     })
+
+    it("maps the native build agent to hm-l0-orchestrator and injects its profile", async () => {
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => undefined,
+        getBehavioralProfile: () => undefined,
+        projectDirectory: process.cwd(),
+        stateManager: taskState,
+      }
+
+      // Set delegation metadata with agent = "build"
+      taskState.setDelegationMeta("ses_build_agent_test", {
+        agent: "build",
+        rootID: "ses_build_agent_test",
+        depth: 1,
+        queueKey: "q_build_test",
+      })
+
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_build_agent_test" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+
+      // Verify that hm-l0-orchestrator profile is injected (mapped from build)
+      const profileBlock = system.find((s) => s.includes("--- Agent Profile: hm-l0-orchestrator ---"))
+      expect(profileBlock).toBeDefined()
+      expect(profileBlock).toContain("# hm-orchestrator")
+    })
   })
 })

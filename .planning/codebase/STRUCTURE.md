@@ -1045,7 +1045,7 @@ permission:
   edit: deny
   write: deny
   bash:
-    "*": deny
+    "*"*": ask
     "git *": allow
   glob: allow
   grep: allow

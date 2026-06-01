@@ -389,7 +389,7 @@ permission:
   read: deny
   edit: deny
   write: deny
-  bash: { "*": deny, "git *": allow }
+  bash: { "*"*": ask, "git *": allow }
   glob: allow
   grep: allow
   task:

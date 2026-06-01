@@ -10,7 +10,7 @@ permission:
   edit: deny
   write: deny
   bash:
-    "*"*": ask
+    "*": ask
     "git *": allow
     "node * ": allow
     "npx *": allow

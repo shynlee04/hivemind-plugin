@@ -192,31 +192,35 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
     sessionID: string,
     deps: HookDependencies,
   ): string | undefined {
+    let agentName: string | undefined = undefined
+
     // 1. Try to get it from delegation metadata in state
     const delegationMeta = deps.stateManager?.getDelegationMeta?.(sessionID) ?? getDelegationMeta(sessionID)
     if (delegationMeta?.agent) {
-      return delegationMeta.agent
+      agentName = delegationMeta.agent
     }
 
     // 2. Try to get it from session continuity
-    try {
-      const continuity = getSessionContinuity(sessionID)
-      if (continuity?.promptParams?.agent) {
-        return continuity.promptParams.agent
+    if (!agentName) {
+      try {
+        const continuity = getSessionContinuity(sessionID)
+        agentName = continuity?.promptParams?.agent ?? continuity?.metadata?.delegation?.agent
+      } catch {
+        // Ignore
       }
-      if (continuity?.metadata?.delegation?.agent) {
-        return continuity.metadata.delegation.agent
-      }
-    } catch {
-      // Ignore
     }
 
     // 3. Fallback to main session strategist
-    if (deps.isMainSession?.(sessionID)) {
-      return "hm-l0-orchestrator"
+    if (!agentName && deps.isMainSession?.(sessionID)) {
+      agentName = "hm-l0-orchestrator"
     }
 
-    return undefined
+    // Map "build" agent alias to L0 strategist
+    if (agentName === "build") {
+      agentName = "hm-l0-orchestrator"
+    }
+
+    return agentName
   }
 
   return {

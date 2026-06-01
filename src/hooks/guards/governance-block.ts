@@ -47,6 +47,9 @@ const EXPERTISE_INSTRUCTIONS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 const TRAJECTORY_INSTRUCTIONS = [
+  "Obey the universal rules in `.opencode/rules/universal-rules.md` and your specific agent instruction profile at all times. These are non-prunable and must be strictly followed.",
+  "Generic agents are prohibited. You must operate strictly as the named specialist agent assigned to this task.",
+  "Before executing any action, you MUST verify the active agent-work-contract and trajectory in your session context.",
   "When managing a phase, call createPhaseTrajectory to start tracking.",
   "Use addTrajectoryEvent to record milestones.",
   "Use traverseTrajectory to review progress.",

@@ -30,25 +30,37 @@ describe("Q6 State Root Migration", () => {
     })
 
     it("continuity storage path resolves to canonical .hivemind/state/", () => {
-      const storagePath = getContinuityStoragePath()
-      expect(storagePath).toContain(".hivemind")
-      expect(storagePath).toContain("state")
-      expect(storagePath).toContain("session-continuity.json")
-      expect(storagePath).not.toContain(".opencode")
+      const oldStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+      try {
+        const storagePath = getContinuityStoragePath()
+        expect(storagePath).toContain(".hivemind")
+        expect(storagePath).toContain("state")
+        expect(storagePath).toContain("session-continuity.json")
+        expect(storagePath).not.toContain(".opencode")
+      } finally {
+        process.env.OPENCODE_HARNESS_STATE_DIR = oldStateDir
+      }
     })
 
     it("delegation persistence writes to .hivemind/state/", () => {
-      const delegationsPath = getDelegationsFilePath()
-      const continuityPath = getContinuityStoragePath()
+      const oldStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+      try {
+        const delegationsPath = getDelegationsFilePath()
+        const continuityPath = getContinuityStoragePath()
 
-      // Delegation file should be in same directory as continuity file
-      expect(delegationsPath).toContain(".hivemind")
-      expect(delegationsPath).toContain("state")
-      expect(delegationsPath).toContain("delegations.json")
-      expect(delegationsPath).not.toContain(".opencode")
+        // Delegation file should be in same directory as continuity file
+        expect(delegationsPath).toContain(".hivemind")
+        expect(delegationsPath).toContain("state")
+        expect(delegationsPath).toContain("delegations.json")
+        expect(delegationsPath).not.toContain(".opencode")
 
-      // Both should share the same parent directory
-      expect(dirname(delegationsPath)).toBe(dirname(continuityPath))
+        // Both should share the same parent directory
+        expect(dirname(delegationsPath)).toBe(dirname(continuityPath))
+      } finally {
+        process.env.OPENCODE_HARNESS_STATE_DIR = oldStateDir
+      }
     })
   })
 
