@@ -25,7 +25,7 @@ vi.mock("node:fs", () => ({
 const {
   resolveBinary,
   getTmuxVersion,
-  readPersistedPort,
+  readOrMigratePort,
   persistPort,
   detectServerUrl,
   createTmuxIntegrationIfSupported,
@@ -114,14 +114,14 @@ describe("getTmuxVersion", () => {
 // Port persistence
 // ---------------------------------------------------------------------------
 
-describe("readPersistedPort", () => {
+describe("readOrMigratePort", () => {
   afterEach(() => {
     vi.clearAllMocks()
   })
 
   it("returns null when no file and no hash fallback", () => {
     existsSyncMock.mockReturnValue(false)
-    const result = readPersistedPort("/project")
+    const result = readOrMigratePort("/project")
     // Should return deterministic fallback port
     expect(result).toBeTypeOf("number")
     expect(result).toBeGreaterThanOrEqual(10000)
@@ -131,7 +131,7 @@ describe("readPersistedPort", () => {
   it("returns parsed port when file exists", () => {
     existsSyncMock.mockReturnValue(true)
     readFileSyncMock.mockReturnValue(JSON.stringify({ port: 4096 }))
-    const result = readPersistedPort("/project")
+    const result = readOrMigratePort("/project")
     expect(result).toBe(4096)
   })
 
@@ -140,14 +140,14 @@ describe("readPersistedPort", () => {
     readFileSyncMock.mockImplementation(() => {
       throw new Error("parse error")
     })
-    const result = readPersistedPort("/project")
+    const result = readOrMigratePort("/project")
     expect(result).toBeNull()
   })
 
   it("returns null when port field is not a number", () => {
     existsSyncMock.mockReturnValue(true)
     readFileSyncMock.mockReturnValue(JSON.stringify({ port: "not-a-number" }))
-    const result = readPersistedPort("/project")
+    const result = readOrMigratePort("/project")
     expect(result).toBeNull()
   })
 })
@@ -196,7 +196,7 @@ describe("detectServerUrl", () => {
   it("returns fallback URL from deterministic hash when no port file", async () => {
     existsSyncMock.mockReturnValue(false)
     const result = await detectServerUrl("/project")
-    // readPersistedPort returns deterministic fallback when no file exists
+    // readOrMigratePort returns deterministic fallback when no file exists
     expect(result).toBeTypeOf("string")
     expect(result).toMatch(/^http:\/\/localhost:/)
   })

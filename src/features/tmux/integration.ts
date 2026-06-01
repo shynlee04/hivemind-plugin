@@ -55,11 +55,35 @@ export async function getTmuxVersion(tmuxPath: string): Promise<string | null> {
 // ---------------------------------------------------------------------------
 
 /**
- * Read the persisted tmux port from `.hivemind/state/tmux-port.json`.
- * If no file exists, compute a deterministic fallback port from a hash of
- * projectDir, mapped to the 10000..65535 range.
+ * Resolve the tmux port for `projectDir`, returning the persisted port if
+ * the state file exists, else computing a deterministic fallback from a
+ * SHA-256 hash of `projectDir` mapped into the 10000..65535 range.
+ *
+ * The previous name `readPersistedPort` was misleading — the function does
+ * NOT return `null` on a cold start; it always returns a usable port via
+ * the deterministic hash fallback. The new name `readOrMigratePort`
+ * documents the "persist or derive" behavior at the call site.
+ *
+ * Birthday-collision invariant: the deterministic fallback has 55,535
+ * distinct ports (10000..65535 inclusive). Per the birthday paradox, the
+ * first collision among N projects on a shared host is expected at
+ * ~√55535 ≈ 236 projects. Two projects on the same host whose SHA-256
+ * hashes happen to map to the same port will both attempt to bind, and
+ * the second will silently fall back to a different port via the
+ * `EADDRINUSE` retry path in the tmux server bootstrap. This is
+ * acceptable for the single-developer, single-host target use case
+ * documented in P42/SPEC.md.
+ *
+ * @param projectDir - absolute path used as the hash key AND as the
+ *   parent of the persisted port file (`.hivemind/state/tmux-port.json`).
+ * @returns a port number in 10000..65535, or `null` only if the persisted
+ *   file exists but is malformed (parse error or non-numeric `port`
+ *   field). A `null` return is a signal to the caller to treat the
+ *   project as having no valid port and to surface the error to the user
+ *   rather than silently using a fresh hash (which would be a different
+ *   port than the one the user may have been told to use).
  */
-export function readPersistedPort(projectDir: string): number | null {
+export function readOrMigratePort(projectDir: string): number | null {
   const path = join(projectDir, PORT_FILE);
   if (!existsSync(path)) {
     // Fallback: deterministic hash of project directory for stability
@@ -96,7 +120,7 @@ export function persistPort(projectDir: string, port: number): void {
  * (caller may detect URL from PluginInput later).
  */
 export async function detectServerUrl(projectDir: string): Promise<string | null> {
-  const port = readPersistedPort(projectDir);
+  const port = readOrMigratePort(projectDir);
   if (port) return `http://localhost:${port}`;
   return null;
 }
