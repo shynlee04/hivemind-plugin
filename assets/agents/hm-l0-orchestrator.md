@@ -26,15 +26,31 @@ permission:
     hm-l3-*: allow
   session-journal-export: allow
   execute-command: allow
+  execute-slash-command: allow
+  delegate-task: allow
+  delegation-status: allow
+  run-background-command: allow
   prompt-skim: allow
   prompt-analyze: allow
   session-patch: ask
   session-tracker: allow
+  session-hierarchy: allow
+  session-context: allow
+  session-delegation-query: allow
+  create-governance-session: allow
+  hivemind-doc: allow
   hivemind-trajectory: allow
   hivemind-pressure: allow
-  hivemind-doc: allow
   hivemind-sdk-supervisor: allow
   hivemind-command-engine: allow
+  hivemind-session-view: allow
+  hivemind-agent-work-create: allow
+  hivemind-agent-work-export: allow
+  configure-primitive: allow
+  validate-restart: allow
+  bootstrap-init: allow
+  bootstrap-recover: allow
+  tmux-copilot: allow
   webfetch: allow
   websearch: allow
   skill:
