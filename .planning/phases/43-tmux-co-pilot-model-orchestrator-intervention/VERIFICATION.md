@@ -198,6 +198,21 @@ None.
 
 ---
 
+## Spec Drift Resolution (P49 Review IN-02)
+
+P49 review IN-02 noted that W-01..W-04 spec drifts were documented above as "Recommended follow-up" but not actually resolved. This section re-checks each drift against the current `src/` and `opencode-tmux/` state and records the resolution status. No code changes are required — the drifts are confirmed real against the current code but are docs-only (W-01/02/03) or out of fix scope (W-04 lives in the vendored fork).
+
+| ID | Drift (per above) | Current code state | Resolution |
+| -- | ----------------- | ------------------ | ---------- |
+| **W-01** | PaneState shape: SPEC says `size: string`; code has flat `width, height, isMain` | `src/features/tmux/fork-bridge.ts:55-62` — `interface PaneState { paneId: string; title: string; isActive: boolean; width: number; height: number; isMain: boolean }` (flat fields, no `size`) | ✓ **Drift confirmed; no code change.** Test contract in `opencode-tmux/src/__tests__/tmux.test.ts:527-598` uses flat fields; flat `width`/`height` are individually more useful than a single `size: "WxH"` string. **43-SPEC.md update remains a non-blocking docs-hygiene follow-up.** |
+| **W-02** | REQ-04 action names: SPEC says `get-pane, plan-grid`; code has `send-keys, list-panes, compute-grid, respawn` | `src/tools/tmux-copilot.ts` — `z.literal("send-keys")`, `z.literal("list-panes")`, `z.literal("compute-grid")`, `z.literal("respawn")` (4 actions; 10 tests in `tests/lib/tmux/tmux-copilot.test.ts`) | ✓ **Drift confirmed; no code change.** The 4 actual action names match the PLAN must_haves and the test contract. **43-SPEC.md update remains a non-blocking docs-hygiene follow-up.** |
+| **W-03** | `plugin.ts:579` (SPEC) vs `plugin.ts:594-595` (actual REQ-05 wiring) | `src/plugin.ts:594-595` — `...(tmuxIntegration ? [createTmuxEventObserver(buildNoopForkSessionManager())] : [])` inside the `eventObservers` array (P49-02 commit `2ac06af8` made the observer call the runtime singleton `getForkSessionManager()` rather than noop) | ✓ **Drift confirmed; no code change.** The wiring contract (conditional observer registration via `createTmuxEventObserver`) is correct; line numbers shifted during plugin.ts evolution. **43-SPEC.md update remains a non-blocking docs-hygiene follow-up.** |
+| **W-04** | `opencode-tmux/src/__tests__/grid-planner.test.ts:17` description says "BFS order" but assertions are DFS-preorder | `opencode-tmux/src/grid-planner.ts:5` — "DFS preorder walk emits one SplitCommand per non-root node"; L46 "Walk the tree in DFS preorder"; L47 emits SplitCommand per node | ⚠ **Drift confirmed; out of fix scope.** `opencode-tmux/` is the vendored fork and is explicitly OUT of the P49 review-fix scope (DO NOT TOUCH per fix strategy). The cosmetic test description "BFS order" remains, but the executable assertion contract is DFS-preorder and matches the code. **Recommended follow-up retained for whoever owns the fork sync.** |
+
+**Resolution summary:** All 4 W items are real drifts confirmed against the current code state. None are runtime defects — W-01, W-02, W-03 are docs-only (43-SPEC.md is stale relative to the code, not the other way around); W-04 is a cosmetic test-description wording issue in the vendored fork. The "Recommended follow-up" entries in the Gaps Summary above remain valid; P49 review-fix does NOT itself close them, since closing requires either (a) updating 43-SPEC.md in a separate docs-hygiene phase, or (b) modifying the fork (out of scope). The Gaps Summary's `## Recommendation` and `## Re-verification (P49)` sections are unaffected by this resolution.
+
+---
+
 ## Recommendation
 
 **Phase 43 PASSED. Proceed to P45+ roadmap insertion.**
