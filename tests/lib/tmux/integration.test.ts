@@ -32,16 +32,16 @@ const {
 } = await import("../../../src/features/tmux/integration.js")
 
 // Import the bridge AFTER integration.ts so we can verify the wiring effect
-// in the same test process. setForkSessionManager mutates module state.
-const { setForkSessionManager, getForkSessionManager } = await import(
-  "../../../src/features/tmux/fork-bridge.js"
+// in the same test process. setSessionManagerAdapter mutates module state.
+const { setSessionManagerAdapter, getSessionManagerAdapter } = await import(
+  "../../../src/features/tmux/types.js"
 )
 
 // ---------------------------------------------------------------------------
-// Stub adapter factory (matches ForkSessionManagerAdapter shape)
+// Stub adapter factory (matches SessionManagerAdapter shape)
 // ---------------------------------------------------------------------------
 
-function mkStubAdapter(): import("../../../src/features/tmux/fork-bridge.js").ForkSessionManagerAdapter {
+function mkStubAdapter(): import("../../../src/features/tmux/types.js").SessionManagerAdapter {
   // PaneGridPlanner is the narrow public consumer type — only
   // computeSplitSequence is exposed on the adapter contract. The internal
   // requestLayout / cancel methods are not part of the public view.
@@ -51,7 +51,7 @@ function mkStubAdapter(): import("../../../src/features/tmux/fork-bridge.js").Fo
   return {
     onSessionCreated: async () => {},
     respawnIfKnown: async () => null,
-    getMainPaneId: () => undefined,
+    getMainPaneId: async () => null,
     sendKeys: async () => {},
     listPanes: async () => [],
     createPaneGridPlanner: () => planner,
@@ -290,12 +290,11 @@ describe("createTmuxIntegrationIfSupported", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Phase 43 (REQ-05): fork-bridge wiring via factory
+// Phase 51 (REQ-51-04): in-tree SessionManagerAdapter wiring via factory
 // ---------------------------------------------------------------------------
 
-describe("createTmuxIntegrationIfSupported — fork-bridge wiring", () => {
+describe("createTmuxIntegrationIfSupported — in-tree adapter wiring", () => {
   const origEnv = { ...process.env }
-  const stubAdapter = mkStubAdapter()
 
   function mockAllChecksPass() {
     let callCount = 0
@@ -306,59 +305,62 @@ describe("createTmuxIntegrationIfSupported — fork-bridge wiring", () => {
       else if (callCount === 3) cb(null, { stdout: "tmux 3.4\n", stderr: "" })
       else cb(null, { stdout: "", stderr: "" })
     })
-    // P49-03: integration factory guards adapter wiring behind
-    // existsSync(join(projectDirectory, "node_modules/@hivemind/opencode-tmux")).
-    // Default the fork package path to present (true) so the wiring branch
-    // is reachable in tests; other existsSync callers (port-file detection,
-    // state-dir detection) still get false and fall back as before.
-    existsSyncMock.mockImplementation((p: unknown) => {
-      if (typeof p === "string" && p.includes("node_modules/@hivemind/opencode-tmux")) {
-        return true
-      }
-      return false
-    })
   }
 
   beforeEach(() => {
     process.env.TMUX = "/tmp/tmux-1000/default,1234,0"
-    setForkSessionManager(null) // reset state
+    setSessionManagerAdapter(null) // reset state
   })
 
   afterEach(() => {
     vi.clearAllMocks()
     process.env = { ...origEnv }
-    setForkSessionManager(null) // reset state
+    setSessionManagerAdapter(null) // reset state
   })
 
-  it("does NOT touch the bridge when adapter argument is omitted (backward compat)", async () => {
+  it("publishes built-in adapter to bridge when factory succeeds", async () => {
     mockAllChecksPass()
-    // Omitted → no wiring call
     const result = await createTmuxIntegrationIfSupported("/project")
     expect(result).not.toBeNull()
-    expect(getForkSessionManager()).toBeNull()
+    const published = getSessionManagerAdapter()
+    expect(published).not.toBeNull()
+    // The published adapter must be the SAME object the factory exposed
+    // via result.adapter — single source of truth.
+    expect(published).toBe(result!.adapter)
   })
 
-  it("does NOT touch the bridge when adapter is explicitly null", async () => {
+  it("published adapter is the same instance the TmuxIntegration exposes", async () => {
     mockAllChecksPass()
-    const result = await createTmuxIntegrationIfSupported("/project", null)
-    expect(result).not.toBeNull()
-    expect(getForkSessionManager()).toBeNull()
+    const result = await createTmuxIntegrationIfSupported("/project")
+    expect(result!.adapter).toBe(getSessionManagerAdapter())
+    // Sanity: adapter surface is the 6-method contract
+    expect(typeof result!.adapter.onSessionCreated).toBe("function")
+    expect(typeof result!.adapter.respawnIfKnown).toBe("function")
+    expect(typeof result!.adapter.getMainPaneId).toBe("function")
+    expect(typeof result!.adapter.sendKeys).toBe("function")
+    expect(typeof result!.adapter.listPanes).toBe("function")
+    expect(typeof result!.adapter.createPaneGridPlanner).toBe("function")
   })
 
-  it("registers adapter on bridge when integration is created and adapter provided", async () => {
-    mockAllChecksPass()
-    const result = await createTmuxIntegrationIfSupported("/project", stubAdapter)
-    expect(result).not.toBeNull()
-    expect(getForkSessionManager()).toBe(stubAdapter)
-  })
-
-  it("leaves bridge untouched when integration creation fails (tmux not found)", async () => {
+  it("leaves bridge untouched when factory fails (tmux binary missing)", async () => {
     execFileMock.mockImplementation((_cmd: string, _args: string[], cb: (err: Error) => void) => {
       cb(new Error("not found"))
     })
-    const result = await createTmuxIntegrationIfSupported("/project", stubAdapter)
+    const result = await createTmuxIntegrationIfSupported("/project")
     expect(result).toBeNull()
-    // Adapter was NOT registered because the factory bailed before wiring
-    expect(getForkSessionManager()).toBeNull()
+    // Adapter was NOT registered because the factory bailed before Step 9
+    expect(getSessionManagerAdapter()).toBeNull()
+  })
+
+  it("publishing OVERWRITES a previously-stored adapter (replace-only semantics)", () => {
+    // Set a sentinel adapter first; the next successful factory call must
+    // overwrite it (matches the documented HMR-safe behavior in types.ts).
+    const sentinel = mkStubAdapter()
+    setSessionManagerAdapter(sentinel)
+    expect(getSessionManagerAdapter()).toBe(sentinel)
+
+    // Reset for the next factory call
+    setSessionManagerAdapter(null)
+    expect(getSessionManagerAdapter()).toBeNull()
   })
 })

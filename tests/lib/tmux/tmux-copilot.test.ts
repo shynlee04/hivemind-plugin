@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest"
-import type { ForkSessionManagerAdapter, PaneState, PaneTreeNode } from "../../../src/features/tmux/fork-bridge.js"
+import type { SessionManagerAdapter, PaneState, PaneTreeNode } from "../../../src/features/tmux/types.js"
 
-const { setForkSessionManager } = await import("../../../src/features/tmux/fork-bridge.js")
+const { setSessionManagerAdapter } = await import("../../../src/features/tmux/types.js")
 
-// Import after vi.mock setForkSessionManager so tests can swap adapter between runs
+// Import after vi.mock setSessionManagerAdapter so tests can swap adapter between runs
 const { tmuxCopilotTool } = await import("../../../src/tools/tmux-copilot.js")
 const tool = tmuxCopilotTool as unknown as {
   execute: (rawArgs: unknown, context?: { sessionID?: string; agent?: string }) => Promise<string>
@@ -20,17 +20,17 @@ const exec = async (rawArgs: unknown, context = { sessionID: "sess-1", agent: "h
 // Fixtures
 // ---------------------------------------------------------------------------
 
-function mkStubAdapter(overrides: Partial<ForkSessionManagerAdapter> = {}): ForkSessionManagerAdapter {
+function mkStubAdapter(overrides: Partial<SessionManagerAdapter> = {}): SessionManagerAdapter {
   // PaneGridPlanner is the narrow public consumer type — only
   // computeSplitSequence is exposed on the adapter contract.
   const planner = {
     computeSplitSequence: (root: PaneTreeNode) =>
       root.children?.map((c) => ({ parentPaneId: root.id, direction: "h" as const })) ?? [],
   }
-  const stub: ForkSessionManagerAdapter = {
+  const stub: SessionManagerAdapter = {
     onSessionCreated: async () => {},
     respawnIfKnown: async () => null,
-    getMainPaneId: () => undefined,
+    getMainPaneId: async () => null,
     sendKeys: async () => {},
     listPanes: async (): Promise<PaneState[]> => [],
     createPaneGridPlanner: () => planner,
@@ -47,19 +47,19 @@ const ORCHESTRATOR_CONTEXT = { sessionID: "sess-1", agent: "hm-orchestrator" }
 
 describe("tmux-copilot — 4 actions", () => {
   beforeEach(() => {
-    setForkSessionManager(null)
+    setSessionManagerAdapter(null)
   })
 
   // 1. send-keys happy path
   it("send-keys: returns {sent: true, paneId} when adapter.sendKeys resolves", async () => {
-    setForkSessionManager(mkStubAdapter({ sendKeys: async () => {} }))
+    setSessionManagerAdapter(mkStubAdapter({ sendKeys: async () => {} }))
     const result = await exec({ action: "send-keys", paneId: "%1", text: "ls -la" })
     expect(result).toEqual({ sent: true, paneId: "%1" })
   })
 
   // 2. send-keys error path
   it("send-keys: returns {sent: false, paneId, error} when adapter.sendKeys rejects", async () => {
-    setForkSessionManager(
+    setSessionManagerAdapter(
       mkStubAdapter({
         sendKeys: async () => {
           throw new Error("pane not found")
@@ -75,14 +75,14 @@ describe("tmux-copilot — 4 actions", () => {
     const fakePanes: PaneState[] = [
       { paneId: "%1", title: "main", isActive: true, width: 80, height: 24, isMain: true },
     ]
-    setForkSessionManager(mkStubAdapter({ listPanes: async () => fakePanes }))
+    setSessionManagerAdapter(mkStubAdapter({ listPanes: async () => fakePanes }))
     const result = await exec({ action: "list-panes" })
     expect(result).toEqual({ panes: fakePanes })
   })
 
   // 4. list-panes error path
   it("list-panes: returns {available: false, reason: 'tmux-not-installed'} when adapter.listPanes rejects", async () => {
-    setForkSessionManager(
+    setSessionManagerAdapter(
       mkStubAdapter({
         listPanes: async () => {
           throw new Error("ENOENT: tmux binary not found")
@@ -99,7 +99,7 @@ describe("tmux-copilot — 4 actions", () => {
       id: "root",
       children: [{ id: "a" }, { id: "b" }],
     }
-    setForkSessionManager(mkStubAdapter())
+    setSessionManagerAdapter(mkStubAdapter())
     const result = await exec({ action: "compute-grid", tree })
     expect(result).toEqual({
       commands: [
@@ -111,7 +111,7 @@ describe("tmux-copilot — 4 actions", () => {
 
   // 6. respawn found
   it("respawn: returns {respawned: true, paneId} when adapter.respawnIfKnown returns paneId", async () => {
-    setForkSessionManager(
+    setSessionManagerAdapter(
       mkStubAdapter({ respawnIfKnown: async () => ({ paneId: "%42" }) }),
     )
     const result = await exec({ action: "respawn", sessionId: "sess-1" })
@@ -120,7 +120,7 @@ describe("tmux-copilot — 4 actions", () => {
 
   // 7. respawn not-found
   it("respawn: returns {respawned: false, error: {reason: 'session-not-closed'}} when adapter returns null", async () => {
-    setForkSessionManager(mkStubAdapter({ respawnIfKnown: async () => null }))
+    setSessionManagerAdapter(mkStubAdapter({ respawnIfKnown: async () => null }))
     const result = await exec({ action: "respawn", sessionId: "sess-1" })
     expect(result).toEqual({
       respawned: false,
@@ -129,15 +129,15 @@ describe("tmux-copilot — 4 actions", () => {
   })
 
   // 8. bridge empty — graceful unavailable
-  it("returns {available: false, reason: 'fork-not-wired'} when bridge is empty", async () => {
-    setForkSessionManager(null)
+  it("returns {available: false, reason: 'tmux-not-wired'} when bridge is empty", async () => {
+    setSessionManagerAdapter(null)
     const result = await exec({ action: "send-keys", paneId: "%1", text: "ls" })
-    expect(result).toEqual({ available: false, reason: "fork-not-wired" })
+    expect(result).toEqual({ available: false, reason: "tmux-not-wired" })
   })
 
   // 9. invalid input — schema validation fails gracefully
   it("returns {error: {kind: 'invalid-input', issues}} when input fails Zod validation", async () => {
-    setForkSessionManager(mkStubAdapter())
+    setSessionManagerAdapter(mkStubAdapter())
     // Missing required 'paneId' for send-keys
     const result = await exec({ action: "send-keys", text: "ls" })
     expect(result).toMatchObject({ error: { kind: "invalid-input" } })
@@ -148,7 +148,7 @@ describe("tmux-copilot — 4 actions", () => {
 
   // 10. permission gate — non-orchestrator agent is rejected
   it("returns {error: {kind: 'permission-denied', agent: <name>}} when caller is not an orchestrator", async () => {
-    setForkSessionManager(mkStubAdapter())
+    setSessionManagerAdapter(mkStubAdapter())
     const result = await exec(
       { action: "send-keys", paneId: "%1", text: "ls" },
       { sessionID: "sess-1", agent: "hm-builder" },
@@ -160,7 +160,7 @@ describe("tmux-copilot — 4 actions", () => {
 
   // 11. list-panes timeout path
   it("list-panes: returns {available: false, reason: 'tmux-timeout'} when adapter throws timeout error", async () => {
-    setForkSessionManager(
+    setSessionManagerAdapter(
       mkStubAdapter({
         listPanes: async () => {
           const err = new Error("ETIMEDOUT: tmux server unreachable") as NodeJS.ErrnoException
@@ -175,7 +175,7 @@ describe("tmux-copilot — 4 actions", () => {
 
   // 12. list-panes generic error path
   it("list-panes: returns {available: false, reason: 'tmux-error', error: {message}} when adapter throws unclassified error", async () => {
-    setForkSessionManager(
+    setSessionManagerAdapter(
       mkStubAdapter({
         listPanes: async () => {
           throw new Error("unexpected tmux protocol error")

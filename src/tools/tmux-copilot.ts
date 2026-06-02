@@ -9,15 +9,26 @@
  *   field — the gate is enforced at execute() runtime via context.agent.
  *   REQUIRES_PERMISSIONS is exported as a module const so future
  *   harness-level enforcement layers can consume it.
- * - Graceful unavailable: when the fork is not wired, returns
- *   {available: false, reason: "fork-not-wired"} instead of throwing.
- *   This is the T-43-09 mitigation (DoS) — no exception escapes.
- * - All adapter calls wrapped in try/catch so tmux/fork failures produce
- *   structured error results rather than uncaught exceptions.
+ * - Graceful unavailable: when the in-tree integration is not wired,
+ *   returns {available: false, reason: "tmux-not-wired"} instead of
+ *   throwing. This is the T-43-09 mitigation (DoS) — no exception escapes.
+ * - All adapter calls wrapped in try/catch so tmux/in-tree failures
+ *   produce structured error results rather than uncaught exceptions.
+ *
+ * Phase 51 migration: the consumer now uses `getSessionManagerAdapter`
+ * (from `../features/tmux/types.js`) instead of the deleted
+ * `getForkSessionManager` (from `../features/tmux/fork-bridge.js`).
+ * The bridge pattern (module-level mutable state populated by the
+ * integration factory at plugin-init time) is preserved.
  */
 import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
-import { getForkSessionManager, type PaneState, type PaneTreeNode, type SplitCommand } from "../features/tmux/fork-bridge.js"
+import {
+  getSessionManagerAdapter,
+  type PaneState,
+  type PaneTreeNode,
+  type SplitCommand,
+} from "../features/tmux/types.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 
 // ---------------------------------------------------------------------------
@@ -100,7 +111,7 @@ const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
 // ---------------------------------------------------------------------------
 
 export type TmuxCopilotResult =
-  | { available: false; reason: "fork-not-wired" | "tmux-not-installed" | "tmux-timeout" }
+  | { available: false; reason: "tmux-not-wired" | "tmux-not-installed" | "tmux-timeout" }
   | { available: false; reason: "tmux-error"; error: { message: string } }
   | { sent: true; paneId: string }
   | { sent: false; paneId: string; error: { message: string } }
@@ -161,9 +172,9 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
     const input = parsed.data
 
     // 3. Bridge check
-    const adapter = getForkSessionManager()
+    const adapter = getSessionManagerAdapter()
     if (adapter === null) {
-      return renderToolResult({ available: false, reason: "fork-not-wired" })
+      return renderToolResult({ available: false, reason: "tmux-not-wired" })
     }
 
     // 4. Dispatch

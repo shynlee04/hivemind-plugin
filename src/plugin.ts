@@ -49,7 +49,6 @@ import { createPtyManagerIfSupported } from "./features/background-command/pty/p
 import { createTmuxIntegrationIfSupported } from "./features/tmux/integration.js"
 import { createTmuxEventObserver } from "./features/tmux/observers.js"
 import type { ForkSessionManager } from "./features/tmux/observers.js"
-import { getForkSessionManager } from "./features/tmux/fork-bridge.js"
 import { createGovernanceSessionTool } from "./features/governance-engine/index.js"
 import { createPromptSkimTool } from "./tools/prompt/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt/prompt-analyze/index.js"
@@ -205,21 +204,28 @@ function shouldAppendParentTuiNotification(type: DelegationNotificationType): bo
 }
 
 /**
- * Build a no-op ForkSessionManager for builds where the fork package is not
- * present. The observer enriches `session.created` events with delegation
- * metadata and dispatches them here; in this build we discard the enriched
- * event. Production builds (with the fork package) construct a real
- * SessionManager and call `setForkSessionManager(adapter)` from the fork's
- * plugin entry — Hivemind's bridge then dispatches to the real manager.
+ * Build a no-op ForkSessionManager for builds where the in-tree tmux
+ * integration is not available (e.g. running outside a tmux session, or
+ * the tmux binary is not installed). The observer enriches `session.created`
+ * events with delegation metadata and dispatches them here; in this case
+ * we discard the enriched event. Production builds (with tmux available)
+ * construct a real `SessionManager` inside `createTmuxIntegrationIfSupported`
+ * and publish the adapter via `setSessionManagerAdapter`; the plugin
+ * entry then passes `tmuxIntegration.adapter` to the observer.
  *
  * Phase 43 (REQ-05): runtime-injection boundary.
+ *
+ * Phase 51 (REQ-51-06): the "no-op" path is now reached when the factory
+ * returns `null` (silent fallback per D-04), not when the fork package is
+ * absent. Same runtime shape, different trigger.
  */
 function buildNoopForkSessionManager(): ForkSessionManager {
   return {
     onSessionCreated: async (_enriched) => {
-      // No-op in Hivemind-only builds. The enriched event still flows through
-      // the observer's metadata lookup pipeline (delegationMeta, lastMessage
-      // capture, etc.) — only the dispatch is a no-op.
+      // No-op when in-tree tmux integration is unavailable. The enriched
+      // event still flows through the observer's metadata lookup pipeline
+      // (delegationMeta, lastMessage capture, etc.) — only the dispatch
+      // is a no-op.
     },
   };
 }
@@ -410,9 +416,12 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const tmuxIntegration = await createTmuxIntegrationIfSupported(projectDirectory)
 
   // Phase 43 (REQ-05): factory-level wiring lands here in the fork's plugin
-  // entry, where a real SessionManager is constructed. In this build, the
-  // fork package is not present, so we leave the bridge unset and use a
-  // no-op ForkSessionManager stub for the observer's dispatch target.
+  // entry, where a real SessionManager is constructed. In the in-tree
+  // build (Phase 51), the factory itself constructs the real SessionManager
+  // and publishes the adapter via `setSessionManagerAdapter` (a
+  // module-level slot in `features/tmux/types.ts`). The observer
+  // receives the real adapter (`tmuxIntegration.adapter`) or a no-op
+  // stub if tmux is unavailable.
 
   // Session tracker: typed owning module for session knowledge capture.
   // Created before delegation modules so it can wire into child session creation
@@ -594,8 +603,8 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
           lmc?.handleEvent(event as Record<string, unknown>)
         }
       }, ...(tmuxIntegration
-        ? [createTmuxEventObserver(getForkSessionManager() ?? buildNoopForkSessionManager())]
-        : [])],
+        ? [createTmuxEventObserver(tmuxIntegration.adapter)]
+        : [createTmuxEventObserver(buildNoopForkSessionManager())])],
     }),
     ...sessionReadHooks,
     // tool.execute.before: combined guard + session-tracker detection.

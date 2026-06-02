@@ -1,16 +1,35 @@
 /**
  * Hivemind Tmux integration module.
  *
- * Provides Tmux availability detection, binary path resolution, port persistence,
- * and a silent fallback factory that mirrors `createPtyManagerIfSupported()`.
+ * Factory module that constructs the in-tree tmux subsystem when tmux
+ * is available, and returns `null` (silent no-op) otherwise. The
+ * factory mirrors the `createPtyManagerIfSupported()` pattern used
+ * elsewhere in the harness.
+ *
+ * What this module owns:
+ * - Binary resolution (tmux, opencode)
+ * - Tmux version detection
+ * - Port persistence (`.hivemind/state/tmux-port.json`)
+ * - Server URL detection (port → `http://localhost:<port>`)
+ * - The factory that wires `TmuxMultiplexer` + `SessionManager` +
+ *   planner factory into a `TmuxIntegration` object
+ *
+ * D-04 contract: silent fallback (returns `null`, not throws). The
+ * factory uses runtime detection (existsSync / which) rather than
+ * import-time detection. The integration still works in a degraded
+ * mode (tmux pane commands are unavailable; `tmux-copilot` tool calls
+ * return `{available: false, reason: "tmux-not-wired"}`).
  */
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { setForkSessionManager } from "./fork-bridge.js";
-import type { ForkSessionManagerAdapter } from "./fork-bridge.js";
+import { PaneGridPlanner } from "./grid-planner.js";
+import { SessionManager } from "./session-manager.js";
+import { TmuxMultiplexer } from "./tmux-multiplexer.js";
+import type { Logger } from "./tmux-multiplexer.js";
+import { setSessionManagerAdapter, type SessionManagerAdapter } from "./types.js";
 
 const execFileAsync = promisify(execFile);
 const PORT_FILE = ".hivemind/state/tmux-port.json";
@@ -129,6 +148,12 @@ export async function detectServerUrl(projectDir: string): Promise<string | null
 // TmuxIntegration interface
 // ---------------------------------------------------------------------------
 
+/**
+ * The wired tmux subsystem. The `tmux-copilot` tool consumes `adapter`
+ * (the `SessionManagerAdapter` shape). `multiplexer` and
+ * `sessionManager_` are exposed for testing + future plugin-time wiring
+ * (e.g. observer hookup in `plugin.ts`).
+ */
 export interface TmuxIntegration {
   readonly isAvailable: () => boolean;
   readonly version: string | null;
@@ -136,6 +161,11 @@ export interface TmuxIntegration {
   readonly opencodeBinaryPath: string | null;
   readonly serverUrl: string | null;
   readonly projectDirectory: string;
+  readonly adapter: SessionManagerAdapter;
+  readonly multiplexer: TmuxMultiplexer;
+  readonly sessionManager_: SessionManager;
+  /** Factory for the in-tree `PaneGridPlanner`. */
+  readonly createPaneGridPlanner: (debounceMs?: number) => PaneGridPlanner;
 }
 
 // ---------------------------------------------------------------------------
@@ -143,26 +173,27 @@ export interface TmuxIntegration {
 // ---------------------------------------------------------------------------
 
 /**
- * Create a TmuxIntegration instance if tmux and opencode are available.
+ * Create a `TmuxIntegration` instance if tmux and opencode are available.
  * Returns `null` (silent no-op) when:
  * - tmux binary not found on PATH
  * - Not running inside a tmux session (process.env.TMUX not set)
  * - opencode binary not found on PATH
  * - Any error occurs during detection
  *
- * If `forkSessionManager` is provided AND the integration is successfully
- * created, registers the adapter via `setForkSessionManager(adapter)` so the
- * tmux-copilot tool can dispatch actions to the fork. When the integration is
- * not created (returns null), the bridge is left untouched (already null by
- * default) — explicit `setForkSessionManager(null)` calls are unnecessary.
+ * Phase 51 (REQ-51-05): the factory owns the in-tree `TmuxMultiplexer`
+ * and `SessionManager` lifecycle. The `adapter` it returns is the
+ * `SessionManagerAdapter` shape that the `tmux-copilot` tool consumes
+ * (replaces the fork-bridge that Phase 43-46 used).
  *
- * Phase 43 (REQ-05): runtime-injection boundary. In production, the fork's
- * plugin entry calls this factory with its own SessionManager cast to
- * `ForkSessionManagerAdapter`. Tests pass a stub adapter.
+ * D-04 contract: runtime existsSync-based detection. The factory
+ * returns `null` (not throws) when tmux is unavailable. The D-04
+ * graceful-fallback guarantee is preserved by the silent-null return
+ * pattern — callers (e.g. `plugin.ts`) treat a `null` return as
+ * "tmux integration not available, skip the tool registration."
  */
 export async function createTmuxIntegrationIfSupported(
   projectDirectory: string,
-  forkSessionManager?: ForkSessionManagerAdapter | null,
+  options: { log?: Logger } = {},
 ): Promise<TmuxIntegration | null> {
   try {
     // Step 1: Check tmux binary via which/where
@@ -183,23 +214,34 @@ export async function createTmuxIntegrationIfSupported(
     // Step 5: Get tmux version string
     const version = await getTmuxVersion(tmuxPath);
 
-    // Phase 43 wiring: register the fork adapter with the bridge. Replace-only
-    // semantics from the bridge handle HMR-style re-init safely.
-    //
-    // D-04: existsSync-based detection (not import-based). The fork package
-    // is OPTIONAL — if package.json declares it but install failed (peer-dep
-    // mismatch, native binding missing), the import chain may resolve but the
-    // on-disk package is absent. existsSync on the package directory is the
-    // runtime truth. When the package is absent, skip fork-bridge registration
-    // — the integration still works (tmux pane commands) but tmux-copilot
-    // tool calls will return {available: false, reason: "fork-not-wired"}
-    // (P43-02's graceful-unavailable contract).
-    const FORK_PACKAGE_DIR = "node_modules/@hivemind/opencode-tmux";
-    if (forkSessionManager !== undefined && forkSessionManager !== null) {
-      if (existsSync(join(projectDirectory, FORK_PACKAGE_DIR))) {
-        setForkSessionManager(forkSessionManager);
-      }
-    }
+    // Step 6: Construct the in-tree multiplexer
+    const multiplexer = new TmuxMultiplexer("main-vertical", 60, options.log);
+
+    // Step 7: Construct the in-tree session manager
+    const sessionManager_ = new SessionManager(
+      multiplexer,
+      serverUrl ?? `http://localhost:${readOrMigratePort(projectDirectory) ?? 0}`,
+      projectDirectory,
+      options.log,
+    );
+
+    // Step 8: Build the SessionManagerAdapter (the surface the
+    // tmux-copilot tool consumes). This is the in-tree replacement
+    // for the fork-bridge's `getForkSessionManager()` pattern.
+    const adapter: SessionManagerAdapter = {
+      onSessionCreated: (event) => sessionManager_.onSessionCreated(event),
+      respawnIfKnown: (sessionId: string) => sessionManager_.respawnIfKnown(sessionId),
+      getMainPaneId: () => multiplexer.getMainPaneId(),
+      sendKeys: (paneId: string, text: string, literal?: boolean) =>
+        multiplexer.sendKeys(paneId, text, literal),
+      listPanes: (mainPaneId?: string) => multiplexer.listPanes(mainPaneId),
+      createPaneGridPlanner: (debounceMs?: number) => new PaneGridPlanner(debounceMs),
+    };
+
+    // Step 9: Publish the adapter to the module-level slot so the
+    // tmux-copilot tool (which is constructed at SDK-tool-registration
+    // time, before this factory runs) can look it up at execute() time.
+    setSessionManagerAdapter(adapter);
 
     return {
       isAvailable: () => true,
@@ -208,6 +250,10 @@ export async function createTmuxIntegrationIfSupported(
       opencodeBinaryPath: opencodePath,
       serverUrl,
       projectDirectory,
+      adapter,
+      multiplexer,
+      sessionManager_,
+      createPaneGridPlanner: (debounceMs?: number) => new PaneGridPlanner(debounceMs),
     };
   } catch {
     return null;
