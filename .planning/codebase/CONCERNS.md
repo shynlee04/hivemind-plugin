@@ -1,372 +1,522 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-05-28
-
-This document catalogs every actionable concern discovered during deep scan of the `hivemind-plugin-private` codebase. Issues are organized by severity (P0–P2) with exact file:line references to enable direct navigation. Each concern includes impact assessment and recommended remediation.
-
----
-
-## 1. Critical Issues (P0)
-
-### 1.1 Duplicate Union Member in PermissionAction Type
-
-- **File:** `src/shared/types.ts:42`
-- **Code:** `export type PermissionAction = "allow" | "ask" | "ask"`
-- **Impact:** The `"ask"` value is duplicated in the union, making it appear to have three valid states when there are only two. This is a silent TypeScript defect — no compiler error is raised, but downstream switch/if statements may have dead branches or incorrect narrowing. Any permission evaluation logic that checks `action === "ask"` works by coincidence but the intent is unclear (was a third action like `"deny"` intended?).
-- **Fix:** Remove the duplicate: `export type PermissionAction = "allow" | "ask"`. Audit all `switch(action)` blocks in `src/tools/delegation/delegate-task.ts`, `src/coordination/spawner/agent-primitive-policy.ts`, and `src/config/compiler.ts` to verify they handle only the expected values.
-
-### 1.2 Silent Error Swallowing via `.catch(() => {})`
-
-- **Files:**
-  - `src/features/session-tracker/capture/event-capture.ts:325` — `backfillChildTurnsFromSdk` errors silently discarded
-  - `src/features/session-tracker/capture/event-capture.ts:373` — `appendAssistantTurn` errors silently discarded
-  - `src/features/session-tracker/capture/event-capture.ts:443` — `backfillChildTurnsFromSdk` errors silently discarded
-  - `src/features/session-tracker/capture/event-capture.ts:500` — `backfillChildTurnsFromSdk` errors silently discarded
-  - `src/features/session-tracker/persistence/child-writer.ts:223` — Write queue errors silently discarded via `next.catch(() => {})`
-  - `src/features/session-tracker/initialization.ts:151` — Recovery/orphan cleanup errors silently discarded
-- **Impact:** These are fire-and-forget patterns where failures are completely invisible. In production, if `backfillChildTurnsFromSdk` or `appendAssistantTurn` consistently fail, the session-tracker will silently produce incomplete data with no observability signal. The child-writer queue at line 223 is particularly dangerous because it means failed writes vanish without entering the retry queue.
-- **Fix:** Replace `.catch(() => {})` with `.catch((err) => { void client.app?.log?.({ body: { service: "session-tracker", level: "warn", message: `[Harness] <operation> failed`, extra: { error: err instanceof Error ? err.message : String(err) } } }) })` — at minimum log the error. For the child-writer queue at line 223, the catch is intentional (the error is already re-thrown at line 221 and captured by the retry queue), but the `catch(() => {})` on the queued promise should still log at debug level.
-
-### 1.3 `ClientLike = any` Type Erasure in Session Tracker
-
-- **File:** `src/features/session-tracker/initialization.ts:36-37`
-- **Code:**
-  ```typescript
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type ClientLike = any
-  ```
-- **Impact:** The entire session-tracker initialization module operates on a fully untyped client reference. This means any call to `this.client.app?.log?.(...)`, `this.client.session.*`, or any SDK surface method is unchecked at compile time. A typo in a method name or incorrect argument shape will only fail at runtime.
-- **Fix:** Define a minimal `ClientLike` interface matching the actual SDK surface used by session-tracker (approximately: `{ app?: { log?: (entry: LogEntry) => void }; session?: { get: (...args: any[]) => Promise<unknown>; messages: (...args: any[]) => Promise<unknown> } }`). Remove the `eslint-disable` and `any` annotation.
+> Generated: 2026-06-02
+> Source: hm-codebase-mapper (concerns focus)
+> Context: Hivemind runtime composition engine — 262 source files, 258 test files
 
 ---
 
-## 2. Technical Debt (P1)
+## Table of Contents
 
-### 2.1 Type Safety Gaps — 12 `as any` Casts
-
-**File group A: `src/tools/delegation/delegation-status.ts`**
-
-| Line | Code | Reason |
-|------|------|--------|
-| 148 | `(childRecord.status as any)` | Status string cast to `any` for terminal kind mapping |
-| 169 | `JSON.parse(raw) as any` | Manifest JSON parsed without schema validation |
-| 174 | `child as any` | Manifest child entry untyped |
-| 250 | `JSON.parse(raw) as any` | Second manifest parse without schema |
-| 266 | `child as any` | Second manifest child untyped |
-| 279 | `child as any` | Third manifest child untyped |
-| 292 | `child as any` | Fourth manifest child untyped |
-
-**File group B: `src/coordination/delegation/coordinator.ts`**
-
-| Line | Code | Reason |
-|------|------|--------|
-| 92 | `(msg as any)?.info ?? msg` | SDK message shape not typed |
-| 212 | `(m as any)?.info?.role ?? (m as any)?.role` | Dual fallback for role extraction |
-| 216 | `(lastAssistantMessage as any)?.info?.error ?? (lastAssistantMessage as any)?.error` | Error shape not typed |
-| 219 | `(errorField as any).message \|\| JSON.stringify(errorField)` | Error field type unknown |
-
-**File group C: `src/shared/session-api.ts`**
-
-| Line | Code | Reason |
-|------|------|--------|
-| 235 | `} as any))` | SDK showToast body shape mismatch |
-
-- **Impact:** The hierarchy-manifest.json parsing in `delegation-status.ts` is the highest risk — a malformed manifest file will produce silently incorrect delegation status results because all field access goes through `any`. The coordinator `as any` casts on SDK message objects mean that if the SDK changes its message shape, the error only surfaces at runtime.
-- **Fix:** Create a `HierarchyManifest` interface and a `ChildEntry` interface in `src/features/session-tracker/types.ts` and use them for all manifest parsing. For SDK message objects, create a `SdkMessageLike` type. Eliminate all 12 casts within one phase.
-
-### 2.2 ESLint Suppressions
-
-- `src/shared/session-api.ts:234` — `eslint-disable-next-line @typescript-eslint/no-explicit-any`
-- `src/features/session-tracker/initialization.ts:36` — `eslint-disable-next-line @typescript-eslint/no-explicit-any`
-- **Impact:** Two explicit eslint-disable comments reduce lint enforcement. The tsconfig has `noUnusedLocals` and `noUnusedParameters` set to `true` (strict mode), but `as any` bypasses all type safety that those rules provide.
-- **Fix:** Resolve the underlying type mismatches (see 2.1 above) and remove both suppressions.
-
-### 2.3 Module Size Violations (Max 500 LOC Rule)
-
-| File | LOC | Limit | Over By |
-|------|-----|-------|---------|
-| `src/features/session-tracker/capture/event-capture.ts` | 1062 | 500 | +562 (112%) |
-| `src/tools/session/execute-slash-command.ts` | 629 | 500 | +129 |
-| `src/features/session-tracker/index.ts` | 622 | 500 | +122 |
-| `src/features/session-tracker/persistence/child-writer.ts` | 603 | 500 | +103 |
-| `src/tools/delegation/delegation-status.ts` | 590 | 500 | +90 |
-| `src/plugin.ts` | 554 | 500 | +54 |
-| `src/features/session-tracker/tool-delegation.ts` | 502 | 500 | +2 |
-| `src/features/session-tracker/capture/tool-capture.ts` | 502 | 500 | +2 |
-| `src/coordination/delegation/manager-runtime.ts` | 491 | 500 | — (within) |
-| `src/tools/config/configure-primitive.ts` | 490 | 500 | — (within) |
-| `src/coordination/delegation/coordinator.ts` | 481 | 500 | — (within) |
-| `src/task-management/continuity/index.ts` | 467 | 500 | — (within) |
-
-- **Impact:** `event-capture.ts` at 1062 LOC is the most severe — it handles `session.idle`, `session.error`, `session.deleted`, `session.next.text.ended`, `session.status`, SDK fallback logic, child session routing, backfill, and pending registry management all in one class. This makes it extremely difficult to test in isolation and nearly impossible to refactor safely.
-- **Fix:** Extract event handlers into dedicated handler classes: `SessionIdleHandler`, `SessionErrorHandler`, `SessionDeletedHandler`. Extract SDK fallback logic into `SdkFallbackResolver`. Extract backfill logic into `BackfillService`. Target: `event-capture.ts` → 4 handler files averaging ~200 LOC each.
-
-### 2.4 Deprecated Callback Pattern in `ChildWriter.enqueueWrite`
-
-- **File:** `src/features/session-tracker/persistence/child-writer.ts:200-224`
-- **Code:** The `enqueueWrite` method uses `.then().catch().then()` promise chaining and manually manages a `writeQueues` Map. Line 223: `this.writeQueues.set(queueKey, next.catch(() => {}))` — the queue entry is set to a promise that swallows errors.
-- **Impact:** The queue chaining pattern is fragile: if the initial `current` promise is `undefined` (Map miss), it defaults to `Promise.resolve()`, but the subsequent `.catch()` on line 223 replaces the entry with a new chain that discards errors. This means if a write fails and is re-enqueued, the original error is lost from the queue tracking.
-- **Fix:** Replace with a dedicated `SerialWriteQueue` class that exposes `enqueue(fn, retryData)` with proper error propagation and retry queue integration. The `SessionIndexWriter` has a similar pattern at `src/features/session-tracker/persistence/session-index-writer.ts:112-128`.
+1. [MODULE SIZE VIOLATIONS](#1-module-size-violations)
+2. [TEST COVERAGE GAPS](#2-test-coverage-gaps)
+3. [OPEN BUGS & FIX COMMENT MARKERS](#3-open-bugs--fix-comment-markers)
+4. [TYPE SAFETY CONCERNS](#4-type-safety-concerns)
+5. [ARCHITECTURAL VIOLATIONS](#5-architectural-violations)
+6. [SECURITY CONCERNS](#6-security-concerns)
+7. [ERROR HANDLING & RESILIENCE](#7-error-handling--resilience)
+8. [DEPENDENCY & BUILD CONCERNS](#8-dependency--build-concerns)
+9. [MAINTENANCE & TECHNICAL DEBT](#9-maintenance--technical-debt)
+10. [PERFORMANCE BOTTLENECKS](#10-performance-bottlenecks)
+11. [CQRS & SURFACE BOUNDARY CONCERNS](#11-cqrs--surface-boundary-concerns)
+12. [CONFIGURATION & SCHEMA CONCERNS](#12-configuration--schema-concerns)
+13. [CLI & BIN MAINTENANCE](#13-cli--bin-maintenance)
+14. [RISK REGISTER](#14-risk-register)
 
 ---
 
-## 3. Security Concerns (P1)
+## 1. MODULE SIZE VIOLATIONS
 
-### 3.1 Console Logging in Production Code
+**Governance rule:** Max module size = 500 LOC. The following source files violate this limit:
 
-- **Files and Lines:**
-  - `src/tools/session/execute-slash-command.ts:486` — `console.error(\`[Harness] session.command dispatch failed: ${message}\`)`
-  - `src/tools/session/dispatch-command.ts:112` — `console.error(\`[Harness] Slash command dispatch failed: ${message}\`)`
-  - `src/tools/session/resolve-command.ts:23` — `console.log(...)` (in JSDoc but actual code)
-  - `src/features/session-tracker/persistence/retry-queue.ts:326` — `console.error(...)` with session ID and error details
-  - `src/features/session-tracker/persistence/session-index-writer.ts:120` — `console.error(...)` with session ID
-  - `src/features/session-tracker/persistence/session-index-writer.ts:225` — `console.warn(...)` with session ID
-- **Impact:** Production `console.error`/`console.warn` output may include session IDs, file paths, delegation IDs, and error stack traces that could be captured by log aggregation systems or exposed in terminal output. The `dispatch-command.ts:112` case includes the full error message which may contain file paths from `node:fs` errors.
-- **Fix:** Replace all `console.error`/`console.warn` in non-test code with the structured logger pattern: `void client.app?.log?.({ body: { service: "<module-name>", level: "warn", message: "[Harness] ..." } })`. For files that don't have access to the `client` reference, thread it through dependencies or use the existing `getConfig()` pattern for service-level logging.
+| File | LOC | Over By |
+|------|-----|---------|
+| `src/tools/delegation/delegation-status.ts` | 780 | +280 |
+| `src/plugin.ts` | 756 | +256 |
+| `src/features/session-tracker/persistence/child-writer.ts` | 681 | +181 |
+| `src/tools/session/execute-slash-command.ts` | 668 | +168 |
+| `src/features/session-tracker/index.ts` | 636 | +136 |
+| `src/coordination/delegation/coordinator.ts` | 561 | +61 |
+| `src/features/tmux/tmux-multiplexer.ts` | 553 | +53 |
+| `src/coordination/delegation/manager-runtime.ts` | 510 | +10 |
+| `src/features/session-tracker/capture/tool-capture.ts` | 502 | +2 |
 
-### 3.2 Unsanitized Session ID in File Paths
+**Impact:**
+- `delegation-status.ts` (780 LOC) is the largest module — a single tool file that handles status polling, list queries, find-stackable, and control actions. Should be decomposed into separate reader modules.
+- `plugin.ts` (756 LOC) is the composition root — densely wires 80+ imports. This is the highest-risk file in the entire codebase. Any import chain breakage here cascades to the entire system.
+- `child-writer.ts` (681 LOC) handles session-tracker child persistence. Complex write logic with dual-write pattern. Refactoring into reader/writer halves or dedicated orphan/backfill modules would reduce risk.
 
-- **Files:**
-  - `src/features/session-tracker/index.ts:132` — `resolve(sessionTrackerRoot(this.projectRoot), sessionID, \`${sessionID}.md\`)`
-  - `src/features/session-tracker/persistence/orphan-quarantine.ts:47` — `join(this.trackerRoot, sessionID)`
-  - `src/features/session-tracker/persistence/orphan-quarantine.ts:60` — `join(this.quarantineDir, sessionID)`
-  - `src/tools/delegation/delegation-status.ts:168` — `safeSessionPath(projectRoot, rootSessionId, "hierarchy-manifest.json")`
-- **Impact:** If a `sessionID` value containing `../` or absolute path segments is injected into the system (via a malicious or malformed delegation record), it could read or write files outside the expected directory tree. While session IDs are typically SDK-generated UUIDs, the codebase does not validate this assumption at the file I/O boundary.
-- **Fix:** Add a `validateSessionId(id: string): boolean` utility that checks for `^[a-zA-Z0-9_-]+$` (no slashes, dots, or special characters) and call it before any file path construction that includes a session ID. Place the utility in `src/shared/helpers.ts`.
-
-### 3.3 Synchronous `readFileSync` in Sidecar Module
-
-- **File:** `src/sidecar/readonly-state.ts:93`
-- **Code:** `return readFileSync(absolutePath, "utf8")`
-- **Impact:** The sidecar module enforces read-only access, but uses blocking synchronous file I/O. If this is called from an async context (e.g., a Next.js route handler), it blocks the event loop. The `isCanonicalStatePath` guard at line 55 is also synchronous and relies on `path.relative()` which is safe from traversal, but the `readFileSync` at line 93 means a large file read blocks the entire thread.
-- **Fix:** Add an async version `readCanonicalStateAsync` using `fs.promises.readFile` and prefer it in all async call sites. Keep the sync version as fallback for initialization contexts only.
-
-### 3.4 Full `process.env` Spread in Governance Session Git Commit
-
-- **File:** `src/features/governance-engine/create-governance-session.ts:114-117`
-- **Code:**
-  ```typescript
-  execSync(
-    `git add -A && git commit -m "phase(24.3.1): pre-governance handoff - ${sessionTitle}" --no-verify`,
-    { cwd, env: { ...process.env } },
-  )
-  ```
-- **Impact:** The full `process.env` is passed to `execSync` for a git commit. While git itself doesn't read sensitive env vars, the `execSync` call could be intercepted or the environment could be logged. The `--no-verify` flag also bypasses git hooks, which may be intentional but removes an additional safety layer.
-- **Fix:** Use a minimal env: `env: { ...process.env, GIT_AUTHOR_NAME: "HiveMind", GIT_AUTHOR_EMAIL: "hivemind@local" }` or better yet, extract git operations to a dedicated utility that doesn't inherit the full parent environment.
+**Recommendation:** Decompose delegation-status.ts into `delegation-status-reader.ts` (status queries), `delegation-status-list.ts` (list/filter), `delegation-status-stack.ts` (find-stackable). Trim plugin.ts by extracting hook registration into dedicated `hook-registry.ts`.
 
 ---
 
-## 4. Performance Issues (P2)
+## 2. TEST COVERAGE GAPS
 
-### 4.1 Repeated JSON.parse Without Memoization
+### 2.1 No Test Coverage — High-Risk Areas
 
-- **File:** `src/tools/delegation/delegation-status.ts:169,250`
-- **Code:** `const manifest = JSON.parse(raw) as any` — called multiple times for the same `rootSessionId` when resolving children from both session-tracker and legacy persistence.
-- **Impact:** When checking delegation status for a parent with many children, the same `hierarchy-manifest.json` file is read from disk and parsed multiple times. Each parse allocates new objects and triggers GC pressure.
-- **Fix:** Add a per-invocation LRU cache keyed by `(projectRoot, rootSessionId)` that returns the parsed manifest. Clear after each tool execution. Alternatively, consolidate the two `getSessionTrackerChildren` and `getLegacyChildren` methods into a single method that parses the manifest once.
+| Module | Risk Level | LOC | Notes |
+|--------|-----------|-----|-------|
+| `src/plugin.ts` | **CRITICAL** | 756 | Composition root — no direct tests |
+| `src/hooks/lifecycle/core-hooks.ts` | **HIGH** | ~200 | Core lifecycle wiring — untested |
+| `src/hooks/lifecycle/session-hooks.ts` | **HIGH** | 423 | Session lifecycle hooks — untested |
+| `src/hooks/guards/tool-guard-hooks.ts` | **HIGH** | ~200 | Tool execution guards — untested |
+| `src/hooks/composition/cqrs-boundary.ts` | **HIGH** | ~100 | CQRS boundary enforcement — untested |
+| `src/coordination/delegation/manager.ts` | **HIGH** | 409 | DelegationManager class — untested |
+| `src/coordination/delegation/state-machine.ts` | **HIGH** | 445 | State machine for delegation — untested |
+| `src/coordination/delegation/manager-runtime.ts` | **HIGH** | 510 | Runtime manager — untested |
+| `src/coordination/completion/detector.ts` | **HIGH** | ~150 | Completion detection — untested |
+| `src/routing/session-entry/intake-gate.ts` | **HIGH** | ~200 | Session entry intake — untested |
+| `src/routing/behavioral-profile/profiles.ts` | **MEDIUM** | ~100 | Profile definitions — untested |
+| `src/config/compiler.ts` | **MEDIUM** | 410 | Config compilation — untested |
+| `src/config/subscriber.ts` | **MEDIUM** | ~200 | Config subscriber — untested |
 
-### 4.2 Synchronous File I/O in Bootstrap Init/Recover
+### 2.2 Schema-Kernel — Zero Test Coverage (15 files, 2,469 LOC)
 
-- **Files:**
-  - `src/tools/config/bootstrap-init.ts:1` — Uses `readFileSync`, `writeFileSync`, `mkdirSync`, `cpSync`, `rmSync`
-  - `src/tools/config/bootstrap-recover.ts:1` — Uses `accessSync`, `cpSync`, `mkdirSync`, `renameSync`, `rmSync`
-  - `src/tools/config/bootstrap-init.ts:113-136` — `mkdirSync` + `writeFileSync` in loops
-- **Impact:** Bootstrap/init operations use entirely synchronous file system APIs. While these run once per session startup, they block the event loop during a critical initialization window. The `cpSync` at `bootstrap-init.ts:1` and `bootstrap-recover.ts:1` may copy entire directory trees synchronously.
-- **Fix:** This is acceptable for CLI commands (`init`, `recover`, `doctor`) since they run synchronously by design. However, `bootstrap-init` is also registered as a plugin tool (line 56 of `plugin.ts`: `createBootstrapInitTool`). When invoked as a tool, it should use async APIs. Split the tool-exposed path to use `fs.promises`.
+Every file under `src/schema-kernel/` lacks dedicated tests:
+- `hivemind-configs.schema.ts` (464 LOC) — largest schema file
+- `agent-work-contract.schema.ts` (155 LOC)
+- `agent-frontmatter.schema.ts` (168 LOC)
+- `session-tracker.schema.ts` (141 LOC)
+- `prompt-enhance.schema.ts` (169 LOC)
+- 10 additional smaller schema files
 
-### 4.3 Unbounded Timer Accumulation in CompletionDetector
+**Risk:** Schema validation logic is the first line of defense for tool inputs. Without tests, schema changes can silently accept invalid data or reject valid data.
 
-- **File:** `src/coordination/completion/detector.ts:35`
-- **Code:** `private stabilityTimers = new Map<string, ReturnType<typeof setTimeout>>()`
-- **Impact:** Each `recordEvent` call (line 76) creates a new `setTimeout` for stability detection. If many delegations are active simultaneously, the `stabilityTimers` map grows without bound. The timer is only cleared in the `cancel` method (line 165) and the timeout handler (line 185). If a delegation's session events stop arriving (e.g., SDK connection drops), the timer for that delegation remains in memory until the 120s timeout fires.
-- **Fix:** Add a `pruneStaleTimers(maxAgeMs: number)` method that removes timers older than `maxAgeMs` and call it periodically from the monitor loop.
+### 2.3 Feature Modules Without Test Directories
 
-### 4.4 `execSync` Blocking in Governance Session Creation
+The following features have **no dedicated test directory**:
 
-- **File:** `src/features/governance-engine/create-governance-session.ts:114`
-- **Code:** `execSync(\`git add -A && git commit ...\`)`
-- **Impact:** The governance session creation uses `execSync` for a git commit, which blocks the entire event loop during the git add + commit operation. In large repositories, this could take several seconds, blocking all other operations in the OpenCode runtime.
-- **Fix:** Replace with `execFile` (async) from `node:child_process` and wrap in a try/catch that returns the error to the caller. Or use `simple-git` library for a non-blocking API.
+| Feature | Source Files | Risk |
+|---------|-------------|------|
+| `features/auto-loop/` | 2 files | MEDIUM |
+| `features/background-command/` | 6 files | MEDIUM |
+| `features/bootstrap/` | 8+ files | HIGH |
+| `features/governance/` | 1 file | MEDIUM |
+| `features/governance-engine/` | 4 files | HIGH |
+| `features/prompt-packet/` | 2 files | LOW |
+| `features/ralph-loop/` | 2 files | MEDIUM |
+| `features/doc-intelligence/` | 3 files | MEDIUM |
+| `features/tmux/` | 6 files | HIGH |
+| `features/sdk-supervisor/` | 1 file | LOW |
 
----
+### 2.4 Coordination Modules — Sparse Coverage
 
-## 5. Code Quality Issues (P2)
+- `coordination/delegation/` — only `manager.ts` has a legacy test stub (`delegation-manager.test.ts` at 2,976 LOC — bloated, likely includes integration tests)
+- `coordination/command-delegation/handler.ts` — NO tests
+- `coordination/spawner/auto-loop.ts` — NO dedicated tests (auto-loop.test.ts exists in lib but may be incomplete)
+- `coordination/sdk-delegation/handler.ts` — NO tests
 
-### 5.1 Empty Catch Blocks Hiding Real Errors
+### 2.5 Cli Module — Near Zero Coverage
 
-14 locations where `catch { }` or `catch { /* comment */ }` discards errors without logging:
+- `cli/index.ts`, `cli/router.ts`, `cli/renderer.ts`, `cli/discovery.ts` — NO tests
+- `cli/ui/prompts.ts` — NO tests
+- `cli/commands/help.ts`, `init.ts`, `recover.ts`, `doctor.ts`, `version.ts` — NO tests
 
-| File | Line | Context |
-|------|------|---------|
-| `src/features/session-tracker/persistence/child-writer.ts` | 223 | Queue promise chain |
-| `src/features/session-tracker/capture/event-capture.ts` | 325 | backfillChildTurnsFromSdk |
-| `src/features/session-tracker/capture/event-capture.ts` | 373 | appendAssistantTurn |
-| `src/features/session-tracker/capture/event-capture.ts` | 422 | session fetch failed |
-| `src/features/session-tracker/capture/event-capture.ts` | 443 | backfillChildTurnsFromSdk |
-| `src/features/session-tracker/capture/event-capture.ts` | 500 | backfillChildTurnsFromSdk |
-| `src/features/session-tracker/initialization.ts` | 151 | Recovery/orphan cleanup |
-| `src/tools/session/session-tracker.ts` | 105 | Unreadable child file |
-| `src/tools/session/session-tracker.ts` | 107 | No hierarchy manifest |
-| `src/tools/session/session-tracker.ts` | 311 | Skip unreadable |
-| `src/tools/session/session-hierarchy.ts` | 280 | Fallback failed |
-| `src/tools/session/session-context.ts` | 225 | Frontmatter optional |
-| `src/coordination/delegation/state-machine.ts` | 441 | Abort session failure |
-| `src/config/compiler.ts` | 359 | Rollback errors |
+**Risk:** CLI is the user-facing surface. Untested CLI commands will produce confusing or broken UX errors.
 
-- **Impact:** These empty catches are categorized into two groups: (a) "acceptable" where the fallback is a read-only operation that failing is expected (e.g., `session-tracker.ts:105` — file doesn't exist yet), and (b) "concerning" where a write or critical operation fails silently (e.g., `event-capture.ts:373` — assistant turn append fails, `child-writer.ts:223` — queue error disappears). The concerning group means production data loss is possible without any signal.
-- **Fix:** For the "acceptable" group, add a comment explaining why the error is intentionally discarded. For the "concerning" group, add `console.warn` or structured logging. Minimum target: zero silent catches on write operations.
+### 2.6 Shared Utilities — Gap Files
 
-### 5.2 Inconsistent Error Shape Handling
-
-- **File:** `src/coordination/delegation/coordinator.ts:212-219`
-- **Code:**
-  ```typescript
-  const role = (m as any)?.info?.role ?? (m as any)?.role
-  // ...
-  const errorField = (lastAssistantMessage as any)?.info?.error ?? (lastAssistantMessage as any)?.error
-  if (errorField) {
-    const errorMsg = typeof errorField === "object" && errorField !== null
-      ? ((errorField as any).message || JSON.stringify(errorField))
-      : String(errorField)
-  ```
-- **Impact:** This triple-fallback pattern (`info.role ?? role`, `info.error ?? error`, `error.message || JSON.stringify(error)`) indicates the SDK message shape has changed at least once, and the code has been patched with new fallbacks rather than updating the old code. The `JSON.stringify(errorField)` fallback at line 219 means that if the error is a complex object, the stringified version is used as the error message — potentially producing very long, unhelpful error strings.
-- **Fix:** Create a `SdkMessageShape` type union that covers all known SDK message formats. Use `zod` to validate at the boundary (the project already has `zod` as a dependency). Replace the chain with a single typed extraction.
-
-### 5.3 Command Delegation Env Propagation (Partially Fixed)
-
-- **File:** `src/coordination/command-delegation/handler.ts:375-381`
-- **Code:** The `buildMinimalEnv` method now uses an allowlist: `const allowedKeys = ["PATH", "HOME", "TERM", "LANG", "PWD"]`
-- **Status:** PARTIALLY FIXED. The allowlist is correct and safe for the `buildMinimalEnv` path. However, the `doctor.ts:244` still passes `{ ...process.env, CI: "true" }` to `spawnSync` — acceptable for a diagnostic tool but not for production delegation paths.
-- **Remaining risk:** The `create-governance-session.ts:116` still passes `{ ...process.env }` to `execSync` (see concern 3.4 above).
+- `shared/tool-helpers.ts` — NO tests
+- `shared/errors/commands.ts` — NO tests
 
 ---
 
-## 6. Architectural Fragility (P2)
+## 3. OPEN BUGS & FIX COMMENT MARKERS
 
-### 6.1 Session Tracker as a God Module
+### 3.1 BUG-5: Parent-Child Hierarchy Race Condition
 
-- **Files:** `src/features/session-tracker/` (entire directory, 6+ files exceeding 500 LOC)
-- **Why fragile:** The session-tracker handles event capture, child session routing, backfill from SDK, hierarchy indexing, persistence (write queues, retry queues, orphan quarantine), and recovery — all tightly coupled. A change to event capture (`event-capture.ts:1062 LOC`) risks breaking persistence (`child-writer.ts:603 LOC`) because they share the same `pendingRegistry`, `sessionIndexWriter`, and `childWriter` references.
-- **What could break:** Adding a new event type (e.g., `session.message.updated`) requires modifying `event-capture.ts` which is already over capacity. The event handler methods (`handleSessionIdle`, `handleSessionError`, `handleSessionDeleted`) each have 100+ LOC with 5-10 `await` calls and multiple catch blocks.
-- **How to improve:** Apply the Single Responsibility Principle — extract each event handler into its own class, inject the shared writers via dependency injection, and reduce `event-capture.ts` to an event router that delegates to handler classes.
+**Location:** `src/features/session-tracker/tool-delegation.ts:283`
+**File:** `src/features/session-tracker/persistence/session-index-writer.ts:222`
 
-### 6.2 Delegation Status Tool Depends on Two Persistence Formats
+```
+// BUG-5 FIX: Parent not yet in on-disk hierarchy (race between in-memory
+// registration and filesystem flush)
+```
 
-- **File:** `src/tools/delegation/delegation-status.ts` (590 LOC)
-- **Why fragile:** The tool reads delegation status from both the new session-tracker format (`hierarchy-manifest.json`) and the legacy persistence format (`delegations.json`). Each format has different JSON shapes, parsed via `as any`. The tool also has a third code path for direct delegation records.
-- **What could break:** If either persistence format changes shape, the `as any` casts silently produce incorrect delegation status. There is no integration test that validates the end-to-end flow from delegation creation → persistence → status read.
-- **How to improve:** Create a `DelegationStatusReader` interface with two implementations: `SessionTrackerStatusReader` and `LegacyPersistenceStatusReader`. Add Zod schemas for each format and validate at the boundary.
+**Severity:** MEDIUM-HIGH. A race condition exists where an L1 parent session may not yet be registered in the on-disk hierarchy when a child session attempts to write. The code appears to have a workaround, but the underlying race persists.
 
-### 6.3 Plugin.ts as Monolithic Composition Root
+### 3.2 BUG-3: Child Session Response Capture Gap
 
-- **File:** `src/plugin.ts` (554 LOC)
-- **Why fragile:** This file imports 60+ modules and wires them together. Adding a new tool requires modifying this file, which increases merge conflict risk and cognitive load. The `deps` object at line 377 is a single mega-object with 12+ properties.
-- **What could break:** The order of initialization matters (e.g., `delegationManager.setCompletionDetector` at line 328 must happen after lifecycle manager creation at line 306). Reordering any initialization step can break the runtime.
-- **How to improve:** Group tool registrations by domain (delegation, session, config, hivemind) into separate `registerXxxTools()` functions. Group hook factories similarly. Reduce the `deps` object to domain-specific sub-objects.
+**Location:** `src/features/session-tracker/tool-delegation.ts:343,359`
 
----
+```
+// BUG-3 FIX: Extract the child agent's final assistant response and append it
+// BUG-3 FIX: Also append as a turn so lastMessage is set and the turn
+```
 
-## 7. Test Coverage Gaps (P2)
+**Severity:** MEDIUM. Child agent responses may not be properly captured in the turn history. The fix appends the response as a synthetic turn, which works but creates non-standard message structures that other parts of the system may not handle correctly.
 
-### 7.1 Untested Core Modules
+### 3.3 Test File: Debug Log Left In
 
-| Module | Source Files | Tests | Risk |
-|--------|-------------|-------|------|
-| `src/hooks/guards/governance-block.ts` | 1 file | None | **High** — governance blocking logic is untested |
-| `src/hooks/lifecycle/core-hooks.ts` | 1 file | None | **High** — core lifecycle hooks untested |
-| `src/hooks/lifecycle/session-hooks.ts` | 1 file | None | **High** — session event handling untested |
-| `src/hooks/observers/event-observers.ts` | 1 file | None | **Medium** — observer factories untested |
-| `src/hooks/observers/session-entry-consumer.ts` | 1 file | None | **Medium** — session entry consumer untested |
-| `src/hooks/observers/session-main-consumer.ts` | 1 file | None | **Medium** — session main consumer untested |
-| `src/hooks/observers/delegation-consumer.ts` | 1 file | None | **Medium** — delegation consumer untested |
-| `src/hooks/observers/session-tracker-consumer.ts` | 1 file | None | **Medium** — session tracker consumer untested |
-| `src/hooks/transforms/tool-after-workflow.ts` | 1 file | None | **Medium** — workflow transform untested |
-| `src/hooks/composition/cqrs-boundary.ts` | 1 file | None | **Low** — boundary guard untested |
-| `src/config/compiler.ts` | 1 file | `tests/lib/config-compiler.test.ts` | **Low** — has tests |
+**Location:** `tests/tools/delegation-status.test.ts:160`
+```
+console.log("[DEBUG TEST RESULT]", result)
+```
 
-### 7.2 Total Coverage Gap Analysis
+**Severity:** LOW. Stale debug logging in committed test file creates noise.
 
-- **Source files:** 228 TypeScript files in `src/`
-- **Test files:** ~203 test files in `tests/`
-- **Estimated source files without direct test coverage:** ~80-100 files
-- **Highest risk untested paths:**
-  1. All hooks modules (`src/hooks/`) — 0 test files for 10+ source files
-  2. `src/coordination/spawner/` — only 3 of 7+ files have tests
-  3. `src/features/governance-engine/` — only 2 test files for 4+ source files
-  4. `src/task-management/journal/` — only `journal-query.test.ts` and `journal-replay.test.ts` cover 4 source files
+### 3.4 Test File: Documented Known Bug
 
-### 7.3 Missing Integration Tests for Session Tracker Race Conditions
+**Location:** `tests/lib/notification-handler.test.ts:19`
+```
+*- Removes `appendPrompt` (BUG — pollutes user input)
+```
 
-- **Context:** The existing CONCERNS.md documents BUG-3 and BUG-5 fixes in the session-tracker (race conditions in child session registration and SDK message fallback).
-- **File:** `src/features/session-tracker/tool-delegation.ts:276,332,348` — race condition fixes
-- **File:** `src/features/session-tracker/persistence/session-index-writer.ts:222` — BUG-5 fix
-- **Risk:** These fixes are verified by unit tests but lack integration tests that exercise the full delegation → event capture → persistence → status read flow with timing-dependent operations.
-- **Fix:** Create `tests/integration/session-tracker-race-conditions.test.ts` that uses `vi.useFakeTimers()` to simulate concurrent `session.idle` and `recordChildTaskDelegation` events.
+**Severity:** MEDIUM. `appendPrompt` call removed due to input pollution bug. This means certain notifications may not be displayed.
 
 ---
 
-## 8. Dependency Concerns (P2)
+## 4. TYPE SAFETY CONCERNS
 
-### 8.1 `bun-pty` in dependencies (not optionalDependencies)
+### 4.1 `as unknown` Cast Patterns (27 occurrences)
 
-- **Package:** `bun-pty@^0.4.8` listed under `dependencies` in `package.json:44`
-- **Risk:** `bun-pty` is a Bun-specific PTY library. The project targets `node >= 20.0.0` (package.json:94). While the runtime gracefully falls back to headless `node:child_process` (per AGENTS.md Phase 16.2.1), `bun-pty` in `dependencies` means `npm install` on Node will attempt to install it and may fail or produce warnings. The type declarations at `src/features/background-command/pty/bun-pty.d.ts` exist to handle this, but it's a fragile arrangement.
-- **Fix:** Move `bun-pty` from `dependencies` to `optionalDependencies` in `package.json`. This is already the intent per the AGENTS.md documentation but was not reflected in the actual manifest.
+The codebase uses `as unknown` type casts extensively, primarily when:
+- Deserializing JSON from disk (`JSON.parse(...) as unknown`)
+- Bridging SDK types that don't match exactly
+- Working with `readdir` directory entries
 
-### 8.2 `bun-types` in dependencies
+**Risk:** These casts bypass TypeScript's type safety entirely. A schema change in the serialized data will not be caught at compile time.
 
-- **Package:** `bun-types@^1.3.14` listed under `dependencies` in `package.json:45`
-- **Risk:** `bun-types` provides TypeScript types for Bun-specific APIs. It should be a devDependency (used only at compile time for type-checking), not a runtime dependency. Shipping it in the published npm package increases install size unnecessarily.
-- **Fix:** Move `bun-types` from `dependencies` to `devDependencies`.
+**High-risk locations:**
+- `src/task-management/continuity/index.ts:275` — `JSON.parse(raw) as unknown` — continuity data deserialization
+- `src/task-management/trajectory/ledger.ts:48` — `JSON.parse(...) as unknown` — trajectory data deserialization
+- `src/config/workflow/workflow-persistence.ts:113` — workflow state deserialization
+- `src/shared/workspace-runtime-policy.ts:32` — policy deserialization
+- `src/shared/session-api.ts:173` — SDK response parsing
+- `src/features/session-tracker/persistence/hierarchy-index.ts:99` — fs directory entry casting
 
-### 8.3 Zod v4 Upgrade
+### 4.2 `as Record<string, unknown>` Usage (8+ locations)
 
-- **Package:** `zod@^4.4.3` in `package.json:48`
-- **Risk:** The project uses Zod v4 which is a major version upgrade from v3. While the codebase has been updated, some patterns like `z.prettifyError(parsed.error)` at `src/tools/delegation/delegate-task.ts:35` are Zod v4-specific. If the Zod team introduces breaking changes in v4.x minor releases, multiple schema files would need updates.
-- **Fix:** Pin to a specific minor version (e.g., `zod@~4.4.3`) instead of using caret range. The `stack-l3-zod` skill documents the full v4 API for reference.
+Pattern where input objects are force-cast to generic record types, losing all structural type information. Found in:
+- `src/features/session-tracker/tool-delegation.ts`
+- `src/features/session-tracker/child-recorder.ts`
+- `src/features/session-tracker/capture/tool-capture.ts`
+- `src/features/session-tracker/capture/child-backfiller.ts`
+- `src/tools/session/execute-slash-command.ts`
+- `src/tools/hivemind/hivemind-session-view.ts`
 
-### 8.4 Peer Dependency Alignment
+### 4.3 Unused/unknown Parameters in catch blocks
 
-- **Package:** `@opencode-ai/plugin@^1.15.10` as both peer and dev dependency, `@opencode-ai/sdk@^1.15.10` as a dependency
-- **Risk:** The peer dependency version must match the host OpenCode version. If a user installs Hivemind with an older OpenCode version that has a different SDK surface, the `as any` casts in `coordinator.ts` (see 2.1) will mask the incompatibility at compile time but fail at runtime.
-- **Fix:** Add a runtime version check in `plugin.ts` that validates the SDK version matches expectations at initialization time.
-
----
-
-## 9. Priority Summary
-
-| # | Issue | Severity | Effort | Files Affected |
-|---|-------|----------|--------|----------------|
-| 1.1 | Duplicate PermissionAction union member | P0 | XS | `src/shared/types.ts` |
-| 1.2 | Silent error swallowing `.catch(() => {})` | P0 | S | `src/features/session-tracker/capture/event-capture.ts`, `child-writer.ts`, `initialization.ts` |
-| 1.3 | `ClientLike = any` type erasure | P0 | M | `src/features/session-tracker/initialization.ts` |
-| 2.1 | 12 `as any` casts (type safety gaps) | P1 | L | `delegation-status.ts`, `coordinator.ts`, `session-api.ts` |
-| 2.2 | ESLint suppressions | P1 | S | `session-api.ts`, `initialization.ts` |
-| 2.3 | Module size violations (8 files >500 LOC) | P1 | L | `event-capture.ts`, `execute-slash-command.ts`, `index.ts`, `child-writer.ts`, etc. |
-| 2.4 | Fragile promise chain in ChildWriter | P1 | M | `src/features/session-tracker/persistence/child-writer.ts` |
-| 3.1 | Console logging in production code | P1 | S | `execute-slash-command.ts`, `dispatch-command.ts`, `retry-queue.ts`, `session-index-writer.ts` |
-| 3.2 | Unsanitized session ID in file paths | P1 | S | `session-tracker/index.ts`, `orphan-quarantine.ts`, `delegation-status.ts` |
-| 3.3 | Synchronous readFileSync in sidecar | P1 | S | `src/sidecar/readonly-state.ts` |
-| 3.4 | Full process.env spread in governance git commit | P1 | S | `src/features/governance-engine/create-governance-session.ts` |
-| 4.1 | Repeated JSON.parse without memoization | P2 | S | `delegation-status.ts` |
-| 4.2 | Synchronous FS in bootstrap-init tool | P2 | M | `bootstrap-init.ts` |
-| 4.3 | Unbounded timer accumulation | P2 | S | `src/coordination/completion/detector.ts` |
-| 4.4 | execSync blocking in governance session creation | P2 | S | `src/features/governance-engine/create-governance-session.ts` |
-| 5.1 | 14 empty catch blocks | P2 | S | `event-capture.ts`, `child-writer.ts`, `session-tracker.ts`, etc. |
-| 5.2 | Inconsistent error shape handling | P2 | M | `src/coordination/delegation/coordinator.ts` |
-| 6.1 | Session tracker god module | P2 | XL | `src/features/session-tracker/` |
-| 6.2 | Dual persistence format dependency | P2 | L | `src/tools/delegation/delegation-status.ts` |
-| 6.3 | Plugin.ts monolithic composition | P2 | L | `src/plugin.ts` |
-| 7.1 | Untested hooks modules (0 coverage) | P2 | L | `src/hooks/` (10+ files) |
-| 7.2 | ~80-100 source files without tests | P2 | XL | Various |
-| 7.3 | Missing integration tests for race conditions | P2 | M | `src/features/session-tracker/` |
-| 8.1 | bun-pty in dependencies (not optional) | P2 | XS | `package.json` |
-| 8.2 | bun-types in dependencies (should be dev) | P2 | XS | `package.json` |
-| 8.3 | Zod v4 pinned with caret range | P2 | S | `package.json` |
-| 8.4 | No runtime SDK version validation | P2 | S | `src/plugin.ts` |
-
-**Legend:** XS = <1 hour, S = 1-4 hours, M = 4-8 hours, L = 1-3 days, XL = 3+ days
+126 `catch` blocks across the codebase, many using generic `catch (err)` without proper error type narrowing. Several patterns observed:
+- Generic `catch (err)` without type guard — **93 occurrences**
+- `catch (caughtError: unknown)` — better pattern, **20 occurrences**
+- `catch (error)` — generic **5 occurrences**
+- `catch (e)` — least descriptive **5 occurrences**
 
 ---
 
-*Concerns audit: 2026-05-28*
+## 5. ARCHITECTURAL VIOLATIONS
+
+### 5.1 Plugin.ts Import Hub (80 imports)
+
+`plugin.ts` imports from 16 different modules across 6 top-level directories. This creates an implicit dependency hub pattern:
+- 30+ coordination imports
+- 12+ tool registrations
+- 10+ hook registrations
+- 10+ feature imports
+- 8+ shared utility imports
+- 5+ routing imports
+
+**Risk:** The plugin.ts file is a single point of failure. Any import error, circular dependency, or module resolution failure will prevent the entire plugin from loading.
+
+### 5.2 Module Size Governance Violation
+
+The 500-LOC maximum module size rule is violated by 9 modules (see Section 1). The largest module (delegation-status.ts at 780 LOC) is 56% over the limit.
+
+### 5.3 No Explicit Circular Dependency Detection
+
+No `madge` or similar circular dependency checking tool is configured in the build pipeline. With 80 imports flowing through plugin.ts, circular dependencies can sneak in undetected.
+
+---
+
+## 6. SECURITY CONCERNS
+
+### 6.1 Path Traversal Protection — Single Point of Validation
+
+**Location:** `src/shared/security/path-scope.ts`
+
+Only one module handles path traversal security. Any code path that bypasses `path-scope.ts` can write to arbitrary filesystem locations.
+
+### 6.2 Untrusted Input in Tool Parameters
+
+The following tools accept user-controlled input that flows into filesystem operations:
+- `configure-primitive.ts` — accepts file path, content, spec data
+- `bootstrap-init.ts` / `bootstrap-recover.ts` — accept scope and config
+- `execute-slash-command.ts` — passes arguments to shell commands
+
+These are validated through Zod schemas and the path-scope module, but the defense chain relies on correct wiring, which is not tested for every tool.
+
+### 6.3 Governance Session — Injection Surface
+
+**Location:** `src/features/governance-engine/create-governance-session.ts:117`
+```
+// any injection vectors in git commit messages or session titles.
+```
+The code acknowledges potential injection vectors but relies on manual review rather than automated sanitization.
+
+### 6.4 Redaction Module — Limited Coverage
+
+**Location:** `src/shared/security/redaction.ts`
+
+The redaction module exists but its coverage of sensitive data patterns is unknown. API keys, tokens, and secrets could leak in tool responses if the redaction patterns are incomplete.
+
+### 6.5 No Security Audit Pipeline
+
+No automated security scanning (SAST, dependency scanning) is configured in the build pipeline.
+
+---
+
+## 7. ERROR HANDLING & RESILIENCE
+
+### 7.1 Dual-Write Pattern — Silent Failures
+
+**Locations:** `continuity/index.ts`, `delegation-persistence.ts`
+
+The dual-write pattern (continuity + session-tracker) uses `console.warn` for failures rather than propagating errors:
+```
+console.warn(`[Harness] patchSessionContinuity dual-write error for ${sessionID}: ...`)
+console.warn(`[Harness] patchSessionContinuity dual-write: skipping session-tracker write for ${sessionID}: ...`)
+```
+
+**Risk:** Silent dual-write failures mean session state can become inconsistent between the two persistence layers without the caller knowing.
+
+### 7.2 Catch Block Proliferation
+
+The codebase has 126 catch blocks, indicating a defensive error-handling culture. While this prevents crashes, the high count suggests:
+- Many operations can fail in unexpected ways
+- Error recovery strategies are inconsistent
+- Some catch blocks may be swallowing legitimate errors
+
+### 7.3 Retry Handler Exists But Usage Is Sparse
+
+**Location:** `src/coordination/delegation/retry-handler.ts`
+
+A dedicated retry handler exists but many files (especially persistence writers) implement their own error handling rather than using the centralized retry mechanism.
+
+### 7.4 PTY Graceful Fallback — Untested
+
+The PTY module gracefully falls back to `node:child_process` when `bun-pty` is unavailable. This fallback path has no dedicated tests, so breakage in the fallback scenario would go undetected.
+
+---
+
+## 8. DEPENDENCY & BUILD CONCERNS
+
+### 8.1 Optional Dependencies — Runtime Risk
+
+7 optional dependencies are listed but may not be installed:
+- `@json-render/core`, `@json-render/ink`, `@json-render/next`, `@json-render/react`, `@json-render/react-pdf` — sidecar/Dashboard GUI
+- `bun-pty` — PTY support (Bun-only, graceful fallback to Node)
+- `react` — sidecar rendering engine
+
+**Risk:** The sidecar GUI is entirely non-functional if these optional dependencies fail to install. This is a degraded-user-experience concern rather than a crash risk.
+
+### 8.2 No Lockfile in CI
+
+No lockfile is checked into the repository. Different installs can produce different dependency trees, leading to "works on my machine" issues.
+
+_(Correction: package-lock.json exists — verified. But no CI pipeline is visible to enforce lockfile consistency.)_
+
+### 8.3 Peer Dependency Version Constraint
+
+`@opencode-ai/plugin: ^1.15.10` as a peer dependency means host applications must provide this exact range. Version mismatches will cause runtime failures that may be hard to diagnose.
+
+### 8.4 Build Script Complexity
+
+The build command chains four operations:
+```
+npm run clean && node scripts/sync-assets.js && tsc && node dist/schema-kernel/generate-config-json-schema.js
+```
+
+**Risk:** Build failures in `sync-assets.js` will prevent TypeScript compilation, mixing asset generation with compilation concerns.
+
+---
+
+## 9. MAINTENANCE & TECHNICAL DEBT
+
+### 9.1 Asset Sync — Dual Maintenance Surface
+
+**File:** `scripts/sync-assets.js`
+
+Assets are authored in `assets/` and synced to `.opencode/` via `scripts/sync-assets.js`. This creates a source-of-truth mirror pattern that requires discipline:
+- Direct edits to `.opencode/` can be overwritten by the sync script
+- User-modified files are backed up (`.backup`), but the backup accumulation is not cleaned up
+
+### 9.2 Session Tracker Module — Largest Feature (35 files)
+
+The session-tracker feature has 35 source files making it the largest single module. Its internal structure includes:
+- 6 capture/handler files (event handling chain)
+- 5 persistence files (dual-write system)
+- 3 recovery files (orphan cleanup, session recovery)
+- Auxiliary files (classification, bootstrap, router, etc.)
+
+**Risk:** The session-tracker has grown organically. The handler chain (events → handlers → persistence) is complex and hard to reason about.
+
+### 9.3 Unconventional Test Directory Layout
+
+Tests are split between `tests/lib/`, `tests/tools/`, and partially under `tests/features/`. This differs from the source structure (mirroring `src/`), making it harder to find tests for a given source module.
+
+### 9.4 Legacy Test File Stubs
+
+Some test files appear to be legacy stubs or migrated tests:
+- `tests/lib/delegation-manager.test.ts` at 2,976 LOC — likely includes integration tests in a unit test file
+- `tests/hooks/create-core-hooks.test.ts` at 1,116 LOC — may duplicate test coverage from `tests/lib/`
+
+### 9.5 Stale Console.log References in JSDoc
+
+Multiple JSDoc `@example` blocks contain `console.log()` calls that would not be compiled out in production. Examples in:
+- `schema-kernel/hivemind-configs.schema.ts`
+- `schema-kernel/generate-config-json-schema.ts`
+- `features/doc-intelligence/parser.ts`
+- `features/bootstrap/primitive-registry.ts`
+- `features/bootstrap/control-plane/gatekeeper.ts`
+- `config/subscriber.ts`
+- `tools/config/bootstrap-init.ts`
+- `tools/config/bootstrap-recover.ts`
+
+### 9.6 Unversioned Agent/Skill Count Tracking
+
+- 75 agents, 34 non-GSD skills, 19 commands are tracked in AGENTS.md
+- Counts are manually maintained and can drift from actual files on disk
+- No automated audit verifies these counts match reality
+
+---
+
+## 10. PERFORMANCE BOTTLENECKS
+
+### 10.1 Synchronous JSON Parsing on Read Path
+
+**Locations:**
+- `continuity/index.ts:275` — `JSON.parse(readFileSync(...))` — blocking on every continuity read
+- `trajectory/ledger.ts:48` — synchronous JSON parse
+- `workspace-runtime-policy.ts:32` — synchronous JSON parse
+- `workflow/workflow-persistence.ts:113` — synchronous JSON parse
+
+**Impact:** Synchronous file I/O on the read path can block the event loop, especially under load (multiple concurrent session queries).
+
+### 10.2 Serialized I/O in Session Tracker
+
+Session tracker persistence uses sequential async writes with `await` chaining. Concurrent initialization of multiple sessions must wait for each other's I/O to complete.
+
+### 10.3 No Caching Layer for Continuity Reads
+
+**Location:** `src/task-management/continuity/index.ts`
+
+Every continuity read goes through `readFileSync` on a JSON file. The in-memory `Map` cache does not persist across restarts (separation of concerns design), but there is no read-through cache for frequently accessed sessions.
+
+### 10.4 Large Module Load Times
+
+Modules exceeding 500 LOC (particularly `delegation-status.ts` at 780 LOC and `plugin.ts` at 756 LOC) take longer to parse and JIT-compile, increasing cold-start time.
+
+---
+
+## 11. CQRS & SURFACE BOUNDARY CONCERNS
+
+### 11.1 CQRS Boundary Module — Untested
+
+**File:** `src/hooks/composition/cqrs-boundary.ts`
+
+The CQRS boundary enforcement module exists but has no tests. It is impossible to verify that the boundary rules are actually being enforced.
+
+### 11.2 Mix of Read and Write in Same Modules
+
+Several modules mix read and write operations in the same class/file:
+- `continuity/index.ts` — both reads (`getSessionContinuity`) and writes (`recordSessionContinuity`, `patchSessionContinuity`)
+- `child-writer.ts` — primarily writes, but also reads existing state
+- `delegation-persistence.ts` — dual read/write in same file
+
+### 11.3 Observer-Transform Overlap in Hooks
+
+The hooks system has both observers (`.on()` handlers) and transforms (`.transform()` handlers). The separation is documented but the actual responsibilities overlap in some places (e.g., `session-tracker-consumer.ts` acts as both observer and implicit state writer).
+
+---
+
+## 12. CONFIGURATION & SCHEMA CONCERNS
+
+### 12.1 Schema-Kernel Is Untested (15 Files, 2,469 LOC)
+
+(Detailed in Section 2.2) — the entire schema validation layer lacks test coverage.
+
+### 12.2 Config Precedence — Stringly-Typed
+
+**File:** `src/schema-kernel/config-precedence.schema.ts`
+
+Config precedence levels are validated as "any non-empty string." This means invalid precedence values are not caught at schema level, only at usage time.
+
+### 12.3 Config Compiler — 410 LOC Untested
+
+**File:** `src/config/compiler.ts`
+
+Config compilation from multiple sources (files, environment, defaults) is a critical path with no direct tests.
+
+---
+
+## 13. CLI & BIN MAINTENANCE
+
+### 13.1 CLI Commands — No Test Coverage
+
+All 5 CLI commands (`help`, `init`, `recover`, `doctor`, `version`) have zero test coverage. CLI bugs will manifest as user-facing failures.
+
+### 13.2 CLI Router — No Tests
+
+**File:** `src/cli/router.ts`
+
+The CLI routing logic that directs command parsing to the appropriate handler is untested.
+
+### 13.3 Bin Files — 4 Executables
+
+4 bin entry points exist. Their startup behavior (argument parsing, error handling, version checks) is not tested.
+
+---
+
+## 14. RISK REGISTER
+
+| Risk ID | Description | Severity | Likelihood | Impact | Mitigation |
+|---------|-------------|----------|------------|--------|------------|
+| R-01 | plugin.ts composition root failure | CRITICAL | LOW | Total plugin failure — no system loads | Add integration test; extract hook registry |
+| R-02 | Session continuity dual-write silent data loss | HIGH | MEDIUM | Partial session state loss | Promote console.warn to structured error propagation |
+| R-03 | BUG-5 hierarchy race condition | HIGH | MEDIUM | Orphan child sessions | Add filesystem flush wait; integration test |
+| R-04 | BUG-3 child response capture gap | MEDIUM | MEDIUM | Incomplete child session journals | Standardize synthetic turn format |
+| R-05 | Schema-kernel untested validation | HIGH | MEDIUM | Silent data corruption on schema changes | Add schema validation unit tests |
+| R-06 | `as unknown` casts bypass type safety | MEDIUM | HIGH | Runtime crashes from shape mismatches | Add Zod runtime validation at deserialization points |
+| R-07 | Sidecar GUI silently broken (optional deps) | LOW | MEDIUM | GUI non-functional for some users | Document optional dependency requirements clearly |
+| R-08 | Error swallowing in 126 catch blocks | MEDIUM | HIGH | Hard-to-diagnose production failures | Audit catch blocks; implement error aggregation |
+| R-09 | No circular dependency detection | MEDIUM | MEDIUM | Import cycles causing runtime errors | Add madge/DPAT to CI pipeline |
+| R-10 | CLI untested (5 commands) | MEDIUM | HIGH | User-facing CLI failures | Add CLI integration tests |
+| R-11 | PTY graceful fallback untested | MEDIUM | LOW | Broken Node.js fallback path | Test fallback on Node.js runtime |
+| R-12 | Redaction module coverage unknown | MEDIUM | MEDIUM | Sensitive data leakage | Audit redaction patterns; add coverage tests |
+| R-13 | Session-tracker organic growth (35 files) | MEDIUM | HIGH | Hard to maintain, refactor risk high | Decompose into bounded sub-modules |
+| R-14 | Module size violations (9 files) | LOW | HIGH | Maintainability degradation | Decompose largest modules |
+| R-15 | Stale JSDoc console.log references | LOW | HIGH | Confusing code examples | Clean up JSDoc examples |
+| R-16 | Agent/skill count drift from AGENTS.md | LOW | HIGH | Documentation inaccuracy | Add automated count verification |
+
+---
+
+## Scoring Summary
+
+| Category | Score (1-5, 5=worst) | Trend |
+|----------|----------------------|-------|
+| Module Size Governance | 4 (9 violations) | ↑ Worsening |
+| Test Coverage | 4 (large untested areas) | → Stable |
+| Type Safety | 3 (heavy `as unknown` usage) | → Stable |
+| Error Handling | 3 (126 catch blocks) | → Stable |
+| Security | 2 (basic protections exist) | → Stable |
+| Performance | 2 (sync I/O concerns) | → Stable |
+| Documentation Hygiene | 3 (stale examples, drift) | → Stable |
+| Build/CI | 2 (no CI visible) | → Stable |
+
+**Overall Health:** MODERATE — functional but with significant areas of technical debt and risk that need structured remediation.
+
+---
+
+## Immediate Action Items
+
+1. **HIGH** — Add integration test for `plugin.ts` to verify all 80 imports resolve correctly
+2. **HIGH** — Decompose `delegation-status.ts` (780 LOC) into separate reader modules
+3. **HIGH** — Address BUG-5 race condition with proper filesystem flush synchronization  
+4. **HIGH** — Add schema-kernel unit tests (15 files, 2,469 LOC uncovered)
+5. **MEDIUM** — Audit all `as unknown` casts and replace with Zod runtime validation
+6. **MEDIUM** — Add circular dependency detection to build pipeline
+7. **MEDIUM** — Standardize catch block error handling patterns
+8. **MEDIUM** — Add CLI command integration tests
+9. **LOW** — Clean up stale JSDoc console.log references
+10. **LOW** — Add automated agent/skill count verification to sync-assets script

@@ -1,0 +1,144 @@
+{
+  "mcpServers": {
+    "notion": {
+      "transport": "http",
+      "enabled": true,
+      "url": "https://mcp.notion.com/mcp",
+      "headers": {
+        "Authorization": "Bearer $NOTION_API_TOKEN"
+      },
+      "timeout": 15000
+    },
+    "stitch": {
+      "transport": "http",
+      "enabled": true,
+      "url": "https://stitch.googleapis.com/mcp"
+    },
+    "gitmcp": {
+      "transport": "http",
+      "enabled": true,
+      "url": "https://gitmcp.io",
+      "timeout": 35000
+    },
+    "fetcher": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "fetcher-mcp"],
+      "timeout": 30000
+    },
+    "web-search-prime": {
+      "transport": "http",
+      "enabled": true,
+      "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
+      "headers": {
+        "Authorization": "Bearer $ZAI_API_KEY"
+      }
+    },
+    "web-reader": {
+      "transport": "http",
+      "enabled": true,
+      "url": "https://api.z.ai/api/mcp/web_reader/mcp",
+      "headers": {
+        "Authorization": "Bearer $ZAI_API_KEY"
+      }
+    },
+    "zread": {
+      "transport": "http",
+      "enabled": true,
+      "url": "https://api.z.ai/api/mcp/zread/mcp",
+      "headers": {
+        "Authorization": "Bearer $ZAI_API_KEY"
+      }
+    },
+    "context7": {
+      "transport": "http",
+      "enabled": true,
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "deepwiki": {
+      "transport": "http",
+      "enabled": true,
+      "url": "https://mcp.deepwiki.com/mcp",
+      "timeout": 15000
+    },
+    "desktop-commander": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "@smithery/cli@latest", "run", "@wonderwhy-er/desktop-commander", "--key", "$SMITHERY_CLI_KEY"]
+    },
+    "exa": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.exa.ai/mcp"],
+      "env": {
+        "EXA_API_KEY": "$EXA_API_KEY"
+      }
+    },
+    "fetch": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
+    },
+    "github": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_PAT"
+      }
+    },
+    "mcp-playwright": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    },
+    "memory": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "netlify": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "@netlify/mcp"],
+      "env": {
+        "NETLIFY_PERSONAL_ACCESS_TOKEN": "$NETLIFY_PAT"
+      }
+    },
+    "repomix": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "repomix", "--mcp"]
+    },
+    "sequential-thinking": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "tavily": {
+      "transport": "http",
+      "enabled": true,
+      "url": "https://mcp.tavily.com/mcp/?tavilyApiKey=$TAVILY_API_KEY",
+      "timeout": 35000
+    },
+    "brave-search": {
+      "transport": "stdio",
+      "enabled": true,
+      "command": "npx",
+      "args": ["-y", "@brave/brave-search-mcp-server"],
+      "env": {
+        "BRAVE_API_KEY": "$BRAVE_API_KEY"
+      }
+    }
+  }
+}

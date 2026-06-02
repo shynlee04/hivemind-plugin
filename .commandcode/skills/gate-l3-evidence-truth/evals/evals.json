@@ -1,0 +1,125 @@
+{
+  "meta": {
+    "skill": "gate-evidence-truth",
+    "version": "1.0.0",
+    "total_scenarios": 5,
+    "description": "Test scenarios for gate-evidence-truth skill evaluation"
+  },
+  "scenarios": [
+    {
+      "id": "EVT-001",
+      "name": "Evidence classification correctness",
+      "trigger": "evidence check for phase completion gate",
+      "context": {
+        "gate_type": "phase_completion",
+        "artifacts": [
+          {"description": "Integration test for delegation-manager dispatch", "file": "tests/tools/delegate-task.test.ts", "mocks_sdk": false, "assertion_depth": "multi_step"},
+          {"description": "Design document for delegation flow", "file": "docs/delegation-design.md", "mocks_sdk": null, "assertion_depth": null},
+          {"description": "Continuity record from test session", "file": ".hivemind/state/continuity.json", "has_session_id": true, "has_delegation_id": true}
+        ]
+      },
+      "assertions": [
+        "Integration test classified as L3",
+        "Design document classified as L5",
+        "Continuity record classified as L2",
+        "Highest evidence level is L2",
+        "L2 meets phase_completion gate minimum (L2)",
+        "Gate verdict is PASS",
+        "Design document (L5) not counted toward gate minimum"
+      ]
+    },
+    {
+      "id": "EVT-002",
+      "name": "Gate minimum enforcement — insufficient evidence",
+      "trigger": "evidence check for milestone completion gate",
+      "context": {
+        "gate_type": "milestone_completion",
+        "artifacts": [
+          {"description": "Unit test for helpers.ts", "file": "tests/lib/helpers.test.ts", "mocks_sdk": false, "assertion_depth": "single_assert"},
+          {"description": "Unit test for concurrency.ts", "file": "tests/lib/concurrency.test.ts", "mocks_sdk": false, "assertion_depth": "multi_step"},
+          {"description": "Phase 1 summary document", "file": ".planning/phase-1/SUMMARY.md", "mocks_sdk": null, "assertion_depth": null}
+        ]
+      },
+      "assertions": [
+        "Unit tests classified as L4",
+        "Summary document classified as L5",
+        "Highest evidence level is L4",
+        "L4 does NOT meet milestone_completion gate minimum (L2 + one L1)",
+        "Gate verdict is FAIL",
+        "Remediation plan specifies: need L2 continuity record AND at least one L1 live session proof"
+      ]
+    },
+    {
+      "id": "EVT-003",
+      "name": "Mock-only detection for integration claims",
+      "trigger": "evidence check for PR review gate",
+      "context": {
+        "gate_type": "pr_review",
+        "artifacts": [
+          {"description": "Integration test for continuity", "file": "tests/lib/continuity.integration.test.ts", "mocks_sdk": true, "mocked_modules": ["fs"], "assertion_depth": "multi_step"},
+          {"description": "Unit test for types.ts", "file": "tests/lib/types.test.ts", "mocks_sdk": false, "assertion_depth": "single_assert"}
+        ]
+      },
+      "assertions": [
+        "Integration test with mocked fs reclassified as L4 (not L3)",
+        "Unit test classified as L4",
+        "Highest evidence level is L4",
+        "L4 does NOT meet pr_review gate minimum (L3)",
+        "Anti-pattern AP-4 detected: mock-only integration claim",
+        "Gate verdict is FAIL",
+        "Remediation: create true integration test with real file I/O"
+      ]
+    },
+    {
+      "id": "EVT-004",
+      "name": "Completion honesty — claims without evidence",
+      "trigger": "evidence check for phase completion gate",
+      "context": {
+        "gate_type": "phase_completion",
+        "artifacts": [
+          {"description": "Phase marked complete in PLAN.md", "file": ".planning/phase-3/PLAN.md", "status": "complete", "test_results": null},
+          {"description": "Code review comment: LGTM", "file": null, "type": "review_comment"},
+          {"description": "SPEC.md for the phase", "file": ".planning/phase-3/SPEC.md", "mocks_sdk": null, "assertion_depth": null}
+        ]
+      },
+      "assertions": [
+        "PLAN.md completion status classified as L5 (documentation)",
+        "Review comment classified as L5 (not executable evidence)",
+        "SPEC.md classified as L5 (design document)",
+        "Highest evidence level is L5",
+        "L5 does NOT meet any gate minimum",
+        "Anti-pattern AP-3 detected: documentation accepted as proof",
+        "Anti-pattern AP-5 detected: LLM review treated as evidence",
+        "Gate verdict is FAIL",
+        "Remediation: produce L2+ evidence (run tests, capture continuity record)"
+      ]
+    },
+    {
+      "id": "EVT-005",
+      "name": "Deployment gate — full evidence verification",
+      "trigger": "evidence check for deployment readiness gate",
+      "context": {
+        "gate_type": "deployment_readiness",
+        "artifacts": [
+          {"description": "Live OpenCode session testing delegation flow", "file": ".hivemind/sessions/session-abc123.log", "is_live_session": true, "covers_feature": "delegation-dispatch-complete"},
+          {"description": "Integration tests for all module boundaries", "file": "tests/integration/", "mocks_sdk": false, "assertion_depth": "multi_step", "test_count": 12, "passing": 12},
+          {"description": "Continuity records for all phases", "file": ".hivemind/state/continuity.json", "phases_covered": [1,2,3,4], "has_session_ids": true},
+          {"description": "Unit test suite", "file": "tests/lib/", "mocks_sdk": true, "test_count": 47, "passing": 47}
+        ]
+      },
+      "assertions": [
+        "Live session classified as L1",
+        "Integration tests classified as L3",
+        "Continuity records classified as L2",
+        "Unit tests classified as L4",
+        "L1 meets deployment_readiness gate minimum (L1)",
+        "All three lenses activated (Dev, Architect, PM)",
+        "Dev lens: test integrity verified, no mock-only integration claims",
+        "Architect lens: evidence hierarchy spans L1-L4, regression vectors checked",
+        "PM lens: live runtime proof exists, completion claims backed by evidence",
+        "Gate verdict is PASS",
+        "All 3 gates in triad clear"
+      ]
+    }
+  ]
+}

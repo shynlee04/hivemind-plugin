@@ -1,0 +1,24 @@
+{
+  "skill": "stack-nextjs",
+  "version": "2026-04-29",
+  "scenarios": [
+    {
+      "id": "eval-1",
+      "scenario": "Agent is migrating a Next.js 15 project to 16 and encounters a deprecated middleware.ts file",
+      "expected_behavior": "Skill's migration table shows middleware.ts → proxy.ts rename, and critical rules confirm 'Use proxy.ts not middleware.ts'",
+      "pass_condition": "Agent finds migration table row for middleware.ts → proxy.ts and applies the rename"
+    },
+    {
+      "id": "eval-2",
+      "scenario": "Agent needs to decide between a Route Handler and Server Action for a form submission that needs custom CORS headers",
+      "expected_behavior": "Skill's decision tree routes: custom status codes + CORS headers → Route Handler (route.ts)",
+      "pass_condition": "Agent follows Route Handler vs Server Action decision tree and selects route.ts correctly"
+    },
+    {
+      "id": "eval-3",
+      "scenario": "Agent sees TypeScript error that cookies() must be awaited in Next.js 16",
+      "expected_behavior": "Skill's critical rules list: 'Always await request APIs: cookies(), headers(), draftMode(), params, searchParams'",
+      "pass_condition": "Agent finds critical rule #1 and applies await to the cookies() call"
+    }
+  ]
+}

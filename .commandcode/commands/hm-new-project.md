@@ -1,0 +1,54 @@
+---
+namespace: hm
+agent: hm-roadmapper
+subtask: false
+description: "Initialize a new project with deep context gathering and PROJECT.md"
+argument-hint: "[--auto]"
+requires: ["hm-config", "hm-phase", "hm-plan-phase"]
+validation-gates: ["spec-compliance-gate"]
+output-templates: ["hm-project.md"]
+coordination-model: "waiter-model"
+completion-signals: ["project-initialized"]
+tools:
+  read: true
+  bash: true
+  write: true
+  agent: true
+  question: true
+---
+
+<runtime_note>
+**Copilot (VS Code):** Use `vscode_askquestions` wherever this workflow calls `question`. They are equivalent — `vscode_askquestions` is the VS Code Copilot implementation of the same interactive question API.
+</runtime_note>
+
+<context>
+**Flags:**
+- `--auto` — Automatic mode. After config questions, runs research → requirements → roadmap without further interaction. Expects idea document via @ reference.
+</context>
+
+<objective>
+Initialize a new project through unified flow: questioning → research (optional) → requirements → roadmap.
+
+**Creates:**
+- `.planning/PROJECT.md` — project context
+- `.planning/config.json` — workflow preferences
+- `.planning/research/` — domain research (optional)
+- `.planning/REQUIREMENTS.md` — scoped requirements
+- `.planning/ROADMAP.md` — phase structure
+- `.planning/STATE.md` — project memory
+
+**After this command:** Run `/hm-plan-phase 1` to start execution.
+</objective>
+
+<execution_context>
+@/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-new-project.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-questioning.md
+@/Users/apple/hivemind-plugin-private/.opencode/references/hm-ui-brand.md
+@/Users/apple/hivemind-plugin-private/.opencode/templates/hm-project.md
+@/Users/apple/hivemind-plugin-private/.opencode/templates/hm-requirements.md
+</execution_context>
+
+<process>
+Execute end-to-end.
+Preserve all workflow gates (validation, approvals, commits, routing).
+</process>

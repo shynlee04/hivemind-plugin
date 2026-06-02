@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Evaluation test scenarios for gate-lifecycle-integration skill",
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "EVAL-TOOL-001",
+      "name": "Clean tool evaluation passes",
+      "context": "Code review of a new tool in src/tools/",
+      "artifact_type": "TOOL",
+      "input_description": "A tool that: is registered in plugin.ts, has Zod schema, calls SDK via session-api.ts wrappers, returns structured response via tool-response.ts, lives in src/tools/, has test file in tests/tools/, is under 200 LOC, has no any types",
+      "assertions": [
+        {
+          "dimension": "lifecycle_initiation",
+          "expected": "PASS",
+          "reason": "Tool registered, factory pattern, Zod schema, structured response"
+        },
+        {
+          "dimension": "cqrs_correctness",
+          "expected": "PASS",
+          "reason": "Write-side only: calls SDK mutations, may write state, never reads events"
+        },
+        {
+          "dimension": "opencode_surface",
+          "expected": "PASS",
+          "reason": "Tool name matches plugin.ts key, proper signature, [Harness] errors"
+        },
+        {
+          "dimension": "classification_fit",
+          "expected": "PASS",
+          "reason": "Lives in src/tools/, shared utilities in src/shared/, no state storage"
+        },
+        {
+          "dimension": "size_and_structure",
+          "expected": "PASS",
+          "reason": "Under 200 LOC, no inline business logic, test file exists"
+        }
+      ],
+      "expected_verdict": "PASS",
+      "expected_routing": "gate-spec-compliance"
+    },
+    {
+      "id": "EVAL-TOOL-002",
+      "name": "CQRS-violating tool fails",
+      "context": "Code review of a tool that reads events directly",
+      "artifact_type": "TOOL",
+      "input_description": "A tool that subscribes to the event stream directly, bypassing hooks, and makes delegation decisions based on observed events",
+      "assertions": [
+        {
+          "dimension": "cqrs_correctness",
+          "expected": "FAIL",
+          "reason": "AP-01 variant: tool reads event stream directly — events are read-side, tool must not observe them",
+          "anti_pattern": "AP-01",
+          "severity": "BLOCK"
+        },
+        {
+          "dimension": "lifecycle_initiation",
+          "expected": "PASS",
+          "reason": "Registration and factory pattern may still be correct"
+        }
+      ],
+      "expected_verdict": "FAIL",
+      "expected_routing": "STOP",
+      "required_remediation": "Remove direct event stream access from tool. Use hook for event observation instead."
+    },
+    {
+      "id": "EVAL-HOOK-001",
+      "name": "Clean hook evaluation passes",
+      "context": "Integration check after hook factory modification",
+      "artifact_type": "HOOK",
+      "input_description": "A hook that: is registered via factory in src/hooks/, observes events only, has try/catch error boundary, extracts sessionID via getEventSessionID(), never calls patchSessionContinuity(), never calls delegationManager.dispatch()",
+      "assertions": [
+        {
+          "dimension": "lifecycle_initiation",
+          "expected": "PASS",
+          "reason": "Factory pattern, dependency injection, event observer signature"
+        },
+        {
+          "dimension": "cqrs_correctness",
+          "expected": "PASS",
+          "reason": "Read-side only: observes events, no state mutations, no dispatch calls"
+        },
+        {
+          "dimension": "error_boundary",
+          "expected": "PASS",
+          "reason": "try/catch present, silent failure, no unhandled rejections"
+        },
+        {
+          "dimension": "classification_fit",
+          "expected": "PASS",
+          "reason": "Lives in src/hooks/, no cross-root imports"
+        },
+        {
+          "dimension": "session_context",
+          "expected": "PASS",
+          "reason": "sessionID via getEventSessionID(), handles missing sessionID"
+        }
+      ],
+      "expected_verdict": "PASS",
+      "expected_routing": "gate-spec-compliance"
+    },
+    {
+      "id": "EVAL-HOOK-002",
+      "name": "Write-side violating hook fails",
+      "context": "Code review of a hook that calls patchSessionContinuity",
+      "artifact_type": "HOOK",
+      "input_description": "A hook handler in src/hooks/ that calls patchSessionContinuity() to update delegation status when it observes session.idle events, without being the documented tool.execute.after exception",
+      "assertions": [
+        {
+          "dimension": "cqrs_correctness",
+          "expected": "FAIL",
+          "reason": "AP-01: WRITE FROM READ-SIDE — hook calling patchSessionContinuity() outside documented exceptions",
+          "anti_pattern": "AP-01",
+          "severity": "BLOCK"
+        },
+        {
+          "dimension": "error_boundary",
+          "expected": "PASS",
+          "reason": "May still have proper error handling"
+        }
+      ],
+      "expected_verdict": "FAIL",
+      "expected_routing": "STOP",
+      "required_remediation": "Move state mutation to a tool (write-side). Hook should only observe and trigger notification or routing."
+    },
+    {
+      "id": "EVAL-PLUGIN-001",
+      "name": "Lean plugin composition passes",
+      "context": "Deployment readiness check",
+      "artifact_type": "PLUGIN.TS",
+      "input_description": "plugin.ts under 200 LOC: instantiates DelegationManager and LifecycleManager, wires hook factories, registers all tools, lazy-loads PTY, no inline business logic, delegates all logic to factories and lib modules",
+      "assertions": [
+        {
+          "dimension": "composition_integrity",
+          "expected": "PASS",
+          "reason": "All tools registered, all hooks wired, single-instantiation of managers"
+        },
+        {
+          "dimension": "separation_of_concerns",
+          "expected": "PASS",
+          "reason": "No inline business logic, PTY lazy-loaded, observers composed from factories"
+        },
+        {
+          "dimension": "dependency_wiring",
+          "expected": "PASS",
+          "reason": "Correct dependency injection to all factory functions"
+        },
+        {
+          "dimension": "runtime_policy",
+          "expected": "PASS",
+          "reason": "Policy loaded once at startup, passed to components"
+        }
+      ],
+      "expected_verdict": "PASS",
+      "expected_routing": "gate-spec-compliance"
+    },
+    {
+      "id": "EVAL-PLUGIN-002",
+      "name": "Fat plugin fails",
+      "context": "Phase audit of plugin.ts that accumulated inline logic",
+      "artifact_type": "PLUGIN.TS",
+      "input_description": "plugin.ts with 350 LOC: inline delegation logic instead of using DelegationManager, hardcoded agent configs, synchronous PTY loading, event handler with business logic inline",
+      "assertions": [
+        {
+          "dimension": "composition_integrity",
+          "expected": "FAIL",
+          "reason": "Over 200 LOC threshold, inline business logic"
+        },
+        {
+          "dimension": "separation_of_concerns",
+          "expected": "FAIL",
+          "reason": "AP-14 variant: module over LOC limit with inline logic that belongs in lib/"
+        },
+        {
+          "dimension": "dependency_wiring",
+          "expected": "FAIL",
+          "reason": "Direct logic instead of factory delegation"
+        }
+      ],
+      "expected_verdict": "FAIL",
+      "expected_routing": "STOP",
+      "required_remediation": "Extract inline logic to src/lib/ modules or src/tools/ factories. Reduce plugin.ts to pure composition under 200 LOC."
+    },
+    {
+      "id": "EVAL-DELEGATION-001",
+      "name": "Bounded delegation depth passes",
+      "context": "Integration check of delegation flow",
+      "artifact_type": "DELEGATION",
+      "input_description": "A delegation chain: root→child→grandchild (depth 3), valid category (research), queue key built via buildDelegationQueueKey(), dual-signal completion via CompletionDetector, grace period cleanup active, recovery guarantee derived from execution mode",
+      "assertions": [
+        {
+          "dimension": "delegation_manager_usage",
+          "expected": "PASS",
+          "reason": "Uses delegationManager.dispatch(), no manual session creation"
+        },
+        {
+          "dimension": "category_and_queue",
+          "expected": "PASS",
+          "reason": "Valid category, proper queue key construction"
+        },
+        {
+          "dimension": "depth_and_budget",
+          "expected": "PASS",
+          "reason": "Depth 3 = MAX_DELEGATION_DEPTH, within budget"
+        },
+        {
+          "dimension": "dual_signal_completion",
+          "expected": "PASS",
+          "reason": "CompletionDetector with 3 stable polls, adaptive polling"
+        },
+        {
+          "dimension": "recovery_and_cleanup",
+          "expected": "PASS",
+          "reason": "Recovery guarantee set, grace period cleanup active"
+        }
+      ],
+      "expected_verdict": "PASS",
+      "expected_routing": "gate-spec-compliance"
+    },
+    {
+      "id": "EVAL-DELEGATION-002",
+      "name": "Unbounded delegation depth fails",
+      "context": "Code review of delegation chain",
+      "artifact_type": "DELEGATION",
+      "input_description": "A delegation chain: root→child→grandchild→great-grandchild (depth 4), exceeding MAX_DELEGATION_DEPTH of 3. No depth check before dispatch. Category is 'analysis' which is not in VALID_DELEGATION_CATEGORIES.",
+      "assertions": [
+        {
+          "dimension": "depth_and_budget",
+          "expected": "FAIL",
+          "reason": "AP-06: UNBOUNDED DELEGATION DEPTH — depth 4 exceeds MAX_DELEGATION_DEPTH (3)",
+          "anti_pattern": "AP-06",
+          "severity": "BLOCK"
+        },
+        {
+          "dimension": "category_and_queue",
+          "expected": "FAIL",
+          "reason": "AP-10: CATEGORY MISMATCH — 'analysis' not in VALID_DELEGATION_CATEGORIES",
+          "anti_pattern": "AP-10",
+          "severity": "WARN"
+        }
+      ],
+      "expected_verdict": "FAIL",
+      "expected_routing": "STOP",
+      "required_remediation": "Enforce depth check before dispatch. Change category to one of: research, implementation, review, visual-engineering, deep, quick."
+    }
+  ]
+}

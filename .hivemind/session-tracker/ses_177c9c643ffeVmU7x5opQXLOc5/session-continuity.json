@@ -1,0 +1,50 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+  "lastUpdated": "2026-06-02T12:41:41.529Z",
+  "hierarchy": {
+    "root": "ses_177c9c643ffeVmU7x5opQXLOc5",
+    "children": {
+      "ses_177c9c5aeffeT54rOpBWYVe5ei": {
+        "file": "ses_177c9c5aeffeT54rOpBWYVe5ei.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_177c5b46cffegf3iPQL1m3iLCA": {
+        "file": "ses_177c5b46cffegf3iPQL1m3iLCA.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_177c5b3eaffePNgekdHET33vgu": {
+        "file": "ses_177c5b3eaffePNgekdHET33vgu.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_177c5b40effeec4oYOfcqI0taw": {
+        "file": "ses_177c5b40effeec4oYOfcqI0taw.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_177c5b437ffePQFGhNTqyresY7": {
+        "file": "ses_177c5b437ffePQFGhNTqyresY7.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 2,
+  "toolSummary": {
+    "task": 5,
+    "bash": 1
+  }
+}

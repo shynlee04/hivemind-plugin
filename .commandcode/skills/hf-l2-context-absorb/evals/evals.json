@@ -1,0 +1,20 @@
+[
+  {
+    "id": "eval-1",
+    "scenario": "User provides dense context dump: 3 URLs (docs, GitHub, blog), 2 narrative paragraphs about project goals, and 4 event descriptions. Session-context-prompt.md does not exist yet. Agent must execute the full 5-wave protocol.",
+    "expected_behavior": "Wave 0 detects no existing file, sets clean slate flag. Wave 1 dispatches 3 parallel subagents (Parser, Matcher, Scanner) — categorizes all 9 input elements. Wave 2 dispatches 3 parallel subagents (URL Extract, Narrative, Cross-Ref) — extracts all 3 URLs, synthesizes narrative, cross-references actors. Wave 3 skipped (<5 unresolved). Wave 4 assembles: initializes YAML frontmatter (dates_active, actors, domains, sessions_count: 1), appends XML absorb-session block with sources, narrative, entities, timeline, insights.",
+    "pass_condition": "Session-context-prompt.md created with valid YAML frontmatter (all required fields initialized) and XML body (all 6 sections present). ≥80% of input elements categorized. All URLs extracted or flagged failed."
+  },
+  {
+    "id": "eval-2",
+    "scenario": "User provides input with 8 URLs but 3 of them return 404 or timeout. Agent must handle partial URL extraction failures gracefully and proceed through waves without stalling.",
+    "expected_behavior": "Wave 2 attempts extraction for all 8 URLs via tavily_extract (batch). 3 fail with 404/timeout. Agent flags those 3 as extracted=\"false\" in open_questions. Since >5 unresolved triggers Wave 3, but all failures are URL-related (not ambiguous intent), so Wave 3 asks: '3 URLs failed to extract. Retry with fallback tools or skip?' YAML merge increments sessions_count, preserves existing fields. XML body includes all URLs with extraction status.",
+    "pass_condition": "5 successful extractions completed. 3 failures flagged with extracted=\"false\". Wave progression continues without blocking on failed URLs. No phantom URLs (every URL has extraction attempt recorded)."
+  },
+  {
+    "id": "eval-3",
+    "scenario": "Session-context-prompt.md already exists with 5 previous absorb sessions. New input mentions 2 new actors and 1 existing actor with additional details. YAML merge must handle: dates_active append, actors merge-append (case-insensitive dedup), sessions_count increment, domains append, absorb_history append. Existing unknown YAML fields must be preserved.",
+    "expected_behavior": "YAML merge rules applied: dates_active → append today if absent. actors → merge-append, check name case-insensitive — existing actor gets details appended, new actors added. sessions_count → 5 → 6. last_updated → overwrite with current timestamp. domains → append new domains only. complexity → max(existing, new). absorb_history → append new entry. All unknown fields from previous schema preserved without modification. XML absorb-session block appended after last existing block.",
+    "pass_condition": "All YAML merge operations correct: sessions_count incremented, actors merge-append with case-insensitive dedup, dates_active updated. No existing fields lost. New absorb-session block appended with correct structure. Line count delta > 0."
+  }
+]

@@ -1,0 +1,374 @@
+{
+  "sessionID": "ses_1798a4563ffeXFUbHt13pftdNf",
+  "parentSessionID": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-executor",
+    "model": "unknown",
+    "tool": "task",
+    "description": "P50 CP11 SHIP — close phase, advance to P51",
+    "subagentType": "gsd-executor"
+  },
+  "created": "2026-06-02T03:52:02.993Z",
+  "updated": "2026-06-02T03:57:43.861Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-executor",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are the subagent **gsd-executor**, being delegated by L0 orchestrator (hm-l0-orchestrator) for Phase 50 **Checkpoint 11 (SHIPPING / phase close)**.\n\n## CONTEXT\n\nP50 cleanup of vendored `opencode-tmux/` fork is **complete and verified**:\n\n| Checkpoint | Commit | Artifact | Status |\n|------------|--------|----------|--------|\n| CP4 SPEC | `beb024f5` | 50-SPEC.md | committed |\n| CP5 CONTEXT | `ad43e657` | 50-CONTEXT.md | committed |\n| CP6 RESEARCH | `2625d83a` | 50-RESEARCH.md | committed |\n| CP7 PATTERNS | `fd4668d6` | 50-PATTERNS.md | committed |\n| CP8 PLAN | `49e985b5` | 50-PLAN.md | committed |\n| CP8 plan-check | `f7634b49` | 50-PLAN-CHECK.md | committed |\n| CP9 EXECUTE | `e9be4f77` | feat(50): cleanup opencode-tmux vendored fork (25 files, 3497 deletions) | committed |\n| CP10 VERIFY | `5b49030f` | 50-VERIFICATION.md | committed (PASS-WITH-FLAGS, 7/7 EARS, ready_for_ship) |\n\n## YOUR TASK — Phase close + advance to P51\n\n### T1 — Create P50 close summary\nUse the `write` tool to create `.planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md` with these sections:\n\n1. **Phase**: 50 — cleanup-opencode-tmux-fork\n2. **Outcome**: SUCCESS (composite_risk 0.05, all 7 EARS verified PASS, 3,102 tests pass)\n3. **What was delivered**:\n   - 21 vendored `opencode-tmux/*` files removed\n   - 1 `scripts/sync-fork.sh` removed\n   - 1 `tests/scripts/sync-fork.bats` removed\n   - `.github/workflows/ci.yml` `bats-vendor-sync` job removed (24 lines)\n   - `CHANGELOG.md` new `### Removed` bullet added\n   - 25 files changed (3 insertions, 3497 deletions)\n4. **What was preserved**:\n   - D-04 graceful-fallback at `src/features/tmux/integration.ts:197-202` (intact)\n   - CP-PTY separation between P50-P55 in-tree synthesis and CP-PTY-01..04 sidecar runway\n   - 26 tool keys (`tests/integration/hook-registration.test.ts:103` assertion held)\n   - `.hivemind/session-tracker/*` append-only contract (84 files byte-identical pre/post)\n   - Lockfile independence (0 references in `package.json` / `package-lock.json`)\n5. **Decisions honored**:\n   - `D-P50-EARS5-NARROW-2026-06-02` (Option B): EARS-5 narrowed to typecheck + tests pass + tmux adapter resolves gracefully — applied\n6. **Flags carried** (informational only, not blocking):\n   - F-1: EARS enumeration cosmetic mismatch SPEC↔PLAN\n   - F-2: commit message verbatim deviation (per project Conventional Commits)\n   - F-3: D-04 line range off by 8 (RESOLVED in actual commit)\n   - F-4: CHANGELOG bullet not pre-quoted (RESOLVED — actual matches SPEC §3 EARS-2 verbatim)\n7. **Backup**: `/tmp/opencode-tmux-backup-1780370747.tar.gz` (16M)\n8. **Commit chain**: list all 8 P50 commits (beb024f5 → ad43e657 → 2625d83a → fd4668d6 → 49e985b5 → f7634b49 → e9be4f77 → 5b49030f)\n9. **Next phase**: P51 (see ROADMAP.md for what P51 is)\n\n### T2 — Update ROADMAP.md\n- READ `.planning/ROADMAP.md` first\n- Find the entry for Phase 50 (`50` or `50-cleanup-opencode-tmux-fork`)\n- Update its status to `[x]` (complete) and add a brief note: \"DONE: cleanup complete, D-04 preserved, 3,102 tests pass\"\n- Use `edit` tool for surgical update — do NOT rewrite the file\n\n### T3 — Update STATE.md\n- READ `.planning/STATE.md` first\n- Find the current position / in_progress section\n- Mark P50 as complete (move from \"in_progress\" or \"current\" to \"complete\")\n- Advance the \"current phase\" pointer to P51\n- Use `edit` tool for surgical update — do NOT rewrite the file\n\n### T4 — Atomic commit (use `git add -u .` to preserve `.hivemind/session-tracker/*`)\n```bash\ngit add -u .\n# Verify session-tracker NOT staged\ngit diff --cached --name-only | grep -c \"hivemind/session-tracker\"  # MUST be 0\ngit commit -m \"chore(50): close P50 cleanup-opencode-tmux-fork — advance to P51\n\n- 50-CLOSE.md summary\n- ROADMAP.md P50 marked [x]\n- STATE.md advanced to P51\n- 3,102 tests pass, 7/7 EARS verified\n- D-04 graceful-fallback preserved\n- Session-tracker append-only contract upheld\n- Backup: /tmp/opencode-tmux-backup-1780370747.tar.gz\"\n```\n\n### Step 5: RETURN\n```\n###TASK_COMPLETED###\nartifact: .planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md\ncommit: <hash>\nroadmap_updated: <true|false>\nstate_updated: <true|false>\nsession_tracker_preserved: <true|false>\np50_fully_closed: <true|false>\nready_for_p51: <true|false>\n```\n\n## GUARDRAILS\n- DO NOT modify any source files in `src/`\n- DO NOT touch `.hivemind/session-tracker/*` (append-only)\n- USE `edit` tool for surgical changes to ROADMAP.md and STATE.md — do NOT use `write`\n- All three file updates go in ONE atomic commit\n- If ROADMAP.md doesn't mention P50 explicitly, just note that in your return and move on\n- If STATE.md doesn't have a current-phase section, just create one with the advance\n\nBegin now.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "I'll acknowledge the system reminder. As the gsd-executor subagent executing the P50 close plan, I'm operating within authorized scope per the delegating L0 orchestrator: the close summary is a L5 planning/governance artifact (`.planning/phases/.../*.md`), ROADMAP/STATE updates are status-pointer edits, and the atomic commit is finalization. No source/runtime/`.opencode`/`.hivemind` mutations outside session-tracker append-only (which I'm explicitly forbidden from touching).\n\nLet me continue exploring to find the P50 entry and P51 reference.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "## Goal\n- Execute P50 close: write 50-CLOSE.md, update ROADMAP.md (mark P50 `[x]`), update STATE.md (advance to P51), atomic commit, return completion marker.\n\n## Constraints & Preferences\n- Subagent role: gsd-executor delegated by L0 orchestrator (hm-l0-orchestrator) for Phase 50 CP11 SHIPPING/phase close.\n- Use `write` tool for 50-CLOSE.md; use `edit` tool (NOT `write`) for surgical updates to ROADMAP.md and STATE.md.\n- All three file updates go in ONE atomic commit.\n- Use `git add -u .` to preserve `.hivemind/session-tracker/*` append-only contract.\n- DO NOT modify any `src/` source files; DO NOT touch `.hivemind/session-tracker/*`.\n- If ROADMAP.md has no P50 entry, note in return and proceed.\n- If STATE.md has no current-phase section, create one with the advance.\n- Verify: `git diff --cached --name-only | grep -c \"hivemind/session-tracker\"` MUST be 0.\n\n## Progress\n### Done\n- Confirmed cwd = `/Users/apple/hivemind-plugin-private`, git toplevel matches.\n- Verified P50 commit chain present on `git log --oneline -10`: `5b49030f` (VERIFY) → `e9be4f77` (EXECUTE) → `f7634b49` (PLAN-CHECK) → `49e985b5` (PLAN) → `fd4668d6` (PATTERNS) → `2625d83a` (RESEARCH) → `ad43e657` (CONTEXT) → `beb024f5` (SPEC).\n- Confirmed `.planning/phases/50-cleanup-opencode-tmux-fork/` contains 8 artifact files (50-SPEC, CONTEXT, RESEARCH, PATTERNS, PLAN, PLAN-CHECK, VERIFICATION) — all present, no 50-CLOSE.md yet.\n- `git status` shows session-tracker has new untracked/modified files (append-only) — must NOT be staged.\n\n### In Progress\n- Reading ROADMAP.md and STATE.md for surgical edit context (both responses were truncated due to length; need re-read or grep for P50/current-phase markers).\n\n### Blocked\n- ROADMAP.md read returned only header (~line 24) + critical reflections; full content for P50 entry not yet seen — need targeted grep/read of relevant section.\n- STATE.md read returned only header + first ~30 lines; need targeted read for \"current phase\"/\"in_progress\"/P50 section.\n\n## Key Decisions\n- Composite risk 0.05, all 7 EARS verified PASS, 3,102 tests pass — P50 outcome = SUCCESS.\n- D-P50-EARS5-NARROW-2026-06-02 (Option B) applied: EARS-5 narrowed to typecheck + tests pass + tmux adapter resolves gracefully.\n- Flags F-1..F-4 informational only, not blocking (F-3, F-4 RESOLVED in actual commit).\n- Backup preserved: `/tmp/opencode-tmux-backup-1780370747.tar.gz` (16M).\n- D-04 graceful-fallback at `src/features/tmux/integration.ts:197-202` intact and preserved.\n- `.hivemind/session-tracker/*` 84 files byte-identical pre/post — append-only contract upheld.\n\n## Next Steps\n1. Re-read ROADMAP.md/STATE.md via `grep -n \"P50\\|current phase\\|in_progress\"` to locate exact edit anchors (responses were truncated).\n2. T1: Use `write` tool to create `.planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md` with 9 required sections (Phase, Outcome, What delivered, What preserved, Decisions honored, Flags carried, Backup, Commit chain, Next phase P51).\n3. T2: Use `edit` tool to update ROADMAP.md P50 entry → `[x]` with note \"DONE: cleanup complete, D-04 preserved, 3,102 tests pass\".\n4. T3: Use `edit` tool on STATE.md: mark P50 complete, advance current-phase pointer to P51.\n5. T4: Atomic commit — `git add -u .` → verify `session-tracker` count = 0 → commit with provided message referencing backup path.\n6. T5: Return the `###TASK_COMPLETED###` block with all 7 required fields (artifact, commit, roadmap_updated, state_updated, session_tracker_preserved, p50_fully_closed, ready_for_p51).\n\n## Critical Context\n- P50 delivered: 21 vendored `opencode-tmux/*` files removed + 1 `scripts/sync-fork.sh` + 1 `tests/scripts/sync-fork.bats` + 24-line `bats-vendor-sync` job in `.github/workflows/ci.yml` + CHANGELOG `### Removed` bullet = 25 files, 3 insertions, 3497 deletions.\n- Preserved invariants: 26 tool keys assertion at `tests/integration/hook-registration.test.ts:103`; CP-PTY separation (P50-P55 in-tree synthesis vs CP-PTY-01..04 sidecar runway); lockfile independence (0 references in `package.json`/`package-lock.json`).\n- Commit chain order for 50-CLOSE.md: `beb024f5` → `ad43e657` → `2625d83a` → `fd4668d6` → `49e985b5` → `f7634b49` → `e9be4f77` → `5b49030f`.\n- Commit message format reference: `chore(50): close P50 cleanup-opencode-tmux-fork — advance to P51` with bullet list including backup path, test count, EARS count, D-04 note, session-tracker note.\n- Next phase after P50 = P51 (in-tree synthesis sequence P50-P55 per pivot doc 49-CLOSE-PIVOT-2026-06-02).\n\n## Relevant Files\n- `/Users/apple/hivemind-plugin-private/.planning/phases/50-cleanup-opencode-tmux-fork/`: target dir for new `50-CLOSE.md`; contains 7 prior P50 artifacts.\n- `/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md`: needs surgical `edit` to mark P50 `[x]`; full content not yet visible due to read truncation.\n- `/Users/apple/hivemind-plugin-private/.planning/STATE.md`: needs surgical `edit` to advance current-phase to P51; full content not yet visible due to read truncation.\n- `/Users/apple/hivemind-plugin-private/.hivemind/session-tracker/*`: 84 files append-only, must NOT be staged or modified.\n- `/tmp/opencode-tmux-backup-1780370747.tar.gz`: 16M backup, referenced in commit message and 50-CLOSE.md.\n- `src/features/tmux/integration.ts:197-202`: D-04 graceful-fallback preservation target.\n- `tests/integration/hook-registration.test.ts:103`: 26 tool keys assertion held.\n- `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-CLOSE-PIVOT-2026-06-02.md`: pivot doc defining P50-P55 in-tree synthesis sequence.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "user",
+      "content": "Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "I have all the context I need. The grep results confirm the exact line numbers for surgical edits. Let me read the precise context around the P50 entry in ROADMAP.md and the current-phase sections in STATE.md, then proceed with all 5 tasks.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "I have the exact edit anchors. Now executing T1: write `50-CLOSE.md` with all 9 required sections.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "T1 done. Now T2: edit ROADMAP.md to mark P50 complete with closure note.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "T2 done. Now T3: edit STATE.md to advance from P50 → P51.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "T3 done. Now T4: verify and execute atomic commit.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "I need to stage surgically — only the 3 P50 close files. The session-tracker and unrelated `tests/integration/.tmp-user-install/` must NOT be staged.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Staging is clean — 3 files staged, 0 session-tracker files, 0 unrelated files. Now check branch and commit.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "On `feature/harness-implementation` branch (not a worktree, not a protected ref). Proceeding with the atomic commit.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "T4 done — atomic commit `4aaa58b0` succeeded. session-tracker files still untouched in working tree. T5: return the completion marker.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "All artifacts verified. P50 close complete. Returning the completion marker:\n\n###TASK_COMPLETED###\nartifact: .planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md\ncommit: 4aaa58b0\nroadmap_updated: true (line 1943 marked [x], closure note added below)\nstate_updated: true (line 20 \"Last advance\" P49→P50, line 31 \"Current focus\" P50→P51)\nsession_tracker_preserved: true (84 files append-only, 0 staged, 0 mutated)\np50_fully_closed: true (25 files removed, 7/7 EARS PASS, 3,102/3,102 tests pass, tsc clean, 26 tool keys held, D-04 preserved)\nready_for_p51: true (P51 plan: synthesize 3 core tmux classes in-tree at src/features/tmux/, ~770 LOC + integration.ts rewrite, 6 BATS + 15+ vitest)\n###END###\n\n**Summary for L0 orchestrator handoff:**\n\nP50 close plan executed atomically. All 3 close files committed in single commit `4aaa58b0`:\n- `.planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md` (6,127 bytes, 9 sections)\n- `.planning/ROADMAP.md` (P50 plan `[x]`, closure note with EARS/test evidence)\n- `.planning/STATE.md` (last-advance + current-focus pointers P49→P50→P51)\n\n**No regressions:**\n- 26 tool keys assertion at `tests/integration/hook-registration.test.ts:103` held\n- D-04 graceful-fallback at `src/features/tmux/integration.ts:197-202` preserved\n- `.hivemind/session-tracker/*` append-only contract upheld (84 files byte-identical, 0 staged)\n- Backup at `/tmp/opencode-tmux-backup-1780370747.tar.gz` (16M) retained for P51 pattern reference\n\n**P51 ready to begin** — in-tree synthesis sequence P50-P55 pivots complete, backup available if pattern context needed.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "gsd-executor",
+      "content": "All artifacts verified. P50 close complete. Returning the completion marker:\n\n###TASK_COMPLETED###\nartifact: .planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md\ncommit: 4aaa58b0\nroadmap_updated: true (line 1943 marked [x], closure note added below)\nstate_updated: true (line 20 \"Last advance\" P49→P50, line 31 \"Current focus\" P50→P51)\nsession_tracker_preserved: true (84 files append-only, 0 staged, 0 mutated)\np50_fully_closed: true (25 files removed, 7/7 EARS PASS, 3,102/3,102 tests pass, tsc clean, 26 tool keys held, D-04 preserved)\nready_for_p51: true (P51 plan: synthesize 3 core tmux classes in-tree at src/features/tmux/, ~770 LOC + integration.ts rewrite, 6 BATS + 15+ vitest)\n###END###\n\n**Summary for L0 orchestrator handoff:**\n\nP50 close plan executed atomically. All 3 close files committed in single commit `4aaa58b0`:\n- `.planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md` (6,127 bytes, 9 sections)\n- `.planning/ROADMAP.md` (P50 plan `[x]`, closure note with EARS/test evidence)\n- `.planning/STATE.md` (last-advance + current-focus pointers P49→P50→P51)\n\n**No regressions:**\n- 26 tool keys assertion at `tests/integration/hook-registration.test.ts:103` held\n- D-04 graceful-fallback at `src/features/tmux/integration.ts:197-202` preserved\n- `.hivemind/session-tracker/*` append-only contract upheld (84 files byte-identical, 0 staged)\n- Backup at `/tmp/opencode-tmux-backup-1780370747.tar.gz` (16M) retained for P51 pattern reference\n\n**P51 ready to begin** — in-tree synthesis sequence P50-P55 pivots complete, backup available if pattern context needed.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-02T03:52:14.141Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_yvr6b8itk3c1_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:52:23.194Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_zo0zbxze35rt_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:52:23.546Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_zo0zbxze35rt_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:52:29.310Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_mouhg6mgcaea_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:52:29.724Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_mouhg6mgcaea_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:52:46.919Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_function_kqt4fohybk7g_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:52:47.956Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_function_kqt4fohybk7g_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:53:41.218Z",
+      "type": "session_compacted",
+      "content": "**compact_summary:**\n\nYou are the subagent **gsd-executor**, being delegated by L0 orchestrator (hm-l0-orchestrator) for Phase 50 **Checkpoint 11 (SHIPPING / phase close)**.\n\n## CONTEXT\n\nP50 cleanup of vendored `opencode-tmux/` fork is **complete and verified**:\n\n| Checkpoint | Commit | Artifact | Status |\n|------------|--------|----------|--------|\n| CP4 SPEC | `beb024f5` | 50-SPEC.md | committed |\n| CP5 CONTEXT | `ad43e657` | 50-CONTEXT.md | committed |\n| CP6 RESEARCH | `2625d83a` | 50-RESEARCH.md | committed |\n| CP7 PATTERNS | `fd4668d6` | 50-PATTERNS.md | committed |\n| CP8 PLAN | `49e985b5` | 50-PLAN.md | committed |\n| CP8 plan-check | `f7634b49` | 50-PLAN-CHECK.md | committed |\n| CP9 EXECUTE | `e9be4f77` | feat(50): cleanup opencode-tmux vendored fork (25 files, 3497 deletions) | committed |\n| CP10 VERIFY | `5b49030f` | 50-VERIFICATION.md | committed (PASS-WITH-FLAGS, 7/7 EARS, ready_for_ship) |\n\n## YOUR TASK — Phase close + advance to P51\n\n### T1 — Create P50 close summary\nUse the `write` tool to create `.planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md` with these sections:\n\n1. **Phase**: 50 — cleanup-opencode-tmux-fork\n2. **Outcome**: SUCCESS (composite_risk 0.05, all 7 EARS verified PASS, 3,102 tests pass)\n3. **What was delivered**:\n   - 21 vendored `opencode-tmux/*` files removed\n   - 1 `scripts/sync-fork.sh` removed\n   - 1 `tests/scripts/sync-fork.bats` removed\n   - `.github/workflows/ci.yml` `bats-vendor-sync` job removed (24 lines)\n   - `CHANGELOG.md` new `### Removed` bullet added\n   - 25 files changed (3 insertions, 3497 deletions)\n4. **What was preserved**:\n   - D-04 graceful-fallback at `src/features/tmux/integration.ts:197-202` (intact)\n   - CP-PTY separation between P50-P55 in-tree synthesis and CP-PTY-01..04 sidecar runway\n   - 26 tool keys (`tests/integration/hook-registration.test.ts:103` assertion held)\n   - `.hivemind/session-tracker/*` append-only contract (84 files byte-identical pre/post)\n   - Lockfile independence (0 references in `package.json` / `package-lock.json`)\n5. **Decisions honored**:\n   - `D-P50-EARS5-NARROW-2026-06-02` (Option B): EARS-5 narrowed to typecheck + tests pass + tmux adapter resolves gracefully — applied\n6. **Flags carried** (informational only, not blocking):\n   - F-1: EARS enumeration cosmetic mismatch SPEC↔PLAN\n   - F-2: commit message verbatim deviation (per project Conventional Commits)\n   - F-3: D-04 line range off by 8 (RESOLVED in actual commit)\n   - F-4: CHANGELOG bullet not pre-quoted (RESOLVED — actual matches SPEC §3 EARS-2 verbatim)\n7. **Backup**: `/tmp/opencode-tmux-backup-1780370747.tar.gz` (16M)\n8. **Commit chain**: list all 8 P50 commits (beb024f5 → ad43e657 → 2625d83a → fd4668d6 → 49e985b5 → f7634b49 → e9be4f77 → 5b49030f)\n9. **Next phase**: P51 (see ROADMAP.md for what P51 is)\n\n### T2 — Update ROADMAP.md\n- READ `.planning/ROADMAP.md` first\n- Find the entry for Phase 50 (`50` or `50-cleanup-opencode-tmux-fork`)\n- Update its status to `[x]` (complete) and add a brief note: \"DONE: cleanup complete, D-04 preserved, 3,102 tests pass\"\n- Use `edit` tool for surgical update — do NOT rewrite the file\n\n### T3 — Update STATE.md\n- READ `.planning/STATE.md` first\n- Find the current position / in_progress section\n- Mark P50 as complete (move from \"in_progress\" or \"current\" to \"complete\")\n- Advance the \"current phase\" pointer to P51\n- Use `edit` tool for surgical update — do NOT rewrite the file\n\n### T4 — Atomic commit (use `git add -u .` to preserve `.hivemind/session-tracker/*`)\n```bash\ngit add -u .\n# Verify session-tracker NOT staged\ngit diff --cached --name-only | grep -c \"hivemind/session-tracker\"  # MUST be 0\ngit commit -m \"chore(50): close P50 cleanup-opencode-tmux-fork — advance to P51\n\n- 50-CLOSE.md summary\n- ROADMAP.md P50 marked [x]\n- STATE.md advanced to P51\n- 3,102 tests pass, 7/7 EARS verified\n- D-04 graceful-fallback preserved\n- Session-tracker append-only contract upheld\n- Backup: /tmp/opencode-tmux-backup-1780370747.tar.gz\"\n```\n\n### Step 5: RETURN\n```\n###TASK_COMPLETED###\nartifact: .planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md\ncommit: <hash>\nroadmap_updated: <true|false>\nstate_updated: <true|false>\nsession_tracker_preserved: <true|false>\np50_fully_closed: <true|false>\nready_for_p51: <true|false>\n```\n\n## GUARDRAILS\n- DO NOT modify any source files in `src/`\n- DO NOT touch `.hivemind/session-tracker/*` (append-only)\n- USE `edit` tool for surgical changes to ROADMAP.md and STATE.md — do NOT use `write`\n- All three file updates go in ONE atomic commit\n- If ROADMAP.md doesn't mention P50 explicitly, just note that in your return and move on\n- If STATE.md doesn't have a current-phase section, just create one with the advance\n\nBegin now.\n",
+      "metadata": {
+        "capturedFrom": "session.compacted"
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:53:56.409Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_f02ofg0ekfxe_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:53:56.840Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_f02ofg0ekfxe_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:55:01.574Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_function_4sn6uc1zkkd3_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:55:22.086Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_uxblpjbunroj_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:55:43.170Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_yskbr1rn4jls_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:55:46.313Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_yskbr1rn4jls_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:55:56.314Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_914uoc82sfuj_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:56:16.910Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_182bj5tfti7j_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:56:31.430Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_6rz5xybixwoj_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:56:47.547Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_l1i30dem2yuk_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:57:03.254Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_upwhtih4gd47_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T03:57:43.822Z",
+      "type": "assistant_message",
+      "content": "All artifacts verified. P50 close complete. Returning the completion marker:\n\n###TASK_COMPLETED###\nartifact: .planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md\ncommit: 4aaa58b0\nroadmap_updated: true (line 1943 marked [x], closure note added below)\nstate_updated: true (line 20 \"Last advance\" P49→P50, line 31 \"Current focus\" P50→P51)\nsession_tracker_preserved: true (84 files append-only, 0 staged, 0 mutated)\np50_fully_closed: true (25 files removed, 7/7 EARS PASS, 3,102/3,102 tests pass, tsc clean, 26 tool keys held, D-04 preserved)\nready_for_p51: true (P51 plan: synthesize 3 core tmux classes in-tree at src/features/tmux/, ~770 LOC + integration.ts rewrite, 6 BATS + 15+ vitest)\n###END###\n\n**Summary for L0 orchestrator handoff:**\n\nP50 close plan executed atomically. All 3 close files committed in single commit `4aaa58b0`:\n- `.planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md` (6,127 bytes, 9 sections)\n- `.planning/ROADMAP.md` (P50 plan `[x]`, closure note with EARS/test evidence)\n- `.planning/STATE.md` (last-advance + current-focus pointers P49→P50→P51)\n\n**No regressions:**\n- 26 tool keys assertion at `tests/integration/hook-registration.test.ts:103` held\n- D-04 graceful-fallback at `src/features/tmux/integration.ts:197-202` preserved\n- `.hivemind/session-tracker/*` append-only contract upheld (84 files byte-identical, 0 staged)\n- Backup at `/tmp/opencode-tmux-backup-1780370747.tar.gz` (16M) retained for P51 pattern reference\n\n**P51 ready to begin** — in-tree synthesis sequence P50-P55 pivots complete, backup available if pattern context needed.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1798a4563ffeXFUbHt13pftdNf"
+      }
+    }
+  ],
+  "lastMessage": "All artifacts verified. P50 close complete. Returning the completion marker:\n\n###TASK_COMPLETED###\nartifact: .planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md\ncommit: 4aaa58b0\nroadmap_updated: true (line 1943 marked [x], closure note added below)\nstate_updated: true (line 20 \"Last advance\" P49→P50, line 31 \"Current focus\" P50→P51)\nsession_tracker_preserved: true (84 files append-only, 0 staged, 0 mutated)\np50_fully_closed: true (25 files removed, 7/7 EARS PASS, 3,102/3,102 tests pass, tsc clean, 26 tool keys held, D-04 preserved)\nready_for_p51: true (P51 plan: synthesize 3 core tmux classes in-tree at src/features/tmux/, ~770 LOC + integration.ts rewrite, 6 BATS + 15+ vitest)\n###END###\n\n**Summary for L0 orchestrator handoff:**\n\nP50 close plan executed atomically. All 3 close files committed in single commit `4aaa58b0`:\n- `.planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md` (6,127 bytes, 9 sections)\n- `.planning/ROADMAP.md` (P50 plan `[x]`, closure note with EARS/test evidence)\n- `.planning/STATE.md` (last-advance + current-focus pointers P49→P50→P51)\n\n**No regressions:**\n- 26 tool keys assertion at `tests/integration/hook-registration.test.ts:103` held\n- D-04 graceful-fallback at `src/features/tmux/integration.ts:197-202` preserved\n- `.hivemind/session-tracker/*` append-only contract upheld (84 files byte-identical, 0 staged)\n- Backup at `/tmp/opencode-tmux-backup-1780370747.tar.gz` (16M) retained for P51 pattern reference\n\n**P51 ready to begin** — in-tree synthesis sequence P50-P55 pivots complete, backup available if pattern context needed."
+}

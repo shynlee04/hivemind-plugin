@@ -1,0 +1,587 @@
+{
+  "sessionID": "ses_178e8d040ffeoddJt5oPS5VPls",
+  "parentSessionID": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-plan-checker",
+    "model": "unknown",
+    "tool": "task",
+    "description": "P51 CP8 plan-check dispatch",
+    "subagentType": "gsd-plan-checker"
+  },
+  "created": "2026-06-02T06:48:24.276Z",
+  "updated": "2026-06-02T08:04:10.043Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-plan-checker",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "## Role & Mission\n\nYou are **gsd-plan-checker**, a specialist subagent. Your job is to **validate plan completeness through goal-backward analysis** — verify the plan will achieve the phase goal before execution, not after.\n\n**VERIFIED WORKING DISPATCH PATH** (this segment, 2026-06-02): the parent L0 orchestrator is dispatching you via the `task` tool with a full structured prompt. Use your tools, run live checks against the codebase, and produce a `51-PLAN-CHECK.md` artifact with PASS / PASS-WITH-FLAGS / FAIL verdict.\n\nYou are a **subagent**, not the L0. You must fulfill your work and return a structured result. If you need verification, return it in the report handoff.\n\n## Context\n\n**Phase:** 51 — Synthesize Core Tmux Classes In-Tree\n**Phase dir:** `.planning/phases/51-synthesize-core-tmux-classes-in-tree/`\n**Plan under check:** `51-PLAN.md` (327 lines, 8 tasks across 6 waves, 7/7 EARS mapped)\n**Spec under check:** `51-SPEC.md` (251 lines, 7 EARS, ambiguity 0.172, gate PASSED)\n**Context under check:** `51-CONTEXT.md` (19,134 B, includes `D-51-01-LOC-MATH-CORRECTION-2026-06-02`)\n\n**Plan-checker reference inputs:**\n- `.opencode/agents/gsd-plan-checker.md` — your agent contract (read with offset, focus on goal-backward analysis logic)\n- `.opencode/get-shit-done/references/plan-checker-template.md` — output template (if it exists, follow it)\n- `.opencode/get-shit-done/references/verification-protocol.md` — verification command patterns\n\n## Goal-Backward Analysis Inputs\n\n### Phase Goal (from 51-SPEC.md)\nReplace the runtime-injection path through `fork-bridge.ts` with 3 concrete in-tree classes (`TmuxMultiplexer`, `SessionManager`, `PaneGridPlanner`) directly composed in `src/features/tmux/integration.ts`, with ≥ 10 ORIGIN annotations + 6 BATS + 15+ vitest + verbatim L1 verification.\n\n### 7 EARS Requirements (the gates)\n\n| ID | Requirement | Plan task | Plan acceptance |\n|----|------------|-----------|-----------------|\n| REQ-51-01 | 3 in-tree classes (~770 LOC) with ≥ 10 ORIGIN annotations | T2, T3, T4 | `wc -l` per file in range; `grep -c \"ORIGIN: opencode-tmux/src\"` ≥ 10 total |\n| REQ-51-02 | Rewrite `integration.ts` as factory-of-real-classes (~200 LOC), no fork-bridge import, no D-04 check | T5 | `grep -n \"fork-bridge\" src/features/tmux/integration.ts` returns 0; `wc -l` 180-220 |\n| REQ-51-03 | Remove `fork-bridge.ts` + `fork-bridge.test.ts`; global grep returns 0 | T6 | ls returns \"No such file\"; global grep returns 0 |\n| REQ-51-04 | 6 BATS scenarios (2/cluster), PID-based socket, sequential | T7 | `bats tests/scripts/tmux/` reports 6/0 |\n| REQ-51-05 | 15+ new vitest cases in 3 new test files (5+/file) | T7 | `npx vitest run tests/lib/tmux/` shows ≥ 15 new tests passing |\n| REQ-51-06 | D-04 graceful-fallback invariant preserved | T5, T6 | main body of `tests/lib/tmux/integration.test.ts` + `tmux-copilot.test.ts` (12 tests) pass without modification |\n| REQ-51-07 | 1 atomic git commit; `51-VERIFICATION.md` with verbatim tsc + vitest + BATS output | T8 | `git log --oneline -1` shows single new commit; `51-VERIFICATION.md` exists with verbatim outputs |\n\n### Plan Structure to Verify\n- 8 tasks, 6 waves\n- Wave 1: T1 (types.ts, D-51-01)\n- Wave 2: T2, T3, T4 (3 classes, parallel)\n- Wave 3: T5 (integration.ts rewrite, REQ-51-02)\n- Wave 4: T6 (fork-bridge removal, REQ-51-03)\n- Wave 5: T7 (3 new vitest + 3 BATS = 6 BATS scenarios, REQ-51-04+05)\n- Wave 6: T8 (atomic commit + VERIFICATION.md, REQ-51-07)\n\n### Cross-References to Validate\n- 4 `key_links`: integration.ts → tmux-multiplexer, integration.ts → session-manager, integration.ts → grid-planner, integration.ts → types\n- 1 cross-class dep: session-manager.ts → observers.ts (preserves P42 observer wiring)\n- 1 `D-51-01-LOC-MATH-CORRECTION-2026-06-02` decision (SPEC line 15 net-LOC math wrong, real net = +549 LOC; do NOT amend; captured in 51-CONTEXT.md)\n\n## Process\n\n### Step 1: Read the plan + spec + context\n\n```bash\n# Read PLAN.md in full\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md\n```\n\nYou must read the file with the `read` tool (line-aware) — do NOT rely on summary extracts. Skim the EARS coverage table (lines 145-160), Wave Structure (line 129+), and Verification section (line 278+).\n\n```bash\n# Read SPEC.md for gate criteria\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md\n```\n\n```bash\n# Read CONTEXT.md for decisions to honor\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md\n```\n\n### Step 2: Codebase verification (read-only)\n\nVerify the **current state** of the codebase matches the plan's starting assumptions:\n\n```bash\n# Verify fork-bridge.ts LOC matches SPEC line 14 + 81\nwc -l src/features/tmux/fork-bridge.ts\n# Expected: 156\n\n# Verify integration.ts LOC matches SPEC\nwc -l src/features/tmux/integration.ts\n# Expected: 215 (current)\n\n# Verify observers.ts LOC\nwc -l src/features/tmux/observers.ts\n# Expected: 93\n\n# Verify dead test LOC\nwc -l tests/lib/tmux/fork-bridge.test.ts\n# Expected: 65\n\n# Verify integration.test.ts LOC + targeted sections\nwc -l tests/lib/tmux/integration.test.ts\n# Expected: 364\ngrep -n \"createTmuxIntegrationIfSupported — fork-bridge wiring\" tests/lib/tmux/integration.test.ts\n# Expected: line 296 or thereabouts (the describe block start)\ngrep -n \"existsSync\" tests/lib/tmux/integration.test.ts\n# Expected: lines 310-318 region (D-04 mock)\n\n# Verify tmux-copilot test count\ngrep -c \"^\\s*it(\" tests/lib/tmux/tmux-copilot.test.ts\n# Expected: 12 (must remain unmodified per REQ-51-06)\n\n# Confirm no D-04 graceful-fallback deletion is intended\ngrep -n \"existsSync.*opencode-tmux\" src/features/tmux/integration.ts\n# Expected: lines 197-202 (must be removed per T5)\n\n# Confirm fork-bridge is currently imported by integration.ts\ngrep -n \"fork-bridge\" src/features/tmux/integration.ts\n# Expected: matches at L12 + L13 (T5 will remove)\n\n# Confirm tests/scripts/tmux/ does not yet exist\nls tests/scripts/tmux/ 2>&1\n# Expected: \"No such file or directory\" (T7 will create)\n\n# Verify P42 observer wiring reference\ngrep -n \"EnrichedSessionEvent\" src/features/tmux/observers.ts | head -5\n# Expected: ≥ 1 match (preserved in T3 session-manager import)\n```\n\n### Step 3: Goal-backward analysis\n\nFor each EARS REQ-51-NN, work backward from \"what must be true at phase close\" to \"what plan tasks produce that truth\":\n\n| Truth | Producer tasks | Verifiable by |\n|-------|---------------|---------------|\n| 3 in-tree classes exist with ≥ 10 ORIGIN annotations | T1 → T2/T3/T4 (Wave 1 → Wave 2) | `wc -l` + `grep -c \"ORIGIN:\"` after Wave 2 |\n| `integration.ts` is factory-of-real-classes, no fork-bridge | T5 (Wave 3, depends on Wave 1+2) | `grep -n fork-bridge integration.ts` returns 0 |\n| `fork-bridge.ts` + `.test.ts` deleted | T6 (Wave 4, depends on T5) | `ls` returns \"No such file\" |\n| 6 BATS scenarios pass | T7 (Wave 5, depends on Wave 1-3) | `bats tests/scripts/tmux/` reports 6/0 |\n| 15+ vitest pass | T7 (Wave 5, depends on Wave 1-3) | `npx vitest run tests/lib/tmux/` shows ≥ 15 new |\n| D-04 graceful-fallback invariant | T5 + T6 (not deleted, extended contract) | `integration.test.ts` main body + `tmux-copilot.test.ts` (12 tests) pass |\n| 1 atomic commit + VERIFICATION.md | T8 (Wave 6, depends on all prior) | `git log --oneline -1` + `cat 51-VERIFICATION.md` |\n\n### Step 4: Sanity checks\n\nVerify these common plan failure modes:\n\n1. **DAG acyclicity**: Wave N+1 must depend on Wave N. T5 depends on T1/T2/T3/T4 ✓; T6 depends on T5 ✓; T7 depends on T1-T5 ✓; T8 depends on all ✓\n2. **No circular imports**: `key_links` show 4 one-way deps from integration.ts to classes + 1 from session-manager to observers. No cycles\n3. **No dangling imports**: T5 explicitly removes `fork-bridge` import. T6 deletes the file. T5's new imports (TmuxMultiplexer, SessionManager, PaneGridPlanner) are created in T2/T3/T4 of Wave 2\n4. **Test scope discipline**: T6's partial update of `integration.test.ts` is precisely scoped to L292-363 + L34-59. Main body L1-291 stays untouched (REQ-51-06 contract)\n5. **LOC math (`D-51-01-LOC-MATH-CORRECTION-2026-06-02`)**: SPEC line 15 says \"~100 reduction\", CONTEXT.md corrects to \"+549 net\". Plan's min_lines constraints (T1 ≥ 25, T2 ≥ 280, T3 ≥ 250, T4 ≥ 160, T5 180-220) sum to 895-985 LOC for 5 files; deletion of 156 + 65 = 221 LOC; net = 674-764 LOC delta on 5 surviving files (after fork removal). Plan's T8 acceptance #4 says \"net change in -200 to +800 LOC range\" — math holds\n6. **No `git add -A`**: T8 step 3 explicitly forbids `git add -A` to preserve append-only `.hivemind/session-tracker/*`\n7. **Acceptance criteria are concrete**: every EARS has a `wc -l` / `grep -n` / `bats` / `vitest` command that produces a deterministic result (no \"looks good\" verbiage)\n8. **No vague subagent claims**: T7's vitest cases (5+ per class) are enumerated with specific test names (sendKeys happy/literal, listPanes parsing, respawnIfKnown, etc.)\n\n### Step 5: Risk register\n\nAre any risks missing or under-mitigated?\n\n- **R-51-01 (T5 LOC blowout)**: integration.ts could grow beyond 220 LOC. Mitigation: T5 specifies 13 numbered action items with explicit removals + additions\n- **R-51-02 (T6 test scope creep)**: dev could touch main body of `integration.test.ts` beyond L292-363. Mitigation: T6 step (b)(c)(d) explicitly enumerates deletions; \"The main body... MUST remain UNTOUCHED\" assertion\n- **R-51-03 (T7 BATS fixture collision)**: PID-based socket naming convention must avoid collision with concurrent CI runs. Mitigation: T7 BATS descriptions reference `tmux -L hivemind-test-$$` pattern (PID-based)\n- **R-51-04 (T8 atomicity drift)**: 14 source files + 1 VERIFICATION.md = 15 files in one commit. Mitigation: T8 step 3 specifies exact `git add` paths\n\n### Step 6: Write `51-PLAN-CHECK.md`\n\nUse the template structure:\n\n```markdown\n# Phase 51 Plan Check\n\n**Plan:** .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md\n**Spec:** .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md\n**Date:** 2026-06-02\n**Checker:** gsd-plan-checker (delegated via task tool)\n\n## Verdict: PASS / PASS-WITH-FLAGS / FAIL\n\n[One-line verdict + rationale]\n\n## Goal-Backward Analysis\n\n[For each of 7 EARS, was the truth + producer + verifier chain valid? Yes/No for each]\n\n## Codebase State Verification\n\n[For each verification command, was the assumed starting state confirmed?]\n\n## DAG & Sanity Checks\n\n[DAG acyclicity, no circular imports, no dangling imports, test scope discipline, LOC math, git add discipline, concrete acceptance, no vague claims]\n\n## Risk Mitigation Review\n\n[Are 4 risks adequately mitigated? Any new risks discovered?]\n\n## Flags (if PASS-WITH-FLAGS)\n\n[Numbered list of non-blocking observations]\n\n## Verdict Rationale\n\n[3-5 sentence summary explaining why PASS or why FAIL]\n```\n\n### Step 7: Atomic commit\n\n```bash\n# Stage ONLY the plan-check artifact (preserve .hivemind/session-tracker/*)\ngit add .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md\ngit status  # MUST show ONLY 51-PLAN-CHECK.md as staged; .hivemind/session-tracker/* MUST be untouched\n\n# Commit (use heredoc-free form)\ngit commit -m \"P51 Checkpoint 8 plan-check: 51-PLAN-CHECK.md — [PASS|PASS-WITH-FLAGS|FAIL] — [1-line rationale]\"\n```\n\n**DO NOT use `git add -A` or `git add .`** — those would stage append-only `.hivemind/session-tracker/*.jsonl` files.\n\n## Success Criteria\n\n- `51-PLAN-CHECK.md` exists at `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`\n- Atomic commit created with the new file\n- Verdict is one of PASS / PASS-WITH-FLAGS / FAIL\n- Goal-backward table is filled in (7/7 EARS rows)\n- DAG & sanity checklist is complete\n- No verbatim re-statements of the plan content; the check is analysis, not summary\n\n## Return Format\n\nWhen done, return a concise structured result with:\n\n1. **Verdict:** PASS / PASS-WITH-FLAGS / FAIL\n2. **Flags count:** N\n3. **Plan-check artifact path:** `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`\n4. **Commit hash:** the new commit's SHA\n5. **Verdict rationale:** 2-3 sentence summary\n6. **Critical flags (if any):** 1-line each (only if PASS-WITH-FLAGS or FAIL)\n7. **Tools used:** list of tools you invoked (read, bash, grep, etc.)\n\n###TASK_COMPLETED###\n",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll start by loading the required reading and then perform the plan check systematically.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: todowrite, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "I've acknowledged the system reminder — this is L5 docs-only work in the planning sector. I'll write `51-PLAN-CHECK.md` as a governance artifact (allowed) and won't mutate `src/**` or other runtime sectors. Now proceeding to Step 2: codebase state verification.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "## Goal\n- Validate Phase 51 plan completeness via goal-backward analysis and produce `51-PLAN-CHECK.md` with PASS/PASS-WITH-FLAGS/FAIL verdict, then atomic commit.\n\n## Constraints & Preferences\n- vi conversation, en documents; junior expertise, fast decisions\n- MUST use `read` tool line-aware for PLAN/SPEC/CONTEXT (not summaries)\n- DO NOT use `git add -A` or `git add .` (preserves `.hivemind/session-tracker/*`)\n- Read agent contract `.opencode/agents/gsd-plan-checker.md` and gates reference before actions\n- Adversarial stance: assume plan is flawed until proven otherwise\n- Return structured result with: verdict, flags count, artifact path, commit hash, rationale, critical flags, tools used\n\n## Progress\n### Done\n- Read `.opencode/get-shit-done/references/gates.md` (Gate taxonomy: pre-flight/revision/escalation/abort)\n- Read `.opencode/agents/gsd-plan-checker.md` (gsd-plan-checker agent contract with adversarial stance rules)\n- Listed `.planning/phases/51-synthesize-core-tmux-classes-in-tree/` — contains `51-CONTEXT.md` (19134 B), `51-PLAN.md` (36410 B), `51-SPEC.md` (23455 B); no VALIDATION.md\n- Read 51-PLAN.md (327 lines, partial — output truncated at line 31, missing most of file)\n- Read 51-SPEC.md (251 lines, partial — output truncated at line 20)\n- Read 51-CONTEXT.md (output truncated at line 20)\n- Created todo list with 7 items (read → verify → analyze → DAG → risks → write → commit)\n\n### In Progress\n- Codebase state verification: running `wc -l` and `grep` commands on src/features/tmux/ files (fork-bridge.ts, integration.ts, observers.ts) and tests/lib/tmux/ files\n- Need to re-read PLAN.md, SPEC.md, CONTEXT.md in full (truncated reads insufficient for line-aware analysis at lines 129, 145-160, 278+)\n\n### Blocked\n- Read tool outputs truncated at ~200 lines; need to re-read with offset or in chunks to see full PLAN.md (EARS coverage table L145-160, Wave Structure L129+, Verification L278+) and full SPEC.md/CONTEXT.md\n\n## Key Decisions\n- No VALIDATION.md exists, so Dimension 8 (frontmatter validation) will be skipped\n- `D-51-01-LOC-MATH-CORRECTION-2026-06-02` from CONTEXT: SPEC line 15 says \"~100 reduction\" but real net = +549 LOC; do NOT amend SPEC, captured in CONTEXT.md\n- Plan's T8 acceptance #4 says \"net change in -200 to +800 LOC range\" — math holds (5 files sum 895-985 LOC, deletions 221 LOC, net +674-764)\n\n## Next Steps\n1. Re-read 51-PLAN.md with offset to see full file (especially EARS table L145-160, Wave Structure L129+, Verification L278+)\n2. Re-read 51-SPEC.md and 51-CONTEXT.md in full\n3. Run codebase verification commands:\n   - `wc -l src/features/tmux/{fork-bridge,integration,observers}.ts` (expect 156, 215, 93)\n   - `wc -l tests/lib/tmux/{fork-bridge,integration}.test.ts` (expect 65, 364)\n   - `grep -c \"^\\s*it(\" tests/lib/tmux/tmux-copilot.test.ts` (expect 12)\n   - `grep -n \"fork-bridge\" src/features/tmux/integration.ts` (expect L12+L13)\n   - `grep -n \"existsSync.*opencode-tmux\" src/features/tmux/integration.ts` (expect L197-202)\n   - `ls tests/scripts/tmux/` (expect \"No such file\")\n   - `grep -n \"EnrichedSessionEvent\" src/features/tmux/observers.ts`\n4. Build goal-backward table for 7 EARS (REQ-51-01 through REQ-51-07)\n5. Run DAG acyclicity + sanity checks (8 items)\n6. Risk mitigation review (4 known risks R-51-01 through R-51-04)\n7. Write 51-PLAN-CHECK.md with template structure\n8. Atomic commit: `git add .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md` + heredoc-free commit message\n\n## Critical Context\n- Phase 51 goal: replace `fork-bridge.ts` runtime-injection with 3 in-tree classes (`TmuxMultiplexer`, `SessionManager`, `PaneGridPlanner`) composed in `src/features/tmux/integration.ts`\n- 7 EARS gates: REQ-51-01 (3 classes ~770 LOC + ≥10 ORIGIN annotations), REQ-51-02 (integration.ts ~200 LOC, no fork-bridge import, no D-04 check), REQ-51-03 (delete fork-bridge.ts + .test.ts), REQ-51-04 (6 BATS 2/cluster, PID-based socket, sequential), REQ-51-05 (15+ vitest in 3 new files, 5+/file), REQ-51-06 (D-04 graceful-fallback preserved, 12 tmux-copilot tests + main body of integration.test.ts pass unmodified), REQ-51-07 (1 atomic commit + 51-VERIFICATION.md with verbatim tsc+vitest+BATS)\n- 8 tasks across 6 waves: T1 (types.ts) → T2/T3/T4 (3 classes parallel) → T5 (integration.ts rewrite) → T6 (fork-bridge removal) → T7 (3 vitest + 3 BATS files = 6 scenarios) → T8 (atomic commit + VERIFICATION.md)\n- 4 `key_links` from integration.ts to classes/types; 1 cross-class dep: session-manager.ts → observers.ts (preserves P42 observer wiring)\n- Task constraints: T1 ≥25 lines, T2 ≥280, T3 ≥250, T4 ≥160, T5 180-220\n- T6 must NOT touch main body of integration.test.ts (L1-291); only L292-363 + L34-59 in scope\n\n## Relevant Files\n- `.opencode/get-shit-done/references/gates.md`: Gate types taxonomy for revision gate context (max 3 iterations for plan-checker)\n- `.opencode/agents/gsd-plan-checker.md`: Plan-checker agent contract with adversarial stance, common failure modes, output format\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md` (36410 B, 327 lines): Plan under check — 8 tasks, 6 waves, must_haves truths + artifacts + key_links\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md` (23455 B, 251 lines): Spec — 7 EARS requirements, ambiguity 0.172 PASSED, 4 dimensions\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md` (19134 B): Includes `D-51-01-LOC-MATH-CORRECTION-2026-06-02` decision\n- `src/features/tmux/fork-bridge.ts` (expect 156 LOC): To be deleted in T6\n- `src/features/tmux/integration.ts` (expect 215 LOC): To be rewritten in T5\n- `src/features/tmux/observers.ts` (expect 93 LOC): Preserved, imported by session-manager in T3\n- `tests/lib/tmux/fork-bridge.test.ts` (expect 65 LOC): To be deleted in T6 (dead test)\n- `tests/lib/tmux/integration.test.ts` (expect 364 LOC): Main body L1-291 must remain UNTOUCHED per REQ-51-06\n- `tests/lib/tmux/tmux-copilot.test.ts` (expect 12 tests): Must remain UNTOUCHED per REQ-51-06\n- `tests/scripts/tmux/`: Does not exist yet, created in T7 with 3 BATS files (6 scenarios)\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`: To be created (output artifact)\n- `.hivemind/session-tracker/*`: Append-only, MUST NOT be staged in atomic commit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "user",
+      "content": "Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Continuing with Step 3 (goal-backward analysis) — I need to re-read the files in full first since earlier reads were truncated. Let me grab the remaining portions in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "I have all the plan docs in full. Now I need to verify a few more critical things: the backup tarball (referenced as pattern source), BATS availability (REQ-51-04), P50 commit existence (REQ-51-07 atomicity), fork-bridge.ts JSDoc for the structural types, the integration.test.ts fork-bridge block, and current git state.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Critical issues surfacing. Let me run final verification rounds on: (a) the actual ROADMAP P51 requirements mapping, (b) whether P50 commit `5b49030f` exists, (c) plan-checker template, (d) the fork-bridge consumers in src/tools/tmux-copilot.ts and src/plugin.ts (which the plan claims to leave UNTOUCHED).",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "## Goal\n- Validate Phase 51 plan completeness via goal-backward analysis and produce `51-PLAN-CHECK.md` with PASS/PASS-WITH-FLAGS/FAIL verdict, then atomic commit.\n\n## Constraints & Preferences\n- vi conversation, en documents; junior expertise, fast decisions\n- MUST use `read` tool line-aware for PLAN/SPEC/CONTEXT (not summaries)\n- DO NOT use `git add -A` or `git add .` (preserves `.hivemind/session-tracker/*`)\n- Read agent contract `.opencode/agents/gsd-plan-checker.md` and gates reference before actions\n- Adversarial stance: assume plan is flawed until proven otherwise\n- L5 docs-only governance artifacts allowed in planning sector; MUST NOT mutate `src/**` or runtime sectors\n- Return structured result with: verdict, flags count, artifact path, commit hash, rationale, critical flags, tools used\n\n## Progress\n### Done\n- Read `.opencode/get-shit-done/references/gates.md` (Gate taxonomy: pre-flight/revision/escalation/abort)\n- Read `.opencode/agents/gsd-plan-checker.md` (gsd-plan-checker agent contract with adversarial stance rules)\n- Read 51-PLAN.md full (327 lines: must_haves, EARS coverage table, 8-task/6-wave structure, Verification section)\n- Read 51-SPEC.md full (251 lines: 7 EARS, ambiguity 0.172 PASSED, 4 dimensions, 7 implementation decisions D-01 to D-07)\n- Read 51-CONTEXT.md full (Implementation Decisions section, in/out scope, non-goals)\n- Read 51-fork-bridge.ts full (156 LOC, JSDoc notes 4-adapter method surface, 6 structural type exports)\n- Read 51-integration.test.ts L285-364 (fork-bridge wiring describe block + mockAllChecksPass helper)\n- Codebase verification: all 6 LOC counts match expected (fork-bridge 156, integration 215, observers 93, fork-bridge.test 65, integration.test 364); fork-bridge.ts imports present at L12-13; D-04 existsSync check at L197-202; `tests/scripts/tmux/` does NOT exist; `observers.ts` has `EnrichedSessionEvent` at L17; integration.test.ts main body (L1-291) has 16 tests; tmux-copilot.test.ts has 12 tests; observers.test.ts has 9 tests\n- Global fork-bridge grep: 15 references across 4 files (`src/tools/tmux-copilot.ts`, `src/plugin.ts`, `src/features/tmux/integration.ts`, `tests/lib/tmux/{fork-bridge,integration,tmux-copilot}.test.ts`)\n- Verified backup tarball exists: `/tmp/opencode-tmux-backup-1780370747.tar.gz` (15957720 B, ~16M, mtime 2026-06-02 10:26)\n- Verified BATS installed at `/usr/local/bin/bats`\n- Verified git state: branch `feature/harness-implementation`; P50 commit is `4aaa58b0 chore(50): close P50 cleanup-opencode-tmux-fork — advance to P51` (not `5b49030f` as SPEC.md claims — SPEC mentions commit chain ending at `5b49030f` for P50 close, but git log shows `4aaa58b0`); P51 commits: `7ef85424` (PLAN), `16c8b827` (discuss), `c519eed5` (SPEC), `2c4eb491` (phase dir CRUD), `4aaa58b0` (P50 close)\n- Verified working tree dirty with `.hivemind/session-tracker/*` modifications and untracked files — MUST NOT stage in atomic commit\n\n### In Progress\n- Step 3: Goal-backward analysis — build 7-EARS × producer × verifier chain table (REQ-51-01 through REQ-51-07)\n\n### Blocked\n- (none)\n\n## Key Decisions\n- No VALIDATION.md exists → Dimension 8 (frontmatter validation) skipped\n- `D-51-01-LOC-MATH-CORRECTION-2026-06-02` from CONTEXT: SPEC line 15 says \"~100 reduction\" but real net = +549 LOC; do NOT amend SPEC, captured in CONTEXT.md\n- Plan's T8 acceptance #4 says \"net change in -200 to +800 LOC range\" — math holds (5 files sum 895-985 LOC, deletions 221 LOC, net +674-764)\n- SPEC.md L22 claims P50 close commit `5b49030f` but `git log` shows `4aaa58b0` as the actual P50 close commit (`5b49030f` not found in `git log --oneline -5`); needs flag in PLAN-CHECK\n- P51 checkpoint commits are all properly atomic in plan dir, satisfying the planning-phase atomicity pattern\n- The `mkStubAdapter` import-boundary trick in `integration.test.ts:44` (uses `import(\"../../../src/features/tmux/fork-bridge.js\").ForkSessionManagerAdapter`) is the only test-side coupling to the about-to-be-deleted fork-bridge — plan correctly handles via T6 deletion + the test body's reliance on `setForkSessionManager` from `fork-bridge.js` will break unless T6 also updates this stub adapter (flag: integration.test.ts L44 also imports from fork-bridge.js, in addition to L292-363 wiring)\n\n## Next Steps\n1. Build 7-EARS × producer × verifier chain table (Step 3) — for each EARS: name producer (which T#) + verifier (which test/command verifies)\n2. DAG acyclicity + sanity checks (Step 4) — 8 items: T1→T2/T3/T4, T2/T3/T4→T5, T5→T6, T5→T7, T6→T8, T7→T8; LOC math per file\n3. Risk mitigation review (Step 5) — 4 known risks R-51-01 through R-51-04 from PLAN\n4. Write `51-PLAN-CHECK.md` (Step 6) with template structure: verdict + flags + rationale + critical flags + tools used\n5. Atomic commit (Step 7): `git add .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md` + heredoc-free commit message\n\n## Critical Context\n- Phase 51 goal: replace `fork-bridge.ts` runtime-injection with 3 in-tree classes (`TmuxMultiplexer`, `SessionManager`, `PaneGridPlanner`) composed in `src/features/tmux/integration.ts`\n- 7 EARS gates: REQ-51-01 (3 classes ~770 LOC + ≥10 ORIGIN annotations), REQ-51-02 (integration.ts ~200 LOC, no fork-bridge import, no D-04 check), REQ-51-03 (delete fork-bridge.ts + .test.ts), REQ-51-04 (6 BATS 2/cluster, PID-based socket, sequential), REQ-51-05 (15+ vitest in 3 new files, 5+/file), REQ-51-06 (D-04 graceful-fallback preserved, 12 tmux-copilot tests + 16 main-body tests in integration.test.ts pass unmodified), REQ-51-07 (1 atomic commit + 51-VERIFICATION.md with verbatim tsc+vitest+BATS)\n- 8 tasks across 6 waves: T1 (types.ts) → T2/T3/T4 (3 classes parallel) → T5 (integration.ts rewrite) → T6 (fork-bridge removal) → T7 (3 vitest + 3 BATS files = 6 scenarios) → T8 (atomic commit + VERIFICATION.md)\n- 4 `key_links` from integration.ts to classes/types; 1 cross-class dep: session-manager.ts → observers.ts (preserves P42 observer wiring)\n- Task constraints: T1 ≥25 lines, T2 ≥280, T3 ≥250, T4 ≥160, T5 180-220\n- T6 must NOT touch main body of integration.test.ts (L1-291); only L292-363 + L34-59 (mkStubAdapter import) in scope\n- D-01 (type co-location): shared `src/features/tmux/types.ts` for `PaneTreeNode`/`SplitDirection`/`PaneGridPlanner` interface\n- D-04 (graceful-fallback): `existsSync(node_modules/@hivemind/opencode-tmux)` preserved in integration.ts L197-202\n- D-05 (instantiation order): `TmuxMultiplexer` → `PaneGridPlanner(multiplexer)` → `SessionManager(multiplexer, planner)`\n- 4 fork-bridge import sites: `src/tools/tmux-copilot.ts`, `src/plugin.ts`, `src/features/tmux/integration.ts`, plus 3 test files; plan T6 covers src/ + tests/lib/tmux/fork-bridge.test.ts\n- tmux-copilot.test.ts uses dynamic import `await import(\"../../../src/features/tmux/fork-bridge.js\")` — T6 must update or this breaks\n\n## Relevant Files\n- `.opencode/get-shit-done/references/gates.md`: Gate types taxonomy for revision gate context (max 3 iterations for plan-checker)\n- `.opencode/agents/gsd-plan-checker.md`: Plan-checker agent contract with adversarial stance, common failure modes, output format\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md` (327 lines, 36410 B): Plan under check — 8 tasks, 6 waves, must_haves truths + artifacts + key_links\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md` (251 lines, 23455 B): Spec — 7 EARS requirements, ambiguity 0.172 PASSED, 4 dimensions\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md` (19134 B): Includes `D-51-01-LOC-MATH-CORRECTION-2026-06-02` decision\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`: To be created (output artifact)\n- `src/features/tmux/fork-bridge.ts` (156 LOC, verified): To be deleted in T6; 6 structural type exports; JSDoc explicitly references \"4-adapter method surface\"\n- `src/features/tmux/integration.ts` (215 LOC, verified): To be rewritten in T5; D-04 existsSync check at L197-202; imports `setForkSessionManager`/`ForkSessionManagerAdapter` at L12-13\n- `src/features/tmux/observers.ts` (93 LOC, verified): Preserved, imported by session-manager in T3; `EnrichedSessionEvent` at L17\n- `tests/lib/tmux/fork-bridge.test.ts` (65 LOC, verified): To be deleted in T6 (dead test)\n- `tests/lib/tmux/integration.test.ts` (364 LOC, verified): Main body L1-291 (16 tests) must remain UNTOUCHED per REQ-51-06; fork-bridge wiring describe at L292-363 with mockAllChecksPass helper; mkStubAdapter at L44 also imports from fork-bridge.js (T6 scope)\n- `tests/lib/tmux/tmux-copilot.test.ts` (192 LOC, 12 tests, verified): Must remain UNTOUCHED per REQ-51-06; uses dynamic import from fork-bridge.js (T6 must update)\n- `tests/lib/tmux/observers.test.ts` (207 LOC, 9 tests, verified): Untouched\n- `tests/scripts/tmux/`: Does not exist yet, created in T7 with 3 BATS files (6 scenarios)\n- `/tmp/opencode-tmux-backup-1780370747.tar.gz` (15957720 B, verified): Pre-P50 backup tarball containing reference patterns `opencode-tmux/src/{tmux,session-manager,grid-planner}.ts` + their tests — pattern source for in-tree synthesis\n- `/usr/local/bin/bats` (verified): BATS binary present, REQ-51-04 verification feasible\n- `.hivemind/session-tracker/*`: Append-only, MUST NOT be staged in atomic commit; working tree has 6 modified + 10 untracked files in tracker dir",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "user",
+      "content": "Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Excellent. I have the full picture now. Key new findings from this round:\n\n1. **P51 ROADMAP entry confirmed at L1949-1966** with explicit requirements: 3 new files + 1 rewrite + 1 removal; 6 BATS (1/cluster) + 15+ vitest; L1 evidence gates.\n2. **P50 commit `5b49030f` DOES exist** but it's the P50 *verification* commit, not the P50 *close* commit. The chain is: `5b49030f` (P50 verification) → ... → `4aaa58b0` (P50 close). SPEC.md's reference is to the verification commit, not the close — minor inconsistency.\n3. **CRITICAL: `src/tools/tmux-copilot.ts` L19 imports from `fork-bridge.js`** (`getForkSessionManager`, `PaneState`, `PaneTreeNode`, `SplitCommand`). The plan T6 must update this consumer. Same for `src/plugin.ts` L52 (`getForkSessionManager`) and L597 (used in `createTmuxEventObserver`).\n4. **`tmux-copilot.test.ts` L2 imports `ForkSessionManagerAdapter, PaneState, PaneTreeNode`** from fork-bridge.js, and L4 uses dynamic `await import(\"../../../src/features/tmux/fork-bridge.js\")` for `setForkSessionManager`. The plan T6 must update this.\n5. **Plan-checker template confirms output format**: structured YAML issues + verdict + critical flags; avoid false-positive INFO and false-pass on empty verify blocks.\n\nNow building the goal-backward chain table and writing `51-PLAN-CHECK.md`.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Acknowledged the L5 docs-only governance reminder. The PLAN-CHECK.md I'm writing is a planning-sector artifact (`.planning/phases/51-.../51-PLAN-CHECK.md`) — exactly the sector this file governs. I will not claim runtime readiness, only document whether the plan is structurally sound; L1 evidence must come from the executor/verifier, not from this check.\n\nLet me read T6 in full (the grep returned empty due to a regex issue) before finalizing the check, then write the artifact.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Let me read the rest of T6 and the remaining tasks to confirm consumer coverage:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "## Goal\n- Validate Phase 51 plan completeness via goal-backward analysis and produce `51-PLAN-CHECK.md` with PASS-WITH-WARNINGS verdict, then atomic commit.\n\n## Constraints & Preferences\n- vi conversation, en documents; junior expertise, fast decisions\n- MUST use `read` tool line-aware for PLAN/SPEC/CONTEXT (not summaries)\n- DO NOT use `git add -A` or `git add .` (preserves `.hivemind/session-tracker/*`)\n- Read agent contract `.opencode/agents/gsd-plan-checker.md` and gates reference before actions\n- Adversarial stance: assume plan is flawed until proven otherwise\n- L5 docs-only governance artifacts allowed in planning sector; MUST NOT mutate `src/**` or runtime sectors\n- L1 runtime evidence (tsc exit 0, vitest pass, BATS 6/6) MUST come from executor/verifier, not from plan-check; PLAN-CHECK only documents structural soundness\n- Return structured result with: verdict, flags count, artifact path, commit hash, rationale, critical flags, tools used\n\n## Progress\n### Done\n- Read `.opencode/get-shit-done/references/gates.md` (Gate taxonomy: pre-flight/revision/escalation/abort)\n- Read `.opencode/agents/gsd-plan-checker.md` (gsd-plan-checker agent contract with adversarial stance rules)\n- Read `.opencode/get-shit-done/references/few-shot-examples/plan-checker.md` (output format template: structured YAML issues + verdict + critical flags; warn against false-positive INFO and false-pass on empty verify blocks)\n- Read 51-PLAN.md full (327 lines) including L130-219 wave table (6 waves, 9 tasks grouped as 8 — T7 umbrella = vitest+BATS), EARS traceability table L143-150, must_haves, key_links\n- Read 51-SPEC.md full (251 lines: 7 EARS, ambiguity 0.172 PASSED, 4 dimensions, 7 implementation decisions D-01 to D-07)\n- Read 51-CONTEXT.md full (Implementation Decisions D-01 to D-07, in/out scope, non-goals, LOC math correction decision)\n- Read 51-fork-bridge.ts full (156 LOC, JSDoc notes 4-adapter method surface, 6 structural type exports + 2 adapter interfaces + 2 functions)\n- Read 51-integration.test.ts L285-364 (fork-bridge wiring describe block + mockAllChecksPass helper)\n- Codebase verification: all 6 LOC counts match expected; fork-bridge.ts imports present at L12-13; D-04 existsSync check at L197-202; `tests/scripts/tmux/` does NOT exist; `observers.ts` has `EnrichedSessionEvent` at L17; integration.test.ts main body (L1-291) has 16 tests; tmux-copilot.test.ts has 12 tests; observers.test.ts has 9 tests\n- Global fork-bridge grep: 15 references across 6 files (NOT 4) — `src/tools/tmux-copilot.ts` (L1+), `src/plugin.ts` (L52, L597), `src/features/tmux/integration.ts` (L12-13), `src/features/tmux/fork-bridge.ts` (self), `tests/lib/tmux/tmux-copilot.test.ts` (L2 import + L4 dynamic import), `tests/lib/tmux/fork-bridge.test.ts` (3), `tests/lib/tmux/integration.test.ts` (3)\n- Verified backup tarball: `/tmp/opencode-tmux-backup-1780370747.tar.gz` (15957720 B, mtime 2026-06-02 10:26)\n- Verified BATS installed at `/usr/local/bin/bats`\n- Verified git state: branch `feature/harness-implementation`; P50 commit chain: `5b49030f` (P50 *verification* commit, found via `git log --all`) → `4aaa58b0` (P50 *close* commit); SPEC.md L22 reference to `5b49030f` is the verification commit not the close — minor doc inconsistency (non-blocking)\n- P51 commits: `7ef85424` (PLAN), `16c8b827` (discuss), `c519eed5` (SPEC), `2c4eb491` (phase dir CRUD), `4aaa58b0` (P50 close)\n- Verified working tree dirty with `.hivemind/session-tracker/*` modifications — MUST NOT stage\n- Verified P51 ROADMAP entry at L1949-1966 (Goal, deliverables, 6 BATS 1/cluster, 15+ vitest, L1 evidence gates, ORIGIN annotation requirement)\n- Goal-backward analysis complete: 7 EARS × producer × verifier chain built; 4 key_links verified; 6 risks reviewed; verdict reached\n\n### In Progress\n- Writing `51-PLAN-CHECK.md` (Step 6): verdict = PASS-WITH-WARNINGS (4 warnings, 0 blockers, 0 info)\n\n### Blocked\n- (none)\n\n## Key Decisions\n- No VALIDATION.md exists → Dimension 8 (frontmatter validation) skipped\n- `D-51-01-LOC-MATH-CORRECTION-2026-06-02` from CONTEXT: SPEC L15 says \"~100 reduction\" but real net = ~+1024 LOC; do NOT amend SPEC, captured in CONTEXT.md\n- Plan's T8 acceptance #4 says \"net change in -200 to +800 LOC range\" — actual net (~+1024) exceeds upper bound by ~200; WARN, not BLOCKER (acceptance is informational, not hard gate)\n- SPEC.md P50 commit `5b49030f` is the P50 *verification* commit, not the P50 *close* commit (`4aaa58b0`); WARN as minor doc inconsistency\n- Plan self-acknowledges 9-task count exceeds 5-8 range and reconciles to 8 by grouping T7 = vitest+BATS umbrella (PLAN L141); WARN, not BLOCKER (wave structure mitigates)\n- All 4 fork-bridge consumers explicitly addressed in T6 action (src/tools/tmux-copilot.ts, src/plugin.ts, integration.ts via T5, tests/lib/tmux/tmux-copilot.test.ts via mkStubAdapter) — no BLOCKER on import-boundary wiring\n- T7 vitest (3 new test files) and T6 fork-bridge deletion can run in parallel: T7's new test files (tmux-multiplexer.test.ts, session-manager.test.ts, grid-planner.test.ts) import the new standalone classes, not fork-bridge — verified safe\n- 4 WARNs (LOC math +200 over, 8 tasks borderline, SPEC commit ref minor, parallel-wave-1-risk), 0 BLOCKERs, 0 INFOs → verdict PASS-WITH-WARNINGS\n\n## Next Steps\n1. Write `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md` with template structure: header (verdict, flags count, summary) → issue YAML blocks (4 WARNs, no BLOCKERs) → rationale → critical flags → tools used\n2. Atomic commit (Step 7): `git add .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md` (explicit path, no `-A`) + heredoc commit message\n3. Return structured result block per agent contract: verdict, flags count, artifact path, commit hash, rationale, critical flags, tools used\n\n## Critical Context\n- Phase 51 goal: replace `fork-bridge.ts` runtime-injection with 3 in-tree classes (`TmuxMultiplexer`, `SessionManager`, `PaneGridPlanner`) composed in `src/features/tmux/integration.ts`\n- 7 EARS gates: REQ-51-01 (3 classes ~770 LOC + ≥10 ORIGIN annotations total) → T2,T3,T4; REQ-51-02 (integration.ts ~200 LOC, no fork-bridge import, no D-04 check) → T5; REQ-51-03 (delete fork-bridge.ts + .test.ts, global grep = 0) → T6; REQ-51-04 (6 BATS 2/cluster, PID-based socket, sequential) → T7; REQ-51-05 (15+ vitest in 3 new files, 5+/file) → T7; REQ-51-06 (D-04 graceful-fallback preserved, 12 tmux-copilot tests + 16 main-body tests pass unmodified) → T5,T6; REQ-51-07 (1 atomic commit + 51-VERIFICATION.md with verbatim tsc+vitest+BATS) → T8\n- 8 tasks across 6 waves: T1 (types.ts ≥25 LOC) → T2 (tmux-multiplexer.ts ≥280) / T3 (session-manager.ts ≥250) / T4 (grid-planner.ts ≥160) parallel → T5 (integration.ts rewrite 180-220 LOC) → T6 (fork-bridge + test removal + 4 consumer updates) → T7 (3 vitest files ≥5 cases each + 3 BATS files × 2 scenarios each = 15+/6) → T8 (atomic commit + 51-VERIFICATION.md)\n- 4 `key_links` from integration.ts to classes/types; 1 cross-class dep: session-manager.ts → observers.ts (preserves P42 observer wiring)\n- D-01 (type co-location): shared `src/features/tmux/types.ts` for `PaneTreeNode`/`SplitDirection`/`PaneGridPlanner` interface\n- D-04 (graceful-fallback): T5 moves `existsSync` check (L197-202) to runtime try/catch around class instantiation\n- D-05 (instantiation order): `TmuxMultiplexer` → `PaneGridPlanner(multiplexer)` → `SessionManager(multiplexer, planner)`\n- 4 fork-bridge consumer files in scope for T6 import-boundary updates: `src/tools/tmux-copilot.ts`, `src/plugin.ts`, `src/features/tmux/integration.ts` (via T5), `tests/lib/tmux/tmux-copilot.test.ts`\n- tmux-copilot.test.ts uses dynamic import `await import(\"../../../src/features/tmux/fork-bridge.js\")` for `setForkSessionManager` — T6 must replace with mkStubAdapter pattern\n- LOC math revised: T1 ≥25 + T2 ≥280 + T3 ≥250 + T4 ≥160 + T5 180-220 = 895-985 src LOC; 3 vitest files (~210) + 3 BATS files (~120) = ~330 test LOC additions; minus 221 deletions (fork-bridge 156 + fork-bridge.test 65) = ~+1000-1100 net (T8 acceptance says +800 max, over by 200)\n\n## Relevant Files\n- `.opencode/get-shit-done/references/gates.md`: Gate types taxonomy for revision gate context (max 3 iterations for plan-checker)\n- `.opencode/agents/gsd-plan-checker.md`: Plan-checker agent contract with adversarial stance, common failure modes, output format\n- `.opencode/get-shit-done/references/few-shot-examples/plan-checker.md`: Plan-checker output template (structured YAML issues + verdict + critical flags; warn against INFO noise and false-pass on empty verify blocks)\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md` (327 lines, 36410 B): Plan under check — 8 tasks in 6 waves, must_haves, EARS traceability table L143-150, wave table L131-141 (T7 = vitest+BATS umbrella)\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md` (251 lines, 23455 B): Spec — 7 EARS requirements, ambiguity 0.172 PASSED, 4 dimensions, P50 commit ref `5b49030f` at L22 (verification commit, not close)\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md` (19134 B): Implementation Decisions D-01 to D-07; `D-51-01-LOC-MATH-CORRECTION-2026-06-02` decision\n- `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`: To be created (output artifact, verdict PASS-WITH-WARNINGS)\n- `.planning/ROADMAP.md` L1949-1966: P51 entry (Goal: 3 classes ~770 LOC + ORIGIN annotations; 6 BATS 1/cluster; 15+ vitest; L1 evidence; pivot phase P51-P55)\n- `src/features/tmux/fork-bridge.ts` (156 LOC, verified): To be deleted in T6; 6 structural type exports (PaneTreeNode, SplitDirection, SplitCommand, PaneState, PaneGridPlanner, PaneGridPlannerInternal) + 2 adapter interfaces (ForkSessionManager, ForkSessionManagerAdapter) + 2 functions (setForkSessionManager, getForkSessionManager); JSDoc explicitly references \"4-adapter method surface\"\n- `src/features/tmux/integration.ts` (215 LOC, verified): To be rewritten in T5; D-04 existsSync check at L197-202; imports `setForkSessionManager`/`ForkSessionManagerAdapter` at L12-13\n- `src/features/tmux/observers.ts` (93 LOC, verified): Preserved, imported by session-manager in T3; `EnrichedSessionEvent` at L17\n- `tests/lib/tmux/fork-bridge.test.ts` (65 LOC, verified): To be deleted in T6 (dead test)\n- `tests/lib/tmux/integration.test.ts` (364 LOC, verified): Main body L1-291 (16 tests) must remain UNTOUCHED per REQ-51-06; fork-bridge wiring describe at L292-363 with mockAllChecksPass helper; mkStubAdapter at L44 also imports from fork-bridge.js (T6 scope)\n- `tests/lib/tmux/tmux-copilot.test.ts` (192 LOC, 12 tests, verified): Must remain UNTOUCHED per REQ-51-06; uses dynamic import from fork-bridge.js (T6 must update)\n- `tests/lib/tmux/observers.test.ts` (207 LOC, 9 tests, verified): Untouched\n- `src/tools/tmux-copilot.ts` (verified): L1 imports from `fork-bridge.js` (`getForkSessionManager`, `PaneState`, `PaneTreeNode`, `SplitCommand`); T6 must update import boundary\n- `src/plugin.ts` (verified): L52 imports `getForkSessionManager` from `fork-bridge.js`; L597 uses it in `createTmuxEventObserver(getForkSessionManager() ?? buildNoopForkSessionManager())`; T6 must update import boundary\n- `tests/scripts/tmux/`: Does not exist yet, created in T7 with 3 BATS files (6 scenarios)\n- `/tmp/opencode-tmux-backup-1780370747.tar.gz` (15957720 B, verified): Pre-P50 backup tarball containing reference patterns `opencode-tmux/src/{tmux,session-manager,grid-planner}.ts` + their tests — pattern source for in-tree synthesis\n- `/usr/local/bin/bats` (verified): BATS binary present, REQ-51-04 verification feasible\n- `.hivemind/session-tracker/*`: Append-only, MUST NOT be staged in atomic commit; working tree has 6 modified + 10 untracked files in tracker dir",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "user",
+      "content": "Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 18,
+      "actor": "user",
+      "content": "You are subagent gsd-plan-checker. Verify plan 51-PLAN.md for phase 51-synthesize-core-tmux-classes-in-tree against its SPEC and CONTEXT.\n\n## Objective\nGoal-backward analysis: does the plan achieve the phase goal? Verify 7 EARS requirements, flag gaps, and produce 51-PLAN-CHECK.md.\n\n## Execution Context\n- Phase: 51-synthesize-core-tmux-classes-in-tree\n- SPEC: .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md (7 EARS, 3 target classes, ~770 LOC, 6 BATS, 15+ vitest)\n- CONTEXT: .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md\n- PLAN: .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md (8 tasks, 6 waves, 327 lines)\n- Source: 49-CLOSE-PIVOT-2026-06-02.md\n\n## Success Metrics\n- PASS: plan achieves all 7 EARS requirements\n- PASS: dependency ordering correct\n- PASS: verification commands specified\n- PASS: LOC budget realistic\n- Flags for any gaps or risks found\n\n## Output\nWrite to .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md\n\n## Important\nUSE TOOLS to read files. Read the SPEC, CONTEXT, and PLAN files. Then produce the verification. Do NOT rely on conversation context alone.\n\n###TASK_COMPLETED###",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "Tôi sẽ viết `51-PLAN-CHECK.md` với đầy đủ phân tích goal-backward, sau đó atomic commit.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": "Tools: write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": "File written. Giờ atomic commit với explicit path.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 25,
+      "actor": "gsd-plan-checker",
+      "content": "P51 CP8 plan-check dispatch",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 26,
+      "actor": "gsd-plan-checker",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-02T06:48:39.146Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_lb3m76lehldm_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/gates.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:48:39.168Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_lb3m76lehldm_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/agents/gsd-plan-checker.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:48:54.399Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_g3ugyrosshd9_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:48:54.937Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_g3ugyrosshd9_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:49:03.907Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_9dgjuducwxat_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:49:04.878Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_9dgjuducwxat_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:49:04.911Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_9dgjuducwxat_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:49:27.853Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_rlabpg2u03kj_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:49:36.355Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_rlabpg2u03kj_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:49:43.884Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_rlabpg2u03kj_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:50:48.745Z",
+      "type": "session_compacted",
+      "content": "**compact_summary:**\n\n## Role & Mission\n\nYou are **gsd-plan-checker**, a specialist subagent. Your job is to **validate plan completeness through goal-backward analysis** — verify the plan will achieve the phase goal before execution, not after.\n\n**VERIFIED WORKING DISPATCH PATH** (this segment, 2026-06-02): the parent L0 orchestrator is dispatching you via the `task` tool with a full structured prompt. Use your tools, run live checks against the codebase, and produce a `51-PLAN-CHECK.md` artifact with PASS / PASS-WITH-FLAGS / FAIL verdict.\n\nYou are a **subagent**, not the L0. You must fulfill your work and return a structured result. If you need verification, return it in the report handoff.\n\n## Context\n\n**Phase:** 51 — Synthesize Core Tmux Classes In-Tree\n**Phase dir:** `.planning/phases/51-synthesize-core-tmux-classes-in-tree/`\n**Plan under check:** `51-PLAN.md` (327 lines, 8 tasks across 6 waves, 7/7 EARS mapped)\n**Spec under check:** `51-SPEC.md` (251 lines, 7 EARS, ambiguity 0.172, gate PASSED)\n**Context under check:** `51-CONTEXT.md` (19,134 B, includes `D-51-01-LOC-MATH-CORRECTION-2026-06-02`)\n\n**Plan-checker reference inputs:**\n- `.opencode/agents/gsd-plan-checker.md` — your agent contract (read with offset, focus on goal-backward analysis logic)\n- `.opencode/get-shit-done/references/plan-checker-template.md` — output template (if it exists, follow it)\n- `.opencode/get-shit-done/references/verification-protocol.md` — verification command patterns\n\n## Goal-Backward Analysis Inputs\n\n### Phase Goal (from 51-SPEC.md)\nReplace the runtime-injection path through `fork-bridge.ts` with 3 concrete in-tree classes (`TmuxMultiplexer`, `SessionManager`, `PaneGridPlanner`) directly composed in `src/features/tmux/integration.ts`, with ≥ 10 ORIGIN annotations + 6 BATS + 15+ vitest + verbatim L1 verification.\n\n### 7 EARS Requirements (the gates)\n\n| ID | Requirement | Plan task | Plan acceptance |\n|----|------------|-----------|-----------------|\n| REQ-51-01 | 3 in-tree classes (~770 LOC) with ≥ 10 ORIGIN annotations | T2, T3, T4 | `wc -l` per file in range; `grep -c \"ORIGIN: opencode-tmux/src\"` ≥ 10 total |\n| REQ-51-02 | Rewrite `integration.ts` as factory-of-real-classes (~200 LOC), no fork-bridge import, no D-04 check | T5 | `grep -n \"fork-bridge\" src/features/tmux/integration.ts` returns 0; `wc -l` 180-220 |\n| REQ-51-03 | Remove `fork-bridge.ts` + `fork-bridge.test.ts`; global grep returns 0 | T6 | ls returns \"No such file\"; global grep returns 0 |\n| REQ-51-04 | 6 BATS scenarios (2/cluster), PID-based socket, sequential | T7 | `bats tests/scripts/tmux/` reports 6/0 |\n| REQ-51-05 | 15+ new vitest cases in 3 new test files (5+/file) | T7 | `npx vitest run tests/lib/tmux/` shows ≥ 15 new tests passing |\n| REQ-51-06 | D-04 graceful-fallback invariant preserved | T5, T6 | main body of `tests/lib/tmux/integration.test.ts` + `tmux-copilot.test.ts` (12 tests) pass without modification |\n| REQ-51-07 | 1 atomic git commit; `51-VERIFICATION.md` with verbatim tsc + vitest + BATS output | T8 | `git log --oneline -1` shows single new commit; `51-VERIFICATION.md` exists with verbatim outputs |\n\n### Plan Structure to Verify\n- 8 tasks, 6 waves\n- Wave 1: T1 (types.ts, D-51-01)\n- Wave 2: T2, T3, T4 (3 classes, parallel)\n- Wave 3: T5 (integration.ts rewrite, REQ-51-02)\n- Wave 4: T6 (fork-bridge removal, REQ-51-03)\n- Wave 5: T7 (3 new vitest + 3 BATS = 6 BATS scenarios, REQ-51-04+05)\n- Wave 6: T8 (atomic commit + VERIFICATION.md, REQ-51-07)\n\n### Cross-References to Validate\n- 4 `key_links`: integration.ts → tmux-multiplexer, integration.ts → session-manager, integration.ts → grid-planner, integration.ts → types\n- 1 cross-class dep: session-manager.ts → observers.ts (preserves P42 observer wiring)\n- 1 `D-51-01-LOC-MATH-CORRECTION-2026-06-02` decision (SPEC line 15 net-LOC math wrong, real net = +549 LOC; do NOT amend; captured in 51-CONTEXT.md)\n\n## Process\n\n### Step 1: Read the plan + spec + context\n\n```bash\n# Read PLAN.md in full\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md\n```\n\nYou must read the file with the `read` tool (line-aware) — do NOT rely on summary extracts. Skim the EARS coverage table (lines 145-160), Wave Structure (line 129+), and Verification section (line 278+).\n\n```bash\n# Read SPEC.md for gate criteria\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md\n```\n\n```bash\n# Read CONTEXT.md for decisions to honor\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md\n```\n\n### Step 2: Codebase verification (read-only)\n\nVerify the **current state** of the codebase matches the plan's starting assumptions:\n\n```bash\n# Verify fork-bridge.ts LOC matches SPEC line 14 + 81\nwc -l src/features/tmux/fork-bridge.ts\n# Expected: 156\n\n# Verify integration.ts LOC matches SPEC\nwc -l src/features/tmux/integration.ts\n# Expected: 215 (current)\n\n# Verify observers.ts LOC\nwc -l src/features/tmux/observers.ts\n# Expected: 93\n\n# Verify dead test LOC\nwc -l tests/lib/tmux/fork-bridge.test.ts\n# Expected: 65\n\n# Verify integration.test.ts LOC + targeted sections\nwc -l tests/lib/tmux/integration.test.ts\n# Expected: 364\ngrep -n \"createTmuxIntegrationIfSupported — fork-bridge wiring\" tests/lib/tmux/integration.test.ts\n# Expected: line 296 or thereabouts (the describe block start)\ngrep -n \"existsSync\" tests/lib/tmux/integration.test.ts\n# Expected: lines 310-318 region (D-04 mock)\n\n# Verify tmux-copilot test count\ngrep -c \"^\\s*it(\" tests/lib/tmux/tmux-copilot.test.ts\n# Expected: 12 (must remain unmodified per REQ-51-06)\n\n# Confirm no D-04 graceful-fallback deletion is intended\ngrep -n \"existsSync.*opencode-tmux\" src/features/tmux/integration.ts\n# Expected: lines 197-202 (must be removed per T5)\n\n# Confirm fork-bridge is currently imported by integration.ts\ngrep -n \"fork-bridge\" src/features/tmux/integration.ts\n# Expected: matches at L12 + L13 (T5 will remove)\n\n# Confirm tests/scripts/tmux/ does not yet exist\nls tests/scripts/tmux/ 2>&1\n# Expected: \"No such file or directory\" (T7 will create)\n\n# Verify P42 observer wiring reference\ngrep -n \"EnrichedSessionEvent\" src/features/tmux/observers.ts | head -5\n# Expected: ≥ 1 match (preserved in T3 session-manager import)\n```\n\n### Step 3: Goal-backward analysis\n\nFor each EARS REQ-51-NN, work backward from \"what must be true at phase close\" to \"what plan tasks produce that truth\":\n\n| Truth | Producer tasks | Verifiable by |\n|-------|---------------|---------------|\n| 3 in-tree classes exist with ≥ 10 ORIGIN annotations | T1 → T2/T3/T4 (Wave 1 → Wave 2) | `wc -l` + `grep -c \"ORIGIN:\"` after Wave 2 |\n| `integration.ts` is factory-of-real-classes, no fork-bridge | T5 (Wave 3, depends on Wave 1+2) | `grep -n fork-bridge integration.ts` returns 0 |\n| `fork-bridge.ts` + `.test.ts` deleted | T6 (Wave 4, depends on T5) | `ls` returns \"No such file\" |\n| 6 BATS scenarios pass | T7 (Wave 5, depends on Wave 1-3) | `bats tests/scripts/tmux/` reports 6/0 |\n| 15+ vitest pass | T7 (Wave 5, depends on Wave 1-3) | `npx vitest run tests/lib/tmux/` shows ≥ 15 new |\n| D-04 graceful-fallback invariant | T5 + T6 (not deleted, extended contract) | `integration.test.ts` main body + `tmux-copilot.test.ts` (12 tests) pass |\n| 1 atomic commit + VERIFICATION.md | T8 (Wave 6, depends on all prior) | `git log --oneline -1` + `cat 51-VERIFICATION.md` |\n\n### Step 4: Sanity checks\n\nVerify these common plan failure modes:\n\n1. **DAG acyclicity**: Wave N+1 must depend on Wave N. T5 depends on T1/T2/T3/T4 ✓; T6 depends on T5 ✓; T7 depends on T1-T5 ✓; T8 depends on all ✓\n2. **No circular imports**: `key_links` show 4 one-way deps from integration.ts to classes + 1 from session-manager to observers. No cycles\n3. **No dangling imports**: T5 explicitly removes `fork-bridge` import. T6 deletes the file. T5's new imports (TmuxMultiplexer, SessionManager, PaneGridPlanner) are created in T2/T3/T4 of Wave 2\n4. **Test scope discipline**: T6's partial update of `integration.test.ts` is precisely scoped to L292-363 + L34-59. Main body L1-291 stays untouched (REQ-51-06 contract)\n5. **LOC math (`D-51-01-LOC-MATH-CORRECTION-2026-06-02`)**: SPEC line 15 says \"~100 reduction\", CONTEXT.md corrects to \"+549 net\". Plan's min_lines constraints (T1 ≥ 25, T2 ≥ 280, T3 ≥ 250, T4 ≥ 160, T5 180-220) sum to 895-985 LOC for 5 files; deletion of 156 + 65 = 221 LOC; net = 674-764 LOC delta on 5 surviving files (after fork removal). Plan's T8 acceptance #4 says \"net change in -200 to +800 LOC range\" — math holds\n6. **No `git add -A`**: T8 step 3 explicitly forbids `git add -A` to preserve append-only `.hivemind/session-tracker/*`\n7. **Acceptance criteria are concrete**: every EARS has a `wc -l` / `grep -n` / `bats` / `vitest` command that produces a deterministic result (no \"looks good\" verbiage)\n8. **No vague subagent claims**: T7's vitest cases (5+ per class) are enumerated with specific test names (sendKeys happy/literal, listPanes parsing, respawnIfKnown, etc.)\n\n### Step 5: Risk register\n\nAre any risks missing or under-mitigated?\n\n- **R-51-01 (T5 LOC blowout)**: integration.ts could grow beyond 220 LOC. Mitigation: T5 specifies 13 numbered action items with explicit removals + additions\n- **R-51-02 (T6 test scope creep)**: dev could touch main body of `integration.test.ts` beyond L292-363. Mitigation: T6 step (b)(c)(d) explicitly enumerates deletions; \"The main body... MUST remain UNTOUCHED\" assertion\n- **R-51-03 (T7 BATS fixture collision)**: PID-based socket naming convention must avoid collision with concurrent CI runs. Mitigation: T7 BATS descriptions reference `tmux -L hivemind-test-$$` pattern (PID-based)\n- **R-51-04 (T8 atomicity drift)**: 14 source files + 1 VERIFICATION.md = 15 files in one commit. Mitigation: T8 step 3 specifies exact `git add` paths\n\n### Step 6: Write `51-PLAN-CHECK.md`\n\nUse the template structure:\n\n```markdown\n# Phase 51 Plan Check\n\n**Plan:** .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md\n**Spec:** .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md\n**Date:** 2026-06-02\n**Checker:** gsd-plan-checker (delegated via task tool)\n\n## Verdict: PASS / PASS-WITH-FLAGS / FAIL\n\n[One-line verdict + rationale]\n\n## Goal-Backward Analysis\n\n[For each of 7 EARS, was the truth + producer + verifier chain valid? Yes/No for each]\n\n## Codebase State Verification\n\n[For each verification command, was the assumed starting state confirmed?]\n\n## DAG & Sanity Checks\n\n[DAG acyclicity, no circular imports, no dangling imports, test scope discipline, LOC math, git add discipline, concrete acceptance, no vague claims]\n\n## Risk Mitigation Review\n\n[Are 4 risks adequately mitigated? Any new risks discovered?]\n\n## Flags (if PASS-WITH-FLAGS)\n\n[Numbered list of non-blocking observations]\n\n## Verdict Rationale\n\n[3-5 sentence summary explaining why PASS or why FAIL]\n```\n\n### Step 7: Atomic commit\n\n```bash\n# Stage ONLY the plan-check artifact (preserve .hivemind/session-tracker/*)\ngit add .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md\ngit status  # MUST show ONLY 51-PLAN-CHECK.md as staged; .hivemind/session-tracker/* MUST be untouched\n\n# Commit (use heredoc-free form)\ngit commit -m \"P51 Checkpoint 8 plan-check: 51-PLAN-CHECK.md — [PASS|PASS-WITH-FLAGS|FAIL] — [1-line rationale]\"\n```\n\n**DO NOT use `git add -A` or `git add .`** — those would stage append-only `.hivemind/session-tracker/*.jsonl` files.\n\n## Success Criteria\n\n- `51-PLAN-CHECK.md` exists at `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`\n- Atomic commit created with the new file\n- Verdict is one of PASS / PASS-WITH-FLAGS / FAIL\n- Goal-backward table is filled in (7/7 EARS rows)\n- DAG & sanity checklist is complete\n- No verbatim re-statements of the plan content; the check is analysis, not summary\n\n## Return Format\n\nWhen done, return a concise structured result with:\n\n1. **Verdict:** PASS / PASS-WITH-FLAGS / FAIL\n2. **Flags count:** N\n3. **Plan-check artifact path:** `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`\n4. **Commit hash:** the new commit's SHA\n5. **Verdict rationale:** 2-3 sentence summary\n6. **Critical flags (if any):** 1-line each (only if PASS-WITH-FLAGS or FAIL)\n7. **Tools used:** list of tools you invoked (read, bash, grep, etc.)\n\n###TASK_COMPLETED###\n",
+      "metadata": {
+        "capturedFrom": "session.compacted"
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:51:03.522Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_uahhc3hgkbko_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:51:05.282Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_uahhc3hgkbko_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:51:05.722Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_uahhc3hgkbko_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:51:27.446Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ov7x531vjho8_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/tmux/integration.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:51:27.451Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ov7x531vjho8_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/fork-bridge.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:51:36.144Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ov7x531vjho8_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:51:43.413Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ov7x531vjho8_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:52:39.376Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_e3ldujy6fedy_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:52:39.415Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_e3ldujy6fedy_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/few-shot-examples/plan-checker.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:54:07.272Z",
+      "type": "session_compacted",
+      "content": "**compact_summary:**\n\n## Role & Mission\n\nYou are **gsd-plan-checker**, a specialist subagent. Your job is to **validate plan completeness through goal-backward analysis** — verify the plan will achieve the phase goal before execution, not after.\n\n**VERIFIED WORKING DISPATCH PATH** (this segment, 2026-06-02): the parent L0 orchestrator is dispatching you via the `task` tool with a full structured prompt. Use your tools, run live checks against the codebase, and produce a `51-PLAN-CHECK.md` artifact with PASS / PASS-WITH-FLAGS / FAIL verdict.\n\nYou are a **subagent**, not the L0. You must fulfill your work and return a structured result. If you need verification, return it in the report handoff.\n\n## Context\n\n**Phase:** 51 — Synthesize Core Tmux Classes In-Tree\n**Phase dir:** `.planning/phases/51-synthesize-core-tmux-classes-in-tree/`\n**Plan under check:** `51-PLAN.md` (327 lines, 8 tasks across 6 waves, 7/7 EARS mapped)\n**Spec under check:** `51-SPEC.md` (251 lines, 7 EARS, ambiguity 0.172, gate PASSED)\n**Context under check:** `51-CONTEXT.md` (19,134 B, includes `D-51-01-LOC-MATH-CORRECTION-2026-06-02`)\n\n**Plan-checker reference inputs:**\n- `.opencode/agents/gsd-plan-checker.md` — your agent contract (read with offset, focus on goal-backward analysis logic)\n- `.opencode/get-shit-done/references/plan-checker-template.md` — output template (if it exists, follow it)\n- `.opencode/get-shit-done/references/verification-protocol.md` — verification command patterns\n\n## Goal-Backward Analysis Inputs\n\n### Phase Goal (from 51-SPEC.md)\nReplace the runtime-injection path through `fork-bridge.ts` with 3 concrete in-tree classes (`TmuxMultiplexer`, `SessionManager`, `PaneGridPlanner`) directly composed in `src/features/tmux/integration.ts`, with ≥ 10 ORIGIN annotations + 6 BATS + 15+ vitest + verbatim L1 verification.\n\n### 7 EARS Requirements (the gates)\n\n| ID | Requirement | Plan task | Plan acceptance |\n|----|------------|-----------|-----------------|\n| REQ-51-01 | 3 in-tree classes (~770 LOC) with ≥ 10 ORIGIN annotations | T2, T3, T4 | `wc -l` per file in range; `grep -c \"ORIGIN: opencode-tmux/src\"` ≥ 10 total |\n| REQ-51-02 | Rewrite `integration.ts` as factory-of-real-classes (~200 LOC), no fork-bridge import, no D-04 check | T5 | `grep -n \"fork-bridge\" src/features/tmux/integration.ts` returns 0; `wc -l` 180-220 |\n| REQ-51-03 | Remove `fork-bridge.ts` + `fork-bridge.test.ts`; global grep returns 0 | T6 | ls returns \"No such file\"; global grep returns 0 |\n| REQ-51-04 | 6 BATS scenarios (2/cluster), PID-based socket, sequential | T7 | `bats tests/scripts/tmux/` reports 6/0 |\n| REQ-51-05 | 15+ new vitest cases in 3 new test files (5+/file) | T7 | `npx vitest run tests/lib/tmux/` shows ≥ 15 new tests passing |\n| REQ-51-06 | D-04 graceful-fallback invariant preserved | T5, T6 | main body of `tests/lib/tmux/integration.test.ts` + `tmux-copilot.test.ts` (12 tests) pass without modification |\n| REQ-51-07 | 1 atomic git commit; `51-VERIFICATION.md` with verbatim tsc + vitest + BATS output | T8 | `git log --oneline -1` shows single new commit; `51-VERIFICATION.md` exists with verbatim outputs |\n\n### Plan Structure to Verify\n- 8 tasks, 6 waves\n- Wave 1: T1 (types.ts, D-51-01)\n- Wave 2: T2, T3, T4 (3 classes, parallel)\n- Wave 3: T5 (integration.ts rewrite, REQ-51-02)\n- Wave 4: T6 (fork-bridge removal, REQ-51-03)\n- Wave 5: T7 (3 new vitest + 3 BATS = 6 BATS scenarios, REQ-51-04+05)\n- Wave 6: T8 (atomic commit + VERIFICATION.md, REQ-51-07)\n\n### Cross-References to Validate\n- 4 `key_links`: integration.ts → tmux-multiplexer, integration.ts → session-manager, integration.ts → grid-planner, integration.ts → types\n- 1 cross-class dep: session-manager.ts → observers.ts (preserves P42 observer wiring)\n- 1 `D-51-01-LOC-MATH-CORRECTION-2026-06-02` decision (SPEC line 15 net-LOC math wrong, real net = +549 LOC; do NOT amend; captured in 51-CONTEXT.md)\n\n## Process\n\n### Step 1: Read the plan + spec + context\n\n```bash\n# Read PLAN.md in full\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md\n```\n\nYou must read the file with the `read` tool (line-aware) — do NOT rely on summary extracts. Skim the EARS coverage table (lines 145-160), Wave Structure (line 129+), and Verification section (line 278+).\n\n```bash\n# Read SPEC.md for gate criteria\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md\n```\n\n```bash\n# Read CONTEXT.md for decisions to honor\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md\n```\n\n### Step 2: Codebase verification (read-only)\n\nVerify the **current state** of the codebase matches the plan's starting assumptions:\n\n```bash\n# Verify fork-bridge.ts LOC matches SPEC line 14 + 81\nwc -l src/features/tmux/fork-bridge.ts\n# Expected: 156\n\n# Verify integration.ts LOC matches SPEC\nwc -l src/features/tmux/integration.ts\n# Expected: 215 (current)\n\n# Verify observers.ts LOC\nwc -l src/features/tmux/observers.ts\n# Expected: 93\n\n# Verify dead test LOC\nwc -l tests/lib/tmux/fork-bridge.test.ts\n# Expected: 65\n\n# Verify integration.test.ts LOC + targeted sections\nwc -l tests/lib/tmux/integration.test.ts\n# Expected: 364\ngrep -n \"createTmuxIntegrationIfSupported — fork-bridge wiring\" tests/lib/tmux/integration.test.ts\n# Expected: line 296 or thereabouts (the describe block start)\ngrep -n \"existsSync\" tests/lib/tmux/integration.test.ts\n# Expected: lines 310-318 region (D-04 mock)\n\n# Verify tmux-copilot test count\ngrep -c \"^\\s*it(\" tests/lib/tmux/tmux-copilot.test.ts\n# Expected: 12 (must remain unmodified per REQ-51-06)\n\n# Confirm no D-04 graceful-fallback deletion is intended\ngrep -n \"existsSync.*opencode-tmux\" src/features/tmux/integration.ts\n# Expected: lines 197-202 (must be removed per T5)\n\n# Confirm fork-bridge is currently imported by integration.ts\ngrep -n \"fork-bridge\" src/features/tmux/integration.ts\n# Expected: matches at L12 + L13 (T5 will remove)\n\n# Confirm tests/scripts/tmux/ does not yet exist\nls tests/scripts/tmux/ 2>&1\n# Expected: \"No such file or directory\" (T7 will create)\n\n# Verify P42 observer wiring reference\ngrep -n \"EnrichedSessionEvent\" src/features/tmux/observers.ts | head -5\n# Expected: ≥ 1 match (preserved in T3 session-manager import)\n```\n\n### Step 3: Goal-backward analysis\n\nFor each EARS REQ-51-NN, work backward from \"what must be true at phase close\" to \"what plan tasks produce that truth\":\n\n| Truth | Producer tasks | Verifiable by |\n|-------|---------------|---------------|\n| 3 in-tree classes exist with ≥ 10 ORIGIN annotations | T1 → T2/T3/T4 (Wave 1 → Wave 2) | `wc -l` + `grep -c \"ORIGIN:\"` after Wave 2 |\n| `integration.ts` is factory-of-real-classes, no fork-bridge | T5 (Wave 3, depends on Wave 1+2) | `grep -n fork-bridge integration.ts` returns 0 |\n| `fork-bridge.ts` + `.test.ts` deleted | T6 (Wave 4, depends on T5) | `ls` returns \"No such file\" |\n| 6 BATS scenarios pass | T7 (Wave 5, depends on Wave 1-3) | `bats tests/scripts/tmux/` reports 6/0 |\n| 15+ vitest pass | T7 (Wave 5, depends on Wave 1-3) | `npx vitest run tests/lib/tmux/` shows ≥ 15 new |\n| D-04 graceful-fallback invariant | T5 + T6 (not deleted, extended contract) | `integration.test.ts` main body + `tmux-copilot.test.ts` (12 tests) pass |\n| 1 atomic commit + VERIFICATION.md | T8 (Wave 6, depends on all prior) | `git log --oneline -1` + `cat 51-VERIFICATION.md` |\n\n### Step 4: Sanity checks\n\nVerify these common plan failure modes:\n\n1. **DAG acyclicity**: Wave N+1 must depend on Wave N. T5 depends on T1/T2/T3/T4 ✓; T6 depends on T5 ✓; T7 depends on T1-T5 ✓; T8 depends on all ✓\n2. **No circular imports**: `key_links` show 4 one-way deps from integration.ts to classes + 1 from session-manager to observers. No cycles\n3. **No dangling imports**: T5 explicitly removes `fork-bridge` import. T6 deletes the file. T5's new imports (TmuxMultiplexer, SessionManager, PaneGridPlanner) are created in T2/T3/T4 of Wave 2\n4. **Test scope discipline**: T6's partial update of `integration.test.ts` is precisely scoped to L292-363 + L34-59. Main body L1-291 stays untouched (REQ-51-06 contract)\n5. **LOC math (`D-51-01-LOC-MATH-CORRECTION-2026-06-02`)**: SPEC line 15 says \"~100 reduction\", CONTEXT.md corrects to \"+549 net\". Plan's min_lines constraints (T1 ≥ 25, T2 ≥ 280, T3 ≥ 250, T4 ≥ 160, T5 180-220) sum to 895-985 LOC for 5 files; deletion of 156 + 65 = 221 LOC; net = 674-764 LOC delta on 5 surviving files (after fork removal). Plan's T8 acceptance #4 says \"net change in -200 to +800 LOC range\" — math holds\n6. **No `git add -A`**: T8 step 3 explicitly forbids `git add -A` to preserve append-only `.hivemind/session-tracker/*`\n7. **Acceptance criteria are concrete**: every EARS has a `wc -l` / `grep -n` / `bats` / `vitest` command that produces a deterministic result (no \"looks good\" verbiage)\n8. **No vague subagent claims**: T7's vitest cases (5+ per class) are enumerated with specific test names (sendKeys happy/literal, listPanes parsing, respawnIfKnown, etc.)\n\n### Step 5: Risk register\n\nAre any risks missing or under-mitigated?\n\n- **R-51-01 (T5 LOC blowout)**: integration.ts could grow beyond 220 LOC. Mitigation: T5 specifies 13 numbered action items with explicit removals + additions\n- **R-51-02 (T6 test scope creep)**: dev could touch main body of `integration.test.ts` beyond L292-363. Mitigation: T6 step (b)(c)(d) explicitly enumerates deletions; \"The main body... MUST remain UNTOUCHED\" assertion\n- **R-51-03 (T7 BATS fixture collision)**: PID-based socket naming convention must avoid collision with concurrent CI runs. Mitigation: T7 BATS descriptions reference `tmux -L hivemind-test-$$` pattern (PID-based)\n- **R-51-04 (T8 atomicity drift)**: 14 source files + 1 VERIFICATION.md = 15 files in one commit. Mitigation: T8 step 3 specifies exact `git add` paths\n\n### Step 6: Write `51-PLAN-CHECK.md`\n\nUse the template structure:\n\n```markdown\n# Phase 51 Plan Check\n\n**Plan:** .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md\n**Spec:** .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md\n**Date:** 2026-06-02\n**Checker:** gsd-plan-checker (delegated via task tool)\n\n## Verdict: PASS / PASS-WITH-FLAGS / FAIL\n\n[One-line verdict + rationale]\n\n## Goal-Backward Analysis\n\n[For each of 7 EARS, was the truth + producer + verifier chain valid? Yes/No for each]\n\n## Codebase State Verification\n\n[For each verification command, was the assumed starting state confirmed?]\n\n## DAG & Sanity Checks\n\n[DAG acyclicity, no circular imports, no dangling imports, test scope discipline, LOC math, git add discipline, concrete acceptance, no vague claims]\n\n## Risk Mitigation Review\n\n[Are 4 risks adequately mitigated? Any new risks discovered?]\n\n## Flags (if PASS-WITH-FLAGS)\n\n[Numbered list of non-blocking observations]\n\n## Verdict Rationale\n\n[3-5 sentence summary explaining why PASS or why FAIL]\n```\n\n### Step 7: Atomic commit\n\n```bash\n# Stage ONLY the plan-check artifact (preserve .hivemind/session-tracker/*)\ngit add .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md\ngit status  # MUST show ONLY 51-PLAN-CHECK.md as staged; .hivemind/session-tracker/* MUST be untouched\n\n# Commit (use heredoc-free form)\ngit commit -m \"P51 Checkpoint 8 plan-check: 51-PLAN-CHECK.md — [PASS|PASS-WITH-FLAGS|FAIL] — [1-line rationale]\"\n```\n\n**DO NOT use `git add -A` or `git add .`** — those would stage append-only `.hivemind/session-tracker/*.jsonl` files.\n\n## Success Criteria\n\n- `51-PLAN-CHECK.md` exists at `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`\n- Atomic commit created with the new file\n- Verdict is one of PASS / PASS-WITH-FLAGS / FAIL\n- Goal-backward table is filled in (7/7 EARS rows)\n- DAG & sanity checklist is complete\n- No verbatim re-statements of the plan content; the check is analysis, not summary\n\n## Return Format\n\nWhen done, return a concise structured result with:\n\n1. **Verdict:** PASS / PASS-WITH-FLAGS / FAIL\n2. **Flags count:** N\n3. **Plan-check artifact path:** `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`\n4. **Commit hash:** the new commit's SHA\n5. **Verdict rationale:** 2-3 sentence summary\n6. **Critical flags (if any):** 1-line each (only if PASS-WITH-FLAGS or FAIL)\n7. **Tools used:** list of tools you invoked (read, bash, grep, etc.)\n\n###TASK_COMPLETED###\n",
+      "metadata": {
+        "capturedFrom": "session.compacted"
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:58:09.536Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_jjtg2vqrr3na_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:58:09.971Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_jjtg2vqrr3na_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:58:50.625Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_3760xg0zowj5_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T06:59:11.493Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_28etyb2mf5k2_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T07:01:12.632Z",
+      "type": "session_compacted",
+      "content": "**compact_summary:**\n\n## Role & Mission\n\nYou are **gsd-plan-checker**, a specialist subagent. Your job is to **validate plan completeness through goal-backward analysis** — verify the plan will achieve the phase goal before execution, not after.\n\n**VERIFIED WORKING DISPATCH PATH** (this segment, 2026-06-02): the parent L0 orchestrator is dispatching you via the `task` tool with a full structured prompt. Use your tools, run live checks against the codebase, and produce a `51-PLAN-CHECK.md` artifact with PASS / PASS-WITH-FLAGS / FAIL verdict.\n\nYou are a **subagent**, not the L0. You must fulfill your work and return a structured result. If you need verification, return it in the report handoff.\n\n## Context\n\n**Phase:** 51 — Synthesize Core Tmux Classes In-Tree\n**Phase dir:** `.planning/phases/51-synthesize-core-tmux-classes-in-tree/`\n**Plan under check:** `51-PLAN.md` (327 lines, 8 tasks across 6 waves, 7/7 EARS mapped)\n**Spec under check:** `51-SPEC.md` (251 lines, 7 EARS, ambiguity 0.172, gate PASSED)\n**Context under check:** `51-CONTEXT.md` (19,134 B, includes `D-51-01-LOC-MATH-CORRECTION-2026-06-02`)\n\n**Plan-checker reference inputs:**\n- `.opencode/agents/gsd-plan-checker.md` — your agent contract (read with offset, focus on goal-backward analysis logic)\n- `.opencode/get-shit-done/references/plan-checker-template.md` — output template (if it exists, follow it)\n- `.opencode/get-shit-done/references/verification-protocol.md` — verification command patterns\n\n## Goal-Backward Analysis Inputs\n\n### Phase Goal (from 51-SPEC.md)\nReplace the runtime-injection path through `fork-bridge.ts` with 3 concrete in-tree classes (`TmuxMultiplexer`, `SessionManager`, `PaneGridPlanner`) directly composed in `src/features/tmux/integration.ts`, with ≥ 10 ORIGIN annotations + 6 BATS + 15+ vitest + verbatim L1 verification.\n\n### 7 EARS Requirements (the gates)\n\n| ID | Requirement | Plan task | Plan acceptance |\n|----|------------|-----------|-----------------|\n| REQ-51-01 | 3 in-tree classes (~770 LOC) with ≥ 10 ORIGIN annotations | T2, T3, T4 | `wc -l` per file in range; `grep -c \"ORIGIN: opencode-tmux/src\"` ≥ 10 total |\n| REQ-51-02 | Rewrite `integration.ts` as factory-of-real-classes (~200 LOC), no fork-bridge import, no D-04 check | T5 | `grep -n \"fork-bridge\" src/features/tmux/integration.ts` returns 0; `wc -l` 180-220 |\n| REQ-51-03 | Remove `fork-bridge.ts` + `fork-bridge.test.ts`; global grep returns 0 | T6 | ls returns \"No such file\"; global grep returns 0 |\n| REQ-51-04 | 6 BATS scenarios (2/cluster), PID-based socket, sequential | T7 | `bats tests/scripts/tmux/` reports 6/0 |\n| REQ-51-05 | 15+ new vitest cases in 3 new test files (5+/file) | T7 | `npx vitest run tests/lib/tmux/` shows ≥ 15 new tests passing |\n| REQ-51-06 | D-04 graceful-fallback invariant preserved | T5, T6 | main body of `tests/lib/tmux/integration.test.ts` + `tmux-copilot.test.ts` (12 tests) pass without modification |\n| REQ-51-07 | 1 atomic git commit; `51-VERIFICATION.md` with verbatim tsc + vitest + BATS output | T8 | `git log --oneline -1` shows single new commit; `51-VERIFICATION.md` exists with verbatim outputs |\n\n### Plan Structure to Verify\n- 8 tasks, 6 waves\n- Wave 1: T1 (types.ts, D-51-01)\n- Wave 2: T2, T3, T4 (3 classes, parallel)\n- Wave 3: T5 (integration.ts rewrite, REQ-51-02)\n- Wave 4: T6 (fork-bridge removal, REQ-51-03)\n- Wave 5: T7 (3 new vitest + 3 BATS = 6 BATS scenarios, REQ-51-04+05)\n- Wave 6: T8 (atomic commit + VERIFICATION.md, REQ-51-07)\n\n### Cross-References to Validate\n- 4 `key_links`: integration.ts → tmux-multiplexer, integration.ts → session-manager, integration.ts → grid-planner, integration.ts → types\n- 1 cross-class dep: session-manager.ts → observers.ts (preserves P42 observer wiring)\n- 1 `D-51-01-LOC-MATH-CORRECTION-2026-06-02` decision (SPEC line 15 net-LOC math wrong, real net = +549 LOC; do NOT amend; captured in 51-CONTEXT.md)\n\n## Process\n\n### Step 1: Read the plan + spec + context\n\n```bash\n# Read PLAN.md in full\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md\n```\n\nYou must read the file with the `read` tool (line-aware) — do NOT rely on summary extracts. Skim the EARS coverage table (lines 145-160), Wave Structure (line 129+), and Verification section (line 278+).\n\n```bash\n# Read SPEC.md for gate criteria\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md\n```\n\n```bash\n# Read CONTEXT.md for decisions to honor\ncat .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CONTEXT.md\n```\n\n### Step 2: Codebase verification (read-only)\n\nVerify the **current state** of the codebase matches the plan's starting assumptions:\n\n```bash\n# Verify fork-bridge.ts LOC matches SPEC line 14 + 81\nwc -l src/features/tmux/fork-bridge.ts\n# Expected: 156\n\n# Verify integration.ts LOC matches SPEC\nwc -l src/features/tmux/integration.ts\n# Expected: 215 (current)\n\n# Verify observers.ts LOC\nwc -l src/features/tmux/observers.ts\n# Expected: 93\n\n# Verify dead test LOC\nwc -l tests/lib/tmux/fork-bridge.test.ts\n# Expected: 65\n\n# Verify integration.test.ts LOC + targeted sections\nwc -l tests/lib/tmux/integration.test.ts\n# Expected: 364\ngrep -n \"createTmuxIntegrationIfSupported — fork-bridge wiring\" tests/lib/tmux/integration.test.ts\n# Expected: line 296 or thereabouts (the describe block start)\ngrep -n \"existsSync\" tests/lib/tmux/integration.test.ts\n# Expected: lines 310-318 region (D-04 mock)\n\n# Verify tmux-copilot test count\ngrep -c \"^\\s*it(\" tests/lib/tmux/tmux-copilot.test.ts\n# Expected: 12 (must remain unmodified per REQ-51-06)\n\n# Confirm no D-04 graceful-fallback deletion is intended\ngrep -n \"existsSync.*opencode-tmux\" src/features/tmux/integration.ts\n# Expected: lines 197-202 (must be removed per T5)\n\n# Confirm fork-bridge is currently imported by integration.ts\ngrep -n \"fork-bridge\" src/features/tmux/integration.ts\n# Expected: matches at L12 + L13 (T5 will remove)\n\n# Confirm tests/scripts/tmux/ does not yet exist\nls tests/scripts/tmux/ 2>&1\n# Expected: \"No such file or directory\" (T7 will create)\n\n# Verify P42 observer wiring reference\ngrep -n \"EnrichedSessionEvent\" src/features/tmux/observers.ts | head -5\n# Expected: ≥ 1 match (preserved in T3 session-manager import)\n```\n\n### Step 3: Goal-backward analysis\n\nFor each EARS REQ-51-NN, work backward from \"what must be true at phase close\" to \"what plan tasks produce that truth\":\n\n| Truth | Producer tasks | Verifiable by |\n|-------|---------------|---------------|\n| 3 in-tree classes exist with ≥ 10 ORIGIN annotations | T1 → T2/T3/T4 (Wave 1 → Wave 2) | `wc -l` + `grep -c \"ORIGIN:\"` after Wave 2 |\n| `integration.ts` is factory-of-real-classes, no fork-bridge | T5 (Wave 3, depends on Wave 1+2) | `grep -n fork-bridge integration.ts` returns 0 |\n| `fork-bridge.ts` + `.test.ts` deleted | T6 (Wave 4, depends on T5) | `ls` returns \"No such file\" |\n| 6 BATS scenarios pass | T7 (Wave 5, depends on Wave 1-3) | `bats tests/scripts/tmux/` reports 6/0 |\n| 15+ vitest pass | T7 (Wave 5, depends on Wave 1-3) | `npx vitest run tests/lib/tmux/` shows ≥ 15 new |\n| D-04 graceful-fallback invariant | T5 + T6 (not deleted, extended contract) | `integration.test.ts` main body + `tmux-copilot.test.ts` (12 tests) pass |\n| 1 atomic commit + VERIFICATION.md | T8 (Wave 6, depends on all prior) | `git log --oneline -1` + `cat 51-VERIFICATION.md` |\n\n### Step 4: Sanity checks\n\nVerify these common plan failure modes:\n\n1. **DAG acyclicity**: Wave N+1 must depend on Wave N. T5 depends on T1/T2/T3/T4 ✓; T6 depends on T5 ✓; T7 depends on T1-T5 ✓; T8 depends on all ✓\n2. **No circular imports**: `key_links` show 4 one-way deps from integration.ts to classes + 1 from session-manager to observers. No cycles\n3. **No dangling imports**: T5 explicitly removes `fork-bridge` import. T6 deletes the file. T5's new imports (TmuxMultiplexer, SessionManager, PaneGridPlanner) are created in T2/T3/T4 of Wave 2\n4. **Test scope discipline**: T6's partial update of `integration.test.ts` is precisely scoped to L292-363 + L34-59. Main body L1-291 stays untouched (REQ-51-06 contract)\n5. **LOC math (`D-51-01-LOC-MATH-CORRECTION-2026-06-02`)**: SPEC line 15 says \"~100 reduction\", CONTEXT.md corrects to \"+549 net\". Plan's min_lines constraints (T1 ≥ 25, T2 ≥ 280, T3 ≥ 250, T4 ≥ 160, T5 180-220) sum to 895-985 LOC for 5 files; deletion of 156 + 65 = 221 LOC; net = 674-764 LOC delta on 5 surviving files (after fork removal). Plan's T8 acceptance #4 says \"net change in -200 to +800 LOC range\" — math holds\n6. **No `git add -A`**: T8 step 3 explicitly forbids `git add -A` to preserve append-only `.hivemind/session-tracker/*`\n7. **Acceptance criteria are concrete**: every EARS has a `wc -l` / `grep -n` / `bats` / `vitest` command that produces a deterministic result (no \"looks good\" verbiage)\n8. **No vague subagent claims**: T7's vitest cases (5+ per class) are enumerated with specific test names (sendKeys happy/literal, listPanes parsing, respawnIfKnown, etc.)\n\n### Step 5: Risk register\n\nAre any risks missing or under-mitigated?\n\n- **R-51-01 (T5 LOC blowout)**: integration.ts could grow beyond 220 LOC. Mitigation: T5 specifies 13 numbered action items with explicit removals + additions\n- **R-51-02 (T6 test scope creep)**: dev could touch main body of `integration.test.ts` beyond L292-363. Mitigation: T6 step (b)(c)(d) explicitly enumerates deletions; \"The main body... MUST remain UNTOUCHED\" assertion\n- **R-51-03 (T7 BATS fixture collision)**: PID-based socket naming convention must avoid collision with concurrent CI runs. Mitigation: T7 BATS descriptions reference `tmux -L hivemind-test-$$` pattern (PID-based)\n- **R-51-04 (T8 atomicity drift)**: 14 source files + 1 VERIFICATION.md = 15 files in one commit. Mitigation: T8 step 3 specifies exact `git add` paths\n\n### Step 6: Write `51-PLAN-CHECK.md`\n\nUse the template structure:\n\n```markdown\n# Phase 51 Plan Check\n\n**Plan:** .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN.md\n**Spec:** .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-SPEC.md\n**Date:** 2026-06-02\n**Checker:** gsd-plan-checker (delegated via task tool)\n\n## Verdict: PASS / PASS-WITH-FLAGS / FAIL\n\n[One-line verdict + rationale]\n\n## Goal-Backward Analysis\n\n[For each of 7 EARS, was the truth + producer + verifier chain valid? Yes/No for each]\n\n## Codebase State Verification\n\n[For each verification command, was the assumed starting state confirmed?]\n\n## DAG & Sanity Checks\n\n[DAG acyclicity, no circular imports, no dangling imports, test scope discipline, LOC math, git add discipline, concrete acceptance, no vague claims]\n\n## Risk Mitigation Review\n\n[Are 4 risks adequately mitigated? Any new risks discovered?]\n\n## Flags (if PASS-WITH-FLAGS)\n\n[Numbered list of non-blocking observations]\n\n## Verdict Rationale\n\n[3-5 sentence summary explaining why PASS or why FAIL]\n```\n\n### Step 7: Atomic commit\n\n```bash\n# Stage ONLY the plan-check artifact (preserve .hivemind/session-tracker/*)\ngit add .planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md\ngit status  # MUST show ONLY 51-PLAN-CHECK.md as staged; .hivemind/session-tracker/* MUST be untouched\n\n# Commit (use heredoc-free form)\ngit commit -m \"P51 Checkpoint 8 plan-check: 51-PLAN-CHECK.md — [PASS|PASS-WITH-FLAGS|FAIL] — [1-line rationale]\"\n```\n\n**DO NOT use `git add -A` or `git add .`** — those would stage append-only `.hivemind/session-tracker/*.jsonl` files.\n\n## Success Criteria\n\n- `51-PLAN-CHECK.md` exists at `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`\n- Atomic commit created with the new file\n- Verdict is one of PASS / PASS-WITH-FLAGS / FAIL\n- Goal-backward table is filled in (7/7 EARS rows)\n- DAG & sanity checklist is complete\n- No verbatim re-statements of the plan content; the check is analysis, not summary\n\n## Return Format\n\nWhen done, return a concise structured result with:\n\n1. **Verdict:** PASS / PASS-WITH-FLAGS / FAIL\n2. **Flags count:** N\n3. **Plan-check artifact path:** `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-PLAN-CHECK.md`\n4. **Commit hash:** the new commit's SHA\n5. **Verdict rationale:** 2-3 sentence summary\n6. **Critical flags (if any):** 1-line each (only if PASS-WITH-FLAGS or FAIL)\n7. **Tools used:** list of tools you invoked (read, bash, grep, etc.)\n\n###TASK_COMPLETED###\n",
+      "metadata": {
+        "capturedFrom": "session.compacted"
+      }
+    },
+    {
+      "timestamp": "2026-06-02T08:01:55.585Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_95J2NFndJElJMG2IgKgQ2760",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T08:02:53.193Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_rWgssIJ0slep6wtCFc7s3460",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T08:03:00.815Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_FH3Po1ErKbQfa9N15xZY1811",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T08:03:09.605Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_S0ZV1k7m39s1miuDeNqz8949",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T08:03:17.908Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_pYJHXgzRFowPhbLpp9l91460",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T08:03:42.618Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_yaWZ3kMFkzCEnDX3u9Cl6530",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T08:04:09.609Z",
+      "type": "assistant_message",
+      "content": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_178e8d040ffeoddJt5oPS5VPls"
+      }
+    }
+  ],
+  "lastMessage": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>"
+}

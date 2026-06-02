@@ -1,0 +1,74 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+  "lastUpdated": "2026-06-02T12:17:08.338Z",
+  "children": {
+    "ses_177c9c5aeffeT54rOpBWYVe5ei": {
+      "sessionID": "ses_177c9c5aeffeT54rOpBWYVe5ei",
+      "parentSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "rootMainSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-codebase-mapper",
+      "createdAt": "2026-06-02T12:01:56.054Z",
+      "updatedAt": "2026-06-02T12:02:30.877Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_177c9c5aeffeT54rOpBWYVe5ei.json"
+    },
+    "ses_177c5b46cffegf3iPQL1m3iLCA": {
+      "sessionID": "ses_177c5b46cffegf3iPQL1m3iLCA",
+      "parentSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "rootMainSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-codebase-mapper",
+      "createdAt": "2026-06-02T12:06:22.735Z",
+      "updatedAt": "2026-06-02T12:11:33.251Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_177c5b46cffegf3iPQL1m3iLCA.json"
+    },
+    "ses_177c5b3eaffePNgekdHET33vgu": {
+      "sessionID": "ses_177c5b3eaffePNgekdHET33vgu",
+      "parentSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "rootMainSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-codebase-mapper",
+      "createdAt": "2026-06-02T12:06:22.757Z",
+      "updatedAt": "2026-06-02T12:17:08.338Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_177c5b3eaffePNgekdHET33vgu.json"
+    },
+    "ses_177c5b40effeec4oYOfcqI0taw": {
+      "sessionID": "ses_177c5b40effeec4oYOfcqI0taw",
+      "parentSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "rootMainSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-codebase-mapper",
+      "createdAt": "2026-06-02T12:06:22.771Z",
+      "updatedAt": "2026-06-02T12:06:22.771Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_177c5b40effeec4oYOfcqI0taw.json"
+    },
+    "ses_177c5b437ffePQFGhNTqyresY7": {
+      "sessionID": "ses_177c5b437ffePQFGhNTqyresY7",
+      "parentSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "rootMainSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-codebase-mapper",
+      "createdAt": "2026-06-02T12:06:22.772Z",
+      "updatedAt": "2026-06-02T12:12:41.371Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_177c5b437ffePQFGhNTqyresY7.json"
+    }
+  },
+  "totalChildren": 5,
+  "maxDepth": 1
+}

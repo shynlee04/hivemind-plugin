@@ -1,0 +1,76 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1780426a7ffe0Tu8kwPa3z76h3",
+  "lastUpdated": "2026-06-02T11:50:12.874Z",
+  "hierarchy": {
+    "root": "ses_1780426a7ffe0Tu8kwPa3z76h3",
+    "children": {
+      "ses_178024b32ffeOkI9dXSIXC0d1I": {
+        "file": "ses_178024b32ffeOkI9dXSIXC0d1I.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-executor",
+        "children": {}
+      },
+      "ses_177fd8d33ffenN3ZGFgyXoRpeS": {
+        "file": "ses_177fd8d33ffenN3ZGFgyXoRpeS.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_177fd8c3dffe4PQiQkTww00wTy": {
+        "file": "ses_177fd8c3dffe4PQiQkTww00wTy.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_177f7a9cbffeO5k5yz6Gbe4XMB": {
+        "file": "ses_177f7a9cbffeO5k5yz6Gbe4XMB.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_177f480c1ffeiY10WAMx7oHdVv": {
+        "file": "ses_177f480c1ffeiY10WAMx7oHdVv.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_177f1eb1affeAARSPAMlW1gucl": {
+        "file": "ses_177f1eb1affeAARSPAMlW1gucl.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_177d64adbffeEXETMTBJdTBtn5": {
+        "file": "ses_177d64adbffeEXETMTBJdTBtn5.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-phase-researcher",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 17,
+  "toolSummary": {
+    "skill": 4,
+    "read": 18,
+    "delegation-status": 6,
+    "glob": 7,
+    "grep": 7,
+    "bash": 18,
+    "task": 5,
+    "hivemind-command-engine": 2,
+    "write": 1,
+    "execute-slash-command": 5,
+    "hivemind-trajectory": 4,
+    "hivemind-agent-work-create": 2,
+    "session-tracker": 3,
+    "edit": 2
+  }
+}

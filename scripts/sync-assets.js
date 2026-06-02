@@ -45,6 +45,29 @@ if (installMode) {
 const projectRoot = stage.sourceRoot;
 const assetsRoot = join(projectRoot, "assets");
 
+// ── GSD Manifest Protection ─────────────────────────────────────────────────
+// Load the gsd-file-manifest.json to explicitly protect user-installed
+// third-party primitives in .opencode/ from being overwritten or deleted.
+const gsdManifestPath = join(stage.consumerRoot, ".opencode", "gsd-file-manifest.json");
+let protectedGsdFiles = new Set();
+if (existsSync(gsdManifestPath)) {
+  try {
+    const manifest = JSON.parse(readFileSync(gsdManifestPath, "utf-8"));
+    if (manifest.files) {
+      for (const relativePath of Object.keys(manifest.files)) {
+        protectedGsdFiles.add(relativePath);
+      }
+    }
+    console.log(`${logPrefix} Loaded ${protectedGsdFiles.size} protected paths from gsd-file-manifest.json`);
+  } catch (err) {
+    console.warn(`${logPrefix} Warning: Could not parse gsd-file-manifest.json, proceeding without manifest protection.`, err.message);
+  }
+}
+
+function isGsdProtected(relativePath) {
+  return protectedGsdFiles.has(relativePath);
+}
+
 const PRIMITIVE_MAP = {
   agents: join(stage.consumerRoot, ".opencode", "agents"),
   skills: join(stage.consumerRoot, ".opencode", "skills"),
@@ -103,6 +126,13 @@ try {
       mkdirSync(targetDir, { recursive: true });
       for (const entry of readdirSync(sourceDir)) {
         if (entry === ".gitkeep" || shouldSkipGsd(entry)) continue;
+        
+        const relativePath = join(kind, entry);
+        if (isGsdProtected(relativePath)) {
+          console.log(`${logPrefix} 🔒 Skipping ${relativePath} — protected by gsd-file-manifest.json (user-installed)`);
+          continue;
+        }
+
         const srcPath = join(sourceDir, entry);
         const destPath = join(targetDir, entry);
         if (existsSync(destPath)) {
@@ -143,6 +173,12 @@ try {
     for (const entry of readdirSync(sourceDir)) {
       if (entry === ".gitkeep") continue;
       if (shouldSkipGsd(entry)) continue;
+
+      const relativePath = join(kind, entry);
+      if (isGsdProtected(relativePath)) {
+        console.log(`${logPrefix} 🔒 Skipping ${relativePath} — protected by gsd-file-manifest.json (user-installed)`);
+        continue;
+      }
 
       const srcPath = join(sourceDir, entry);
       const destPath = join(targetDir, entry);
