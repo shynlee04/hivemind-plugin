@@ -5,13 +5,65 @@
 **Spec:** `53-SPEC.md` (5 EARS: REQ-53-01..05, ambiguity 0.10, commit `8606d5b7`)
 **Context:** `53-CONTEXT.md` (12 locked decisions D-53-01..12, commit `2ff127e1`)
 **Patterns:** `53-PATTERNS.md` (9 patterns mapped, commit `f1f44a79`)
-**Plan commit:** `17add7f5` (P53 Checkpoint 8: 53-01-PLAN.md)
+**Plan commit:** `17add7f5` (P53 Checkpoint 8: 53-01-PLAN.md) — superseded by `9ab0956d`
+**Original verdict (SUPERSEDED — see Re-Verification below):** **FAIL** (2 blockers, 4 warnings, 0 info)
 **Date:** 2026-06-02
-**Verdict:** **FAIL** (2 blockers, 4 warnings, 0 info)
 
 ---
 
-## Goal-Backward Analysis
+## Re-Verification Verdict (2026-06-02)
+
+**Re-checked plan:** `53-01-PLAN.md` (909 lines after remediation, 6 tasks, 1 wave, autonomous)
+**Remediation commit:** `9ab0956d` (P53 Checkpoint 8: 53-01-PLAN.md — fix 2 blockers + 4 warnings (100% pass))
+**Re-verified by:** gsd-plan-checker (subagent delegation, post-remediation re-validation)
+**Date:** 2026-06-02
+**Verdict:** **PASS** (0 blockers, 0 warnings, 0 info)
+
+### 12-Dimension Re-Analysis
+
+| # | Dimension | Verdict | Notes |
+|---|-----------|---------|-------|
+| 1 | Requirement Coverage | ✅ PASS | REQ-53-01..05 all mapped to T1..T5 (producer + verifier); no requirement dropped |
+| 2 | Task Completeness | ✅ PASS | T4 BATS test bodies now use `await observer({...})` direct dispatch (BLOCKER-1 fixed); 3 `@test` blocks (WARN-D fixed); T5 P42/P43 last line refs accurate (WARN-A, WARN-B fixed); T6 staging uses `git add -u` + explicit `git add <5 new paths>` (BLOCKER-2 fixed) |
+| 3 | Dependency Correctness | ✅ PASS | T1→{T2,T3,T4,T5}→T6 acyclic; no forward refs |
+| 4 | Key Links Planned | ✅ PASS | All 10 critical key_links explicit and concrete |
+| 5 | Scope Sanity | ✅ PASS | 6 tasks borderline but justified in new "## Plan Notes" section (WARN-C documented with coupling analysis + P51 precedent) |
+| 6 | Verification Derivation | ✅ PASS | 5 truths user-observable, 6 L1 evidence commands listed |
+| 7 | Context Compliance | ✅ PASS | All 12 D-53-* decisions honored; D-53-13 drift resolved in favor of CONTEXT |
+| 7b | Scope Reduction | ✅ PASS | No reduction language; full delivery per CONTEXT |
+| 7c | Architectural Tier | ⏭️ SKIPPED | No RESEARCH.md with responsibility map for P53 |
+| 8 | Nyquist Compliance | ⏭️ SKIPPED | N/A for plan-check; VALIDATION.md is for EXECUTE phase |
+| 9 | Cross-Plan Data Contracts | ✅ PASS | No cross-plan data pipelines for P53 |
+| 10 | AGENTS.md Compliance | ✅ PASS | All rules respected (atomic commits, JSDoc, R-P50-03, Source-vs-Deploy) |
+| 11 | Atomic Commit | ✅ PASS | T6 now stages 4 modified tracked files via `git add -u` AND 5 new untracked files via explicit `git add <paths>`; no globs; journal files remain untracked |
+| 12 | Verdict Synthesis | ✅ PASS | All 12 dimensions pass; 0 blockers / 0 warnings / 0 info |
+
+### Fix Verification Table
+
+| # | Original Finding | Severity | Fix Applied | Verified |
+|---|------------------|----------|-------------|----------|
+| 1 | **BLOCKER-1** (T4 BATS deadlock pattern) | BLOCKER | Replaced `await new Promise((resolve) => { observer.onPaneCaptured(resolve); })` + `handler({...})` with direct `await observer({ event: { type: "pane-captured", ... } })` dispatch in all 3 BATS tests | ✅ CONFIRMED — `grep "^@test"` returns 3 blocks; `grep "await observer({"` returns 5 invocations across T4 (one per fire-event call); no `onPaneCaptured(resolve)` pattern in BATS test bodies (only in the explanatory comment block L376 + Plan Notes L888 as historical record) |
+| 2 | **BLOCKER-2** (T6 staging only uses `git add -u`) | BLOCKER | T6 Step 2 now uses BOTH `git add -u` (for 4 tracked modifications) AND explicit `git add <5 new paths>` (for 5 untracked new files: hook, .gitkeep, 2 vitest, 1 BATS) | ✅ CONFIRMED — `grep "git add"` shows L643 `git add -u` followed by L645 `git add \` with 5 explicit paths (no globs); D-53-11 spirit preserved |
+| 3 | **WARN-A** (T5 P42 last line ref inaccuracy) | WARNING | Updated T5 Step 1 to use literal line 75 content `  — this document's fix commit` (2-space indent + em-dash + space + lowercase text) without "including the closing backtick" reference | ✅ CONFIRMED — P42 UAT.md L75 verified as `  — this document's fix commit` (2-space + em-dash + space + text); plan L533, L545, L595 all reference the correct content; "including the closing backtick" string is absent from the plan |
+| 4 | **WARN-B** (T5 P43 last line ref off by 1) | WARNING | Updated T5 Step 2 to use line 250 unique `_Verifier:` anchor (NOT line 249 `_Re-verified:` anchor); explicitly listed lines 248/249/250 in read_first | ✅ CONFIRMED — P43 VERIFICATION.md is 250 lines total; L250 is `_Verifier: the agent (goal-backward verification, all L1 evidence re-run independently)_`; L249 is `_Re-verified: 2026-06-01T22:55:00Z via P49 (49-07-PLAN.md)_`; plan L555, L596 correctly cite L250 with unique `_Verifier:` text |
+| 5 | **WARN-C** (3 `@test` blocks claimed, only 2 shown in T4) | WARNING | Added 3rd `@test` block at L463: "pane-monitor dispose() is permanent across multiple subsequent dispatches" — fires 1 pre-event + 3 post-events, asserts `counters.written === 1` (NOT 4) and file count is 1 (NOT 4); verifies `disposed: true` flag is sticky | ✅ CONFIRMED — `grep "^@test"` returns exactly 3 blocks (L399, L435, L463); T4 `<done>`, `<verify>`, L1 Evidence, and Success Criteria all updated to 3/3 passing |
+| 6 | **WARN-D** (6 tasks borderline, no rationale) | WARNING | Added "## Plan Notes" section at L860-882 with: (a) "Why 6 Tasks Is Acceptable" subsection (coupling analysis table + P51 precedent of 8 tasks in single plan), (b) "Why 5 Patches" subsection (audit trail of all 6 fixes) | ✅ CONFIRMED — `grep "## Plan Notes"` returns L861; subsections at L863 ("Why 6 Tasks Is Acceptable") and L884 ("Why 5 Patches"); coupling analysis table at L867-876; P51 precedent cited at L878 |
+
+### Final Verdict
+
+**PASS** — 0/12 dimensions fail, 0/12 warnings, 0/12 info. All 6 prior findings (2 BLOCKERS + 4 WARNINGS) resolved and confirmed via systematic verification:
+
+- The BATS test bodies are now correct (no deadlock; direct observer dispatch in all 3 tests).
+- The commit staging is now correct (4 modified tracked + 5 explicit new untracked = 9 files in commit).
+- The paperwork line references are now accurate (P42 L75 + P43 L250 verified against actual file content).
+- The 3rd `@test` block is present and provides genuine coverage value (dispose permanence across multiple dispatches).
+- The 6-task plan is justified by coupling analysis and project precedent.
+
+The plan is now ready for EXECUTE. No further revisions required.
+
+---
+
+## Goal-Backward Analysis (Original — Audit Trail)
 
 ### Phase Goal (from `53-SPEC.md` L7-9 + `ROADMAP.md` L1975-1986)
 
