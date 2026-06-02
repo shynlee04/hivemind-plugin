@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-06-02
-**Last advance:** P54 EXECUTE — session-persistence + restart-recovery (commit `a5c67c19`, 2026-06-02). 5/5 EARS PASS (REQ-54-01..05), 1/1 BATS (slot 56 — kill-parent-restart-recovery real OS process survival) + 40/40 BATS regression (1 pre-existing env-dependent failure unrelated to P54), 6/6 P54 vitest + 3203/3203 vitest regression, 0 .hivemind/* in P54 commits (R-P50-03), 27 tool keys unchanged, persistence.ts 400 LOC ≤ 500 cap, session-manager.ts 29 LOC added/0 removed ≤ 30 budget, D-04 silent-fallback preserved, P20 invariant honored (0 new deps), no UUID package (inline via `node:crypto.getRandomValues`). **Prior advances in same loop:** P50 (commit `5b49030f`) + P51 (commit `345987d7`) + P52 (commit `b22207df`) + P53 (commit `5f7a09e5`). **Current planned phase:** P55 (E2E UAT against seed's 4 success criteria). **Pivot decision:** same as P50 close — full rewrite synthesis, drop opencode-tmux fork; P45/P46/P47/P48 superseded by P50-P55 (see `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-CLOSE-PIVOT-2026-06-02.md`).
+**Last advance:** P54 closure — session-persistence-restart-recovery closed via `.planning/phases/54-session-persistence-restart-recovery/54-CLOSE.md` (commit `<this-commit>`, 2026-06-02). 5/5 EARS PASS, 1/1 P54 BATS (real OS process survival), 6/6 P54 vitest + 3203/3203 vitest regression, 0 .hivemind/ in P54 commits (R-P50-03 strict), 27 tool keys unchanged. **Prior advances in same loop:** P50 (`5b49030f`) + P51 (`345987d7`) + P52 (`b22207df`) + P53 (`1dca30aa`). **Current planned phase:** P55 (E2E UAT against seed's 4 success criteria). **Pivot decision:** same as P50 close.
 **Completed:**
 
 - P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write
@@ -29,7 +29,7 @@ progress:
 - **P42-03** — Plugin wiring: bootstrap integration + event observer registration
 - **P54-01** — Session persistence + restart-recovery: 9-field JSON persistence on every state transition, restoreAll filter to paused+detached, UUIDv7 inline generator, atomic wx-flag write, SessionManager 7th optional ctor param + 2 persist call sites, kill-parent-restart-recovery BATS L1 evidence (commit `a5c67c19`)
 
-**Current focus:** P55 — E2E UAT against seed's 4 success criteria (P50-P54 complete: fork removed, 3 in-tree classes synthesized, factory swap + state-query + observer expansion + pane-monitor hook + session persistence shipped).
+**Current focus:** P55 — E2E UAT Against Seed's 4 Success Criteria (P50-P54 complete: fork removed, 3 in-tree classes synthesized, factory swap + state-query + observer expansion + pane-monitor hook + session persistence shipped).
 
 ---
 
