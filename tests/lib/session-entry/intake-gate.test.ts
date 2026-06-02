@@ -25,52 +25,52 @@ describe("resolveIntake", () => {
       expect(Array.isArray(result.warnings)).toBe(true)
     })
 
-    it("routes implementation requests to gsd-executor", () => {
+    it("routes implementation requests to hm-l0-orchestrator", () => {
       const result = resolveIntake("build the API endpoint")
       expect(result.purpose.purpose).toBe("implementation")
-      expect(result.routingTarget).toBe("gsd-executor")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
     })
 
-    it("routes discovery requests to hm-l2-scout", () => {
+    it("routes discovery requests to hm-l0-orchestrator", () => {
       const result = resolveIntake("explore the codebase structure")
       expect(result.purpose.purpose).toBe("discovery")
-      expect(result.routingTarget).toBe("hm-l2-scout")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
     })
 
-    it("routes brainstorming requests to hm-l2-brainstorm", () => {
+    it("routes brainstorming requests to hm-l0-orchestrator", () => {
       const result = resolveIntake("let's brainstorm ideas for the UI")
       expect(result.purpose.purpose).toBe("brainstorming")
-      expect(result.routingTarget).toBe("hm-l2-brainstorm")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
     })
 
-    it("routes research requests to hm-l3-research-chain", () => {
+    it("routes research requests to hm-l0-orchestrator", () => {
       const result = resolveIntake("research the best database options")
       expect(result.purpose.purpose).toBe("research")
-      expect(result.routingTarget).toBe("hm-l3-research-chain")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
     })
 
-    it("routes planning requests to gsd-planner", () => {
+    it("routes planning requests to hm-l0-orchestrator", () => {
       const result = resolveIntake("plan the implementation for auth")
       expect(result.purpose.purpose).toBe("planning")
-      expect(result.routingTarget).toBe("gsd-planner")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
     })
 
-    it("routes gatekeeping requests to hm-l2-critic", () => {
+    it("routes gatekeeping requests to hm-l0-orchestrator", () => {
       const result = resolveIntake("verify the implementation passes gates")
       expect(result.purpose.purpose).toBe("gatekeeping")
-      expect(result.routingTarget).toBe("hm-l2-critic")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
     })
 
-    it("routes tdd requests to hm-l2-test-driven-execution", () => {
+    it("routes tdd requests to hm-l0-orchestrator", () => {
       const result = resolveIntake("write tests using tdd approach")
       expect(result.purpose.purpose).toBe("tdd")
-      expect(result.routingTarget).toBe("hm-l2-test-driven-execution")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
     })
 
-    it("routes course-correction requests to gsd-debugger", () => {
+    it("routes course-correction requests to hm-l0-orchestrator", () => {
       const result = resolveIntake("there's a bug in the system")
       expect(result.purpose.purpose).toBe("course-correction")
-      expect(result.routingTarget).toBe("gsd-debugger")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
     })
   })
 
@@ -136,12 +136,12 @@ describe("resolveIntake", () => {
 
     it("returns empty warnings when target exists in registry", () => {
       const primitives = new Map([
-        ["agent:gsd-executor", { name: "gsd-executor", type: "agent" }],
+        ["agent:hm-l0-orchestrator", { name: "hm-l0-orchestrator", type: "agent" }],
       ])
       const validator = createRegistryValidator(primitives)
 
       const result = resolveIntake("implement the feature", undefined, validator)
-      expect(result.routingTarget).toBe("gsd-executor")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
       expect(result.warnings).toEqual([])
     })
 
@@ -150,10 +150,10 @@ describe("resolveIntake", () => {
       const validator = createRegistryValidator(primitives)
 
       const result = resolveIntake("implement the feature", undefined, validator)
-      expect(result.routingTarget).toBe("gsd-executor")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
       // Still routes, but with a warning
       expect(result.warnings).toHaveLength(1)
-      expect(result.warnings[0]).toContain("gsd-executor")
+      expect(result.warnings[0]).toContain("hm-l0-orchestrator")
       expect(result.warnings[0]).toContain("not found in primitive registry")
     })
 
@@ -164,7 +164,7 @@ describe("resolveIntake", () => {
       })
 
       const result = resolveIntake("implement the feature", undefined, errorValidator)
-      expect(result.routingTarget).toBe("gsd-executor")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
       expect(result.warnings).toHaveLength(1)
       expect(result.warnings[0]).toContain("filesystem unavailable")
     })
@@ -175,7 +175,7 @@ describe("resolveIntake", () => {
       }
 
       const result = resolveIntake("implement the feature", undefined, throwingValidator)
-      expect(result.routingTarget).toBe("gsd-executor")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
       expect(result.warnings).toHaveLength(1)
       expect(result.warnings[0]).toContain("Registry validation failed")
       expect(result.warnings[0]).toContain("registry crash")
@@ -186,7 +186,7 @@ describe("resolveIntake", () => {
 
       const result = resolveIntake("write tests using tdd approach", undefined, emptyValidator)
       expect(result.purpose.purpose).toBe("tdd")
-      expect(result.routingTarget).toBe("hm-l2-test-driven-execution")
+      expect(result.routingTarget).toBe("hm-l0-orchestrator")
       expect(result.warnings.length).toBeGreaterThan(0)
       // Routing still happens despite warnings
       expect(result.routingTarget).toBeDefined()

@@ -1038,5 +1038,132 @@ Body content.
     await flushDeferred()
     expect(promptMock).toHaveBeenCalled()
   })
+
+  it("should block and poll until child subtask completes when testBlocking is true", async () => {
+    const promptMock = vi.fn(async () => ({ info: { role: "assistant", content: [] }, parts: [] }))
+    const client = {
+      session: { prompt: promptMock },
+      tui: {
+        clearPrompt: vi.fn(),
+        appendPrompt: vi.fn(),
+        submitPrompt: vi.fn(),
+      },
+    } as unknown as PluginInput["client"]
+
+    const projectRoot = await createProjectWithCommand(
+      "block-poll-cmd",
+      `---
+description: "Block and poll test"
+agent: gsd-executor
+subtask: true
+---
+Body content.
+`,
+    )
+
+    const parentSessionID = "ses_parent_block"
+    const childSessionID = "ses_child_block_123"
+
+    // 1. Create parent session folder and initial empty hierarchy manifest
+    const trackerDir = path.join(projectRoot, ".hivemind", "session-tracker", parentSessionID)
+    await mkdir(trackerDir, { recursive: true })
+    await writeFile(path.join(trackerDir, `${parentSessionID}.md`), "# Parent Session", "utf-8")
+    const manifestPath = path.join(trackerDir, "hierarchy-manifest.json")
+    await writeFile(
+      manifestPath,
+      JSON.stringify({
+        version: "2.0",
+        rootMainSessionID: parentSessionID,
+        lastUpdated: new Date().toISOString(),
+        children: {},
+        totalChildren: 0,
+        maxDepth: 0,
+      }),
+      "utf-8"
+    )
+
+    // Simulate OpenCode asynchronous behavior: 500ms after prompt, update manifest to add the child
+    // and write the child session file as completed.
+    setTimeout(async () => {
+      // Update manifest with the child
+      await writeFile(
+        manifestPath,
+        JSON.stringify({
+          version: "2.0",
+          rootMainSessionID: parentSessionID,
+          lastUpdated: new Date().toISOString(),
+          children: {
+            [childSessionID]: {
+              sessionID: childSessionID,
+              parentSessionID,
+              rootMainSessionID: parentSessionID,
+              delegationDepth: 1,
+              delegatedBy: "gsd-executor",
+              subagentType: "gsd-executor",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              status: "completed",
+              turnCount: 1,
+              childFile: `${childSessionID}.json`,
+            }
+          },
+          totalChildren: 1,
+          maxDepth: 1,
+        }),
+        "utf-8"
+      )
+
+      // Write the child session JSON file
+      const childJsonPath = path.join(trackerDir, `${childSessionID}.json`)
+      await writeFile(
+        childJsonPath,
+        JSON.stringify({
+          sessionID: childSessionID,
+          parentSessionID,
+          delegationDepth: 1,
+          delegatedBy: {
+            agentName: "gsd-executor",
+            tool: "execute-slash-command",
+            description: "Block and poll test",
+            subagentType: "gsd-executor",
+          },
+          created: new Date().toISOString(),
+          updated: new Date().toISOString(),
+          status: "completed",
+          mainAgent: { name: "gsd-executor", model: "test" },
+          turns: [
+            {
+              turn: 1,
+              actor: "assistant",
+              content: "Successfully completed block-poll task!",
+              tools: [],
+              role: "assistant"
+            }
+          ],
+          children: [],
+          lastMessage: "Successfully completed block-poll task!",
+        }),
+        "utf-8"
+      )
+    }, 500)
+
+    const tool = createExecuteSlashCommandTool(client)
+    const result = await tool.execute(
+      { command: "block-poll-cmd", subtask: true, testBlocking: true },
+      {
+        sessionID: parentSessionID,
+        agent: "gsd-executor",
+        metadata: vi.fn(),
+        directory: projectRoot,
+        worktree: projectRoot,
+        abort: new AbortController().signal,
+        ask: vi.fn(),
+        messageID: "msg_block_poll",
+      } as any,
+    )
+
+    expect(result.error).toBe(false)
+    expect(result.output).toBe("Successfully completed block-poll task!")
+  })
 })
 

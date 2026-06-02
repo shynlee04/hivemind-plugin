@@ -194,13 +194,17 @@ function extractKeywords(text: string): string[] {
 function calculateSimilarityScore(keywords: string[], agent: Agent): number {
   let score = 0
   const nameLower = agent.name.toLowerCase()
+  // Strip lineage prefix (e.g., "gsd-" or "hm-") for exact match checks
+  const nameWithoutPrefix = nameLower.replace(/^[a-z0-9]+-/, "")
   
   keywords.forEach((keyword) => {
     const stems = getWordStems(keyword)
     for (const stem of stems) {
       if (nameLower.includes(stem)) {
         score += 1.0
-        if (nameLower === stem) score += 1.0
+        if (nameLower === stem || nameWithoutPrefix === stem) {
+          score += 1.0
+        }
         break
       }
     }

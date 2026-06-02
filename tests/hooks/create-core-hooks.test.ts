@@ -182,6 +182,8 @@ describe("createCoreHooks", () => {
         matchConfidence: 0.45,
       },
       warnings: [],
+      trajectoryWarnings: [],
+      jitRecommendations: [],
     }
   }
 

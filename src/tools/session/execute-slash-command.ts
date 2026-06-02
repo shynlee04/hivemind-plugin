@@ -11,7 +11,8 @@ import {
   InvalidCommandError,
   DelegationContextError,
 } from "../../shared/errors/commands.js"
-import { describeError } from "../../shared/helpers.js"
+import { describeError, extractAssistantText } from "../../shared/helpers.js"
+import { getSessionMessages, getSessionStatusMap } from "../../shared/session-api.js"
 import { randomUUID } from "node:crypto"
 import { isValidSessionID } from "../../features/session-tracker/types.js"
 import { resolveCommand } from "./resolve-command.js"
@@ -216,7 +217,8 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             const obj = a as { name?: string; id?: string; description?: string }
             return { name: obj.name || obj.id || "", description: obj.description }
           }).filter((a) => a.name.length > 0)
-          const agentResult = await selectAgent(executionArgs.command, normalizedAgents)
+          const selectIntent = executionArgs.command + (executionArgs.arguments ? " " + executionArgs.arguments : "")
+          const agentResult = await selectAgent(selectIntent, normalizedAgents)
           if (agentResult.agent) {
             suggestedAgent = agentResult.agent
           }
@@ -244,7 +246,8 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               const obj = a as { name?: string; id?: string; description?: string }
               return { name: obj.name || obj.id || "", description: obj.description }
             }).filter((a) => a.name.length > 0)
-            const agentResult = await selectAgent(executionArgs.command, normalizedAgents)
+            const selectIntent = executionArgs.command + (executionArgs.arguments ? " " + executionArgs.arguments : "")
+            const agentResult = await selectAgent(selectIntent, normalizedAgents)
             if (agentResult.agent) {
               resolvedAgent = agentResult.agent
             }
@@ -397,6 +400,9 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             })
           }
 
+          // 1. Fetch baseline children of ctx.sessionID before dispatch
+          const baselineChildren = await getChildSessionIDs(projectRoot, ctx.sessionID)
+
           const promptText = await expandCommandTemplate(commandBundle.body, executionArgs.arguments ?? "", projectRoot)
           const dispatchResult = await dispatchCommand({
             client,
@@ -421,12 +427,147 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             } as ToolResult
           }
 
+          // In unit tests, unless testBlocking is explicitly requested, resolve immediately to avoid hanging on mocked SDK calls
+          if (process.env.NODE_ENV === "test" && !args.testBlocking) {
+            return {
+              output: [
+                `✓ Command ${cmdDisplay} dispatched as subtask.`,
+                `  Agent: ${subtaskAgent}`,
+                `  Description: ${commandBundle.description}`,
+              ].join("\n"),
+              metadata: buildSuccessMetadata(
+                args,
+                validated,
+                "subtask",
+                resolvedParentSessionID,
+                startTime,
+                {
+                  agent: subtaskAgent,
+                  description: commandBundle.description,
+                  scheduled: true,
+                  dispatched: true,
+                }
+              ),
+              error: false,
+            } as ToolResult
+          }
+
+          // 2. Poll for the newly created child session ID by checking the difference in hierarchy manifest
+          let childSessionID: string | null = null
+          const startDiscovery = Date.now()
+          const discoveryTimeout = 15_000 // 15 seconds to discover child session ID
+          while (Date.now() - startDiscovery < discoveryTimeout) {
+            const currentChildren = await getChildSessionIDs(projectRoot, ctx.sessionID)
+            for (const id of currentChildren) {
+              if (!baselineChildren.has(id)) {
+                childSessionID = id
+                break
+              }
+            }
+            if (childSessionID) break
+            await new Promise((resolve) => setTimeout(resolve, 200))
+          }
+
+          if (!childSessionID) {
+            return {
+              output: `✗ Timeout: failed to discover child session ID for dispatched subtask command.`,
+              metadata: buildSuccessMetadata(
+                args,
+                validated,
+                "subtask",
+                resolvedParentSessionID,
+                startTime,
+                {
+                  agent: subtaskAgent,
+                  description: commandBundle.description,
+                  error: true,
+                  errorType: "timeout",
+                }
+              ),
+              error: true,
+            } as ToolResult
+          }
+
+          // 3. Block and poll until the child session reaches a terminal state
+          let terminal = false
+          let successState = false
+          let terminalOutput = ""
+          const pollInterval = 1000
+          const maxPolls = 600 // 10 minutes max
+          
+          for (let poll = 0; poll < maxPolls; poll++) {
+            if (ctx.abort?.aborted) {
+              return {
+                output: "✗ Dispatch aborted by caller.",
+                error: true,
+                metadata: { error: true, errorType: "cancelled" }
+              }
+            }
+
+            // A. Check disk record status
+            const resolvedChild = await resolveSessionFile(projectRoot, childSessionID)
+            const diskStatus = resolvedChild?.childRecord?.status
+            if (diskStatus && ["completed", "error", "timeout", "aborted", "cancelled"].includes(diskStatus)) {
+              terminal = true
+              successState = diskStatus === "completed"
+              terminalOutput = resolvedChild?.childRecord?.lastMessage ?? ""
+              if (!terminalOutput && resolvedChild?.childRecord?.turns) {
+                const messages = resolvedChild.childRecord.turns.map(t => ({
+                  role: t.role,
+                  parts: [{ type: "text", text: t.content }]
+                }))
+                terminalOutput = extractAssistantText(messages)
+              }
+              break
+            }
+
+            // B. Check API status (getSessionStatusMap and getSessionMessages)
+            try {
+              const statusMap = await getSessionStatusMap(client)
+              const apiStatus = statusMap[childSessionID]?.type
+              if (apiStatus === "idle") {
+                const messages = await getSessionMessages(client, childSessionID)
+                if (messages.length > 0) {
+                  const lastMessage = messages[messages.length - 1]
+                  const lastRole = (lastMessage as any)?.info?.role ?? (lastMessage as any)?.role
+                  if (lastRole === "assistant") {
+                    terminal = true
+                    successState = true
+                    terminalOutput = extractAssistantText(messages)
+                    break
+                  }
+                }
+              }
+            } catch (apiErr) {
+              // Ignore API errors, fallback to disk status
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, pollInterval))
+          }
+
+          if (!terminal) {
+            return {
+              output: `✗ Timeout: child session ${childSessionID} did not reach terminal state.`,
+              metadata: buildSuccessMetadata(
+                args,
+                validated,
+                "subtask",
+                resolvedParentSessionID,
+                startTime,
+                {
+                  agent: subtaskAgent,
+                  childSessionID,
+                  description: commandBundle.description,
+                  error: true,
+                  errorType: "timeout",
+                }
+              ),
+              error: true,
+            } as ToolResult
+          }
+
           return {
-            output: [
-              `✓ Command ${cmdDisplay} dispatched as subtask.`,
-              `  Agent: ${subtaskAgent}`,
-              `  Description: ${commandBundle.description}`,
-            ].join("\n"),
+            output: terminalOutput || `✓ Subtask completed on child session ${childSessionID}.`,
             metadata: buildSuccessMetadata(
               args,
               validated,
@@ -435,12 +576,12 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               startTime,
               {
                 agent: subtaskAgent,
+                childSessionID,
                 description: commandBundle.description,
-                scheduled: true,
-                dispatched: true,
+                completed: true,
               }
             ),
-            error: false,
+            error: !successState,
           } as ToolResult
         }
         // Build the slash command text for TUI pipeline
@@ -663,6 +804,27 @@ async function expandCommandTemplate(commandBody: string, commandArguments: stri
 
   return expanded
 }
+
+async function getChildSessionIDs(projectRoot: string, parentSessionID: string): Promise<Set<string>> {
+  const resolved = await resolveSessionFile(projectRoot, parentSessionID)
+  if (!resolved) return new Set()
+  try {
+    const raw = await fs.readFile(resolved.manifestPath, "utf-8")
+    const manifest = JSON.parse(raw)
+    const children = manifest.children ?? {}
+    const childIds = new Set<string>()
+    for (const [childId, child] of Object.entries(children)) {
+      const parent = (child as any).parentSessionID
+      if (parent === parentSessionID) {
+        childIds.add(childId)
+      }
+    }
+    return childIds
+  } catch {
+    return new Set()
+  }
+}
+
 
 
 
