@@ -205,3 +205,126 @@ describe("Integration with fork SessionManager", () => {
     expect(call).toHaveProperty("hivemindMeta.agent", "gsd-researcher")
   })
 })
+
+// ---------------------------------------------------------------------------
+// Phase 52: TmuxEventType union + SessionStateChanged / PaneCaptured dispatch
+// ---------------------------------------------------------------------------
+
+import type {
+  SessionStateChangedEvent,
+  PaneCapturedEvent,
+  TmuxEventType,
+} from "../../../src/features/tmux/observers.js"
+
+function makeSessionStateChangedEvent(overrides: Partial<SessionStateChangedEvent> = {}): SessionStateChangedEvent {
+  return {
+    type: "session-state-changed",
+    sessionId: overrides.sessionId ?? "ses_s1",
+    previousState: overrides.previousState ?? "active",
+    currentState: overrides.currentState ?? "ready",
+    timestamp: overrides.timestamp ?? Date.now(),
+  }
+}
+
+function makePaneCapturedEvent(overrides: Partial<PaneCapturedEvent> = {}): PaneCapturedEvent {
+  return {
+    type: "pane-captured",
+    sessionId: overrides.sessionId ?? "ses_s1",
+    paneId: overrides.paneId ?? "%5",
+    contentLength: overrides.contentLength ?? 1024,
+    timestamp: overrides.timestamp ?? Date.now(),
+  }
+}
+
+describe("Phase 52: TmuxEventType union export", () => {
+  it("includes session.created, session-state-changed, pane-captured (3 values)", () => {
+    const values: TmuxEventType[] = ["session.created", "session-state-changed", "pane-captured"]
+    expect(values).toHaveLength(3)
+    expect(values).toContain("session.created")
+    expect(values).toContain("session-state-changed")
+    expect(values).toContain("pane-captured")
+  })
+})
+
+describe("Phase 52: session-state-changed dispatch", () => {
+  afterEach(() => {
+    vi.clearAllMocks()
+    getDelegationMetaResult = undefined
+  })
+
+  it("registers onSessionStateChanged listener and dispatches event to it", async () => {
+    const { sessionManager } = makeForkSessionManager()
+    const observer = createTmuxEventObserver(sessionManager)
+    const listener = vi.fn()
+
+    observer.onSessionStateChanged(listener)
+    const event = makeSessionStateChangedEvent({ sessionId: "ses_state1", currentState: "ready" })
+    await observer({ event })
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).toHaveBeenCalledWith(event)
+  })
+
+  it("does NOT forward session-state-changed to the fork SessionManager", async () => {
+    const { sessionManager, onSessionCreated } = makeForkSessionManager()
+    const observer = createTmuxEventObserver(sessionManager)
+
+    await observer({ event: makeSessionStateChangedEvent() })
+
+    expect(onSessionCreated).not.toHaveBeenCalled()
+  })
+
+  it("supports multiple listeners, invoked in registration order", async () => {
+    const { sessionManager } = makeForkSessionManager()
+    const observer = createTmuxEventObserver(sessionManager)
+    const order: string[] = []
+    observer.onSessionStateChanged(() => order.push("first"))
+    observer.onSessionStateChanged(() => order.push("second"))
+    observer.onSessionStateChanged(() => order.push("third"))
+
+    await observer({ event: makeSessionStateChangedEvent() })
+
+    expect(order).toEqual(["first", "second", "third"])
+  })
+})
+
+describe("Phase 52: pane-captured dispatch", () => {
+  afterEach(() => {
+    vi.clearAllMocks()
+    getDelegationMetaResult = undefined
+  })
+
+  it("registers onPaneCaptured listener and dispatches event to it", async () => {
+    const { sessionManager } = makeForkSessionManager()
+    const observer = createTmuxEventObserver(sessionManager)
+    const listener = vi.fn()
+
+    observer.onPaneCaptured(listener)
+    const event = makePaneCapturedEvent({ paneId: "%7", contentLength: 2048 })
+    await observer({ event })
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).toHaveBeenCalledWith(event)
+  })
+
+  it("does NOT forward pane-captured to the fork SessionManager", async () => {
+    const { sessionManager, onSessionCreated } = makeForkSessionManager()
+    const observer = createTmuxEventObserver(sessionManager)
+
+    await observer({ event: makePaneCapturedEvent() })
+
+    expect(onSessionCreated).not.toHaveBeenCalled()
+  })
+
+  it("listener exceptions do not break the chain", async () => {
+    const { sessionManager } = makeForkSessionManager()
+    const observer = createTmuxEventObserver(sessionManager)
+    const goodListener = vi.fn()
+    observer.onPaneCaptured(() => { throw new Error("listener boom") })
+    observer.onPaneCaptured(goodListener)
+
+    await observer({ event: makePaneCapturedEvent() })
+
+    expect(goodListener).toHaveBeenCalledTimes(1)
+  })
+})
