@@ -100,7 +100,8 @@ const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
 // ---------------------------------------------------------------------------
 
 export type TmuxCopilotResult =
-  | { available: false; reason: "fork-not-wired" | "tmux-not-installed" }
+  | { available: false; reason: "fork-not-wired" | "tmux-not-installed" | "tmux-timeout" }
+  | { available: false; reason: "tmux-error"; error: { message: string } }
   | { sent: true; paneId: string }
   | { sent: false; paneId: string; error: { message: string } }
   | { panes: PaneState[] }
