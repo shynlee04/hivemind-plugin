@@ -82,6 +82,9 @@ import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
 import { runRalphLoop, escalationMessage } from "./coordination/spawner/ralph-loop.js"
 import { SessionTracker } from "./features/session-tracker/index.js"
 import { getConfig, getFreshConfig } from "./config/subscriber.js"
+import { createSidecarServer } from "./sidecar/server/factory.js"
+import { SidecarDependencyRegistry } from "./sidecar/server/registry.js"
+import { SseConnectionPool } from "./sidecar/server/sse/pool.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
 import { getSessionContinuity, listSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./task-management/continuity/index.js"
 import { enrichContinuityListWithTracker } from "./task-management/continuity/continuity-reader.js"
@@ -417,6 +420,35 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // an already-started OpenCode process). Auto-init wrapper deferred to Phase 43.
   const tmuxIntegration = await createTmuxIntegrationIfSupported(projectDirectory)
 
+  // ── Step 5.5: Sidecar HTTP server ──────────────────────────────
+  // Per D-SC01-03: server start failure must NOT block plugin init.
+  const sidecarRegistry = new SidecarDependencyRegistry()
+  const ssePool = new SseConnectionPool({})
+  let sidecarPort = 0
+  try {
+    const sidecar = await createSidecarServer({
+      registry: sidecarRegistry,
+      ssePool,
+      projectDirectory,
+    })
+    sidecarPort = sidecar.port
+  } catch (err) {
+    void client?.app?.log?.({
+      body: {
+        service: "sidecar",
+        level: "warn",
+        message: "[Harness] Sidecar: server start failed — continuing without sidecar",
+        extra: { error: err instanceof Error ? err.message : String(err) },
+      },
+    })
+  }
+
+  // Suppress unused-variable warning — port will be consumed by Next.js sidecar in SC-03.
+  void sidecarPort
+
+  // Bind client to sidecar registry (always available — plugin parameter).
+  try { sidecarRegistry.setClient(client) } catch { /* skip — sidecar may not have started */ }
+
   // Phase 43 (REQ-05): factory-level wiring lands here in the fork's plugin
   // entry, where a real SessionManager is constructed. In the in-tree
   // build (Phase 51), the factory itself constructs the real SessionManager
@@ -429,6 +461,9 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // Created before delegation modules so it can wire into child session creation
   // for delegate-task SDK-dispatched sessions.
   const sessionTracker = new SessionTracker({ client, projectRoot: projectDirectory })
+
+  // Bind session tracker to sidecar registry (non-blocking — best-effort).
+  try { sidecarRegistry.setSessionTracker(sessionTracker) } catch { /* skip — sidecar may not have started */ }
 
   // REQ-01: Construct critical deps SYNCHRONOUSLY before delegation wiring
   // so onChildSessionCreated callbacks find eventCapture already available.
@@ -446,6 +481,10 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   })
   const delegationManager = delegationModules.delegationManager
   const monitor = delegationModules.monitor
+
+  // Bind delegation manager to sidecar registry (non-blocking — best-effort).
+  try { sidecarRegistry.setDelegationManager(delegationManager) } catch { /* skip — sidecar may not have started */ }
+
   // Recovery runs asynchronously — must not block plugin init.
   // If a second OpenCode instance starts, recoverPending() would await SDK calls
   // for sessions that belong to the first instance, causing a hang.

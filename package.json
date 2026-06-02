@@ -69,13 +69,14 @@
     "vitest": "^4.1.7"
   },
   "optionalDependencies": {
-    "@json-render/core": "^0.18.0",
-    "@json-render/ink": "^0.18.0",
-    "@json-render/next": "^0.18.0",
-    "@json-render/react": "^0.18.0",
-    "@json-render/react-pdf": "^0.18.0",
+    "@json-render/core": "^0.19.0",
+    "@json-render/ink": "^0.19.0",
+    "@json-render/next": "^0.19.0",
+    "@json-render/react": "^0.19.0",
+    "@json-render/react-pdf": "^0.19.0",
     "bun-pty": "^0.4.8",
-    "react": "^19.2.6"
+    "react": "^19.2.6",
+    "ws": "^8.18.0"
   },
   "license": "MIT",
   "author": "HiveMind Contributors",
