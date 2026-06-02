@@ -7,8 +7,8 @@ last_updated: "2026-06-02T15:13:01.864Z"
 progress:
   total_phases: 61
   completed_phases: 17
-  total_plans: 133
-  completed_plans: 101
+  total_plans: 136
+  completed_plans: 104
   percent: 28
 ---
 
@@ -38,12 +38,14 @@ progress:
 
 | Phase | Title | Status | Depends On |
 |-------|-------|--------|------------|
-| SC-01 | Foundation — Plugin HTTP Server + State Bridge | 📋 SPEC | P39 |
+| SC-01 | Foundation — Plugin HTTP Server + State Bridge | ✅ COMPLETE | P39 |
 | SC-02 | REST API + Tool Proxy | 📋 PENDING | SC-01 |
 | SC-03 | Next.js 16 Standalone App | 📋 PENDING | SC-01, SC-02 |
 | SC-04 | Session Explorer Panel | 📋 PENDING | SC-03 |
 | SC-05 | Delegation Dashboard Panel | 📋 PENDING | SC-03 |
 | SC-06 | MEMS Browser + Control Panel | 📋 PENDING | SC-04, SC-05 |
+
+**SC-01:** ✅ COMPLETE (2026-06-02). 3 plans, 3 waves, 5 atomic commits. 59 tests, clean typecheck. Server factory + dependency registry + SSE pool + extended state prefixes + plugin step 5.5 wiring. Blocks SC-02, SC-03.
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
 **Phase 24.5:** ✅ COMPLETE — 4 broken workflow step paths fixed (commit `158a9d66`). Typecheck clean.
 **Phase 24.6:** ✅ COMPLETE — 3 critical commands elevated from stubs to 100+ lines (commit `4959ff08`). Typecheck + tests clean.
