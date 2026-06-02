@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- Removed vendored `opencode-tmux/` fork; in-tree tmux-copilot module (P50-P55 synthesis) replaces it.
+
 ### Added
 - Phase 0 Governance Baseline (docs/governance)
 - Core Architecture (WS-CA) Bootstrap CLI & Config Consumer Runtime Wiring
