@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_177191049ffex2SX6zz4IwPIoZ",
+  "lastUpdated": "2026-06-02T15:22:21.685Z",
+  "children": {
+    "ses_17712466bffevHebEqDt29KRzb": {
+      "sessionID": "ses_17712466bffevHebEqDt29KRzb",
+      "parentSessionID": "ses_177191049ffex2SX6zz4IwPIoZ",
+      "rootMainSessionID": "ses_177191049ffex2SX6zz4IwPIoZ",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-plan-checker",
+      "subagentType": "",
+      "createdAt": "2026-06-02T15:22:21.685Z",
+      "updatedAt": "2026-06-02T15:22:21.685Z",
+      "status": "running",
+      "turnCount": 0,
+      "childFile": "ses_17712466bffevHebEqDt29KRzb.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

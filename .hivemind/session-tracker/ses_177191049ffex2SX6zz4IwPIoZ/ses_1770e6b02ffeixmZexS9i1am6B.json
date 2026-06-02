@@ -1,0 +1,26 @@
+{
+  "sessionID": "ses_1770e6b02ffeixmZexS9i1am6B",
+  "parentSessionID": "ses_177191049ffex2SX6zz4IwPIoZ",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-02T15:26:34.181Z",
+  "updated": "2026-06-02T16:00:35.209Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": [],
+  "lastMessage": "[Harness] Delegation safety ceiling reached after 1800000ms",
+  "terminalKind": "dispatched"
+}

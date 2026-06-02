@@ -1,0 +1,24 @@
+{
+  "sessionID": "ses_17712466bffevHebEqDt29KRzb",
+  "parentSessionID": "ses_177191049ffex2SX6zz4IwPIoZ",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-plan-checker",
+    "model": "",
+    "tool": "task",
+    "description": "<objective>\nReview the existing PLAN.md for Phase SC-01 (Sidecar Foundation) for quality, completeness, and alignment with locked requirements and decisions.\n</objective>\n\n<files_to_read>\n- .planning/phases/SC-01-sidecar-foundation/SC-01-PLAN.md (Existing plan to review)\n- .planning/phases/SC-01-sidecar-foundation/SC-01-CONTEXT.md (Locked decisions — 14 decisions)\n- .planning/phases/SC-01-sidecar-foundation/SC-01-SPEC.md (Locked requirements — 7 requirements)\n- .planning/phases/SC-01-sidecar-foundation/SC-01-RESEARCH.md (Technical research)\n</files_to_read>\n\n<checklist>\nVerify these dimensions:\n\n1. **Frontmatter validity** — Are all required fields present? (phase, plan, type, wave, depends_on, files_modified, autonomous, requirements, must_haves)\n2. **Requirements traceability** — Do all 7 SPEC requirements map to tasks?\n3. **Decision compliance** — Are all 14 CONTEXT.md decisions reflected in the plan?\n4. **Task completeness** — Does each task have: `<name>`, `<files>`, `<action>`, `<verify>`, `<done>`?\n5. **Acceptance criteria** — Does every task have verifiable acceptance criteria?\n6. **Verification coverage** — Does the verification section cover all 8 SPEC acceptance criteria?\n7. **Threat model** — Is the STRIDE threat model complete and appropriate?\n8. **Wave/dependency ordering** — Are waves and dependencies logical?\n</checklist>\n\n<output>\nReturn `## VERIFICATION PASSED` if the plan is clean, or `## ISSUES FOUND` with a YAML block of issues. Each issue must have: dimension, severity (BLOCKER/WARNING/INFO), finding, affected_field, suggested_fix.\n</output>",
+    "subagentType": ""
+  },
+  "created": "2026-06-02T15:22:21.401Z",
+  "updated": "2026-06-02T15:22:21.501Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-plan-checker",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:gsd-plan-checker",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
+}

@@ -1,0 +1,630 @@
+{
+  "sessionID": "ses_17739d25fffeN0oxD2o0OeOJsn",
+  "parentSessionID": "ses_17743befcffewaXqGZ8tDIoCCn",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-codebase-mapper",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Audit existing sidecar codebase",
+    "subagentType": "gsd-codebase-mapper"
+  },
+  "created": "2026-06-02T14:39:09.742Z",
+  "updated": "2026-06-02T14:42:12.328Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-codebase-mapper",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a codebase audit subagent. Your task is to audit the Hivemind project for ALL surfaces that a bidirectional sidecar GUI would need to integrate with. The sidecar is a Next.js 16 + @json-render/react control panel that both reads state from and writes actions back to the Hivemind plugin.\n\n## Scope\nThe sidecar must integrate with ALL of these:\n1. **Session-tracker** — `.hivemind/session-tracker/` directory structure, journal files, continuity records\n2. **Delegation system** — `src/coordination/delegation/` (manager, coordinator, lifecycle, dispatcher, monitor, notification-router, retry-handler, slot-manager)\n3. **Tmux integration** — `src/tools/tmux-copilot.ts`, `src/tools/tmux-state-query.ts`, observers, integration module (P50-P55)\n4. **Plugin tools** — ALL 27 tools registered in `src/plugin.ts`, their inputs/outputs, Zod schemas\n5. **Plugin hooks** — ALL hooks: `tool.execute.before`, `tool.execute.after`, `chat.message`, `event`, `system.transform`\n6. **Sidecar skeleton** — `src/sidecar/readonly-state.ts` (120 LOC), path containment, current wiring state\n7. **Package exports** — `src/index.ts`, what's publicly exported, what sidecar-needs are missing\n8. **Trajectory + Pressure** — `src/task-management/trajectory/`, `src/features/pressure/`\n9. **Config** — `src/config/`, runtime policy, hivemind config schema\n\n## Method\n1. Glob the session-tracker directory: `.hivemind/session-tracker/`\n2. Read `src/plugin.ts` to list ALL registered tools and hooks\n3. Read `src/sidecar/readonly-state.ts`\n4. Glob `src/coordination/delegation/` to list all files\n5. Glob `tools/tmux-*` to find tmux tools\n6. Read `src/index.ts` for public exports\n7. Check `.hivemind/state/` for state files\n\n## Output\nWrite to `.hivemind/planning/sidecar-vision/AUDIT-codebase-surfaces.md` with a comprehensive table:\n\n| Surface | Location | Type | Sidecar Use | R/O or R/W |\n|---------|----------|------|-------------|------------|\n| Session continuity | .hivemind/state/continuity*.json | State file | Display active sessions, recovery status | Read |\n| Delegation records | .hivemind/state/delegations.json | State file | Display delegation tree, status | Read |\n| Session tracker journal | .hivemind/session-tracker/ | Directory | Display session timeline | Read |\n| delegate-task tool | src/tools/delegation/delegate-task.ts | Tool | Browser → trigger delegation | Write (via SDK) |\n| ... | ... | ... | ... | ... |\n\nIdentify ALL surfaces needed for a bidirectional sidecar that can:\n- DISPLAY session state, delegation trees, tmux panes, trajectory, metrics\n- TRIGGER actions: delegate tasks, execute commands, patch sessions, inspect state\n- MONITOR live: SSE push from hooks when sessions/delegations change\n\nReturn: file path + count of identified surfaces.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll execute a comprehensive audit of all sidecar-integration surfaces across the Hivemind codebase. Let me start by reading all the key files in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, glob, glob, glob, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Now let me read the remaining key modules in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Let me read the remaining critical modules.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Let me read the remaining type files and check other important directories.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Let me get a few more critical details.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "I now have comprehensive data. Let me write the audit document.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Tools: write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "## Mapping Complete\n\n**Focus:** Sidecar codebase surfaces audit\n\n**Document written:**\n- `.hivemind/planning/sidecar-vision/AUDIT-codebase-surfaces.md` (523 lines)\n\n**Surface count:** ~85 unique integration surfaces identified across 9 categories:\n\n| Category | Count |\n|----------|-------|\n| State files on disk | 5 |\n| Registered plugin tools | 27 |\n| Plugin hooks | 5 |\n| Delegation module files | 21 |\n| Tmux integration files | 7 |\n| Session-tracker source files | 25+ |\n| Trajectory files | 5 |\n| Pressure files | 6 |\n| Config files | 8 |\n| Public API exports | 30 modules |\n\n**Key findings:**\n- 10 critical gaps identified (CANONICAL_PREFIXES missing `.hivemind/session-tracker/`, no HTTP/SSE server, types not exported, tmux-state-query returns placeholder data, no sidecar UI components)\n- Event hook observer pipeline is the ideal SSE injection point\n- SIDECAR-03 guard must be extended to cover session-tracker paths",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "gsd-codebase-mapper",
+      "content": "## Mapping Complete\n\n**Focus:** Sidecar codebase surfaces audit\n\n**Document written:**\n- `.hivemind/planning/sidecar-vision/AUDIT-codebase-surfaces.md` (523 lines)\n\n**Surface count:** ~85 unique integration surfaces identified across 9 categories:\n\n| Category | Count |\n|----------|-------|\n| State files on disk | 5 |\n| Registered plugin tools | 27 |\n| Plugin hooks | 5 |\n| Delegation module files | 21 |\n| Tmux integration files | 7 |\n| Session-tracker source files | 25+ |\n| Trajectory files | 5 |\n| Pressure files | 6 |\n| Config files | 8 |\n| Public API exports | 30 modules |\n\n**Key findings:**\n- 10 critical gaps identified (CANONICAL_PREFIXES missing `.hivemind/session-tracker/`, no HTTP/SSE server, types not exported, tmux-state-query returns placeholder data, no sidecar UI components)\n- Event hook observer pipeline is the ideal SSE injection point\n- SIDECAR-03 guard must be extended to cover session-tracker paths",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-02T14:39:26.496Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_zx9l9uR9DlvAr0x14dIx1312",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:42.548Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_EIJaOf28jKp6TX44KzLh2193",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:42.561Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_aA87c23YChykoxxitM7Z3016",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:42.566Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_2fUbQhvzkbJabgtzm3EG6512",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/sidecar/readonly-state.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:42.645Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_06_vq86KF220hVnds6hai6U3347",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:42.661Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_05_0N31UGGDCbBdmDYBbj0B2541",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:42.680Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_04_itT25K3Xao6b5dJ9DhM25128",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:42.709Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_tD8IU4MuR3gr6seyl53Y6829",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:50.364Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_UZZGwj8jV1dylTVQj5di6837",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:58.022Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_385tuJyUP1NRWULrm30c6833",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/tmux-state-query.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:58.048Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_7llqgQ6ByI5DAiIERjwq6185",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/tmux-copilot.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:58.104Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_5TVjcLHuk3U6EBslvz4M3301",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:58.110Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_05_GIw3Hm8LrfDFVEA1Ghku8965",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:58.127Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_I0Rn9CKgWpybRTmzOiRe7669",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:58.143Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_04_cqr5QcYwf4wr3NC1pM186306",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:58.162Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_06_RNKxS9Si4vwe7w5CFTr01671",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:58.187Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_07_AsGWsgIeggvOlZWupE3U4279",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:07.308Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_pHnJ8XFmRDR5eND2uGYb7558",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/config/subscriber.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:07.320Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_42oPauKMBVcNV08QEAr89782",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:07.343Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ProuoyRptQ0mQiC92uf15144",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:07.357Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_C1pDFx6KjB3rCQc8ajcL4713",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:07.365Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_06_MpxoH6wcQRNWe7qbxZRF2896",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:07.385Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_07_FF89tcFIqXoDRCZnqYYJ6110",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:07.390Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_05_VTz3L7Qc88ptcWAxAjYl3989",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:07.500Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_04_EkAMu1e5Ub1D5NA4rkrb7813",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:15.840Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_HzTE8SGO7KulnzZb3LjP6431",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:15.860Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_3ILlL0Sy5shw020yThAi2343",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/runtime-pressure/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:15.867Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_x6Rn9tvInVbWmgZ5a8L04084",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:15.873Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_WP0LMTnICGZPECvvvZSK8965",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:15.896Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_04_SOhV4pWuuvWJbuaZWRoQ9922",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:15.902Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_06_3BxtY8feTQr3xMBEMp0u5757",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:15.914Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_mipwLGkXYEUuihd4TjuV6836",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:35.290Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_FJbDZgemRcFXObzJwwk06819",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:35.298Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_2yWqiITKl6NaFnuYsq9O9831",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_17743befcffewaXqGZ8tDIoCCn/hierarchy-manifest.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:35.306Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_G2aHveCYKrrrY7Ejk9NY9773",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_17743befcffewaXqGZ8tDIoCCn/session-continuity.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:35.314Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_iNUev9XGrdlgYEn53wU59752",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/configs.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:35.322Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_KEK5H0oAmECxonWcRaeI3445",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/session-tracker/project-continuity.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:35.385Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_ZMKGE2IPG5LEk2whCyNq3178",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:45.914Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_Ivu4IHa2ntEyP2ZSA3za3415",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:53.496Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_BNBJdyXPnbhe9mwIb6pz1436",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:41:47.726Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_Oac0xR8Q8keTSQpCKUPM9634",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:41:55.857Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_I1Kza20k6T47Ts8qNdAu6079",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:42:12.287Z",
+      "type": "assistant_message",
+      "content": "## Mapping Complete\n\n**Focus:** Sidecar codebase surfaces audit\n\n**Document written:**\n- `.hivemind/planning/sidecar-vision/AUDIT-codebase-surfaces.md` (523 lines)\n\n**Surface count:** ~85 unique integration surfaces identified across 9 categories:\n\n| Category | Count |\n|----------|-------|\n| State files on disk | 5 |\n| Registered plugin tools | 27 |\n| Plugin hooks | 5 |\n| Delegation module files | 21 |\n| Tmux integration files | 7 |\n| Session-tracker source files | 25+ |\n| Trajectory files | 5 |\n| Pressure files | 6 |\n| Config files | 8 |\n| Public API exports | 30 modules |\n\n**Key findings:**\n- 10 critical gaps identified (CANONICAL_PREFIXES missing `.hivemind/session-tracker/`, no HTTP/SSE server, types not exported, tmux-state-query returns placeholder data, no sidecar UI components)\n- Event hook observer pipeline is the ideal SSE injection point\n- SIDECAR-03 guard must be extended to cover session-tracker paths",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_17739d25fffeN0oxD2o0OeOJsn"
+      }
+    }
+  ],
+  "lastMessage": "## Mapping Complete\n\n**Focus:** Sidecar codebase surfaces audit\n\n**Document written:**\n- `.hivemind/planning/sidecar-vision/AUDIT-codebase-surfaces.md` (523 lines)\n\n**Surface count:** ~85 unique integration surfaces identified across 9 categories:\n\n| Category | Count |\n|----------|-------|\n| State files on disk | 5 |\n| Registered plugin tools | 27 |\n| Plugin hooks | 5 |\n| Delegation module files | 21 |\n| Tmux integration files | 7 |\n| Session-tracker source files | 25+ |\n| Trajectory files | 5 |\n| Pressure files | 6 |\n| Config files | 8 |\n| Public API exports | 30 modules |\n\n**Key findings:**\n- 10 critical gaps identified (CANONICAL_PREFIXES missing `.hivemind/session-tracker/`, no HTTP/SSE server, types not exported, tmux-state-query returns placeholder data, no sidecar UI components)\n- Event hook observer pipeline is the ideal SSE injection point\n- SIDECAR-03 guard must be extended to cover session-tracker paths"
+}

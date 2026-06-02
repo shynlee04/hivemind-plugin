@@ -3,18 +3,18 @@
   "parentSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
   "delegationDepth": 1,
   "delegatedBy": {
-    "agentName": "hm-codebase-mapper",
-    "model": "unknown",
+    "agentName": "",
+    "model": "",
     "tool": "task",
-    "description": "Generate CONVENTIONS.md and TESTING.md",
-    "subagentType": "hm-codebase-mapper"
+    "description": "",
+    "subagentType": ""
   },
   "created": "2026-06-02T12:06:22.470Z",
-  "updated": "2026-06-02T13:11:08.636Z",
-  "status": "completed",
+  "updated": "2026-06-02T16:00:35.211Z",
+  "status": "error",
   "mainAgent": {
-    "name": "hm-codebase-mapper",
-    "model": "unknown"
+    "name": "",
+    "model": ""
   },
   "turns": [
     {
@@ -1041,5 +1041,7 @@
       }
     }
   ],
-  "lastMessage": "## MAPPING COMPLETE\n\n**Files Generated:**\n\n| File | Path | Lines |\n|------|------|-------|\n| **CONVENTIONS.md** | `.planning/codebase/CONVENTIONS.md` | 697 |\n| **TESTING.md** | `.planning/codebase/TESTING.md` | 988 |\n\n**Total:** 1,685 lines of codebase intelligence documentation.\n\n---\n\n### CONVENTIONS.md — 13 Sections\n\n| Section | Coverage |\n|---------|----------|\n| TypeScript Configuration | `strict: true`, `verbatimModuleSyntax`, 12 locked tsconfig settings |\n| Module System & Imports | ESM-only, `.js` extensions, 4-group import order |\n| Naming Conventions | Files (kebab-case), classes (PascalCase), functions (camelCase), project prefixes (hm-/hf-/gate-/stack-/gsd-) |\n| Code Structure & Organization | 500 LOC limit, module dependency chain, file placement |\n| Error Handling | `[Harness]` prefix, custom error classes, `ToolResponse` envelope, SDK error extraction |\n| Type Patterns | Explicit return types, type guards, discriminated unions, `import type`, no `any` |\n| Architecture Rules | No circular deps, dual-layer state, deep-clone-on-read, Q6, CQRS |\n| Architecture Patterns (CQRS & 9-Surface) | Write-side (tools), Read-side (hooks), 3 hook categories, WaiterModel delegation |\n| Commit Conventions | `type(scope): description — why`, 8 types, 11 scopes, atomic commits |\n| Documentation Standards | JSDoc, section comments, inline comment types (TODO/HACK/PERF) |\n| Anti-Patterns | 10 code + 5 delegation anti-patterns with detection/correction |\n| State Management | `TaskStateManager`, continuity store, delegation persistence |\n| SDK Integration Patterns | Plugin pattern, SDK wrapper, tool factory, hook factory |\n\n### TESTING.md — 14 Sections\n\n| Section | Coverage |\n|---------|----------|\n| Test Framework | Vitest v4, `globals: true`, V8 coverage provider |\n| Test Locations & Organization | Full directory tree, 260 test files across 14 directories |\n| Running Tests | 10 commands for various run modes |\n| Coverage Configuration | Thresholds (75/62/80/77), exclusions, reporters |\n| Test Patterns | `describe`/`it` structure, section organization, assertion style |\n| Mocking Approach | `vi.fn()`, mock clients, in-memory client utility, `vi.spyOn`, `vi.mock` |\n| Setup & Teardown Patterns | Temp dir management, env var save/restore, cleanup |\n| Integration Tests | 15 integration test files, cross-module patterns, import verification |\n| Eval Tests | 3 eval files for coherence/correctness/stability |\n| CI Integration | Pre-commit checks, pipeline stages, test isolation principles |\n| Writing New Tests | File location templates, import paths, conventions table |\n| Testing Best Practices | 10 Do's, 8 Don'ts, 6 philosophy principles |\n| Phase Conformance Tests | Phase-annotated conformance verification tests |\n| Troubleshooting | 10 common issues with solutions, 6 debug commands, env vars |"
+  "lastMessage": "## MAPPING COMPLETE\n\n**Files Generated:**\n\n| File | Path | Lines |\n|------|------|-------|\n| **CONVENTIONS.md** | `.planning/codebase/CONVENTIONS.md` | 697 |\n| **TESTING.md** | `.planning/codebase/TESTING.md` | 988 |\n\n**Total:** 1,685 lines of codebase intelligence documentation.\n\n---\n\n### CONVENTIONS.md — 13 Sections\n\n| Section | Coverage |\n|---------|----------|\n| TypeScript Configuration | `strict: true`, `verbatimModuleSyntax`, 12 locked tsconfig settings |\n| Module System & Imports | ESM-only, `.js` extensions, 4-group import order |\n| Naming Conventions | Files (kebab-case), classes (PascalCase), functions (camelCase), project prefixes (hm-/hf-/gate-/stack-/gsd-) |\n| Code Structure & Organization | 500 LOC limit, module dependency chain, file placement |\n| Error Handling | `[Harness]` prefix, custom error classes, `ToolResponse` envelope, SDK error extraction |\n| Type Patterns | Explicit return types, type guards, discriminated unions, `import type`, no `any` |\n| Architecture Rules | No circular deps, dual-layer state, deep-clone-on-read, Q6, CQRS |\n| Architecture Patterns (CQRS & 9-Surface) | Write-side (tools), Read-side (hooks), 3 hook categories, WaiterModel delegation |\n| Commit Conventions | `type(scope): description — why`, 8 types, 11 scopes, atomic commits |\n| Documentation Standards | JSDoc, section comments, inline comment types (TODO/HACK/PERF) |\n| Anti-Patterns | 10 code + 5 delegation anti-patterns with detection/correction |\n| State Management | `TaskStateManager`, continuity store, delegation persistence |\n| SDK Integration Patterns | Plugin pattern, SDK wrapper, tool factory, hook factory |\n\n### TESTING.md — 14 Sections\n\n| Section | Coverage |\n|---------|----------|\n| Test Framework | Vitest v4, `globals: true`, V8 coverage provider |\n| Test Locations & Organization | Full directory tree, 260 test files across 14 directories |\n| Running Tests | 10 commands for various run modes |\n| Coverage Configuration | Thresholds (75/62/80/77), exclusions, reporters |\n| Test Patterns | `describe`/`it` structure, section organization, assertion style |\n| Mocking Approach | `vi.fn()`, mock clients, in-memory client utility, `vi.spyOn`, `vi.mock` |\n| Setup & Teardown Patterns | Temp dir management, env var save/restore, cleanup |\n| Integration Tests | 15 integration test files, cross-module patterns, import verification |\n| Eval Tests | 3 eval files for coherence/correctness/stability |\n| CI Integration | Pre-commit checks, pipeline stages, test isolation principles |\n| Writing New Tests | File location templates, import paths, conventions table |\n| Testing Best Practices | 10 Do's, 8 Don'ts, 6 philosophy principles |\n| Phase Conformance Tests | Phase-annotated conformance verification tests |\n| Troubleshooting | 10 common issues with solutions, 6 debug commands, env vars |",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
 }

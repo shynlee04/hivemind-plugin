@@ -1,0 +1,26 @@
+{
+  "sessionID": "ses_1770abdc2ffeYuKJvP35igvtvo",
+  "parentSessionID": "ses_17712466bffevHebEqDt29KRzb",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-02T15:30:35.184Z",
+  "updated": "2026-06-02T15:32:54.142Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": [],
+  "lastMessage": "Child session ses_1770abdc2ffeYuKJvP35igvtvo reached terminal status completed",
+  "terminalKind": "completed"
+}

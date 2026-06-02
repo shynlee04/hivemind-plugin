@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_17712466bffevHebEqDt29KRzb",
+  "lastUpdated": "2026-06-02T16:00:35.234Z",
+  "children": {
+    "ses_1770abdc2ffeYuKJvP35igvtvo": {
+      "sessionID": "ses_1770abdc2ffeYuKJvP35igvtvo",
+      "parentSessionID": "ses_17712466bffevHebEqDt29KRzb",
+      "rootMainSessionID": "ses_17712466bffevHebEqDt29KRzb",
+      "delegationDepth": 1,
+      "delegatedBy": "",
+      "subagentType": "",
+      "createdAt": "2026-06-02T16:00:35.234Z",
+      "updatedAt": "2026-06-02T16:00:35.234Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1770abdc2ffeYuKJvP35igvtvo.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

@@ -1,0 +1,473 @@
+{
+  "sessionID": "ses_17736aabeffeyMrj37UJuNCHtg",
+  "parentSessionID": "ses_17743befcffewaXqGZ8tDIoCCn",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-ai-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Design sidecar architecture",
+    "subagentType": "gsd-ai-researcher"
+  },
+  "created": "2026-06-02T14:42:36.496Z",
+  "updated": "2026-06-02T14:46:45.652Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-ai-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are an architecture design subagent. Design the complete architecture for the Hivemind Sidecar — a Next.js 16 + @json-render/react bidirectional control plane that bridges human operators (in browser), Hivemind runtime (plugin), and native OpenCode.\n\n## Context from Research\n\n### Communication Pattern (from opencode-pty research)\n```\nBrowser (Next.js 16 + @json-render/react + shadcn)\n    ↕ REST (state reads) + WebSocket (live streaming)\nNext.js API Routes (in standalone mode)\n    ↕ HTTP localhost\nHivemind Plugin (embedded HTTP server in plugin.ts startup)\n    ↕ SDK\nOpenCode Runtime + Agents\n```\n\n### Key Findings\n- **Plugin-embedded HTTP server** is the canonical pattern (proven by opencode-pty, OpenChamber)\n- **@json-render/shadcn** provides 36 pre-built components — sidecar should NOT build custom UI primitives\n- **~85 integration surfaces** exist across: delegation (27 tools), tmux (7 files), session-tracker (25+), trajectory (5), pressure (6), config (8)\n- **10 critical gaps** identified in codebase audit: no canonical prefix mapping for session-tracker paths, types not exported for sidecar, no HTTP/SSE server exists\n- **Bidirectional**: REST for state reads + command dispatch, WebSocket for streaming delegation output + SSE for event push\n\n### Sidecar 4 Panels (from landscape)\n1. **Session Explorer** — delegation tree, session timeline, continuity state, tmux panes\n2. **Delegation Dashboard** — active/in-flight, concurrency slots, completion status, notifications\n3. **MEMS Browser** — knowledge graph, decision anchors, trajectory, pressure metrics\n4. **Control Panel** — command dispatch, config editor, runtime policy, tool inspection\n\n## Design Task\n\n### 1. Plugin Integration Layer\nDesign how the plugin starts the sidecar server:\n- When: during plugin startup (alongside PTY manager, tmux integration)\n- What: Express/Fastify/Node HTTP server on localhost random port\n- Endpoints needed:\n  - `GET /api/state/:category` — read state files from `.hivemind/`\n  - `GET /api/sessions/:id` — session details\n  - `GET /api/events` — SSE stream for live events\n  - `POST /api/tools/:name` — invoke any registered plugin tool\n  - `GET /api/catalog` — expose json-render catalog for AI spec generation\n  - WebSocket `/ws/delegation` — streaming delegation output\n- How to pass `client` SDK reference to the HTTP server\n- How to expose all 27 tools via REST\n\n### 2. State Bridge\nHow does the HTTP server read `.hivemind/` state:\n- Use `readCanonicalState()` from `src/sidecar/readonly-state.ts`\n- Extend CANONICAL_PREFIXES to include session-tracker paths\n- Path containment enforcement (reuse existing logic)\n- Cache invalidation via SSE events\n\n### 3. Tool Proxy\nHow does the browser invoke plugin tools:\n- `/api/tools/delegate-task` → calls `delegationManager.delegate(...)`\n- `/api/tools/execute-slash-command` → calls `client.session.prompt(...)`\n- `/api/tools/session-patch` → calls session patch logic\n- Tool response wrapping via `ToolResponse<T>` envelope\n- Authentication: localhost-only binding, no auth needed\n\n### 4. json-render Integration\nHow json-render catalogs map to panels:\n- One catalog per panel? Or one unified catalog?\n- How specs are generated (pre-built vs AI-generated vs hybrid)?\n- StateStore binding to `.hivemind/` data\n\n### 5. Plugin Startup Sequence\nWhere in `src/plugin.ts` does the sidecar start:\n```\n// Existing order:\n1. Runtime policy\n2. PTY manager\n3. Tmux integration  ← HERE? After tmux\n4. Delegation modules\n5. Session tracker\n6. Lifecycle manager\n7. Return hooks + tools\n\n// NEW: Sidecar server starts here, port available in return context\n```\n\n## Output\nWrite to `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` with:\n1. System architecture diagram (text)\n2. Communication flow: browser ↔ plugin ↔ OpenCode\n3. Plugin startup integration sequence\n4. API endpoint design (REST + SSE + WebSocket)\n5. State bridge design (read-only guard extensions)\n6. Tool proxy design (tool invocation via REST)\n7. json-render integration design (catalog strategy)\n8. Security model (localhost-only, no auth needed)\n9. File structure: where sidecar code lives (new `src/sidecar/` structure)\n\nReturn: file path + 5 key architectural decisions made.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Now let me research the json-render/react and Next.js standalone mode patterns, and examine the existing codebase for the state bridge integration points.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: read, read, context7_query-docs",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: context7_query-docs, glob, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Now let me check Next.js standalone mode and the existing coordination modules to complete my understanding.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Now let me verify the document was written correctly and wrap up.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "**File written:** `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` (1,113 lines)\n\n---\n\n## 5 Key Architectural Decisions Made\n\n### 1. Two-Server Model (Plugin HTTP + Next.js Standalone)\nTwo separate servers communicating over localhost HTTP. The **plugin-embedded HTTP/WS server** owns all data access; the **Next.js 16 standalone app** owns all UI rendering. This avoids React/Next.js dependency bloat in the plugin, prevents version conflicts with the host OpenCode runtime, and lets the sidecar be developed and deployed independently. Port discovery via `.hivemind/state/sidecar-port.json` sentinel file.\n\n### 2. Single Unified json-render Catalog (Not Per-Panel)\nOne catalog defining all **44 components** (36 shadcn/ui + 8 custom). Enables cross-panel component references (clicking a session in Explorer opens detail in Delegation Dashboard), simplifies AI spec generation, and eliminates lazy-loading complexity. Panel filtering happens at render time via a `panel` prop on the container, not at catalog definition time.\n\n### 3. Lazy Dependency Binding via Registry\nThe sidecar server starts with an empty `SidecarDependencyRegistry`. Plugin modules register themselves *after* construction (e.g., `sidecarRegistry.setDelegationManager(delMods.delegationManager)`). This is necessary because the server must start early (step 5.5 in the init sequence) before delegation modules (step 7) and session tracker (step 6) exist. Prevents circular init dependencies. Unregistered endpoints return `503`.\n\n### 4. SSE for Push Events, WebSocket Only for Delegation Streaming\nSSE handles 90% of use cases — session events, state invalidation, delegation status updates. It's simpler than WebSocket (unidirectional, built-in reconnection via `EventSource` with `last-event-id`). WebSocket is reserved exclusively for the `/ws/delegation` endpoint where bidirectional streaming is needed (abort commands during live delegation output). Two protocols instead of one, but each is simpler than a WS-only solution with manual reconnection.\n\n### 5. Extended CANONICAL_PREFIXES with session-tracker Support\nExtended the existing `CANONICAL_PREFIXES` from `[\".hivemind/state\", \".planning\"]` to `[\".hivemind/state\", \".hivemind/session-tracker\", \".opencode\", \".planning\"]`. Reuses the battle-tested `isCanonicalStatePath()` path containment logic with existing regression tests. The new prefixes enable the Session Explorer (session knowledge) and Control Panel (primitive inspection) without creating a parallel read path.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "gsd-ai-researcher",
+      "content": "**File written:** `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` (1,113 lines)\n\n---\n\n## 5 Key Architectural Decisions Made\n\n### 1. Two-Server Model (Plugin HTTP + Next.js Standalone)\nTwo separate servers communicating over localhost HTTP. The **plugin-embedded HTTP/WS server** owns all data access; the **Next.js 16 standalone app** owns all UI rendering. This avoids React/Next.js dependency bloat in the plugin, prevents version conflicts with the host OpenCode runtime, and lets the sidecar be developed and deployed independently. Port discovery via `.hivemind/state/sidecar-port.json` sentinel file.\n\n### 2. Single Unified json-render Catalog (Not Per-Panel)\nOne catalog defining all **44 components** (36 shadcn/ui + 8 custom). Enables cross-panel component references (clicking a session in Explorer opens detail in Delegation Dashboard), simplifies AI spec generation, and eliminates lazy-loading complexity. Panel filtering happens at render time via a `panel` prop on the container, not at catalog definition time.\n\n### 3. Lazy Dependency Binding via Registry\nThe sidecar server starts with an empty `SidecarDependencyRegistry`. Plugin modules register themselves *after* construction (e.g., `sidecarRegistry.setDelegationManager(delMods.delegationManager)`). This is necessary because the server must start early (step 5.5 in the init sequence) before delegation modules (step 7) and session tracker (step 6) exist. Prevents circular init dependencies. Unregistered endpoints return `503`.\n\n### 4. SSE for Push Events, WebSocket Only for Delegation Streaming\nSSE handles 90% of use cases — session events, state invalidation, delegation status updates. It's simpler than WebSocket (unidirectional, built-in reconnection via `EventSource` with `last-event-id`). WebSocket is reserved exclusively for the `/ws/delegation` endpoint where bidirectional streaming is needed (abort commands during live delegation output). Two protocols instead of one, but each is simpler than a WS-only solution with manual reconnection.\n\n### 5. Extended CANONICAL_PREFIXES with session-tracker Support\nExtended the existing `CANONICAL_PREFIXES` from `[\".hivemind/state\", \".planning\"]` to `[\".hivemind/state\", \".hivemind/session-tracker\", \".opencode\", \".planning\"]`. Reuses the battle-tested `isCanonicalStatePath()` path containment logic with existing regression tests. The new prefixes enable the Session Explorer (session knowledge) and Control Panel (primitive inspection) without creating a parallel read path.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-02T14:43:02.537Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_LAzI1GyiN20bcfYW8nF12193",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:08.757Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_GilMO4M8WnHEKgW8ulyk0922",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:08.763Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_lIuO5FfJtt09pmwGEcuJ6800",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:08.772Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_iVtJubbmyp2AWNmvfnDR6537",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/codebase/ARCHITECTURE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:16.650Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_02_KPfM0oFgcgEJz7fKY2zX8045",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:16.673Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_0ChuZQ8pVeimsDC13EZa9819",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:18.975Z",
+      "type": "tool_call",
+      "content": "Tool: context7_resolve-library-id",
+      "metadata": {
+        "tool": "context7_resolve-library-id",
+        "callID": "call_00_XYhKuQ4C7av7r3GSCRM51330",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:26.120Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_yBAz3jPhF2BL0M2qeGMD4427",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/sidecar/readonly-state.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:26.126Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Fy7w4LeXH4WurPibPibc6802",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/sidecar/readonly-state.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:27.842Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_02_uigaYxb0aJikTjk7ycy64469",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:36.068Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_u2BhkUMNuNBu6JyfFOQW0636",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:36.081Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_oVNvyfW6y4fBQySE7dJ65161",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:37.970Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_00_Ee5yxH5ViUjn3jFLgFpC5101",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:49.406Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_ME3o50hB1g8CdTPBSSuQ0817",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:49.429Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_zdP257qYhPk8rrxiYVLg3391",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/next.config.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:49.453Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_Ar4Jbf8LIw5PjNkcyk7c8523",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:56.770Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_etrqkFiEmLSnn2YULWeJ7564",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/package.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:56.776Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_j3OrwTkjMO3F0xTuyhMe1435",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/README.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:56.781Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_K0Ab1rlE1JtLZonqtzPN6265",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/tsconfig.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:56.786Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_DKbtUsQKquxdCrq0quKm1861",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/src/app/page.tsx"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:43:56.793Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_EmZGQjW39YChU8FnOyce0883",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/src/app/layout.tsx"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:44:06.003Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_MtTlSgjvQsFTzoungWSW9936",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:44:11.121Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_00_3eoIUgIuLfvtbQCbZPLz1945",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:44:23.835Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_84kheovYN51utShWoJDy7859",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:44:39.169Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_ETeipmVzruhXKkY60CYo0528",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:46:10.968Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_ET_6CSGYWiJd3EbepJL2uIW3742",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:46:21.447Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_01_uZDdfO5kZKaawnsu1gU42235",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:46:21.465Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_AX90ZpwJDaDebnJ10AfU3020",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:46:45.608Z",
+      "type": "assistant_message",
+      "content": "**File written:** `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` (1,113 lines)\n\n---\n\n## 5 Key Architectural Decisions Made\n\n### 1. Two-Server Model (Plugin HTTP + Next.js Standalone)\nTwo separate servers communicating over localhost HTTP. The **plugin-embedded HTTP/WS server** owns all data access; the **Next.js 16 standalone app** owns all UI rendering. This avoids React/Next.js dependency bloat in the plugin, prevents version conflicts with the host OpenCode runtime, and lets the sidecar be developed and deployed independently. Port discovery via `.hivemind/state/sidecar-port.json` sentinel file.\n\n### 2. Single Unified json-render Catalog (Not Per-Panel)\nOne catalog defining all **44 components** (36 shadcn/ui + 8 custom). Enables cross-panel component references (clicking a session in Explorer opens detail in Delegation Dashboard), simplifies AI spec generation, and eliminates lazy-loading complexity. Panel filtering happens at render time via a `panel` prop on the container, not at catalog definition time.\n\n### 3. Lazy Dependency Binding via Registry\nThe sidecar server starts with an empty `SidecarDependencyRegistry`. Plugin modules register themselves *after* construction (e.g., `sidecarRegistry.setDelegationManager(delMods.delegationManager)`). This is necessary because the server must start early (step 5.5 in the init sequence) before delegation modules (step 7) and session tracker (step 6) exist. Prevents circular init dependencies. Unregistered endpoints return `503`.\n\n### 4. SSE for Push Events, WebSocket Only for Delegation Streaming\nSSE handles 90% of use cases — session events, state invalidation, delegation status updates. It's simpler than WebSocket (unidirectional, built-in reconnection via `EventSource` with `last-event-id`). WebSocket is reserved exclusively for the `/ws/delegation` endpoint where bidirectional streaming is needed (abort commands during live delegation output). Two protocols instead of one, but each is simpler than a WS-only solution with manual reconnection.\n\n### 5. Extended CANONICAL_PREFIXES with session-tracker Support\nExtended the existing `CANONICAL_PREFIXES` from `[\".hivemind/state\", \".planning\"]` to `[\".hivemind/state\", \".hivemind/session-tracker\", \".opencode\", \".planning\"]`. Reuses the battle-tested `isCanonicalStatePath()` path containment logic with existing regression tests. The new prefixes enable the Session Explorer (session knowledge) and Control Panel (primitive inspection) without creating a parallel read path.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_17736aabeffeyMrj37UJuNCHtg"
+      }
+    }
+  ],
+  "lastMessage": "**File written:** `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` (1,113 lines)\n\n---\n\n## 5 Key Architectural Decisions Made\n\n### 1. Two-Server Model (Plugin HTTP + Next.js Standalone)\nTwo separate servers communicating over localhost HTTP. The **plugin-embedded HTTP/WS server** owns all data access; the **Next.js 16 standalone app** owns all UI rendering. This avoids React/Next.js dependency bloat in the plugin, prevents version conflicts with the host OpenCode runtime, and lets the sidecar be developed and deployed independently. Port discovery via `.hivemind/state/sidecar-port.json` sentinel file.\n\n### 2. Single Unified json-render Catalog (Not Per-Panel)\nOne catalog defining all **44 components** (36 shadcn/ui + 8 custom). Enables cross-panel component references (clicking a session in Explorer opens detail in Delegation Dashboard), simplifies AI spec generation, and eliminates lazy-loading complexity. Panel filtering happens at render time via a `panel` prop on the container, not at catalog definition time.\n\n### 3. Lazy Dependency Binding via Registry\nThe sidecar server starts with an empty `SidecarDependencyRegistry`. Plugin modules register themselves *after* construction (e.g., `sidecarRegistry.setDelegationManager(delMods.delegationManager)`). This is necessary because the server must start early (step 5.5 in the init sequence) before delegation modules (step 7) and session tracker (step 6) exist. Prevents circular init dependencies. Unregistered endpoints return `503`.\n\n### 4. SSE for Push Events, WebSocket Only for Delegation Streaming\nSSE handles 90% of use cases — session events, state invalidation, delegation status updates. It's simpler than WebSocket (unidirectional, built-in reconnection via `EventSource` with `last-event-id`). WebSocket is reserved exclusively for the `/ws/delegation` endpoint where bidirectional streaming is needed (abort commands during live delegation output). Two protocols instead of one, but each is simpler than a WS-only solution with manual reconnection.\n\n### 5. Extended CANONICAL_PREFIXES with session-tracker Support\nExtended the existing `CANONICAL_PREFIXES` from `[\".hivemind/state\", \".planning\"]` to `[\".hivemind/state\", \".hivemind/session-tracker\", \".opencode\", \".planning\"]`. Reuses the battle-tested `isCanonicalStatePath()` path containment logic with existing regression tests. The new prefixes enable the Session Explorer (session knowledge) and Control Panel (primitive inspection) without creating a parallel read path."
+}

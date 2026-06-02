@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "rootMainSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
-  "lastUpdated": "2026-06-02T13:11:08.602Z",
+  "lastUpdated": "2026-06-02T16:00:35.233Z",
   "children": {
     "ses_177c9c5aeffeT54rOpBWYVe5ei": {
       "sessionID": "ses_177c9c5aeffeT54rOpBWYVe5ei",
@@ -47,11 +47,11 @@
       "parentSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
       "rootMainSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
       "delegationDepth": 1,
-      "delegatedBy": "task",
-      "subagentType": "hm-codebase-mapper",
-      "createdAt": "2026-06-02T12:06:22.771Z",
-      "updatedAt": "2026-06-02T13:11:08.602Z",
-      "status": "completed",
+      "delegatedBy": "",
+      "subagentType": "",
+      "createdAt": "2026-06-02T16:00:35.233Z",
+      "updatedAt": "2026-06-02T16:00:35.233Z",
+      "status": "active",
       "turnCount": 0,
       "childFile": "ses_177c5b40effeec4oYOfcqI0taw.json"
     },

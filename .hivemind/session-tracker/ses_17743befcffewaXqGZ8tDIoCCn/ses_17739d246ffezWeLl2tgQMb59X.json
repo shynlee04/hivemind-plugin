@@ -1,0 +1,414 @@
+{
+  "sessionID": "ses_17739d246ffezWeLl2tgQMb59X",
+  "parentSessionID": "ses_17743befcffewaXqGZ8tDIoCCn",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-domain-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research ecosystem GUI patterns",
+    "subagentType": "gsd-domain-researcher"
+  },
+  "created": "2026-06-02T14:39:09.766Z",
+  "updated": "2026-06-02T14:42:17.075Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-domain-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a research subagent. Survey the OpenCode ecosystem and adjacent projects for GUI/control-panel patterns that Hivemind sidecar can learn from. The sidecar is a Next.js 16 + @json-render/react bidirectional control plane that bridges human operators, Hivemind runtime, and native OpenCode.\n\n## Research Scope\n\n### 1. OpenCode Ecosystem GUI Patterns\nSearch these repositories for GUI/browser/control-panel patterns:\n- https://github.com/awesome-opencode/awesome-opencode (curated directory)\n- https://github.com/kdcokenny/opencode-background-agents — how does it expose agent state?\n- https://github.com/shekohex/opencode-pty — PTT/PTY integration panels?\n- https://github.com/Opencode-DCP/opencode-dynamic-context-pruning — context visualization?\n- Any other repos with browser-based control panels for OpenCode\n\n### 2. json-render Example Dashboards\n- GitHub: `vercel-labs/json-render` → check `apps/web/` and `examples/` directories\n- What example dashboards exist? Revenue dashboard? Analytics?\n- Is there a \"control panel\" or \"admin dashboard\" template?\n- What 36 shadcn components does `@json-render/shadcn` provide?\n\n### 3. Plugin → Browser Communication Patterns\n- How do other IDE plugins communicate with browser panels? (WebSocket? SSE? HTTP polling?)\n- Pattern for \"plugin as backend, browser as frontend\" in local-only tools\n- Security implications of bidirectional communication from browser → plugin tools\n\n### 4. Terminal + GUI Hybrid Architectures\n- Any examples of tools that combine terminal agents with browser dashboards?\n- tmux + web UI hybrid patterns\n- How Vercel's AI SDK chat interfaces combine with json-render UI\n\n### 5. What to AVOID\n- Anti-patterns in plugin-browser bidirectional communication\n- Common mistakes when building sidecar dashboards\n- Over-engineering traps (what should stay in TUI vs go to GUI)\n\n## Sources\n- Tavily search: \"opencode plugin dashboard\", \"json-render dashboard templates\", \"AI agent control panel web UI\"\n- GitHub: search `awesome-opencode` list for GUI/panel repos\n- Context7: query `/vercel-labs/json-render` for examples\n- Exa search: \"json-render shadcn dashboard template\"\n\n## Output\nWrite to `.hivemind/planning/sidecar-vision/RESEARCH-ecosystem.md` with:\n- Reference architectures found (3 minimum)\n- json-render dashboard patterns available\n- Communication pattern recommendations\n- Anti-patterns to avoid\n- Recommendation: build pattern for sidecar\n\nReturn: file path + 3 most valuable references found.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: tavily_tavily_search, tavily_tavily_search, tavily_tavily_search, tavily_tavily_search",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "**Research complete.** File written to `.hivemind/planning/sidecar-vision/RESEARCH-ecosystem.md` (23KB, 7 major sections).\n\n## 3 Most Valuable References Found\n\n### 1. **OpenChamber** (`openchamber/openchamber`)\nFull GUI for OpenCode with 3.1k+ stars, 1,464 commits. Proves the \"GUI on top of OpenCode server API\" pattern at scale. Ships web/PWA, Tauri desktop, and VS Code extension from the same codebase. Key takeaway: the sidecar should **never modify OpenCode** — OpenChamber doesn't, and it works.\n\n### 2. **opencode-pty Plugin** (`shekohex/opencode-pty`)\nThe only OpenCode plugin that ships its own browser web UI. Provides the canonical **plugin-embedded HTTP server** pattern: plugin starts a local port, React browser UI connects via REST API. REST endpoints for session CRUD (`GET/POST/DELETE /api/sessions`), terminal buffer retrieval, and health checks. This is the exact pattern the sidecar should follow.\n\n### 3. **json-render/shadcn** (`vercel-labs/json-render`)\n36 pre-built shadcn/ui components in a 3-layer architecture (Schema → Catalog → Registry). Built-in state management (`setState`, `pushState`, `removeState`) via `@json-render/zustand` / `@json-render/jotai`. The sidecar should **not build custom UI primitives** — use all 36 components from `@json-render/shadcn` and extend with 5-10 custom components (`SessionCard`, `DelegationTree`, `PressureGauge`, etc.).\n\n### Key Recommendation\n**Hybrid REST + WebSocket** communication model: REST for control/CRUD, WebSocket for streaming delegation output. Start Phase 1 with REST-only (read-only dashboard), add WebSocket in Phase 3. Localhost-only binding with optional password auth for network access.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "gsd-domain-researcher",
+      "content": "**Research complete.** File written to `.hivemind/planning/sidecar-vision/RESEARCH-ecosystem.md` (23KB, 7 major sections).\n\n## 3 Most Valuable References Found\n\n### 1. **OpenChamber** (`openchamber/openchamber`)\nFull GUI for OpenCode with 3.1k+ stars, 1,464 commits. Proves the \"GUI on top of OpenCode server API\" pattern at scale. Ships web/PWA, Tauri desktop, and VS Code extension from the same codebase. Key takeaway: the sidecar should **never modify OpenCode** — OpenChamber doesn't, and it works.\n\n### 2. **opencode-pty Plugin** (`shekohex/opencode-pty`)\nThe only OpenCode plugin that ships its own browser web UI. Provides the canonical **plugin-embedded HTTP server** pattern: plugin starts a local port, React browser UI connects via REST API. REST endpoints for session CRUD (`GET/POST/DELETE /api/sessions`), terminal buffer retrieval, and health checks. This is the exact pattern the sidecar should follow.\n\n### 3. **json-render/shadcn** (`vercel-labs/json-render`)\n36 pre-built shadcn/ui components in a 3-layer architecture (Schema → Catalog → Registry). Built-in state management (`setState`, `pushState`, `removeState`) via `@json-render/zustand` / `@json-render/jotai`. The sidecar should **not build custom UI primitives** — use all 36 components from `@json-render/shadcn` and extend with 5-10 custom components (`SessionCard`, `DelegationTree`, `PressureGauge`, etc.).\n\n### Key Recommendation\n**Hybrid REST + WebSocket** communication model: REST for control/CRUD, WebSocket for streaming delegation output. Start Phase 1 with REST-only (read-only dashboard), add WebSocket in Phase 3. Localhost-only binding with optional password auth for network access.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-02T14:39:16.336Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_rhA9WJEpPQZ6K5QypjDY0278",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:27.277Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_01_VwThgF0BvZJv8rr42CPN4049",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:28.043Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_03_PYARjVkDArxMOfS5onVw5276",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:28.600Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_00_nTyI0vqZVv9Obl58AgBH3524",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:29.474Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_02_YN1L0kosRbR6pkXcEJnk0751",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:45.087Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_01_9aBwTasfWNLDneKxAdGy0286",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:45.586Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_02_Y0IRfiOj8VcptORQ4Rrl7456",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:46.077Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_00_47PvOaKitowBHBcUmNKX1632",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:47.974Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_03_mOMHk57Wb9mK7VX9K1yX4964",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:39:55.541Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_X9aIjTuoPcIzDjwoilM69831",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:08.550Z",
+      "type": "tool_call",
+      "content": "Tool: context7_resolve-library-id",
+      "metadata": {
+        "tool": "context7_resolve-library-id",
+        "callID": "call_00_hKP4tPdDxmHN7uP71KsI1521",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:09.001Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_01_xSbsa64BlhLn2397WRnI5830",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:09.031Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_02_dao5huHdd05fzGTxYMUC2279",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:09.823Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_03_Iz8CuV1sM5bPIUlxco0O3756",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:18.392Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_00_fETSkTq2JOsPpvDu377W1775",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:19.387Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_02_4bIUEomc6S2lAmDxafIS7361",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:22.156Z",
+      "type": "tool_call",
+      "content": "Tool: fetcher_fetch_url",
+      "metadata": {
+        "tool": "fetcher_fetch_url",
+        "callID": "call_01_k84Z1d2ovYXSMcdPYNps2769",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:36.239Z",
+      "type": "tool_call",
+      "content": "Tool: context7_query-docs",
+      "metadata": {
+        "tool": "context7_query-docs",
+        "callID": "call_00_xhSFK2QkCmKzb7Dp6GhE8299",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:36.725Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_01_93FaUK9jg3DcadPmUQ3T1178",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:46.346Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_01_xB7XaLaexGmaq7ZFBUqk9066",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:47.873Z",
+      "type": "tool_call",
+      "content": "Tool: fetcher_fetch_url",
+      "metadata": {
+        "tool": "fetcher_fetch_url",
+        "callID": "call_00_5TuXQ3Uw2Ia5KlzxvE1j3134",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:40:55.502Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_F4MXX7lKO2SmlKfEf3kY6757",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:41:01.366Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_aqsvXvmeAA9dwngR7lsS1777",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:41:53.572Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_Zi99ex4hIRE1n6jv9lgs5012",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:42:06.124Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_Ma12P9EVIkqO0tyyCEM54093",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T14:42:17.034Z",
+      "type": "assistant_message",
+      "content": "**Research complete.** File written to `.hivemind/planning/sidecar-vision/RESEARCH-ecosystem.md` (23KB, 7 major sections).\n\n## 3 Most Valuable References Found\n\n### 1. **OpenChamber** (`openchamber/openchamber`)\nFull GUI for OpenCode with 3.1k+ stars, 1,464 commits. Proves the \"GUI on top of OpenCode server API\" pattern at scale. Ships web/PWA, Tauri desktop, and VS Code extension from the same codebase. Key takeaway: the sidecar should **never modify OpenCode** — OpenChamber doesn't, and it works.\n\n### 2. **opencode-pty Plugin** (`shekohex/opencode-pty`)\nThe only OpenCode plugin that ships its own browser web UI. Provides the canonical **plugin-embedded HTTP server** pattern: plugin starts a local port, React browser UI connects via REST API. REST endpoints for session CRUD (`GET/POST/DELETE /api/sessions`), terminal buffer retrieval, and health checks. This is the exact pattern the sidecar should follow.\n\n### 3. **json-render/shadcn** (`vercel-labs/json-render`)\n36 pre-built shadcn/ui components in a 3-layer architecture (Schema → Catalog → Registry). Built-in state management (`setState`, `pushState`, `removeState`) via `@json-render/zustand` / `@json-render/jotai`. The sidecar should **not build custom UI primitives** — use all 36 components from `@json-render/shadcn` and extend with 5-10 custom components (`SessionCard`, `DelegationTree`, `PressureGauge`, etc.).\n\n### Key Recommendation\n**Hybrid REST + WebSocket** communication model: REST for control/CRUD, WebSocket for streaming delegation output. Start Phase 1 with REST-only (read-only dashboard), add WebSocket in Phase 3. Localhost-only binding with optional password auth for network access.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_17739d246ffezWeLl2tgQMb59X"
+      }
+    }
+  ],
+  "lastMessage": "**Research complete.** File written to `.hivemind/planning/sidecar-vision/RESEARCH-ecosystem.md` (23KB, 7 major sections).\n\n## 3 Most Valuable References Found\n\n### 1. **OpenChamber** (`openchamber/openchamber`)\nFull GUI for OpenCode with 3.1k+ stars, 1,464 commits. Proves the \"GUI on top of OpenCode server API\" pattern at scale. Ships web/PWA, Tauri desktop, and VS Code extension from the same codebase. Key takeaway: the sidecar should **never modify OpenCode** — OpenChamber doesn't, and it works.\n\n### 2. **opencode-pty Plugin** (`shekohex/opencode-pty`)\nThe only OpenCode plugin that ships its own browser web UI. Provides the canonical **plugin-embedded HTTP server** pattern: plugin starts a local port, React browser UI connects via REST API. REST endpoints for session CRUD (`GET/POST/DELETE /api/sessions`), terminal buffer retrieval, and health checks. This is the exact pattern the sidecar should follow.\n\n### 3. **json-render/shadcn** (`vercel-labs/json-render`)\n36 pre-built shadcn/ui components in a 3-layer architecture (Schema → Catalog → Registry). Built-in state management (`setState`, `pushState`, `removeState`) via `@json-render/zustand` / `@json-render/jotai`. The sidecar should **not build custom UI primitives** — use all 36 components from `@json-render/shadcn` and extend with 5-10 custom components (`SessionCard`, `DelegationTree`, `PressureGauge`, etc.).\n\n### Key Recommendation\n**Hybrid REST + WebSocket** communication model: REST for control/CRUD, WebSocket for streaming delegation output. Start Phase 1 with REST-only (read-only dashboard), add WebSocket in Phase 3. Localhost-only binding with optional password auth for network access."
+}

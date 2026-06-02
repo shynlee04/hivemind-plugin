@@ -3,18 +3,18 @@
   "parentSessionID": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
   "delegationDepth": 1,
   "delegatedBy": {
-    "agentName": "gsd-pattern-mapper",
-    "model": "unknown",
+    "agentName": "",
+    "model": "",
     "tool": "task",
-    "description": "P53 CP7 PATTERNS resume",
-    "subagentType": "gsd-pattern-mapper"
+    "description": "",
+    "subagentType": ""
   },
   "created": "2026-06-02T12:57:22.493Z",
-  "updated": "2026-06-02T13:49:41.886Z",
-  "status": "completed",
+  "updated": "2026-06-02T16:00:35.211Z",
+  "status": "error",
   "mainAgent": {
-    "name": "gsd-pattern-mapper",
-    "model": "unknown"
+    "name": "",
+    "model": ""
   },
   "turns": [
     {
@@ -1093,5 +1093,7 @@
       }
     }
   ],
-  "lastMessage": "###TASK_COMPLETED###\nP53 PATTERNS: 9 patterns mapped\nCommit: f1f44a799bda68554e97a5e87fb35dcf09833f89\nPath: .planning/phases/53-live-pane-monitoring-hook-journal-integration/53-PATTERNS.md\n\n**Summary:** 448-line PATTERNS.md written with 9 mapped patterns + Constraints for planner:\n\n| # | Pattern | Primary analog (file:line) |\n|---|---------|----------------------------|\n| 1 | Hook module shape | `src/hooks/observers/event-observers.ts:18-38` + `delegation-consumer.ts:26-41` (factory + deps + return handle) |\n| 2 | Observer integration | `src/features/tmux/observers.ts:89-103, 151-162, 201-203` (TmuxEventObserver + onPaneCaptured listener push + per-listener try/catch) |\n| 3 | Hook registration in plugin.ts | `src/plugin.ts:606-608` (createTmuxEventObserver call site) + `src/plugin.ts:601` (eventObservers array) + `src/plugin.ts:581-593` (logWarn injection pattern) |\n| 4 | Journal write | `src/features/session-tracker/persistence/atomic-write.ts:33-56, 105-107` (atomicWriteJson + ensureDirectory) + `session-writer.ts:48-52`; SPEC's `flag: \"wx\"` is intentional variant — not the atomic-write pattern |\n| 5 | File:write with backoff | `src/features/session-tracker/persistence/retry-queue.ts:60-64, 182-202, 219-230` (ChildWriteRetryQueue + BACKOFF_SCHEDULE_MS + setTimeout scheduling) |\n| 6 | Rate-limit / cap | `src/coordination/delegation/slot-manager.ts:33-83` (Map<sessionId,...> per-session cap) — P53 uses simpler variant |\n| 7 | Test pattern for hooks | `tests/lib/tmux/observers.test.ts:1-22, 297-308` (mock-then-import + listener dispatch) + `grid-planner.test.ts:107-186` (useFakeTimers + advanceTimersByTime) + `integration.test.ts:17-22` (node:fs mock) |\n| 8 | BATS for filesystem artifacts | `tests/scripts/tmux/helpers.bash:7-26, 11-18` (TMUX_BATS_ROOT, TMUX_BATS_DIST, tmux_node_eval, tmux_bats_require_dist) + `54-tmux-observer-expansion.bats:9, 50-60` (load \"helpers\" + node ESM pattern) |\n| 9 | Paperwork rewrite | `42-tmux-visual-orchestration-layer-fork-extension/UAT.md:10-21, 70-75` (existing L5 notice + `## Related Review Artifacts` section precedent) — P53 introduces new `## L1 Backing (P53)` convention |\n\n**Notable finding flagged for planner:** SPEC.md:34 says `contentPreview` (string) is the 7th field with `schemaVersion: \"1.0\"`, but CONTEXT.md:50 D-53-04 locks `retryCount` (number) as the 7th field with `schemaVersion: 1`. Constraints §1 documents this discrepancy and recommends the CONTEXT-locked version."
+  "lastMessage": "###TASK_COMPLETED###\nP53 PATTERNS: 9 patterns mapped\nCommit: f1f44a799bda68554e97a5e87fb35dcf09833f89\nPath: .planning/phases/53-live-pane-monitoring-hook-journal-integration/53-PATTERNS.md\n\n**Summary:** 448-line PATTERNS.md written with 9 mapped patterns + Constraints for planner:\n\n| # | Pattern | Primary analog (file:line) |\n|---|---------|----------------------------|\n| 1 | Hook module shape | `src/hooks/observers/event-observers.ts:18-38` + `delegation-consumer.ts:26-41` (factory + deps + return handle) |\n| 2 | Observer integration | `src/features/tmux/observers.ts:89-103, 151-162, 201-203` (TmuxEventObserver + onPaneCaptured listener push + per-listener try/catch) |\n| 3 | Hook registration in plugin.ts | `src/plugin.ts:606-608` (createTmuxEventObserver call site) + `src/plugin.ts:601` (eventObservers array) + `src/plugin.ts:581-593` (logWarn injection pattern) |\n| 4 | Journal write | `src/features/session-tracker/persistence/atomic-write.ts:33-56, 105-107` (atomicWriteJson + ensureDirectory) + `session-writer.ts:48-52`; SPEC's `flag: \"wx\"` is intentional variant — not the atomic-write pattern |\n| 5 | File:write with backoff | `src/features/session-tracker/persistence/retry-queue.ts:60-64, 182-202, 219-230` (ChildWriteRetryQueue + BACKOFF_SCHEDULE_MS + setTimeout scheduling) |\n| 6 | Rate-limit / cap | `src/coordination/delegation/slot-manager.ts:33-83` (Map<sessionId,...> per-session cap) — P53 uses simpler variant |\n| 7 | Test pattern for hooks | `tests/lib/tmux/observers.test.ts:1-22, 297-308` (mock-then-import + listener dispatch) + `grid-planner.test.ts:107-186` (useFakeTimers + advanceTimersByTime) + `integration.test.ts:17-22` (node:fs mock) |\n| 8 | BATS for filesystem artifacts | `tests/scripts/tmux/helpers.bash:7-26, 11-18` (TMUX_BATS_ROOT, TMUX_BATS_DIST, tmux_node_eval, tmux_bats_require_dist) + `54-tmux-observer-expansion.bats:9, 50-60` (load \"helpers\" + node ESM pattern) |\n| 9 | Paperwork rewrite | `42-tmux-visual-orchestration-layer-fork-extension/UAT.md:10-21, 70-75` (existing L5 notice + `## Related Review Artifacts` section precedent) — P53 introduces new `## L1 Backing (P53)` convention |\n\n**Notable finding flagged for planner:** SPEC.md:34 says `contentPreview` (string) is the 7th field with `schemaVersion: \"1.0\"`, but CONTEXT.md:50 D-53-04 locks `retryCount` (number) as the 7th field with `schemaVersion: 1`. Constraints §1 documents this discrepancy and recommends the CONTEXT-locked version.",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
 }

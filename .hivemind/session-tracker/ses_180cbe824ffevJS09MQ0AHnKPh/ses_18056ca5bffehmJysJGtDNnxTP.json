@@ -3,17 +3,17 @@
   "parentSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
   "delegationDepth": 1,
   "delegatedBy": {
-    "agentName": "gsd-executor",
+    "agentName": "",
     "model": "",
     "tool": "task",
     "description": "",
     "subagentType": ""
   },
   "created": "2026-05-31T20:10:56.313Z",
-  "updated": "2026-06-01T12:08:40.171Z",
+  "updated": "2026-06-02T16:00:35.212Z",
   "status": "error",
   "mainAgent": {
-    "name": "gsd-executor",
+    "name": "",
     "model": ""
   },
   "turns": [

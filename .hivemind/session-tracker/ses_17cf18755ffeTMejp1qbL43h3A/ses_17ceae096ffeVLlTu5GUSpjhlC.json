@@ -1,0 +1,24 @@
+{
+  "sessionID": "ses_17ceae096ffeVLlTu5GUSpjhlC",
+  "parentSessionID": "ses_17cf18755ffeTMejp1qbL43h3A",
+  "delegationDepth": 2,
+  "delegatedBy": {
+    "agentName": "gsd-security-auditor",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-01T12:07:40.243Z",
+  "updated": "2026-06-02T16:00:35.211Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "gsd-security-auditor",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": []
+}

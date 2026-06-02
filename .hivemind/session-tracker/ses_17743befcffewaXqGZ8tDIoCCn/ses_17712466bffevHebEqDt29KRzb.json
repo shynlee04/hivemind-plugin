@@ -1,0 +1,333 @@
+{
+  "sessionID": "ses_17712466bffevHebEqDt29KRzb",
+  "parentSessionID": "ses_177191049ffex2SX6zz4IwPIoZ",
+  "delegationDepth": 2,
+  "delegatedBy": {
+    "agentName": "gsd-plan-checker",
+    "model": "unknown",
+    "tool": "delegate-task",
+    "description": "",
+    "subagentType": "gsd-plan-checker"
+  },
+  "created": "2026-06-02T15:22:21.468Z",
+  "updated": "2026-06-02T15:32:54.143Z",
+  "status": "active",
+  "mainAgent": {
+    "name": "gsd-plan-checker",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "<objective>\nReview the existing PLAN.md for Phase SC-01 (Sidecar Foundation) for quality, completeness, and alignment with locked requirements and decisions.\n</objective>\n\n<files_to_read>\n- .planning/phases/SC-01-sidecar-foundation/SC-01-PLAN.md (Existing plan to review)\n- .planning/phases/SC-01-sidecar-foundation/SC-01-CONTEXT.md (Locked decisions — 14 decisions)\n- .planning/phases/SC-01-sidecar-foundation/SC-01-SPEC.md (Locked requirements — 7 requirements)\n- .planning/phases/SC-01-sidecar-foundation/SC-01-RESEARCH.md (Technical research)\n</files_to_read>\n\n<checklist>\nVerify these dimensions:\n\n1. **Frontmatter validity** — Are all required fields present? (phase, plan, type, wave, depends_on, files_modified, autonomous, requirements, must_haves)\n2. **Requirements traceability** — Do all 7 SPEC requirements map to tasks?\n3. **Decision compliance** — Are all 14 CONTEXT.md decisions reflected in the plan?\n4. **Task completeness** — Does each task have: `<name>`, `<files>`, `<action>`, `<verify>`, `<done>`?\n5. **Acceptance criteria** — Does every task have verifiable acceptance criteria?\n6. **Verification coverage** — Does the verification section cover all 8 SPEC acceptance criteria?\n7. **Threat model** — Is the STRIDE threat model complete and appropriate?\n8. **Wave/dependency ordering** — Are waves and dependencies logical?\n</checklist>\n\n<output>\nReturn `## VERIFICATION PASSED` if the plan is clean, or `## ISSUES FOUND` with a YAML block of issues. Each issue must have: dimension, severity (BLOCKER/WARNING/INFO), finding, affected_field, suggested_fix.\n</output>",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: bash, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: grep, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Bây giờ tôi đã có tất cả dữ liệu cần thiết. Hãy để tôi phân tích từng chiều một cách có hệ thống.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: bash, grep",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Tools: sequential-thinking_sequentialthinking",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "## ISSUES FOUND\n\n**Phase:** SC-01-sidecar-foundation\n**Plans checked:** 1 (`SC-01-PLAN.md`)\n**Issues:** 6 blocker(s), 4 warning(s)\n\n---\n\n### Blockers (must fix before execution)\n\n**1. [decision_compliance] Locked decisions D-SC01-05 and D-SC01-06 not implemented — `/health` endpoint and `501` fallback missing**\n\nTask 2's action for `factory.ts` says \"creates Node `http.createServer`, binds to localhost:port, returns `SidecarServer`\" — but says NOTHING about what the request handler does. Locked decisions explicitly require:\n- `GET /health` → `200 OK` with `{ status: \"ok\", uptime: <ms> }` (D-SC01-05)\n- All other routes → `501 Not Implemented` (D-SC01-06)\n\nWithout these, the server accepts connections but never responds. SC-02's curl-based health checks and the Next.js connectivity verification will both fail.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: decision_compliance\n  severity: blocker\n  description: \"Locked decisions D-SC01-05 and D-SC01-06 not reflected in Task 2 factory.ts action — /health endpoint and 501 fallback missing\"\n  plan: \"SC-01-PLAN\"\n  task: 2\n  affected_field: \"<action> of Task 2 (factory.ts)\"\n  suggested_fix: \"Add to factory.ts action: request handler checks req.url === '/health' && req.method === 'GET' → 200 with JSON { status: 'ok', uptime }, else → 501 'Not Implemented'\"\n```\n\n**2. [decision_compliance] Locked decision D-SC01-03 not implemented — no try-catch around server start**\n\nTask 3's plugin.ts wiring shows:\n```\nconst sidecarPort = await sidecarServer.start()\n```\nwithout any error handling. D-SC01-03 states: *\"Server start failure must NOT block plugin init. Use a try-catch wrapper in plugin.ts step 5.5.\"*\n\nA port conflict or any server start error will crash plugin initialization.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: decision_compliance\n  severity: blocker\n  description: \"Locked decision D-SC01-03 not implemented — no try-catch wrapper around server.start() in plugin.ts wiring\"\n  task: 3\n  affected_field: \"<action> of Task 3 (plugin.ts step 5.5)\"\n  suggested_fix: \"Wrap server.start() in try-catch: try { const port = await sidecarServer.start(); ... } catch (err) { console.warn('[Harness] Sidecar server failed to start:', err); }\"\n```\n\n**3. [decision_compliance] Locked decision D-SC01-04 not implemented — no error handling for port.json write**\n\nTask 3 shows `writeFileSync` writing to `.hivemind/state/sidecar-port.json` without error handling. D-SC01-04 states: *\"sidecar-port.json write failure is non-fatal — log warning and continue.\"*\n\nA filesystem permission issue or missing `.hivemind/state/` directory will throw an uncaught exception during plugin init.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: decision_compliance\n  severity: blocker\n  description: \"Locked decision D-SC01-04 not implemented — no try-catch around writeFileSync for sidecar-port.json\"\n  task: 3\n  affected_field: \"<action> of Task 3 (port.json write)\"\n  suggested_fix: \"Wrap writeFileSync in try-catch: try { writeFileSync(...); } catch (err) { console.warn('[Harness] Failed to write sidecar-port.json:', err); }\"\n```\n\n**4. [task_completeness] Wave 0 test files missing — violates D-SC01-13 TDD approach and SPEC in-scope item**\n\nSPEC §Boundaries explicitly lists *\"Wave 0 test files for new modules (`tests/sidecar/server/`)\"* as **IN SCOPE**. D-SC01-13 mandates TDD approach with tests before implementation.\n\n- No Wave 0 plan exists (only `plan: 01 wave: 1`)\n- VALIDATION.md confirms 4 test files are `❌ W0` (MISSING):\n  - `tests/sidecar/server/types.test.ts`\n  - `tests/sidecar/server/registry.test.ts`\n  - `tests/sidecar/server/factory.test.ts`\n  - `tests/sidecar/server/sse/pool.test.ts`\n- Task 2's verify command acknowledges the gap: `\"WARNING: Tests may not exist yet — Wave 0 must create them\"`\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: task_completeness\n  severity: blocker\n  description: \"Wave 0 test files missing — violates D-SC01-13 TDD requirement and SPEC in-scope declaration\"\n  affected_field: \"No Wave 0 plan; verify commands assume missing test files\"\n  suggested_fix: \"Create Wave 0 plan with 4 test file tasks before Wave 1 implementation, or fold test creation into each task's first action step\"\n```\n\n**5. [frontmatter_validity] `requirements` field references non-existent ID `SIDECAR-FOUNDATION-01`**\n\nThe `requirements` frontmatter says `[SIDECAR-FOUNDATION-01]` but REQUIREMENTS.md has no such ID. The closest registered ID is `SIDECAR-01` (line 73 of REQUIREMENTS.md): *\"Sidecar reads artifact JSON from `.hivemind/` and `.planning/`\"*.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: frontmatter_validity\n  severity: blocker\n  description: \"requirements: [SIDECAR-FOUNDATION-01] does not match any registered requirement ID in REQUIREMENTS.md — correct ID is SIDECAR-01\"\n  affected_field: \"frontmatter → requirements\"\n  suggested_fix: \"Change to 'requirements: [SIDECAR-01]' to match REQUIREMENTS.md registration\"\n```\n\n**6. [acceptance_criteria] No success criteria for error handling patterns mandated by D-SC01-03 and D-SC01-04**\n\nThe `<success_criteria>` section and `<verification>` section contain no items verifying that:\n- Server start failure gracefully degrades (D-SC01-03)\n- Port.json write failure gracefully degrades (D-SC01-04)\n\nThese are locked decisions with no verifiable acceptance criteria.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: acceptance_criteria\n  severity: blocker\n  description: \"No success criteria or verification items for graceful degradation of server start failure (D-SC01-03) and port.json write failure (D-SC01-04)\"\n  affected_field: \"<success_criteria> and <verification>\"\n  suggested_fix: \"Add: 'Server start failure logs warning and does not block plugin init'; 'Port.json write failure logs warning and does not block plugin init'\"\n```\n\n---\n\n### Warnings (should fix)\n\n**7. [acceptance_criteria] 4 SPEC acceptance criteria absent from `<success_criteria>`**\n\nThe SPEC lists 14 acceptance criteria; `<success_criteria>` only covers 8. Missing:\n\n| SPEC AC | Description |\n|---------|-------------|\n| AC #3 | `SidecarEventType` union is exactly 11 members: `session.created`, `session.updated`, `session.idle`, `session.deleted`, `session.error`, `delegation.dispatched`, `delegation.completed`, `delegation.failed`, `delegation.timeout`, `invalidate.cache`, `heartbeat` |\n| AC #5 | Accessing an unbound registry getter throws `[Harness]` error |\n| AC #8 | `SseConnectionPool` enforces max 50 concurrent connections |\n| AC #13-14 | New test files (`factory.test.ts`, `registry.test.ts`, `pool.test.ts`) exist and pass |\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: acceptance_criteria\n  severity: warning\n  description: \"4 SPEC acceptance criteria missing from success_criteria: SidecarEventType 11 members, unbound getter throws [Harness], max 50 connections, new test files pass\"\n  affected_field: \"<success_criteria>\"\n  suggested_fix: \"Add all 4 missing items to success_criteria\"\n```\n\n**8. [verification_coverage] 3 RESEARCH.md security threats have no corresponding STRIDE entries**\n\nThe RESEARCH.md §Security Domain identifies 3 threat patterns with no matching threat IDs in the PLAN's STRIDE register:\n\n| Threat Pattern | STRIDE | RESEARCH Reference | Missing From Plan |\n|----------------|--------|-------------------|-------------------|\n| Path traversal via state API | Tampering | \"isCanonicalStatePath() restricts to 4 prefixes\" | No threat ID |\n| Server start failure exposes half-init state | DoS | \"Try-catch at step 5.5; log warning; continue\" | No threat ID |\n| SSE dead connection accumulation | DoS | \"Cleanup on broadcast error; max 50 clients\" | No threat ID |\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: verification_coverage\n  severity: warning\n  description: \"3 threat patterns from RESEARCH.md Security Domain have no corresponding STRIDE threat IDs in plan's threat model\"\n  affected_field: \"<threat_model> STRIDE register\"\n  suggested_fix: \"Add T-SC01-04 (Path traversal — Tampering), T-SC01-05 (Server start failure — DoS), T-SC01-06 (SSE dead connection — DoS) to STRIDE register\"\n```\n\n**9. [decision_compliance] D-SC01-12 not referenced — planner verification of plugin.ts step numbering**\n\nD-SC01-12 states: *\"Planner MUST verify `src/plugin.ts` startup sequence before inserting step 5.5 — the exact step numbering may have shifted due to P39 or other in-flight changes.\"*\n\nThe plan references `src/plugin.ts` but does not include a verification step to confirm the actual step numbering before modification. The plan operates as if step numbering at lines 1-17 is current.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: decision_compliance\n  severity: warning\n  description: \"D-SC01-12 not referenced in plan — no verification step to confirm actual plugin.ts step numbering before insertion\"\n  affected_field: \"Objective or Task 3 <action>\"\n  suggested_fix: \"Add verification instruction: 'Before editing plugin.ts, grep for step numbering comments to confirm step 5 exists and step 6 follows'\"\n```\n\n**10. [verification_coverage] Missing verification for `listCanonicalDirectory` and `SidecarEventType`**\n\nThe `<verification>` section has 8 checks but does not verify:\n- `listCanonicalDirectory()` returns correct entries for canonical paths and empty for non-canonical paths\n- `SidecarEventType` union has exactly 11 members\n- Unbound registry getter throws `[Harness]` error\n- `SseConnectionPool` enforces max 50 connections\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: verification_coverage\n  severity: warning\n  description: \"Verification checks missing for listCanonicalDirectory, SidecarEventType members, unbound getter error, and max SSE connections\"\n  affected_field: \"<verification>\"\n  suggested_fix: \"Add verification items: 'listCanonicalDirectory returns entries for canonical paths'; 'SidecarEventType has 11 members'; 'Unbound registry getter throws [Harness] error'; 'SseConnectionPool rejects client beyond max count'\"\n```\n\n---\n\n### Summary\n\n| Severity | Count | Key Themes |\n|----------|-------|------------|\n| **BLOCKER** | 6 | Missing `/health` endpoint (D-SC01-05/06), missing try-catch for server start (D-SC01-03), missing try-catch for port.json (D-SC01-04), Wave 0 tests missing (D-SC01-13), wrong requirement ID, missing error-handling ACs |\n| **WARNING** | 4 | Partial acceptance criteria coverage, incomplete threat model, unverified step numbering, missing verification checks |\n\n**Recommendation:** Return to planner for revision. The 6 blockers represent locked decisions not implemented in the plan — executing as-is would deliver an HTTP server that never responds to requests (no `/health`, no 501) and crashes plugin init on any failure.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "gsd-plan-checker",
+      "content": "<system_reminder>\nDelegated task started:\n- Task: Delegation: gsd-plan-checker\n- Agent: gsd-plan-checker\n</system_reminder>",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 11,
+      "actor": "gsd-plan-checker",
+      "content": "[DT:dt-1780414235184-0tskzl] 🔄 running | 30.0s | tools=3 | agent=gsd-plan-checker",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 12,
+      "actor": "gsd-plan-checker",
+      "content": "[DT:dt-1780414235184-0tskzl] 🔄 running | 1m 0s | tools=6 | agent=gsd-plan-checker",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 13,
+      "actor": "gsd-plan-checker",
+      "content": "[DT:dt-1780414235184-0tskzl] 🔄 running | 1m 30s | tools=8 | agent=gsd-plan-checker",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 14,
+      "actor": "gsd-plan-checker",
+      "content": "[DT:dt-1780414235184-0tskzl] 🔄 running | 2m 0s | tools=10 | agent=gsd-plan-checker",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 15,
+      "actor": "gsd-plan-checker",
+      "content": "✅ [DT:dt-1780414235184-0tskzl] success — Child session ses_1770abdc2ffeYuKJvP35igvtvo reached terminal status completed",
+      "tools": [],
+      "role": "user"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-02T15:22:21.676Z",
+      "type": "tool_call",
+      "content": "Tool: delegate-task — delegation initiated",
+      "metadata": {
+        "tool": "delegate-task",
+        "callID": "call_00_P42CVZgs7PATt9E02vnR0791",
+        "phase": "dispatch",
+        "description": "Task delegation initiated",
+        "subagentType": "gsd-plan-checker"
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:22:44.977Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_qJ1780nTLVRmEQ68jNnH7723",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/SC-01-sidecar-foundation/SC-01-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:22:44.993Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_TTF8pUxmwl8el4KS4RgK7609",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/SC-01-sidecar-foundation/SC-01-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:22:45.009Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_bdd5TLjxZCkjyppnK3N78512",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/SC-01-sidecar-foundation/SC-01-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:22:45.024Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_St3jTV2ye9MJuQUIXx7s8568",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/SC-01-sidecar-foundation/SC-01-PLAN.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:23:31.442Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_eo0MF44s9CcjsSLk0UR59280",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:23:32.096Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_m2FBecVwVK5BeVniIdgH8195",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:23:50.078Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_EGqwFh9O8r4rdPD05GOW2001",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:23:50.408Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_t9J0V1EkHnSlH5PNnC2y1697",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/SC-01-sidecar-foundation/SC-01-VALIDATION.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:24:21.840Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_dL1A7EvTRYmwLEVs6b8W7551",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:24:21.870Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_fzYlsY8y1SOpI2aUmR118807",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:24:31.776Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_JzID9oqIJn5Fvns8iqKR1960",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:24:31.796Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_MvnaWB2aX9rorBpAUC9Z2848",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:24:51.944Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_IM4gHIY75I6oo6pmTN1s5264",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/REQUIREMENTS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:24:51.969Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_TZLKGEg2xrDla9lnjsZs4218",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:25:20.859Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_bbKcrCIcg3p2ggQ8Ulmg7614",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T15:30:35.264Z",
+      "type": "tool_call",
+      "content": "Tool: delegate-task — delegation initiated",
+      "metadata": {
+        "tool": "delegate-task",
+        "callID": "call_00_33oEhawEl2btmVFW2Qak6179",
+        "phase": "dispatch",
+        "description": "Task delegation initiated",
+        "subagentType": "gsd-plan-checker"
+      }
+    }
+  ],
+  "lastMessage": "## ISSUES FOUND\n\n**Phase:** SC-01-sidecar-foundation\n**Plans checked:** 1 (`SC-01-PLAN.md`)\n**Issues:** 6 blocker(s), 4 warning(s)\n\n---\n\n### Blockers (must fix before execution)\n\n**1. [decision_compliance] Locked decisions D-SC01-05 and D-SC01-06 not implemented — `/health` endpoint and `501` fallback missing**\n\nTask 2's action for `factory.ts` says \"creates Node `http.createServer`, binds to localhost:port, returns `SidecarServer`\" — but says NOTHING about what the request handler does. Locked decisions explicitly require:\n- `GET /health` → `200 OK` with `{ status: \"ok\", uptime: <ms> }` (D-SC01-05)\n- All other routes → `501 Not Implemented` (D-SC01-06)\n\nWithout these, the server accepts connections but never responds. SC-02's curl-based health checks and the Next.js connectivity verification will both fail.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: decision_compliance\n  severity: blocker\n  description: \"Locked decisions D-SC01-05 and D-SC01-06 not reflected in Task 2 factory.ts action — /health endpoint and 501 fallback missing\"\n  plan: \"SC-01-PLAN\"\n  task: 2\n  affected_field: \"<action> of Task 2 (factory.ts)\"\n  suggested_fix: \"Add to factory.ts action: request handler checks req.url === '/health' && req.method === 'GET' → 200 with JSON { status: 'ok', uptime }, else → 501 'Not Implemented'\"\n```\n\n**2. [decision_compliance] Locked decision D-SC01-03 not implemented — no try-catch around server start**\n\nTask 3's plugin.ts wiring shows:\n```\nconst sidecarPort = await sidecarServer.start()\n```\nwithout any error handling. D-SC01-03 states: *\"Server start failure must NOT block plugin init. Use a try-catch wrapper in plugin.ts step 5.5.\"*\n\nA port conflict or any server start error will crash plugin initialization.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: decision_compliance\n  severity: blocker\n  description: \"Locked decision D-SC01-03 not implemented — no try-catch wrapper around server.start() in plugin.ts wiring\"\n  task: 3\n  affected_field: \"<action> of Task 3 (plugin.ts step 5.5)\"\n  suggested_fix: \"Wrap server.start() in try-catch: try { const port = await sidecarServer.start(); ... } catch (err) { console.warn('[Harness] Sidecar server failed to start:', err); }\"\n```\n\n**3. [decision_compliance] Locked decision D-SC01-04 not implemented — no error handling for port.json write**\n\nTask 3 shows `writeFileSync` writing to `.hivemind/state/sidecar-port.json` without error handling. D-SC01-04 states: *\"sidecar-port.json write failure is non-fatal — log warning and continue.\"*\n\nA filesystem permission issue or missing `.hivemind/state/` directory will throw an uncaught exception during plugin init.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: decision_compliance\n  severity: blocker\n  description: \"Locked decision D-SC01-04 not implemented — no try-catch around writeFileSync for sidecar-port.json\"\n  task: 3\n  affected_field: \"<action> of Task 3 (port.json write)\"\n  suggested_fix: \"Wrap writeFileSync in try-catch: try { writeFileSync(...); } catch (err) { console.warn('[Harness] Failed to write sidecar-port.json:', err); }\"\n```\n\n**4. [task_completeness] Wave 0 test files missing — violates D-SC01-13 TDD approach and SPEC in-scope item**\n\nSPEC §Boundaries explicitly lists *\"Wave 0 test files for new modules (`tests/sidecar/server/`)\"* as **IN SCOPE**. D-SC01-13 mandates TDD approach with tests before implementation.\n\n- No Wave 0 plan exists (only `plan: 01 wave: 1`)\n- VALIDATION.md confirms 4 test files are `❌ W0` (MISSING):\n  - `tests/sidecar/server/types.test.ts`\n  - `tests/sidecar/server/registry.test.ts`\n  - `tests/sidecar/server/factory.test.ts`\n  - `tests/sidecar/server/sse/pool.test.ts`\n- Task 2's verify command acknowledges the gap: `\"WARNING: Tests may not exist yet — Wave 0 must create them\"`\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: task_completeness\n  severity: blocker\n  description: \"Wave 0 test files missing — violates D-SC01-13 TDD requirement and SPEC in-scope declaration\"\n  affected_field: \"No Wave 0 plan; verify commands assume missing test files\"\n  suggested_fix: \"Create Wave 0 plan with 4 test file tasks before Wave 1 implementation, or fold test creation into each task's first action step\"\n```\n\n**5. [frontmatter_validity] `requirements` field references non-existent ID `SIDECAR-FOUNDATION-01`**\n\nThe `requirements` frontmatter says `[SIDECAR-FOUNDATION-01]` but REQUIREMENTS.md has no such ID. The closest registered ID is `SIDECAR-01` (line 73 of REQUIREMENTS.md): *\"Sidecar reads artifact JSON from `.hivemind/` and `.planning/`\"*.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: frontmatter_validity\n  severity: blocker\n  description: \"requirements: [SIDECAR-FOUNDATION-01] does not match any registered requirement ID in REQUIREMENTS.md — correct ID is SIDECAR-01\"\n  affected_field: \"frontmatter → requirements\"\n  suggested_fix: \"Change to 'requirements: [SIDECAR-01]' to match REQUIREMENTS.md registration\"\n```\n\n**6. [acceptance_criteria] No success criteria for error handling patterns mandated by D-SC01-03 and D-SC01-04**\n\nThe `<success_criteria>` section and `<verification>` section contain no items verifying that:\n- Server start failure gracefully degrades (D-SC01-03)\n- Port.json write failure gracefully degrades (D-SC01-04)\n\nThese are locked decisions with no verifiable acceptance criteria.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: acceptance_criteria\n  severity: blocker\n  description: \"No success criteria or verification items for graceful degradation of server start failure (D-SC01-03) and port.json write failure (D-SC01-04)\"\n  affected_field: \"<success_criteria> and <verification>\"\n  suggested_fix: \"Add: 'Server start failure logs warning and does not block plugin init'; 'Port.json write failure logs warning and does not block plugin init'\"\n```\n\n---\n\n### Warnings (should fix)\n\n**7. [acceptance_criteria] 4 SPEC acceptance criteria absent from `<success_criteria>`**\n\nThe SPEC lists 14 acceptance criteria; `<success_criteria>` only covers 8. Missing:\n\n| SPEC AC | Description |\n|---------|-------------|\n| AC #3 | `SidecarEventType` union is exactly 11 members: `session.created`, `session.updated`, `session.idle`, `session.deleted`, `session.error`, `delegation.dispatched`, `delegation.completed`, `delegation.failed`, `delegation.timeout`, `invalidate.cache`, `heartbeat` |\n| AC #5 | Accessing an unbound registry getter throws `[Harness]` error |\n| AC #8 | `SseConnectionPool` enforces max 50 concurrent connections |\n| AC #13-14 | New test files (`factory.test.ts`, `registry.test.ts`, `pool.test.ts`) exist and pass |\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: acceptance_criteria\n  severity: warning\n  description: \"4 SPEC acceptance criteria missing from success_criteria: SidecarEventType 11 members, unbound getter throws [Harness], max 50 connections, new test files pass\"\n  affected_field: \"<success_criteria>\"\n  suggested_fix: \"Add all 4 missing items to success_criteria\"\n```\n\n**8. [verification_coverage] 3 RESEARCH.md security threats have no corresponding STRIDE entries**\n\nThe RESEARCH.md §Security Domain identifies 3 threat patterns with no matching threat IDs in the PLAN's STRIDE register:\n\n| Threat Pattern | STRIDE | RESEARCH Reference | Missing From Plan |\n|----------------|--------|-------------------|-------------------|\n| Path traversal via state API | Tampering | \"isCanonicalStatePath() restricts to 4 prefixes\" | No threat ID |\n| Server start failure exposes half-init state | DoS | \"Try-catch at step 5.5; log warning; continue\" | No threat ID |\n| SSE dead connection accumulation | DoS | \"Cleanup on broadcast error; max 50 clients\" | No threat ID |\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: verification_coverage\n  severity: warning\n  description: \"3 threat patterns from RESEARCH.md Security Domain have no corresponding STRIDE threat IDs in plan's threat model\"\n  affected_field: \"<threat_model> STRIDE register\"\n  suggested_fix: \"Add T-SC01-04 (Path traversal — Tampering), T-SC01-05 (Server start failure — DoS), T-SC01-06 (SSE dead connection — DoS) to STRIDE register\"\n```\n\n**9. [decision_compliance] D-SC01-12 not referenced — planner verification of plugin.ts step numbering**\n\nD-SC01-12 states: *\"Planner MUST verify `src/plugin.ts` startup sequence before inserting step 5.5 — the exact step numbering may have shifted due to P39 or other in-flight changes.\"*\n\nThe plan references `src/plugin.ts` but does not include a verification step to confirm the actual step numbering before modification. The plan operates as if step numbering at lines 1-17 is current.\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: decision_compliance\n  severity: warning\n  description: \"D-SC01-12 not referenced in plan — no verification step to confirm actual plugin.ts step numbering before insertion\"\n  affected_field: \"Objective or Task 3 <action>\"\n  suggested_fix: \"Add verification instruction: 'Before editing plugin.ts, grep for step numbering comments to confirm step 5 exists and step 6 follows'\"\n```\n\n**10. [verification_coverage] Missing verification for `listCanonicalDirectory` and `SidecarEventType`**\n\nThe `<verification>` section has 8 checks but does not verify:\n- `listCanonicalDirectory()` returns correct entries for canonical paths and empty for non-canonical paths\n- `SidecarEventType` union has exactly 11 members\n- Unbound registry getter throws `[Harness]` error\n- `SseConnectionPool` enforces max 50 connections\n\n```yaml\nissue:\n  plan: \"SC-01\"\n  dimension: verification_coverage\n  severity: warning\n  description: \"Verification checks missing for listCanonicalDirectory, SidecarEventType members, unbound getter error, and max SSE connections\"\n  affected_field: \"<verification>\"\n  suggested_fix: \"Add verification items: 'listCanonicalDirectory returns entries for canonical paths'; 'SidecarEventType has 11 members'; 'Unbound registry getter throws [Harness] error'; 'SseConnectionPool rejects client beyond max count'\"\n```\n\n---\n\n### Summary\n\n| Severity | Count | Key Themes |\n|----------|-------|------------|\n| **BLOCKER** | 6 | Missing `/health` endpoint (D-SC01-05/06), missing try-catch for server start (D-SC01-03), missing try-catch for port.json (D-SC01-04), Wave 0 tests missing (D-SC01-13), wrong requirement ID, missing error-handling ACs |\n| **WARNING** | 4 | Partial acceptance criteria coverage, incomplete threat model, unverified step numbering, missing verification checks |\n\n**Recommendation:** Return to planner for revision. The 6 blockers represent locked decisions not implemented in the plan — executing as-is would deliver an HTTP server that never responds to requests (no `/health`, no 501) and crashes plugin init on any failure."
+}
