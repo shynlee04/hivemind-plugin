@@ -62,7 +62,7 @@ const ListSessionsActionSchema = z.object({
 
 const GetSessionActionSchema = z.object({
   action: z.literal("get-session"),
-  sessionId: z.string().min(1),
+  sessionId: z.string().min(1).optional(),
 })
 
 const GetSummaryActionSchema = z.object({
