@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_17c73d8e9ffev03Kl1ZE7PCnBq",
+  "lastUpdated": "2026-06-01T14:34:44.257Z",
+  "children": {
+    "ses_17c672869ffepnbEi5PqKw1ssK": {
+      "sessionID": "ses_17c672869ffepnbEi5PqKw1ssK",
+      "parentSessionID": "ses_17c73d8e9ffev03Kl1ZE7PCnBq",
+      "rootMainSessionID": "ses_17c73d8e9ffev03Kl1ZE7PCnBq",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "gsd-advisor-researcher",
+      "createdAt": "2026-06-01T14:31:33.251Z",
+      "updatedAt": "2026-06-01T14:34:44.257Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_17c672869ffepnbEi5PqKw1ssK.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

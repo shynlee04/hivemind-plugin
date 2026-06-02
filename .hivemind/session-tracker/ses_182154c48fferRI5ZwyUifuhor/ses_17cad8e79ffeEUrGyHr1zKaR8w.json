@@ -1,0 +1,335 @@
+{
+  "sessionID": "ses_17cad8e79ffeEUrGyHr1zKaR8w",
+  "parentSessionID": "ses_182154c48fferRI5ZwyUifuhor",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Create Phase 45 executable plans",
+    "subagentType": "gsd-planner"
+  },
+  "created": "2026-06-01T13:14:38.880Z",
+  "updated": "2026-06-01T13:18:50.791Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "<objective>\nCreate executable PLAN.md file(s) for Phase 45 (Vendor Sync Script). Task breakdown, dependency analysis, wave ordering, verification gates.\n\n**Workflow position:** SPEC ✅ → ASSUMPTIONS ✅ → RESEARCH ✅ → **PLAN (you)** → PLAN-CHECK → EXECUTE\n\n**Context:**\n- Phase 45 directory: `.planning/phases/45-vendor-sync-script-2026-06-01/`\n- All upstream artifacts ready:\n  - `45-SPEC.md` — 5 requirements (fetch & merge, pinned file protection, --dry-run, idempotency, bats tests)\n  - `45-ASSUMPTIONS.md` — 8 assumptions (git, bats, no remote, no tests/scripts/ dir)\n  - `45-RESEARCH.md` — 660 lines covering git merge-tree pattern, bats setup, 6 pitfalls, don't-hand-roll\n- Fork at `opencode-tmux/` (history-less regular files)\n- Remote upstream: `shynlee04/opencode-tmux` (GitHub)\n- 4 Hivemind-pinned files to protect\n- Test framework: `bats` (not installed, install as task)\n\n**What to produce:**\n1. Read ALL 3 upstream artifacts (SPEC, ASSUMPTIONS, RESEARCH)\n2. Break into 2 waves:\n   - **Wave 1 (Script + CLI):** `scripts/sync-fork.sh` — the sync script with --dry-run, pinned file protection, idempotency\n   - **Wave 2 (Tests + Docs):** `tests/scripts/sync-fork.bats` — bats test suite for 3 scenarios, install instructions, docs\n3. Each task must have: description, files to modify, verification step, dependency\n4. Separate must-have from nice-to-have\n5. Include threat model in PLAN (STRIDE register)\n6. Write to `45-01-PLAN.md` in phase directory\n7. Commit atomically: \"plan(phase-45): add PLAN.md for Vendor Sync Script\"\n8. Return: number of tasks, waves, commit hash\n\n**Structure:**\nPlan filename: `45-01-PLAN.md`\nFormat: standard GSD plan with waves, tasks, verification steps, must_haves, threat_model.\n</objective>\n\n<execution_context>\nRead 45-SPEC.md, 45-ASSUMPTIONS.md, 45-RESEARCH.md first.\n</execution_context>\n\n<process>\n1. Read all 3 artifacts\n2. Check existing scripts/ and bats patterns in project\n3. Break into waves with task-level detail\n4. Write PLAN.md with proper GSD format\n5. Commit atomically\n6. Return summary\n</process>\n\n<success_criteria>\n- PLAN.md written with 2 waves, all tasks have verification steps\n- Must-have/nice-to-have separated\n- Threat model included\n- Commit landed\n</success_criteria>",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Now let me check existing patterns in the project for reference.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: grep, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: read, grep",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Now let me check the ROADMAP entry for Phase 45 more precisely to update it afterward.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "I'll use `sequential-thinking` to structure the plans before writing.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Now let me create both PLAN.md files. I'll create Plan 01 (Wave 1: Script) first, then Plan 02 (Wave 2: Tests).",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Tools: write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Now update ROADMAP.md to reflect the plans.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Now commit atomically.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 45-vendor-sync-script\n**Plans:** 2 plans in 2 waves\n**Commit:** `ec8876fa5849b2c3421672d8f680193ba29c10f4`\n\n### Wave Structure\n\n| Wave | Plans | Autonomous | Description |\n|------|-------|------------|-------------|\n| 1 | 45-01 | yes (checkpoint:human-verify for T2) | Create `scripts/sync-fork.sh` — sync script with conflict detection, dry-run, idempotency |\n| 2 | 45-02 | yes | Install bats, create `tests/scripts/sync-fork.bats` — 3 test scenarios |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| 45-01 | Create sync script with merge-tree conflict detection, pinned file protection, dry-run, idempotent temp remote lifecycle | 2 (T1: auto script creation, T2: human verify) | `scripts/sync-fork.sh` |\n| 45-02 | Install bats via npm + create 3-scenario integration test suite using local git fixtures | 2 (T1: bats install + dirs, T2: TDD bats suite) | `tests/scripts/sync-fork.bats`, `tests/scripts/.gitkeep`, `package.json` |\n\n### Requirements → Plan Mapping\n\n| Requirement | Plan | Coverage |\n|-------------|------|----------|\n| **REQ-01** Fetch and merge from fork | 45-01 T1 | `git fetch` + `git merge FETCH_HEAD --no-edit` |\n| **REQ-02** Pinned file protection (4 files) | 45-01 T1 | `git merge-tree --write-tree --name-only` → grep PINNED_FILES → exit 1 |\n| **REQ-03** `--dry-run` mode | 45-01 T1 | Preview summary, exit 0/1, no working tree changes |\n| **REQ-04** Idempotent execution | 45-01 T1 | Temp remote lifecycle via `trap cleanup EXIT`, no persistent state |\n| **REQ-05** Shell test suite (3 bats scenarios) | 45-02 T1+T2 | (a) clean ffwd, (b) 3-way merge, (c) pinned conflict abort |\n\n### Key Design Decisions (locked)\n\n1. **Conflict detection mechanism:** `git merge-tree --write-tree --name-only` — zero side-effects on working tree, reads exit code (0=clean, 1=conflict, 2+=error) not output parsing alone (per RESEARCH Pitfall 3)\n2. **Env var overrides:** `SYNC_FORK_REMOTE_URL` + `SYNC_FORK_BRANCH` — enables CI/testing with local fixture repos; defaults to the real GitHub fork\n3. **bats install:** npm `--save-dev` (not brew/apt) — matches existing Node.js toolchain, CI can `npm ci` without external package managers\n4. **Test fixtures:** Local bare git repos in `BATS_TEST_TMPDIR` — zero network dependency, auto-cleaned by bats\n5. **Cleanup guarantee:** `trap cleanup EXIT` handles temp remote removal + `git merge --abort` on SIGINT, SIGTERM, or any error path\n\n### Threat Model Summary\n\n6 threats in STRIDE register across both plans:\n- **Mitigated:** Argument spoofing, repudiation (temp remote), tampering (conflict detection, pinned file overwrite), npm supply chain\n- **Accepted:** Network fetch TLS (standard HTTPS), bats as devDependency only\n\n### Next Steps\n\nExecute Wave 1 → Wave 2 sequentially:\n\n```\n/gsd-execute-phase 45-vendor-sync-script\n```\n\n<sub>`/clear` first — fresh context window</sub>",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "gsd-planner",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 45-vendor-sync-script\n**Plans:** 2 plans in 2 waves\n**Commit:** `ec8876fa5849b2c3421672d8f680193ba29c10f4`\n\n### Wave Structure\n\n| Wave | Plans | Autonomous | Description |\n|------|-------|------------|-------------|\n| 1 | 45-01 | yes (checkpoint:human-verify for T2) | Create `scripts/sync-fork.sh` — sync script with conflict detection, dry-run, idempotency |\n| 2 | 45-02 | yes | Install bats, create `tests/scripts/sync-fork.bats` — 3 test scenarios |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| 45-01 | Create sync script with merge-tree conflict detection, pinned file protection, dry-run, idempotent temp remote lifecycle | 2 (T1: auto script creation, T2: human verify) | `scripts/sync-fork.sh` |\n| 45-02 | Install bats via npm + create 3-scenario integration test suite using local git fixtures | 2 (T1: bats install + dirs, T2: TDD bats suite) | `tests/scripts/sync-fork.bats`, `tests/scripts/.gitkeep`, `package.json` |\n\n### Requirements → Plan Mapping\n\n| Requirement | Plan | Coverage |\n|-------------|------|----------|\n| **REQ-01** Fetch and merge from fork | 45-01 T1 | `git fetch` + `git merge FETCH_HEAD --no-edit` |\n| **REQ-02** Pinned file protection (4 files) | 45-01 T1 | `git merge-tree --write-tree --name-only` → grep PINNED_FILES → exit 1 |\n| **REQ-03** `--dry-run` mode | 45-01 T1 | Preview summary, exit 0/1, no working tree changes |\n| **REQ-04** Idempotent execution | 45-01 T1 | Temp remote lifecycle via `trap cleanup EXIT`, no persistent state |\n| **REQ-05** Shell test suite (3 bats scenarios) | 45-02 T1+T2 | (a) clean ffwd, (b) 3-way merge, (c) pinned conflict abort |\n\n### Key Design Decisions (locked)\n\n1. **Conflict detection mechanism:** `git merge-tree --write-tree --name-only` — zero side-effects on working tree, reads exit code (0=clean, 1=conflict, 2+=error) not output parsing alone (per RESEARCH Pitfall 3)\n2. **Env var overrides:** `SYNC_FORK_REMOTE_URL` + `SYNC_FORK_BRANCH` — enables CI/testing with local fixture repos; defaults to the real GitHub fork\n3. **bats install:** npm `--save-dev` (not brew/apt) — matches existing Node.js toolchain, CI can `npm ci` without external package managers\n4. **Test fixtures:** Local bare git repos in `BATS_TEST_TMPDIR` — zero network dependency, auto-cleaned by bats\n5. **Cleanup guarantee:** `trap cleanup EXIT` handles temp remote removal + `git merge --abort` on SIGINT, SIGTERM, or any error path\n\n### Threat Model Summary\n\n6 threats in STRIDE register across both plans:\n- **Mitigated:** Argument spoofing, repudiation (temp remote), tampering (conflict detection, pinned file overwrite), npm supply chain\n- **Accepted:** Network fetch TLS (standard HTTPS), bats as devDependency only\n\n### Next Steps\n\nExecute Wave 1 → Wave 2 sequentially:\n\n```\n/gsd-execute-phase 45-vendor-sync-script\n```\n\n<sub>`/clear` first — fresh context window</sub>",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-01T13:15:00.435Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_t9KyUEj2RZekuS9QtQsE5772",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01/45-ASSUMPTIONS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:15:00.444Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_a6WDTpJ4GsbtX7VKpFxy5869",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01/45-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:15:00.455Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_PbVz9KLS1nonmyR9g4BM1138",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01/45-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:15:16.357Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_J6HK3emEnZCJiMwIwZNg0339",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/scripts/sync-oss.sh"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:15:16.391Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_AiQVHDpSgijvOP1DbXjQ2185",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:15:16.401Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_ylFxFWqXKsvom2T8N2vm4643",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:15:38.015Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_MoPWKCCscbOqgAcgYHbB9179",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:15:38.048Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_VbjhBv6w10Eq70YAqr8J4852",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:15:52.635Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_oNKUn9MC9hcEUrDZJCC90980",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:15:52.655Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_JvyHLLWtvP4PuRRvrU0x9410",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:16:23.903Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_5YKE5Dr3adDEFLkIxonc0570",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:16:42.559Z",
+      "type": "tool_call",
+      "content": "Tool: sequential-thinking_sequentialthinking",
+      "metadata": {
+        "tool": "sequential-thinking_sequentialthinking",
+        "callID": "call_00_VZ8s8zmdzxVSAiv60Kc10276",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:17:33.502Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_KndBpNuN1yGbAqowsV6G5968",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:18:06.297Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_wk3zaWQ30e9WTD0JmYD77632",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:18:21.379Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_00_L5vJ0QhHwX4KEMzrvaqT9364",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:18:30.073Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_6ge7cnKIYIjQHTt4vXTT6771",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:18:35.883Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_BhM1URtEO0iYjvyUdwTc6408",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:18:50.750Z",
+      "type": "assistant_message",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 45-vendor-sync-script\n**Plans:** 2 plans in 2 waves\n**Commit:** `ec8876fa5849b2c3421672d8f680193ba29c10f4`\n\n### Wave Structure\n\n| Wave | Plans | Autonomous | Description |\n|------|-------|------------|-------------|\n| 1 | 45-01 | yes (checkpoint:human-verify for T2) | Create `scripts/sync-fork.sh` — sync script with conflict detection, dry-run, idempotency |\n| 2 | 45-02 | yes | Install bats, create `tests/scripts/sync-fork.bats` — 3 test scenarios |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| 45-01 | Create sync script with merge-tree conflict detection, pinned file protection, dry-run, idempotent temp remote lifecycle | 2 (T1: auto script creation, T2: human verify) | `scripts/sync-fork.sh` |\n| 45-02 | Install bats via npm + create 3-scenario integration test suite using local git fixtures | 2 (T1: bats install + dirs, T2: TDD bats suite) | `tests/scripts/sync-fork.bats`, `tests/scripts/.gitkeep`, `package.json` |\n\n### Requirements → Plan Mapping\n\n| Requirement | Plan | Coverage |\n|-------------|------|----------|\n| **REQ-01** Fetch and merge from fork | 45-01 T1 | `git fetch` + `git merge FETCH_HEAD --no-edit` |\n| **REQ-02** Pinned file protection (4 files) | 45-01 T1 | `git merge-tree --write-tree --name-only` → grep PINNED_FILES → exit 1 |\n| **REQ-03** `--dry-run` mode | 45-01 T1 | Preview summary, exit 0/1, no working tree changes |\n| **REQ-04** Idempotent execution | 45-01 T1 | Temp remote lifecycle via `trap cleanup EXIT`, no persistent state |\n| **REQ-05** Shell test suite (3 bats scenarios) | 45-02 T1+T2 | (a) clean ffwd, (b) 3-way merge, (c) pinned conflict abort |\n\n### Key Design Decisions (locked)\n\n1. **Conflict detection mechanism:** `git merge-tree --write-tree --name-only` — zero side-effects on working tree, reads exit code (0=clean, 1=conflict, 2+=error) not output parsing alone (per RESEARCH Pitfall 3)\n2. **Env var overrides:** `SYNC_FORK_REMOTE_URL` + `SYNC_FORK_BRANCH` — enables CI/testing with local fixture repos; defaults to the real GitHub fork\n3. **bats install:** npm `--save-dev` (not brew/apt) — matches existing Node.js toolchain, CI can `npm ci` without external package managers\n4. **Test fixtures:** Local bare git repos in `BATS_TEST_TMPDIR` — zero network dependency, auto-cleaned by bats\n5. **Cleanup guarantee:** `trap cleanup EXIT` handles temp remote removal + `git merge --abort` on SIGINT, SIGTERM, or any error path\n\n### Threat Model Summary\n\n6 threats in STRIDE register across both plans:\n- **Mitigated:** Argument spoofing, repudiation (temp remote), tampering (conflict detection, pinned file overwrite), npm supply chain\n- **Accepted:** Network fetch TLS (standard HTTPS), bats as devDependency only\n\n### Next Steps\n\nExecute Wave 1 → Wave 2 sequentially:\n\n```\n/gsd-execute-phase 45-vendor-sync-script\n```\n\n<sub>`/clear` first — fresh context window</sub>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_17cad8e79ffeEUrGyHr1zKaR8w"
+      }
+    }
+  ],
+  "lastMessage": "## PLANNING COMPLETE\n\n**Phase:** 45-vendor-sync-script\n**Plans:** 2 plans in 2 waves\n**Commit:** `ec8876fa5849b2c3421672d8f680193ba29c10f4`\n\n### Wave Structure\n\n| Wave | Plans | Autonomous | Description |\n|------|-------|------------|-------------|\n| 1 | 45-01 | yes (checkpoint:human-verify for T2) | Create `scripts/sync-fork.sh` — sync script with conflict detection, dry-run, idempotency |\n| 2 | 45-02 | yes | Install bats, create `tests/scripts/sync-fork.bats` — 3 test scenarios |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| 45-01 | Create sync script with merge-tree conflict detection, pinned file protection, dry-run, idempotent temp remote lifecycle | 2 (T1: auto script creation, T2: human verify) | `scripts/sync-fork.sh` |\n| 45-02 | Install bats via npm + create 3-scenario integration test suite using local git fixtures | 2 (T1: bats install + dirs, T2: TDD bats suite) | `tests/scripts/sync-fork.bats`, `tests/scripts/.gitkeep`, `package.json` |\n\n### Requirements → Plan Mapping\n\n| Requirement | Plan | Coverage |\n|-------------|------|----------|\n| **REQ-01** Fetch and merge from fork | 45-01 T1 | `git fetch` + `git merge FETCH_HEAD --no-edit` |\n| **REQ-02** Pinned file protection (4 files) | 45-01 T1 | `git merge-tree --write-tree --name-only` → grep PINNED_FILES → exit 1 |\n| **REQ-03** `--dry-run` mode | 45-01 T1 | Preview summary, exit 0/1, no working tree changes |\n| **REQ-04** Idempotent execution | 45-01 T1 | Temp remote lifecycle via `trap cleanup EXIT`, no persistent state |\n| **REQ-05** Shell test suite (3 bats scenarios) | 45-02 T1+T2 | (a) clean ffwd, (b) 3-way merge, (c) pinned conflict abort |\n\n### Key Design Decisions (locked)\n\n1. **Conflict detection mechanism:** `git merge-tree --write-tree --name-only` — zero side-effects on working tree, reads exit code (0=clean, 1=conflict, 2+=error) not output parsing alone (per RESEARCH Pitfall 3)\n2. **Env var overrides:** `SYNC_FORK_REMOTE_URL` + `SYNC_FORK_BRANCH` — enables CI/testing with local fixture repos; defaults to the real GitHub fork\n3. **bats install:** npm `--save-dev` (not brew/apt) — matches existing Node.js toolchain, CI can `npm ci` without external package managers\n4. **Test fixtures:** Local bare git repos in `BATS_TEST_TMPDIR` — zero network dependency, auto-cleaned by bats\n5. **Cleanup guarantee:** `trap cleanup EXIT` handles temp remote removal + `git merge --abort` on SIGINT, SIGTERM, or any error path\n\n### Threat Model Summary\n\n6 threats in STRIDE register across both plans:\n- **Mitigated:** Argument spoofing, repudiation (temp remote), tampering (conflict detection, pinned file overwrite), npm supply chain\n- **Accepted:** Network fetch TLS (standard HTTPS), bats as devDependency only\n\n### Next Steps\n\nExecute Wave 1 → Wave 2 sequentially:\n\n```\n/gsd-execute-phase 45-vendor-sync-script\n```\n\n<sub>`/clear` first — fresh context window</sub>"
+}

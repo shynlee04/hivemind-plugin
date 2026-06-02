@@ -1,0 +1,256 @@
+{
+  "sessionID": "ses_17a9974bfffeNpS3PQAB9FFKIR",
+  "parentSessionID": "ses_17a9b399affeN0ZfKPoFe41t9L",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "general",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research opencode-tmux complexity",
+    "subagentType": "general"
+  },
+  "created": "2026-06-01T22:55:50.622Z",
+  "updated": "2026-06-01T22:56:30.659Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "general",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "I need you to analyze the opencode-tmux package inside this repository. \n\nThe repo is at: /Users/apple/hivemind-plugin-private/opencode-tmux/\n\nPlease:\n1. List all files in the src/ directory with `ls -la opencode-tmux/src/` and `ls -la opencode-tmux/src/__tests__/`\n2. Read every source file in opencode-tmux/src/ (index.ts, tmux.ts, session-manager.ts, config.ts, util.ts)\n3. Read package.json\n4. Count total LOC for all src/ files\n5. Count total LOC for all test files\n\nAlso read these Hivemind files:\n- src/features/tmux/fork-bridge.ts\n- src/features/tmux/integration.ts\n- src/features/tmux/observers.ts\n- src/tools/tmux-copilot.ts\n\nReturn a report containing:\n- Total LOC of opencode-tmux source (each file + total)\n- Total LOC of opencode-tmux tests (each file + total)\n- What each source file does in 1 sentence\n- What the package.json peerDependencies and exports are\n- In the Hivemind side: what fork-bridge.ts, integration.ts, observers.ts actually DO\n- Is there anything in opencode-tmux that is non-trivial? (complex algorithms, tricky edge cases, race condition handling?)\n- Would it be reasonable to re-implement this from scratch in ~300-400 LOC?\n\nBe specific with file:line references. Give me honest facts, not opinions.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: bash, bash, read, read, read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Now let me read the Hivemind side files and the test files:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Here is the complete analysis:\n\n---\n\n## opencode-tmux — Source LOC (6 files)\n\n| File | LOC | Purpose |\n|------|-----|---------|\n| `src/index.ts` | 41 | Plugin entry: wires tmux session hooks (created/status/deleted) via `SessionManager` |\n| `src/tmux.ts` | 346 | `TmuxMultiplexer` class: wraps tmux CLI (`split-window`, `kill-pane`, `send-keys`, `list-panes`, `select-layout`) with shell-safe quoting and promisified `execFile` |\n| `src/session-manager.ts` | 307 | `SessionManager` class: tracks session→pane mapping, handles idle→close/busy→respawn lifecycle, health-check server before spawn, race conditions with `pendingClose`/`spawningSessions` sets |\n| `src/config.ts` | 90 | Config loader: merges global `~/.config/opencode/opencode-tmux.json` + project-local, validates layout enum, clamps `mainPaneSize` to [10,90] |\n| `src/util.ts` | 28 | Logger factory wrapping `client.app.log()` |\n| `src/grid-planner.ts` | 120 | `PaneGridPlanner`: DFS preorder tree→split-command converter with 500ms trailing-edge debounce coalescing |\n| **Source total** | **932** | |\n\n## opencode-tmux — Test LOC (6 files)\n\n| File | LOC |\n|------|-----|\n| `src/__tests__/index.test.ts` | 187 |\n| `src/__tests__/tmux.test.ts` | 599 |\n| `src/__tests__/session-manager.test.ts` | 501 |\n| `src/__tests__/config.test.ts` | 272 |\n| `src/__tests__/util.test.ts` | 63 |\n| `src/__tests__/grid-planner.test.ts` | 198 |\n| **Test total** | **1820** |\n\n(Note: tests are almost 2× the source — reasonable for an execFile-dependent plugin with race conditions.)\n\n## package.json\n\n- **peerDependencies**: `\"@opencode-ai/plugin\": \"^1.15.13\"`\n- **exports**: single entrypoint — `\"main\": \"dist/index.js\"` + `\"types\": \"dist/index.d.ts\"` (default CJS/ESM via `\"type\": \"module\"`)\n- Build: `bun build src/index.ts --outdir dist --target node --format esm --external @opencode-ai/plugin && tsc --emitDeclarationOnly`\n- Test: `bun test --coverage --isolate`\n\n## Hivemind-side files\n\n| File | LOC | What it does |\n|------|-----|-------------|\n| `fork-bridge.ts` | 138 | Defines structural type mirrors (`PaneTreeNode`, `PaneState`, `ForkSessionManagerAdapter`) + a module-private adapter singleton with `setForkSessionManager()`/`getForkSessionManager()` — pure type/DI layer, zero tmux logic |\n| `integration.ts` | 191 | `createTmuxIntegrationIfSupported()` factory: resolves `tmux` + `opencode` binaries via `which`, checks `$TMUX`, persists/reads port from `.hivemind/state/tmux-port.json` (with sha256 deterministic fallback), optionally wires the fork adapter via `setForkSessionManager` |\n| `observers.ts` | 93 | `createTmuxEventObserver()`: decorates `session.created` events with Hivemind delegation metadata (`agent`, `delegationId`, `depth` from `getDelegationMeta()`) before forwarding to fork's `SessionManager.onSessionCreated()` |\n| `tmux-copilot.ts` | 189 | Registers the `tmux-copilot` tool with 4 actions (`send-keys`, `list-panes`, `compute-grid`, `respawn`), orchestrator-only permission gate, graceful `fork-not-wired` fallback, all calls wrapped in try/catch |\n\n## Non-trivial things (file:line references)\n\n1. **Race: idle-arrives-during-spawn** — `session-manager.ts:137–142` and `session-manager.ts:157–162`. If a `session.status{idle}` fires while the pane is still spawning (i.e., `spawningSessions.has(sid)` is true), the close is deferred via `pendingClose`. After spawn completes, line 138 checks `pendingClose` and immediately tears down. This prevents orphan panes.\n\n2. **Race: respawn guard** — `session-manager.ts:164–168`. An idle→closed pane has `closedSessions.has(sid)`. When status flips back to `busy`, only those in `closedSessions` respawn. Deleted sessions (line 178) pass `autoClose=false`, which does NOT add to `closedSessions` — so they never respawn. This prevents zombie panes for dead sessions.\n\n3. **Shell quoting fns** — `tmux.ts:34–36`: custom `quoteShellArg` that escapes single quotes via `'\\''` for safe injection into the `opencode attach ...` command string. This is passed to `execFile` which by default does not use a shell — wait, no: on line 134 the command is a single `opencodeCmd` string, meaning it IS passed through a shell. The quoting is necessary.\n\n4. **sendKeys contract caveat** — `tmux.ts:215–221` comment documents that tmux `send-keys` resolving does NOT mean the target pane consumed the text — only that tmux accepted the command. This is a deliberate API honesty note.\n\n5. **Grid planner debounce** — `grid-planner.ts:81–98`: trailing-edge 500ms debounce. Each `requestLayout()` call replaces the pending tree and resets the timer. On fire, runs DFS `computeSplitSequence`. The `cancel()` method exists for shutdown. Direction rule (line 59): depth-1 → `\"h\"`, deeper → `\"v\"`.\n\n6. **Fork-bridge structural typing** — `fork-bridge.ts:24–72` defines exact structural mirrors of the fork's types (`PaneTreeNode`, `SplitCommand`, `PaneState`, `PaneGridPlanner`, `ForkSessionManagerAdapter`). Zero import dependency on the fork package — the adapter is injected at runtime. This is an architectural decision, not algorithmic complexity.\n\n7. **Deterministic port fallback** — `integration.ts:62–75`: `createHash(\"sha256\").update(projectDir).digest(\"hex\")` → map to `[10000, 65535]` range. Stable cross-session port for the same project directory.\n\n## Could this be re-implemented in ~300-400 LOC?\n\n**No.** Here is why:\n\n- `tmux.ts` (346 LOC) alone is the multiplexer. To replicate: `execFile` wrappers for 6 CLI commands, shell quoting, `SpawnPaneOptions` parsing, `PaneState` parsing from tab-separated tmux format, layout re-application logic. This is ~250 LOC minimum for a feature-complete version.\n\n- `session-manager.ts` (307 LOC) has three interlocking state sets: `sessions` (tracked), `spawningSessions` (in-flight), `spawnedSessions` (dedup guard), `closedSessions` (respawn-eligible), `pendingClose` (deferred idle-while-spawning). The dual lifecycle flows (created→idle→busy→deleted) with the pending-close race are hard to compress below ~200 LOC.\n\n- `config.ts` (90 LOC) + `util.ts` (28 LOC) + `grid-planner.ts` (120 LOC) are already lean — you'd shave ~40 LOC total.\n\n- Tests are 1820 LOC — if you keep a similar test surface, you save nothing.\n\n**Honest estimate: 650–750 LOC** for the same functionality, if you compress `tmux.ts` and `session-manager.ts` moderately. The race condition handling with 5 tracked sets (`spawningSessions`, `spawnedSessions`, `closedSessions`, `pendingClose`, `sessions`) is the irreducible core complexity — that logic cannot go much below ~180 LOC.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "general",
+      "content": "Here is the complete analysis:\n\n---\n\n## opencode-tmux — Source LOC (6 files)\n\n| File | LOC | Purpose |\n|------|-----|---------|\n| `src/index.ts` | 41 | Plugin entry: wires tmux session hooks (created/status/deleted) via `SessionManager` |\n| `src/tmux.ts` | 346 | `TmuxMultiplexer` class: wraps tmux CLI (`split-window`, `kill-pane`, `send-keys`, `list-panes`, `select-layout`) with shell-safe quoting and promisified `execFile` |\n| `src/session-manager.ts` | 307 | `SessionManager` class: tracks session→pane mapping, handles idle→close/busy→respawn lifecycle, health-check server before spawn, race conditions with `pendingClose`/`spawningSessions` sets |\n| `src/config.ts` | 90 | Config loader: merges global `~/.config/opencode/opencode-tmux.json` + project-local, validates layout enum, clamps `mainPaneSize` to [10,90] |\n| `src/util.ts` | 28 | Logger factory wrapping `client.app.log()` |\n| `src/grid-planner.ts` | 120 | `PaneGridPlanner`: DFS preorder tree→split-command converter with 500ms trailing-edge debounce coalescing |\n| **Source total** | **932** | |\n\n## opencode-tmux — Test LOC (6 files)\n\n| File | LOC |\n|------|-----|\n| `src/__tests__/index.test.ts` | 187 |\n| `src/__tests__/tmux.test.ts` | 599 |\n| `src/__tests__/session-manager.test.ts` | 501 |\n| `src/__tests__/config.test.ts` | 272 |\n| `src/__tests__/util.test.ts` | 63 |\n| `src/__tests__/grid-planner.test.ts` | 198 |\n| **Test total** | **1820** |\n\n(Note: tests are almost 2× the source — reasonable for an execFile-dependent plugin with race conditions.)\n\n## package.json\n\n- **peerDependencies**: `\"@opencode-ai/plugin\": \"^1.15.13\"`\n- **exports**: single entrypoint — `\"main\": \"dist/index.js\"` + `\"types\": \"dist/index.d.ts\"` (default CJS/ESM via `\"type\": \"module\"`)\n- Build: `bun build src/index.ts --outdir dist --target node --format esm --external @opencode-ai/plugin && tsc --emitDeclarationOnly`\n- Test: `bun test --coverage --isolate`\n\n## Hivemind-side files\n\n| File | LOC | What it does |\n|------|-----|-------------|\n| `fork-bridge.ts` | 138 | Defines structural type mirrors (`PaneTreeNode`, `PaneState`, `ForkSessionManagerAdapter`) + a module-private adapter singleton with `setForkSessionManager()`/`getForkSessionManager()` — pure type/DI layer, zero tmux logic |\n| `integration.ts` | 191 | `createTmuxIntegrationIfSupported()` factory: resolves `tmux` + `opencode` binaries via `which`, checks `$TMUX`, persists/reads port from `.hivemind/state/tmux-port.json` (with sha256 deterministic fallback), optionally wires the fork adapter via `setForkSessionManager` |\n| `observers.ts` | 93 | `createTmuxEventObserver()`: decorates `session.created` events with Hivemind delegation metadata (`agent`, `delegationId`, `depth` from `getDelegationMeta()`) before forwarding to fork's `SessionManager.onSessionCreated()` |\n| `tmux-copilot.ts` | 189 | Registers the `tmux-copilot` tool with 4 actions (`send-keys`, `list-panes`, `compute-grid`, `respawn`), orchestrator-only permission gate, graceful `fork-not-wired` fallback, all calls wrapped in try/catch |\n\n## Non-trivial things (file:line references)\n\n1. **Race: idle-arrives-during-spawn** — `session-manager.ts:137–142` and `session-manager.ts:157–162`. If a `session.status{idle}` fires while the pane is still spawning (i.e., `spawningSessions.has(sid)` is true), the close is deferred via `pendingClose`. After spawn completes, line 138 checks `pendingClose` and immediately tears down. This prevents orphan panes.\n\n2. **Race: respawn guard** — `session-manager.ts:164–168`. An idle→closed pane has `closedSessions.has(sid)`. When status flips back to `busy`, only those in `closedSessions` respawn. Deleted sessions (line 178) pass `autoClose=false`, which does NOT add to `closedSessions` — so they never respawn. This prevents zombie panes for dead sessions.\n\n3. **Shell quoting fns** — `tmux.ts:34–36`: custom `quoteShellArg` that escapes single quotes via `'\\''` for safe injection into the `opencode attach ...` command string. This is passed to `execFile` which by default does not use a shell — wait, no: on line 134 the command is a single `opencodeCmd` string, meaning it IS passed through a shell. The quoting is necessary.\n\n4. **sendKeys contract caveat** — `tmux.ts:215–221` comment documents that tmux `send-keys` resolving does NOT mean the target pane consumed the text — only that tmux accepted the command. This is a deliberate API honesty note.\n\n5. **Grid planner debounce** — `grid-planner.ts:81–98`: trailing-edge 500ms debounce. Each `requestLayout()` call replaces the pending tree and resets the timer. On fire, runs DFS `computeSplitSequence`. The `cancel()` method exists for shutdown. Direction rule (line 59): depth-1 → `\"h\"`, deeper → `\"v\"`.\n\n6. **Fork-bridge structural typing** — `fork-bridge.ts:24–72` defines exact structural mirrors of the fork's types (`PaneTreeNode`, `SplitCommand`, `PaneState`, `PaneGridPlanner`, `ForkSessionManagerAdapter`). Zero import dependency on the fork package — the adapter is injected at runtime. This is an architectural decision, not algorithmic complexity.\n\n7. **Deterministic port fallback** — `integration.ts:62–75`: `createHash(\"sha256\").update(projectDir).digest(\"hex\")` → map to `[10000, 65535]` range. Stable cross-session port for the same project directory.\n\n## Could this be re-implemented in ~300-400 LOC?\n\n**No.** Here is why:\n\n- `tmux.ts` (346 LOC) alone is the multiplexer. To replicate: `execFile` wrappers for 6 CLI commands, shell quoting, `SpawnPaneOptions` parsing, `PaneState` parsing from tab-separated tmux format, layout re-application logic. This is ~250 LOC minimum for a feature-complete version.\n\n- `session-manager.ts` (307 LOC) has three interlocking state sets: `sessions` (tracked), `spawningSessions` (in-flight), `spawnedSessions` (dedup guard), `closedSessions` (respawn-eligible), `pendingClose` (deferred idle-while-spawning). The dual lifecycle flows (created→idle→busy→deleted) with the pending-close race are hard to compress below ~200 LOC.\n\n- `config.ts` (90 LOC) + `util.ts` (28 LOC) + `grid-planner.ts` (120 LOC) are already lean — you'd shave ~40 LOC total.\n\n- Tests are 1820 LOC — if you keep a similar test surface, you save nothing.\n\n**Honest estimate: 650–750 LOC** for the same functionality, if you compress `tmux.ts` and `session-manager.ts` moderately. The race condition handling with 5 tracked sets (`spawningSessions`, `spawnedSessions`, `closedSessions`, `pendingClose`, `sessions`) is the irreducible core complexity — that logic cannot go much below ~180 LOC.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-01T22:56:04.969Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_QtIGe7zzImLy0xbtBIEb1608",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux/package.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:04.984Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_QeVgRsGuwz57Pud8Iiqn3594",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux/src/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:04.994Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_NW1QEbfNNv53Q1T99rlp4385",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux/src/tmux.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:05.004Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_Uj8G7Xvm1TtSMu07gLpI3640",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux/src/session-manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:05.014Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_06_vlvovhZGvT1J9dVLBheU2825",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux/src/config.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:05.023Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_07_yJRLFCVgHISMtf0bywYt7915",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux/src/util.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:05.045Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_HKUvfPvdXR7qFWpPjvQC8209",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:05.061Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_8pv9c36kquKKJeeeSp513692",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:12.941Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_DeySukhfb28TLIKjU22k3849",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/tmux-copilot.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:12.952Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_zseg0Iohg8brhZt1OEsp0599",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux/src/grid-planner.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:12.965Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_M4TzOIHnJNm4eSxseDYR2656",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/fork-bridge.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:12.973Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_k54tFx8ZOm8r3l3k2P7d4826",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/integration.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:12.982Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_mrKxU94nTCUIErI0mddr4404",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/observers.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:12.998Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_05_QUxFGBOuUNI2VpNWIw2M2563",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:13.011Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_06_uXO50E9LOE8qG53tkNuA6734",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T22:56:30.608Z",
+      "type": "assistant_message",
+      "content": "Here is the complete analysis:\n\n---\n\n## opencode-tmux — Source LOC (6 files)\n\n| File | LOC | Purpose |\n|------|-----|---------|\n| `src/index.ts` | 41 | Plugin entry: wires tmux session hooks (created/status/deleted) via `SessionManager` |\n| `src/tmux.ts` | 346 | `TmuxMultiplexer` class: wraps tmux CLI (`split-window`, `kill-pane`, `send-keys`, `list-panes`, `select-layout`) with shell-safe quoting and promisified `execFile` |\n| `src/session-manager.ts` | 307 | `SessionManager` class: tracks session→pane mapping, handles idle→close/busy→respawn lifecycle, health-check server before spawn, race conditions with `pendingClose`/`spawningSessions` sets |\n| `src/config.ts` | 90 | Config loader: merges global `~/.config/opencode/opencode-tmux.json` + project-local, validates layout enum, clamps `mainPaneSize` to [10,90] |\n| `src/util.ts` | 28 | Logger factory wrapping `client.app.log()` |\n| `src/grid-planner.ts` | 120 | `PaneGridPlanner`: DFS preorder tree→split-command converter with 500ms trailing-edge debounce coalescing |\n| **Source total** | **932** | |\n\n## opencode-tmux — Test LOC (6 files)\n\n| File | LOC |\n|------|-----|\n| `src/__tests__/index.test.ts` | 187 |\n| `src/__tests__/tmux.test.ts` | 599 |\n| `src/__tests__/session-manager.test.ts` | 501 |\n| `src/__tests__/config.test.ts` | 272 |\n| `src/__tests__/util.test.ts` | 63 |\n| `src/__tests__/grid-planner.test.ts` | 198 |\n| **Test total** | **1820** |\n\n(Note: tests are almost 2× the source — reasonable for an execFile-dependent plugin with race conditions.)\n\n## package.json\n\n- **peerDependencies**: `\"@opencode-ai/plugin\": \"^1.15.13\"`\n- **exports**: single entrypoint — `\"main\": \"dist/index.js\"` + `\"types\": \"dist/index.d.ts\"` (default CJS/ESM via `\"type\": \"module\"`)\n- Build: `bun build src/index.ts --outdir dist --target node --format esm --external @opencode-ai/plugin && tsc --emitDeclarationOnly`\n- Test: `bun test --coverage --isolate`\n\n## Hivemind-side files\n\n| File | LOC | What it does |\n|------|-----|-------------|\n| `fork-bridge.ts` | 138 | Defines structural type mirrors (`PaneTreeNode`, `PaneState`, `ForkSessionManagerAdapter`) + a module-private adapter singleton with `setForkSessionManager()`/`getForkSessionManager()` — pure type/DI layer, zero tmux logic |\n| `integration.ts` | 191 | `createTmuxIntegrationIfSupported()` factory: resolves `tmux` + `opencode` binaries via `which`, checks `$TMUX`, persists/reads port from `.hivemind/state/tmux-port.json` (with sha256 deterministic fallback), optionally wires the fork adapter via `setForkSessionManager` |\n| `observers.ts` | 93 | `createTmuxEventObserver()`: decorates `session.created` events with Hivemind delegation metadata (`agent`, `delegationId`, `depth` from `getDelegationMeta()`) before forwarding to fork's `SessionManager.onSessionCreated()` |\n| `tmux-copilot.ts` | 189 | Registers the `tmux-copilot` tool with 4 actions (`send-keys`, `list-panes`, `compute-grid`, `respawn`), orchestrator-only permission gate, graceful `fork-not-wired` fallback, all calls wrapped in try/catch |\n\n## Non-trivial things (file:line references)\n\n1. **Race: idle-arrives-during-spawn** — `session-manager.ts:137–142` and `session-manager.ts:157–162`. If a `session.status{idle}` fires while the pane is still spawning (i.e., `spawningSessions.has(sid)` is true), the close is deferred via `pendingClose`. After spawn completes, line 138 checks `pendingClose` and immediately tears down. This prevents orphan panes.\n\n2. **Race: respawn guard** — `session-manager.ts:164–168`. An idle→closed pane has `closedSessions.has(sid)`. When status flips back to `busy`, only those in `closedSessions` respawn. Deleted sessions (line 178) pass `autoClose=false`, which does NOT add to `closedSessions` — so they never respawn. This prevents zombie panes for dead sessions.\n\n3. **Shell quoting fns** — `tmux.ts:34–36`: custom `quoteShellArg` that escapes single quotes via `'\\''` for safe injection into the `opencode attach ...` command string. This is passed to `execFile` which by default does not use a shell — wait, no: on line 134 the command is a single `opencodeCmd` string, meaning it IS passed through a shell. The quoting is necessary.\n\n4. **sendKeys contract caveat** — `tmux.ts:215–221` comment documents that tmux `send-keys` resolving does NOT mean the target pane consumed the text — only that tmux accepted the command. This is a deliberate API honesty note.\n\n5. **Grid planner debounce** — `grid-planner.ts:81–98`: trailing-edge 500ms debounce. Each `requestLayout()` call replaces the pending tree and resets the timer. On fire, runs DFS `computeSplitSequence`. The `cancel()` method exists for shutdown. Direction rule (line 59): depth-1 → `\"h\"`, deeper → `\"v\"`.\n\n6. **Fork-bridge structural typing** — `fork-bridge.ts:24–72` defines exact structural mirrors of the fork's types (`PaneTreeNode`, `SplitCommand`, `PaneState`, `PaneGridPlanner`, `ForkSessionManagerAdapter`). Zero import dependency on the fork package — the adapter is injected at runtime. This is an architectural decision, not algorithmic complexity.\n\n7. **Deterministic port fallback** — `integration.ts:62–75`: `createHash(\"sha256\").update(projectDir).digest(\"hex\")` → map to `[10000, 65535]` range. Stable cross-session port for the same project directory.\n\n## Could this be re-implemented in ~300-400 LOC?\n\n**No.** Here is why:\n\n- `tmux.ts` (346 LOC) alone is the multiplexer. To replicate: `execFile` wrappers for 6 CLI commands, shell quoting, `SpawnPaneOptions` parsing, `PaneState` parsing from tab-separated tmux format, layout re-application logic. This is ~250 LOC minimum for a feature-complete version.\n\n- `session-manager.ts` (307 LOC) has three interlocking state sets: `sessions` (tracked), `spawningSessions` (in-flight), `spawnedSessions` (dedup guard), `closedSessions` (respawn-eligible), `pendingClose` (deferred idle-while-spawning). The dual lifecycle flows (created→idle→busy→deleted) with the pending-close race are hard to compress below ~200 LOC.\n\n- `config.ts` (90 LOC) + `util.ts` (28 LOC) + `grid-planner.ts` (120 LOC) are already lean — you'd shave ~40 LOC total.\n\n- Tests are 1820 LOC — if you keep a similar test surface, you save nothing.\n\n**Honest estimate: 650–750 LOC** for the same functionality, if you compress `tmux.ts` and `session-manager.ts` moderately. The race condition handling with 5 tracked sets (`spawningSessions`, `spawnedSessions`, `closedSessions`, `pendingClose`, `sessions`) is the irreducible core complexity — that logic cannot go much below ~180 LOC.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_17a9974bfffeNpS3PQAB9FFKIR"
+      }
+    }
+  ],
+  "lastMessage": "Here is the complete analysis:\n\n---\n\n## opencode-tmux — Source LOC (6 files)\n\n| File | LOC | Purpose |\n|------|-----|---------|\n| `src/index.ts` | 41 | Plugin entry: wires tmux session hooks (created/status/deleted) via `SessionManager` |\n| `src/tmux.ts` | 346 | `TmuxMultiplexer` class: wraps tmux CLI (`split-window`, `kill-pane`, `send-keys`, `list-panes`, `select-layout`) with shell-safe quoting and promisified `execFile` |\n| `src/session-manager.ts` | 307 | `SessionManager` class: tracks session→pane mapping, handles idle→close/busy→respawn lifecycle, health-check server before spawn, race conditions with `pendingClose`/`spawningSessions` sets |\n| `src/config.ts` | 90 | Config loader: merges global `~/.config/opencode/opencode-tmux.json` + project-local, validates layout enum, clamps `mainPaneSize` to [10,90] |\n| `src/util.ts` | 28 | Logger factory wrapping `client.app.log()` |\n| `src/grid-planner.ts` | 120 | `PaneGridPlanner`: DFS preorder tree→split-command converter with 500ms trailing-edge debounce coalescing |\n| **Source total** | **932** | |\n\n## opencode-tmux — Test LOC (6 files)\n\n| File | LOC |\n|------|-----|\n| `src/__tests__/index.test.ts` | 187 |\n| `src/__tests__/tmux.test.ts` | 599 |\n| `src/__tests__/session-manager.test.ts` | 501 |\n| `src/__tests__/config.test.ts` | 272 |\n| `src/__tests__/util.test.ts` | 63 |\n| `src/__tests__/grid-planner.test.ts` | 198 |\n| **Test total** | **1820** |\n\n(Note: tests are almost 2× the source — reasonable for an execFile-dependent plugin with race conditions.)\n\n## package.json\n\n- **peerDependencies**: `\"@opencode-ai/plugin\": \"^1.15.13\"`\n- **exports**: single entrypoint — `\"main\": \"dist/index.js\"` + `\"types\": \"dist/index.d.ts\"` (default CJS/ESM via `\"type\": \"module\"`)\n- Build: `bun build src/index.ts --outdir dist --target node --format esm --external @opencode-ai/plugin && tsc --emitDeclarationOnly`\n- Test: `bun test --coverage --isolate`\n\n## Hivemind-side files\n\n| File | LOC | What it does |\n|------|-----|-------------|\n| `fork-bridge.ts` | 138 | Defines structural type mirrors (`PaneTreeNode`, `PaneState`, `ForkSessionManagerAdapter`) + a module-private adapter singleton with `setForkSessionManager()`/`getForkSessionManager()` — pure type/DI layer, zero tmux logic |\n| `integration.ts` | 191 | `createTmuxIntegrationIfSupported()` factory: resolves `tmux` + `opencode` binaries via `which`, checks `$TMUX`, persists/reads port from `.hivemind/state/tmux-port.json` (with sha256 deterministic fallback), optionally wires the fork adapter via `setForkSessionManager` |\n| `observers.ts` | 93 | `createTmuxEventObserver()`: decorates `session.created` events with Hivemind delegation metadata (`agent`, `delegationId`, `depth` from `getDelegationMeta()`) before forwarding to fork's `SessionManager.onSessionCreated()` |\n| `tmux-copilot.ts` | 189 | Registers the `tmux-copilot` tool with 4 actions (`send-keys`, `list-panes`, `compute-grid`, `respawn`), orchestrator-only permission gate, graceful `fork-not-wired` fallback, all calls wrapped in try/catch |\n\n## Non-trivial things (file:line references)\n\n1. **Race: idle-arrives-during-spawn** — `session-manager.ts:137–142` and `session-manager.ts:157–162`. If a `session.status{idle}` fires while the pane is still spawning (i.e., `spawningSessions.has(sid)` is true), the close is deferred via `pendingClose`. After spawn completes, line 138 checks `pendingClose` and immediately tears down. This prevents orphan panes.\n\n2. **Race: respawn guard** — `session-manager.ts:164–168`. An idle→closed pane has `closedSessions.has(sid)`. When status flips back to `busy`, only those in `closedSessions` respawn. Deleted sessions (line 178) pass `autoClose=false`, which does NOT add to `closedSessions` — so they never respawn. This prevents zombie panes for dead sessions.\n\n3. **Shell quoting fns** — `tmux.ts:34–36`: custom `quoteShellArg` that escapes single quotes via `'\\''` for safe injection into the `opencode attach ...` command string. This is passed to `execFile` which by default does not use a shell — wait, no: on line 134 the command is a single `opencodeCmd` string, meaning it IS passed through a shell. The quoting is necessary.\n\n4. **sendKeys contract caveat** — `tmux.ts:215–221` comment documents that tmux `send-keys` resolving does NOT mean the target pane consumed the text — only that tmux accepted the command. This is a deliberate API honesty note.\n\n5. **Grid planner debounce** — `grid-planner.ts:81–98`: trailing-edge 500ms debounce. Each `requestLayout()` call replaces the pending tree and resets the timer. On fire, runs DFS `computeSplitSequence`. The `cancel()` method exists for shutdown. Direction rule (line 59): depth-1 → `\"h\"`, deeper → `\"v\"`.\n\n6. **Fork-bridge structural typing** — `fork-bridge.ts:24–72` defines exact structural mirrors of the fork's types (`PaneTreeNode`, `SplitCommand`, `PaneState`, `PaneGridPlanner`, `ForkSessionManagerAdapter`). Zero import dependency on the fork package — the adapter is injected at runtime. This is an architectural decision, not algorithmic complexity.\n\n7. **Deterministic port fallback** — `integration.ts:62–75`: `createHash(\"sha256\").update(projectDir).digest(\"hex\")` → map to `[10000, 65535]` range. Stable cross-session port for the same project directory.\n\n## Could this be re-implemented in ~300-400 LOC?\n\n**No.** Here is why:\n\n- `tmux.ts` (346 LOC) alone is the multiplexer. To replicate: `execFile` wrappers for 6 CLI commands, shell quoting, `SpawnPaneOptions` parsing, `PaneState` parsing from tab-separated tmux format, layout re-application logic. This is ~250 LOC minimum for a feature-complete version.\n\n- `session-manager.ts` (307 LOC) has three interlocking state sets: `sessions` (tracked), `spawningSessions` (in-flight), `spawnedSessions` (dedup guard), `closedSessions` (respawn-eligible), `pendingClose` (deferred idle-while-spawning). The dual lifecycle flows (created→idle→busy→deleted) with the pending-close race are hard to compress below ~200 LOC.\n\n- `config.ts` (90 LOC) + `util.ts` (28 LOC) + `grid-planner.ts` (120 LOC) are already lean — you'd shave ~40 LOC total.\n\n- Tests are 1820 LOC — if you keep a similar test surface, you save nothing.\n\n**Honest estimate: 650–750 LOC** for the same functionality, if you compress `tmux.ts` and `session-manager.ts` moderately. The race condition handling with 5 tracked sets (`spawningSessions`, `spawnedSessions`, `closedSessions`, `pendingClose`, `sessions`) is the irreducible core complexity — that logic cannot go much below ~180 LOC."
+}

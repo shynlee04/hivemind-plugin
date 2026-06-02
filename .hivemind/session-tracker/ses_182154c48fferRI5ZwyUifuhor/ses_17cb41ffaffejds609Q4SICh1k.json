@@ -1,0 +1,605 @@
+{
+  "sessionID": "ses_17cb41ffaffejds609Q4SICh1k",
+  "parentSessionID": "ses_182154c48fferRI5ZwyUifuhor",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research Phase 45 implementation",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-06-01T13:07:28.410Z",
+  "updated": "2026-06-01T13:14:05.836Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "<objective>\nResearch the implementation approach for Phase 45 (Vendor Sync Script for vendored tmux fork). Produce 45-RESEARCH.md consumed by gsd-planner.\n\n**Workflow position:** SPEC ✅ → ASSUMPTIONS ✅ → **RESEARCH (you)** → PLAN → PLAN-CHECK → EXECUTE\n\n**Context:**\n- Phase 45 directory: `.planning/phases/45-vendor-sync-script-2026-06-01/`\n- SPEC: 5 requirements at `45-SPEC.md`\n- ASSUMPTIONS: 8 items at `45-ASSUMPTIONS.md`\n- Fork at `opencode-tmux/` (history-less regular files, no gitlink)\n- Remote upstream: `shynlee04/opencode-tmux` (GitHub)\n- 4 Hivemind-pinned files: `opencode-tmux/src/tmux.ts`, `opencode-tmux/src/grid-planner.ts`, `opencode-tmux/src/session-manager.ts`, `src/features/tmux/fork-bridge.ts`\n- Test framework: `bats` (not yet installed)\n\n**What to research:**\n1. **Shell script patterns** — best practices for sync scripts (set -euo pipefail, idempotency, dry-run)\n2. **git merge strategies** — `git merge --no-edit --no-ff`, `git cherry-pick` range, 3-way merge via temp clone\n3. **bats test framework** — how to set up for shell script testing (test structure, mock patterns, lifecycle hooks)\n4. **Pinned file protection** — pattern for detecting unauthorized changes to protected files\n5. **Don't hand-roll** — what not to build custom (git porcelain commands via git CLI is standard, don't wrap git plumbing)\n\n**Output:** Research findings with:\n- Standard stack recommendations (bash, git, bats)\n- Architecture/script patterns\n- Don't hand-roll items\n- Common pitfalls\n- Confidence levels on all claims (HIGH/MEDIUM/LOW with sources)\n- Code examples of key patterns\n\nWrite to: `.planning/phases/45-vendor-sync-script-2026-06-01/45-RESEARCH.md`\n</objective>\n\n<execution_context>\nRead 45-SPEC.md and 45-ASSUMPTIONS.md first.\n</execution_context>\n\n<process>\n1. Read SPEC and ASSUMPTIONS\n2. Check existing shell scripts in the project (e.g., `scripts/sync-oss.sh`) for existing patterns\n3. Research bats setup patterns\n4. Research git merge strategies for vendor sync\n5. Write 45-RESEARCH.md with all sections\n6. Commit atomically: \"research(phase-45): add RESEARCH.md for Vendor Sync Script\"\n7. Return: key findings, standard stack, commit hash\n</process>\n\n<success_criteria>\n- 45-RESEARCH.md written with standard stack, patterns, pitfalls, don't-hand-roll\n- All claims have confidence levels\n- Code examples from official sources\n- Commit landed\n</success_criteria>",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Now let me explore the existing patterns, the vendored fork, and research the technical domains.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Let me research bats, git merge strategies, and check available tools.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Tools: webfetch, webfetch, tavily_tavily_search",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Tools: bash, webfetch, tavily_tavily_search",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Let me check the existing test patterns and look at the bats tutorial, plus the fork-bridge.ts file to understand the Hivemind side of things.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Let me check the full fork-bridge and opencode-tmux source files that are Hivemind-pinned.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: bash, bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Tools: write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** 45 — Vendor Sync Script\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **`git merge-tree --write-tree --name-only`** is the ideal approach for conflict detection — zero side effects on working tree/index, available since Git 2.33 (dev machine has 2.54.0). Exit code 0 = clean, 1 = conflicts. This replaces the messier `git merge --no-commit` then abort pattern.\n\n2. **Standard stack is solid:** bash (`set -euo pipefail`, matching `scripts/sync-oss.sh` pattern) + git (2.54.0) + bats-core (1.13.0 on npm). No external npm/pip packages needed for the script itself.\n\n3. **bats must be installed** — verified not present. Two clean paths: `brew install bats-core` (macOS, 1-command) or `npm install -g bats` (any OS). Add `bats_require_minimum_version 1.7.0` in test files.\n\n4. **6 documented pitfalls** with prevention strategies: `set -e` with command substitutions, merge-tree output parsing gotchas, temp remote cleanup, bats version requirements.\n\n5. **Don't hand-roll:** git porcelain commands, `git merge-tree` plumbing, bats framework — all do exactly what's needed.\n\n### File Created\n`.planning/phases/45-vendor-sync-script-2026-06-01/45-RESEARCH.md` — 660 lines, all sections\n\n### Commit\n```\nd2eb605b research(phase-45): add RESEARCH.md for Vendor Sync Script\n```\n\n### Confidence Assessment\n| Area | Level | Reason |\n|------|-------|--------|\n| Standard Stack | HIGH | git 2.54.0 verified, bash available, bats docs verified |\n| Architecture | HIGH | merge-tree docs verified, temp remote pattern from git docs |\n| Pitfalls | HIGH | Verified against git-merge-tree docs warnings + common bash patterns |\n\n### Ready for Planning\nResearch complete. Planner can create PLAN.md files using the documented patterns and stack recommendations.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-01T13:07:35.842Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_JoRUsSYq4xpjE04Pjh3G2649",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:07:35.856Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_YMiYY282sR3mu09DOZT77238",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01/45-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:07:35.862Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_mktPXWoajeWWBmFYNi4h5517",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01/45-ASSUMPTIONS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:07:45.591Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_yc2WtDzlwWfTIApHU7K51299",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:07:45.657Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_2e4MYneOlhB2mfaVuOaR8427",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:07:45.682Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_bjJmFTGTtQT44SQyNSq31540",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:02.963Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_2wL5tx6qtAvYEmLD1hMy2756",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:02.980Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_2FeErB4YAOjRQnZKSUcr4060",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/scripts/sync-oss.sh"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:02.988Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_2GUZbYd51A1AFZapYXKR0918",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux/.gitignore"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:03.037Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_ZbVpYVVCqv0iCkwAc2jl9966",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:10.804Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_OxBXpmLLqZ7xUYVSba2J1042",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:20.225Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_02_XPO5VshCkwTMMysntlUE3591",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:20.274Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_01_EHD0d0eCePG5vA6wfoju4443",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:20.355Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_00_w12LnkTo79cxk50vYhRD8129",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:28.593Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_02_pWgLimKwV1bBvoHriq6A2381",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:28.662Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_01_KENTIyOlYfvXEJPxmAvm2007",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:28.840Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_extract",
+      "metadata": {
+        "tool": "tavily_tavily_extract",
+        "callID": "call_00_HvdLOYQ24PIviLcyGLVl8468",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:44.861Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_02_U3YXnvJSwsimd31dPFxG5235",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:45.155Z",
+      "type": "tool_call",
+      "content": "Tool: webfetch",
+      "metadata": {
+        "tool": "webfetch",
+        "callID": "call_00_FlpkB6YkqBkruxeNiX2M7612",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:45.324Z",
+      "type": "tool_call",
+      "content": "Tool: webfetch",
+      "metadata": {
+        "tool": "webfetch",
+        "callID": "call_01_Z9OD5gnIAB3B58FLMACI2545",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:53.938Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_djV7Oy9x6su88p4YCgaM0404",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:54.988Z",
+      "type": "tool_call",
+      "content": "Tool: webfetch",
+      "metadata": {
+        "tool": "webfetch",
+        "callID": "call_01_iYNM9m4titxulP1BVVWv9110",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:08:55.325Z",
+      "type": "tool_call",
+      "content": "Tool: tavily_tavily_search",
+      "metadata": {
+        "tool": "tavily_tavily_search",
+        "callID": "call_02_qE4dccdva6DWVyGxe1Sp0598",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:09:07.279Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_YzQ1aFcWL9Lry0uW1Ze83197",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/fork-bridge.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:09:07.606Z",
+      "type": "tool_call",
+      "content": "Tool: webfetch",
+      "metadata": {
+        "tool": "webfetch",
+        "callID": "call_01_fmPzVcEFmnrxk6M90Be60417",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:09:12.019Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_JMLSjAO72hHhogEONk8u1490",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:09:30.988Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_HvEKfFhsxDK5jpCuzeyn2365",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/opencode-tmux/package.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:09:31.004Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_aOYdlP8PfiUYFVBDcsHW3355",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/fork-bridge.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:09:31.101Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_sWn2WYEmInsu5RHMtPU24264",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:09:42.954Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_gVMNAXTFnMfFwyfyN9Uy5874",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:09:43.526Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_uhIjdEgkKIwb841XZkYC4969",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:09:43.564Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_IIOD0Sg0ShkytG40TS0l2530",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:10:06.397Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_akXxxipiwWRmJJNDQFBR2286",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:11:28.649Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_ouJyzLr7HRspK2A4wgyV0111",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:11:37.031Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_ZhjEfD6NUkxQ43lPJVeD9076",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:11:45.895Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_70gHL00wfIzdsF3U5sCb1337",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:11:54.389Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_76kW5yKwgerUpt9UeWX15882",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:12:10.712Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_0mrqRBHYyUJn1Kedwjgy1552",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T13:14:05.794Z",
+      "type": "assistant_message",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** 45 — Vendor Sync Script\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **`git merge-tree --write-tree --name-only`** is the ideal approach for conflict detection — zero side effects on working tree/index, available since Git 2.33 (dev machine has 2.54.0). Exit code 0 = clean, 1 = conflicts. This replaces the messier `git merge --no-commit` then abort pattern.\n\n2. **Standard stack is solid:** bash (`set -euo pipefail`, matching `scripts/sync-oss.sh` pattern) + git (2.54.0) + bats-core (1.13.0 on npm). No external npm/pip packages needed for the script itself.\n\n3. **bats must be installed** — verified not present. Two clean paths: `brew install bats-core` (macOS, 1-command) or `npm install -g bats` (any OS). Add `bats_require_minimum_version 1.7.0` in test files.\n\n4. **6 documented pitfalls** with prevention strategies: `set -e` with command substitutions, merge-tree output parsing gotchas, temp remote cleanup, bats version requirements.\n\n5. **Don't hand-roll:** git porcelain commands, `git merge-tree` plumbing, bats framework — all do exactly what's needed.\n\n### File Created\n`.planning/phases/45-vendor-sync-script-2026-06-01/45-RESEARCH.md` — 660 lines, all sections\n\n### Commit\n```\nd2eb605b research(phase-45): add RESEARCH.md for Vendor Sync Script\n```\n\n### Confidence Assessment\n| Area | Level | Reason |\n|------|-------|--------|\n| Standard Stack | HIGH | git 2.54.0 verified, bash available, bats docs verified |\n| Architecture | HIGH | merge-tree docs verified, temp remote pattern from git docs |\n| Pitfalls | HIGH | Verified against git-merge-tree docs warnings + common bash patterns |\n\n### Ready for Planning\nResearch complete. Planner can create PLAN.md files using the documented patterns and stack recommendations.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_17cb41ffaffejds609Q4SICh1k"
+      }
+    }
+  ],
+  "lastMessage": "## RESEARCH COMPLETE\n\n**Phase:** 45 — Vendor Sync Script\n**Confidence:** HIGH\n\n### Key Findings\n\n1. **`git merge-tree --write-tree --name-only`** is the ideal approach for conflict detection — zero side effects on working tree/index, available since Git 2.33 (dev machine has 2.54.0). Exit code 0 = clean, 1 = conflicts. This replaces the messier `git merge --no-commit` then abort pattern.\n\n2. **Standard stack is solid:** bash (`set -euo pipefail`, matching `scripts/sync-oss.sh` pattern) + git (2.54.0) + bats-core (1.13.0 on npm). No external npm/pip packages needed for the script itself.\n\n3. **bats must be installed** — verified not present. Two clean paths: `brew install bats-core` (macOS, 1-command) or `npm install -g bats` (any OS). Add `bats_require_minimum_version 1.7.0` in test files.\n\n4. **6 documented pitfalls** with prevention strategies: `set -e` with command substitutions, merge-tree output parsing gotchas, temp remote cleanup, bats version requirements.\n\n5. **Don't hand-roll:** git porcelain commands, `git merge-tree` plumbing, bats framework — all do exactly what's needed.\n\n### File Created\n`.planning/phases/45-vendor-sync-script-2026-06-01/45-RESEARCH.md` — 660 lines, all sections\n\n### Commit\n```\nd2eb605b research(phase-45): add RESEARCH.md for Vendor Sync Script\n```\n\n### Confidence Assessment\n| Area | Level | Reason |\n|------|-------|--------|\n| Standard Stack | HIGH | git 2.54.0 verified, bash available, bats docs verified |\n| Architecture | HIGH | merge-tree docs verified, temp remote pattern from git docs |\n| Pitfalls | HIGH | Verified against git-merge-tree docs warnings + common bash patterns |\n\n### Ready for Planning\nResearch complete. Planner can create PLAN.md files using the documented patterns and stack recommendations."
+}

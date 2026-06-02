@@ -1,0 +1,26 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_17a9b399affeN0ZfKPoFe41t9L",
+  "lastUpdated": "2026-06-01T22:56:30.660Z",
+  "hierarchy": {
+    "root": "ses_17a9b399affeN0ZfKPoFe41t9L",
+    "children": {
+      "ses_17a9974bfffeNpS3PQAB9FFKIR": {
+        "file": "ses_17a9974bfffeNpS3PQAB9FFKIR.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "general",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 1,
+  "toolSummary": {
+    "skill": 1,
+    "glob": 3,
+    "grep": 2,
+    "invalid": 4,
+    "hivemind-doc": 7,
+    "task": 1
+  }
+}

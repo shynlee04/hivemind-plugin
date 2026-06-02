@@ -1,0 +1,30 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_17c73d8e9ffev03Kl1ZE7PCnBq",
+  "lastUpdated": "2026-06-01T14:35:08.993Z",
+  "hierarchy": {
+    "root": "ses_17c73d8e9ffev03Kl1ZE7PCnBq",
+    "children": {
+      "ses_17c672869ffepnbEi5PqKw1ssK": {
+        "file": "ses_17c672869ffepnbEi5PqKw1ssK.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-advisor-researcher",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 6,
+  "toolSummary": {
+    "todowrite": 4,
+    "read": 27,
+    "glob": 2,
+    "bash": 14,
+    "skill": 1,
+    "grep": 3,
+    "hivemind-trajectory": 4,
+    "hivemind-agent-work-create": 1,
+    "hivemind-command-engine": 1,
+    "task": 1
+  }
+}

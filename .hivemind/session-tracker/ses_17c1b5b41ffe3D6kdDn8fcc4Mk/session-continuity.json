@@ -1,0 +1,122 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
+  "lastUpdated": "2026-06-02T00:38:43.678Z",
+  "hierarchy": {
+    "root": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
+    "children": {
+      "ses_17c1ad249ffezDYcfcXEt7x2Og": {
+        "file": "ses_17c1ad249ffezDYcfcXEt7x2Og.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_17c17471effekrnnPp3lP6Yg5d": {
+        "file": "ses_17c17471effekrnnPp3lP6Yg5d.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_17c12489dffeLWWlF1P58FDHsr": {
+        "file": "ses_17c12489dffeLWWlF1P58FDHsr.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_17c0d69b6ffedaDwChYu7DUQlk": {
+        "file": "ses_17c0d69b6ffedaDwChYu7DUQlk.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-pattern-mapper",
+        "children": {}
+      },
+      "ses_17c0a9735ffeCuxuDKCaCNepzS": {
+        "file": "ses_17c0a9735ffeCuxuDKCaCNepzS.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-pattern-mapper",
+        "children": {}
+      },
+      "ses_17c02f4b2ffepSTNaObpVeknYG": {
+        "file": "ses_17c02f4b2ffepSTNaObpVeknYG.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_17bef79c6ffevtS6d7Ig1huhq4": {
+        "file": "ses_17bef79c6ffevtS6d7Ig1huhq4.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
+      },
+      "ses_17bea7d85ffepD9WH3E7cv00Ja": {
+        "file": "ses_17bea7d85ffepD9WH3E7cv00Ja.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_17ac2005dffebz95cDsgLC41qo": {
+        "file": "ses_17ac2005dffebz95cDsgLC41qo.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
+      },
+      "ses_17ab66cc0ffeD022LQLWaNlc5N": {
+        "file": "ses_17ab66cc0ffeD022LQLWaNlc5N.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-reviewer",
+        "children": {}
+      },
+      "ses_17aad3509ffeI9NoWwEPB9BPZH": {
+        "file": "ses_17aad3509ffeI9NoWwEPB9BPZH.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-code-fixer",
+        "children": {}
+      },
+      "ses_17a9dbe98ffe5wtOPirItLp0fy": {
+        "file": "ses_17a9dbe98ffe5wtOPirItLp0fy.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "explore",
+        "children": {}
+      },
+      "ses_17a9d65bcffeTo4t1jVECq4C1n": {
+        "file": "ses_17a9d65bcffeTo4t1jVECq4C1n.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "explore",
+        "children": {}
+      },
+      "ses_17a8a24c0ffel2OQbc70TXSIvD": {
+        "file": "ses_17a8a24c0ffel2OQbc70TXSIvD.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-project-researcher",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 11,
+  "toolSummary": {
+    "skill": 1,
+    "hivemind-trajectory": 12,
+    "execute-slash-command": 3,
+    "task": 19,
+    "hivemind-agent-work-export": 1,
+    "bash": 11,
+    "read": 2,
+    "delegation-status": 2,
+    "question": 2,
+    "hivemind-agent-work-create": 2,
+    "invalid": 1
+  }
+}

@@ -1,0 +1,617 @@
+{
+  "sessionID": "ses_17c12489dffeLWWlF1P58FDHsr",
+  "parentSessionID": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Research P49 implementation domain",
+    "subagentType": "gsd-phase-researcher"
+  },
+  "created": "2026-06-01T16:04:14.843Z",
+  "updated": "2026-06-01T16:09:06.967Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are the subagent gsd-phase-researcher. You must produce a RESEARCH.md for Phase 49.\n\n## Context\n\nPhase 49: tmux-e2e-completion — close the runtime gap for tmux by bundling all wiring fixes.\n\n### Phase loop position\nSPECS ✅ → CONTEXT ✅ → RESEARCH (you are here) → PATTERNS.md → PLAN → PLAN-CHECK → EXECUTE\n\n### What to research\n1. **Plugin.ts wiring patterns** — how other tools are registered in src/plugin.ts (import + tools array entry)\n2. **SessionManager pattern** — how SessionManager is created elsewhere (src/coordination/), to replace buildNoopForkSessionManager()\n3. **Co-pilot wiring** — how existing co-pilot tools are registered in plugin.ts\n4. **BATS in CI** — how to add a BATS job to .github/workflows/ci.yml (node 22, Linux)\n5. **P42/P45 paperwork** — what format VERIFICATION.md, UAT.md, SUMMARY.md follow (read existing examples)\n\n### Key files to read\n- src/plugin.ts — current wiring (noop at L215-220, ternary at L594-595)\n- src/tools/tmux-copilot.ts — orphan tool (189 LOC, not imported)\n- src/features/tmux/*.ts — fork-bridge, integration, observers\n- .github/workflows/ci.yml — current CI config\n- tests/scripts/sync-fork.bats — existing BATS suite\n- .planning/phases/*/ for VERIFICATION.md, UAT.md, SUMMARY.md templates\n\n### Decisions locked (from CONTEXT.md)\n- D-01: Import + register tmuxCopilotTool in plugin.ts tools array (~4 LOC)\n- D-02: Observer wired to getForkSessionManager() with noop fallback\n- D-03: Keep long slug (49-close-tmux-end-to-end-gap...)\n- D-04: Integration factory auto-detects vendored opencode-tmux/ fork\n- D-05: Observer registration follows existing pattern\n- D-06: BATS job on Linux node-22 with graceful skip\n- D-07: P42 VERIFICATION.md + UAT.md retrospective\n- D-08: P45 45-01-SUMMARY.md\n- D-09: Atomic commit per P49 plan task\n\n### Output\nWrite to `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-RESEARCH.md`\n\nInclude:\n- Standard stack / patterns for plugin.ts wiring\n- Architecture patterns for tool registration\n- Don't-hand-roll list\n- Common pitfalls\n- Code examples of existing working tool registrations\n- Confidence levels on all claims\n\nCommit atomically when done.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll research Phase 49 systematically. Let me start by reading all the key files in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read, glob, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Let me find UAT.md and SUMMARY.md examples, and check more patterns.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Tools: glob, glob, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Let me check the config.json and verify the output path, then check relevant test files.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Let me check the P42 directory and verify the exact wiring locations.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Now I have a comprehensive picture of all the code and patterns. Let me write the RESEARCH.md.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "Now let me commit the RESEARCH.md atomically.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** 49 - Tmux E2E Completion\n**Confidence:** HIGH\n\n### Key Findings\n1. **Tool registration is straightforward** — `tmuxCopilotTool` is a pre-constructed `tool({...})` instance at `src/tools/tmux-copilot.ts:108`. Just import + add to the `tool: {}` spread in `plugin.ts:645-665`. No factory wrapper needed.\n\n2. **Observer wiring is a one-line change** — Replace `createTmuxEventObserver(buildNoopForkSessionManager())` with `createTmuxEventObserver(getForkSessionManager() ?? buildNoopForkSessionManager())` at `plugin.ts:594-595`. Structural typing guarantees compatibility between the bridge's `ForkSessionManagerAdapter` and the observer's `ForkSessionManager` — both share `onSessionCreated` with identical signature.\n\n3. **BATS CI is a standalone Linux job** — D-06 locks it to `ubuntu-latest` + Node 22. `npm install -g bats` then `bats tests/scripts/sync-fork.bats`. Use `continue-on-error: true` for graceful degradation.\n\n4. **Paperwork follows established templates** — P43 `VERIFICATION.md` (frontmatter + requirement tables + wiring links + spot-check results), P45 `UAT.md` (numbered scenarios with expected/result/pending), P45 `SUMMARY.md` (frontmatter + outcome + deliverables + decisions).\n\n5. **Key pitfall: two `ForkSessionManager` interfaces** — `observers.ts` defines one (just `onSessionCreated`), `fork-bridge.ts` defines another (`onSessionCreated` + `respawnIfKnown` + `getMainPaneId`). They're structurally compatible but a developer unaware of both might be confused.\n\n### File Created\n`.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-RESEARCH.md` (633 LOC, committed)\n\n### Confidence Assessment\n| Area | Level | Reason |\n|------|-------|--------|\n| Tool Registration | HIGH | Verified against actual plugin.ts line 645-665 and tmux-copilot.ts line 108 |\n| Observer Wiring | HIGH | Verified both ForkSessionManager interfaces and structural typing compatibility |\n| Bridge Injection | HIGH | Verified integration.ts:164-166 and fork-bridge.ts:127-138 |\n| BATS CI | HIGH | Verified ci.yml structure and sync-fork.bats content |\n| Paperwork | MEDIUM | P42 exact requirement count (5 per CONTEXT.md, needs plan file cross-reference) |\n\n### Assumption Open\n- **A4:** P42 exact requirement count is 5 per CONTEXT.md but must be verified by reading P42 plan files (42-01-PLAN.md through 42-03-PLAN.md)\n\n### Ready for Planning\nResearch complete. Planner can now create PLAN.md files for each of the 7 REQs.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "gsd-phase-researcher",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** 49 - Tmux E2E Completion\n**Confidence:** HIGH\n\n### Key Findings\n1. **Tool registration is straightforward** — `tmuxCopilotTool` is a pre-constructed `tool({...})` instance at `src/tools/tmux-copilot.ts:108`. Just import + add to the `tool: {}` spread in `plugin.ts:645-665`. No factory wrapper needed.\n\n2. **Observer wiring is a one-line change** — Replace `createTmuxEventObserver(buildNoopForkSessionManager())` with `createTmuxEventObserver(getForkSessionManager() ?? buildNoopForkSessionManager())` at `plugin.ts:594-595`. Structural typing guarantees compatibility between the bridge's `ForkSessionManagerAdapter` and the observer's `ForkSessionManager` — both share `onSessionCreated` with identical signature.\n\n3. **BATS CI is a standalone Linux job** — D-06 locks it to `ubuntu-latest` + Node 22. `npm install -g bats` then `bats tests/scripts/sync-fork.bats`. Use `continue-on-error: true` for graceful degradation.\n\n4. **Paperwork follows established templates** — P43 `VERIFICATION.md` (frontmatter + requirement tables + wiring links + spot-check results), P45 `UAT.md` (numbered scenarios with expected/result/pending), P45 `SUMMARY.md` (frontmatter + outcome + deliverables + decisions).\n\n5. **Key pitfall: two `ForkSessionManager` interfaces** — `observers.ts` defines one (just `onSessionCreated`), `fork-bridge.ts` defines another (`onSessionCreated` + `respawnIfKnown` + `getMainPaneId`). They're structurally compatible but a developer unaware of both might be confused.\n\n### File Created\n`.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-RESEARCH.md` (633 LOC, committed)\n\n### Confidence Assessment\n| Area | Level | Reason |\n|------|-------|--------|\n| Tool Registration | HIGH | Verified against actual plugin.ts line 645-665 and tmux-copilot.ts line 108 |\n| Observer Wiring | HIGH | Verified both ForkSessionManager interfaces and structural typing compatibility |\n| Bridge Injection | HIGH | Verified integration.ts:164-166 and fork-bridge.ts:127-138 |\n| BATS CI | HIGH | Verified ci.yml structure and sync-fork.bats content |\n| Paperwork | MEDIUM | P42 exact requirement count (5 per CONTEXT.md, needs plan file cross-reference) |\n\n### Assumption Open\n- **A4:** P42 exact requirement count is 5 per CONTEXT.md but must be verified by reading P42 plan files (42-01-PLAN.md through 42-03-PLAN.md)\n\n### Ready for Planning\nResearch complete. Planner can now create PLAN.md files for each of the 7 REQs.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-01T16:04:21.865Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_hpmg2z0bAR5RXTjGW0fw7874",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:38.336Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_MHP7EZkumchcHHTRq8rN3350",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/tmux-copilot.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:38.345Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_hnoAAMxAMtsAl49Usabv6922",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.github/workflows/ci.yml"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:38.351Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_y6ksVTD8Ld82L3uawCti7998",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/scripts/sync-fork.bats"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:38.357Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_jkHvR9k3I6JELS5jvITz5824",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:38.412Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_04_e0fOj0kKmrQbnAq0ar4g4487",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:38.417Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_05_DPrbCgopmlszH8Ev8qic2985",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:46.982Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_hABpUhaXY0o1kh7dYGSO6171",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:53.182Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_cDzlw082MvviZCQuPwyu5236",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/43-tmux-co-pilot-model-orchestrator-intervention/VERIFICATION.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:53.186Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_kckgtZ5yr1dAaF8CYHNm6755",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/fork-bridge.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:53.191Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_m8I9tzkSyoxS2t7aYnWG6598",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/integration.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:04:53.196Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_3521d3kEFdwsIxK7exIV7608",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/observers.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:23.013Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_p88PTY2AE5TOdVXnzUot4899",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:23.019Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_x5WUHRlXviA9BOsDtHd99920",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:23.024Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_aS9A9Q6GBbEoBspXtVsO9000",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:23.029Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_DWBB7kDzGDkvKsegcSjg4118",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:29.246Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_h98F7INEZzAhjJDzbYDr9034",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:29.253Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_jpZCFdxhBZHxocaCr4mJ3983",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:29.257Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_KjUSMfvXeLfC8DvcppUO7974",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:36.245Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_2aLjB5Q2kFGfjyDJ7QXs0804",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/archive/2026-05-07/workstreams/milestone/phases/41-session-journal-time-machine/SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:36.257Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_NVzpA1UcA2rLRqPuzVCD9805",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/archive/2026-05-07/workstreams/milestone/phases/42-sidecar-foundation/SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:36.277Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_xT0RY7OIbrvzWDgLoXF83731",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:44.222Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_6wQQ18UWsn28nZ1fhAqS0862",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01/45-UAT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:44.228Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_7qfUFQA4DVfLYDel1BIJ1622",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01/45-02-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:05:44.233Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_tNkMrrGwggRWG3RZAHMx4871",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/45-vendor-sync-script-2026-06-01/45-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:00.798Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_fhHigHYJ0MYMY0LXUlFC1536",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/config.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:00.809Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_8Df5wgPl6fdHXejFfcmO9431",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:00.828Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_c6pW2m8qilsV8HHwM1am6998",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:06.993Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_jGBgndI6UxOuSK9WNpcR7437",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:06.998Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_LSP3fnNV69qZoNYG4c502666",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:15.369Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_sP0mcbqT8XnEhnKHV8Cb6911",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:39.135Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_ZZhw8BIdLEommt7n1Ii92387",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:39.142Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_mvRs0u3kOZuky00mcjmE4969",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:39.151Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_WfauV461gVsmSTT1ka1j0784",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:06:53.392Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_Z4FE45YAAhnJzAXlMWER7253",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:08:28.041Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_JHCGpxbStVV7rcS5ZwqD8472",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:08:35.160Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_sxOmWTuBut0UwjDPp8uQ6974",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:08:55.727Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_rVNOoiE6ANgJObZ5Z0fW1786",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-01T16:09:06.928Z",
+      "type": "assistant_message",
+      "content": "## RESEARCH COMPLETE\n\n**Phase:** 49 - Tmux E2E Completion\n**Confidence:** HIGH\n\n### Key Findings\n1. **Tool registration is straightforward** — `tmuxCopilotTool` is a pre-constructed `tool({...})` instance at `src/tools/tmux-copilot.ts:108`. Just import + add to the `tool: {}` spread in `plugin.ts:645-665`. No factory wrapper needed.\n\n2. **Observer wiring is a one-line change** — Replace `createTmuxEventObserver(buildNoopForkSessionManager())` with `createTmuxEventObserver(getForkSessionManager() ?? buildNoopForkSessionManager())` at `plugin.ts:594-595`. Structural typing guarantees compatibility between the bridge's `ForkSessionManagerAdapter` and the observer's `ForkSessionManager` — both share `onSessionCreated` with identical signature.\n\n3. **BATS CI is a standalone Linux job** — D-06 locks it to `ubuntu-latest` + Node 22. `npm install -g bats` then `bats tests/scripts/sync-fork.bats`. Use `continue-on-error: true` for graceful degradation.\n\n4. **Paperwork follows established templates** — P43 `VERIFICATION.md` (frontmatter + requirement tables + wiring links + spot-check results), P45 `UAT.md` (numbered scenarios with expected/result/pending), P45 `SUMMARY.md` (frontmatter + outcome + deliverables + decisions).\n\n5. **Key pitfall: two `ForkSessionManager` interfaces** — `observers.ts` defines one (just `onSessionCreated`), `fork-bridge.ts` defines another (`onSessionCreated` + `respawnIfKnown` + `getMainPaneId`). They're structurally compatible but a developer unaware of both might be confused.\n\n### File Created\n`.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-RESEARCH.md` (633 LOC, committed)\n\n### Confidence Assessment\n| Area | Level | Reason |\n|------|-------|--------|\n| Tool Registration | HIGH | Verified against actual plugin.ts line 645-665 and tmux-copilot.ts line 108 |\n| Observer Wiring | HIGH | Verified both ForkSessionManager interfaces and structural typing compatibility |\n| Bridge Injection | HIGH | Verified integration.ts:164-166 and fork-bridge.ts:127-138 |\n| BATS CI | HIGH | Verified ci.yml structure and sync-fork.bats content |\n| Paperwork | MEDIUM | P42 exact requirement count (5 per CONTEXT.md, needs plan file cross-reference) |\n\n### Assumption Open\n- **A4:** P42 exact requirement count is 5 per CONTEXT.md but must be verified by reading P42 plan files (42-01-PLAN.md through 42-03-PLAN.md)\n\n### Ready for Planning\nResearch complete. Planner can now create PLAN.md files for each of the 7 REQs.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_17c12489dffeLWWlF1P58FDHsr"
+      }
+    }
+  ],
+  "lastMessage": "## RESEARCH COMPLETE\n\n**Phase:** 49 - Tmux E2E Completion\n**Confidence:** HIGH\n\n### Key Findings\n1. **Tool registration is straightforward** — `tmuxCopilotTool` is a pre-constructed `tool({...})` instance at `src/tools/tmux-copilot.ts:108`. Just import + add to the `tool: {}` spread in `plugin.ts:645-665`. No factory wrapper needed.\n\n2. **Observer wiring is a one-line change** — Replace `createTmuxEventObserver(buildNoopForkSessionManager())` with `createTmuxEventObserver(getForkSessionManager() ?? buildNoopForkSessionManager())` at `plugin.ts:594-595`. Structural typing guarantees compatibility between the bridge's `ForkSessionManagerAdapter` and the observer's `ForkSessionManager` — both share `onSessionCreated` with identical signature.\n\n3. **BATS CI is a standalone Linux job** — D-06 locks it to `ubuntu-latest` + Node 22. `npm install -g bats` then `bats tests/scripts/sync-fork.bats`. Use `continue-on-error: true` for graceful degradation.\n\n4. **Paperwork follows established templates** — P43 `VERIFICATION.md` (frontmatter + requirement tables + wiring links + spot-check results), P45 `UAT.md` (numbered scenarios with expected/result/pending), P45 `SUMMARY.md` (frontmatter + outcome + deliverables + decisions).\n\n5. **Key pitfall: two `ForkSessionManager` interfaces** — `observers.ts` defines one (just `onSessionCreated`), `fork-bridge.ts` defines another (`onSessionCreated` + `respawnIfKnown` + `getMainPaneId`). They're structurally compatible but a developer unaware of both might be confused.\n\n### File Created\n`.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-RESEARCH.md` (633 LOC, committed)\n\n### Confidence Assessment\n| Area | Level | Reason |\n|------|-------|--------|\n| Tool Registration | HIGH | Verified against actual plugin.ts line 645-665 and tmux-copilot.ts line 108 |\n| Observer Wiring | HIGH | Verified both ForkSessionManager interfaces and structural typing compatibility |\n| Bridge Injection | HIGH | Verified integration.ts:164-166 and fork-bridge.ts:127-138 |\n| BATS CI | HIGH | Verified ci.yml structure and sync-fork.bats content |\n| Paperwork | MEDIUM | P42 exact requirement count (5 per CONTEXT.md, needs plan file cross-reference) |\n\n### Assumption Open\n- **A4:** P42 exact requirement count is 5 per CONTEXT.md but must be verified by reading P42 plan files (42-01-PLAN.md through 42-03-PLAN.md)\n\n### Ready for Planning\nResearch complete. Planner can now create PLAN.md files for each of the 7 REQs."
+}

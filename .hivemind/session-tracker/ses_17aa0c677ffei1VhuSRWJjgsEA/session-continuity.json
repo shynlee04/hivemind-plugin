@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_17aa0c677ffei1VhuSRWJjgsEA",
+  "lastUpdated": "2026-06-01T22:49:48.704Z",
+  "hierarchy": {
+    "root": "ses_17aa0c677ffei1VhuSRWJjgsEA",
+    "children": {
+      "ses_17a9f15d4ffeYQS9FJqXyZqvJP": {
+        "file": "ses_17a9f15d4ffeYQS9FJqXyZqvJP.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "general",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 1,
+  "toolSummary": {
+    "todowrite": 1,
+    "task": 1
+  }
+}
