@@ -148,7 +148,22 @@ Every phase must explicitly trace through these protocols:
 
 ---
 
-## Phase 0 — Governance Baseline (Blocking Entry Gate)
+## Sidecar: GUI Control Plane (SC)
+
+Hivemind Sidecar — Next.js 16 + @json-render/react bidirectional control plane bridging human operators (browser), Hivemind runtime (plugin), and native OpenCode. 4 panels: Session Explorer, Delegation Dashboard, MEMS Browser, Control Panel. See `.hivemind/planning/sidecar-vision/`.
+
+**Architecture:** Two-server model — plugin-embedded HTTP/WS server (Node http + ws) exposes .hivemind/ state reads + tool proxy via REST, SSE for event push, WS for delegation streaming. Next.js 16 standalone app consumes the plugin API. ~85 integration surfaces identified across delegation (27 tools), tmux (7), session-tracker (25+), trajectory (5), pressure (6), config (8).
+
+| Phase | Title | Status | Depends On | Blocks |
+|-------|-------|--------|------------|--------|
+| SC-01 | Foundation — Plugin HTTP Server + State Bridge | 📋 SPEC | P39 (Integration Hardening) | SC-02..SC-06 |
+| SC-02 | REST API + Tool Proxy | 📋 PENDING | SC-01 | SC-03..SC-06 |
+| SC-03 | Next.js 16 Standalone App | 📋 PENDING | SC-01, SC-02 | SC-04..SC-06 |
+| SC-04 | Session Explorer Panel | 📋 PENDING | SC-03 | SC-06 |
+| SC-05 | Delegation Dashboard Panel | 📋 PENDING | SC-03 | SC-06 |
+| SC-06 | MEMS Browser + Control Panel | 📋 PENDING | SC-04, SC-05 | — |
+
+---
 
 Phase 0 is the current blocking gate before BOOT, MCM, and f-04 continuation. It is docs/governance only and produces L5 evidence. It does not authorize runtime code moves, `.opencode/` primitive edits, `.hivemind/` state edits, package changes, tests, or commits.
 

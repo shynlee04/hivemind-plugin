@@ -29,6 +29,21 @@ progress:
 - **P42-03** — Plugin wiring: bootstrap integration + event observer registration
 
 **Current focus:** P53 — Live Pane Monitoring Hook + Journal Integration (P50-P52 complete: fork removed, 3 in-tree classes synthesized, factory swap + state-query tool + observer expansion shipped). Then P54 session persistence + restart-recovery, P55 E2E UAT against seed's 4 success criteria.
+
+---
+
+## Sidecar GUI Control Plane (SC)
+
+6 phases for the Hivemind Sidecar — Next.js 16 + @json-render/react bidirectional browser control panel. See `.hivemind/planning/sidecar-vision/`.
+
+| Phase | Title | Status | Depends On |
+|-------|-------|--------|------------|
+| SC-01 | Foundation — Plugin HTTP Server + State Bridge | 📋 SPEC | P39 |
+| SC-02 | REST API + Tool Proxy | 📋 PENDING | SC-01 |
+| SC-03 | Next.js 16 Standalone App | 📋 PENDING | SC-01, SC-02 |
+| SC-04 | Session Explorer Panel | 📋 PENDING | SC-03 |
+| SC-05 | Delegation Dashboard Panel | 📋 PENDING | SC-03 |
+| SC-06 | MEMS Browser + Control Panel | 📋 PENDING | SC-04, SC-05 |
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
 **Phase 24.5:** ✅ COMPLETE — 4 broken workflow step paths fixed (commit `158a9d66`). Typecheck clean.
 **Phase 24.6:** ✅ COMPLETE — 3 critical commands elevated from stubs to 100+ lines (commit `4959ff08`). Typecheck + tests clean.
