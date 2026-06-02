@@ -259,3 +259,216 @@ $ git diff --cached --stat
 absent `tmux` binary — fails because `tmux` is now installed in the
 EXECUTE environment, which is a post-install side effect of the
 EXECUTE setup).
+
+---
+
+## Re-Verification (Independent — gsd-verifier)
+
+**Date:** 2026-06-02
+**Verifier:** gsd-verifier (L2 specialist, fresh process, independent of executor)
+**Re-verification mode:** INITIAL — no prior `gaps:` section; this is the first independent pass
+**Goal-backward methodology:** verify the phase goal is observably true in the codebase, not that the executor's claims are accurate.
+
+### Per-EARS Verdict (5/5 expected)
+
+| REQ | EARS Statement | Status | Evidence (fresh runtime) |
+|-----|----------------|--------|--------------------------|
+| **REQ-54-01** | `createSessionPersistence({projectDirectory})` factory exists | ✅ VERIFIED | `src/features/tmux/persistence.ts:254` exports `createSessionPersistence`; returns `SessionPersistence` with `persist`, `remove`, `restoreAll`, `generateId`, `__stateRoot` (4 public + 1 read-only test seam) — matches SPEC |
+| **REQ-54-02** | Persist on every state transition (9-field JSON, schemaVersion: 1) | ✅ VERIFIED | Inline test wrote 1 record → `jq 'keys \| length'` = 9, `jq .schemaVersion` = 1 (number), `jq .state` = "ready"; `wx` first, `w` on EEXIST (lines 277, 282) |
+| **REQ-54-03** | Restore on startup (paused + detached only, skip failed) | ✅ VERIFIED | `ALIVE_STATES = new Set(["paused", "detached"])` (line 102); `restoreAll()` filters via `ALIVE_STATES.has(parsed.state)` (line 382); vitest test 3 (5 seeded → 2 returned) and inline test (1 ready → 0 returned) both confirm |
+| **REQ-54-04** | UUIDv7 inline generator (no new deps) | ✅ VERIFIED | `generateUuidV7()` at line 120; uses `node:crypto.getRandomValues`; 1000-generation test: all match regex, 0 collisions, 5 sample IDs confirmed (`019e8942-b7a7-745f-9696-62e4f3a25ea4` etc.); no `uuid` package in `package.json:49-57` |
+| **REQ-54-05** | Wire to SessionManager (7th optional ctor param, 2 persist() call sites) | ✅ VERIFIED | `persistence?: SessionPersistence` at `session-manager.ts:129` (7th param); call sites at lines 209 (after `sessions.set`, in `onSessionCreated`) and 310 (before `sessions.delete`, in `handleSessionClose`); `TrackedSession.state: SessionState` field at line 91; `types.ts` diff = empty (27-tool-key invariant preserved) |
+
+**Verdict: 5/5 EARS verified**
+
+### L1 Evidence (Verifier-Run, Fresh Process)
+
+```text
+=== TYPECHECK ===
+$ npx tsc --noEmit -p tsconfig.json
+(no output)
+===TSC_EXIT=0===
+
+=== VITEST persistence ===
+$ npx vitest run tests/lib/tmux/persistence.test.ts --reporter=verbose
+ ✓ tests/lib/tmux/persistence.test.ts > createSessionPersistence > generateId() returns valid UUIDv7 (regex + 1000 generations, 0 collisions) 64ms
+ ✓ tests/lib/tmux/persistence.test.ts > createSessionPersistence > persist() writes 9-field JSON with schemaVersion: 1 (numeric) 6ms
+ ✓ tests/lib/tmux/persistence.test.ts > createSessionPersistence > restoreAll() returns only paused + detached, sorted by spawnTime 11ms
+ ✓ tests/lib/tmux/persistence.test.ts > createSessionPersistence > persist() silently fails (no throw) when stateRoot is read-only 4ms
+ ✓ tests/lib/tmux/persistence.test.ts > createSessionPersistence > restoreAll() returns [] when stateRoot is missing (fresh project) 3ms
+ ✓ tests/lib/tmux/persistence.test.ts > createSessionPersistence > restoreAll() skips malformed records and continues 7ms
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+===VITEST_EXIT=0===
+
+=== BUILD dist for BATS ===
+$ npx tsc
+(no output)
+===BUILD_EXIT=0===
+
+=== BATS P54 (kill-restart contract) ===
+$ bats --jobs 1 tests/scripts/tmux/56-session-persistence-kill-restart.bats
+1..1
+ok 1 session persistence record survives harness parent kill and tmux session stays alive
+===BATS_EXIT=0===
+
+=== Full vitest (no regressions) ===
+$ npx vitest run --reporter=default
+ Test Files  267 passed (267)
+      Tests  3203 passed | 2 skipped (3205)
+   Duration  24.30s
+```
+
+### Inline L1 Runtime Proof (fresh process, no BATS temp dir)
+
+```text
+$ node --input-type=module -e "
+import('.../dist/features/tmux/persistence.js').then(async (mod) => {
+  const p = mod.createSessionPersistence({ projectDirectory: '/tmp/p54-verify' });
+  await p.persist({ schemaVersion: 1, sessionId: 'test-uuid-12345', ... state: 'ready' ... });
+  const records = await p.restoreAll();
+  const id = p.generateId();
+  console.log('UUIDv7 sample:', id);
+  console.log('UUIDv7 regex match:', /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id));
+});
+"
+persisted ok
+records.length: 0          ← state="ready" correctly excluded by restoreAll filter
+UUIDv7 sample: 019e8941-fbde-7e69-b30a-3ba15a48782d
+UUIDv7 regex match: true
+
+$ jq -r 'keys | length' /tmp/p54-verify/.hivemind/state/tmux-sessions/test-uuid-12345.json
+9
+$ jq -r .schemaVersion /tmp/p54-verify/.hivemind/state/tmux-sessions/test-uuid-12345.json
+1
+$ jq -r .state /tmp/p54-verify/.hivemind/state/tmux-sessions/test-uuid-12345.json
+ready
+```
+
+### UUIDv7 Implementation Probe (1000-generation)
+
+```text
+$ node --input-type=module -e "
+import('.../dist/features/tmux/persistence.js').then((mod) => {
+  const N = 1000;
+  const ids = Array.from({length: N}, () => mod.generateUuidV7());
+  const unique = new Set(ids).size;
+  const allValid = ids.every((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id));
+  console.log('N=' + N, 'unique=' + unique, 'allValid=' + allValid);
+});
+"
+N=1000 unique=1000 allValid=true
+```
+
+### D-04 Silent-Fallback Verification
+
+```text
+=== D-04 silent-fallback (mkdir EACCES, no throw) ===
+src/features/tmux/persistence.ts:265-267:
+  void mkdir(stateRoot, { recursive: true }).catch((err) => {
+    logWarn(`mkdir failed for stateRoot=${stateRoot}`, err)
+  })
+
+src/features/tmux/persistence.ts:294-324 (persist try/catch):
+  async function persist(record: PersistedSession): Promise<void> {
+    try { ... await writeRecord(filePath, record); }
+    catch (err) { logWarn(`persist failed for sessionId=... state=...`, err); }
+  }
+
+src/features/tmux/persistence.ts:363-370 (restoreAll ENOENT):
+  try { files = await readdir(stateRoot); }
+  catch { return []; }   ← fresh-project case
+```
+
+**Verdict:** D-04 enforced in 3 places (factory mkdir, persist write, restoreAll readdir). No `throw` crosses the `createSessionPersistence` boundary. Vitest test 4 (EACCES chmod 0o555) is the L1 proof.
+
+### R-P50-03 Compliance (Spirit — `.hivemind/*` Not Staged)
+
+```text
+$ git show --name-only --format= a5c67c19 | grep -E "^\S" | grep -c hivemind
+0
+
+$ git show --name-only --format= a5c67c19
+.planning/phases/54-session-persistence-restart-recovery/54-01-SUMMARY.md
+.planning/phases/54-session-persistence-restart-recovery/54-VERIFICATION.md
+src/features/tmux/persistence.ts
+src/features/tmux/session-manager.ts
+tests/lib/tmux/.gitkeep
+tests/lib/tmux/persistence.test.ts
+tests/scripts/tmux/56-session-persistence-kill-restart.bats
+tests/scripts/tmux/helpers.bash
+```
+
+**Verdict:** 0 `.hivemind/*` files in the commit. R-P50-03 spirit honored. `.gitignore` line 2 gitignores `.hivemind/state/` automatically (no edit needed).
+
+### 27-Tool-Key Invariant
+
+```text
+$ git diff fc4f5958 HEAD --numstat -- src/features/tmux/types.ts
+(empty)
+$ npx vitest run tests/integration/hook-registration.test.ts 2>&1 | tail -5
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+```
+
+**Verdict:** `types.ts` byte-identical to P51. Hook-registration test passes 6/6 — tool catalog unchanged.
+
+### Additive-Only Budget
+
+```text
+$ git diff fc4f5958 HEAD --numstat -- src/features/tmux/session-manager.ts
+29	0	src/features/tmux/session-manager.ts
+```
+
+**Verdict:** 29 lines added, 0 lines removed. Within the ≤ 30 LOC budget (D-54-08).
+
+### Module LOC Cap
+
+```text
+$ wc -l src/features/tmux/persistence.ts
+     400 src/features/tmux/persistence.ts
+```
+
+**Verdict:** 400 LOC. Under the 500 LOC cap (target ~150; the 400 is the well-documented JSDoc density per executor's deviation #5).
+
+### SC-Isolation Confirmation
+
+```text
+$ grep -rE "SC-[0-9]" .planning/phases/54-session-persistence-restart-recovery/ 2>&1 | grep -v "SC-isolation" | wc -l
+0
+```
+
+**Verdict:** 0 SC-* references in P54 artifacts. SC-isolation preserved.
+
+### Final Verdict: **PASS**
+
+**Score: 5/5 EARS verified, 0 blockers, 0 warnings.**
+
+| Dimension | Result |
+|-----------|--------|
+| EARS coverage (REQ-54-01..05) | ✅ 5/5 |
+| L1 runtime evidence (fresh process) | ✅ tsc=0, vitest 6/6, BATS 1/1, full vitest 3203/3203 |
+| Inline JSON-shape proof | ✅ 9 fields, schemaVersion=1 (number), state="ready" |
+| UUIDv7 1000-generation | ✅ 1000 unique, 100% regex match |
+| D-04 silent-fallback | ✅ 3 try/catch sites, vitest EACCES test passes |
+| R-P50-03 | ✅ 0 `.hivemind/*` in commit |
+| 27-tool-key invariant | ✅ types.ts empty diff, hook-registration 6/6 |
+| Additive budget (≤ 30 LOC) | ✅ 29/0 |
+| Module LOC cap (≤ 500) | ✅ 400 |
+| SC-isolation | ✅ 0 SC-* references |
+| Atomic commit | ✅ 1 commit (a5c67c19) with 8 files, 6 source artifacts |
+
+**Phase 54 goal achieved.** The persistence layer is observably present in the codebase, with L1 runtime proof of the kill-parent-restart-recovery contract. Ready to proceed to next phase.
+
+### Re-Verification Artifacts
+
+- `54-VERIFICATION.md` (this file — updated with re-verification section)
+- Source verified in-process: `src/features/tmux/persistence.ts` (400 LOC), `src/features/tmux/session-manager.ts` (332 LOC, +29 additive)
+- Inline runtime proof captured above (5 L1 commands + 1000-gen UUIDv7 + inline JSON shape)
+- Commit `a5c67c19` re-confirmed as the atomic EXECUTE (8 files, 0 `.hivemind/*`)
+
+---
+
+*Re-verified: 2026-06-02*
+*Verifier: gsd-verifier (independent of executor, fresh process)*
+*Verdict: PASS*
