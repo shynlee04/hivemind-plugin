@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-06-02
-**Last advance:** P54 closure — session-persistence-restart-recovery closed via `.planning/phases/54-session-persistence-restart-recovery/54-CLOSE.md` (commit `<this-commit>`, 2026-06-02). 5/5 EARS PASS, 1/1 P54 BATS (real OS process survival), 6/6 P54 vitest + 3203/3203 vitest regression, 0 .hivemind/ in P54 commits (R-P50-03 strict), 27 tool keys unchanged. **Prior advances in same loop:** P50 (`5b49030f`) + P51 (`345987d7`) + P52 (`b22207df`) + P53 (`1dca30aa`). **Current planned phase:** P55 (E2E UAT against seed's 4 success criteria). **Pivot decision:** same as P50 close.
+**Last advance:** P54 closure — session-persistence-restart-recovery closed via `.planning/phases/54-session-persistence-restart-recovery/54-CLOSE.md` (commit `300da58a`, 2026-06-02). 5/5 EARS PASS, 1/1 P54 BATS (real OS process survival), 6/6 P54 vitest + 3203/3203 vitest regression, 0 .hivemind/ in P54 commits (R-P50-03 strict), 27 tool keys unchanged. **Prior advances in same loop:** P50 (`5b49030f`) + P51 (`345987d7`) + P52 (`b22207df`) + P53 (`1dca30aa`). **Current planned phase:** P55 (E2E UAT against seed's 4 success criteria). **Pivot decision:** same as P50 close.
 **Completed:**
 
 - P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write
