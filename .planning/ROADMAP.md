@@ -157,7 +157,7 @@ Hivemind Sidecar — Next.js 16 + @json-render/react bidirectional control plane
 | Phase | Title | Status | Depends On | Blocks |
 |-------|-------|--------|------------|--------|
 | SC-01 | Foundation — Plugin HTTP Server + State Bridge | 📋 SPEC | P39 (Integration Hardening) | SC-02..SC-06 |
-| SC-02 | REST API + Tool Proxy | 📋 PENDING | SC-01 | SC-03..SC-06 |
+| SC-02 | REST API + Tool Proxy | 🔵 READY (5 plans: W0 TDD red + W1 infra + W2 REST + W3 realtime + W4 integration) | SC-01 | SC-03..SC-06 |
 | SC-03 | Next.js 16 Standalone App | 📋 PENDING | SC-01, SC-02 | SC-04..SC-06 |
 | SC-04 | Session Explorer Panel | 📋 PENDING | SC-03 | SC-06 |
 | SC-05 | Delegation Dashboard Panel | 📋 PENDING | SC-03 | SC-06 |
