@@ -21,6 +21,13 @@ tmux_bats_require_dist() {
   if [[ ! -f "${TMUX_BATS_DIST}/persistence.js" ]]; then
     skip "dist/features/tmux/persistence.js missing — run 'npx tsc' first"
   fi
+  # P55 additions (D-55-06 — 2 new dist checks for BATS slots 58 + 60)
+  if [[ ! -f "${TMUX_BATS_DIST}/grid-planner.js" ]]; then
+    skip "dist/features/tmux/grid-planner.js missing — run 'npx tsc' first"
+  fi
+  if [[ ! -f "${TMUX_BATS_ROOT}/dist/tools/tmux-copilot.js" ]]; then
+    skip "dist/tools/tmux-copilot.js missing — run 'npx tsc' first"
+  fi
 }
 
 # Run a Node ESM script that imports the in-tree tmux modules.
