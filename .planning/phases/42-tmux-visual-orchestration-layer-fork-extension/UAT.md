@@ -73,3 +73,15 @@ public note that the runtime behavior is unverified.
   — finding **IN-01** (P42/UAT.md L5-only claims not flagged)
 - `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-REVIEW-FIX.md`
   — this document's fix commit
+
+## L1 Backing (P53)
+
+The P49 pass-1 audit downgraded this UAT to L5 documentary PASS (no live runtime evidence). P53 re-anchors it to L1 by capturing real journal entries from the pane-monitor hook.
+
+**Runtime evidence** (P53 commit, see `53-VERIFICATION.md`):
+
+- Hook module: `src/hooks/pane-monitor.ts:createPaneMonitorHook`
+- Journal entry: `.hivemind/journal/test-session/<ISO-timestamp>-pane.json` (7 fields, schemaVersion=1)
+- Backoff: 5s→10s→30s schedule verified by `tests/lib/hooks/pane-monitor-backoff.test.ts`
+- Cap: 100/session/hour verified by `tests/lib/hooks/pane-monitor-cap.test.ts` + BATS `55-pane-monitor-journal-capture.bats`
+- Cross-reference: `.planning/phases/53-live-pane-monitoring-hook-journal-integration/53-VERIFICATION.md`

@@ -15,6 +15,9 @@ tmux_bats_require_dist() {
   if [[ ! -f "${TMUX_BATS_DIST}/types.js" ]]; then
     skip "dist/features/tmux/types.js missing — run 'npx tsc' first"
   fi
+  if [[ ! -f "${TMUX_BATS_ROOT}/dist/hooks/pane-monitor.js" ]]; then
+    skip "dist/hooks/pane-monitor.js missing — run 'npx tsc' first"
+  fi
 }
 
 # Run a Node ESM script that imports the in-tree tmux modules.

@@ -248,3 +248,16 @@ The next phase in the P45+ roadmap should address the 2 pre-existing OOS failure
 _Originally verified: 2026-06-01T18:55:00Z_
 _Re-verified: 2026-06-01T22:55:00Z via P49 (49-07-PLAN.md)_
 _Verifier: the agent (goal-backward verification, all L1 evidence re-run independently)_
+
+## L1 Backing (P53)
+
+The four W-01..W-04 spec-drift items previously RESOLVED at commit `0a501582` were L5 documentary cross-references. P53 upgrades them to L1 by attaching the pane-monitor hook's runtime evidence.
+
+**Runtime evidence** (P53 commit, see `53-VERIFICATION.md`):
+
+- Hook module: `src/hooks/pane-monitor.ts` (D-04 silent-fallback preserved)
+- Journal entry: 7-field JSON with `schemaVersion: 1`, `eventType: "pane-captured"`, `sessionId`, `paneId`, `contentLength`, `capturedAt`, `retryCount`
+- Backoff: `BACKOFF_SCHEDULE_MS = [5000, 10000, 30000]`, `MAX_RETRIES = 3`
+- Cap: `RATE_LIMIT_PER_HOUR = 100`, UTC top-of-hour reset via `Math.floor(Date.now() / 3_600_000)`
+- Dispose: `dispose()` removes listener from `paneCaptureListeners` array
+- Cross-reference: `.planning/phases/53-live-pane-monitoring-hook-journal-integration/53-VERIFICATION.md`

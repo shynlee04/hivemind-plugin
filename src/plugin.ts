@@ -49,6 +49,7 @@ import { createPtyManagerIfSupported } from "./features/background-command/pty/p
 import { createTmuxIntegrationIfSupported } from "./features/tmux/integration.js"
 import { createTmuxEventObserver } from "./features/tmux/observers.js"
 import type { ForkSessionManager } from "./features/tmux/observers.js"
+import { createPaneMonitorHook } from "./hooks/pane-monitor.js"
 import { tmuxStateQueryTool } from "./tools/tmux-state-query.js"
 import { createGovernanceSessionTool } from "./features/governance-engine/index.js"
 import { createPromptSkimTool } from "./tools/prompt/prompt-skim/index.js"
@@ -594,6 +595,37 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
 
   const toolGuardHooks = createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy, hivemindConfig, projectRoot: projectDirectory })
 
+  // P53: bind the tmux observer in a const so the pane-monitor hook can
+  // subscribe to the SAME instance (consistency: pane-captured events from
+  // this observer trigger the hook; the observer is also added to the
+  // eventObservers array below for session.created forwarding).
+  const tmuxObserver = tmuxIntegration
+    ? createTmuxEventObserver(tmuxIntegration.adapter)
+    : createTmuxEventObserver(buildInTreeSessionManager())
+
+  // P53: pane-monitor hook consumes pane-captured events and persists
+  // them as 7-field JSON entries under .hivemind/journal/<sid>/. The
+  // handle is retained (closure-captured retry timers must not be GC'd)
+  // for the lifetime of the plugin instance.
+  const paneMonitorHook = createPaneMonitorHook({
+    sessionId: "harness",
+    observer: tmuxObserver,
+    journalRoot: join(projectDirectory, ".hivemind/journal"),
+    logWarn: (msg: string, err?: unknown) => {
+      void client.app?.log?.({
+        body: {
+          service: "pane-monitor",
+          level: "warn",
+          message: msg,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    },
+  })
+  // Touch the handle to keep the closure-captured retry timers alive.
+  // Without this reference the GC may collect the hook mid-session.
+  void paneMonitorHook
+
   return {
     config: async () => {},
     ...createCoreHooks({
@@ -603,9 +635,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
           const lmc = sessionTracker.getLastMessageCapture()
           lmc?.handleEvent(event as Record<string, unknown>)
         }
-      }, ...(tmuxIntegration
-        ? [createTmuxEventObserver(tmuxIntegration.adapter)]
-        : [createTmuxEventObserver(buildInTreeSessionManager())])],
+      }, tmuxObserver],
     }),
     ...sessionReadHooks,
     // tool.execute.before: combined guard + session-tracker detection.
