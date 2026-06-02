@@ -34,6 +34,7 @@
 import type { EnrichedSessionEvent, ForkSessionManager } from "./observers.js";
 import type { TmuxMultiplexer } from "./tmux-multiplexer.js";
 import type { TmuxLayout } from "./tmux-multiplexer.js";
+import type { PersistedSession, SessionPersistence, SessionState } from "./persistence.js";
 
 // ---------------------------------------------------------------------------
 // Logger (inlined — matches tmux-multiplexer.ts Logger shape)
@@ -86,6 +87,8 @@ interface TrackedSession {
   paneId: string;
   spawnTime: number;
   ageTimer: ReturnType<typeof setTimeout> | null;
+  /** P54 state — initial `"active"`, transitions: `ready`, `failed`. */
+  state: SessionState;
 }
 
 // ---------------------------------------------------------------------------
@@ -112,6 +115,7 @@ export class SessionManager implements ForkSessionManager {
    * @param serverUrl OpenCode server URL (forwarded to `opencode attach`).
    * @param directory Working directory forwarded to `opencode attach`.
    * @param log Optional logger (uses shape compatible with `client.app.log`).
+   * @param persistence Optional P54 handle; `persist()` fires on every state transition; `undefined` preserves P51 behavior (D-54-08).
    *
    * ORIGIN: opencode-tmux/src/session-manager.ts:69-138 (adapted — no config)
    */
@@ -122,6 +126,7 @@ export class SessionManager implements ForkSessionManager {
     private readonly log?: Logger,
     private readonly layout: TmuxLayout = SESSION_MANAGER_DEFAULTS.layout,
     private readonly mainPaneSize: number = SESSION_MANAGER_DEFAULTS.mainPaneSize,
+    private readonly persistence?: SessionPersistence,
   ) {}
 
   // -------------------------------------------------------------------------
@@ -194,9 +199,14 @@ export class SessionManager implements ForkSessionManager {
         paneId: result.paneId,
         spawnTime: Date.now(),
         ageTimer: null,
+        state: "active", // P54 — D-54-04
       };
 
       this.sessions.set(sessionId, tracked);
+
+      // P54 (D-54-08 call site #1): active → ready, persist. D-04 silent-fallback.
+      tracked.state = "ready";
+      void this.persistence?.persist(this.toPersistedSession(tracked));
 
       // Re-apply the layout after a 250ms settle window so the new
       // pane resizes according to `mainPaneSize`. The first
@@ -295,9 +305,28 @@ export class SessionManager implements ForkSessionManager {
       tracked.ageTimer = null;
     }
 
+    // P54 (D-54-08 call site #2): * → failed, persist. Excluded by `restoreAll`.
+    tracked.state = "failed";
+    void this.persistence?.persist(this.toPersistedSession(tracked));
+
     this.sessions.delete(sessionId);
 
     const closed = await this.multiplexer.closePane(paneId);
     this.log?.debug("handleSessionClose: closePane result", { sessionId, closed });
+  }
+
+  // P54 persistence mapping
+  private toPersistedSession(tracked: TrackedSession): PersistedSession {
+    return {
+      sessionId: tracked.sessionId,
+      agent: tracked.agent,
+      delegationId: tracked.delegationId,
+      directory: tracked.directory,
+      paneId: tracked.paneId,
+      spawnTime: tracked.spawnTime,
+      state: tracked.state,
+      lastTransitionAt: Date.now(),
+      schemaVersion: 1,
+    };
   }
 }
