@@ -3,21 +3,21 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-06-01T17:19:04.854Z"
+last_updated: "2026-06-02T00:00:00.000Z"
 progress:
   total_phases: 55
-  completed_phases: 17
+  completed_phases: 18
   total_plans: 126
   completed_plans: 100
-  percent: 31
+  percent: 33
 ---
 
 <!-- generated-by: gsd-doc-writer -->
 
 # Hivemind — State
 
-**Last updated:** 2026-05-31
-**Last advance:** P44-04 — capability-layer completion (commit `f47485b1`, 2026-06-01T05:11:46Z). Note: prior STATE text said P44-01 (stale 3 plans behind). **Current planned phase:** P49 (tmux-e2e-completion, added 2026-06-01, depends on P42/P43/P45).
+**Last updated:** 2026-06-02
+**Last advance:** P49 closure — tmux-e2e-completion closed via pivot doc (commit `209ca5f8`, 2026-06-02). **Current planned phase:** P50 (cleanup-opencode-tmux-fork) → P51 → P52 → P53 → P54 → P55 — in-tree synthesis sequence (added 2026-06-02, depends on P49 close). **Pivot decision:** full rewrite synthesis, drop opencode-tmux fork; P45/P46/P47/P48 superseded by P50-P55 (see `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-CLOSE-PIVOT-2026-06-02.md`).
 **Completed:**
 
 - P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write
@@ -28,7 +28,7 @@ progress:
 - **P42-02** — Hivemind tmux module: integration.ts, observers.ts, 25 tests
 - **P42-03** — Plugin wiring: bootstrap integration + event observer registration
 
-**Current focus:** Phase 43 — Co-pilot model — orchestrator intervention via send-keys, pane grid planning
+**Current focus:** P50 — Cleanup opencode-tmux fork + script coupling (PIVOT from P45 vendor-sync; P50 supersedes P45/P46/P47/P48). Then P51 synthesize core tmux classes in-tree, P52 wire tmux-copilot + state query, P53 live pane monitoring, P54 session persistence, P55 E2E UAT.
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
 **Phase 24.5:** ✅ COMPLETE — 4 broken workflow step paths fixed (commit `158a9d66`). Typecheck clean.
 **Phase 24.6:** ✅ COMPLETE — 3 critical commands elevated from stubs to 100+ lines (commit `4959ff08`). Typecheck + tests clean.
@@ -387,6 +387,9 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
   - P24.8 **COMPLETE** — `--mode=install` flag with non-destructive merge, dual-root resolution, version drift optimization, postinstall hook (commit `8861bf16`); typecheck + tests clean
 - Phase 43 added: Tmux Co-Pilot Model — Orchestrator Intervention
 - **2026-06-01** — **Phase 49 added**: tmux-e2e-completion — close tmux end-to-end gap. Bundle: register tmux-copilot in plugin.ts, replace noop fork session manager, wire co-pilot intervention, add BATS to CI, run BATS suite (P45 45-02), close P42 (VERIFICATION + UAT) + P43 (re-verify REQ-05) + P45 45-01 (SUMMARY) paperwork gaps. **Depends on**: Phase 42, Phase 43, Phase 45. **Source**: gsd-verifier + hm-architect synthesis `.hivemind/planning/tmux-phases-42-43-45-status-2026-06-01.md` + commit `f40ff92a`. **Gate condition**: L1 runtime proof (vitest 2,963 tests) + BATS 3/3 pass + tmux-copilot `grep` match in `src/plugin.ts` + `buildNoopForkSessionManager` removed.
+- **2026-06-02** — **Phase 49 CLOSED via pivot document**. 9 execute plans (commit a8d7b1e5) + 8 fix-pass-1 commits + 4 fix-pass-2 commits + close-pivot doc (commit `209ca5f8`). L1 verified (tsc exit 0, vitest 12/12 tmux-copilot, BATS 3/3). L4 (live session) deferred to next phase per UAT-skip override. P42/P43/P45 paperwork gaps DOWNGRADED to L5 (P49 in-tree fix). UAT SKIPPED per user override ("UAT wont work since many things have dropped").
+- **2026-06-02** — **PIVOT DECISION**: full rewrite synthesis. Drop `opencode-tmux/` fork and P45 vendor-sync-script entirely. New in-tree synthesis phases P50-P55 supersede P45/P46/P47/P48. Rationale: opencode-tmux forked from upstream lacks the `task` field needed for orchestrator prompts (upstream SDK limitation); in-tree synthesis with explicit `sendKeys` calls bypasses SDK abstraction. Seed `.planning/seeds/tmux-visual-orchestration-layer-2026-05-31.md` 4 success criteria mapped to P52 (state query) + P53 (live pane monitoring) + P54 (session persistence) + P55 (E2E UAT).
+- **2026-06-02** — **Phases 50-55 added** for in-tree synthesis: P50 cleanup fork (drops `opencode-tmux/`, `scripts/sync-fork.sh`, `tests/scripts/sync-fork.bats`, `.github/workflows/ci.yml` bats-vendor-sync job L64-82), P51 synthesize core tmux classes (`src/features/tmux/{tmux-multiplexer,session-manager,grid-planner}.ts` ~770 LOC + rewrite `integration.ts` ~200 LOC), P52 wire tmux-copilot + state query API (1 tool, 1 hook, expanded observer), P53 live pane monitoring hook + journal integration, P54 session persistence + restart-recovery, P55 E2E UAT against seed's 4 success criteria. **Automation directive**: run full 11-checkpoint loop per phase per `.opencode/rules/universal-rules.md` §4.
 
 ### Key Restructuring Decisions
 

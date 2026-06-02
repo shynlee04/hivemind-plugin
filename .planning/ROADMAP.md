@@ -1917,13 +1917,95 @@ Plans:
 
 Plans:
 
-- [ ] 49-01: Register `tmuxCopilotTool` in `src/plugin.ts` (~5 LOC import + tools array)
-- [ ] 49-02: Replace `buildNoopForkSessionManager()` with real SessionManager wiring
-- [ ] 49-03: Wire co-pilot intervention in `src/plugin.ts`
-- [ ] 49-04: Add BATS to `.github/workflows/ci.yml` (~3 LOC)
-- [ ] 49-05: Run BATS suite, capture output (3/3 pass evidence)
-- [ ] 49-06: Write P42 VERIFICATION.md + UAT.md + P45 45-01 SUMMARY.md
-- [ ] 49-07: gsd-verify-work for P43 with stricter REQ-05
+- [x] 49-01: Register `tmuxCopilotTool` in `src/plugin.ts` (~5 LOC import + tools array) — commit `012c01f8`
+- [x] 49-02: Replace `buildNoopForkSessionManager()` with real SessionManager wiring — commit `2599c4c7`
+- [x] 49-03: Wire co-pilot intervention in `src/plugin.ts` — commit `57b2096b`
+- [x] 49-04: Add BATS to `.github/workflows/ci.yml` (~3 LOC) — commit `1d53606b`
+- [x] 49-05: Run BATS suite, capture output (3/3 pass evidence) — commit `e08c8e80`
+- [x] 49-06: Write P42 VERIFICATION.md + UAT.md + P45 45-01 SUMMARY.md — commit `6e8ed3da`
+- [x] 49-07: gsd-verify-work for P43 with stricter REQ-05 — commit `f31c43e7`
+- [x] 49-08: `fork-bridge.ts` keep external, narrow runtime-injection — commit `9e28966a`
+- [x] 49-09: tmux-copilot `fork-not-wired` error path — commit `e2bd65a4`
+
+**Closure (2026-06-02)**: P49 closed via pivot document `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-CLOSE-PIVOT-2026-06-02.md` (commit `209ca5f8`). L1 verified (tsc exit 0, vitest 12/12 tmux-copilot.test.ts, BATS 3/3). L4 (live session) deferred per user override. P42/P43/P45 paperwork gaps DOWNGRADED to L5; UAT SKIPPED. Pivots to P50-P55 in-tree synthesis (see below). **Supersedes**: P45, P46, P47, P48.
+
+---
+
+### Phase 50: Cleanup opencode-tmux Fork + Script Coupling (2026-06-02)
+
+**Goal:** Remove the `opencode-tmux/` package, `scripts/sync-fork.sh`, `tests/scripts/sync-fork.bats`, and the `bats-vendor-sync` job in `.github/workflows/ci.yml` (lines 64-82) — all artifacts of the now-deferred P45 vendor-sync strategy. After P50, no references to the fork, the sync script, or the BATS-vendor-sync CI job remain in the repo. This is the **PIVOT** phase that transitions from external-fork to in-tree synthesis (P51-P55). Tests: `tsc --noEmit` exit 0, `vitest run` no dead-import failures, `grep -rE "opencode-tmux|sync-fork|bats-vendor-sync" --exclude-dir=node_modules --exclude-dir=.git` returns 0 matches, CI lint clean.
+**Requirements:** REQ-04 (Tmux Visual Orchestration), REQ-05 (Co-pilot Model), REQ-07 (Cqrs Boundary).
+**Depends on:** Phase 49 (closed).
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 50-01: Remove `opencode-tmux/` directory (~932 LOC source + 1,820 LOC test), `scripts/sync-fork.sh` (126 LOC), `tests/scripts/sync-fork.bats` (210 LOC), and the `bats-vendor-sync` job from `.github/workflows/ci.yml` (L64-82) — single atomic commit with clean verification (tsc + vitest + grep + CI lint). No dead imports in `src/`.
+
+---
+
+### Phase 51: Synthesize Core Tmux Classes In-Tree (2026-06-02)
+
+**Goal:** Replace the in-tree `fork-bridge.ts` runtime-injection surface with three concrete classes synthesized from the opencode-tmux fork reference patterns. **Copy patterns verbatim** from `opencode-tmux/src/{tmux,session-manager,grid-planner}.ts` (to be deleted in P50) into new in-tree modules at `src/features/tmux/{tmux-multiplexer,session-manager,grid-planner}.ts`. Annotate every copied function with `// ORIGIN: opencode-tmux/src/<filename>.ts:<line>` header for traceability. Rewrite `src/features/tmux/integration.ts` to a factory-of-real-classes (drop the `fork-bridge.ts` no-op stub). This phase delivers **3 new files (~770 LOC) + 1 rewrite (~200 LOC) + 1 removal (`fork-bridge.ts` 138 LOC)**, reducing net LOC by ~100 while eliminating the fork dependency. Tests: 6 BATS scenarios (1/cluster) for `tmux-multiplexer`, `session-manager`, `grid-planner`; 15+ vitest cases in `tests/lib/tmux/`; existing `integration.test.ts` (363 LOC) + `tmux-copilot.test.ts` (12 tests) untouched. **L1 evidence**: BATS 6/6, vitest 15+ pass, tsc exit 0.
+**Requirements:** REQ-04, REQ-05, REQ-07.
+**Depends on:** Phase 50.
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 51-01: Create `src/features/tmux/{tmux-multiplexer,session-manager,grid-planner}.ts` (~770 LOC), rewrite `src/features/tmux/integration.ts` as factory-of-real-classes (~200 LOC), remove `src/features/tmux/fork-bridge.ts` (138 LOC). Add 6 BATS scenarios, 15+ vitest cases. ORIGIN annotations on every copied function. Atomic commit; L1 verification (BATS 6/6, vitest 15+, tsc 0).
+
+---
+
+### Phase 52: Wire tmux-copilot + State Query API (2026-06-02)
+
+**Goal:** Keep the public contract of `src/tools/tmux-copilot.ts` **identical** (4 actions: send-keys, capture-pane, list-panes, kill-session; `TmuxCopilotResult` union widened in P49 pass-2 fix at L100-112). Swap only the factory: from `buildNoopForkSessionManager()` to `buildInTreeSessionManager()`. Add a new `src/tools/tmux-state-query.ts` read-only tool (no mutation) that exposes session metadata for the observability layer. Expand `src/features/tmux/observers.ts` (93 LOC) with 2 new event subscriptions: `session-state-changed` and `pane-captured`. This phase delivers **2 new tools, 1 expanded observer, 1 factory swap**. Tests: 3 BATS scenarios (1/action); 5+ vitest cases for the new query tool; manual smoke test for the action dispatch. **L1 evidence**: BATS 3/3, vitest 5+ pass, tsc exit 0, manual `tmux-copilot` invoke in a real session produces expected output.
+**Requirements:** REQ-04, REQ-05.
+**Depends on:** Phase 51.
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 52-01: Swap `tmux-copilot.ts` factory from `buildNoopForkSessionManager` to `buildInTreeSessionManager`. Add `src/tools/tmux-state-query.ts` (read-only metadata). Expand `observers.ts` with `session-state-changed` + `pane-captured`. 3 BATS + 5 vitest. Atomic commit; L1 verification.
+
+---
+
+### Phase 53: Live Pane Monitoring Hook + Journal Integration (2026-06-02)
+
+**Goal:** Add a new hook `src/hooks/pane-monitor.ts` that subscribes to `pane-captured` events (from P52 observer expansion) and writes structured journal entries to `.hivemind/journal/<sessionId>/<timestamp>-pane.json`. Implement exponential backoff (5s → 10s → 30s) on capture failures. Cap journal writes to 100 entries per session per hour to prevent runaway growth. **Closes P42 UAT gaps retroactively**: re-write P42 UAT.md with L1 backing (live journal entries captured during hook test) instead of the L5-downgraded P49 pass-1 fix. Also re-write P43 VERIFICATION.md (was W-01..W-04 RESOLVED at 0a501582) to reference P53 hook evidence. Tests: 1 BATS scenario for journal entry capture; 1 vitest for backoff; 1 vitest for cap. **L1 evidence**: journal entries written to `.hivemind/journal/test-session/2026-06-02T*-pane.json` and grep-able; backoff timing measured; cap enforced.
+**Requirements:** REQ-04, REQ-05.
+**Depends on:** Phase 52.
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 53-01: Create `src/hooks/pane-monitor.ts` (subscribes to `pane-captured`, writes `.hivemind/journal/<sid>/<ts>-pane.json`, exponential backoff 5s→10s→30s, 100/session/hour cap). Retroactively rewrite P42 UAT.md + P43 VERIFICATION.md with P53 L1 evidence. 1 BATS + 2 vitest. Atomic commit; L1 verification (journal files written + grep'd).
+
+---
+
+### Phase 54: Session Persistence + Restart-Recovery (2026-06-02)
+
+**Goal:** Implement persistent session metadata at `.hivemind/state/tmux-sessions/<sessionId>.json`, serialized on every state transition (`active → ready → paused → detached → failed`). On harness restart, restore `paused` and `detached` sessions from disk; `failed` sessions are NOT auto-restored. Use restart-safe IDs (UUIDv7 — sortable, no birthday collision). Wire to `src/features/tmux/session-manager.ts` (from P51) via a new `src/features/tmux/persistence.ts` module (~150 LOC). Tests: 1 BATS for kill-parent-restart-recovery (the most important contract — harness restart preserves live tmux sessions); 4+ vitest for state transitions. **L1 evidence**: kill harness parent during a live session, restart, verify `.hivemind/state/tmux-sessions/<sid>.json` exists and the tmux session is still alive.
+**Requirements:** REQ-04.
+**Depends on:** Phase 53.
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 54-01: Create `src/features/tmux/persistence.ts` (~150 LOC, serialize on every transition, restore on restart for `paused`/`detached`, UUIDv7 IDs). 1 BATS kill-parent-restart + 4 vitest transitions. Atomic commit; L1 verification (manual kill-restart preserves session).
+
+---
+
+### Phase 55: E2E UAT Against Seed's 4 Success Criteria (2026-06-02)
+
+**Goal:** Author 4 BATS scenarios — one per seed success criterion — that exercise the end-to-end tmux visual orchestration layer. **Each seed criterion becomes its own BATS test.** Partial passes (e.g., 3/4) still advance ROADMAP (per the close-pivot UAT strategy). Criteria: (1) **Live pane monitoring** — harness shows live content of all agent tmux panes; (2) **Orchestrator intervention** — orchestrator can `send-keys` to any pane; (3) **Session persistence** — harness restart preserves `paused`/`detached` sessions; (4) **Visual dependency graph** — delegation tree renders as a pane grid (DFS via P51 `grid-planner.ts`). Tests: 4 BATS scenarios + 1 manual screenshot/journal pass for visual verification. **L1 evidence**: 4 BATS files, each running in isolation; L2 evidence: manual screenshots of the tmux grid + journal entries. **GATE**: All 4 BATS must run; 3/4 PASS advances ROADMAP, 2/4 or fewer requires P56 retry phase.
+**Requirements:** REQ-04, REQ-05, REQ-07.
+**Depends on:** Phase 54.
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 55-01: Write 4 BATS scenarios (one per seed criterion) + run manual L2 verification (screenshots of tmux grid + journal entries). Capture `.planning/phases/55-e2e-uat-tmux-seed/55-E2E-UAT-2026-06-02.md` with L1 + L2 evidence. If 3/4 PASS: ROADMAP advance; if 2/4 or fewer: trigger P56 retry phase planning.
 
 ---
 
