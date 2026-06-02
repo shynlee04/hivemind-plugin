@@ -32,7 +32,7 @@ export type ReadOnlyStateOptions = {
  * not under one of these directories (relative to `projectRoot`) is
  * rejected by the read guards.
  */
-const CANONICAL_PREFIXES = [".hivemind/state", ".planning"]
+const CANONICAL_PREFIXES = [".hivemind/state", ".hivemind/session-tracker", ".opencode", ".planning"]
 
 /**
  * Returns true if `absolutePath` lies inside one of the canonical

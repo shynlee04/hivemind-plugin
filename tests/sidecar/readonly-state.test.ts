@@ -10,11 +10,19 @@ import {
   refuseCanonicalWrite,
 } from "../../src/sidecar/readonly-state.js"
 
+import {
+  CANONICAL_PREFIXES,
+  listCanonicalDirectory,
+  createReadOnlyStateOptions,
+} from "../../src/sidecar/readonly-state-extensions.js"
+
 let projectRoot = ""
 
 beforeEach(() => {
   projectRoot = mkdtempSync(join(tmpdir(), "sidecar-readonly-"))
   mkdirSync(join(projectRoot, ".hivemind", "state"), { recursive: true })
+  mkdirSync(join(projectRoot, ".hivemind", "session-tracker"), { recursive: true })
+  mkdirSync(join(projectRoot, ".opencode"), { recursive: true })
   mkdirSync(join(projectRoot, ".planning"), { recursive: true })
   mkdirSync(join(projectRoot, "src"), { recursive: true })
 })
@@ -107,6 +115,62 @@ describe("sidecar readonly-state — SIDECAR-03 enforcement", () => {
         returned = false
       }
       expect(returned).toBe(false)
+    })
+  })
+
+  describe("extended CANONICAL_PREFIXES", () => {
+    it("has exactly 4 prefixes", () => {
+      expect(CANONICAL_PREFIXES).toHaveLength(4)
+    })
+
+    it("includes .hivemind/session-tracker", () => {
+      expect(CANONICAL_PREFIXES).toContain(".hivemind/session-tracker")
+    })
+
+    it("includes .opencode", () => {
+      expect(CANONICAL_PREFIXES).toContain(".opencode")
+    })
+
+    it("still includes .hivemind/state and .planning", () => {
+      expect(CANONICAL_PREFIXES).toContain(".hivemind/state")
+      expect(CANONICAL_PREFIXES).toContain(".planning")
+    })
+
+    it("isCanonicalStatePath returns true for all 4 prefixes", () => {
+      const opts = { projectRoot }
+      expect(isCanonicalStatePath(join(projectRoot, ".hivemind", "state", "x.json"), opts)).toBe(true)
+      expect(isCanonicalStatePath(join(projectRoot, ".hivemind", "session-tracker", "y.json"), opts)).toBe(true)
+      expect(isCanonicalStatePath(join(projectRoot, ".opencode", "z.json"), opts)).toBe(true)
+      expect(isCanonicalStatePath(join(projectRoot, ".planning", "w.md"), opts)).toBe(true)
+    })
+  })
+
+  describe("listCanonicalDirectory", () => {
+    it("returns DirectoryEntry[] for canonical dirs", () => {
+      const opts = { projectRoot }
+      writeFileSync(join(projectRoot, ".planning", "STATE.md"), "state content", "utf8")
+      const entries = listCanonicalDirectory(join(projectRoot, ".planning"), opts)
+      expect(entries.length).toBeGreaterThan(0)
+      const stateEntry = entries.find((e) => e.name === "STATE.md")
+      expect(stateEntry).toBeDefined()
+      expect(stateEntry!.type).toBe("file")
+      expect(stateEntry!.size).toBeGreaterThan(0)
+      expect(stateEntry!.mtime).toBeGreaterThan(0)
+    })
+
+    it("returns empty array for non-canonical paths", () => {
+      const entries = listCanonicalDirectory(join(projectRoot, "src"), {
+        projectRoot,
+      })
+      expect(entries).toEqual([])
+    })
+
+    it("returns empty array for nonexistent paths", () => {
+      const entries = listCanonicalDirectory(
+        join(projectRoot, ".hivemind", "session-tracker", "nonexistent"),
+        { projectRoot },
+      )
+      expect(entries).toEqual([])
     })
   })
 })
