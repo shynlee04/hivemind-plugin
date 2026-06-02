@@ -157,4 +157,36 @@ describe("tmux-copilot — 4 actions", () => {
       error: { kind: "permission-denied", agent: "hm-builder" },
     })
   })
+
+  // 11. list-panes timeout path
+  it("list-panes: returns {available: false, reason: 'tmux-timeout'} when adapter throws timeout error", async () => {
+    setForkSessionManager(
+      mkStubAdapter({
+        listPanes: async () => {
+          const err = new Error("ETIMEDOUT: tmux server unreachable") as NodeJS.ErrnoException
+          err.code = "ETIMEDOUT"
+          throw err
+        },
+      }),
+    )
+    const result = await exec({ action: "list-panes" })
+    expect(result).toEqual({ available: false, reason: "tmux-timeout" })
+  })
+
+  // 12. list-panes generic error path
+  it("list-panes: returns {available: false, reason: 'tmux-error', error: {message}} when adapter throws unclassified error", async () => {
+    setForkSessionManager(
+      mkStubAdapter({
+        listPanes: async () => {
+          throw new Error("unexpected tmux protocol error")
+        },
+      }),
+    )
+    const result = await exec({ action: "list-panes" })
+    expect(result).toEqual({
+      available: false,
+      reason: "tmux-error",
+      error: { message: "unexpected tmux protocol error" },
+    })
+  })
 })
