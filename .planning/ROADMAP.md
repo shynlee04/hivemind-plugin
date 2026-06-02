@@ -1940,7 +1940,9 @@ Plans:
 
 Plans:
 
-- [ ] 50-01: Remove `opencode-tmux/` directory (~932 LOC source + 1,820 LOC test), `scripts/sync-fork.sh` (126 LOC), `tests/scripts/sync-fork.bats` (210 LOC), and the `bats-vendor-sync` job from `.github/workflows/ci.yml` (L64-82) — single atomic commit with clean verification (tsc + vitest + grep + CI lint). No dead imports in `src/`.
+- [x] 50-01: Remove `opencode-tmux/` directory (~932 LOC source + 1,820 LOC test), `scripts/sync-fork.sh` (126 LOC), `tests/scripts/sync-fork.bats` (210 LOC), and the `bats-vendor-sync` job from `.github/workflows/ci.yml` (L64-82) — single atomic commit with clean verification (tsc + vitest + grep + CI lint). No dead imports in `src/`.
+
+**Closure (2026-06-02)**: P50 closed via `.planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md`. 25 files removed (21 vendored + sync-fork.sh + sync-fork.bats + CI job + CHANGELOG), 3,497 deletions, 0 insertions. tsc exit 0, vitest 3,102/3,102 pass, grep returns 0 matches, CI lint clean. 26 tool keys assertion held, D-04 graceful-fallback at `src/features/tmux/integration.ts:197-202` preserved. Backup at `/tmp/opencode-tmux-backup-1780370747.tar.gz` (16M) retained until P51 close. Pivots to P51 in-tree synthesis.
 
 ---
 
