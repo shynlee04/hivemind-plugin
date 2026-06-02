@@ -1,0 +1,8 @@
+P51: Synthesize Core Tmux Classes In-Tree
+
+Phase scope: replace `fork-bridge.ts` runtime-injection surface with 3 concrete
+classes synthesized in-tree at `src/features/tmux/`. ~770 LOC + `integration.ts`
+factory rewrite, 6 BATS + 15+ vitest. REQ-04, REQ-05, REQ-07.
+
+CP1: Scouting (DONE 2026-06-02) — read STATE.md + 50-CLOSE.md + .planning/AGENTS.md
+CP2: CRUD — this dir + .gitkeep
