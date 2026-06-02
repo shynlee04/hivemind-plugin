@@ -1996,7 +1996,7 @@ Plans:
 
 Plans:
 
-- [ ] 53-01: Create `src/hooks/pane-monitor.ts` (subscribes to `pane-captured`, writes `.hivemind/journal/<sid>/<ts>-pane.json`, exponential backoff 5s→10s→30s, 100/session/hour cap). Retroactively rewrite P42 UAT.md + P43 VERIFICATION.md with P53 L1 evidence. 1 BATS + 2 vitest. Atomic commit; L1 verification (journal files written + grep'd).
+- [x] 53-01: Create `src/hooks/pane-monitor.ts` (subscribes to `pane-captured`, writes `.hivemind/journal/<sid>/<ts>-pane.json`, exponential backoff 5s→10s→30s, 100/session/hour cap). Retroactively rewrite P42 UAT.md + P43 VERIFICATION.md with P53 L1 evidence. 1 BATS + 2 vitest. Atomic commit; L1 verification (journal files written + grep'd). ✅ executed atomically (EXECUTE commit `5f7a09e5`, 9 files +1005/-3, 0 .hivemind/*; VERIFY commit `f2801911`); summary in `.planning/phases/53-live-pane-monitoring-hook-journal-integration/53-CLOSE.md`; 5/5 EARS PASS, 3/3 P53 BATS (1 file, 3 scenarios) + 40/40 BATS regression, 4/4 P53 vitest + 3149/3149 vitest regression, module 490 LOC ≤ 500 cap, D-04 silent-fallback preserved, R-P50-03 honored (0 .hivemind/*), P20 invariant honored (0 new deps), 27 tool keys unchanged, retroactive P42 UAT.md +12 lines and P43 VERIFICATION.md +13 lines with `## L1 Backing (P53)` sections.
 
 ---
 

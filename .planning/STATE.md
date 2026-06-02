@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-06-02
-**Last advance:** P52 closure — wire-tmux-copilot + state-query closed via `.planning/phases/52-wire-tmux-copilot-state-query/52-CLOSE.md` (commit `b22207df`, 2026-06-02). 4/4 EARS PASS, 11/11 P52 BATS, 26/26 P51 BATS (no regression), 3144/3144 vitest, 0 .hivemind/ in P52 commits (R-P50-03), 27 tool keys assertion held (was 26). Audit-remediation commit `6474ad67` closed 4 gaps left by prior P52 agent (state-query vitest untracked + 7 observer P52 tests + 3 BATS + 27-tool assertion fix). **Prior advances in same loop:** P50 (commit `5b49030f`) + P51 (commit `345987d7`). **Current planned phase:** P53 (live pane monitoring hook + journal integration) → P54 (session persistence + restart-recovery) → P55 (E2E UAT against seed's 4 success criteria) — in-tree synthesis sequence. **Pivot decision:** full rewrite synthesis, drop opencode-tmux fork; P45/P46/P47/P48 superseded by P50-P55 (see `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-CLOSE-PIVOT-2026-06-02.md`).
+**Last advance:** P53 closure — live-pane-monitoring-hook-journal-integration closed via `.planning/phases/53-live-pane-monitoring-hook-journal-integration/53-CLOSE.md` (commit `5f7a09e5`, 2026-06-02). 5/5 EARS PASS, 3/3 P53 BATS (1+2 — see notes: 1 BATS file with 3 scenarios) + 40/40 P51+P52+P53 BATS regression, 4/4 P53 vitest + 3149/3149 vitest regression, 0 .hivemind/ in P53 commits (R-P50-03), 27 tool keys unchanged, module LOC 490 ≤ 500 cap, D-04 silent-fallback preserved. **Prior advances in same loop:** P50 (commit `5b49030f`) + P51 (commit `345987d7`) + P52 (commit `b22207df`). **Current planned phase:** P54 (session persistence + restart-recovery) → P55 (E2E UAT against seed's 4 success criteria). **Pivot decision:** same as P50 close — full rewrite synthesis, drop opencode-tmux fork; P45/P46/P47/P48 superseded by P50-P55 (see `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-CLOSE-PIVOT-2026-06-02.md`).
 **Completed:**
 
 - P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write
@@ -28,7 +28,7 @@ progress:
 - **P42-02** — Hivemind tmux module: integration.ts, observers.ts, 25 tests
 - **P42-03** — Plugin wiring: bootstrap integration + event observer registration
 
-**Current focus:** P53 — Live Pane Monitoring Hook + Journal Integration (P50-P52 complete: fork removed, 3 in-tree classes synthesized, factory swap + state-query tool + observer expansion shipped). Then P54 session persistence + restart-recovery, P55 E2E UAT against seed's 4 success criteria.
+**Current focus:** P54 — Session Persistence + Restart-Recovery (P50-P53 complete: fork removed, 3 in-tree classes synthesized, factory swap + state-query + observer expansion + pane-monitor hook shipped). Then P55 E2E UAT against seed's 4 success criteria.
 
 ---
 
