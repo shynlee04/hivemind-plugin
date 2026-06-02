@@ -1955,7 +1955,7 @@ Plans:
 
 Plans:
 
-- [ ] 51-01: Create `src/features/tmux/{tmux-multiplexer,session-manager,grid-planner}.ts` (~770 LOC), rewrite `src/features/tmux/integration.ts` as factory-of-real-classes (~200 LOC), remove `src/features/tmux/fork-bridge.ts` (138 LOC). Add 6 BATS scenarios, 15+ vitest cases. ORIGIN annotations on every copied function. Atomic commit; L1 verification (BATS 6/6, vitest 15+, tsc 0).
+- [x] 51-01: Create `src/features/tmux/{tmux-multiplexer,session-manager,grid-planner}.ts` (~770 LOC), rewrite `src/features/tmux/integration.ts` as factory-of-real-classes (~200 LOC), remove `src/features/tmux/fork-bridge.ts` (138 LOC). Add 6 BATS scenarios, 15+ vitest cases. ORIGIN annotations on every copied function. Atomic commit; L1 verification (BATS 6/6, vitest 15+, tsc 0). ✅ executed via stacked resume (commit `9a1ad770`); summary in `.planning/phases/51-synthesize-core-tmux-classes-in-tree/51-CLOSE.md` (commit `345987d7`); 22 files (+2884/-337, net +2547); 7/7 EARS PASS, 80/80 vitest, 26/26 BATS, D-04 preserved.
 
 ---
 
@@ -1968,7 +1968,7 @@ Plans:
 
 Plans:
 
-- [ ] 52-01: Swap `tmux-copilot.ts` factory from `buildNoopForkSessionManager` to `buildInTreeSessionManager`. Add `src/tools/tmux-state-query.ts` (read-only metadata). Expand `observers.ts` with `session-state-changed` + `pane-captured`. 3 BATS + 5 vitest. Atomic commit; L1 verification.
+- [x] 52-01: Swap `tmux-copilot.ts` factory from `buildNoopForkSessionManager` to `buildInTreeSessionManager`. Add `src/tools/tmux-state-query.ts` (read-only metadata). Expand `observers.ts` with `session-state-changed` + `pane-captured`. 3 BATS + 5 vitest. Atomic commit; L1 verification. ✅ executed via audit-remediation (commits `2bd5a0e2`, `dbf260b5`, `3f2a7bc6`, `8ed3d6ea`, `6474ad67`); summary in `.planning/phases/52-wire-tmux-copilot-state-query/52-CLOSE.md` (commit `b22207df`); 4/4 EARS PASS, 11/11 P52 BATS, 26/26 P51 BATS (no regression), 3144/3144 vitest, 27 tool keys.
 
 ---
 

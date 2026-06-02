@@ -17,7 +17,7 @@ progress:
 # Hivemind — State
 
 **Last updated:** 2026-06-02
-**Last advance:** P50 closure — cleanup-opencode-tmux-fork closed via `.planning/phases/50-cleanup-opencode-tmux-fork/50-CLOSE.md` (commit `5b49030f`, 2026-06-02). 25 files removed, 3,497 deletions, 0 insertions. tsc clean, vitest 3,102/3,102 pass, 7/7 EARS PASS, 26 tool keys assertion held, D-04 graceful-fallback preserved. **Current planned phase:** P51 (synthesize core tmux classes in-tree) → P52 → P53 → P54 → P55 — in-tree synthesis sequence (P50 complete, depends on P50 close). **Pivot decision:** full rewrite synthesis, drop opencode-tmux fork; P45/P46/P47/P48 superseded by P50-P55 (see `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-CLOSE-PIVOT-2026-06-02.md`).
+**Last advance:** P52 closure — wire-tmux-copilot + state-query closed via `.planning/phases/52-wire-tmux-copilot-state-query/52-CLOSE.md` (commit `b22207df`, 2026-06-02). 4/4 EARS PASS, 11/11 P52 BATS, 26/26 P51 BATS (no regression), 3144/3144 vitest, 0 .hivemind/ in P52 commits (R-P50-03), 27 tool keys assertion held (was 26). Audit-remediation commit `6474ad67` closed 4 gaps left by prior P52 agent (state-query vitest untracked + 7 observer P52 tests + 3 BATS + 27-tool assertion fix). **Prior advances in same loop:** P50 (commit `5b49030f`) + P51 (commit `345987d7`). **Current planned phase:** P53 (live pane monitoring hook + journal integration) → P54 (session persistence + restart-recovery) → P55 (E2E UAT against seed's 4 success criteria) — in-tree synthesis sequence. **Pivot decision:** full rewrite synthesis, drop opencode-tmux fork; P45/P46/P47/P48 superseded by P50-P55 (see `.planning/phases/49-close-tmux-end-to-end-gap-register-tmux-copilot-in-src-plugi/49-CLOSE-PIVOT-2026-06-02.md`).
 **Completed:**
 
 - P41-D-01 — No-op persistDelegations file I/O, keep session-tracker dual-write
@@ -28,7 +28,7 @@ progress:
 - **P42-02** — Hivemind tmux module: integration.ts, observers.ts, 25 tests
 - **P42-03** — Plugin wiring: bootstrap integration + event observer registration
 
-**Current focus:** P51 — Synthesize core tmux classes in-tree (P50 cleanup complete, P51-P55 in-tree synthesis sequence). Then P52 wire tmux-copilot + state query, P53 live pane monitoring, P54 session persistence, P55 E2E UAT.
+**Current focus:** P53 — Live Pane Monitoring Hook + Journal Integration (P50-P52 complete: fork removed, 3 in-tree classes synthesized, factory swap + state-query tool + observer expansion shipped). Then P54 session persistence + restart-recovery, P55 E2E UAT against seed's 4 success criteria.
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
 **Phase 24.5:** ✅ COMPLETE — 4 broken workflow step paths fixed (commit `158a9d66`). Typecheck clean.
 **Phase 24.6:** ✅ COMPLETE — 3 critical commands elevated from stubs to 100+ lines (commit `4959ff08`). Typecheck + tests clean.
