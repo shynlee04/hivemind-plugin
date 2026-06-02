@@ -10,6 +10,8 @@
  * returns a complete routing decision with optional warnings.
  */
 
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 import type { ClassificationResult, PurposeClass } from "./purpose-classifier.js"
 import { classifyPurpose } from "./purpose-classifier.js"
 import type { LanguageDetection } from "./language-resolution.js"
@@ -18,18 +20,18 @@ import type { ProfileMatch } from "./profile-resolver.js"
 import { resolveProfile } from "./profile-resolver.js"
 
 /**
- * Maps each purpose class to the agent that should handle it.
- * This is the routing table for session intake.
+ * Maps each purpose class to the L0 orchestrator for dynamic, state-aware dispatch.
+ * Decoupled from specific specialist agents to allow trajectory-based routing.
  */
 export const PURPOSE_TO_ROUTING_TARGET: Record<PurposeClass, string> = {
-  discovery: "hm-l2-scout",
-  brainstorming: "hm-l2-brainstorm",
-  research: "hm-l3-research-chain",
-  planning: "gsd-planner",
-  implementation: "gsd-executor",
-  gatekeeping: "hm-l2-critic",
-  tdd: "hm-l2-test-driven-execution",
-  "course-correction": "gsd-debugger",
+  discovery: "hm-l0-orchestrator",
+  brainstorming: "hm-l0-orchestrator",
+  research: "hm-l0-orchestrator",
+  planning: "hm-l0-orchestrator",
+  implementation: "hm-l0-orchestrator",
+  gatekeeping: "hm-l0-orchestrator",
+  tdd: "hm-l0-orchestrator",
+  "course-correction": "hm-l0-orchestrator",
 }
 
 /** Complete result of the intake gate resolution */
@@ -40,10 +42,48 @@ export interface IntakeResult {
   language: LanguageDetection
   /** Profile match result */
   profile: ProfileMatch
-  /** Target agent name for routing */
+  /** Target agent name for routing (now defaults to L0 orchestrator) */
   routingTarget: string
   /** Warnings from registry validation (empty when target is verified) */
   warnings: string[]
+  /** Trajectory warnings (e.g., missing prerequisite artifacts) */
+  trajectoryWarnings: string[]
+  /** Just-in-time recommendations for skills/commands based on project state */
+  jitRecommendations: string[]
+}
+
+/**
+ * Resolves trajectory context by scanning .hivemind/ or .planning/ for prerequisite artifacts.
+ *
+ * @param projectRoot - Optional absolute path to the project root directory.
+ * @returns Object containing trajectory warnings and JIT recommendations.
+ */
+function resolveTrajectoryContext(projectRoot?: string): { trajectoryWarnings: string[]; jitRecommendations: string[] } {
+  const trajectoryWarnings: string[] = []
+  const jitRecommendations: string[] = []
+
+  if (!projectRoot) {
+    return { trajectoryWarnings, jitRecommendations }
+  }
+
+  const planningDir = join(projectRoot, ".planning")
+  const hivemindDir = join(projectRoot, ".hivemind", "planning")
+
+  // Check for basic project initialization artifacts
+  const hasRoadmap = existsSync(join(planningDir, "ROADMAP.md")) || existsSync(join(hivemindDir, "ROADMAP.md"))
+  const hasCodebase = existsSync(join(planningDir, "codebase", "ARCHITECTURE.md")) || existsSync(join(hivemindDir, "codebase", "ARCHITECTURE.md"))
+
+  if (!hasRoadmap) {
+    trajectoryWarnings.push("Project roadmap (ROADMAP.md) not found.")
+    jitRecommendations.push("Consider running `/hm-new-project` or `/hm-roadmap` to establish project scope before proceeding.")
+  }
+
+  if (!hasCodebase) {
+    trajectoryWarnings.push("Codebase mapping (ARCHITECTURE.md) not found.")
+    jitRecommendations.push("Consider running `/hm-map-codebase` to understand existing patterns before planning or implementation.")
+  }
+
+  return { trajectoryWarnings, jitRecommendations }
 }
 
 /**
@@ -83,29 +123,31 @@ export function createRegistryValidator(
  * Resolves the full intake gate for a session entry.
  *
  * Combines purpose classification, language detection, profile
- * resolution, and optional registry validation to produce a routing
- * decision. When a registry validator is provided, the routing target
- * is checked against known primitives and a warning is added if the
- * target is not found — routing proceeds regardless.
+ * resolution, trajectory context analysis, and optional registry
+ * validation to produce a state-aware routing decision. When a
+ * registry validator is provided, the routing target is checked
+ * against known primitives and a warning is added if not found.
  *
  * @param input - The raw user input string
  * @param context - Optional session context for profile resolution
  * @param registryValidator - Optional validator to check routing target existence
- * @returns IntakeResult with purpose, language, profile, routing target, and warnings
+ * @param projectRoot - Optional absolute path to the project root for trajectory analysis
+ * @returns IntakeResult with purpose, language, profile, routing target, warnings, and trajectory context
  *
  * @example
  * ```typescript
  * const result = resolveIntake("implement the caching layer", {
  *   messageLength: 35,
  *   technicalTerms: ["caching", "layer"],
- * })
+ * }, undefined, "/path/to/project")
  * // {
  * //   purpose: { purpose: "implementation", confidence: 0.85, alternatives: [] },
  * //   language: { language: "en", script: "latin", confidence: 1 },
- * //   profile: { communicationStyle: "concise", decisionSpeed: "fast",
- * //             expertise: "mid", matchConfidence: 0.45 },
- * //   routingTarget: "gsd-executor",
- * //   warnings: []
+ * //   profile: { communicationStyle: "concise", decisionSpeed: "fast", expertise: "mid", matchConfidence: 0.45 },
+ * //   routingTarget: "hm-l0-orchestrator",
+ * //   warnings: [],
+ * //   trajectoryWarnings: ["Codebase mapping (ARCHITECTURE.md) not found."],
+ * //   jitRecommendations: ["Consider running `/hm-map-codebase`..."]
  * // }
  * ```
  */
@@ -113,12 +155,14 @@ export function resolveIntake(
   input: string,
   context?: Record<string, unknown>,
   registryValidator?: RegistryValidator,
+  projectRoot?: string,
 ): IntakeResult {
   const purpose = classifyPurpose(input)
   const language = detectLanguage(input)
   const profile = resolveProfile(context)
   const routingTarget = PURPOSE_TO_ROUTING_TARGET[purpose.purpose]
   const warnings: string[] = []
+  const { trajectoryWarnings, jitRecommendations } = resolveTrajectoryContext(projectRoot)
 
   if (registryValidator) {
     try {
@@ -144,5 +188,7 @@ export function resolveIntake(
     profile,
     routingTarget,
     warnings,
+    trajectoryWarnings,
+    jitRecommendations,
   }
 }

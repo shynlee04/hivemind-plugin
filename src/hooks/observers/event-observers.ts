@@ -47,13 +47,14 @@ export type SessionEntryEventFact =
  * Creates an event observer that classifies session intake on session.created events.
  *
  * Extracts the initial user message from the event, runs it through `resolveIntake()`
- * to classify purpose, detect language, and resolve the developer profile, and stores
- * the result in an in-memory cache keyed by session ID for later retrieval by the
- * system.transform hook.
+ * to classify purpose, detect language, resolve the developer profile, and analyze
+ * trajectory context, then stores the result in an in-memory cache keyed by session
+ * ID for later retrieval by the system.transform hook.
  *
+ * @param projectDirectory - Absolute path to the project root for trajectory analysis.
  * @returns An observer function and a `getIntake` lookup function.
  */
-export function createSessionEntryEventObserver(): {
+export function createSessionEntryEventObserver(projectDirectory: string): {
   observer: (input: { event?: unknown }) => Promise<SessionEntryEventFact>
   getIntake: (sessionId: string) => IntakeResult | undefined
 } {
@@ -71,7 +72,7 @@ export function createSessionEntryEventObserver(): {
     const messages = getNestedValue(event, ["messages"]) as Array<{ role: string; content: string }> | undefined
     const userMessage = messages?.find(m => m.role === "user")?.content ?? ""
 
-    const intake = resolveIntake(userMessage)
+    const intake = resolveIntake(userMessage, undefined, undefined, projectDirectory)
     intakeCache.set(sessionId, intake)
 
     return { kind: "session-created", sessionId, intake }

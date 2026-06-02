@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
-  "lastUpdated": "2026-06-02T12:47:10.391Z",
+  "lastUpdated": "2026-06-02T14:06:02.591Z",
   "hierarchy": {
     "root": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
     "children": {
@@ -291,19 +291,47 @@
         "status": "active",
         "delegatedBy": "gsd-phase-researcher",
         "children": {}
+      },
+      "ses_1779f9aacffernrjWhTAkHBdPQ": {
+        "file": "ses_1779f9aacffernrjWhTAkHBdPQ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1779702d8ffegjwdIitPFjAwbr": {
+        "file": "ses_1779702d8ffegjwdIitPFjAwbr.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-pattern-mapper",
+        "children": {}
+      },
+      "ses_177663d27ffeF2nHLXYP2iywt6": {
+        "file": "ses_177663d27ffeF2nHLXYP2iywt6.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_1775bb22cffeRcs2uL7Gg1ao66": {
+        "file": "ses_1775bb22cffeRcs2uL7Gg1ao66.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-plan-checker",
+        "children": {}
       }
     }
   },
-  "turnCount": 51,
+  "turnCount": 53,
   "toolSummary": {
     "skill": 1,
     "hivemind-trajectory": 23,
     "execute-slash-command": 10,
-    "task": 46,
+    "task": 50,
     "hivemind-agent-work-export": 1,
-    "bash": 115,
+    "bash": 117,
     "read": 24,
-    "delegation-status": 14,
+    "delegation-status": 15,
     "question": 3,
     "hivemind-agent-work-create": 7,
     "invalid": 6,

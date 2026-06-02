@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "rootMainSessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
-  "lastUpdated": "2026-06-02T12:17:08.338Z",
+  "lastUpdated": "2026-06-02T13:11:08.602Z",
   "children": {
     "ses_177c9c5aeffeT54rOpBWYVe5ei": {
       "sessionID": "ses_177c9c5aeffeT54rOpBWYVe5ei",
@@ -50,8 +50,8 @@
       "delegatedBy": "task",
       "subagentType": "hm-codebase-mapper",
       "createdAt": "2026-06-02T12:06:22.771Z",
-      "updatedAt": "2026-06-02T12:06:22.771Z",
-      "status": "active",
+      "updatedAt": "2026-06-02T13:11:08.602Z",
+      "status": "completed",
       "turnCount": 0,
       "childFile": "ses_177c5b40effeec4oYOfcqI0taw.json"
     },

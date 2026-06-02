@@ -561,7 +561,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     }
   })()
 
-  const sessionEntryObserverFactory = createSessionEntryEventObserver()
+  const sessionEntryObserverFactory = createSessionEntryEventObserver(projectDirectory)
   const sessionIsMainObserverFactory = createSessionIsMainObserver()
 
   const deps = { client, lifecycleManager, stateManager: taskState, runAutoLoop, runRalphLoop, escalationMessage, getIntake: sessionEntryObserverFactory.getIntake, hivemindConfig, getFreshHivemindConfig: () => getFreshConfig(projectDirectory), getBehavioralProfile: (sessionId: string) => resolveBehavioralProfile(sessionId, projectDirectory), isMainSession: sessionIsMainObserverFactory.isMainSession, projectDirectory }

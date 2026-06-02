@@ -6,11 +6,11 @@
     "agentName": "hm-codebase-mapper",
     "model": "unknown",
     "tool": "task",
-    "description": "Map conventions & testing",
+    "description": "Generate CONVENTIONS.md and TESTING.md",
     "subagentType": "hm-codebase-mapper"
   },
   "created": "2026-06-02T12:06:22.470Z",
-  "updated": "2026-06-02T12:41:41.527Z",
+  "updated": "2026-06-02T13:11:08.636Z",
   "status": "completed",
   "mainAgent": {
     "name": "hm-codebase-mapper",
@@ -19,22 +19,190 @@
   "turns": [
     {
       "turn": 1,
-      "actor": "hm-codebase-mapper",
+      "actor": "user",
       "content": "You are a hm-codebase-mapper agent with **quality focus**.\n\n**Task:** Analyze the codebase at `/Users/apple/hivemind-plugin-private` and write 2 documents directly to `.planning/codebase/`:\n\n1. **CONVENTIONS.md** — Coding standards, style guides, lint rules, TypeScript strictness, naming patterns, commit conventions, architectural rules, anti-patterns\n2. **TESTING.md** — Test framework (vitest), test locations, coverage targets, test patterns, mocking approach, CI integration, testing instructions\n\n**Rules:**\n- Write documents directly to `.planning/codebase/CONVENTIONS.md` and `.planning/codebase/TESTING.md`\n- Each document must be thorough (hundreds of lines — capture full detail)\n- Follow existing document templates/styles if any reference exists\n- Return ONLY a confirmation with file paths and line counts when done",
       "tools": [],
       "role": "user"
     },
     {
       "turn": 2,
-      "actor": "hm-codebase-mapper",
-      "content": "Map conventions & testing",
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": " Let me check more patterns — the existing codebase intelligence docs and some more source modules:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "user",
+      "content": "Continue from where the quality focus mapper left off. The previous attempt returned empty.\n\n**Task:** Analyze the codebase at `/Users/apple/hivemind-plugin-private` and write 2 documents directly to `.planning/codebase/`:\n\n1. **CONVENTIONS.md** — Coding standards, style guides, lint rules, TypeScript strictness, naming patterns, commit conventions, architectural rules, anti-patterns, 500+ lines\n2. **TESTING.md** — Test framework (vitest), test locations, coverage targets, test patterns, mocking approach, CI integration, testing instructions, 500+ lines\n\nReturn confirmation with file paths and line counts when done.",
       "tools": [],
       "role": "user"
     },
     {
-      "turn": 3,
-      "actor": "hm-codebase-mapper",
-      "content": "<task id=\"ses_177c5b40effeec4oYOfcqI0taw\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": " Let me gather a few more data points before writing:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": " Now I have enough context. Let me write both documents.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": " Now let me write the TESTING.md:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 25,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 26,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 27,
+      "actor": "unknown",
+      "content": "## MAPPING COMPLETE\n\n**Files Generated:**\n\n| File | Path | Lines |\n|------|------|-------|\n| **CONVENTIONS.md** | `.planning/codebase/CONVENTIONS.md` | 697 |\n| **TESTING.md** | `.planning/codebase/TESTING.md` | 988 |\n\n**Total:** 1,685 lines of codebase intelligence documentation.\n\n---\n\n### CONVENTIONS.md — 13 Sections\n\n| Section | Coverage |\n|---------|----------|\n| TypeScript Configuration | `strict: true`, `verbatimModuleSyntax`, 12 locked tsconfig settings |\n| Module System & Imports | ESM-only, `.js` extensions, 4-group import order |\n| Naming Conventions | Files (kebab-case), classes (PascalCase), functions (camelCase), project prefixes (hm-/hf-/gate-/stack-/gsd-) |\n| Code Structure & Organization | 500 LOC limit, module dependency chain, file placement |\n| Error Handling | `[Harness]` prefix, custom error classes, `ToolResponse` envelope, SDK error extraction |\n| Type Patterns | Explicit return types, type guards, discriminated unions, `import type`, no `any` |\n| Architecture Rules | No circular deps, dual-layer state, deep-clone-on-read, Q6, CQRS |\n| Architecture Patterns (CQRS & 9-Surface) | Write-side (tools), Read-side (hooks), 3 hook categories, WaiterModel delegation |\n| Commit Conventions | `type(scope): description — why`, 8 types, 11 scopes, atomic commits |\n| Documentation Standards | JSDoc, section comments, inline comment types (TODO/HACK/PERF) |\n| Anti-Patterns | 10 code + 5 delegation anti-patterns with detection/correction |\n| State Management | `TaskStateManager`, continuity store, delegation persistence |\n| SDK Integration Patterns | Plugin pattern, SDK wrapper, tool factory, hook factory |\n\n### TESTING.md — 14 Sections\n\n| Section | Coverage |\n|---------|----------|\n| Test Framework | Vitest v4, `globals: true`, V8 coverage provider |\n| Test Locations & Organization | Full directory tree, 260 test files across 14 directories |\n| Running Tests | 10 commands for various run modes |\n| Coverage Configuration | Thresholds (75/62/80/77), exclusions, reporters |\n| Test Patterns | `describe`/`it` structure, section organization, assertion style |\n| Mocking Approach | `vi.fn()`, mock clients, in-memory client utility, `vi.spyOn`, `vi.mock` |\n| Setup & Teardown Patterns | Temp dir management, env var save/restore, cleanup |\n| Integration Tests | 15 integration test files, cross-module patterns, import verification |\n| Eval Tests | 3 eval files for coherence/correctness/stability |\n| CI Integration | Pre-commit checks, pipeline stages, test isolation principles |\n| Writing New Tests | File location templates, import paths, conventions table |\n| Testing Best Practices | 10 Do's, 8 Don'ts, 6 philosophy principles |\n| Phase Conformance Tests | Phase-annotated conformance verification tests |\n| Troubleshooting | 10 common issues with solutions, 6 debug commands, env vars |",
       "tools": [],
       "role": "assistant"
     }
@@ -533,7 +701,345 @@
         "capturedFrom": "task_tool_result",
         "taskID": "ses_177c5b40effeec4oYOfcqI0taw"
       }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:00.282Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_vXysrC37TiDdzcXkNh7M4424",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:20.878Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_5h31BDW5KEVrSUqE28qC3263",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:20.899Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_0Ocs6EMBhRCD1M0D2D9n8427",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:20.912Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_zgMOEUmgxb4tsJ2LwMkR4736",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:20.936Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_03_Wi4XEtbdM3qKFVx05DRj1140",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:28.618Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_vwtwsFX0NyFVfJ8zeGRF2960",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/hooks/hook-cqrs-boundary.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:28.624Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_VMlJvuXqQzOn51TtRgRI0212",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/runtime-policy.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:28.630Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_esDM2lS4abfYLpiVw0ab0583",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/continuity.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:28.643Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_ccElrsALPzeOMXvemAqN2634",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:34.716Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_H7k4melB3u2xYtRz5Tn56524",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/CONTRIBUTING.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:34.726Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_kdBsw55ccN9YYyoBpBY52017",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/README.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:40.775Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_lPPZiUXVgTUvXZ771bh30917",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/CONTRIBUTING.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:07:40.791Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_IFvN7wy8C55b866Rc6iX7764",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/lifecycle/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:08:43.795Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_H650ev6Xgh6bi0wk5Ksr9524",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:08:49.799Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_srvS9aKIDnt4y0wMLpwW8108",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:08:57.880Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_4KoNWc9yPzko65Brivqt0251",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/agent-work-contracts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:08:57.930Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Jb9yQEIP0mZMQDJZ6nbf6927",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/phase39-conformance.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:08:58.050Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_jgVzs6nST13YXcdbZx1u7683",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:09:22.883Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Xdd0ic9vIGg3qdAL3YHy4276",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:09:22.902Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_02_K2G1emuhzauLfPzqlCKt3688",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:09:22.912Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_03_z9OcLlzPHOa1WMOkoFhv7092",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:09:22.929Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_sFWuNCuRk17QsfS4IlXS8660",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/integration/session-tracker-lifecycle.test.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:09:32.365Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_4jQmiXFuHhoxgwFHUIoN6548",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/eval"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:09:32.382Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_6NS9SAHYC1GRSfrvbadD3014",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/lib/helpers/in-memory-client.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:10:46.191Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_BT30DlOTCeZMQL2b7iIT9282",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:10:52.457Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_sfynizsdM7ybc5qI2NeJ2701",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:10:58.041Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_448MbdzUN8UWgtrLgPM38711",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-02T13:11:08.583Z",
+      "type": "assistant_message",
+      "content": "## MAPPING COMPLETE\n\n**Files Generated:**\n\n| File | Path | Lines |\n|------|------|-------|\n| **CONVENTIONS.md** | `.planning/codebase/CONVENTIONS.md` | 697 |\n| **TESTING.md** | `.planning/codebase/TESTING.md` | 988 |\n\n**Total:** 1,685 lines of codebase intelligence documentation.\n\n---\n\n### CONVENTIONS.md — 13 Sections\n\n| Section | Coverage |\n|---------|----------|\n| TypeScript Configuration | `strict: true`, `verbatimModuleSyntax`, 12 locked tsconfig settings |\n| Module System & Imports | ESM-only, `.js` extensions, 4-group import order |\n| Naming Conventions | Files (kebab-case), classes (PascalCase), functions (camelCase), project prefixes (hm-/hf-/gate-/stack-/gsd-) |\n| Code Structure & Organization | 500 LOC limit, module dependency chain, file placement |\n| Error Handling | `[Harness]` prefix, custom error classes, `ToolResponse` envelope, SDK error extraction |\n| Type Patterns | Explicit return types, type guards, discriminated unions, `import type`, no `any` |\n| Architecture Rules | No circular deps, dual-layer state, deep-clone-on-read, Q6, CQRS |\n| Architecture Patterns (CQRS & 9-Surface) | Write-side (tools), Read-side (hooks), 3 hook categories, WaiterModel delegation |\n| Commit Conventions | `type(scope): description — why`, 8 types, 11 scopes, atomic commits |\n| Documentation Standards | JSDoc, section comments, inline comment types (TODO/HACK/PERF) |\n| Anti-Patterns | 10 code + 5 delegation anti-patterns with detection/correction |\n| State Management | `TaskStateManager`, continuity store, delegation persistence |\n| SDK Integration Patterns | Plugin pattern, SDK wrapper, tool factory, hook factory |\n\n### TESTING.md — 14 Sections\n\n| Section | Coverage |\n|---------|----------|\n| Test Framework | Vitest v4, `globals: true`, V8 coverage provider |\n| Test Locations & Organization | Full directory tree, 260 test files across 14 directories |\n| Running Tests | 10 commands for various run modes |\n| Coverage Configuration | Thresholds (75/62/80/77), exclusions, reporters |\n| Test Patterns | `describe`/`it` structure, section organization, assertion style |\n| Mocking Approach | `vi.fn()`, mock clients, in-memory client utility, `vi.spyOn`, `vi.mock` |\n| Setup & Teardown Patterns | Temp dir management, env var save/restore, cleanup |\n| Integration Tests | 15 integration test files, cross-module patterns, import verification |\n| Eval Tests | 3 eval files for coherence/correctness/stability |\n| CI Integration | Pre-commit checks, pipeline stages, test isolation principles |\n| Writing New Tests | File location templates, import paths, conventions table |\n| Testing Best Practices | 10 Do's, 8 Don'ts, 6 philosophy principles |\n| Phase Conformance Tests | Phase-annotated conformance verification tests |\n| Troubleshooting | 10 common issues with solutions, 6 debug commands, env vars |",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_177c5b40effeec4oYOfcqI0taw"
+      }
     }
   ],
-  "lastMessage": "<task id=\"ses_177c5b40effeec4oYOfcqI0taw\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>"
+  "lastMessage": "## MAPPING COMPLETE\n\n**Files Generated:**\n\n| File | Path | Lines |\n|------|------|-------|\n| **CONVENTIONS.md** | `.planning/codebase/CONVENTIONS.md` | 697 |\n| **TESTING.md** | `.planning/codebase/TESTING.md` | 988 |\n\n**Total:** 1,685 lines of codebase intelligence documentation.\n\n---\n\n### CONVENTIONS.md — 13 Sections\n\n| Section | Coverage |\n|---------|----------|\n| TypeScript Configuration | `strict: true`, `verbatimModuleSyntax`, 12 locked tsconfig settings |\n| Module System & Imports | ESM-only, `.js` extensions, 4-group import order |\n| Naming Conventions | Files (kebab-case), classes (PascalCase), functions (camelCase), project prefixes (hm-/hf-/gate-/stack-/gsd-) |\n| Code Structure & Organization | 500 LOC limit, module dependency chain, file placement |\n| Error Handling | `[Harness]` prefix, custom error classes, `ToolResponse` envelope, SDK error extraction |\n| Type Patterns | Explicit return types, type guards, discriminated unions, `import type`, no `any` |\n| Architecture Rules | No circular deps, dual-layer state, deep-clone-on-read, Q6, CQRS |\n| Architecture Patterns (CQRS & 9-Surface) | Write-side (tools), Read-side (hooks), 3 hook categories, WaiterModel delegation |\n| Commit Conventions | `type(scope): description — why`, 8 types, 11 scopes, atomic commits |\n| Documentation Standards | JSDoc, section comments, inline comment types (TODO/HACK/PERF) |\n| Anti-Patterns | 10 code + 5 delegation anti-patterns with detection/correction |\n| State Management | `TaskStateManager`, continuity store, delegation persistence |\n| SDK Integration Patterns | Plugin pattern, SDK wrapper, tool factory, hook factory |\n\n### TESTING.md — 14 Sections\n\n| Section | Coverage |\n|---------|----------|\n| Test Framework | Vitest v4, `globals: true`, V8 coverage provider |\n| Test Locations & Organization | Full directory tree, 260 test files across 14 directories |\n| Running Tests | 10 commands for various run modes |\n| Coverage Configuration | Thresholds (75/62/80/77), exclusions, reporters |\n| Test Patterns | `describe`/`it` structure, section organization, assertion style |\n| Mocking Approach | `vi.fn()`, mock clients, in-memory client utility, `vi.spyOn`, `vi.mock` |\n| Setup & Teardown Patterns | Temp dir management, env var save/restore, cleanup |\n| Integration Tests | 15 integration test files, cross-module patterns, import verification |\n| Eval Tests | 3 eval files for coherence/correctness/stability |\n| CI Integration | Pre-commit checks, pipeline stages, test isolation principles |\n| Writing New Tests | File location templates, import paths, conventions table |\n| Testing Best Practices | 10 Do's, 8 Don'ts, 6 philosophy principles |\n| Phase Conformance Tests | Phase-annotated conformance verification tests |\n| Troubleshooting | 10 common issues with solutions, 6 debug commands, env vars |"
 }

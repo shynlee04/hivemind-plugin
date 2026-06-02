@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_177c9c643ffeVmU7x5opQXLOc5",
-  "lastUpdated": "2026-06-02T12:41:41.529Z",
+  "lastUpdated": "2026-06-02T13:11:24.590Z",
   "hierarchy": {
     "root": "ses_177c9c643ffeVmU7x5opQXLOc5",
     "children": {
@@ -42,9 +42,12 @@
       }
     }
   },
-  "turnCount": 2,
+  "turnCount": 3,
   "toolSummary": {
-    "task": 5,
-    "bash": 1
+    "task": 6,
+    "bash": 2,
+    "session-hierarchy": 1,
+    "delegation-status": 1,
+    "glob": 1
   }
 }

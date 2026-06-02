@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smell Report: OpenCode Harness Sidecar</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-secondary: #666666;
+      --border: #e5e5e5;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .meta { color: var(--text-secondary); font-size: 0.875rem; }
+    .score-badge {
+      display: inline-block;
+      background: var(--success-bg);
+      color: var(--success);
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+    h2 { font-size: 1.125rem; font-weight: 600; margin: 2rem 0 1rem; }
+    p { margin-bottom: 1rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.875rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    th { font-weight: 600; color: var(--text-secondary); }
+    .status-yes { color: #dc2626; }
+    .status-no { color: var(--success); }
+    .status-intentional { color: #2563eb; }
+    .conclusion {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Smell Report: OpenCode Harness Sidecar</h1>
+    <div class="meta">Target: sidecar/src/app/page.tsx, sidecar/src/app/layout.tsx</div>
+    <div class="meta">Date: 2026-06-02</div>
+    <div class="score-badge">10/10 — CLEAN</div>
+  </header>
+
+  <main>
+    <h2>Executive Summary</h2>
+    <p>The audited surface is an intentional, documented foundation stub for Phase 42. It contains no visual design, layout, or styling. Because the lack of design is a deliberate, explicitly stated architectural decision (deferring UI to SIDECAR-01/02), it does not exhibit AI-generated design smells or category reflexes.</p>
+
+    <h2>Odor Analysis</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Odor</th>
+          <th>Detected</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Tech gradient</td><td class="status-no">No</td><td>No styling present.</td></tr>
+        <tr><td>Generic tech hue</td><td class="status-no">No</td><td>No styling present.</td></tr>
+        <tr><td>Feature tile grid</td><td class="status-no">No</td><td>No styling present.</td></tr>
+        <tr><td>Accent rail</td><td class="status-no">No</td><td>No styling present.</td></tr>
+        <tr><td>Unearned blur</td><td class="status-no">No</td><td>No styling present.</td></tr>
+        <tr><td>Stat monument</td><td class="status-no">No</td><td>No styling present.</td></tr>
+        <tr><td>Icon topper</td><td class="status-no">No</td><td>No styling present.</td></tr>
+        <tr><td>Bounce everywhere</td><td class="status-no">No</td><td>No styling present.</td></tr>
+        <tr><td>Default type</td><td class="status-intentional">Yes (Intentional)</td><td>Browser defaults are expected in an unstyled stub.</td></tr>
+        <tr><td>Center stack</td><td class="status-intentional">Yes (Intentional)</td><td>Default browser flow is expected in an unstyled stub.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="conclusion">
+      <h2>Conclusion</h2>
+      <p>The surface is clean of design smells. The current state is a valid, intentional placeholder. No redesign, relayout, or recolor is recommended at this time. Follow the planned SIDECAR-01/02 phases for actual UI implementation.</p>
+    </div>
+  </main>
+</body>
+</html>

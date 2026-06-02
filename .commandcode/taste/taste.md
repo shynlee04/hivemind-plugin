@@ -6,6 +6,7 @@
 
 # Workflow
 - Conduct thorough audits before proposing fixes or implementation plans; never attempt fixes without first completing sufficient investigation and validation. Confidence: 0.75
+- When modifying code, trace the full data flow and wire changes end-to-end into all consuming systems (hooks, lifecycle, prompt injection) — never make surface-level data structure changes without integrating them into the runtime pipeline. Confidence: 0.75
 
 # Asset Management
 - Client-side installed assets under `.opencode/` must never be modified—manage only source `assets/` (hm-*); any gsd-* installed in user space is the user's choice and must remain untouched. Confidence: 0.75

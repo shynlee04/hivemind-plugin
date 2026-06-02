@@ -122,6 +122,12 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
         if (intake.warnings.length > 0) {
           contextLines.push(`- warnings: ${intake.warnings.join("; ")}`)
         }
+        if (intake.trajectoryWarnings.length > 0) {
+          contextLines.push(`- trajectory_warnings: ${intake.trajectoryWarnings.join("; ")}`)
+        }
+        if (intake.jitRecommendations.length > 0) {
+          contextLines.push(`- jit_recommendations: ${intake.jitRecommendations.join("; ")}`)
+        }
 
         ;(output.system as string[]).push(contextLines.join("\n"))
       }
