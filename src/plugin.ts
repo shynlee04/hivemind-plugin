@@ -49,6 +49,7 @@ import { createPtyManagerIfSupported } from "./features/background-command/pty/p
 import { createTmuxIntegrationIfSupported } from "./features/tmux/integration.js"
 import { createTmuxEventObserver } from "./features/tmux/observers.js"
 import type { ForkSessionManager } from "./features/tmux/observers.js"
+import { tmuxStateQueryTool } from "./tools/tmux-state-query.js"
 import { createGovernanceSessionTool } from "./features/governance-engine/index.js"
 import { createPromptSkimTool } from "./tools/prompt/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt/prompt-analyze/index.js"
@@ -204,7 +205,7 @@ function shouldAppendParentTuiNotification(type: DelegationNotificationType): bo
 }
 
 /**
- * Build a no-op ForkSessionManager for builds where the in-tree tmux
+ * Build an in-tree ForkSessionManager for builds where the in-tree tmux
  * integration is not available (e.g. running outside a tmux session, or
  * the tmux binary is not installed). The observer enriches `session.created`
  * events with delegation metadata and dispatches them here; in this case
@@ -219,7 +220,7 @@ function shouldAppendParentTuiNotification(type: DelegationNotificationType): bo
  * returns `null` (silent fallback per D-04), not when the fork package is
  * absent. Same runtime shape, different trigger.
  */
-function buildNoopForkSessionManager(): ForkSessionManager {
+function buildInTreeSessionManager(): ForkSessionManager {
   return {
     onSessionCreated: async (_enriched) => {
       // No-op when in-tree tmux integration is unavailable. The enriched
@@ -604,7 +605,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
         }
       }, ...(tmuxIntegration
         ? [createTmuxEventObserver(tmuxIntegration.adapter)]
-        : [createTmuxEventObserver(buildNoopForkSessionManager())])],
+        : [createTmuxEventObserver(buildInTreeSessionManager())])],
     }),
     ...sessionReadHooks,
     // tool.execute.before: combined guard + session-tracker detection.
@@ -677,6 +678,10 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
       // into the plugin tool spread. It is exported as a `tool()` instance
       // (not a factory) so it requires no per-call dependency plumbing.
       "tmux-copilot": tmuxCopilotTool,
+      // Phase 52 (REQ-04, REQ-05): read-only session metadata tool for the
+      // observability layer. Same orchestrator-tier permission gate pattern
+      // as tmux-copilot.ts.
+      "tmux-state-query": tmuxStateQueryTool,
     },
     // Auto-persist workflow state after configure-primitive calls with workflow params.
     // Best-effort: failures are silently ignored — does not affect the tool call result.
