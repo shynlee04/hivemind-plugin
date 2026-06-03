@@ -174,6 +174,21 @@ Use when dispatching a registered OpenCode command, optionally overriding the ta
 - With `subtask: true` → dispatches as SubtaskPartInput to the target agent
 - The target agent must exist as a registered agent definition
 
+## The Critical Boundary: Main Session Execution vs. Subtask Background Execution
+
+A major source of confusion is assuming all `execute-slash-command` dispatches run in the background. Note this critical boundary:
+
+- **When using `execute-slash-command` with `subtask: true` (or when the command's frontmatter has `subtask: true`):**
+  - This is a **background delegation**.
+  - A separate child session is spawned.
+  - The target agent executes the command's instructions, runs all necessary tools (file writes, command execution), and returns the final result.
+  - The parent orchestrator **blocks and waits** for the child session to complete, then receives the final output. No further local tool invocations are needed from the parent orchestrator.
+- **When using `execute-slash-command` without `subtask: true` (e.g., `subtask: false` or TUI prompt path):**
+  - This is **NOT a background delegation**.
+  - It simply injects/appends the command's prompt template/instructions into the **current/main session**.
+  - **The calling agent (orchestrator) remains responsible** for carrying out all the steps, files creation, tool runs, and sequential tasks instructed by the command. The command itself does not execute tools in the background; it only sets the prompt for the current session.
+  - Assuming that a non-subtask command will run itself in the background is a **hallucination**. The caller must sequentially invoke tools (such as the `task` tool or other local tools) to carry out the steps defined in the command template.
+
 ## Pattern 4: Session Stacking — Attaching to Existing Sessions
 
 Session stacking attaches new work as a child of an existing session — not just resuming an aborted task. This works with **both completed and incomplete sessions**. The new subagent attaches as a child of that session, preserving the delegation hierarchy chain.
@@ -259,6 +274,7 @@ For the detailed monitoring protocol, read `references/status-checking-protocol.
 | **Stale Parent Session** — stacking onto a session that no longer exists | Session ID passed but session is expired or purged | Verify session existence via `session-tracker` before stacking. Use `hivemind-session-view` for unified check |
 | **Synchronous Wait on Async** — blocking on delegate-task return | Caller waits for delegation-status in a loop instead of continuing work | Design async workflow: dispatch → continue own work → check status when needed |
 | **Prompt Session ID Injection** — passing session ID in prompt text | New independent session created instead of attaching to parent | Put session ID in `task_id` parameter (task tool) or `parentSessionId` in context JSON (delegate-task) |
+| **Background Hallucination on Main Session Commands** | Assuming a command dispatched without `subtask: true` executes its internal tasks in the background | Remember that non-subtask commands only append instructions to the main session. The orchestrator must execute the tools itself to fulfill the task checklist. Use `subtask: true` if background subagent execution is required. |
 
 ## Self-Correction
 
