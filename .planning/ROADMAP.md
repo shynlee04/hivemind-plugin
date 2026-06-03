@@ -2026,6 +2026,19 @@ Plans:
 
 ---
 
+### Phase 56: Stress Test for Real-Life Tmux Use (2026-06-03)
+
+**Goal:** Author a stress test scenario that exercises the complete tmux visual orchestration layer (P50-P55 deliverables) in a real-life, end-to-end multi-agent workflow. The stress test must demonstrate: (1) orchestrator spawns 3+ sub-agents via delegate-task; (2) each sub-agent runs in a real tmux pane (P51 grid-planner layout); (3) orchestrator sends `send-keys` to specific panes (P52); (4) pane-captured events are journaled (P53); (5) sessions persist across harness restart (P54); (6) state-query tool returns live session state (P52); (7) all 27 tool keys remain registered (P49 invariant). **L1 evidence**: a single BATS scenario (or small set) that spawns 3+ real tmux sessions, exercises the full tool+hook surface, and verifies end-to-end correctness. **L2 evidence**: captured journal entries + tmux session listing.
+**Requirements:** REQ-04, REQ-05, REQ-07.
+**Depends on:** Phase 55.
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 56-01: Author `tests/scripts/tmux/61-stress-test-real-world-workflow.bats` + extension to `helpers.bash`. Run 1 stress test scenario that simulates a real orchestrator workflow. Atomic commit; L1 verification (1 stress test scenario passes; tool surface intact; 0 regressions).
+
+---
+
 ### Phase 48: CI/CD Release Pipeline (2026-06-01)
 
 **Goal:** Stand up a GitHub Actions workflow that builds the vendored fork, runs the test suite, and publishes `@hivemind/opencode-tmux` to npm with version synchronization against the main `hivemind` package (no drift allowed between the two package versions on a release). Include a pre-release channel (`canary` dist-tag) for trunk-based publishing. Tests: a CI dry-run job that exercises the workflow against a fixture package and verifies the produced tarball contains the expected entry points and excludes source-only files; the publish job is gated on this verification.
