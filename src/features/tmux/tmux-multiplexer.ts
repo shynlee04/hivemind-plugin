@@ -63,12 +63,20 @@ export type TmuxLayout = "main-vertical" | "main-horizontal" | "tiled" | "even-h
 // ---------------------------------------------------------------------------
 
 /**
- * Result of a `spawnPane` call. `paneId` is only set when `success === true`.
+ * Result of a `spawnPane` call.
+ * - `paneId` is set when `success === true`.
+ * - `error` is set when `success === false` (human-readable failure reason).
  * ORIGIN: opencode-tmux/src/tmux.ts:8-11
  */
 export interface PaneResult {
   success: boolean;
   paneId?: string;
+  /**
+   * Human-readable failure reason. Set when `success === false` so callers
+   * can surface WHY the spawn failed (binary missing, no main pane, tmux
+   * CLI error, etc.) instead of receiving a silent `{success: false}`.
+   */
+  error?: string;
 }
 
 /**
@@ -269,7 +277,7 @@ export class TmuxMultiplexer {
     const tmux = await this.getBinary();
     if (!tmux) {
       this.log?.debug("spawnPane: tmux binary not found");
-      return { success: false };
+      return { success: false, error: "tmux binary not found" };
     }
 
     try {
@@ -291,7 +299,7 @@ export class TmuxMultiplexer {
       const splitTarget = await this.getMainPaneId();
       if (!splitTarget) {
         this.log?.debug("spawnPane: could not resolve main pane ID, aborting");
-        return { success: false };
+        return { success: false, error: "could not resolve main pane ID" };
       }
       const splitTargetArgs = ["-t", splitTarget];
 
@@ -345,10 +353,11 @@ export class TmuxMultiplexer {
         return { success: true, paneId };
       }
 
-      return { success: false };
+      return { success: false, error: "tmux split-window returned no pane id" };
     } catch (err) {
+      const errorMsg = err instanceof Error ? `${err.message}` : String(err);
       this.log?.debug("spawnPane: ERROR", err);
-      return { success: false };
+      return { success: false, error: errorMsg };
     }
   }
 
