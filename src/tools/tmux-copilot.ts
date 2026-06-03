@@ -265,6 +265,16 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
     // forward-prompt, list-panes, compute-grid, respawn) out of the
     // human operator's reach while preserving read/control
     // affordances (peek, take-over, release).
+    //
+    // [REGRESSION GUARD — P58.8 S2] Do NOT remove this restriction, do
+    // NOT widen USER_SESSION_ALLOWED_ACTIONS to include write-side
+    // actions, and do NOT collapse the `isUserSession` branch into a
+    // single tier with orchestrator. The S2 affordance is intentional
+    // and minimal by design (D-58-22 LOCKED). BATS 72 (slot-72) is the
+    // acceptance signal that USER_SESSION can reach peek / take-over /
+    // release; BATS 73/74 (Wave 2C/2D) verify the inverse — that
+    // USER_SESSION CANNOT reach send-keys, list-panes, etc. Removing
+    // or weakening this guard breaks the cross-tier invariant.
     if (isUserSession && !USER_SESSION_ALLOWED_ACTIONS.has(input.action)) {
       return renderToolResult({
         error: { kind: "permission-denied", agent: callerAgent ?? "unknown" },
