@@ -390,6 +390,17 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
       }
       case "take-over": {
         // P58 G5 (REQ-58-05, D-58-11): set manualOverride=true with audit fields.
+        //
+        // [P58.8 S2 — D-58-22 ALLOW] `take-over` is intentionally in
+        // USER_SESSION_ALLOWED_ACTIONS. The whole point of the S2
+        // affordance is for the human operator to interrupt the
+        // auto-dispatch loop and take manual control of a delegate
+        // session. The state mutation (setManualOverrideState) is
+        // idempotent and audit-trailed (takenBy = "human-operator"
+        // makes the source unambiguous in session-tracker records),
+        // so the risk surface is bounded: there is no tmux-server
+        // write, only an in-memory flag the next forward-prompt will
+        // honour. BATS 72 step 1 is the acceptance signal.
         setManualOverrideState(input.sessionId, {
           manualOverride: true,
           takenAt: Date.now(),
@@ -404,6 +415,15 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
       }
       case "release": {
         // P58 G5 (REQ-58-05): clear manualOverride=false.
+        //
+        // [P58.8 S2 — D-58-22 ALLOW] `release` is intentionally in
+        // USER_SESSION_ALLOWED_ACTIONS as the inverse of `take-over`:
+        // once the human operator has finished manual intervention
+        // they must be able to return the session to auto-dispatch
+        // without orchestrator-tier involvement. Symmetric to
+        // take-over — same idempotent state mutation, same
+        // audit-trail, no tmux-server write. BATS 72 step 2 is the
+        // acceptance signal.
         setManualOverrideState(input.sessionId, { manualOverride: false })
         return renderToolResult({
           sessionId: input.sessionId,
