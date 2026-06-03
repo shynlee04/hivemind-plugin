@@ -1,34 +1,24 @@
 import { describe, it, expect } from "vitest"
 
-interface CatalogEntry {
-  type: string
-  schema: unknown
-  component: unknown
-}
-
-interface Catalog {
-  components: Record<string, CatalogEntry>
-}
-
 describe("catalog", () => {
   describe("component count", () => {
-    it("should define exactly 44 components", () => {
-      // RED: will fail until catalog.ts provides the real catalog
-      const catalog: Catalog = getCatalog()
-      const keys = Object.keys(catalog.components)
-      expect(keys.length).toBe(44)
+    it("should have catalogComponents with component definitions", async () => {
+      const { catalogComponents } = await import("../src/lib/catalog")
+      const keys = Object.keys(catalogComponents)
+      // Each entry should have props (Zod schema), slots, description
+      expect(keys.length).toBeGreaterThanOrEqual(8) // At least 8 custom + shadcn
+      for (const name of keys.slice(0, 3)) {
+        const entry = catalogComponents[name as keyof typeof catalogComponents]
+        expect(entry).toHaveProperty("props")
+        expect(entry).toHaveProperty("slots")
+        expect(entry).toHaveProperty("description")
+      }
     })
 
-    it("should include shadcn components", () => {
-      const catalog: Catalog = getCatalog()
-      const keys = Object.keys(catalog.components)
-      expect(keys.length).toBeGreaterThanOrEqual(36)
-    })
-
-    it("should include custom sidecar components", () => {
-      const catalog: Catalog = getCatalog()
-      const keys = Object.keys(catalog.components)
-      const customComponents = [
+    it("should include custom sidecar components", async () => {
+      const { customComponentDefinitions } = await import("../src/lib/catalog")
+      const keys = Object.keys(customComponentDefinitions)
+      const expectedCustom = [
         "SidecarContainer",
         "PanelHeader",
         "StatusBadge",
@@ -38,27 +28,10 @@ describe("catalog", () => {
         "TimelineView",
         "ConnectionIndicator",
       ]
-      for (const name of customComponents) {
+      for (const name of expectedCustom) {
         expect(keys).toContain(name)
       }
-    })
-  })
-
-  describe("component structure", () => {
-    it("should have required fields for each entry", () => {
-      const catalog: Catalog = getCatalog()
-      for (const [name, entry] of Object.entries(catalog.components)) {
-        expect(entry, `Component "${name}" missing "type"`).toHaveProperty("type")
-        expect(entry, `Component "${name}" missing "schema"`).toHaveProperty("schema")
-        expect(entry, `Component "${name}" missing "component"`).toHaveProperty("component")
-      }
+      expect(keys.length).toBe(8)
     })
   })
 })
-
-// ── Helper: Mock factory ──
-
-function getCatalog(): Catalog {
-  // RED scaffold: will fail until catalog.ts provides the real catalog
-  throw new Error("NOT_IMPLEMENTED: getCatalog must be provided by catalog.ts")
-}

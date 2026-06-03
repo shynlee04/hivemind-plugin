@@ -11,7 +11,7 @@
 
 "use client"
 
-import { createStateStore } from "@json-render/react"
+import { createStateStore } from "@json-render/core"
 import type { SidecarState, SidecarEvent } from "./types"
 import { getPluginClient } from "./plugin-client"
 
@@ -35,13 +35,10 @@ const INITIAL_STATE: SidecarState = {
 /**
  * Create and initialize the sidecar StateStore.
  *
- * Fetches a snapshot from the plugin server and begins listening for
- * SSE-driven state updates.
- *
  * @returns The initialized StateStore instance.
  */
 export function createSidecarStateStore() {
-  const store = createStateStore(INITIAL_STATE)
+  const store = createStateStore(INITIAL_STATE as unknown as Record<string, unknown>)
 
   /**
    * Initialize the store by fetching a snapshot from the plugin server.
@@ -51,7 +48,6 @@ export function createSidecarStateStore() {
       const client = getPluginClient()
       const snapshot = await client.snapshot()
 
-      // Convert session array to record for O(1) lookup
       const sessionsRecord: Record<string, (typeof snapshot.sessions)[0]> = {}
       for (const session of snapshot.sessions) {
         sessionsRecord[session.id] = session
@@ -70,8 +66,7 @@ export function createSidecarStateStore() {
       store.set("/server", snapshot.server)
       store.set("/ui/lastUpdated", Date.now())
     } catch {
-      // Plugin unavailable — store remains in default state.
-      // The dashboard shell will show the "not available" message.
+      // Plugin unavailable — store remains in default state
     }
   }
 
@@ -83,14 +78,12 @@ export function createSidecarStateStore() {
   }
 
   /**
-   * Handle an incoming sidecar event by patching the corresponding
-   * state path.
+   * Handle an incoming sidecar event by patching the corresponding state path.
    */
   function handleEvent(event: SidecarEvent): void {
     const { type, payload } = event
 
     if (type.startsWith("session.")) {
-      // Patch sessions path
       const currentSessions = store.get("/sessions") as Record<string, unknown>
       if (payload.session && typeof payload.session === "object") {
         const sessionPayload = payload.session as { id: string }
@@ -99,7 +92,6 @@ export function createSidecarStateStore() {
         }
       }
     } else if (type.startsWith("delegation.")) {
-      // Patch delegations path
       if (payload.delegation && typeof payload.delegation === "object") {
         const delPayload = payload.delegation as { id: string }
         if (delPayload.id) {
@@ -107,7 +99,6 @@ export function createSidecarStateStore() {
         }
       }
     } else if (type === "invalidate.cache") {
-      // Cache invalidation — evict affected category
       const category = payload.category as string | undefined
       if (category === "sessions") {
         initialize().catch(() => {})
@@ -125,10 +116,9 @@ export function createSidecarStateStore() {
   }
 
   return {
-    getState: () => store.get() as SidecarState,
+    getState: () => store.getSnapshot() as unknown as SidecarState,
     get: (path: string) => store.get(path),
     set: (path: string, value: unknown) => store.set(path, value),
-    subscribe: (path: string, cb: (value: unknown) => void) => store.subscribe(path, cb),
     initialize,
     refreshSnapshot,
     handleEvent,
