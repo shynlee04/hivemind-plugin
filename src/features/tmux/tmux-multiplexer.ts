@@ -519,6 +519,50 @@ export class TmuxMultiplexer {
   }
 
   // -------------------------------------------------------------------------
+  // Capture pane content (P58.8, REQ-58-07)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Capture the visible content of a tmux pane via `tmux capture-pane -p`.
+   * Returns the raw text content (up to `maxBytes` characters, default 5000)
+   * along with the capture timestamp and byte length.
+   *
+   * This is the read-side companion to `sendKeys` — used by the polling
+   * loop in `SessionManager.startPolling()` (P58.8 S1) and by the
+   * `delegation-status peek` action to surface what the user currently
+   * sees in the pane. The 2-second timeout protects against hung tmux
+   * servers; a timeout returns `byteLength: 0` (the caller can detect
+   * this and skip the cache write).
+   *
+   * @param paneId - The tmux pane id (e.g. `%0`).
+   * @param maxBytes - Maximum content length to return. Defaults to 5000.
+   * @returns Captured content + timestamp + byte length.
+   */
+  async capturePaneContent(
+    paneId: string,
+    maxBytes: number = 5000,
+  ): Promise<{ content: string; capturedAt: number; byteLength: number }> {
+    const tmux = await this.getBinary();
+    if (!tmux) {
+      return { content: "", capturedAt: Date.now(), byteLength: 0 };
+    }
+    try {
+      const { stdout } = await execFileAsync(tmux, [
+        "capture-pane",
+        "-t", paneId,
+        "-p",
+      ], { timeout: 2000 } as Parameters<typeof execFileAsync>[2]);
+      // execFile returns string | Buffer; coerce to string for stable API.
+      const full = typeof stdout === "string" ? stdout : (stdout?.toString("utf8") ?? "");
+      const content = full.length > maxBytes ? full.slice(-maxBytes) : full;
+      return { content, capturedAt: Date.now(), byteLength: Buffer.byteLength(content, "utf8") };
+    } catch (err) {
+      this.log?.debug("capturePaneContent: ERROR", { paneId, err });
+      return { content: "", capturedAt: Date.now(), byteLength: 0 };
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // Layout
   // -------------------------------------------------------------------------
 
