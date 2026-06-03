@@ -79,6 +79,12 @@ export type MockRegistrySurface = {
   getPressure: ReturnType<typeof vi.fn>
   getConfigSubscriber: ReturnType<typeof vi.fn>
   isReady: ReturnType<typeof vi.fn>
+  delegationManager: MockDelegationManager
+  sessionTracker: MockSessionTracker
+  client: MockOpenCodeClient
+  trajectory: MockTrajectory
+  pressure: MockPressure
+  configSubscriber: MockConfigSubscriber
 }
 
 export type MockRegistryBundle = {
@@ -147,6 +153,14 @@ export function createMockRegistry(): MockRegistryBundle {
     getPressure: vi.fn(() => pressure),
     getConfigSubscriber: vi.fn(() => configSubscriber),
     isReady: vi.fn(() => true),
+    // Direct getter-matching properties for use when cast as any
+    // (matches real SidecarDependencyRegistry getter accessor names):
+    delegationManager,
+    sessionTracker,
+    client,
+    trajectory,
+    pressure,
+    configSubscriber,
   }
 
   return {

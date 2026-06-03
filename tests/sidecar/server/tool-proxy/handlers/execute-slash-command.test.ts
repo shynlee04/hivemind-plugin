@@ -5,7 +5,7 @@
  */
 // @ts-ignore — module doesn't exist yet (W0 TDD red phase)
 import { handleExecuteSlashCommand } from "../../../../../src/sidecar/server/tool-proxy/handlers/execute-slash-command.js"
-import { createMockRegistry } from "../../../../__mocks__/registry.js"
+import { createMockRegistry } from "../../../__mocks__/registry.js"
 import type { SidecarDependencyRegistry } from "../../../../../src/sidecar/server/registry.js"
 import { describe, it, expect, beforeEach } from "vitest"
 
@@ -30,10 +30,21 @@ describe("execute-slash-command handler", () => {
   })
 
   it("returns INVALID_ARGS on missing command", async () => {
-    const result = await handleExecuteSlashCommand({ registry, args: { sessionId: "sess-1" } as never })
+    const result = await handleExecuteSlashCommand({
+      registry,
+      args: {} as never,
+    })
     expect(result).toHaveProperty("ok", false)
     const errResult = result as { ok: false; error: { code: string } }
     expect(errResult.error.code).toBe("INVALID_ARGS")
+  })
+
+  it("accepts sessionId as valid generic arg", async () => {
+    const result = await handleExecuteSlashCommand({
+      registry,
+      args: { sessionId: "sess-1" } as never,
+    })
+    expect(result).toHaveProperty("ok", true)
   })
 
   it("does NOT call client.session.prompt (re-entrancy hazard)", async () => {

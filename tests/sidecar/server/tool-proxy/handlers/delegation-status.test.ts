@@ -4,7 +4,7 @@
  */
 // @ts-ignore — module doesn't exist yet (W0 TDD red phase)
 import { handleDelegationStatus } from "../../../../../src/sidecar/server/tool-proxy/handlers/delegation-status.js"
-import { createMockRegistry } from "../../../../__mocks__/registry.js"
+import { createMockRegistry } from "../../../__mocks__/registry.js"
 import type { SidecarDependencyRegistry } from "../../../../../src/sidecar/server/registry.js"
 import { describe, it, expect, beforeEach } from "vitest"
 
@@ -32,6 +32,11 @@ describe("delegation-status handler", () => {
     expect(result).toHaveProperty("ok", false)
     const errResult = result as { ok: false; error: { code: string } }
     expect(errResult.error.code).toBe("INVALID_ARGS")
+  })
+
+  it("accepts sessionId as valid generic arg", async () => {
+    const result = await handleDelegationStatus({ registry, args: { sessionId: "sess-1" } as never })
+    expect(result).toHaveProperty("ok", true)
   })
 
   it("reads DelegationManager state without mutating it", async () => {

@@ -1,0 +1,9 @@
+[
+  {"id":"delegate-task","name":"Delegate Task","kind":"write","description":"Dispatch a delegation"},
+  {"id":"delegation-status","name":"Delegation Status","kind":"read","description":"Query delegation state"},
+  {"id":"execute-slash-command","name":"Execute Slash Command","kind":"write","description":"Execute a slash command"},
+  {"id":"hivemind-trajectory","name":"Hivemind Trajectory","kind":"read","description":"Inspect trajectory"},
+  {"id":"hivemind-session-view","name":"Hivemind Session View","kind":"read","description":"View session state"},
+  {"id":"session-patch","name":"Session Patch","kind":"write","description":"Patch session files (FORBIDDEN_PATH gated)"},
+  {"id":"hivemind-command-engine","name":"Hivemind Command Engine","kind":"read","description":"List/discover commands"}
+]

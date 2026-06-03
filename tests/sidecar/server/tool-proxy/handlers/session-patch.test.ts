@@ -12,9 +12,10 @@
 import { handleSessionPatch } from "../../../../../src/sidecar/server/tool-proxy/handlers/session-patch.js"
 // @ts-ignore — module doesn't exist yet (W0 TDD red phase) — but DOES exist (SC-01) — RE-VERIFY
 import { isCanonicalStatePath, CANONICAL_PREFIXES } from "../../../../../src/sidecar/readonly-state.js"
-import { createMockRegistry } from "../../../../__mocks__/registry.js"
+import { createMockRegistry } from "../../../__mocks__/registry.js"
 import type { SidecarDependencyRegistry } from "../../../../../src/sidecar/server/registry.js"
 import { describe, it, expect, beforeEach } from "vitest"
+import { join } from "node:path"
 
 describe("session-patch handler (with FORBIDDEN_PATH gate)", () => {
   let registry: SidecarDependencyRegistry
@@ -77,9 +78,12 @@ describe("session-patch handler (with FORBIDDEN_PATH gate)", () => {
   })
 
   it("CANONICAL_PREFIXES from readonly-state has 4 entries (SC-01 invariant)", () => {
+    const opts = { projectRoot: process.cwd() }
+    const statePath = join(process.cwd(), ".hivemind/state/x.json")
+    const safePath = "/tmp/safe.md"
     expect(CANONICAL_PREFIXES.length).toBe(4)
-    expect(isCanonicalStatePath(".hivemind/state/x.json")).toBe(true)
-    expect(isCanonicalStatePath("/tmp/safe.md")).toBe(false)
+    expect(isCanonicalStatePath(statePath, opts)).toBe(true)
+    expect(isCanonicalStatePath(safePath, opts)).toBe(false)
   })
 
   it("returns INVALID_ARGS on missing path", async () => {

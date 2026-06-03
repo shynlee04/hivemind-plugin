@@ -29,33 +29,28 @@ export type ToolHandler<TArgs = unknown, TResult = unknown> = (
   | { ok: false; error: { code: string; message: string } }
 >
 
-// ── Create handler helper (stub factory) ─────────────────────
+// ── TOOL_HANDLERS map (7 real handlers) ──────────────────────
 
-/**
- * Create a stub handler that resolves to a success with default data.
- * Used in W1 before real handler implementations exist (W2).
- */
-function stubHandler(name: string): ToolHandler {
-  return async () => {
-    return { ok: true, data: { [name]: true } }
-  }
-}
-
-// ── TOOL_HANDLERS map (7 stubs, replaced with real in W2) ────
+import { handleDelegateTask } from "./handlers/delegate-task.js"
+import { handleDelegationStatus } from "./handlers/delegation-status.js"
+import { handleExecuteSlashCommand } from "./handlers/execute-slash-command.js"
+import { handleHivemindTrajectory } from "./handlers/hivemind-trajectory.js"
+import { handleHivemindSessionView } from "./handlers/hivemind-session-view.js"
+import { handleSessionPatch } from "./handlers/session-patch.js"
+import { handleHivemindCommandEngine } from "./handlers/hivemind-command-engine.js"
 
 /**
  * Registered write tool handlers. Each entry maps a tool name to its
- * async handler function. Stub entries are replaced with real handler
- * imports in W2.
+ * async handler function.
  */
 export const TOOL_HANDLERS: Record<string, ToolHandler> = {
-  "delegate-task": stubHandler("delegationId"),
-  "delegation-status": stubHandler("status"),
-  "execute-slash-command": stubHandler("output"),
-  "hivemind-trajectory": stubHandler("events"),
-  "hivemind-session-view": stubHandler("sessionId"),
-  "session-patch": stubHandler("patched"),
-  "hivemind-command-engine": stubHandler("routes"),
+  "delegate-task": (args, registry) => handleDelegateTask({ args: args as never, registry }),
+  "delegation-status": (args, registry) => handleDelegationStatus({ args: args as never, registry }),
+  "execute-slash-command": (args, registry) => handleExecuteSlashCommand({ args: args as never, registry }),
+  "hivemind-trajectory": (args, registry) => handleHivemindTrajectory({ args: args as never, registry }),
+  "hivemind-session-view": (args, registry) => handleHivemindSessionView({ args: args as never, registry }),
+  "session-patch": (args, registry) => handleSessionPatch({ args: args as never, registry }),
+  "hivemind-command-engine": (args, registry) => handleHivemindCommandEngine({ args: args as never, registry }),
 }
 
 // ── Dispatch function ────────────────────────────────────────
