@@ -869,14 +869,16 @@ Body content.
     await flushDeferred()
 
     expect(result.metadata).toMatchObject({
-      mode: "session-prompt", // Dispatched directly as session-prompt to child session
+      mode: "session-command", // Dispatched directly as session-command to child session
       dispatched: true,
     })
 
-    expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({
+    expect(commandMock).toHaveBeenCalledWith(expect.objectContaining({
       path: { id: "ses_child" },
       body: {
-        parts: [{ type: "text", text: "/subtask-in-child-cmd" }],
+        command: "subtask-in-child-cmd",
+        arguments: "",
+        agent: "gsd-executor",
       }
     }))
   })
@@ -988,10 +990,10 @@ Body content
   })
 
   it("should return success when child session dispatch is started asynchronously", async () => {
-    // Child session path uses dispatchCommand directly — now returns success: true immediately
-    const promptMock = vi.fn().mockRejectedValue(new Error("Child dispatch failed"))
+    // Child session path uses session.command directly — now returns success: true immediately
+    const commandMock = vi.fn().mockRejectedValue(new Error("Child dispatch failed"))
     const client = {
-      session: { prompt: promptMock },
+      session: { command: commandMock },
       tui: {
         clearPrompt: vi.fn(async () => undefined),
         appendPrompt: vi.fn(async () => undefined),
@@ -1036,7 +1038,7 @@ Body content.
 
     expect(result.error).toBe(false)
     await flushDeferred()
-    expect(promptMock).toHaveBeenCalled()
+    expect(commandMock).toHaveBeenCalled()
   })
 
   it("should block and poll until child subtask completes when testBlocking is true", async () => {

@@ -602,43 +602,39 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         const promptText = parts.join(" ")
 
         if (isChildSession) {
-          // Bypassing TUI pipeline for child sessions to avoid global prompt clearing and workspace interference
-          const childDispatchResult = await dispatchCommand({
-            client,
-            sessionID: ctx.sessionID,
-            promptText,
-            subtask: false,
-            directory: ctx.directory,
-          })
-
-          if (!childDispatchResult.success) {
-            return {
-              output: childDispatchResult.output ?? `Failed to dispatch ${cmdDisplay}`,
-              metadata: {
-                error: true,
-                errorType: "dispatch_failed",
-                command: args.command,
-              },
-              error: true,
-            } as ToolResult
-          }
+          // In a child session, execute the command directly via the SDK's session.command() API
+          setTimeout(async () => {
+            try {
+              await client.session.command({
+                path: { id: ctx.sessionID },
+                body: {
+                  command: commandBundle.name,
+                  arguments: validated.arguments ?? "",
+                  ...(resolvedAgent && { agent: resolvedAgent }),
+                },
+                ...(ctx.directory ? { query: { directory: ctx.directory } } : {}),
+              })
+            } catch (caughtError: unknown) {
+              const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+              console.error(`[Harness] session.command dispatch failed in child session: ${message}`)
+            }
+          }, 50)
 
           return {
             output: [
-              `✓ Command ${cmdDisplay} dispatched directly to child session ${ctx.sessionID} (bypassed TUI).`,
-              `  Prompt text: ${promptText}`,
-              `  The command will execute immediately after this tool call returns.`,
-              validated.agent ? `  Agent: ${validated.agent}` : null,
+              `✓ Command ${cmdDisplay} dispatched directly to child session ${ctx.sessionID} via SDK command API.`,
+              resolvedAgent ? `  Agent: ${resolvedAgent}` : null,
               validated.model ? `  Model: ${validated.model}` : null,
             ].filter(Boolean).join("\n"),
             metadata: buildSuccessMetadata(
               args,
               validated,
-              "session-prompt",
+              "session-command",
               resolvedParentSessionID,
               startTime,
               {
-                promptText,
+                command: commandBundle.name,
+                agent: resolvedAgent,
                 dispatched: true,
               }
             ),
