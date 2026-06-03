@@ -11,6 +11,7 @@ import type { DelegationStateMachine } from "./state-machine.js"
 import type { Delegation, DelegationResult } from "./types.js"
 import type { DelegationPool, DelegationPoolEntry, DelegationLifecycleStatus } from "./pool-types.js"
 import { freezeDelegationPool, sanitizePreview } from "./pool-types.js"
+import type { PersistedSession } from "../../features/tmux/persistence.js"
 
 type NativeTask = (params: { agent: string; prompt: string; disabledTools: string[] }) => Promise<unknown>
 
@@ -32,6 +33,17 @@ export type DelegationManagerOptions = {
   runtimePolicy?: RuntimePolicy
   sendPromptAsync?: (sessionId: string, prompt: string) => Promise<void>
   stateMachine?: DelegationStateMachine
+  /**
+   * P58 (G3, REQ-58-03, D-58-06/07/08): Optional sub-type exposing the
+   * persistence + pane-rehydration surface needed by abort+resume. Narrow
+   * type (only the methods we call) — keep the dependency surface small.
+   * Existing callers that don't inject `sessionManager` see the G3 wiring
+   * as a no-op (the `?.` short-circuits).
+   */
+  sessionManager?: {
+    persist: (record: PersistedSession) => Promise<void>
+    respawnIfKnown: (sessionId: string) => Promise<{ paneId: string } | null>
+  }
 }
 
 export type DelegationControlRequest = {
@@ -194,9 +206,18 @@ export class DelegationManager {
 
   /** Mark a delegation aborted via the lifecycle module. */
   abortDelegation(delegationId: string): DelegationResult {
-    if (this.options.coordinator?.abortDelegation) return this.options.coordinator.abortDelegation(delegationId)
-    if (this.options.lifecycle) return this.options.lifecycle.markAborted(delegationId)
-    return this.terminalFallback(delegationId, "[Harness] Delegation aborted")
+    let result: DelegationResult
+    if (this.options.coordinator?.abortDelegation) result = this.options.coordinator.abortDelegation(delegationId)
+    else if (this.options.lifecycle) result = this.options.lifecycle.markAborted(delegationId)
+    else result = this.terminalFallback(delegationId, "[Harness] Delegation aborted")
+    // P58 (G3, REQ-58-03, D-58-06): persist state=paused (NOT failed) when
+    // a tmux session is attached. The pane is still alive, so the future
+    // resume must observe the same paneId.
+    const record = this.getStatus(delegationId)
+    if (record?.tmuxSessionId && this.options.sessionManager?.persist) {
+      void this.options.sessionManager.persist({ ...record, state: "paused", lastTransitionAt: Date.now(), schemaVersion: 1 } as unknown as PersistedSession)
+    }
+    return result
   }
 
   /** Mark a delegation cancelled via the lifecycle module. */
@@ -272,7 +293,24 @@ export class DelegationManager {
       const prompt = request.restartPrompt ?? delegation.prompt
       if (!prompt) throw new Error("[Harness] resume/chain requires a prompt")
 
+      // P58 (G3, REQ-58-03, D-58-07): respawnIfKnown BEFORE sendPromptAsync.
+      // The paneId may have changed during the paused interval; update the
+      // record before re-sending the prompt so the bytes land on the
+      // correct pane.
+      if (delegation.tmuxSessionId && this.options.sessionManager?.respawnIfKnown) {
+        const respawned = await this.options.sessionManager.respawnIfKnown(delegation.tmuxSessionId)
+        if (respawned?.paneId && respawned.paneId !== delegation.childSessionId) {
+          delegation.childSessionId = respawned.paneId
+        }
+      }
+
       await this.options.sendPromptAsync(childSessionId, prompt)
+
+      // P58 (G3, REQ-58-03, D-58-08): persist state=ready AFTER sendPromptAsync
+      // resolves. Transition paused → ready on success only.
+      if (delegation.tmuxSessionId && this.options.sessionManager?.persist) {
+        void this.options.sessionManager.persist({ ...delegation, state: "ready", lastTransitionAt: Date.now(), schemaVersion: 1 } as unknown as PersistedSession)
+      }
 
       // For chain action, update parentSessionId to chainParentSessionId if provided
       const chainParentId = request.action === "chain"

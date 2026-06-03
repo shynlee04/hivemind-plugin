@@ -34,7 +34,7 @@ export const DelegationControlSchema = z.object({
 const DelegationStatusInputSchema = z.object({
   delegationId: z.string().min(1).optional(),
   status: z.string().optional(),
-  action: z.enum(["status", "get", "list", "control", "find-stackable"]).default("status"),
+  action: z.enum(["status", "get", "list", "control", "find-stackable", "pool"]).default("status"),
   control: DelegationControlSchema.optional(),
   agentFilter: z.string().optional(),
 })
@@ -46,6 +46,8 @@ type ManagerLike = {
   controlDelegation?: (request: { action: "abort" | "cancel" | "restart" | "resume" | "chain" | "adjust-prompt" | "change-agent"; delegationId: string; chainParentSessionId?: string; restartPrompt?: string; agent?: string }) => Promise<unknown>
   getAllDelegations: () => Delegation[]
   getStatus: (id: string) => Delegation | undefined
+  /** P58 (G2, REQ-58-02): returns a frozen DelegationPool JSON snapshot. */
+  getPoolSnapshot?: () => unknown
 }
 type StatusDeps = {
   coordinator?: { dispatch: (params: Record<string, unknown>) => Promise<Record<string, unknown>> }
@@ -479,6 +481,16 @@ export function createDelegationStatusTool(
         if (args.action === "find-stackable") return await handleFindStackable(args, context.sessionID, delegationManager, readPersisted, deps)
         if (args.action === "list") return renderList(args, context.sessionID, delegationManager, readPersisted, deps)
         if (args.action === "control") return await handleControl(args, context.sessionID, delegationManager, readPersisted, deps)
+        // P58 (G2, REQ-58-02): "pool" action returns the frozen DelegationPool
+        // JSON snapshot. The ManagerLike interface declares `getPoolSnapshot`
+        // as optional so older managers (without G2) skip this branch gracefully.
+        if (args.action === "pool") {
+          if (typeof delegationManager.getPoolSnapshot !== "function") {
+            return renderToolResult(error("[Harness] delegation-status pool action requires getPoolSnapshot() support on the manager"))
+          }
+          const snapshot = delegationManager.getPoolSnapshot()
+          return renderToolResult(success(`Delegation pool snapshot: ${(snapshot as { delegations?: unknown[] }).delegations?.length ?? 0} entries`, snapshot as Record<string, unknown>))
+        }
 
         if (args.delegationId) {
           let delegation = delegationManager.getStatus(args.delegationId)
