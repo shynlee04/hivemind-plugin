@@ -1,0 +1,328 @@
+{
+  "sessionID": "ses_1725a0c2affeBVxv6yk4jUkILP",
+  "parentSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "SC-03 planning phase",
+    "subagentType": "hm-planner"
+  },
+  "created": "2026-06-03T13:22:03.871Z",
+  "updated": "2026-06-03T13:25:15.714Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are subagent: hm-planner. You are being delegated by hm-orchestrator (L0 strategist). Your task is to create an executable PLAN.md for SC-03 (Next.js 16 Standalone App) of the Hivemind Sidecar GUI.\n\n## Read These First\n1. `.planning/phases/SC-03-nextjs-app/03-SPEC.md` (295 lines, 22 EARS requirements, 13 ACs)\n2. `.planning/phases/SC-03-nextjs-app/03-CONTEXT.md` (319 lines, 12 proposed decisions)\n3. `.planning/phases/SC-03-nextjs-app/03-RESEARCH.md` (271 lines, stack audit, pitfall analysis)\n\n## Planning Context\n- SC-01 and SC-02 are COMPLETE with full SC-02 implementation\n- SC-03 is the Next.js 16 standalone app at package.json in `sidecar/` with @json-render/react\n- Architecture: 4 panels (Session Explorer, Delegation Dashboard, MEMS Browser, Control Panel)\n- 17 REST endpoints from SC-02 drive all state reads\n- SSE for real-time events, WS for delegation streaming\n- SC-03 is a SEPARATE process — no direct src/sidecar/ imports\n- Dependencies need upgrades: next 15→16, @json-render/react 0.1→0.19\n\n## Output: Write `.planning/phases/SC-03-nextjs-app/03-PLAN.md`\n\nThe PLAN.md must include:\n\n### Structure\n1. **Goal** (from SPEC)\n2. **Must-Haves** (goal-backward from SPEC ACs)\n3. **Wave Structure** with dependency graph:\n   - **Wave 0 (TDD Red):** Test scaffolds — plugin-client mock + Next.js API route tests\n   - **Wave 1 (Foundation):** Dep upgrades, Next.js scaffold, plugin-client.ts, json-render catalog stubs, 4 panel stubs\n   - **Wave 2 (Panels):** Session Explorer + Delegation Dashboard panels with json-render specs\n   - **Wave 3 (Panels):** MEMS Browser + Control Panel + SSE live updates\n   - **Wave 4 (Integration):** E2E smoke test, performance baselines, phase gate\n4. **File Inventory** with LOC budgets\n5. **Risk Mitigations** (from RESEARCH open risks)\n6. **Allowed/Forbidden Surfaces** (from CONTEXT)\n7. **Verification Commands**\n8. **Coverage Expectations**\n9. **Stop Conditions**\n\n### Each Wave Plan Must Have:\n- Objective\n- Task list (numbered, each with specific file paths)\n- Allowed/forbidden surfaces per wave\n- Verification gate criteria per wave (primary, secondary, tertiary checks)\n- Atomic commit message template\n\n### Verification Gate for Full Phase\n- Primary: typecheck 0 errors\n- Secondary: full test suite passes\n- Tertiary: build succeeds with dist files\n- Quaternary: SC-01 + SC-02 regression passes\n\nReturn the plan summary: how many waves, total LOC estimate, key risks.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: grep, grep",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Now I have full context. Let me load the planning-relevant skills and write the PLAN.md.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Now let me write the comprehensive PLAN.md.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Let me confirm the file was written correctly:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "## PLANNING COMPLETE\n\n**Plan:** SC-03-nextjs-16-standalone-app\n**Tasks:** 28 tasks across 5 waves\n**Coverage audit:** All items COVERED (32 GOAL/REQ/RESEARCH/CONTEXT items mapped)\n\n**Artifacts:**\n- `.planning/phases/SC-03-nextjs-app/03-PLAN.md` (541 LOC)\n\n**Plan Summary:**\n\n| Dimension | Value |\n|-----------|-------|\n| **Waves** | 5 (Wave 0→4) |\n| **Total Tasks** | 28 |\n| **Total Files** | 28 (8 config, 17 source, 8 test) |\n| **Total LOC Estimate** | ~2,430 |\n| **Verification Gates** | 4 per wave (primary/secondary/tertiary/quaternary) |\n| **Coverage** | 100% — all 22 EARS requirements, 13 ACs, 12 D-SC03 decisions, 5 RESEARCH items |\n\n**Wave Structure:**\n- **Wave 0 (TDD Red):** vitest config + 8 test files (RED-phase — define expected behavior before implementation)\n- **Wave 1 (Foundation):** Dep upgrades (next 16, json-render 0.19, tailwind v4, shadcn) + all 6 core libs (`types.ts`, `constants.ts`, `plugin-client.ts`, `catalog.ts`, `state-store.ts`, `use-sse.ts`) + `next.config.ts` + `globals.css`\n- **Wave 2 (Dashboard Shell):** 4 app pages (`layout.tsx`, `page.tsx`, `loading.tsx`, `error.tsx`) + 2 components (`dashboard-shell.tsx`, `error-boundary.tsx`)\n- **Wave 3 (Panel Stubs):** 8 panel files across 4 panels (stub + pre-built json-render spec each)\n- **Wave 4 (Integration):** Typecheck + tests + build + regression + performance baselines\n\n**Key Risks:**\n1. **json-render v0.1→0.19 API discontinuity** — mitigated: zero existing catalog code\n2. **Standalone `process.cwd()` resolution** — mitigated: `HIVEMIND_DIR` env var + path resolve fallback\n3. **SSE EventSource listener accumulation** — mitigated: `useEffect` cleanup returning `eventSource.close()`\n4. **Tailwind v4 `@source` directive** — mitigated: `require.resolve` path for shadcn dist\n\n**Next:** Dispatch `hm-plan-checker` for plan verification, then proceed to `hm-execute-phase` for Wave 0 execution.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-03T13:22:20.087Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_gMDU2XH463HvaGsZNXBt4050",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/SC-03-nextjs-app/03-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:20.092Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_5lfhcQ4Gk3KTQnjgCacM8593",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/SC-03-nextjs-app/03-RESEARCH.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:20.108Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_2jzVi3HNkLeWfyhfGADh3578",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/SC-03-nextjs-app/03-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:29.307Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_8sqZ7zF7vcbUhZrw7Py36635",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/package.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:29.312Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Aebf41ZNajwzaqMnalPP5449",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/next.config.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:29.317Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_MlyfdPzdIrY9kuuqZgv05103",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/tsconfig.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:29.323Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_BEVwZfmptXwRIAGyJmNr0035",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/src/app/layout.tsx"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:29.336Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_zWTfoZrZ1XeqTSi1VCzG0919",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/src/app/page.tsx"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:37.913Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ZOOvQ1hSO2klxLkmWKTS1282",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar/src"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:37.918Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_BGFiyeIxvfmCTPi6wqZC2165",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/sidecar"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:37.937Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_DRugoa5hSYdfWPhiBneP8932",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/planning/sidecar-vision/ARCHITECTURE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:49.738Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_loy9647D75D1YgCk447k2527",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:49.792Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_KDGpe6aDjI7Nl0yfpzlj0307",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:23:07.082Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ZrSB8sgdOdWRlVS9sXca2484",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/planning/sidecar-vision/ARCHITECTURE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:23:31.709Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_00_S200qVHRFrcGKofcON5X2506",
+        "input": {
+          "name": "wave-execution"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:24:56.719Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_GE4jXgnjj4npJEmpJUeT9488",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:25:05.906Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_00_nEhuh9zZGsZNn019dYkB6319",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:25:05.915Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_Eg9sUyzWqgSJ8gt4CCde5604",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:25:15.675Z",
+      "type": "assistant_message",
+      "content": "## PLANNING COMPLETE\n\n**Plan:** SC-03-nextjs-16-standalone-app\n**Tasks:** 28 tasks across 5 waves\n**Coverage audit:** All items COVERED (32 GOAL/REQ/RESEARCH/CONTEXT items mapped)\n\n**Artifacts:**\n- `.planning/phases/SC-03-nextjs-app/03-PLAN.md` (541 LOC)\n\n**Plan Summary:**\n\n| Dimension | Value |\n|-----------|-------|\n| **Waves** | 5 (Wave 0→4) |\n| **Total Tasks** | 28 |\n| **Total Files** | 28 (8 config, 17 source, 8 test) |\n| **Total LOC Estimate** | ~2,430 |\n| **Verification Gates** | 4 per wave (primary/secondary/tertiary/quaternary) |\n| **Coverage** | 100% — all 22 EARS requirements, 13 ACs, 12 D-SC03 decisions, 5 RESEARCH items |\n\n**Wave Structure:**\n- **Wave 0 (TDD Red):** vitest config + 8 test files (RED-phase — define expected behavior before implementation)\n- **Wave 1 (Foundation):** Dep upgrades (next 16, json-render 0.19, tailwind v4, shadcn) + all 6 core libs (`types.ts`, `constants.ts`, `plugin-client.ts`, `catalog.ts`, `state-store.ts`, `use-sse.ts`) + `next.config.ts` + `globals.css`\n- **Wave 2 (Dashboard Shell):** 4 app pages (`layout.tsx`, `page.tsx`, `loading.tsx`, `error.tsx`) + 2 components (`dashboard-shell.tsx`, `error-boundary.tsx`)\n- **Wave 3 (Panel Stubs):** 8 panel files across 4 panels (stub + pre-built json-render spec each)\n- **Wave 4 (Integration):** Typecheck + tests + build + regression + performance baselines\n\n**Key Risks:**\n1. **json-render v0.1→0.19 API discontinuity** — mitigated: zero existing catalog code\n2. **Standalone `process.cwd()` resolution** — mitigated: `HIVEMIND_DIR` env var + path resolve fallback\n3. **SSE EventSource listener accumulation** — mitigated: `useEffect` cleanup returning `eventSource.close()`\n4. **Tailwind v4 `@source` directive** — mitigated: `require.resolve` path for shadcn dist\n\n**Next:** Dispatch `hm-plan-checker` for plan verification, then proceed to `hm-execute-phase` for Wave 0 execution.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1725a0c2affeBVxv6yk4jUkILP"
+      }
+    }
+  ],
+  "lastMessage": "## PLANNING COMPLETE\n\n**Plan:** SC-03-nextjs-16-standalone-app\n**Tasks:** 28 tasks across 5 waves\n**Coverage audit:** All items COVERED (32 GOAL/REQ/RESEARCH/CONTEXT items mapped)\n\n**Artifacts:**\n- `.planning/phases/SC-03-nextjs-app/03-PLAN.md` (541 LOC)\n\n**Plan Summary:**\n\n| Dimension | Value |\n|-----------|-------|\n| **Waves** | 5 (Wave 0→4) |\n| **Total Tasks** | 28 |\n| **Total Files** | 28 (8 config, 17 source, 8 test) |\n| **Total LOC Estimate** | ~2,430 |\n| **Verification Gates** | 4 per wave (primary/secondary/tertiary/quaternary) |\n| **Coverage** | 100% — all 22 EARS requirements, 13 ACs, 12 D-SC03 decisions, 5 RESEARCH items |\n\n**Wave Structure:**\n- **Wave 0 (TDD Red):** vitest config + 8 test files (RED-phase — define expected behavior before implementation)\n- **Wave 1 (Foundation):** Dep upgrades (next 16, json-render 0.19, tailwind v4, shadcn) + all 6 core libs (`types.ts`, `constants.ts`, `plugin-client.ts`, `catalog.ts`, `state-store.ts`, `use-sse.ts`) + `next.config.ts` + `globals.css`\n- **Wave 2 (Dashboard Shell):** 4 app pages (`layout.tsx`, `page.tsx`, `loading.tsx`, `error.tsx`) + 2 components (`dashboard-shell.tsx`, `error-boundary.tsx`)\n- **Wave 3 (Panel Stubs):** 8 panel files across 4 panels (stub + pre-built json-render spec each)\n- **Wave 4 (Integration):** Typecheck + tests + build + regression + performance baselines\n\n**Key Risks:**\n1. **json-render v0.1→0.19 API discontinuity** — mitigated: zero existing catalog code\n2. **Standalone `process.cwd()` resolution** — mitigated: `HIVEMIND_DIR` env var + path resolve fallback\n3. **SSE EventSource listener accumulation** — mitigated: `useEffect` cleanup returning `eventSource.close()`\n4. **Tailwind v4 `@source` directive** — mitigated: `require.resolve` path for shadcn dist\n\n**Next:** Dispatch `hm-plan-checker` for plan verification, then proceed to `hm-execute-phase` for Wave 0 execution."
+}

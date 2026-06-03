@@ -1,0 +1,72 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+  "lastUpdated": "2026-06-03T14:21:22.607Z",
+  "hierarchy": {
+    "root": "ses_172625a4dffe0HxdVgunR88RNZ",
+    "children": {
+      "ses_1725fcdc3ffe2cHxogJIamTGIv": {
+        "file": "ses_1725fcdc3ffe2cHxogJIamTGIv.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-phase-researcher",
+        "children": {}
+      },
+      "ses_1725a0c2affeBVxv6yk4jUkILP": {
+        "file": "ses_1725a0c2affeBVxv6yk4jUkILP.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-planner",
+        "children": {}
+      },
+      "ses_17256ea44ffeRLKWdlpMU90CVl": {
+        "file": "ses_17256ea44ffeRLKWdlpMU90CVl.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-plan-checker",
+        "children": {}
+      },
+      "ses_172518a65ffeLUQ6RLxRGgXj2I": {
+        "file": "ses_172518a65ffeLUQ6RLxRGgXj2I.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-planner",
+        "children": {}
+      },
+      "ses_1724f1bb3ffetqHu7Xycyzqgly": {
+        "file": "ses_1724f1bb3ffetqHu7Xycyzqgly.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-plan-checker",
+        "children": {}
+      },
+      "ses_1724af64dffe7eb6DMr8OEhqIJ": {
+        "file": "ses_1724af64dffe7eb6DMr8OEhqIJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-executor",
+        "children": {}
+      },
+      "ses_1723bed48ffeTnUO4hpC7vvN8J": {
+        "file": "ses_1723bed48ffeTnUO4hpC7vvN8J.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-verifier",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 9,
+  "toolSummary": {
+    "session-tracker": 1,
+    "hivemind-doc": 2,
+    "glob": 7,
+    "read": 3,
+    "bash": 4,
+    "write": 1,
+    "task": 10,
+    "hivemind-command-engine": 1,
+    "execute-slash-command": 3,
+    "delegation-status": 1
+  }
+}

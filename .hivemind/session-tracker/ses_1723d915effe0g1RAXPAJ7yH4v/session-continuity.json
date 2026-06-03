@@ -1,0 +1,73 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
+  "lastUpdated": "2026-06-03T14:52:31.789Z",
+  "hierarchy": {
+    "root": "ses_1723d915effe0g1RAXPAJ7yH4v",
+    "children": {
+      "ses_1723724b3ffejTjrXKTzYTtB5s": {
+        "file": "ses_1723724b3ffejTjrXKTzYTtB5s.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-roadmapper",
+        "children": {}
+      },
+      "ses_17230d8b4ffeDkYUSRYE7vZ5gh": {
+        "file": "ses_17230d8b4ffeDkYUSRYE7vZ5gh.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-roadmapper",
+        "children": {}
+      },
+      "ses_17229706dffetof1Cl7znh3YtM": {
+        "file": "ses_17229706dffetof1Cl7znh3YtM.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_17212b389ffemLobFYLyfYgral": {
+        "file": "ses_17212b389ffemLobFYLyfYgral.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1720c3904ffeYQ1H2KRV5ZzqcW": {
+        "file": "ses_1720c3904ffeYQ1H2KRV5ZzqcW.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_172088ba1ffeyUX9UsAqCiqyVW": {
+        "file": "ses_172088ba1ffeyUX9UsAqCiqyVW.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_17207396effem6DFI5mda5yqc6": {
+        "file": "ses_17207396effem6DFI5mda5yqc6.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 13,
+  "toolSummary": {
+    "hivemind-doc": 1,
+    "hivemind-command-engine": 1,
+    "session-tracker": 2,
+    "delegation-status": 3,
+    "bash": 39,
+    "read": 5,
+    "write": 2,
+    "question": 1,
+    "execute-slash-command": 5,
+    "task": 6,
+    "invalid": 2
+  }
+}

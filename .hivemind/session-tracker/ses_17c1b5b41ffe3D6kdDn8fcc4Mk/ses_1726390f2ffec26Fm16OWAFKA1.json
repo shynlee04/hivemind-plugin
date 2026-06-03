@@ -1,0 +1,877 @@
+{
+  "sessionID": "ses_1726390f2ffec26Fm16OWAFKA1",
+  "parentSessionID": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase.",
+    "subagentType": "hm-planner"
+  },
+  "created": "2026-06-03T13:11:40.057Z",
+  "updated": "2026-06-03T13:28:14.147Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "<objective>\nClarify phase requirements through structured Socratic questioning with quantitative ambiguity scoring.\n\n**Position in workflow:** `spec-phase → discuss-phase → plan-phase → execute-phase → verify`\n\n**How it works:**\n1. Load phase context (PROJECT.md, REQUIREMENTS.md, ROADMAP.md, STATE.md)\n2. Scout the codebase — understand current state before asking questions\n3. Run Socratic interview loop (up to 6 rounds, rotating perspectives)\n4. Score ambiguity across 4 weighted dimensions after each round\n5. Gate: ambiguity ≤ 0.20 AND all dimensions meet minimums → write SPEC.md\n6. Commit SPEC.md — discuss-phase picks it up automatically on next run\n\n**Output:** `{phase_dir}/{padded_phase}-SPEC.md` — falsifiable requirements that lock \"what/why\" before discuss-phase handles \"how\"\n</objective>\n\n<execution_context>\n<reference path=\"/Users/apple/hivemind-plugin-private/.opencode/workflows/hm-spec-phase.md\">\n<purpose>\nClarify WHAT a phase delivers through a Socratic interview loop with quantitative ambiguity scoring.\nProduces a SPEC.md with falsifiable requirements that discuss-phase treats as locked decisions.\n\nThis workflow handles \"what\" and \"why\" — discuss-phase handles \"how\".\n</purpose>\n\n<ambiguity_model>\nScore each dimension 0.0 (completely unclear) to 1.0 (crystal clear):\n\n| Dimension         | Weight | Minimum | What it measures                                  |\n|-------------------|--------|---------|---------------------------------------------------|\n| Goal Clarity      | 35%    | 0.75    | Is the outcome specific and measurable?           |\n| Boundary Clarity  | 25%    | 0.70    | What's in scope vs out of scope?                  |\n| Constraint Clarity| 20%    | 0.65    | Performance, compatibility, data requirements?    |\n| Acceptance Criteria| 20%   | 0.70    | How do we know it's done?                         |\n\n**Ambiguity score** = 1.0 − (0.35×goal + 0.25×boundary + 0.20×constraint + 0.20×acceptance)\n\n**Gate:** ambiguity ≤ 0.20 AND all dimensions ≥ their minimums → ready to write SPEC.md.\n\nA score of 0.20 means 80% weighted clarity — enough precision that the planner won't silently make wrong assumptions.\n</ambiguity_model>\n\n<interview_perspectives>\nRotate through these perspectives — each naturally surfaces different blindspots:\n\n**Researcher (rounds 1–2):** Ground the discussion in current reality.\n- \"What exists in the codebase today related to this phase?\"\n- \"What's the delta between today and the target state?\"\n- \"What triggers this work — what's broken or missing?\"\n\n**Simplifier (round 2):** Surface minimum viable scope.\n- \"What's the simplest version that solves the core problem?\"\n- \"If you had to cut 50%, what's the irreducible core?\"\n- \"What would make this phase a success even without the nice-to-haves?\"\n\n**Boundary Keeper (round 3):** Lock the perimeter.\n- \"What explicitly will NOT be done in this phase?\"\n- \"What adjacent problems is it tempting to solve but shouldn't?\"\n- \"What does 'done' look like — what's the final deliverable?\"\n\n**Failure Analyst (round 4):** Find the edge cases that invalidate requirements.\n- \"What's the worst thing that could go wrong if we get the requirements wrong?\"\n- \"What does a broken version of this look like?\"\n- \"What would cause a verifier to reject the output?\"\n\n**Seed Closer (rounds 5–6):** Lock remaining undecided territory.\n- \"We have [dimension] at [score] — what would make it completely clear?\"\n- \"The remaining ambiguity is in [area] — can we make a decision now?\"\n- \"Is there anything you'd regret not specifying before planning starts?\"\n</interview_perspectives>\n\n<process>\n\n## Step 1: Initialize\n\n```bash\nINIT=$(node \"/Users/apple/hivemind-plugin-private/.opencode/hivemind/bin/hm-tools.cjs\" init phase-op \"${PHASE}\")\nif [[ \"$INIT\" == @file:* ]]; then INIT=$(cat \"${INIT#@file:}\"); fi\n```\n\nParse JSON for: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `state_path`, `requirements_path`, `roadmap_path`, `planning_path`, `response_language`, `commit_docs`.\n\n**If `response_language` is set:** All user-facing text in this workflow MUST be in `{response_language}`. Technical terms, code, and file paths stay in English.\n\n**If `phase_found` is false:**\n```\nPhase [X] not found in roadmap.\nUse /hm-progress to see available phases.\n```\nExit.\n\n**Check for existing SPEC.md:**\n```bash\nls ${phase_dir}/*-SPEC.md 2>/dev/null | grep -v AI-SPEC | head -1 || true\n```\n\nIf SPEC.md already exists:\n\n**If `--auto`:** Auto-select \"Update it\". Log: `[auto] SPEC.md exists — updating.`\n\n**Otherwise:** Use question:\n- header: \"Spec\"\n- question: \"Phase [X] already has a SPEC.md. What do you want to do?\"\n- options:\n  - \"Update it\" — Revise and re-score\n  - \"View it\" — Show current spec\n  - \"Skip\" — Exit (use existing spec as-is)\n\nIf \"View\": Display SPEC.md, then offer Update/Skip.\nIf \"Skip\": Exit with message: \"Existing SPEC.md unchanged. Run /hm-discuss-phase [X] to continue.\"\nIf \"Update\": Load existing SPEC.md, continue to Step 3.\n\n## Step 2: Scout Codebase\n\n**Read these files before any questions:**\n- `{requirements_path}` — Project requirements\n- `{state_path}` — Decisions already made, current phase, blockers\n- ROADMAP.md phase entry — Phase description, goals, canonical refs\n\n**Grep the codebase** for code/files relevant to this phase goal. Look for:\n- Existing implementations of similar functionality\n- Integration points where new code will connect\n- Test coverage gaps relevant to the phase\n- Prior phase artifacts (SUMMARY.md, VERIFICATION.md) that inform current state\n\n**Synthesize current state** — the grounded baseline for the interview:\n- What exists today related to this phase\n- The gap between current state and the phase goal\n- The primary deliverable: what file/behavior/capability does NOT exist yet?\n\nConfirm your current state synthesis internally. Do not present it to the user yet — you'll use it to ask precise, grounded questions.\n\n## Step 3: First Ambiguity Assessment\n\nBefore questioning begins, score the phase's current ambiguity based only on what ROADMAP.md and REQUIREMENTS.md say:\n\n```\nGoal Clarity:       [score 0.0–1.0]\nBoundary Clarity:   [score 0.0–1.0]\nConstraint Clarity: [score 0.0–1.0]\nAcceptance Criteria:[score 0.0–1.0]\n\nAmbiguity: [score] ([calculate])\n```\n\n**If `--auto` and initial ambiguity already ≤ 0.20 with all minimums met:** Skip interview — derive SPEC.md directly from roadmap + requirements. Log: `[auto] Phase requirements are already sufficiently clear — generating SPEC.md from existing context.` Jump to Step 6.\n\n**Otherwise:** Continue to Step 4.\n\n## Step 4: Socratic Interview Loop\n\n**Max 6 rounds.** Each round: 2–3 questions max. End round after user responds.\n\n**Round selection by perspective:**\n- Round 1: Researcher\n- Round 2: Researcher + Simplifier\n- Round 3: Boundary Keeper\n- Round 4: Failure Analyst\n- Rounds 5–6: Seed Closer (focus on lowest-scoring dimensions)\n\n**After each round:**\n1. Update all 4 dimension scores from the user's answers\n2. Calculate new ambiguity score\n3. Display the updated scoring:\n\n```\nAfter round [N]:\n  Goal Clarity:       [score] (min 0.75) [✓ or ↑ needed]\n  Boundary Clarity:   [score] (min 0.70) [✓ or ↑ needed]\n  Constraint Clarity: [score] (min 0.65) [✓ or ↑ needed]\n  Acceptance Criteria:[score] (min 0.70) [✓ or ↑ needed]\n  Ambiguity: [score] (gate: ≤ 0.20)\n```\n\n**Gate check after each round:**\n\nIf gate passes (ambiguity ≤ 0.20 AND all minimums met):\n\n**If `--auto`:** Jump to Step 6.\n\n**Otherwise:** question:\n- header: \"Spec Gate Passed\"\n- question: \"Ambiguity is [score] — requirements are clear enough to write SPEC.md. Proceed?\"\n- options:\n  - \"Yes — write SPEC.md\" → Jump to Step 6\n  - \"One more round\" → Continue interview\n  - \"Done talking — write it\" → Jump to Step 6\n\n**If max rounds reached (6) and gate not passed:**\n\n**If `--auto`:** Write SPEC.md anyway — flag unresolved dimensions. Log: `[auto] Max rounds reached. Writing SPEC.md with [N] dimensions below minimum. Planner will need to treat these as assumptions.`\n\n**Otherwise:** question:\n- header: \"Max Rounds\"\n- question: \"After 6 rounds, ambiguity is [score]. [List dimensions still below minimum.] What would you like to do?\"\n- options:\n  - \"Write SPEC.md anyway — flag gaps\" → Write SPEC.md, mark unresolved dimensions in Ambiguity Report\n  - \"Keep talking\" → Continue (no round limit from here)\n  - \"Abandon\" → Exit without writing\n\n**If `--auto` mode throughout:** Replace all question calls above with the agent's recommended choice. Log decisions inline. Apply the same logic as `--auto` in discuss-phase.\n\n**Text mode (`workflow.text_mode: true` or `--text` flag):** Use plain-text numbered lists instead of question TUI menus.\n\n## Step 5: (covered inline — ambiguity scoring is per-round)\n\n## Step 6: Generate SPEC.md\n\nUse the SPEC.md template from @/Users/apple/hivemind-plugin-private/.opencode/templates/hm-spec.md.\n\n**Requirements for every requirement entry:**\n- One specific, testable statement\n- Current state (what exists now)\n- Target state (what it should become)\n- Acceptance criterion (how to verify it was met)\n\n**Vague requirements are rejected:**\n- ✗ \"The system should be fast\"\n- ✗ \"Improve user experience\"\n- ✓ \"API endpoint responds in < 200ms at p95 under 100 concurrent requests\"\n- ✓ \"CLI command exits with code 1 and prints to stderr on invalid input\"\n\n**Count requirements.** The display in discuss-phase reads: \"Found SPEC.md — {N} requirements locked.\"\n\n**Boundaries must be explicit lists:**\n- \"In scope\" — what this phase produces\n- \"Out of scope\" — what it explicitly does NOT do (with brief reasoning)\n\n**Acceptance criteria must be pass/fail checkboxes** — no \"should feel good\" or \"looks reasonable.\"\n\n**If any dimensions are below minimum**, mark them in the Ambiguity Report with: `⚠ Below minimum — planner must treat as assumption`.\n\nWrite to: `{phase_dir}/{padded_phase}-SPEC.md`\n\n## Step 7: Commit\n\n```bash\ngit add \"${phase_dir}/${padded_phase}-SPEC.md\"\ngit commit -m \"spec(phase-${phase_number}): add SPEC.md for ${phase_name} — ${requirement_count} requirements (#2213)\"\n```\n\nIf `commit_docs` is false: Skip commit. Note that SPEC.md was written but not committed.\n\n## Step 8: Wrap Up\n\nDisplay:\n\n```\nSPEC.md written — {N} requirements locked.\n\n  Phase {X}: {name}\n  Ambiguity: {final_score} (gate: ≤ 0.20)\n\nNext: /hm-discuss-phase {X}\n  discuss-phase will detect SPEC.md and focus on implementation decisions only.\n```\n\n</process>\n\n<critical_rules>\n- Every requirement MUST have current state, target state, and acceptance criterion\n- Boundaries section is MANDATORY — cannot be empty\n- \"In scope\" and \"Out of scope\" must be explicit lists, not narrative prose\n- Acceptance criteria must be pass/fail — no subjective criteria\n- SPEC.md is NEVER written if the user selects \"Abandon\"\n- Do NOT ask about HOW to implement — that is discuss-phase territory\n- Scout the codebase BEFORE the first question — grounded questions only\n- Max 2–3 questions per round — do not frontload all questions at once\n</critical_rules>\n\n<success_criteria>\n- Codebase scouted and current state understood before questioning\n- All 4 dimensions scored after every round\n- Gate passed OR user explicitly chose to write despite gaps\n- SPEC.md contains only falsifiable requirements\n- Boundaries are explicit (in scope / out of scope with reasoning)\n- Acceptance criteria are pass/fail checkboxes\n- SPEC.md committed atomically (when commit_docs is true)\n- User directed to /hm-discuss-phase as next step\n</success_criteria>\n\n</reference>\n<reference path=\"/Users/apple/hivemind-plugin-private/.opencode/templates/hm-spec.md\">\n# Phase Spec Template\n\nTemplate for `.planning/phases/XX-name/{phase_num}-SPEC.md` — locks requirements before discuss-phase.\n\n**Purpose:** Capture WHAT a phase delivers and WHY, with enough precision that requirements are falsifiable. discuss-phase reads this file and focuses on HOW to implement (skipping \"what/why\" questions already answered here).\n\n**Key principle:** Every requirement must be falsifiable — you can write a test or check that proves it was met or not. Vague requirements like \"improve performance\" are not allowed.\n\n**Downstream consumers:**\n- `discuss-phase` — reads SPEC.md at startup; treats Requirements, Boundaries, and Acceptance Criteria as locked; skips \"what/why\" questions\n- `hm-planner` — reads locked requirements to constrain plan scope\n- `hm-verifier` — uses acceptance criteria as explicit pass/fail checks\n\n---\n\n## File Template\n\n```markdown\n# Phase [X]: [Name] — Specification\n\n**Created:** [date]\n**Ambiguity score:** [score] (gate: ≤ 0.20)\n**Requirements:** [N] locked\n\n## Goal\n\n[One precise sentence — specific and measurable. NOT \"improve X\" — instead \"X changes from A to B\".]\n\n## Background\n\n[Current state from codebase — what exists today, what's broken or missing, what triggers this work. Grounded in code reality, not abstract description.]\n\n## Requirements\n\n1. **[Short label]**: [Specific, testable statement.]\n   - Current: [what exists or does NOT exist today]\n   - Target: [what it should become after this phase]\n   - Acceptance: [concrete pass/fail check — how a verifier confirms this was met]\n\n2. **[Short label]**: [Specific, testable statement.]\n   - Current: [what exists or does NOT exist today]\n   - Target: [what it should become after this phase]\n   - Acceptance: [concrete pass/fail check]\n\n[Continue for all requirements. Each must have Current/Target/Acceptance.]\n\n## Boundaries\n\n**In scope:**\n- [Explicit list of what this phase produces]\n- [Each item is a concrete deliverable or behavior]\n\n**Out of scope:**\n- [Explicit list of what this phase does NOT do] — [brief reason why it's excluded]\n- [Adjacent problems excluded from this phase] — [brief reason]\n\n## Constraints\n\n[Performance, compatibility, data volume, dependency, or platform constraints.\nIf none: \"No additional constraints beyond standard project conventions.\"]\n\n## Acceptance Criteria\n\n- [ ] [Pass/fail criterion — unambiguous, verifiable]\n- [ ] [Pass/fail criterion]\n- [ ] [Pass/fail criterion]\n\n[Every acceptance criterion must be a checkbox that resolves to PASS or FAIL.\nNo \"should feel good\", \"looks reasonable\", or \"generally works\" — those are not checkboxes.]\n\n## Ambiguity Report\n\n| Dimension          | Score | Min  | Status | Notes                              |\n|--------------------|-------|------|--------|------------------------------------|\n| Goal Clarity       |       | 0.75 |        |                                    |\n| Boundary Clarity   |       | 0.70 |        |                                    |\n| Constraint Clarity |       | 0.65 |        |                                    |\n| Acceptance Criteria|       | 0.70 |        |                                    |\n| **Ambiguity**      |       | ≤0.20|        |                                    |\n\nStatus: ✓ = met minimum, ⚠ = below minimum (planner treats as assumption)\n\n## Interview Log\n\n[Key decisions made during the Socratic interview. Format: round → question → answer → decision locked.]\n\n| Round | Perspective    | Question summary         | Decision locked                    |\n|-------|----------------|-------------------------|------------------------------------|\n| 1     | Researcher     | [what was asked]        | [what was decided]                 |\n| 2     | Simplifier     | [what was asked]        | [what was decided]                 |\n| 3     | Boundary Keeper| [what was asked]        | [what was decided]                 |\n\n[If --auto mode: note \"auto-selected\" decisions with the reasoning the agent used.]\n\n---\n\n*Phase: [XX-name]*\n*Spec created: [date]*\n*Next step: /hm-discuss-phase [X] — implementation decisions (how to build what's specified above)*\n```\n\n<good_examples>\n\n**Example 1: Feature addition (Post Feed)**\n\n```markdown\n# Phase 3: Post Feed — Specification\n\n**Created:** 2025-01-20\n**Ambiguity score:** 0.12\n**Requirements:** 4 locked\n\n## Goal\n\nUsers can scroll through posts from accounts they follow, with new posts available after pull-to-refresh.\n\n## Background\n\nThe database has a `posts` table and `follows` table. No feed query or feed UI exists today. The home screen shows a placeholder \"Your feed will appear here.\" This phase builds the feed query, API endpoint, and the feed list component.\n\n## Requirements\n\n1. **Feed query**: Returns posts from followed accounts ordered by creation time, descending.\n   - Current: No feed query exists — `posts` table is queried directly only from profile pages\n   - Target: `GET /api/feed` returns paginated posts from followed accounts, newest first, max 20 per page\n   - Acceptance: Query returns correct posts for a user who follows 3 accounts with known post counts; cursor-based pagination advances correctly\n\n2. **Feed display**: Posts display in a scrollable card list.\n   - Current: Home screen shows static placeholder text\n   - Target: Home screen renders feed cards with author, timestamp, post content, and reaction count\n   - Acceptance: Feed renders without error for 0 posts (empty state shown), 1 post, and 20+ posts\n\n3. **Pull-to-refresh**: User can refresh the feed manually.\n   - Current: No refresh mechanism exists\n   - Target: Pull-down gesture triggers refetch; new posts appear at top of list\n   - Acceptance: After a new post is created in test, pull-to-refresh shows the new post without full app restart\n\n4. **New posts indicator**: When new posts arrive, a banner appears instead of auto-scrolling.\n   - Current: No such mechanism\n   - Target: \"3 new posts\" banner appears when refetch returns posts newer than the oldest visible post; tapping banner scrolls to top and shows new posts\n   - Acceptance: Banner appears for ≥1 new post, does not appear when no new posts, tap navigates to top\n\n## Boundaries\n\n**In scope:**\n- Feed query (backend) — posts from followed accounts, paginated\n- Feed list UI (frontend) — post cards with author, timestamp, content, reaction counts\n- Pull-to-refresh gesture\n- New posts indicator banner\n- Empty state when user follows no one or no posts exist\n\n**Out of scope:**\n- Creating posts — that is Phase 4\n- Reacting to posts — that is Phase 5\n- Following/unfollowing accounts — that is Phase 2 (already done)\n- Push notifications for new posts — separate backlog item\n\n## Constraints\n\n- Feed query must use cursor-based pagination (not offset) — the database has 500K+ posts and offset pagination is unacceptably slow beyond page 3\n- The feed card component must reuse the existing `<AvatarImage>` component from Phase 2\n\n## Acceptance Criteria\n\n- [ ] `GET /api/feed` returns posts only from followed accounts (not all posts)\n- [ ] `GET /api/feed` supports `cursor` parameter for pagination\n- [ ] Feed renders correctly at 0, 1, and 20+ posts\n- [ ] Pull-to-refresh triggers refetch\n- [ ] New posts indicator appears when posts newer than current view exist\n- [ ] Empty state renders when user follows no one\n\n## Ambiguity Report\n\n| Dimension          | Score | Min  | Status | Notes                            |\n|--------------------|-------|------|--------|----------------------------------|\n| Goal Clarity       | 0.92  | 0.75 | ✓      |                                  |\n| Boundary Clarity   | 0.95  | 0.70 | ✓      | Explicit out-of-scope list       |\n| Constraint Clarity | 0.80  | 0.65 | ✓      | Cursor pagination required       |\n| Acceptance Criteria| 0.85  | 0.70 | ✓      | 6 pass/fail criteria             |\n| **Ambiguity**      | 0.12  | ≤0.20| ✓      |                                  |\n\n## Interview Log\n\n| Round | Perspective     | Question summary              | Decision locked                         |\n|-------|-----------------|------------------------------|-----------------------------------------|\n| 1     | Researcher      | What exists in posts today?  | posts + follows tables exist, no feed  |\n| 2     | Simplifier      | Minimum viable feed?         | Cards + pull-refresh, no auto-scroll   |\n| 3     | Boundary Keeper | What's NOT this phase?       | Creating posts, reactions out of scope |\n| 3     | Boundary Keeper | What does done look like?    | Scrollable feed with 4 card fields     |\n\n---\n\n*Phase: 03-post-feed*\n*Spec created: 2025-01-20*\n*Next step: /hm-discuss-phase 3 — implementation decisions (card layout, loading skeleton, etc.)*\n```\n\n**Example 2: CLI tool (Database backup)**\n\n```markdown\n# Phase 2: Backup Command — Specification\n\n**Created:** 2025-01-20\n**Ambiguity score:** 0.15\n**Requirements:** 3 locked\n\n## Goal\n\nA `hm backup` CLI command creates a reproducible database snapshot that can be restored by `hm restore` (a separate phase).\n\n## Background\n\nNo backup tooling exists. The project uses PostgreSQL. Developers currently use `pg_dump` manually — there is no standardized process, no output naming convention, and no CI integration. Three incidents in the last quarter involved restoring from wrong or corrupt dumps.\n\n## Requirements\n\n1. **Backup creation**: CLI command executes a full database backup.\n   - Current: No `backup` subcommand exists in the CLI\n   - Target: `hm backup` connects to the database (via `DATABASE_URL` env or `--db` flag), runs pg_dump, writes output to `./backups/YYYY-MM-DD_HH-MM-SS.dump`\n   - Acceptance: Running `hm backup` on a test database creates a `.dump` file; running `pg_restore` on that file recreates the database without error\n\n2. **Network retry**: Transient network failures are retried automatically.\n   - Current: pg_dump fails immediately on network error\n   - Target: Backup retries up to 3 times with 5-second delay; 4th failure exits with code 1 and a message to stderr\n   - Acceptance: Simulating 2 sequential network failures causes 2 retries then success; simulating 4 failures causes exit code 1 and stderr message\n\n3. **Partial cleanup**: Failed backups do not leave corrupt files.\n   - Current: Manual pg_dump leaves partial files on failure\n   - Target: If backup fails after starting, the partial `.dump` file is deleted before exit\n   - Acceptance: After a simulated failure mid-dump, no `.dump` file exists in `./backups/`\n\n## Boundaries\n\n**In scope:**\n- `hm backup` subcommand (full dump only)\n- Output to `./backups/` directory (created if missing)\n- Network retry (3 attempts)\n- Partial file cleanup on failure\n\n**Out of scope:**\n- `hm restore` — that is Phase 3\n- Incremental backups — separate backlog item (full dump only for now)\n- S3 or remote storage — separate backlog item\n- Encryption — separate backlog item\n- Scheduled/cron backups — separate backlog item\n\n## Constraints\n\n- Must use `pg_dump` (not a custom query) — ensures compatibility with standard `pg_restore`\n- `--no-retry` flag must be available for CI use (fail fast, no retries)\n\n## Acceptance Criteria\n\n- [ ] `hm backup` creates a `.dump` file in `./backups/YYYY-MM-DD_HH-MM-SS.dump` format\n- [ ] `hm backup` uses `DATABASE_URL` env var or `--db` flag for connection\n- [ ] 3 retries on network failure, then exit code 1 with stderr message\n- [ ] `--no-retry` flag skips retries and fails immediately on first error\n- [ ] No partial `.dump` file left after a failed backup\n\n## Ambiguity Report\n\n| Dimension          | Score | Min  | Status | Notes                          |\n|--------------------|-------|------|--------|--------------------------------|\n| Goal Clarity       | 0.90  | 0.75 | ✓      |                                |\n| Boundary Clarity   | 0.95  | 0.70 | ✓      | Explicit out-of-scope list     |\n| Constraint Clarity | 0.75  | 0.65 | ✓      | pg_dump required               |\n| Acceptance Criteria| 0.80  | 0.70 | ✓      | 5 pass/fail criteria           |\n| **Ambiguity**      | 0.15  | ≤0.20| ✓      |                                |\n\n## Interview Log\n\n| Round | Perspective     | Question summary              | Decision locked                         |\n|-------|-----------------|------------------------------|-----------------------------------------|\n| 1     | Researcher      | What backup tooling exists?  | None — pg_dump manual only             |\n| 2     | Simplifier      | Minimum viable backup?       | Full dump only, local only             |\n| 3     | Boundary Keeper | What's NOT this phase?       | Restore, S3, encryption excluded       |\n| 4     | Failure Analyst | What goes wrong on failure?  | Partial files, CI fail-fast needed     |\n\n---\n\n*Phase: 02-backup-command*\n*Spec created: 2025-01-20*\n*Next step: /hm-discuss-phase 2 — implementation decisions (progress reporting, flag design, etc.)*\n```\n\n</good_examples>\n\n<guidelines>\n**Every requirement needs all three fields:**\n- Current: grounds the requirement in reality — what exists today?\n- Target: the concrete change — not \"improve X\" but \"X becomes Y\"\n- Acceptance: the falsifiable check — how does a verifier confirm this?\n\n**Ambiguity Report must reflect the actual interview.** If a dimension is below minimum, mark it ⚠ — the planner knows to treat it as an assumption rather than a locked requirement.\n\n**Interview Log is evidence of rigor.** Don't skip it. It shows that requirements came from discovery, not assumption.\n\n**Boundaries protect the phase from scope creep.** The out-of-scope list with reasoning is as important as the in-scope list. Future phases that touch adjacent areas can point to this SPEC.md to understand what was intentionally excluded.\n\n**SPEC.md is a one-way door for requirements.** discuss-phase will treat these as locked. If requirements change after SPEC.md is written, the user should update SPEC.md first, then re-run discuss-phase.\n\n**SPEC.md does NOT replace CONTEXT.md.** They serve different purposes:\n- SPEC.md: what the phase delivers (requirements, boundaries, acceptance criteria)\n- CONTEXT.md: how the phase will be implemented (decisions, patterns, tradeoffs)\n\ndiscuss-phase generates CONTEXT.md after reading SPEC.md.\n</guidelines>\n\n</reference>\n</execution_context>\n\n<runtime_note>\n**Copilot (VS Code):** Use `vscode_askquestions` wherever this workflow calls `question`. They are equivalent.\n</runtime_note>\n\n<context>\nPhase number: 58 (required)\n\n**Flags:**\n- `--auto` — Skip interactive questions; the agent selects recommended defaults and writes SPEC.md\n- `--text` — Use plain-text numbered lists instead of TUI menus (required for `/rc` remote sessions)\n\nContext files are resolved in-workflow using `init phase-op`.\n</context>\n\n<process>\nExecute end-to-end.\n\n**MANDATORY:** Read the workflow file BEFORE taking any action. The workflow contains the complete step-by-step process including the Socratic interview loop, ambiguity scoring gate, and SPEC.md generation. Do not improvise from the objective summary above.\n</process>\n\n<success_criteria>\n- Codebase scouted for current state before questioning begins\n- All 4 ambiguity dimensions scored after each interview round\n- Gate passed: ambiguity ≤ 0.20 AND all dimension minimums met\n- SPEC.md written with falsifiable requirements, explicit boundaries, and acceptance criteria\n- SPEC.md committed atomically\n- User knows they can now run /hm-discuss-phase which will load SPEC.md automatically\n</success_criteria>\nCalled the Read tool with the following input: {\"filePath\":\"/Users/apple/hivemind-plugin-private/.opencode/templates/hm-spec.md\"}\n<path>/Users/apple/hivemind-plugin-private/.opencode/templates/hm-spec.md</path>\n<type>file</type>\n<content>\n1: # Phase Spec Template\n2: \n3: Template for `.planning/phases/XX-name/{phase_num}-SPEC.md` — locks requirements before discuss-phase.\n4: \n5: **Purpose:** Capture WHAT a phase delivers and WHY, with enough precision that requirements are falsifiable. discuss-phase reads this file and focuses on HOW to implement (skipping \"what/why\" questions already answered here).\n6: \n7: **Key principle:** Every requirement must be falsifiable — you can write a test or check that proves it was met or not. Vague requirements like \"improve performance\" are not allowed.\n8: \n9: **Downstream consumers:**\n10: - `discuss-phase` — reads SPEC.md at startup; treats Requirements, Boundaries, and Acceptance Criteria as locked; skips \"what/why\" questions\n11: - `hm-planner` — reads locked requirements to constrain plan scope\n12: - `hm-verifier` — uses acceptance criteria as explicit pass/fail checks\n13: \n14: ---\n15: \n16: ## File Template\n17: \n18: ```markdown\n19: # Phase [X]: [Name] — Specification\n20: \n21: **Created:** [date]\n22: **Ambiguity score:** [score] (gate: ≤ 0.20)\n23: **Requirements:** [N] locked\n24: \n25: ## Goal\n26: \n27: [One precise sentence — specific and measurable. NOT \"improve X\" — instead \"X changes from A to B\".]\n28: \n29: ## Background\n30: \n31: [Current state from codebase — what exists today, what's broken or missing, what triggers this work. Grounded in code reality, not abstract description.]\n32: \n33: ## Requirements\n34: \n35: 1. **[Short label]**: [Specific, testable statement.]\n36:    - Current: [what exists or does NOT exist today]\n37:    - Target: [what it should become after this phase]\n38:    - Acceptance: [concrete pass/fail check — how a verifier confirms this was met]\n39: \n40: 2. **[Short label]**: [Specific, testable statement.]\n41:    - Current: [what exists or does NOT exist today]\n42:    - Target: [what it should become after this phase]\n43:    - Acceptance: [concrete pass/fail check]\n44: \n45: [Continue for all requirements. Each must have Current/Target/Acceptance.]\n46: \n47: ## Boundaries\n48: \n49: **In scope:**\n50: - [Explicit list of what this phase produces]\n51: - [Each item is a concrete deliverable or behavior]\n52: \n53: **Out of scope:**\n54: - [Explicit list of what this phase does NOT do] — [brief reason why it's excluded]\n55: - [Adjacent problems excluded from this phase] — [brief reason]\n56: \n57: ## Constraints\n58: \n59: [Performance, compatibility, data volume, dependency, or platform constraints.\n60: If none: \"No additional constraints beyond standard project conventions.\"]\n61: \n62: ## Acceptance Criteria\n63: \n64: - [ ] [Pass/fail criterion — unambiguous, verifiable]\n65: - [ ] [Pass/fail criterion]\n66: - [ ] [Pass/fail criterion]\n67: \n68: [Every acceptance criterion must be a checkbox that resolves to PASS or FAIL.\n69: No \"should feel good\", \"looks reasonable\", or \"generally works\" — those are not checkboxes.]\n70: \n71: ## Ambiguity Report\n72: \n73: | Dimension          | Score | Min  | Status | Notes                              |\n74: |--------------------|-------|------|--------|------------------------------------|\n75: | Goal Clarity       |       | 0.75 |        |                                    |\n76: | Boundary Clarity   |       | 0.70 |        |                                    |\n77: | Constraint Clarity |       | 0.65 |        |                                    |\n78: | Acceptance Criteria|       | 0.70 |        |                                    |\n79: | **Ambiguity**      |       | ≤0.20|        |                                    |\n80: \n81: Status: ✓ = met minimum, ⚠ = below minimum (planner treats as assumption)\n82: \n83: ## Interview Log\n84: \n85: [Key decisions made during the Socratic interview. Format: round → question → answer → decision locked.]\n86: \n87: | Round | Perspective    | Question summary         | Decision locked                    |\n88: |-------|----------------|-------------------------|------------------------------------|\n89: | 1     | Researcher     | [what was asked]        | [what was decided]                 |\n90: | 2     | Simplifier     | [what was asked]        | [what was decided]                 |\n91: | 3     | Boundary Keeper| [what was asked]        | [what was decided]                 |\n92: \n93: [If --auto mode: note \"auto-selected\" decisions with the reasoning the agent used.]\n94: \n95: ---\n96: \n97: *Phase: [XX-name]*\n98: *Spec created: [date]*\n99: *Next step: /hm-discuss-phase [X] — implementation decisions (how to build what's specified above)*\n100: ```\n101: \n102: <good_examples>\n103: \n104: **Example 1: Feature addition (Post Feed)**\n105: \n106: ```markdown\n107: # Phase 3: Post Feed — Specification\n108: \n109: **Created:** 2025-01-20\n110: **Ambiguity score:** 0.12\n111: **Requirements:** 4 locked\n112: \n113: ## Goal\n114: \n115: Users can scroll through posts from accounts they follow, with new posts available after pull-to-refresh.\n116: \n117: ## Background\n118: \n119: The database has a `posts` table and `follows` table. No feed query or feed UI exists today. The home screen shows a placeholder \"Your feed will appear here.\" This phase builds the feed query, API endpoint, and the feed list component.\n120: \n121: ## Requirements\n122: \n123: 1. **Feed query**: Returns posts from followed accounts ordered by creation time, descending.\n124:    - Current: No feed query exists — `posts` table is queried directly only from profile pages\n125:    - Target: `GET /api/feed` returns paginated posts from followed accounts, newest first, max 20 per page\n126:    - Acceptance: Query returns correct posts for a user who follows 3 accounts with known post counts; cursor-based pagination advances correctly\n127: \n128: 2. **Feed display**: Posts display in a scrollable card list.\n129:    - Current: Home screen shows static placeholder text\n130:    - Target: Home screen renders feed cards with author, timestamp, post content, and reaction count\n131:    - Acceptance: Feed renders without error for 0 posts (empty state shown), 1 post, and 20+ posts\n132: \n133: 3. **Pull-to-refresh**: User can refresh the feed manually.\n134:    - Current: No refresh mechanism exists\n135:    - Target: Pull-down gesture triggers refetch; new posts appear at top of list\n136:    - Acceptance: After a new post is created in test, pull-to-refresh shows the new post without full app restart\n137: \n138: 4. **New posts indicator**: When new posts arrive, a banner appears instead of auto-scrolling.\n139:    - Current: No such mechanism\n140:    - Target: \"3 new posts\" banner appears when refetch returns posts newer than the oldest visible post; tapping banner scrolls to top and shows new posts\n141:    - Acceptance: Banner appears for ≥1 new post, does not appear when no new posts, tap navigates to top\n142: \n143: ## Boundaries\n144: \n145: **In scope:**\n146: - Feed query (backend) — posts from followed accounts, paginated\n147: - Feed list UI (frontend) — post cards with author, timestamp, content, reaction counts\n148: - Pull-to-refresh gesture\n149: - New posts indicator banner\n150: - Empty state when user follows no one or no posts exist\n151: \n152: **Out of scope:**\n153: - Creating posts — that is Phase 4\n154: - Reacting to posts — that is Phase 5\n155: - Following/unfollowing accounts — that is Phase 2 (already done)\n156: - Push notifications for new posts — separate backlog item\n157: \n158: ## Constraints\n159: \n160: - Feed query must use cursor-based pagination (not offset) — the database has 500K+ posts and offset pagination is unacceptably slow beyond page 3\n161: - The feed card component must reuse the existing `<AvatarImage>` component from Phase 2\n162: \n163: ## Acceptance Criteria\n164: \n165: - [ ] `GET /api/feed` returns posts only from followed accounts (not all posts)\n166: - [ ] `GET /api/feed` supports `cursor` parameter for pagination\n167: - [ ] Feed renders correctly at 0, 1, and 20+ posts\n168: - [ ] Pull-to-refresh triggers refetch\n169: - [ ] New posts indicator appears when posts newer than current view exist\n170: - [ ] Empty state renders when user follows no one\n171: \n172: ## Ambiguity Report\n173: \n174: | Dimension          | Score | Min  | Status | Notes                            |\n175: |--------------------|-------|------|--------|----------------------------------|\n176: | Goal Clarity       | 0.92  | 0.75 | ✓      |                                  |\n177: | Boundary Clarity   | 0.95  | 0.70 | ✓      | Explicit out-of-scope list       |\n178: | Constraint Clarity | 0.80  | 0.65 | ✓      | Cursor pagination required       |\n179: | Acceptance Criteria| 0.85  | 0.70 | ✓      | 6 pass/fail criteria             |\n180: | **Ambiguity**      | 0.12  | ≤0.20| ✓      |                                  |\n181: \n182: ## Interview Log\n183: \n184: | Round | Perspective     | Question summary              | Decision locked                         |\n185: |-------|-----------------|------------------------------|-----------------------------------------|\n186: | 1     | Researcher      | What exists in posts today?  | posts + follows tables exist, no feed  |\n187: | 2     | Simplifier      | Minimum viable feed?         | Cards + pull-refresh, no auto-scroll   |\n188: | 3     | Boundary Keeper | What's NOT this phase?       | Creating posts, reactions out of scope |\n189: | 3     | Boundary Keeper | What does done look like?    | Scrollable feed with 4 card fields     |\n190: \n191: ---\n192: \n193: *Phase: 03-post-feed*\n194: *Spec created: 2025-01-20*\n195: *Next step: /hm-discuss-phase 3 — implementation decisions (card layout, loading skeleton, etc.)*\n196: ```\n197: \n198: **Example 2: CLI tool (Database backup)**\n199: \n200: ```markdown\n201: # Phase 2: Backup Command — Specification\n202: \n203: **Created:** 2025-01-20\n204: **Ambiguity score:** 0.15\n205: **Requirements:** 3 locked\n206: \n207: ## Goal\n208: \n209: A `hm backup` CLI command creates a reproducible database snapshot that can be restored by `hm restore` (a separate phase).\n210: \n211: ## Background\n212: \n213: No backup tooling exists. The project uses PostgreSQL. Developers currently use `pg_dump` manually — there is no standardized process, no output naming convention, and no CI integration. Three incidents in the last quarter involved restoring from wrong or corrupt dumps.\n214: \n215: ## Requirements\n216: \n217: 1. **Backup creation**: CLI command executes a full database backup.\n218:    - Current: No `backup` subcommand exists in the CLI\n219:    - Target: `hm backup` connects to the database (via `DATABASE_URL` env or `--db` flag), runs pg_dump, writes output to `./backups/YYYY-MM-DD_HH-MM-SS.dump`\n220:    - Acceptance: Running `hm backup` on a test database creates a `.dump` file; running `pg_restore` on that file recreates the database without error\n221: \n222: 2. **Network retry**: Transient network failures are retried automatically.\n223:    - Current: pg_dump fails immediately on network error\n224:    - Target: Backup retries up to 3 times with 5-second delay; 4th failure exits with code 1 and a message to stderr\n225:    - Acceptance: Simulating 2 sequential network failures causes 2 retries then success; simulating 4 failures causes exit code 1 and stderr message\n226: \n227: 3. **Partial cleanup**: Failed backups do not leave corrupt files.\n228:    - Current: Manual pg_dump leaves partial files on failure\n229:    - Target: If backup fails after starting, the partial `.dump` file is deleted before exit\n230:    - Acceptance: After a simulated failure mid-dump, no `.dump` file exists in `./backups/`\n231: \n232: ## Boundaries\n233: \n234: **In scope:**\n235: - `hm backup` subcommand (full dump only)\n236: - Output to `./backups/` directory (created if missing)\n237: - Network retry (3 attempts)\n238: - Partial file cleanup on failure\n239: \n240: **Out of scope:**\n241: - `hm restore` — that is Phase 3\n242: - Incremental backups — separate backlog item (full dump only for now)\n243: - S3 or remote storage — separate backlog item\n244: - Encryption — separate backlog item\n245: - Scheduled/cron backups — separate backlog item\n246: \n247: ## Constraints\n248: \n249: - Must use `pg_dump` (not a custom query) — ensures compatibility with standard `pg_restore`\n250: - `--no-retry` flag must be available for CI use (fail fast, no retries)\n251: \n252: ## Acceptance Criteria\n253: \n254: - [ ] `hm backup` creates a `.dump` file in `./backups/YYYY-MM-DD_HH-MM-SS.dump` format\n255: - [ ] `hm backup` uses `DATABASE_URL` env var or `--db` flag for connection\n256: - [ ] 3 retries on network failure, then exit code 1 with stderr message\n257: - [ ] `--no-retry` flag skips retries and fails immediately on first error\n258: - [ ] No partial `.dump` file left after a failed backup\n259: \n260: ## Ambiguity Report\n261: \n262: | Dimension          | Score | Min  | Status | Notes                          |\n263: |--------------------|-------|------|--------|--------------------------------|\n264: | Goal Clarity       | 0.90  | 0.75 | ✓      |                                |\n265: | Boundary Clarity   | 0.95  | 0.70 | ✓      | Explicit out-of-scope list     |\n266: | Constraint Clarity | 0.75  | 0.65 | ✓      | pg_dump required               |\n267: | Acceptance Criteria| 0.80  | 0.70 | ✓      | 5 pass/fail criteria           |\n268: | **Ambiguity**      | 0.15  | ≤0.20| ✓      |                                |\n269: \n270: ## Interview Log\n271: \n272: | Round | Perspective     | Question summary              | Decision locked                         |\n273: |-------|-----------------|------------------------------|-----------------------------------------|\n274: | 1     | Researcher      | What backup tooling exists?  | None — pg_dump manual only             |\n275: | 2     | Simplifier      | Minimum viable backup?       | Full dump only, local only             |\n276: | 3     | Boundary Keeper | What's NOT this phase?       | Restore, S3, encryption excluded       |\n277: | 4     | Failure Analyst | What goes wrong on failure?  | Partial files, CI fail-fast needed     |\n278: \n279: ---\n280: \n281: *Phase: 02-backup-command*\n282: *Spec created: 2025-01-20*\n283: *Next step: /hm-discuss-phase 2 — implementation decisions (progress reporting, flag design, etc.)*\n284: ```\n285: \n286: </good_examples>\n287: \n288: <guidelines>\n289: **Every requirement needs all three fields:**\n290: - Current: grounds the requirement in reality — what exists today?\n291: - Target: the concrete change — not \"improve X\" but \"X becomes Y\"\n292: - Acceptance: the falsifiable check — how does a verifier confirm this?\n293: \n294: **Ambiguity Report must reflect the actual interview.** If a dimension is below minimum, mark it ⚠ — the planner knows to treat it as an assumption rather than a locked requirement.\n295: \n296: **Interview Log is evidence of rigor.** Don't skip it. It shows that requirements came from discovery, not assumption.\n297: \n298: **Boundaries protect the phase from scope creep.** The out-of-scope list with reasoning is as important as the in-scope list. Future phases that touch adjacent areas can point to this SPEC.md to understand what was intentionally excluded.\n299: \n300: **SPEC.md is a one-way door for requirements.** discuss-phase will treat these as locked. If requirements change after SPEC.md is written, the user should update SPEC.md first, then re-run discuss-phase.\n301: \n302: **SPEC.md does NOT replace CONTEXT.md.** They serve different purposes:\n303: - SPEC.md: what the phase delivers (requirements, boundaries, acceptance criteria)\n304: - CONTEXT.md: how the phase will be implemented (decisions, patterns, tradeoffs)\n305: \n306: discuss-phase generates CONTEXT.md after reading SPEC.md.\n307: </guidelines>\n\n(End of file - total 307 lines)\n</content>\n\n<system-reminder>\nInstructions from: /Users/apple/hivemind-plugin-private/.opencode/templates/CONTEXT.md\n# Phase Context Template\n\nTemplate for `.planning/phases/XX-name/{phase_num}-CONTEXT.md` - captures implementation decisions for a phase.\n\n**Purpose:** Document decisions that downstream agents need. Researcher uses this to know WHAT to investigate. Planner uses this to know WHAT choices are locked vs flexible.\n\n**Key principle:** Categories are NOT predefined. They emerge from what was actually discussed for THIS phase. A CLI phase has CLI-relevant sections, a UI phase has UI-relevant sections.\n\n**Downstream consumers:**\n- `hm-phase-researcher` — Reads decisions to focus research (e.g., \"card layout\" → research card component patterns)\n- `hm-planner` — Reads decisions to create specific tasks (e.g., \"infinite scroll\" → task includes virtualization)\n\n---\n\n## File Template\n\n```markdown\n# Phase [X]: [Name] - Context\n\n**Gathered:** [date]\n**Status:** Ready for planning\n\n<domain>\n## Phase Boundary\n\n[Clear statement of what this phase delivers — the scope anchor. This comes from ROADMAP.md and is fixed. Discussion clarifies implementation within this boundary.]\n\n</domain>\n\n<decisions>\n## Implementation Decisions\n\n### [Area 1 that was discussed]\n- **D-01:** [Specific decision made]\n- **D-02:** [Another decision if applicable]\n\n### [Area 2 that was discussed]\n- **D-03:** [Specific decision made]\n\n### [Area 3 that was discussed]\n- **D-04:** [Specific decision made]\n\n### the agent's Discretion\n[Areas where user explicitly said \"you decide\" — the agent has flexibility here during planning/implementation]\n\n</decisions>\n\n<specifics>\n## Specific Ideas\n\n[Any particular references, examples, or \"I want it like X\" moments from discussion. Product references, specific behaviors, interaction patterns.]\n\n[If none: \"No specific requirements — open to standard approaches\"]\n\n</specifics>\n\n<canonical_refs>\n## Canonical References\n\n**Downstream agents MUST read these before planning or implementing.**\n\n[List every spec, ADR, feature doc, or design doc that defines requirements or constraints for this phase. Use full relative paths so agents can read them directly. Group by topic area when the phase has multiple concerns.]\n\n### [Topic area 1]\n- `path/to/spec-or-adr.md` — [What this doc decides/defines that's relevant]\n- `path/to/doc.md` §N — [Specific section and what it covers]\n\n### [Topic area 2]\n- `path/to/feature-doc.md` — [What capability this defines]\n\n[If the project has no external specs: \"No external specs — requirements are fully captured in decisions above\"]\n\n</canonical_refs>\n\n<code_context>\n## Existing Code Insights\n\n### Reusable Assets\n- [Component/hook/utility]: [How it could be used in this phase]\n\n### Established Patterns\n- [Pattern]: [How it constrains/enables this phase]\n\n### Integration Points\n- [Where new code connects to existing system]\n\n</code_context>\n\n<deferred>\n## Deferred Ideas\n\n[Ideas that came up during discussion but belong in other phases. Captured here so they're not lost, but explicitly out of scope for this phase.]\n\n[If none: \"None — discussion stayed within phase scope\"]\n\n</deferred>\n\n---\n\n*Phase: XX-name*\n*Context gathered: [date]*\n```\n\n<good_examples>\n\n**Example 1: Visual feature (Post Feed)**\n\n```markdown\n# Phase 3: Post Feed - Context\n\n**Gathered:** 2025-01-20\n**Status:** Ready for planning\n\n<domain>\n## Phase Boundary\n\nDisplay posts from followed users in a scrollable feed. Users can view posts and see engagement counts. Creating posts and interactions are separate phases.\n\n</domain>\n\n<decisions>\n## Implementation Decisions\n\n### Layout style\n- Card-based layout, not timeline or list\n- Each card shows: author avatar, name, timestamp, full post content, reaction counts\n- Cards have subtle shadows, rounded corners — modern feel\n\n### Loading behavior\n- Infinite scroll, not pagination\n- Pull-to-refresh on mobile\n- New posts indicator at top (\"3 new posts\") rather than auto-inserting\n\n### Empty state\n- Friendly illustration + \"Follow people to see posts here\"\n- Suggest 3-5 accounts to follow based on interests\n\n### the agent's Discretion\n- Loading skeleton design\n- Exact spacing and typography\n- Error state handling\n\n</decisions>\n\n<canonical_refs>\n## Canonical References\n\n### Feed display\n- `docs/features/social-feed.md` — Feed requirements, post card fields, engagement display rules\n- `docs/decisions/adr-012-infinite-scroll.md` — Scroll strategy decision, virtualization requirements\n\n### Empty states\n- `docs/design/empty-states.md` — Empty state patterns, illustration guidelines\n\n</canonical_refs>\n\n<specifics>\n## Specific Ideas\n\n- \"I like how Twitter shows the new posts indicator without disrupting your scroll position\"\n- Cards should feel like Linear's issue cards — clean, not cluttered\n\n</specifics>\n\n<deferred>\n## Deferred Ideas\n\n- Commenting on posts — Phase 5\n- Bookmarking posts — add to backlog\n\n</deferred>\n\n---\n\n*Phase: 03-post-feed*\n*Context gathered: 2025-01-20*\n```\n\n**Example 2: CLI tool (Database backup)**\n\n```markdown\n# Phase 2: Backup Command - Context\n\n**Gathered:** 2025-01-20\n**Status:** Ready for planning\n\n<domain>\n## Phase Boundary\n\nCLI command to backup database to local file or S3. Supports full and incremental backups. Restore command is a separate phase.\n\n</domain>\n\n<decisions>\n## Implementation Decisions\n\n### Output format\n- JSON for programmatic use, table format for humans\n- Default to table, --json flag for JSON\n- Verbose mode (-v) shows progress, silent by default\n\n### Flag design\n- Short flags for common options: -o (output), -v (verbose), -f (force)\n- Long flags for clarity: --incremental, --compress, --encrypt\n- Required: database connection string (positional or --db)\n\n### Error recovery\n- Retry 3 times on network failure, then fail with clear message\n- --no-retry flag to fail fast\n- Partial backups are deleted on failure (no corrupt files)\n\n### the agent's Discretion\n- Exact progress bar implementation\n- Compression algorithm choice\n- Temp file handling\n\n</decisions>\n\n<canonical_refs>\n## Canonical References\n\n### Backup CLI\n- `docs/features/backup-restore.md` — Backup requirements, supported backends, encryption spec\n- `docs/decisions/adr-007-cli-conventions.md` — Flag naming, exit codes, output format standards\n\n</canonical_refs>\n\n<specifics>\n## Specific Ideas\n\n- \"I want it to feel like pg_dump — familiar to database people\"\n- Should work in CI pipelines (exit codes, no interactive prompts)\n\n</specifics>\n\n<deferred>\n## Deferred Ideas\n\n- Scheduled backups — separate phase\n- Backup rotation/retention — add to backlog\n\n</deferred>\n\n---\n\n*Phase: 02-backup-command*\n*Context gathered: 2025-01-20*\n```\n\n**Example 3: Organization task (Photo library)**\n\n```markdown\n# Phase 1: Photo Organization - Context\n\n**Gathered:** 2025-01-20\n**Status:** Ready for planning\n\n<domain>\n## Phase Boundary\n\nOrganize existing photo library into structured folders. Handle duplicates and apply consistent naming. Tagging and search are separate phases.\n\n</domain>\n\n<decisions>\n## Implementation Decisions\n\n### Grouping criteria\n- Primary grouping by year, then by month\n- Events detected by time clustering (photos within 2 hours = same event)\n- Event folders named by date + location if available\n\n### Duplicate handling\n- Keep highest resolution version\n- Move duplicates to _duplicates folder (don't delete)\n- Log all duplicate decisions for review\n\n### Naming convention\n- Format: YYYY-MM-DD_HH-MM-SS_originalname.ext\n- Preserve original filename as suffix for searchability\n- Handle name collisions with incrementing suffix\n\n### the agent's Discretion\n- Exact clustering algorithm\n- How to handle photos with no EXIF data\n- Folder emoji usage\n\n</decisions>\n\n<canonical_refs>\n## Canonical References\n\n### Organization rules\n- `docs/features/photo-organization.md` — Grouping rules, duplicate policy, naming spec\n- `docs/decisions/adr-003-exif-handling.md` — EXIF extraction strategy, fallback for missing metadata\n\n</canonical_refs>\n\n<specifics>\n## Specific Ideas\n\n- \"I want to be able to find photos by roughly when they were taken\"\n- Don't delete anything — worst case, move to a review folder\n\n</specifics>\n\n<deferred>\n## Deferred Ideas\n\n- Face detection grouping — future phase\n- Cloud sync — out of scope for now\n\n</deferred>\n\n---\n\n*Phase: 01-photo-organization*\n*Context gathered: 2025-01-20*\n```\n\n</good_examples>\n\n<guidelines>\n**This template captures DECISIONS for downstream agents.**\n\nThe output should answer: \"What does the researcher need to investigate? What choices are locked for the planner?\"\n\n**Good content (concrete decisions):**\n- \"Card-based layout, not timeline\"\n- \"Retry 3 times on network failure, then fail\"\n- \"Group by year, then by month\"\n- \"JSON for programmatic use, table for humans\"\n\n**Bad content (too vague):**\n- \"Should feel modern and clean\"\n- \"Good user experience\"\n- \"Fast and responsive\"\n- \"Easy to use\"\n\n**After creation:**\n- File lives in phase directory: `.planning/phases/XX-name/{phase_num}-CONTEXT.md`\n- `hm-phase-researcher` uses decisions to focus investigation AND reads canonical_refs to know WHAT docs to study\n- `hm-planner` uses decisions + research to create executable tasks AND reads canonical_refs to verify alignment\n- Downstream agents should NOT need to ask the user again about captured decisions\n\n**CRITICAL — Canonical references:**\n- The `<canonical_refs>` section is MANDATORY. Every CONTEXT.md must have one.\n- If your project has external specs, ADRs, or design docs, list them with full relative paths grouped by topic\n- If ROADMAP.md lists `Canonical refs:` per phase, extract and expand those\n- Inline mentions like \"see ADR-019\" scattered in decisions are useless to downstream agents — they need full paths and section references in a dedicated section they can find\n- If no external specs exist, say so explicitly — don't silently omit the section\n</guidelines>\n\n</system-reminder>",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll execute the `hm-spec-phase` workflow for Phase 58 with `--auto --text` flags. Let me start by initializing the phase context.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Let me find the actual path of the hivemind tools.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Let me save the init result for processing and then explore the phase context.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 25,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 26,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 27,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 28,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 29,
+      "actor": "unknown",
+      "content": "Now I have enough context. Let me set up the todo list and proceed with the workflow.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 30,
+      "actor": "unknown",
+      "content": "**Step 3: First Ambiguity Assessment (auto-mode, before interview)**\n\n```\nINITIAL SCORING (from ROADMAP.md line 510 + codebase scout):\n\n  Goal Clarity:       0.78 (min 0.75) ✓ at min\n  Boundary Clarity:   0.68 (min 0.70) ⚠ below\n  Constraint Clarity: 0.65 (min 0.65) ✓ at min\n  Acceptance Criteria:0.55 (min 0.70) ⚠ below\n  Ambiguity:          0.317 (gate: ≤ 0.20) ⚠\n\n  → Interview required.\n```\n\n**Step 4: Socratic Interview Loop (--auto mode, 6 rounds)**\n\nI'll now run the agent's recommended-choice interview rounds and score after each.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 31,
+      "actor": "unknown",
+      "content": "**─── ROUND 1 (Researcher) — Current state of the 6 gaps ───**\n\n*Q1.1 — Gap (1) \"delegate-task must not invoke native task tool\": What is the current dispatch path?*\n- Code reality: `src/tools/delegation/delegate-task.ts:75-83` calls `coordinator.dispatch(...)` (in-tree Hivemind DelegationManager), not the SDK `task` tool. The native task tool is NOT imported here. Gap (1) is therefore a **guard-rail** for future code — explicit policy + test to prevent future contributors from reaching for `@opencode-ai/plugin` `task` shortcut. → Auto-locked.\n\n*Q1.2 — Gap (2) \"programmatic pool status API\": What exists?*\n- Code reality: `src/tools/delegation/delegation-status.ts` (780 LOC) has `delegation-status({ action: \"list\" | \"status\" | \"find-stackable\" })`. The 3 actions are CLI-oriented. A \"pool\" API would return a typed `DelegationPool` object (id → status, agent, depth, parent, startedAt, promptPreview) consumable by `tmux-copilot` and sidecar. → Auto-locked: add `getPoolSnapshot()` read-only API on `DelegationManager` + a new `action: \"pool\"` on `delegation-status` tool.\n\n*Q1.3 — Gap (3) \"abort+resume cycle preserving session state\": What exists?*\n- Code reality: `src/coordination/delegation/manager.ts` has `abortDelegation` + `resume` actions via `sendPromptAsync path`. `src/coordination/delegation/resume-resolver.ts:17` (`REQ-RC-01`) already implements resume. Missing: tmux pane state preservation across abort — the session-manager must mark pane as `paused` on abort and `respawnIfKnown` on resume. → Auto-locked.\n\n**After round 1:**\n```\nGoal Clarity:       0.85 ✓ (gap mapping grounded in code paths)\nBoundary Clarity:   0.70 ✓ (in/out scope inferred from existing modules)\nConstraint Clarity: 0.70 ✓ (existing module constraints: P51-P55 byte-identical types, persistence.ts contract)\nAcceptance Criteria:0.55 ⚠ (still no pass/fail — needs failure analyst)\nAmbiguity:          0.260 ⚠\n```\n\n**─── ROUND 2 (Simplifier + Researcher) — Minimum viable scope ───**\n\n*Q2.1 — If we had to cut 50%, what's the irreducible core?*\n- 6 gaps → can group into 3 themes: **(A) Programmatic surface** (gaps 1+2+4 — read-only API additions, no semantic change), **(B) Lifecycle round-trip** (gap 3 — wire existing abort+resume to tmux persistence), **(C) Human-in-loop + observability** (gaps 5+6 — takeover/release + session-tracker events). Cut anything that requires a new storage format or new tool registration; keep only API additions + wiring. → Auto-locked: 3 sub-deliverables, no new tool keys, no schema change.\n\n*Q2.2 — What would make this phase a success even without the nice-to-haves?*\n- The seed criterion (P55 germinated) is satisfied. P56 is the stress test. Phase 58 is the **production-readiness hardening** of P55's verified layer. Success = all 6 gaps closed with **typecheck clean + 1 BATS scenario per gap (6 total) + delegations status pool JSON shape contract frozen**. → Auto-locked.\n\n**After round 2:**\n```\nGoal Clarity:       0.90 ✓\nBoundary Clarity:   0.75 ✓\nConstraint Clarity: 0.72 ✓\nAcceptance Criteria:0.60 ⚠\nAmbiguity:          0.218 ⚠\n```\n\n**─── ROUND 3 (Boundary Keeper) — Lock the perimeter ───**\n\n*Q3.1 — What explicitly will NOT be done in this phase?*\n- No new `src/features/tmux/*.ts` modules. No new tool registrations in `src/plugin.ts` (P55's 27-tool-key invariant locked — don't break it). No new `package.json` deps. No new storage formats in `.hivemind/`. No plan mode for delegated agents. No new persistent state schema. No SDK upgrade. → Auto-locked as Out-of-Scope list.\n\n*Q3.2 — What adjacent problems is it tempting to solve but shouldn't?*\n- (a) Reimplementing `delegate-task` to support `plan` agents — out, future phase. (b) Sidecar-driven tmux projection (SC-*) — out, depends on Q2 + SC-01 done. (c) Tmux visual dependency graph auto-refresh (compute-grid already exists; just not auto-triggered) — out, future. (d) Multi-user session concurrency (collision detection) — out, single-user assumption preserved. (e) Migrating `appendTuiPrompt` to `showTuiToast` for delegate notifications — out, that's a different layer. → Auto-locked.\n\n*Q3.3 — What does \"done\" look like — what's the final deliverable?*\n- (i) 6 BATS scenarios at `tests/scripts/tmux/61..66-*.bats` (one per gap). (ii) 1 new BATS helper extension (`tmux_bats_require_pool_api`). (iii) 1 new sub-section in `docs/draft/tmux-orchestration-programmatic-pool-2026-06-03.md` (if not exists, create; otherwise append). (iv) All 3,203+ vitest still pass + 6 new BATS pass + tsc --noEmit clean. → Auto-locked.\n\n**After round 3:**\n```\nGoal Clarity:       0.92 ✓\nBoundary Clarity:   0.92 ✓ (explicit in/out list)\nConstraint Clarity: 0.75 ✓\nAcceptance Criteria:0.65 ⚠\nAmbiguity:          0.155 ✓ (gate passed, but Acceptance still below)\n```\n\n**─── ROUND 4 (Failure Analyst) — Edge cases that invalidate ───**\n\n*Q4.1 — Worst case for gap (5) takeover/release?*\n- User takes over, harness auto-prompts a delegation while user is typing → input pollution. Mitigation: take-over sets a `manualOverride: true` flag on the session; `appendTuiPrompt` checks the flag and skips if set; `release` clears the flag. → Auto-locked: flag-based suppression with explicit release.\n\n*Q4.2 — Worst case for gap (3) abort+resume?*\n- Abort kills the tmux pane, but the session-manager still has a `ready` record. On resume, `respawnIfKnown` returns null and resume fails silently. Mitigation: abort MUST transition tmux record to `paused` (NOT `failed`); resume MUST rehydrate the tmux pane via `respawnIfKnown` BEFORE re-sending prompt. → Auto-locked: state machine `ready → paused → ready` is the only legal abort+resume path.\n\n*Q4.3 — Worst case for gap (6) deep session-tracker integration?*\n- Every `recordChildTaskDelegation` call now also fires a `pane-captured` event → N×M fanout → journal write storm. Mitigation: `session-tracker.recordChildTaskDelegation` is the SOURCE; tmux observer is a DOWNSTREAM subscriber; one event per delegation lifecycle transition (3 events per delegation: `queued`, `dispatched`, `terminal`). Total = O(delegations), not O(pane-captures). → Auto-locked: 3 events per delegation, fan-in pattern.\n\n**After round 4:**\n```\nGoal Clarity:       0.93 ✓\nBoundary Clarity:   0.92 ✓\nConstraint Clarity: 0.80 ✓\nAcceptance Criteria:0.78 ✓ (failure-mode acceptance criteria now explicit)\nAmbiguity:          0.117 ✓✓ GATE PASSED\n```\n\n**─── ROUND 5 (Seed Closer) — Lock remaining edge ───**\n\n*Q5.1 — Is there anything you'd regret not specifying before planning starts?*\n- The **JSON shape of `DelegationPool`** must be frozen NOW (not in discuss-phase) so planner doesn't invent 2 different shapes. Shape: `{ delegations: Array<{ id, agent, status, depth, parentId, startedAt, promptPreview }> }`. Falsy `parentId` for root delegations. `status` is `\"queued\" | \"dispatched\" | \"running\" | \"completed\" | \"failed\" | \"aborted\" | \"paused\"`. → Auto-locked as a typed contract.\n\n*Q5.2 — What about gap (1) prevention? Is \"delegate-task must not invoke native task tool\" a code change or a test?*\n- It is BOTH: a code-comment policy block in `src/tools/delegation/delegate-task.ts` (1-2 lines) AND a grep-based BATS test that fails if `import { task } from \"@opencode-ai/plugin\"` (or similar) is found in `src/tools/delegation/`. → Auto-locked.\n\n**After round 5:**\n```\nGoal Clarity:       0.95 ✓\nBoundary Clarity:   0.93 ✓\nConstraint Clarity: 0.82 ✓\nAcceptance Criteria:0.85 ✓\nAmbiguity:          0.075 ✓✓ WELL BELOW GATE\n```\n\n**─── ROUND 6 (Seed Closer) — Final confirmations ───**\n\n*Q6.1 — The 6 gaps as discrete requirements, one per gap?*\n- Confirmed: 6 requirements, each tagged with its gap number (G1..G6). Each has Current/Target/Acceptance. Boundaries are explicit. No \"v1\" or \"simplified\" language. → Auto-locked.\n\n*Q6.2 — Any defer?*\n- No defer. All 6 gaps are in scope. Out-of-scope list explicit. → Auto-locked.\n\n**After round 6 (FINAL):**\n```\nGoal Clarity:       0.95 ✓\nBoundary Clarity:   0.93 ✓\nConstraint Clarity: 0.82 ✓\nAcceptance Criteria:0.85 ✓\nAmbiguity:          0.075 ✓✓ GATE PASSED COMFORTABLY\n```\n\n✓ All dimensions meet minimums. ✓ Ambiguity 0.075 ≤ 0.20 gate. **Proceed to SPEC.md.**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 32,
+      "actor": "unknown",
+      "content": "**Step 6: Generate SPEC.md**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 33,
+      "actor": "unknown",
+      "content": "Let me write the SPEC.md in smaller pieces to avoid the JSON parsing issue.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 34,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 35,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 36,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 37,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 38,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 39,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 40,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 41,
+      "actor": "unknown",
+      "content": "Now let me verify the file is complete and well-formed.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 42,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 43,
+      "actor": "unknown",
+      "content": "Now let me commit the SPEC.md atomically.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 44,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 45,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 46,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 47,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 48,
+      "actor": "unknown",
+      "content": "## PLANNING COMPLETE\n\n**Plan:** 58-1 (Phase 58 SPEC.md)\n**Requirements:** 6 locked (G1–G6, one per architectural gap)\n**Coverage audit:** all_covered\n**Mode:** `--auto` (6 Socratic rounds, all gates passed by round 5)\n\n**Artifacts:**\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` (252 lines, committed as `db4473b7`)\n\n**Final ambiguity report:**\n\n| Dimension          | Score | Min  | Status |\n|--------------------|-------|------|--------|\n| Goal Clarity       | 0.95  | 0.75 | ✓      |\n| Boundary Clarity   | 0.93  | 0.70 | ✓      |\n| Constraint Clarity | 0.82  | 0.65 | ✓      |\n| Acceptance Criteria| 0.85  | 0.70 | ✓      |\n| **Ambiguity**      | **0.075** | **≤0.20** | **✓** |\n\n**SPEC.md sections (all 8 present):** Goal · Background · Requirements (6) · Boundaries (In + Out) · Constraints · Acceptance Criteria (13 checkboxes) · Ambiguity Report · Interview Log (16 decisions)\n\n**Gate trajectory:**\n- Initial: 0.317 (below gate)\n- After R1 Researcher: 0.260\n- After R2 Simplifier: 0.218\n- After R3 Boundary Keeper: 0.155 ✓ (gate passed but Acceptance still below min)\n- After R4 Failure Analyst: 0.117 ✓\n- After R5 Seed Closer: 0.075 ✓✓ (all minimums met, comfortably below gate)\n- After R6 Confirm: 0.075 (final lock)\n\n**Next:** `/hm-discuss-phase 58` — discuss-phase will detect the SPEC.md and focus exclusively on implementation decisions (how to build the 6 locked requirements). The Boundary Keeper's 11-item out-of-scope list + the Constraints section (P55 invariants, D-04 silent-fallback, D-53-13 schemaVersion, P20 zero-deps) are now treated as locked by discuss-phase.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-03T13:12:00.402Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_cbfsoxeo7r39_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:12:21.587Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_uqsl1i1clhg4_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:12:32.412Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_50og8dokiw05_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:12:41.739Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_j1qg7islr0jb_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:12:50.782Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_vdvcohyvih30_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:13:01.591Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_9yjpsfvh8ksz_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:13:10.809Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_egx27r9u1mcj_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:13:27.688Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_7xtw91xoply5_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:13:40.069Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_j5yg1u7agvlc_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:13:59.614Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_7slcpeuhheok_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:14:08.360Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_t59enxsgbiqy_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:14:18.155Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_r57ksw860nbg_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:14:33.868Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_2ms3nao163wc_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:14:44.324Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_2ksav88s7b4z_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:14:55.811Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_8b4fmpiz6k8k_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:15:08.764Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_1wt4qtzt40fn_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:15:20.246Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_0u3vgxoztsv6_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:15:31.808Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_f2yzacjfqb1h_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:15:45.283Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_nhv9kn1m0j5y_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:15:59.084Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_04og3yddh7lf_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:16:12.854Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_2eeuct0ljns4_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:16:24.216Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_vgnwerv76210_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:16:35.116Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_hm5w52uo2x1q_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:16:46.848Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_tiboxk3jryuw_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:16:56.417Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_mlr0ux1jnrph_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegate-task.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:17:22.043Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_77lwj96o8tuw_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:17:39.986Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ccyd2mq8rblh_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:18:11.400Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_ruej67q6en9x_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:19:02.127Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_9l6rci2g007z_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:20:11.310Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_n4d925ehvx72_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:21:41.235Z",
+      "type": "tool_call",
+      "content": "Tool: invalid",
+      "metadata": {
+        "tool": "invalid",
+        "callID": "call_function_8btexagr5t2m_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:22:20.090Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_function_mn8szzlbkd97_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:23:17.157Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_vg2ibrm3hjiu_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:23:36.457Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_nrm5wmm4erjz_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:23:49.007Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_vurhm1u723ov_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:24:09.939Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_cu04dqwyzwpk_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:25:41.039Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_labegeqhn67z_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:26:22.625Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_geb6fann0vl7_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:26:39.403Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_8stw03x3z8bz_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:26:54.160Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_pqh3n9tgcin7_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:27:09.534Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hspb43onaw93_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:27:20.306Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_0jvkmw5j4l3y_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:27:33.383Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_a4pl9ukq1z08_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:27:44.973Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_nxana3d8de1g_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:27:58.282Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_vi1refrpce4b_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T13:28:14.094Z",
+      "type": "assistant_message",
+      "content": "## PLANNING COMPLETE\n\n**Plan:** 58-1 (Phase 58 SPEC.md)\n**Requirements:** 6 locked (G1–G6, one per architectural gap)\n**Coverage audit:** all_covered\n**Mode:** `--auto` (6 Socratic rounds, all gates passed by round 5)\n\n**Artifacts:**\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` (252 lines, committed as `db4473b7`)\n\n**Final ambiguity report:**\n\n| Dimension          | Score | Min  | Status |\n|--------------------|-------|------|--------|\n| Goal Clarity       | 0.95  | 0.75 | ✓      |\n| Boundary Clarity   | 0.93  | 0.70 | ✓      |\n| Constraint Clarity | 0.82  | 0.65 | ✓      |\n| Acceptance Criteria| 0.85  | 0.70 | ✓      |\n| **Ambiguity**      | **0.075** | **≤0.20** | **✓** |\n\n**SPEC.md sections (all 8 present):** Goal · Background · Requirements (6) · Boundaries (In + Out) · Constraints · Acceptance Criteria (13 checkboxes) · Ambiguity Report · Interview Log (16 decisions)\n\n**Gate trajectory:**\n- Initial: 0.317 (below gate)\n- After R1 Researcher: 0.260\n- After R2 Simplifier: 0.218\n- After R3 Boundary Keeper: 0.155 ✓ (gate passed but Acceptance still below min)\n- After R4 Failure Analyst: 0.117 ✓\n- After R5 Seed Closer: 0.075 ✓✓ (all minimums met, comfortably below gate)\n- After R6 Confirm: 0.075 (final lock)\n\n**Next:** `/hm-discuss-phase 58` — discuss-phase will detect the SPEC.md and focus exclusively on implementation decisions (how to build the 6 locked requirements). The Boundary Keeper's 11-item out-of-scope list + the Constraints section (P55 invariants, D-04 silent-fallback, D-53-13 schemaVersion, P20 zero-deps) are now treated as locked by discuss-phase.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_1726390f2ffec26Fm16OWAFKA1"
+      }
+    }
+  ],
+  "lastMessage": "## PLANNING COMPLETE\n\n**Plan:** 58-1 (Phase 58 SPEC.md)\n**Requirements:** 6 locked (G1–G6, one per architectural gap)\n**Coverage audit:** all_covered\n**Mode:** `--auto` (6 Socratic rounds, all gates passed by round 5)\n\n**Artifacts:**\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` (252 lines, committed as `db4473b7`)\n\n**Final ambiguity report:**\n\n| Dimension          | Score | Min  | Status |\n|--------------------|-------|------|--------|\n| Goal Clarity       | 0.95  | 0.75 | ✓      |\n| Boundary Clarity   | 0.93  | 0.70 | ✓      |\n| Constraint Clarity | 0.82  | 0.65 | ✓      |\n| Acceptance Criteria| 0.85  | 0.70 | ✓      |\n| **Ambiguity**      | **0.075** | **≤0.20** | **✓** |\n\n**SPEC.md sections (all 8 present):** Goal · Background · Requirements (6) · Boundaries (In + Out) · Constraints · Acceptance Criteria (13 checkboxes) · Ambiguity Report · Interview Log (16 decisions)\n\n**Gate trajectory:**\n- Initial: 0.317 (below gate)\n- After R1 Researcher: 0.260\n- After R2 Simplifier: 0.218\n- After R3 Boundary Keeper: 0.155 ✓ (gate passed but Acceptance still below min)\n- After R4 Failure Analyst: 0.117 ✓\n- After R5 Seed Closer: 0.075 ✓✓ (all minimums met, comfortably below gate)\n- After R6 Confirm: 0.075 (final lock)\n\n**Next:** `/hm-discuss-phase 58` — discuss-phase will detect the SPEC.md and focus exclusively on implementation decisions (how to build the 6 locked requirements). The Boundary Keeper's 11-item out-of-scope list + the Constraints section (P55 invariants, D-04 silent-fallback, D-53-13 schemaVersion, P20 zero-deps) are now treated as locked by discuss-phase."
+}

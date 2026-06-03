@@ -1,0 +1,100 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+  "lastUpdated": "2026-06-03T14:21:22.542Z",
+  "children": {
+    "ses_1725fcdc3ffe2cHxogJIamTGIv": {
+      "sessionID": "ses_1725fcdc3ffe2cHxogJIamTGIv",
+      "parentSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "rootMainSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-phase-researcher",
+      "createdAt": "2026-06-03T13:15:47.579Z",
+      "updatedAt": "2026-06-03T13:21:39.171Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1725fcdc3ffe2cHxogJIamTGIv.json"
+    },
+    "ses_1725a0c2affeBVxv6yk4jUkILP": {
+      "sessionID": "ses_1725a0c2affeBVxv6yk4jUkILP",
+      "parentSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "rootMainSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-planner",
+      "createdAt": "2026-06-03T13:22:03.913Z",
+      "updatedAt": "2026-06-03T13:25:15.690Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1725a0c2affeBVxv6yk4jUkILP.json"
+    },
+    "ses_17256ea44ffeRLKWdlpMU90CVl": {
+      "sessionID": "ses_17256ea44ffeRLKWdlpMU90CVl",
+      "parentSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "rootMainSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-plan-checker",
+      "createdAt": "2026-06-03T13:25:29.203Z",
+      "updatedAt": "2026-06-03T13:27:32.589Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_17256ea44ffeRLKWdlpMU90CVl.json"
+    },
+    "ses_172518a65ffeLUQ6RLxRGgXj2I": {
+      "sessionID": "ses_172518a65ffeLUQ6RLxRGgXj2I",
+      "parentSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "rootMainSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "delegationDepth": 1,
+      "delegatedBy": "execute-slash-command",
+      "subagentType": "hm-planner",
+      "createdAt": "2026-06-03T13:31:21.615Z",
+      "updatedAt": "2026-06-03T13:32:33.078Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_172518a65ffeLUQ6RLxRGgXj2I.json"
+    },
+    "ses_1724f1bb3ffetqHu7Xycyzqgly": {
+      "sessionID": "ses_1724f1bb3ffetqHu7Xycyzqgly",
+      "parentSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "rootMainSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-plan-checker",
+      "createdAt": "2026-06-03T13:34:00.842Z",
+      "updatedAt": "2026-06-03T13:35:59.507Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1724f1bb3ffetqHu7Xycyzqgly.json"
+    },
+    "ses_1724af64dffe7eb6DMr8OEhqIJ": {
+      "sessionID": "ses_1724af64dffe7eb6DMr8OEhqIJ",
+      "parentSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "rootMainSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "delegationDepth": 1,
+      "delegatedBy": "execute-slash-command",
+      "subagentType": "hm-executor",
+      "createdAt": "2026-06-03T13:38:32.668Z",
+      "updatedAt": "2026-06-03T14:14:08.693Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1724af64dffe7eb6DMr8OEhqIJ.json"
+    },
+    "ses_1723bed48ffeTnUO4hpC7vvN8J": {
+      "sessionID": "ses_1723bed48ffeTnUO4hpC7vvN8J",
+      "parentSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "rootMainSessionID": "ses_172625a4dffe0HxdVgunR88RNZ",
+      "delegationDepth": 1,
+      "delegatedBy": "execute-slash-command",
+      "subagentType": "hm-verifier",
+      "createdAt": "2026-06-03T13:54:58.025Z",
+      "updatedAt": "2026-06-03T14:21:22.542Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1723bed48ffeTnUO4hpC7vvN8J.json"
+    }
+  },
+  "totalChildren": 7,
+  "maxDepth": 1
+}
