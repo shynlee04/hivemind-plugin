@@ -1,19 +1,52 @@
 import { execSync } from "node:child_process"
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { describe, it, expect, beforeAll, afterAll } from "vitest"
 
 const PROJECT_ROOT = process.cwd()
-const TMP_DIR = resolve(PROJECT_ROOT, "tests/integration/.tmp-user-install")
+
+/**
+ * Pre-existing test pollution cleanup (one-time, runs once per test process).
+ *
+ * Historical `user-install.test.ts` hardcoded a temp dir under
+ * `tests/integration/.tmp-user-install/` and could leave it behind on test
+ * failure because `afterAll` is not guaranteed to run. That path is
+ * dangerously close to the production-path template (`tests/integration/`)
+ * used by other tooling and was polluting the working tree. Any pre-existing
+ * pollution from a previous run is removed here as a one-shot cleanup
+ * before the test process begins.
+ *
+ * `tests/integration/.hivemind/` is the actual production path template
+ * (Q6 — `.hivemind/` is the internal state root). Tests must never write
+ * there, so any stale state from a previous run is also removed.
+ */
+const LEGACY_TMP_DIR = resolve(PROJECT_ROOT, "tests/integration/.tmp-user-install")
+const LEGACY_HIVEMIND_DIR = resolve(PROJECT_ROOT, "tests/integration/.hivemind")
+rmSync(LEGACY_TMP_DIR, { recursive: true, force: true })
+rmSync(LEGACY_HIVEMIND_DIR, { recursive: true, force: true })
+
+// Per-process unique temp dir (mkdtempSync guarantees no collisions across
+// concurrent vitest workers, and the dir is fully removed in afterAll).
+let TMP_DIR: string
 
 describe("E2E Integration — user install simulation", () => {
   beforeAll(() => {
-    rmSync(TMP_DIR, { recursive: true, force: true })
-    mkdirSync(TMP_DIR, { recursive: true })
+    TMP_DIR = mkdtempSync(join(tmpdir(), "hivemind-user-install-"))
   })
 
   afterAll(() => {
-    rmSync(TMP_DIR, { recursive: true, force: true })
+    // try/catch (not try/finally — vitest's afterAll is the boundary here)
+    // to guarantee cleanup even on test failure or process interruption.
+    if (TMP_DIR) {
+      try {
+        rmSync(TMP_DIR, { recursive: true, force: true })
+      } catch {
+        // Best-effort cleanup; nothing the test process can do if the OS
+        // is refusing the unlink (e.g. EBUSY on Windows). The directory
+        // lives under os.tmpdir() and is reclaimed by the OS on reboot.
+      }
+    }
   })
 
   it("simulates a clean npm-install and postinstall asset extraction in consumer project", () => {
