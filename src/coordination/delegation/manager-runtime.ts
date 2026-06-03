@@ -281,7 +281,31 @@ export class DelegationManager {
         // opposite of what `run_in_background: true` is supposed to mean.
         // The legacy flag is kept on RuntimePolicy for backwards-compat
         // with on-disk policy YAML, but is no longer consulted here.
-        await sendPromptAsync(this.client, delegation.childSessionId, promptBody)
+        //
+        // P58.8 (S3, REQ-58-09): true-fire-and-forget WaiterModel. We do
+        // NOT await sendPromptAsync — the dispatch() promise resolves
+        // immediately after the SDK accepts the prompt. The parent stream
+        // is unblocked at the moment of dispatch return. Errors are
+        // surfaced via the .catch() handler below: we transition the
+        // delegation to 'error' and push a structured log entry. The
+        // state machine, monitor, and capture-pane polling all start
+        // synchronously after kicking off the void send.
+        void sendPromptAsync(this.client, delegation.childSessionId, promptBody)
+          .catch((err: unknown) => {
+            const message = err instanceof Error ? err.message : String(err)
+            this.state.transitionToTerminal(
+              delegation.id,
+              "error",
+              `[Harness] Fire-and-forget prompt send failed: ${message}`,
+            )
+            void this.client.app?.log?.({
+              body: {
+                service: "delegation",
+                level: "error",
+                message: `[Harness] delegation ${delegation.id} sendPromptAsync rejected: ${message}`,
+              },
+            })
+          })
         this.state.transition(delegation.id, "running")
         this.monitor?.start(delegation.id, params.parentSessionId)
         // P58.8 (S1, REQ-58-07): start the capture-pane polling loop now that
@@ -290,8 +314,13 @@ export class DelegationManager {
         // iterates `this.sessions` populated by the SDK `session.created`
         // event — no paneId argument is needed here.
         this.sessionManager?.startPolling()
-      } catch {
-        this.state.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
+      } catch (caught) {
+        const caughtMessage = caught instanceof Error ? caught.message : String(caught)
+        this.state.transitionToTerminal(
+          delegation.id,
+          "error",
+          `[Harness] Failed to build/send prompt to child session: ${caughtMessage}`,
+        )
         return buildDelegationResult(this.state.get(delegation.id) ?? delegation)
       }
       return buildDelegationResult(this.state.get(delegation.id) ?? delegation)
