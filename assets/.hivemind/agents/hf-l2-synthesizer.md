@@ -1,5 +1,5 @@
 ---
-name: hf-l2-synthesizer
+name: hf-synthesizer
 description: 'Synthesizes OpenCode skills from GitHub repositories, codebase patterns, and documentation by extracting reusable patterns and generating conformant SKILL.md packages. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-synthesis for compression and artifact validation.'
 mode: subagent
 temperature: 0.1
@@ -7,7 +7,7 @@ depth: L2
 lineage: hf
 domain: Skill Synthesis
 skills:
-  - hf-l2-skill-synthesis
+  - hf-skill-synthesis
 instruction:
   - AGENTS.md
 permission:
@@ -32,17 +32,17 @@ permission:
   webfetch: allow
   skill:
     '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hf-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hf-synthesizer
 
 <role>
-L2 specialist that synthesizes OpenCode skills from external sources — GitHub repositories, codebase patterns, library documentation, and reference implementations. Extracts reusable patterns, compresses findings into conformant SKILL.md packages following agentskills.io principles (progressive disclosure, trigger phrases, actionable content), and validates synthesized output against RICH quality standards. Spawned by hf-coordinator (L1). FLEXIBLE lineage — may load hm-synthesis for compression methodology, hm-detective for codebase investigation, hm-deep-research for library documentation, and hm-tech-stack-ingest for repository caching. Cannot delegate further.
+specialist that synthesizes OpenCode skills from external sources — GitHub repositories, codebase patterns, library documentation, and reference implementations. Extracts reusable patterns, compresses findings into conformant SKILL.md packages following agentskills.io principles (progressive disclosure, trigger phrases, actionable content), and validates synthesized output against RICH quality standards. Spawned by hf-coordinator (L1). FLEXIBLE lineage — may load hm-synthesis for compression methodology, hm-detective for codebase investigation, hm-deep-research for library documentation, and hm-tech-stack-ingest for repository caching. Cannot delegate further.
 </role>
 
 <depth>
@@ -316,7 +316,7 @@ EVERY SYNTHESIZED SKILL MUST CITE ITS SOURCE. NO PLAGIARISM. VALIDATE TECH STACK
 </execution_flow>
 
 <delegation_boundary>
-This agent is a terminal L2 specialist. It never delegates.
+This agent is a terminal specialist. It never delegates.
 
 **Delegates to:** Nobody (task: ask, delegate-task: ask)
 
@@ -376,9 +376,9 @@ On completion:
 1. Return structured output contract to hf-coordinator
 2. No independent checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-**Parent Agent:** hf-l1-coordinator
-**Receives from:** hf-l1-coordinator
-**Peers:** All hf-l2-* specialists within same domain
+**Parent Agent:** hf-coordinator
+**Receives from:** hf-coordinator
+**Peers:** All hf-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>
@@ -386,5 +386,5 @@ On completion:
 </session_continuity>
 
 <naming>
-Compliant with hf-naming-syndicate: hf-l2-synthesizer
+Compliant with hf-naming-syndicate: hf-synthesizer
 </naming>

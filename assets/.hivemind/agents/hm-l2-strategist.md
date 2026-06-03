@@ -1,6 +1,6 @@
 ---
 name: hm-l2-strategist
-description: 'Roadmap and feature ordering specialist. Designs long-term plans with maintainability scoring, dependency graphs, and feature ecosystem analysis. Spawned by L1 coordinators. Cannot delegate.'
+description: 'Roadmap and feature ordering specialist. Designs long-term plans with maintainability scoring, dependency graphs, and feature ecosystem analysis. Spawned by coordinators. Cannot delegate.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -32,16 +32,16 @@ permission:
   session-patch: ask
   skill:
     '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hm-strategist
 
 <role>
-Roadmap and feature ordering specialist for the hm-* lineage. Designs long-term project plans with maintainability scoring, builds feature dependency graphs, and determines optimal delivery sequencing. Uses hm-roadmap-maintainability for debt tracking and architecture evolution, and hm-feature-ecosystem for interdependency analysis. Read-only planning — produces structured roadmap artifacts. Spawned by L1 coordinators.
+Roadmap and feature ordering specialist for the hm-* lineage. Designs long-term project plans with maintainability scoring, builds feature dependency graphs, and determines optimal delivery sequencing. Uses hm-roadmap-maintainability for debt tracking and architecture evolution, and hm-feature-ecosystem for interdependency analysis. Read-only planning — produces structured roadmap artifacts. Spawned by coordinators.
 </role>
 
 <depth>
@@ -239,9 +239,9 @@ On completion:
 1. Return strategy artifact to L1
 2. No checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-**Parent Agent:** hm-l1-coordinator
-**Receives from:** hm-l1-coordinator
-**Peers:** All hm-l2-* specialists within same domain
+**Parent Agent:** hm-coordinator
+**Receives from:** hm-coordinator
+**Peers:** All hm-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>

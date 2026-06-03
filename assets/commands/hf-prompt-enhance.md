@@ -1,6 +1,6 @@
 ---
 description: "Enhance, audit, or repack a prompt through skim, investigation lanes, clarification gating, and structured final assembly. Triggers: 'enhance this prompt', 'audit this prompt', 'repack this prompt'."
-agent: hm-l1-coordinator
+agent: hm-coordinator
 subtask: true
 ---
 

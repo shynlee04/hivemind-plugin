@@ -14,10 +14,10 @@ permission:
   grep: allow
   skill:
     '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # General-Purpose Fallback Subagent
@@ -55,9 +55,9 @@ Confirm the requested action completed. Re-read modified files to verify changes
 </verification>
 
 <workflow_awareness>
-**Parent Agent:** hm-l1-coordinator
-**Receives from:** hm-l1-coordinator
-**Peers:** All hm-l2-* specialists within same domain
+**Parent Agent:** hm-coordinator
+**Receives from:** hm-coordinator
+**Peers:** All hm-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 </workflow_awareness>
 

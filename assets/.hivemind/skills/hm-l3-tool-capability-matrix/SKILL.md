@@ -145,16 +145,16 @@ L0 orchestrators coordinate multi-agent workflows. They route, they do not imple
 | `bash` | `ask` (all) | No shell execution; delegate to L1/L2 |
 | `glob` | `allow` | Discover project structure |
 | `grep` | `allow` | Search codebase for context |
-| `task` | `allow` (specific agents) | Primary function: dispatch L1 coordinators |
+| `task` | `allow` (specific agents) | Primary function: dispatch coordinators |
 | `delegate-task` | `allow` | Harness delegation with tracking |
 | `delegation-status` | `allow` | Monitor dispatched tasks |
 | `skill` | `allow` | Load coordinator skills |
 
 **Actual L0 agent examples:** `hm-l0-orchestrator`, `hf-l0-orchestrator`, `gsd-executor`
 
-### L1 (Coordinator — Subagent, dispatches L2 specialists)
+### L1 (Coordinator — Subagent, dispatches specialists)
 
-L1 coordinators manage parallel task waves. They orchestrate subagent dispatch but do not implement directly.
+coordinators manage parallel task waves. They orchestrate subagent dispatch but do not implement directly.
 
 | Tool | Typical | Rationale |
 |------|---------|-----------|
@@ -164,16 +164,16 @@ L1 coordinators manage parallel task waves. They orchestrate subagent dispatch b
 | `bash` | Restricted: `git *`, `node *` | Git operations, Node.js for state queries |
 | `glob` | `allow` | Discover project structure |
 | `grep` | `allow` | Search codebase for context |
-| `task` | `allow` (all hm-l2-* or hf-l2-* agents) | Primary function: dispatch L2 specialists |
+| `task` | `allow` (all hm-* or hf-* agents) | Primary function: dispatch specialists |
 | `delegate-task` | `allow` or `ask` | Varies — hm coordinators ask, hf coordinators may allow |
 | `delegation-status` | `allow` or `ask` | Varies |
 | `skill` | `allow` | Load coordination skills |
 
-**Actual L1 agent examples:** `hm-l1-coordinator`, `hf-l1-coordinator`
+**Actual L1 agent examples:** `hm-coordinator`, `hf-coordinator`
 
 ### L2 (Specialist — Subagent, implements/analyzes)
 
-L2 specialists perform the actual work: research, implementation, review, debugging, authoring. Permissions are domain-specific.
+specialists perform the actual work: research, implementation, review, debugging, authoring. Permissions are domain-specific.
 
 #### Read-Only L2 (researcher, reviewer, auditor, validator, evaluator)
 
@@ -205,7 +205,7 @@ L2 specialists perform the actual work: research, implementation, review, debugg
 | `webfetch` | `allow` if research needed | Documentation lookup |
 | `websearch` | `allow` if research needed | Internet search |
 
-**Actual read-write L2 agent examples:** `hm-l2-executor`, `hm-l2-debugger`, `hm-l2-implementator`, `hm-l2-optimizer`, `hf-l2-skill-builder`, `hf-l2-agent-builder`, `hf-l2-command-builder`, `hf-l2-tool-builder`
+**Actual read-write L2 agent examples:** `hm-l2-executor`, `hm-l2-debugger`, `hm-l2-implementator`, `hm-l2-optimizer`, `hf-skill-builder`, `hf-agent-builder`, `hf-command-builder`, `hf-tool-builder`
 
 #### Hivemind Harness Tool Denials at L2
 
@@ -360,7 +360,7 @@ Typically: read, glob, grep, configure-primitive.
   "task": {
     "*": "ask",
     "hm-l2-reviewer": "allow",
-    "hm-l2-*": "allow"
+    "hm-*": "allow"
   }
 }
 ```
@@ -402,7 +402,7 @@ Based on actual agent definitions in `.opencode/agents/` (April 2026):
 |-------------|-----------|------------|
 | **The Gate-Opener** — allowing unrestricted bash to L2 agents | `bash: allow` without patterns | Restrict to `git *`, `node *`, `npm *`, `npx *` |
 | **The Cross-Lineage Breaker** — hm agent loading hf skill | hm agent frontmatter includes hf-* in skills array | Remove hf-* skills; cross-lineage access is hf→hm only |
-| **The Delegation Leaker** — L2 agent allowed to delegate via task | `task: allow` on read-only agent | Set `task: "*": ask` for all L2 specialists |
+| **The Delegation Leaker** — L2 agent allowed to delegate via task | `task: allow` on read-only agent | Set `task: "*": ask` for all specialists |
 | **The File-Scoper** — edit allowed on entire project | `edit: allow` without path restriction | Scope to specific directories: `.opencode/**`, `src/**` |
 | **The Harness Abuser** — L2 agent using delegate-task | `delegate-task: allow` on specialist agent | ask all harness delegation tools on L2 |
 | **The Blind Agent** — no read permission but expected to analyze code | `read: ask` on researcher agent | Always allow `read` on any agent expected to read code |
@@ -489,8 +489,8 @@ do → audit → fix → repeat
 |-------|-------------|
 | `hm-l3-opencode-platform-reference` | Source for native tool permissions documentation |
 | `hm-l3-subagent-delegation-patterns` | Delegation patterns that depend on correct tool permissions |
-| `hf-l2-naming-syndicate` | Naming rules for agents whose tools this matrix covers |
-| `hf-l2-delegation-gates` | Authorization gates that use tool permissions as enforcement |
+| `hf-naming-syndicate` | Naming rules for agents whose tools this matrix covers |
+| `hf-delegation-gates` | Authorization gates that use tool permissions as enforcement |
 | `opencode-config-workflow` | Configuration workflow for applying permission rules |
 
 ---

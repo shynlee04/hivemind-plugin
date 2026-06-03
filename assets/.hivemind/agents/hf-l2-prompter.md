@@ -1,5 +1,5 @@
 ---
-name: hf-l2-prompter
+name: hf-prompter
 description: 'Expert prompt engineering and validation specialist for creating, optimizing, and testing high-quality prompts through multi-agent workflows. Spawned by hf-coordinator for prompt engineering tasks. Cannot delegate.'
 mode: subagent
 temperature: 0.2
@@ -7,7 +7,7 @@ depth: L2
 lineage: hf
 domain: Prompt Engineering
 skills:
-  - hf-l2-command-parser
+  - hf-command-parser
   - hm-l3-deep-research
   - hm-l3-detective
   - hm-l3-synthesis
@@ -38,11 +38,11 @@ permission:
   session-patch: ask
   skill:
     '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hf-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hf-prompter
@@ -253,7 +253,7 @@ NEVER DELEGATE. ALWAYS VALIDATE THROUGH TESTER MODE BEFORE COMPLETING. EVERY OPT
 </execution_flow>
 
 <delegation_boundary>
-This agent is a terminal L2 specialist. It never delegates.
+This agent is a terminal specialist. It never delegates.
 - Receives tasks from hf-coordinator only
 - Returns structured results to hf-coordinator only
 - Has no delegation capabilities (task: ask, delegate-task: ask)
@@ -294,9 +294,9 @@ On completion:
 </session_continuity>
 
 <workflow_awareness>
-**Parent Agent:** hf-l1-coordinator
-**Receives from:** hf-l1-coordinator
-**Peers:** All hf-l2-* specialists within same domain
+**Parent Agent:** hf-coordinator
+**Receives from:** hf-coordinator
+**Peers:** All hf-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>
@@ -335,5 +335,5 @@ If a source or reference is unavailable:
 </self_correction>
 
 <naming>
-Compliant with hf-naming-syndicate: hf-l2-prompter
+Compliant with hf-naming-syndicate: hf-prompter
 </naming>

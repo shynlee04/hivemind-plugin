@@ -9,7 +9,7 @@ description: >-
   "market research", "SEO research", "customer insight", "phân tích ngành".
 metadata:
   lineage: standalone
-  author: hf-l2-skill-builder
+  author: hf-skill-builder
   created: 2026-05-12
   domain: marketing
   language: vi
@@ -316,4 +316,4 @@ Trước khi kết luận research, kiểm tra:
 
 ---
 
-*Skill được tạo bởi hf-l2-skill-builder — Cross-lineage: đã tham khảo hm-l2-brainstorm (entry gate, phase workflow), hm-l2-product-validation (RICE pattern), hm-l3-deep-research (IRON CLAW, citation tracking), hm-l3-research-chain (pipeline orchestration)*
+*Skill được tạo bởi hf-skill-builder — Cross-lineage: đã tham khảo hm-l2-brainstorm (entry gate, phase workflow), hm-l2-product-validation (RICE pattern), hm-l3-deep-research (IRON CLAW, citation tracking), hm-l3-research-chain (pipeline orchestration)*

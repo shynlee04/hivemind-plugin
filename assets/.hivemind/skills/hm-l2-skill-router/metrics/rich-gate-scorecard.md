@@ -9,7 +9,7 @@ Domain-execution router — maps task domains to hm-* skill loading bundles acro
 
 | Dimension | Score | Max | Notes |
 |-----------|-------|-----|-------|
-| D1: Knowledge Delta | 14 | 20 | Task-to-skill routing knowledge: 12 domain bundles, priority ordering, dependency chains, multi-domain resolution, exclusion rules. Depth-qualified names (l2/l3) ensure correct skill file resolution. Includes gate-* skills (gate-l3-evidence-truth). Could deepen with per-skill version constraints and cross-bundle dependency analysis. |
+| D1: Knowledge Delta | 14 | 20 | Task-to-skill routing knowledge: 12 domain bundles, priority ordering, dependency chains, multi-domain resolution, exclusion rules. Depth-qualified names (l2/l3) ensure correct skill file resolution. Includes gate-* skills (gate-evidence-truth). Could deepen with per-skill version constraints and cross-bundle dependency analysis. |
 | D2: Mindset + Procedures | 15 | 15 | Iron law: "Max 3 skills per bundle." Clear classification protocol. Multi-domain decision tree with split rule for 3+ domains. 6 loading rules with depth qualification mandate. |
 | D3: Anti-Pattern Quality | 15 | 15 | Four anti-patterns: Domain Ambiguity (3+ domains without clear primary), Wrong Router (meta-builder vs product-dev), Bundle Overload (>3 skills), Stale Dispatch (renamed/retired skill). Each with detection and correction logic. |
 | D4: Spec Compliance | 14 | 15 | Valid frontmatter with lineage, routes-to (hm-* + gate-*), input-from, consumed-by. 16 trigger phrases. Clear negatives (NOT for executing skills). Cross-skill routing table with 7+ references. Depth-qualified names throughout. |
@@ -29,7 +29,7 @@ Domain-execution router — maps task domains to hm-* skill loading bundles acro
 | RICH-4 | PASS | 6 loading rules. Multi-domain decision tree. Domain overlap resolution. Iron law enforcement. |
 | RICH-5 | PASS | Progressive disclosure: SKILL.md (routing + rules) + references/routing-map.md (signal tables, combos, exclusions). |
 | RICH-6 | PASS | Domain-based routing works across project types. Multi-domain resolution handles complex tasks. Exclusion rules handle non-hm-* intents. |
-| RICH-7 | PASS | Self-correction with 4 anti-patterns. Honest about being a router only — does not execute skills. Wrong Router pattern routes to sibling hf-l2-skill-router. |
+| RICH-7 | PASS | Self-correction with 4 anti-patterns. Honest about being a router only — does not execute skills. Wrong Router pattern routes to sibling hf-skill-router. |
 | RICH-8 | PASS | This scorecard. Evals with 6 scenarios. Self-correction with 4 anti-patterns. |
 
 ## Exit Decision: PASS

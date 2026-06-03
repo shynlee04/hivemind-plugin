@@ -37,9 +37,9 @@ metadata:
 | Value | Meaning | Examples |
 |-------|---------|----------|
 | `hm-*` | Product-dev lineage only | hm-l3-detective, hm-l2-debug |
-| `hf-*` | Meta-builder lineage only | hf-l2-agent-composition, hf-l2-naming-syndicate |
-| `gate-*` | Internal quality gates only | gate-l3-evidence-truth (THIS PROJECT ONLY) |
-| `stack-*` | Read-only reference packs | stack-l3-vitest, stack-l3-zod |
+| `hf-*` | Meta-builder lineage only | hf-agent-composition, hf-naming-syndicate |
+| `gate-*` | Internal quality gates only | gate-evidence-truth (THIS PROJECT ONLY) |
+| `stack-*` | Read-only reference packs | stack-vitest, stack-zod |
 | `both` | Available to both lineages | opencode-config-workflow |
 
 ## Agent .md File Schema
@@ -62,7 +62,7 @@ metadata:
     synthesis-task:                     #   loaded for synthesis tasks
       - "hm-l3-synthesis"
     quality-task:                       #   loaded for quality tasks (if applicable)
-      - "gate-l3-evidence-truth"
+      - "gate-evidence-truth"
 ---
 ```
 

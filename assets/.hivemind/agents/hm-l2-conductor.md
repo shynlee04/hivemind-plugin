@@ -1,5 +1,5 @@
 ---
-name: hm-l2-conductor
+name: hm-l0-orchestrator
 description: 'Delegation routing specialist. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly.'
 mode: primary
 depth: L2
@@ -19,10 +19,10 @@ permission:
   delegate-task: allow
   skill:
     '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
   read:
     '*': ask
     '*.md': allow
@@ -110,12 +110,12 @@ After every completed task, append a dated entry to the relevant wisdom file. Be
 - ALWAYS record what you learned after completing a task.
 
 <workflow_awareness>
-**Parent Agent:** hm-l1-coordinator
-**Receives from:** hm-l1-coordinator
-**Peers:** All hm-l2-* specialists within same domain
+**Parent Agent:** hm-coordinator
+**Receives from:** hm-coordinator
+**Peers:** All hm-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 </workflow_awareness>
 
 <naming>
-Compliant with hf-naming-syndicate: hm-l2-conductor
+Compliant with hf-naming-syndicate: hm-l0-orchestrator
 </naming>

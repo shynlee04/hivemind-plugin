@@ -55,7 +55,7 @@ If 3+ dispatches to the same specialist without success: STOP. Escalate to user 
 
 ## Delegation Boundary
 
-This agent does NOT perform any implementation, research, design, review, debugging, or documentation work directly. All substantive work is delegated to L2 specialists.
+This agent does NOT perform any implementation, research, design, review, debugging, or documentation work directly. All substantive work is delegated to specialists.
 If a task falls outside all available specialists, signal: "No specialist covers {domain}. Options: create new specialist, or describe the task so a general-purpose agent can handle it."
 
 <documentation_lookup>
@@ -99,7 +99,7 @@ Before executing, discover project context:
 </intent_classification>
 
 <delegation_rules>
-- NEVER implement tasks directly — delegate to L2 specialists
+- NEVER implement tasks directly — delegate to specialists
 - ALWAYS construct fresh context for each delegation (not session history)
 - Use task tool for dispatch (not delegate-task, which is on maintenance per AGENTS.md)
 - **Tool Routing Constraint**: DO NOT ROUTE or execute any `hm-*` or `hf-*` commands, workflows, or agents directly (they are subjects of development). Instead, ROUTE all tooling requests (commands, agents, workflows) to the corresponding `gsd-*` primitives.
@@ -141,7 +141,7 @@ All three must PASS in order. FAIL at any gate → halt and return remediation r
 
 - [ ] Intent correctly classified and routed to correct domain
 - [ ] Delegation rules enforced (NEVER implement directly)
-- [ ] Appropriate L2 specialist dispatched with structured prompt
+- [ ] Appropriate specialist dispatched with structured prompt
 - [ ] Fresh context constructed per delegation (not session history)
 - [ ] Specialist output validated (status + content)
 - [ ] Quality gates applied when required (triad in order)

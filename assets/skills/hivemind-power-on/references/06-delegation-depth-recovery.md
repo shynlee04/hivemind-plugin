@@ -12,8 +12,8 @@ Depth is a state variable tracked in `session-continuity.json` and exposed throu
 |------|-----------|-------------|
 | **Hard limit:** Max depth = 3 | None | Circuit breaker trips at depth >= 3 |
 | **L0 human dispatch:** Treated as depth 0 | N/A | Always resets to 0 |
-| **L1 coordinator dispatch:** Creates depth 1 | L2 can't dispatch further | Dispatching from L1 increases depth to 1 |
-| **L2 specialist dispatch:** Creates depth 2 | L2 can delegate to subtools (depth limit: subtools = 2 max) | Dispatching from L2 increases depth to 2 (or 3 if subtool inside subtool) |
+| **coordinator dispatch:** Creates depth 1 | L2 can't dispatch further | Dispatching from L1 increases depth to 1 |
+| **specialist dispatch:** Creates depth 2 | L2 can delegate to subtools (depth limit: subtools = 2 max) | Dispatching from L2 increases depth to 2 (or 3 if subtool inside subtool) |
 | **Subtle recovery:** Session depth reset | Only when re-serialized by L0 | New dispatch from L0 resets depth |
 | **Recovery by L2:** Redispatched task | L2 cannot to | None |
 | **Recovery by L1:** Redispatched from same L1 | Same | L1 dispatches at depth 1, which is below the max depth |
@@ -36,7 +36,7 @@ Returns:
 }
 ```
 
-If `canDispatch` === false, an L1 coordinator must take over for further dispatching.
+If `canDispatch` === false, an coordinator must take over for further dispatching.
 
 ## Depth State in session-continuity.json
 

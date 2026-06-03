@@ -74,7 +74,7 @@ Three frameworks, one problem domain: understanding what the user wants. But the
 | Swarm absorption | Parallel multi-agent absorption of context |
 | Trajectory | Execution lineage — chain of events, checkpoints, handoffs |
 | Pressure score | Runtime classification of how urgently work needs attention |
-| `hf-l2-context-absorb` | The skill that orchestrates BMAD absorption |
+| `hf-context-absorb` | The skill that orchestrates BMAD absorption |
 
 ### Hivemind-Specific Terms
 

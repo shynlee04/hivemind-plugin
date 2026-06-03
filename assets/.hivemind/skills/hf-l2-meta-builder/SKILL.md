@@ -1,5 +1,5 @@
 ---
-name: hf-l2-meta-builder
+name: hf-meta-builder
 description: "Routes requests about OpenCode meta-concepts (skills, agents, commands, tools) to specialist authors. Classifies intent, navigates step-by-step, reports back. Use when creating, auditing, stacking, or configuring any OpenCode meta-concept. Triggers on: 'create a skill', 'audit this skill', 'build an agent', 'set up a command', 'stack skills', 'configure OpenCode', 'fix skill trigger', '/hf-create', '/hf-audit', '/hf-stack'."
 metadata:
   layer: "0"

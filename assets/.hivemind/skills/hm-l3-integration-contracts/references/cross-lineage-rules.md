@@ -21,7 +21,7 @@ Enforces **D-AD-01** (hm↔hf skill loading boundaries) and **D-02** (gate-* int
 
 **Violation example:**
 ```
-❌ hm-l2-planner loads hf-l2-agent-composition
+❌ hm-l2-planner loads hf-agent-composition
    → hm planners do not build agents. Remove the hf skill from the planner's load list.
 ```
 
@@ -33,7 +33,7 @@ Enforces **D-AD-01** (hm↔hf skill loading boundaries) and **D-02** (gate-* int
 
 **Valid justifications:**
 1. **Codebase investigation:** hf-auditor loading hm-l3-detective to scan source code
-2. **Quality verification:** hf-auditor loading gate-l3-evidence-truth to validate implementations
+2. **Quality verification:** hf-auditor loading gate-evidence-truth to validate implementations
 3. **Synthesis:** hf-synthesizer loading hm-l3-synthesis for artifact compression of product-dev findings
 4. **Refactoring:** hf-refactorer loading hm-l2-refactor for code restructuring methodology
 5. **Platform knowledge:** hf-agent-builder loading hm-l3-opencode-platform-reference for OpenCode SDK awareness
@@ -43,8 +43,8 @@ Enforces **D-AD-01** (hm↔hf skill loading boundaries) and **D-02** (gate-* int
 metadata:
   consumed-by:
     - "hm-l2-researcher"
-    - "hf-l2-auditor"
-  cross-lineage-justification: "hf-l2-auditor loads for codebase investigation during skill/agent quality audits"
+    - "hf-auditor"
+  cross-lineage-justification: "hf-auditor loads for codebase investigation during skill/agent quality audits"
 ```
 
 ## D-02: gate-* skills are THIS PROJECT ONLY
@@ -53,11 +53,11 @@ metadata:
 
 **Permitted consumers:**
 - hm-l2-auditor (all 3 gate skills)
-- hm-l2-reviewer (gate-l3-evidence-truth only)
-- hm-l2-validator (gate-l3-evidence-truth only)
-- hm-l2-critic (gate-l3-evidence-truth only)
-- hm-l2-assessor (gate-l3-evidence-truth only)
-- hf-l2-auditor (gate-l3-evidence-truth only, with justification)
+- hm-l2-reviewer (gate-evidence-truth only)
+- hm-l2-validator (gate-evidence-truth only)
+- hm-l2-critic (gate-evidence-truth only)
+- hm-l2-assessor (gate-evidence-truth only)
+- hf-auditor (gate-evidence-truth only, with justification)
 
 **Prohibited:** Any other agent type. gate-* skills are never loaded by executors, planners, researchers, builders, orchestrators, or any shipped agent.
 
@@ -73,9 +73,9 @@ When adding a cross-lineage consumer to a skill's `consumed-by` list, append the
 metadata:
   consumed-by:
     - "hm-l2-researcher"        # primary, same-lineage
-    - "hf-l2-agent-builder"     # cross-lineage, see justification below
+    - "hf-agent-builder"     # cross-lineage, see justification below
   cross-lineage-justification: >
-    hf-l2-agent-builder loads this skill to reference OpenCode SDK signatures
+    hf-agent-builder loads this skill to reference OpenCode SDK signatures
     when constructing agent definitions that interact with the platform. The
     agent builder needs canonical platform knowledge to set correct permissions.
 ```

@@ -1,5 +1,5 @@
 ---
-name: stack-l3-vitest
+name: stack-vitest
 version: 4.1.0
 description: Vitest testing framework API reference, patterns, and harness-specific testing conventions
 category: stack

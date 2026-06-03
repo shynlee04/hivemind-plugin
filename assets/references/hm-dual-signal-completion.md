@@ -27,7 +27,7 @@ sequenceDiagram
 ## The Dual Signals
 
 1. **Doer Signal (Signal 1)**: The implementer agent (e.g., `hm-executor`, `hm-code-fixer`) asserts that it has executed the tasks and claims completion.
-2. **Verifier Signal (Signal 2)**: An independent auditor agent (e.g., `hm-verifier`, `hm-plan-checker`, `gate-l3-evidence-truth`) runs verification logic and generates positive, concrete proof that the must-haves are satisfied.
+2. **Verifier Signal (Signal 2)**: An independent auditor agent (e.g., `hm-verifier`, `hm-plan-checker`, `gate-evidence-truth`) runs verification logic and generates positive, concrete proof that the must-haves are satisfied.
 
 ## Evidence Hierarchy
 Verification must provide evidence according to the following truth level structure:

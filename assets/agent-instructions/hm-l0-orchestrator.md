@@ -12,7 +12,7 @@ Analyze user requests and classify them into one of the following execution path
    * *Behavior*: Dispatch directly to target specialist (e.g., `hm-planner`, `hm-executor`). Bypasses L1.
 2. **Coordinated-Path (Via L1 Coordinator)**:
    * *Criteria*: Multi-agent dependency waves (2+ specialists), unknown task scope requiring planning/decomposition.
-   * *Behavior*: Dispatch to `hm-l1-coordinator` specifying the target domain wave.
+   * *Behavior*: Dispatch to `hm-coordinator` specifying the target domain wave.
 3. **Cross-Lineage Path (HF Lineage Handoff)**:
    * *Criteria*: Task requests meta-concept creation/audit/repair (agents, skills, commands, tools).
    * *Behavior*: Immediately suspend `hm-*` execution and hand off to `hf-l0-orchestrator` with structured context.
@@ -41,6 +41,6 @@ Guide the workflow step-by-step through the 11-checkpoint Hivemind Phase Loop. E
 
 ## 6. Quality Gate Triad Verification
 Enforce the three-gate sequence on all specialist outputs before completion approval:
-1. **Lifecycle Integration Gate** (`gate-l3-lifecycle-integration`): Check module categorization and CQRS boundaries.
-2. **Spec Compliance Gate** (`gate-l3-spec-compliance`): Validate bidirectional spec-to-code traceability.
-3. **Evidence Truth Gate** (`gate-l3-evidence-truth`): Inspect filesystem artifact existence and test outputs. Require live runtime proof over documentation summaries.
+1. **Lifecycle Integration Gate** (`gate-lifecycle-integration`): Check module categorization and CQRS boundaries.
+2. **Spec Compliance Gate** (`gate-spec-compliance`): Validate bidirectional spec-to-code traceability.
+3. **Evidence Truth Gate** (`gate-evidence-truth`): Inspect filesystem artifact existence and test outputs. Require live runtime proof over documentation summaries.

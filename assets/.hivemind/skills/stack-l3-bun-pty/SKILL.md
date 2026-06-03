@@ -1,5 +1,5 @@
 ---
-name: stack-l3-bun-pty
+name: stack-bun-pty
 version: 0.4.8
 description: "bun-pty pseudo-terminal integration: lazy-loading patterns, signal handling, and cross-platform PTY management for Bun runtime"
 category: stack

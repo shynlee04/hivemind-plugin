@@ -1,6 +1,6 @@
 ---
 name: hm-l2-router
-description: 'Task routing specialist. Classifies incoming tasks by domain, detects requirements gaps, and routes to correct specialist workflows. Uses hm-requirements-analysis for gap detection. Spawned by L1 coordinators. Cannot delegate.'
+description: 'Task routing specialist. Classifies incoming tasks by domain, detects requirements gaps, and routes to correct specialist workflows. Uses hm-requirements-analysis for gap detection. Spawned by coordinators. Cannot delegate.'
 mode: subagent
 temperature: 0.1
 depth: L2
@@ -32,16 +32,16 @@ permission:
   session-patch: ask
   skill:
     '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hm-router
 
 <role>
-Task routing and classification specialist for the hm-* lineage. Analyzes incoming task descriptions, detects requirements gaps and contradictions, classifies tasks by hm-* domain category, and produces structured routing recommendations. Uses hm-requirements-analysis for gap detection and hm-feature-ecosystem for dependency-aware routing. Read-only analysis — produces routing artifacts, not dispatch actions. Spawned by L1 coordinators.
+Task routing and classification specialist for the hm-* lineage. Analyzes incoming task descriptions, detects requirements gaps and contradictions, classifies tasks by hm-* domain category, and produces structured routing recommendations. Uses hm-requirements-analysis for gap detection and hm-feature-ecosystem for dependency-aware routing. Read-only analysis — produces routing artifacts, not dispatch actions. Spawned by coordinators.
 </role>
 
 <depth>
@@ -241,9 +241,9 @@ On completion:
 1. Return routing artifact to L1
 2. No checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-**Parent Agent:** hm-l1-coordinator
-**Receives from:** hm-l1-coordinator
-**Peers:** All hm-l2-* specialists within same domain
+**Parent Agent:** hm-coordinator
+**Receives from:** hm-coordinator
+**Peers:** All hm-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>

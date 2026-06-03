@@ -1,5 +1,5 @@
 ---
-name: stack-l3-opencode
+name: stack-opencode
 version: "1.14.28"
 description: "OpenCode SDK + Plugin internals for feature development, architecture, auditing, quality checking, test building, and gatekeeping. Contains BEYOND-DOCS expert knowledge extracted from source."
 triggers:

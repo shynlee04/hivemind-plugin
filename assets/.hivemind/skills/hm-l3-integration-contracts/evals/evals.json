@@ -13,22 +13,22 @@
       "must_include": ["hm-l2-researcher", "hm-l2-scout", "hm-l2-investigator"]
     },
     {
-      "prompt": "Can an hm-l2-planner load hf-l2-agent-composition?",
+      "prompt": "Can an hm-l2-planner load hf-agent-composition?",
       "expected_load": true,
       "must_include": ["NEVER", "D-AD-01 STRICT", "violation"]
     },
     {
-      "prompt": "Can an hf-l2-auditor load hm-l3-detective?",
+      "prompt": "Can an hf-auditor load hm-l3-detective?",
       "expected_load": true,
       "must_include": ["FLEXIBLE", "justified", "cross-lineage"]
     },
     {
-      "prompt": "Which skills should the hf-l2-skill-builder load by default?",
+      "prompt": "Which skills should the hf-skill-builder load by default?",
       "expected_load": true,
-      "must_include": ["hf-l2-skill-synthesis", "hf-l2-use-authoring-skills", "hf-l2-naming-syndicate"]
+      "must_include": ["hf-skill-synthesis", "hf-use-authoring-skills", "hf-naming-syndicate"]
     },
     {
-      "prompt": "Is gate-l3-evidence-truth available to shipped agents?",
+      "prompt": "Is gate-evidence-truth available to shipped agents?",
       "expected_load": true,
       "must_include": ["internal only", "D-02", "THIS PROJECT ONLY"]
     },
@@ -38,7 +38,7 @@
       "reason": "agent creation belongs to hf-meta-builder, not integration contracts"
     },
     {
-      "prompt": "What is the cross-lineage justification for hf-l2-synthesizer loading hm-l3-synthesis?",
+      "prompt": "What is the cross-lineage justification for hf-synthesizer loading hm-l3-synthesis?",
       "expected_load": true,
       "must_include": ["FLEXIBLE", "synthesis", "artifact compression"]
     },

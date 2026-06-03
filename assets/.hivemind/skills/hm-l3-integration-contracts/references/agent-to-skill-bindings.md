@@ -36,11 +36,11 @@ This is the canonical reference for which skills each agent domain loads. These 
 
 | Agent Type | Required Skills | Load Priority |
 |-----------|----------------|---------------|
-| Reviewer | hm-l2-test-driven-execution, gate-l3-evidence-truth, hm-l2-production-readiness | 1. test-driven-execution, 2. evidence-truth, 3. production-readiness |
-| Auditor | hm-l2-gate-orchestrator, gate-l3-evidence-truth, gate-l3-spec-compliance | 1. gate-orchestrator, 2. evidence-truth, 3. spec-compliance |
-| Validator | hm-l2-test-driven-execution, gate-l3-evidence-truth | 1. test-driven-execution, 2. evidence-truth |
-| Critic | gate-l3-evidence-truth, hm-l2-test-driven-execution | 1. evidence-truth, 2. test-driven-execution |
-| Assessor | hm-l2-production-readiness, gate-l3-evidence-truth | 1. production-readiness, 2. evidence-truth |
+| Reviewer | hm-l2-test-driven-execution, gate-evidence-truth, hm-l2-production-readiness | 1. test-driven-execution, 2. evidence-truth, 3. production-readiness |
+| Auditor | hm-l2-gate-orchestrator, gate-evidence-truth, gate-spec-compliance | 1. gate-orchestrator, 2. evidence-truth, 3. spec-compliance |
+| Validator | hm-l2-test-driven-execution, gate-evidence-truth | 1. test-driven-execution, 2. evidence-truth |
+| Critic | gate-evidence-truth, hm-l2-test-driven-execution | 1. evidence-truth, 2. test-driven-execution |
+| Assessor | hm-l2-production-readiness, gate-evidence-truth | 1. production-readiness, 2. evidence-truth |
 
 ## Debug Domain
 
@@ -63,16 +63,16 @@ This is the canonical reference for which skills each agent domain loads. These 
 
 | Agent Type | Required Skills | Load Priority |
 |-----------|----------------|---------------|
-| Orchestrator (hf L0) | hf-l2-agent-composition, hf-l2-agents-and-subagents-dev, hf-l2-delegation-gates | 1. agent-composition, 2. agents-and-subagents-dev, 3. delegation-gates |
-| Coordinator (hf) | hf-l2-agent-composition, hf-l2-agents-and-subagents-dev | 1. agent-composition, 2. agents-and-subagents-dev |
-| Agent Builder | hf-l2-agent-composition, hf-l2-agents-and-subagents-dev, hf-l2-naming-syndicate | 1. agent-composition, 2. agents-and-subagents-dev, 3. naming-syndicate |
-| Skill Builder | hf-l2-skill-synthesis, hf-l2-use-authoring-skills, hf-l2-naming-syndicate | 1. skill-synthesis, 2. use-authoring-skills, 3. naming-syndicate |
-| Command Builder | hf-l2-command-dev, hf-l2-command-parser, hf-l2-naming-syndicate | 1. command-dev, 2. command-parser, 3. naming-syndicate |
-| Tool Builder | hf-l2-custom-tools-dev, hf-l2-naming-syndicate | 1. custom-tools-dev, 2. naming-syndicate |
-| Auditor (hf) | hf-l2-auditor, gate-l3-evidence-truth (FLEXIBLE justified) | 1. hf-auditor, 2. evidence-truth |
-| Refactorer (hf) | hf-l2-use-authoring-skills, hm-l2-refactor (FLEXIBLE justified) | 1. use-authoring-skills, 2. hm-refactor |
-| Synthesizer (hf) | hf-l2-skill-synthesis, hm-l3-synthesis (FLEXIBLE justified) | 1. skill-synthesis, 2. hm-synthesis |
-| Prompter | hf-l2-agent-composition, hf-l2-context-absorb | 1. agent-composition, 2. context-absorb |
+| Orchestrator (hf L0) | hf-agent-composition, hf-agents-and-subagents-dev, hf-delegation-gates | 1. agent-composition, 2. agents-and-subagents-dev, 3. delegation-gates |
+| Coordinator (hf) | hf-agent-composition, hf-agents-and-subagents-dev | 1. agent-composition, 2. agents-and-subagents-dev |
+| Agent Builder | hf-agent-composition, hf-agents-and-subagents-dev, hf-naming-syndicate | 1. agent-composition, 2. agents-and-subagents-dev, 3. naming-syndicate |
+| Skill Builder | hf-skill-synthesis, hf-use-authoring-skills, hf-naming-syndicate | 1. skill-synthesis, 2. use-authoring-skills, 3. naming-syndicate |
+| Command Builder | hf-command-dev, hf-command-parser, hf-naming-syndicate | 1. command-dev, 2. command-parser, 3. naming-syndicate |
+| Tool Builder | hf-custom-tools-dev, hf-naming-syndicate | 1. custom-tools-dev, 2. naming-syndicate |
+| Auditor (hf) | hf-auditor, gate-evidence-truth (FLEXIBLE justified) | 1. hf-auditor, 2. evidence-truth |
+| Refactorer (hf) | hf-use-authoring-skills, hm-l2-refactor (FLEXIBLE justified) | 1. use-authoring-skills, 2. hm-refactor |
+| Synthesizer (hf) | hf-skill-synthesis, hm-l3-synthesis (FLEXIBLE justified) | 1. skill-synthesis, 2. hm-synthesis |
+| Prompter | hf-agent-composition, hf-context-absorb | 1. agent-composition, 2. context-absorb |
 
 ## Discovery Domain
 

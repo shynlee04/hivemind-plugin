@@ -97,6 +97,6 @@ graph TD
 ## 5. Quality Gate Triad Governance
 
 All returned deliverables from specialist waves must pass the three-gate quality triad in strict sequence before final approval:
-1. **Lifecycle Integration Gate** (`gate-l3-lifecycle-integration`): Check component directory compliance, CQRS write/read boundaries, event wiring, and SDK surface compliance.
-2. **Spec Compliance Gate** (`gate-l3-spec-compliance`): Scan for spec-to-code gap analysis, bidirectional traceability, EARS acceptance criteria, and anti-patterns.
-3. **Evidence Truth Gate** (`gate-l3-evidence-truth`): Evaluate the evidence hierarchy. Require live runtime proof (L1/L2 test output) over documentation summaries (L5). Reject mocked assertions.
+1. **Lifecycle Integration Gate** (`gate-lifecycle-integration`): Check component directory compliance, CQRS write/read boundaries, event wiring, and SDK surface compliance.
+2. **Spec Compliance Gate** (`gate-spec-compliance`): Scan for spec-to-code gap analysis, bidirectional traceability, EARS acceptance criteria, and anti-patterns.
+3. **Evidence Truth Gate** (`gate-evidence-truth`): Evaluate the evidence hierarchy. Require live runtime proof (L1/L2 test output) over documentation summaries (L5). Reject mocked assertions.

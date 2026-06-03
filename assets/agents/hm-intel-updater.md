@@ -88,7 +88,7 @@ Verify exported types and function signatures directly in these directories.
 
 <schema_renderer_compliance>
 ### Schema & Dashboard Compliance
-Generated `.planning/intel/*.json` documents must comply with React dashboard renderer requirements (`stack-l3-json-render`):
+Generated `.planning/intel/*.json` documents must comply with React dashboard renderer requirements (`stack-json-render`):
 1. Every JSON payload must validate against its respective schema kernel.
 2. Metadata updates must contain the correct date, version number, and file hashes.
 3. Outdated or deleted components must be marked as "deprecated" rather than being silently excised.

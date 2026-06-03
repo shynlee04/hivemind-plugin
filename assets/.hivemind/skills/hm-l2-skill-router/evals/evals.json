@@ -55,7 +55,7 @@
       "scenario_type": "negative",
       "assertions": [
         "Detects meta-builder intent (signal: 'create a new skill')",
-        "Routes to hf-l2-skill-router instead of hm-* skills",
+        "Routes to hf-skill-router instead of hm-* skills",
         "Does NOT load any hm-* skill bundle",
         "Explains boundary: hm-l2-skill-router handles product-dev tasks only"
       ]
@@ -67,7 +67,7 @@
       "scenario_type": "boundary",
       "assertions": [
         "Classifies as Review domain (signals: 'ship', 'review', 'evidence gate')",
-        "Routes to hm-l2-production-readiness + gate-l3-evidence-truth",
+        "Routes to hm-l2-production-readiness + gate-evidence-truth",
         "Includes gate-* skill for terminal evidence verification",
         "Max 3 skill limit not exceeded"
       ]
@@ -87,7 +87,7 @@
     {
       "gate": "RICH-3",
       "claim": "Cross-references to 7 sibling skills + 12 domain-referenced skills",
-      "evidence": "7 skills in Cross-References table (hm-l2-lineage-router, hm-l2-coordinating-loop, hm-l2-phase-execution, hm-l2-subagent-delegation-patterns, hf-l2-skill-router, hm-l2-gate-orchestrator, gate-l3-evidence-truth). 19 skill references across 12 domains."
+      "evidence": "7 skills in Cross-References table (hm-l2-lineage-router, hm-l2-coordinating-loop, hm-l2-phase-execution, hm-l2-subagent-delegation-patterns, hf-skill-router, hm-l2-gate-orchestrator, gate-evidence-truth). 19 skill references across 12 domains."
     },
     {
       "gate": "RICH-4",
@@ -107,7 +107,7 @@
     {
       "gate": "RICH-7",
       "claim": "Honest gap tracking with self-correction",
-      "evidence": "Self-correction documents 4 anti-patterns. Multi-domain limit honestly documented. Wrong Router pattern routes to sibling hf-l2-skill-router."
+      "evidence": "Self-correction documents 4 anti-patterns. Multi-domain limit honestly documented. Wrong Router pattern routes to sibling hf-skill-router."
     },
     {
       "gate": "RICH-8",

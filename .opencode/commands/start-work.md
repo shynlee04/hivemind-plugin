@@ -1,6 +1,6 @@
 ---
 description: "Execute a task plan with full orchestration. Reads plan and runs pending phases through controlled delegation."
-agent: hm-l2-conductor
+agent: hm-l0-orchestrator
 subtask: false
 ---
 

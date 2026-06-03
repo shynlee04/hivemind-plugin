@@ -20,8 +20,8 @@ Hivemind organizes agent capabilities into structured, non-overlapping tiers:
 ```
 
 ### L0/L1: Orchestration Tier
-- **Agents**: `hm-orchestrator`, `hm-l0-orchestrator`, `hm-l1-coordinator`
-- **Boundaries**: Forbidden from performing direct code modifications or running test/build commands. They analyze task parameters, resolve dependencies, spawn L2 specialists, and evaluate quality gate compliance.
+- **Agents**: `hm-orchestrator`, `hm-l0-orchestrator`, `hm-coordinator`
+- **Boundaries**: Forbidden from performing direct code modifications or running test/build commands. They analyze task parameters, resolve dependencies, spawn specialists, and evaluate quality gate compliance.
 
 ### L2: Specialist Tier
 - **Research Specialists**:

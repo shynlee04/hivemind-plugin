@@ -22,9 +22,9 @@
     "grep": "allow",
     "task": {
       "*": "ask",
-      "hm-l1-*": "allow",
-      "hm-l2-*": "allow",
-      "hm-l3-*": "allow"
+      "hm-*": "allow",
+      "hm-*": "allow",
+      "hm-*": "allow"
     },
     "session-journal-export": "allow",
     "execute-command": "allow",
@@ -57,11 +57,11 @@
     "websearch": "allow",
     "skill": {
       "*": "ask",
-      "hm-l1-*": "allow",
-      "hm-l2-*": "allow",
-      "hm-l3-*": "allow",
-      "gate-l3-*": "allow",
-      "stack-l3-*": "allow"
+      "hm-*": "allow",
+      "hm-*": "allow",
+      "hm-*": "allow",
+      "gate-*": "allow",
+      "stack-*": "allow"
     }
   },
   "reasoningEffort": "high",

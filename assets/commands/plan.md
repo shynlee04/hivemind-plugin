@@ -1,6 +1,6 @@
 ---
 description: "Enter strategic planning mode. Agent interviews you to build a detailed plan before any code is written."
-agent: hm-l2-conductor
+agent: hm-l0-orchestrator
 subtask: false
 ---
 

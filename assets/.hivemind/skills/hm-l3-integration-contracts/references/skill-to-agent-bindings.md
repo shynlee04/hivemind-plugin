@@ -12,17 +12,17 @@ Which agents consume each skill, across all 5 lineages. This is the canonical re
 | hm-l3-deep-research | hm-l2-researcher, hm-l2-synthesizer | hm-* | STRICT |
 | hm-l3-tech-stack-ingest | hm-l2-researcher, hm-l2-scout, hm-l2-technician | hm-* | STRICT |
 | hm-l3-research-chain | hm-l2-researcher | hm-* | STRICT |
-| hm-l3-synthesis | hm-l2-synthesizer, hf-l2-synthesizer | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-synthesis | hm-l2-synthesizer, hf-synthesizer | hm+hf | FLEXIBLE (hf justified) |
 | hm-l3-omo-reference | hm-l2-researcher, hm-l2-architect | hm-* | STRICT |
-| hm-l3-opencode-platform-reference | hm-l2-researcher, hf-l2-agent-builder, hf-l2-tool-builder | hm+hf | FLEXIBLE (hf justified) |
-| hm-l3-opencode-non-interactive-shell | hm-l2-operator, hf-l2-command-builder | hm+hf | FLEXIBLE (hf justified) |
-| hm-l3-opencode-project-audit | hm-l2-auditor, hf-l2-auditor | hm+hf | FLEXIBLE (hf justified) |
-| hm-l3-subagent-delegation-patterns | hm-l1-coordinator, hm-l2-operator, hm-l2-guardian | hm-* | STRICT |
+| hm-l3-opencode-platform-reference | hm-l2-researcher, hf-agent-builder, hf-tool-builder | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-opencode-non-interactive-shell | hm-l2-operator, hf-command-builder | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-opencode-project-audit | hm-l2-auditor, hf-auditor | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-subagent-delegation-patterns | hm-coordinator, hm-l2-operator, hm-l2-guardian | hm-* | STRICT |
 | hm-l3-tech-context-compliance | hm-l2-technician, hm-l2-integrator | hm-* | STRICT |
-| hm-l3-tool-capability-matrix | hm-l2-technician, hf-l2-agent-builder, hf-l2-tool-builder | hm+hf | FLEXIBLE (hf justified) |
-| hm-l3-hivemind-state-reference | hm-l1-coordinator, hm-l2-persistor, hm-l2-operator | hm-* | STRICT |
-| hm-l3-hivemind-engine-contracts | hm-l2-integrator, hm-l2-architect, hf-l2-tool-builder | hm+hf | FLEXIBLE (hf justified) |
-| hm-l3-integration-contracts | hm-l2-auditor, hm-l2-validator, hf-l2-auditor, hf-l2-meta-builder | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-tool-capability-matrix | hm-l2-technician, hf-agent-builder, hf-tool-builder | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-hivemind-state-reference | hm-coordinator, hm-l2-persistor, hm-l2-operator | hm-* | STRICT |
+| hm-l3-hivemind-engine-contracts | hm-l2-integrator, hm-l2-architect, hf-tool-builder | hm+hf | FLEXIBLE (hf justified) |
+| hm-l3-integration-contracts | hm-l2-auditor, hm-l2-validator, hf-auditor, hf-meta-builder | hm+hf | FLEXIBLE (hf justified) |
 
 ## Planning Skills (L2 depth)
 
@@ -45,54 +45,54 @@ Which agents consume each skill, across all 5 lineages. This is the canonical re
 | hm-l2-test-driven-execution | hm-l2-executor, hm-l2-builder, hm-l2-validator, hm-l2-reviewer, hm-l2-critic, hm-l2-finisher | hm-* | STRICT |
 | hm-l2-phase-loop | hm-l2-guardian | hm-* | STRICT |
 | hm-l2-completion-looping | hm-l2-debugger, hm-l2-finisher, hm-l2-guardian, hm-l2-investigator, hm-l2-operator, hm-l2-persistor | hm-* | STRICT |
-| hm-l2-coordinating-loop | hm-l0-orchestrator, hm-l1-coordinator, hm-l2-connector | hm-* | STRICT |
+| hm-l2-coordinating-loop | hm-l0-orchestrator, hm-coordinator, hm-l2-connector | hm-* | STRICT |
 | hm-l2-production-readiness | hm-l2-integrator, hm-l2-reviewer, hm-l2-assessor, hm-l2-curator | hm-* | STRICT |
 
 ## Quality Skills (L2 depth)
 
 | Skill | Consumed By | Lineage Scope | Access |
 |-------|------------|--------------|--------|
-| hm-l2-gate-orchestrator | hm-l0-orchestrator, hm-l1-coordinator, hm-l2-auditor, hm-l2-reviewer | hm-* | STRICT |
+| hm-l2-gate-orchestrator | hm-l0-orchestrator, hm-coordinator, hm-l2-auditor, hm-l2-reviewer | hm-* | STRICT |
 
 ## Debug & Refactor Skills (L2 depth)
 
 | Skill | Consumed By | Lineage Scope | Access |
 |-------|------------|--------------|--------|
 | hm-l2-debug | hm-l2-debugger, hm-l2-investigator | hm-* | STRICT |
-| hm-l2-refactor | hm-l2-architect, hf-l2-refactorer | hm+hf | FLEXIBLE (hf justified) |
+| hm-l2-refactor | hm-l2-architect, hf-refactorer | hm+hf | FLEXIBLE (hf justified) |
 
 ## Routing Skills (L2 depth)
 
 | Skill | Consumed By | Lineage Scope | Access |
 |-------|------------|--------------|--------|
 | hm-l2-skill-router | hm-l2-router | hm-* | STRICT |
-| hf-l2-skill-router | hf-l1-coordinator, hf-l2-meta-builder | hf-* | STRICT |
+| hf-skill-router | hf-coordinator, hf-meta-builder | hf-* | STRICT |
 | hm-l2-lineage-router | hm-l2-router | hm-* | STRICT |
 
 ## Internal Gate Skills (L3 depth) — THIS PROJECT ONLY
 
 | Skill | Consumed By | Lineage Scope | Access |
 |-------|------------|--------------|--------|
-| gate-l3-evidence-truth | hm-l2-reviewer, hm-l2-auditor, hm-l2-validator, hm-l2-critic, hm-l2-assessor, hf-l2-auditor | gate (hm+hf) | FLEXIBLE (hf justified) |
-| gate-l3-spec-compliance | hm-l2-auditor | gate-* | STRICT (internal only) |
-| gate-l3-lifecycle-integration | hm-l2-auditor | gate-* | STRICT (internal only) |
+| gate-evidence-truth | hm-l2-reviewer, hm-l2-auditor, hm-l2-validator, hm-l2-critic, hm-l2-assessor, hf-auditor | gate (hm+hf) | FLEXIBLE (hf justified) |
+| gate-spec-compliance | hm-l2-auditor | gate-* | STRICT (internal only) |
+| gate-lifecycle-integration | hm-l2-auditor | gate-* | STRICT (internal only) |
 
 ## Meta-Builder Skills (L2 depth) — hf-* lineage
 
 | Skill | Consumed By | Lineage Scope | Access |
 |-------|------------|--------------|--------|
-| hf-l2-agent-composition | hf-l0-orchestrator, hf-l1-coordinator, hf-l2-agent-builder, hf-l2-prompter | hf-* | STRICT |
-| hf-l2-agents-and-subagents-dev | hf-l0-orchestrator, hf-l1-coordinator, hf-l2-agent-builder | hf-* | STRICT |
-| hf-l2-delegation-gates | hf-l0-orchestrator | hf-* | STRICT |
-| hf-l2-skill-synthesis | hf-l2-skill-builder, hf-l2-synthesizer | hf-* | STRICT |
-| hf-l2-use-authoring-skills | hf-l2-skill-builder, hf-l2-refactorer | hf-* | STRICT |
-| hf-l2-naming-syndicate | hf-l2-agent-builder, hf-l2-skill-builder, hf-l2-command-builder, hf-l2-tool-builder | hf-* | STRICT |
-| hf-l2-command-dev | hf-l2-command-builder | hf-* | STRICT |
-| hf-l2-command-parser | hf-l2-command-builder | hf-* | STRICT |
-| hf-l2-custom-tools-dev | hf-l2-tool-builder | hf-* | STRICT |
-| hf-l2-context-absorb | hf-l2-prompter | hf-* | STRICT |
-| hf-l2-agents-md-sync | hf-l2-auditor | hf-* | STRICT |
-| hf-l2-meta-builder | hf-l0-orchestrator, hf-l1-coordinator | hf-* | STRICT |
+| hf-agent-composition | hf-l0-orchestrator, hf-coordinator, hf-agent-builder, hf-prompter | hf-* | STRICT |
+| hf-agents-and-subagents-dev | hf-l0-orchestrator, hf-coordinator, hf-agent-builder | hf-* | STRICT |
+| hf-delegation-gates | hf-l0-orchestrator | hf-* | STRICT |
+| hf-skill-synthesis | hf-skill-builder, hf-synthesizer | hf-* | STRICT |
+| hf-use-authoring-skills | hf-skill-builder, hf-refactorer | hf-* | STRICT |
+| hf-naming-syndicate | hf-agent-builder, hf-skill-builder, hf-command-builder, hf-tool-builder | hf-* | STRICT |
+| hf-command-dev | hf-command-builder | hf-* | STRICT |
+| hf-command-parser | hf-command-builder | hf-* | STRICT |
+| hf-custom-tools-dev | hf-tool-builder | hf-* | STRICT |
+| hf-context-absorb | hf-prompter | hf-* | STRICT |
+| hf-agents-md-sync | hf-auditor | hf-* | STRICT |
+| hf-meta-builder | hf-l0-orchestrator, hf-coordinator | hf-* | STRICT |
 
 ## Human-Facing Interaction Skills (L2 depth)
 
@@ -104,18 +104,18 @@ Which agents consume each skill, across all 5 lineages. This is the canonical re
 
 | Skill | Consumed By | Lineage Scope | Access |
 |-------|------------|--------------|--------|
-| stack-l3-bun-pty | hf-l2-tool-builder, hm-l2-researcher | stack | OPEN (both) |
-| stack-l3-json-render | hf-l2-tool-builder, hm-l2-researcher | stack | OPEN (both) |
-| stack-l3-nextjs | hf-l2-tool-builder, hm-l2-researcher | stack | OPEN (both) |
-| stack-l3-opencode | hf-l2-agent-builder, hf-l2-tool-builder, hm-l2-researcher | stack | OPEN (both) |
-| stack-l3-vitest | hm-l2-executor, hm-l2-builder, hf-l2-tool-builder | stack | OPEN (both) |
-| stack-l3-zod | hf-l2-tool-builder, hm-l2-executor | stack | OPEN (both) |
+| stack-bun-pty | hf-tool-builder, hm-l2-researcher | stack | OPEN (both) |
+| stack-json-render | hf-tool-builder, hm-l2-researcher | stack | OPEN (both) |
+| stack-nextjs | hf-tool-builder, hm-l2-researcher | stack | OPEN (both) |
+| stack-opencode | hf-agent-builder, hf-tool-builder, hm-l2-researcher | stack | OPEN (both) |
+| stack-vitest | hm-l2-executor, hm-l2-builder, hf-tool-builder | stack | OPEN (both) |
+| stack-zod | hf-tool-builder, hm-l2-executor | stack | OPEN (both) |
 
 ## Unprefixed
 
 | Skill | Consumed By | Lineage Scope | Access |
 |-------|------------|--------------|--------|
-| opencode-config-workflow | hf-l0-orchestrator, hf-l1-coordinator | both | OPEN |
+| opencode-config-workflow | hf-l0-orchestrator, hf-coordinator | both | OPEN |
 
 ## Orphan Status
 

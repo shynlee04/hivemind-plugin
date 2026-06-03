@@ -15,7 +15,7 @@ metadata:
   lineage: "hm-*"
   task-group: "how-to-implement"
   routes-to: ["hm-*", "gate-*"]
-  input-from: ["hm-l0-orchestrator", "hm-l1-coordinator"]
+  input-from: ["hm-l0-orchestrator", "hm-coordinator"]
   consumed-by: ["hm-l2-coordinating-loop", "hm-l2-phase-execution", "hm-l2-subagent-delegation-patterns"]
 allowed-tools:
   - Read
@@ -46,7 +46,7 @@ This is a **dispatch router** — it bridges the gap between task classification
 | Implementation | hm-l2-phase-execution + hm-l2-cross-cutting-change | 2 |
 | Quality | hm-l2-test-driven-execution + hm-l2-gate-orchestrator | 2 |
 | Debug | hm-l2-debug + hm-l2-completion-looping | 2 |
-| Review | hm-l2-production-readiness + gate-l3-evidence-truth | 2 |
+| Review | hm-l2-production-readiness + gate-evidence-truth | 2 |
 | Architecture | hm-l2-refactor + hm-l2-roadmap-maintainability | 2 |
 | Analysis | hm-l2-requirements-analysis + hm-l2-product-validation | 2 |
 | Brainstorm | hm-l2-brainstorm + hm-l2-user-intent-interactive-loop | 2 |
@@ -137,9 +137,9 @@ This is a **dispatch router** — it bridges the gap between task classification
 | Priority | Skill | Role |
 |----------|-------|------|
 | 1 | `hm-l2-production-readiness` | Deployment safety verification (8 dimensions) |
-| 2 | `gate-l3-evidence-truth` | Terminal evidence gate (L1-L5 hierarchy) |
+| 2 | `gate-evidence-truth` | Terminal evidence gate (L1-L5 hierarchy) |
 
-**Loading order:** hm-l2-production-readiness (collect evidence) → gate-l3-evidence-truth (terminal gate)
+**Loading order:** hm-l2-production-readiness (collect evidence) → gate-evidence-truth (terminal gate)
 
 ### Domain 7: Architecture
 
@@ -252,7 +252,7 @@ Agent loads skills and executes
 ### Anti-Pattern 2: Wrong Router
 
 **Detection:** Task is a meta-builder task (creating skills/agents/commands) but hm-l2-skill-router is being invoked.
-**Correction:** This router handles hm-* product-dev tasks only. Route meta-builder tasks to hf-l2-skill-router instead. Signal: "Meta-builder task detected. This is not a product-dev task. Use hf-l2-skill-router for meta-builder dispatch."
+**Correction:** This router handles hm-* product-dev tasks only. Route meta-builder tasks to hf-skill-router instead. Signal: "Meta-builder task detected. This is not a product-dev task. Use hf-skill-router for meta-builder dispatch."
 
 ### Anti-Pattern 3: Bundle Overload
 
@@ -272,9 +272,9 @@ Agent loads skills and executes
 | `hm-l2-coordinating-loop` | Consumer — uses this router to determine skill bundles for coordinated multi-agent tasks |
 | `hm-l2-phase-execution` | Consumer — uses this router to attach skill bundles to phase execution dispatch |
 | `hm-l2-subagent-delegation-patterns` | Consumer — uses this router to determine which skills subagents need |
-| `hf-l2-skill-router` | Sibling router — handles hf-* meta-builder dispatch (complementary lineage) |
+| `hf-skill-router` | Sibling router — handles hf-* meta-builder dispatch (complementary lineage) |
 | `hm-l2-gate-orchestrator` | Referenced in Quality domain — orchestrates the gate triad pipeline |
-| `gate-l3-evidence-truth` | Referenced in Review domain — terminal evidence gate |
+| `gate-evidence-truth` | Referenced in Review domain — terminal evidence gate |
 
 ## Quality Contract (HMQUAL Compliance)
 

@@ -86,16 +86,16 @@ These agents are soft primitive authoring specialists. They build, edit, and aud
 | Agent Name | Depth | Core Responsibility / Skill Focus |
 |:---|:---|:---|
 | [hf-l0-orchestrator](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l0-orchestrator.md) | L0 | Front-facing strategist for `hf-*` meta-concepts; maps authoring pathways. |
-| [hf-l1-coordinator](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l1-coordinator.md) | L1 | Coordinates multi-agent builder waves (agent composition, skill synthesis). |
-| [hf-l2-agent-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l2-agent-builder.md) | L2 | Generates declarative agent profiles; configures temperatures, steps, and permissions. |
-| [hf-l2-auditor](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l2-auditor.md) | L2 | Audits soft primitives (agents, skills, commands) against naming rules and AQUAL. |
-| [hf-l2-command-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l2-command-builder.md) | L2 | Configures command schemas for both singular and plural folders. |
-| [hf-l2-meta-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l2-meta-builder.md) | L2 | Manages meta-builder tasks; routes to specialized L2 builders. |
-| [hf-l2-prompter](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l2-prompter.md) | L2 | Optimizes and enhances prompts; applies system tags and constraints. |
-| [hf-l2-refactorer](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l2-refactorer.md) | L2 | Restructures soft concepts; updates schemas, splits files, and updates rules. |
-| [hf-l2-skill-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l2-skill-builder.md) | L2 | Scaffolds skill directories; creates SKILL.md, prompts, and configurations. |
-| [hf-l2-synthesizer](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l2-synthesizer.md) | L2 | Translates codebases and schemas into modular OpenCode skill patterns. |
-| [hf-l2-tool-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-l2-tool-builder.md) | L2 | Generates custom integration tools with Zod schema verification. |
+| [hf-coordinator](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-coordinator.md) | L1 | Coordinates multi-agent builder waves (agent composition, skill synthesis). |
+| [hf-agent-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-agent-builder.md) | L2 | Generates declarative agent profiles; configures temperatures, steps, and permissions. |
+| [hf-auditor](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-auditor.md) | L2 | Audits soft primitives (agents, skills, commands) against naming rules and AQUAL. |
+| [hf-command-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-command-builder.md) | L2 | Configures command schemas for both singular and plural folders. |
+| [hf-meta-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-meta-builder.md) | L2 | Manages meta-builder tasks; routes to specialized L2 builders. |
+| [hf-prompter](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-prompter.md) | L2 | Optimizes and enhances prompts; applies system tags and constraints. |
+| [hf-refactorer](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-refactorer.md) | L2 | Restructures soft concepts; updates schemas, splits files, and updates rules. |
+| [hf-skill-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-skill-builder.md) | L2 | Scaffolds skill directories; creates SKILL.md, prompts, and configurations. |
+| [hf-synthesizer](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-synthesizer.md) | L2 | Translates codebases and schemas into modular OpenCode skill patterns. |
+| [hf-tool-builder](file:///Users/apple/hivemind-plugin-private/assets/agents/hf-tool-builder.md) | L2 | Generates custom integration tools with Zod schema verification. |
 
 ### GSD Lineage: Developer-Only Utilities (33 Agents)
 
@@ -165,10 +165,10 @@ Below is the mapping for the primary workflows of both HM (Harness Modules) and 
 | 10| `/gsd-doctor` | `gsd` | `doctor.md` | `gsd-debug-session-manager`| `USER-PROFILE.md` |
 | 11| `/harness-audit` | `hm` | `hm-audit.md` | `hm-nyquist-auditor` | `universal-rules.md` |
 | 12| `/gsd-audit` | `gsd` | `audit.md` | `gsd-nyquist-auditor` | `USER-PROFILE.md` |
-| 13| `/hf-create` | `hf` | `hf-create.md` | `hf-l2-agent-builder` | `universal-rules.md`, `AGENTS.md` |
-| 14| `/hf-audit` | `hf` | `hf-audit.md` | `hf-l2-auditor` | `universal-rules.md` |
-| 15| `/hf-stack` | `hf` | `hf-stack.md` | `hf-l2-tool-builder` | `universal-rules.md` |
-| 16| `/hf-absorb` | `hf` | `hf-absorb.md` | `hf-l2-meta-builder` | `universal-rules.md` |
+| 13| `/hf-create` | `hf` | `hf-create.md` | `hf-agent-builder` | `universal-rules.md`, `AGENTS.md` |
+| 14| `/hf-audit` | `hf` | `hf-audit.md` | `hf-auditor` | `universal-rules.md` |
+| 15| `/hf-stack` | `hf` | `hf-stack.md` | `hf-tool-builder` | `universal-rules.md` |
+| 16| `/hf-absorb` | `hf` | `hf-absorb.md` | `hf-meta-builder` | `universal-rules.md` |
 | 17| `/hm-add-tests` | `hm` | `hm-add-tests.md` | `hm-verifier` | `universal-rules.md` |
 | 18| `/gsd-add-tests` | `gsd` | `add-tests.md` | `gsd-verifier` | `USER-PROFILE.md` |
 | 19| `/hm-code-review` | `hm` | `hm-code-review.md` | `hm-code-reviewer` | `universal-rules.md` |
@@ -201,7 +201,7 @@ graph TD
 
 1. **Fast-Path (Direct-to-L2/L3 Specialist)**:
    * **Criteria**: Task requires exactly one specialist agent; the command routes directly; no multi-agent dependency loops exist; it is a simple status check or recovery.
-   * **Behavior**: L0 dispatches directly to the L2/L3 agent via the native `task` tool, bypassing the L1 coordinator to save token context.
+   * **Behavior**: L0 dispatches directly to the L2/L3 agent via the native `task` tool, bypassing the coordinator to save token context.
 2. **Coordinated-Path (Via L1 Coordinator)**:
    * **Criteria**: Task requires 2+ specialists in parallel/sequence (multi-wave); output of one agent feeds another; the task has high ambiguity and requires decomposition.
    * **Behavior**: L0 dispatches to the L1 Coordinator, which plans the waves, handles temporary variables, and manages sub-task queues.
@@ -226,13 +226,13 @@ stateDiagram-v2
     EvidenceGate --> [*]: FAIL (Remediate)
 ```
 
-1. **Gate 1: Lifecycle Integration (`gate-l3-lifecycle-integration`)**
+1. **Gate 1: Lifecycle Integration (`gate-lifecycle-integration`)**
    * **Audit Target**: Verifies package structure compliance.
    * **Checks**: Confirms no business logic exists in the plugin wrapper; code conforms to CQRS boundaries; files are registered correctly (`src/` vs `.opencode/` vs `.hivemind/`).
-2. **Gate 2: Spec Compliance (`gate-l3-spec-compliance`)**
+2. **Gate 2: Spec Compliance (`gate-spec-compliance`)**
    * **Audit Target**: Verifies traceability against specifications.
    * **Checks**: Confirms EARS compliance (Easy Approach to Requirements Syntax); scans for gaps between the requirements and output; checks plan-to-code mapping.
-3. **Gate 3: Evidence Truth (`gate-l3-evidence-truth`)**
+3. **Gate 3: Evidence Truth (`gate-evidence-truth`)**
    * **Audit Target**: Verifies truth of execution.
    * **Checks**: Inspects the evidence hierarchy (prefers live runtime test evidence over logs and summaries); detects mock-only overrides. Refuses gate passage if evidence is missing.
 

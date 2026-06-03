@@ -12,7 +12,7 @@ Decision tree for routing user requests to the correct lineage (hm-* product dev
 USER REQUEST RECEIVED
     |
     ├── Starts with /hf-* command?
-    |   └── YES → hf-* lineage → load hf-l2-skill-router
+    |   └── YES → hf-* lineage → load hf-skill-router
     |
     ├── Starts with /plan, /ultrawork, /gsd-*?
     |   └── YES → hm-* lineage → load hm-l2-lineage-router
@@ -102,10 +102,10 @@ stack-* skills (REFERENCE):
 
 | Prefix | Lineage | Load |
 |--------|---------|------|
-| `/hf-create` | hf-* | `hf-l2-skill-router` |
-| `/hf-audit` | hf-* | `hf-l2-skill-router` |
-| `/hf-stack` | hf-* | `hf-l2-skill-router` |
-| `/hf-configure` | hf-* | `hf-l2-skill-router` |
+| `/hf-create` | hf-* | `hf-skill-router` |
+| `/hf-audit` | hf-* | `hf-skill-router` |
+| `/hf-stack` | hf-* | `hf-skill-router` |
+| `/hf-configure` | hf-* | `hf-skill-router` |
 | `/plan` | hm-* | `hm-l2-lineage-router` |
 | `/ultrawork` | hm-* | `hm-l2-lineage-router` |
 | `/gsd-*` | hm-* | `hm-l2-lineage-router` |

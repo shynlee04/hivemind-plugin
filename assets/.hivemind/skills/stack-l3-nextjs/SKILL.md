@@ -1,5 +1,5 @@
 ---
-name: stack-l3-nextjs
+name: stack-nextjs
 version: "16.2.2"
 description: "Next.js 16.x stack reference — App Router architecture, server/client components, route handlers, proxy, cache components, Turbopack"
 category: stack

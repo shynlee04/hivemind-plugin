@@ -95,7 +95,7 @@ This reference documents the complete routing map used by `hm-l2-skill-router` t
 | "pre-release" | "Pre-release verification pass" |
 | "evidence check" | "Check the evidence gate before shipping" |
 
-**Bundle:** hm-l2-production-readiness → gate-l3-evidence-truth
+**Bundle:** hm-l2-production-readiness → gate-evidence-truth
 
 **Dependency chain:** production-readiness (evidence collection) → evidence-truth (terminal gate with L1-L5 hierarchy)
 
@@ -208,7 +208,7 @@ When a task spans 2 domains:
 
 | Task Type | Route To | NOT This Router |
 |-----------|---------|-----------------|
-| Meta-builder (create/edit skills, agents, commands) | hf-l2-skill-router | hm-l2-skill-router |
+| Meta-builder (create/edit skills, agents, commands) | hf-skill-router | hm-l2-skill-router |
 | Simple file operations (read, write, edit) | No skill needed | hm-l2-skill-router |
 | Git operations (commit, branch, merge) | No skill needed | hm-l2-skill-router |
 | Conversational questions | No skill needed | hm-l2-skill-router |
@@ -216,6 +216,6 @@ When a task spans 2 domains:
 ## Depth Qualification
 
 All skill names in this router use `{lineage}-{depth}-{name}` format:
-- `hm-l2-*` — Layer 2 product-dev skills
-- `hm-l3-*` — Layer 3 specialized skills (detective, deep research, synthesis, research chain, tech stack)
-- `gate-l3-*` — Layer 3 internal gate skills (evidence-truth)
+- `hm-*` — Layer 2 product-dev skills
+- `hm-*` — Layer 3 specialized skills (detective, deep research, synthesis, research chain, tech stack)
+- `gate-*` — Layer 3 internal gate skills (evidence-truth)

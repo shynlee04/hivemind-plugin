@@ -1,5 +1,5 @@
 ---
-name: hf-l2-tool-builder
+name: hf-tool-builder
 description: 'Creates custom OpenCode tools with Zod schemas, plugin hooks, and TypeScript implementation. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for stack validation.'
 mode: subagent
 temperature: 0.1
@@ -7,7 +7,7 @@ depth: L2
 lineage: hf
 domain: Tool Building
 skills:
-  - hf-l2-custom-tools-dev
+  - hf-custom-tools-dev
 instruction:
   - AGENTS.md
 permission:
@@ -31,17 +31,17 @@ permission:
   session-patch: ask
   skill:
     '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hf-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hf-tool-builder
 
 <role>
-L2 specialist that creates custom OpenCode tools with Zod schemas, plugin hooks, and TypeScript implementation. Produces tool files following the Hivemind plugin SDK patterns: `tool()` helper registration, Zod input/output schemas, execute function with before/after hooks, and proper error handling. Ensures tools participate in the CQRS write-side pattern and comply with the 9-surface mutation authority. Spawned by hf-coordinator (L1). FLEXIBLE lineage — may load hm-* skills for tech stack validation and plugin SDK research. Cannot delegate further.
+specialist that creates custom OpenCode tools with Zod schemas, plugin hooks, and TypeScript implementation. Produces tool files following the Hivemind plugin SDK patterns: `tool()` helper registration, Zod input/output schemas, execute function with before/after hooks, and proper error handling. Ensures tools participate in the CQRS write-side pattern and comply with the 9-surface mutation authority. Spawned by hf-coordinator (L1). FLEXIBLE lineage — may load hm-* skills for tech stack validation and plugin SDK research. Cannot delegate further.
 </role>
 
 <depth>
@@ -247,7 +247,7 @@ NO ANY TYPES. EVERY TOOL USES ZOD SCHEMAS. CQRS WRITE-SIDE ONLY. [HARNESS] PREFI
 </execution_flow>
 
 <delegation_boundary>
-This agent is a terminal L2 specialist. It never delegates.
+This agent is a terminal specialist. It never delegates.
 
 **Delegates to:** Nobody (task: ask, delegate-task: ask)
 
@@ -290,9 +290,9 @@ On completion:
 1. Return structured output contract to hf-coordinator
 2. No independent checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-**Parent Agent:** hf-l1-coordinator
-**Receives from:** hf-l1-coordinator
-**Peers:** All hf-l2-* specialists within same domain
+**Parent Agent:** hf-coordinator
+**Receives from:** hf-coordinator
+**Peers:** All hf-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>
@@ -300,5 +300,5 @@ On completion:
 </session_continuity>
 
 <naming>
-Compliant with hf-naming-syndicate: hf-l2-tool-builder
+Compliant with hf-naming-syndicate: hf-tool-builder
 </naming>

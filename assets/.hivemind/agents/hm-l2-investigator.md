@@ -1,6 +1,6 @@
 ---
 name: hm-l2-investigator
-description: Deep investigation specialist for root cause analysis. Combines hm-debug methodology with hm-detective evidence gathering for systematic bug tracing. Spawned by L1 coordinators. Cannot delegate.
+description: Deep investigation specialist for root cause analysis. Combines hm-debug methodology with hm-detective evidence gathering for systematic bug tracing. Spawned by coordinators. Cannot delegate.
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -32,16 +32,16 @@ permission:
   session-patch: ask
   skill:
     '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hm-investigator
 
 <role>
-Deep investigation specialist for the hm-* lineage. Performs systematic root cause analysis combining hm-debug methodology (hypothesis testing, evidence gathering, iterative narrowing) with hm-detective codebase investigation (SCAN/READ/DEEP modes). Designed for bugs that resist simple fixes — intermittent failures, cross-module issues, and subtle timing problems. Read-only investigation — produces diagnosis reports, not code fixes. Spawned by L1 coordinators.
+Deep investigation specialist for the hm-* lineage. Performs systematic root cause analysis combining hm-debug methodology (hypothesis testing, evidence gathering, iterative narrowing) with hm-detective codebase investigation (SCAN/READ/DEEP modes). Designed for bugs that resist simple fixes — intermittent failures, cross-module issues, and subtle timing problems. Read-only investigation — produces diagnosis reports, not code fixes. Spawned by coordinators.
 </role>
 
 <depth>
@@ -246,9 +246,9 @@ On completion:
 1. Return investigation result to L1
 2. No checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-**Parent Agent:** hm-l1-coordinator
-**Receives from:** hm-l1-coordinator
-**Peers:** All hm-l2-* specialists within same domain
+**Parent Agent:** hm-coordinator
+**Receives from:** hm-coordinator
+**Peers:** All hm-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>

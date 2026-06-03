@@ -4,7 +4,7 @@
 
 ## Summary
 
-Map task domains to specialist L2 agents. L1 coordinators use these tables to dispatch the correct specialist.
+Map task domains to specialist L2 agents. coordinators use these tables to dispatch the correct specialist.
 
 ## hm-* Product Development Phases
 
@@ -18,40 +18,40 @@ Map task domains to specialist L2 agents. L1 coordinators use these tables to di
 | **Planning / Spec Authoring** | hm-l2-planner | hm-l2-spec-driven-authoring |
 | **Implementation / Execution** | hm-l2-executor | hm-l2-phase-execution + hm-l2-cross-cutting-change |
 | **Testing / TDD** | hm-l2-spec-verifier | hm-l2-test-driven-execution |
-| **Code Review** | hm-l2-reviewer | gate-l3-lifecycle-integration → gate-l3-spec-compliance → gate-l3-evidence-truth |
+| **Code Review** | hm-l2-reviewer | gate-lifecycle-integration → gate-spec-compliance → gate-evidence-truth |
 | **Debugging** | hm-l2-debugger | hm-l2-debug + hm-l2-completion-looping |
 | **Refactoring** | hm-l2-optimizer | hm-l2-refactor + hm-l2-cross-cutting-change |
-| **Production Readiness** | hm-l2-curator | hm-l2-production-readiness + gate-l3-evidence-truth |
+| **Production Readiness** | hm-l2-curator | hm-l2-production-readiness + gate-evidence-truth |
 | **Deep Research** | hm-l2-researcher | hm-l3-detective → hm-l3-deep-research → hm-l3-synthesis |
 | **Tech Stack Validation** | hm-l2-technician | hm-l3-tech-context-compliance + hm-l3-tech-stack-ingest |
 | **Documentation** | hm-l2-writer | hm-l2-spec-driven-authoring |
 | **Risk Assessment** | hm-l2-risk-assessor | hm-l2-product-validation |
 | **Completion / Finishing** | hm-l2-finisher | hm-l2-completion-looping |
 | **Context Mapping** | hm-l2-context-mapper | hm-l3-detective |
-| **Integration / E2E** | hm-l2-integrator | hm-l2-production-readiness + gate-l3-evidence-truth |
+| **Integration / E2E** | hm-l2-integrator | hm-l2-production-readiness + gate-evidence-truth |
 
 ## hf-* Meta-Builder Phases
 
 | Task Category | L2 Specialist | Skills to Load |
 |---------------|---------------|----------------|
-| **Agent Building** | hf-l2-agent-builder | hf-l2-agents-and-subagents-dev + hf-l2-agent-composition |
-| **Skill Authoring** | hf-l2-skill-builder | hf-l2-use-authoring-skills + hf-l2-skill-synthesis |
-| **Command Building** | hf-l2-command-builder | hf-l2-command-dev + hf-l2-command-parser |
-| **Tool Building** | hf-l2-tool-builder | hf-l2-custom-tools-dev |
-| **Audit (meta-concept)** | hf-l2-auditor | hf-l2-agents-md-sync + gate-l3-evidence-truth |
-| **Refactoring (meta-concept)** | hf-l2-refactorer | hf-l2-agents-md-sync + hm-l2-refactor (cross-lineage) |
-| **Synthesis (meta-patterns)** | hf-l2-synthesizer | hf-l2-skill-synthesis + hm-l3-synthesis (cross-lineage) |
-| **Prompt Engineering** | hf-l2-prompter | prompt-skim → prompt-analyze |
-| **Meta-Concept Workflow** | hf-l2-meta-builder | hf-l2-meta-builder-core |
+| **Agent Building** | hf-agent-builder | hf-agents-and-subagents-dev + hf-agent-composition |
+| **Skill Authoring** | hf-skill-builder | hf-use-authoring-skills + hf-skill-synthesis |
+| **Command Building** | hf-command-builder | hf-command-dev + hf-command-parser |
+| **Tool Building** | hf-tool-builder | hf-custom-tools-dev |
+| **Audit (meta-concept)** | hf-auditor | hf-agents-md-sync + gate-evidence-truth |
+| **Refactoring (meta-concept)** | hf-refactorer | hf-agents-md-sync + hm-l2-refactor (cross-lineage) |
+| **Synthesis (meta-patterns)** | hf-synthesizer | hf-skill-synthesis + hm-l3-synthesis (cross-lineage) |
+| **Prompt Engineering** | hf-prompter | prompt-skim → prompt-analyze |
+| **Meta-Concept Workflow** | hf-meta-builder | hf-meta-builder-core |
 
 ## Gate Skills (Shared Between Lineages)
 
 | Gate | Skill | Loaded By |
 |------|-------|-----------|
-| Lifecycle Check | gate-l3-lifecycle-integration | hm-l1-coordinator, hf-l1-coordinator |
-| Spec Compliance | gate-l3-spec-compliance | hm-l1-coordinator, hf-l1-coordinator |
-| Evidence Truth | gate-l3-evidence-truth | hm-l1-coordinator, hf-l1-coordinator |
-| Gate Orchestration | hm-l2-gate-orchestrator | hm-l1-coordinator |
+| Lifecycle Check | gate-lifecycle-integration | hm-coordinator, hf-coordinator |
+| Spec Compliance | gate-spec-compliance | hm-coordinator, hf-coordinator |
+| Evidence Truth | gate-evidence-truth | hm-coordinator, hf-coordinator |
+| Gate Orchestration | hm-l2-gate-orchestrator | hm-coordinator |
 
 ## L0 Orchestrator Routing Logic
 
@@ -59,11 +59,11 @@ Map task domains to specialist L2 agents. L1 coordinators use these tables to di
 1. Receive task
 2. Classify lineage (hm-* or hf-*) using lineage-routing-tree
 3. Classify domain within lineage (from tables above)
-4. Select L1 coordinator:
-   - hm-* tasks → hm-l1-coordinator
-   - hf-* tasks → hf-l1-coordinator
-5. Dispatch with: task domain, expected L2 specialist, required gates
-6. L1 maps domain to specific L2 specialist (from tables above)
+4. Select coordinator:
+   - hm-* tasks → hm-coordinator
+   - hf-* tasks → hf-coordinator
+5. Dispatch with: task domain, expected specialist, required gates
+6. L1 maps domain to specific specialist (from tables above)
 7. L1 dispatches L2 with task envelope
 8. L1 monitors, integrates, verifies
 ```

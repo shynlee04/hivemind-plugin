@@ -1,5 +1,5 @@
 ---
-name: gate-l3-spec-compliance
+name: gate-spec-compliance
 description: >
   Spec compliance gate performing bidirectional traceability, gap detection (4 types),
   EARS acceptance criteria validation, and anti-pattern scanning. Use during code review

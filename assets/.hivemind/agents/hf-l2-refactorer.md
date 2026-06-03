@@ -1,5 +1,5 @@
 ---
-name: hf-l2-refactorer
+name: hf-refactorer
 description: 'Refactors OpenCode skills and agents to improve structural quality, reduce technical debt, eliminate anti-patterns, and align with lineage standards. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-refactor for systematic refactoring methodology.'
 mode: subagent
 temperature: 0.1
@@ -7,8 +7,8 @@ depth: L2
 lineage: hf
 domain: Primitive Refactoring
 skills:
-  - hf-l2-agents-md-sync
-  - hf-l2-use-authoring-skills
+  - hf-agents-md-sync
+  - hf-use-authoring-skills
 instruction:
   - AGENTS.md
 permission:
@@ -32,17 +32,17 @@ permission:
   session-patch: ask
   skill:
     '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hf-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hf-refactorer
 
 <role>
-L2 specialist that refactors OpenCode skills and agents to improve structural quality, reduce technical debt, eliminate anti-patterns, align with lineage standards (hm-* STRICT, hf-* FLEXIBLE), and ensure AQUAL/RICH compliance. Operates surgically — preserves behavior while improving structure. Spawned by hf-coordinator (L1). FLEXIBLE lineage — may load hm-refactor for systematic refactoring methodology and hm-detective for pre-refactor pattern investigation. Cannot delegate further.
+specialist that refactors OpenCode skills and agents to improve structural quality, reduce technical debt, eliminate anti-patterns, align with lineage standards (hm-* STRICT, hf-* FLEXIBLE), and ensure AQUAL/RICH compliance. Operates surgically — preserves behavior while improving structure. Spawned by hf-coordinator (L1). FLEXIBLE lineage — may load hm-refactor for systematic refactoring methodology and hm-detective for pre-refactor pattern investigation. Cannot delegate further.
 </role>
 
 <depth>
@@ -284,7 +284,7 @@ PRESERVE BEHAVIOR. EVERY REFACTOR MUST PASS AQUAL VALIDATION. NEVER CHANGE WHAT 
 </execution_flow>
 
 <delegation_boundary>
-This agent is a terminal L2 specialist. It never delegates.
+This agent is a terminal specialist. It never delegates.
 
 **Delegates to:** Nobody (task: ask, delegate-task: ask)
 
@@ -342,9 +342,9 @@ On completion:
 1. Return structured output contract to hf-coordinator
 2. No independent checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-**Parent Agent:** hf-l1-coordinator
-**Receives from:** hf-l1-coordinator
-**Peers:** All hf-l2-* specialists within same domain
+**Parent Agent:** hf-coordinator
+**Receives from:** hf-coordinator
+**Peers:** All hf-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>
@@ -352,5 +352,5 @@ On completion:
 </session_continuity>
 
 <naming>
-Compliant with hf-naming-syndicate: hf-l2-refactorer
+Compliant with hf-naming-syndicate: hf-refactorer
 </naming>

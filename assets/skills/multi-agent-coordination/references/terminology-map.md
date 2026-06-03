@@ -36,7 +36,7 @@ The same word — "wave," "orchestrator," "agent" — means radically different 
 |-----------|---------|
 | **GSD** | A top-level agent that manages phases: discuss → plan → execute → verify. Owns the roadmap. Long-lived across sessions. |
 | **OMO** | Category-based routing. The "orchestrator" is the routing engine, not an agent. Tasks are classified and matched automatically. |
-| **Hivemind** | An L0/L1 agent that dispatches L2 specialists. Owns the task inventory, checkpoint gates, and completion detection. Short-lived per workflow. |
+| **Hivemind** | An L0/L1 agent that dispatches specialists. Owns the task inventory, checkpoint gates, and completion detection. Short-lived per workflow. |
 
 ### "Agent"
 

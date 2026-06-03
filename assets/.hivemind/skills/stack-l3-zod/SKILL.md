@@ -1,5 +1,5 @@
 ---
-name: stack-l3-zod
+name: stack-zod
 version: "4.x"
 description: "Zod v4 TypeScript-first schema validation — complete API, patterns, and v3→v4 migration"
 triggers:

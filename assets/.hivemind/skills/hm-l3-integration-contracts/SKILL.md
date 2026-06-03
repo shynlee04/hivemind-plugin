@@ -22,17 +22,17 @@ metadata:
   routes-to: ["hm-*"]
   input-from:
     - "hm-l2-lineage-router"
-    - "hf-l2-naming-syndicate"
+    - "hf-naming-syndicate"
   consumed-by:
     - "hm-l0-orchestrator"
-    - "hm-l1-coordinator"
+    - "hm-coordinator"
     - "hm-l2-auditor"
     - "hm-l2-reviewer"
     - "hm-l2-validator"
-    - "hf-l2-auditor"
-    - "hf-l2-meta-builder"
+    - "hf-auditor"
+    - "hf-meta-builder"
     - "hm-l2-skill-router"
-    - "hf-l2-skill-router"
+    - "hf-skill-router"
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
@@ -94,11 +94,11 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 ### Quality Domain
 | Agent Type | Required Skills |
 |-----------|----------------|
-| Reviewer | hm-l2-test-driven-execution, gate-l3-evidence-truth, hm-l2-production-readiness |
-| Auditor | hm-l2-gate-orchestrator, gate-l3-evidence-truth, gate-l3-spec-compliance |
-| Validator | hm-l2-test-driven-execution, gate-l3-evidence-truth |
-| Critic | gate-l3-evidence-truth, hm-l2-test-driven-execution |
-| Assessor | hm-l2-production-readiness, gate-l3-evidence-truth |
+| Reviewer | hm-l2-test-driven-execution, gate-evidence-truth, hm-l2-production-readiness |
+| Auditor | hm-l2-gate-orchestrator, gate-evidence-truth, gate-spec-compliance |
+| Validator | hm-l2-test-driven-execution, gate-evidence-truth |
+| Critic | gate-evidence-truth, hm-l2-test-driven-execution |
+| Assessor | hm-l2-production-readiness, gate-evidence-truth |
 
 ### Debug Domain
 | Agent Type | Required Skills |
@@ -118,16 +118,16 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 ### Meta-Builder Domain (hf-* lineage)
 | Agent Type | Required Skills |
 |-----------|----------------|
-| Orchestrator (hf L0) | hf-l2-agent-composition, hf-l2-agents-and-subagents-dev, hf-l2-delegation-gates |
-| Coordinator (hf) | hf-l2-agent-composition, hf-l2-agents-and-subagents-dev |
-| Agent Builder | hf-l2-agent-composition, hf-l2-agents-and-subagents-dev, hf-l2-naming-syndicate |
-| Skill Builder | hf-l2-skill-synthesis, hf-l2-use-authoring-skills, hf-l2-naming-syndicate |
-| Command Builder | hf-l2-command-dev, hf-l2-command-parser, hf-l2-naming-syndicate |
-| Tool Builder | hf-l2-custom-tools-dev, hf-l2-naming-syndicate |
-| Auditor (hf) | hf-l2-auditor (self-referential), gate-l3-evidence-truth |
-| Refactorer (hf) | hf-l2-use-authoring-skills, hm-l2-refactor |
-| Synthesizer (hf) | hf-l2-skill-synthesis, hm-l3-synthesis |
-| Prompter | hf-l2-agent-composition, hf-l2-context-absorb |
+| Orchestrator (hf L0) | hf-agent-composition, hf-agents-and-subagents-dev, hf-delegation-gates |
+| Coordinator (hf) | hf-agent-composition, hf-agents-and-subagents-dev |
+| Agent Builder | hf-agent-composition, hf-agents-and-subagents-dev, hf-naming-syndicate |
+| Skill Builder | hf-skill-synthesis, hf-use-authoring-skills, hf-naming-syndicate |
+| Command Builder | hf-command-dev, hf-command-parser, hf-naming-syndicate |
+| Tool Builder | hf-custom-tools-dev, hf-naming-syndicate |
+| Auditor (hf) | hf-auditor (self-referential), gate-evidence-truth |
+| Refactorer (hf) | hf-use-authoring-skills, hm-l2-refactor |
+| Synthesizer (hf) | hf-skill-synthesis, hm-l3-synthesis |
+| Prompter | hf-agent-composition, hf-context-absorb |
 
 ### Discovery Domain
 | Agent Type | Required Skills |
@@ -158,11 +158,11 @@ Each skill declares which agent types consume it. This enables orphan detection 
 | hm-l3-deep-research | hm-l2-researcher, hm-l2-synthesizer | hm STRICT |
 | hm-l3-tech-stack-ingest | hm-l2-researcher, hm-l2-scout, hm-l2-technician | hm STRICT |
 | hm-l3-research-chain | hm-l2-researcher | hm STRICT |
-| hm-l3-synthesis | hm-l2-synthesizer, hf-l2-synthesizer (FLEXIBLE) | hm+hf |
+| hm-l3-synthesis | hm-l2-synthesizer, hf-synthesizer (FLEXIBLE) | hm+hf |
 | hm-l3-omo-reference | hm-l2-researcher, hm-l2-architect | hm STRICT |
-| hm-l3-opencode-platform-reference | hm-l2-researcher, hf-l2-agent-builder, hf-l2-tool-builder (FLEXIBLE) | hm+hf |
-| hm-l3-opencode-project-audit | hm-l2-auditor, hf-l2-auditor (FLEXIBLE) | hm+hf |
-| hm-l3-subagent-delegation-patterns | hm-l1-coordinator, hm-l2-operator, hm-l2-guardian | hm STRICT |
+| hm-l3-opencode-platform-reference | hm-l2-researcher, hf-agent-builder, hf-tool-builder (FLEXIBLE) | hm+hf |
+| hm-l3-opencode-project-audit | hm-l2-auditor, hf-auditor (FLEXIBLE) | hm+hf |
+| hm-l3-subagent-delegation-patterns | hm-coordinator, hm-l2-operator, hm-l2-guardian | hm STRICT |
 
 ### Planning Skills
 | Skill | Consumed By | Lineage |
@@ -183,22 +183,22 @@ Each skill declares which agent types consume it. This enables orphan detection 
 | hm-l2-test-driven-execution | hm-l2-executor, hm-l2-builder, hm-l2-validator, hm-l2-reviewer, hm-l2-critic, hm-l2-finisher | hm STRICT |
 | hm-l2-phase-loop | hm-l2-guardian | hm STRICT |
 | hm-l2-completion-looping | hm-l2-debugger, hm-l2-finisher, hm-l2-guardian, hm-l2-investigator, hm-l2-operator, hm-l2-persistor | hm STRICT |
-| hm-l2-coordinating-loop | hm-l0-orchestrator, hm-l1-coordinator, hm-l2-connector | hm STRICT |
+| hm-l2-coordinating-loop | hm-l0-orchestrator, hm-coordinator, hm-l2-connector | hm STRICT |
 | hm-l2-production-readiness | hm-l2-integrator, hm-l2-reviewer, hm-l2-assessor, hm-l2-curator | hm STRICT |
 
 ### Quality Skills
 | Skill | Consumed By | Lineage |
 |-------|------------|---------|
-| hm-l2-gate-orchestrator | hm-l0-orchestrator, hm-l1-coordinator, hm-l2-auditor, hm-l2-reviewer | hm STRICT |
-| gate-l3-evidence-truth | hm-l2-reviewer, hm-l2-auditor, hm-l2-validator, hm-l2-critic, hm-l2-assessor, hf-l2-auditor (FLEXIBLE) | gate (hm+hf) |
-| gate-l3-spec-compliance | hm-l2-auditor | gate STRICT |
-| gate-l3-lifecycle-integration | hm-l2-auditor | gate STRICT |
+| hm-l2-gate-orchestrator | hm-l0-orchestrator, hm-coordinator, hm-l2-auditor, hm-l2-reviewer | hm STRICT |
+| gate-evidence-truth | hm-l2-reviewer, hm-l2-auditor, hm-l2-validator, hm-l2-critic, hm-l2-assessor, hf-auditor (FLEXIBLE) | gate (hm+hf) |
+| gate-spec-compliance | hm-l2-auditor | gate STRICT |
+| gate-lifecycle-integration | hm-l2-auditor | gate STRICT |
 
 ### Debug Skills
 | Skill | Consumed By | Lineage |
 |-------|------------|---------|
 | hm-l2-debug | hm-l2-debugger, hm-l2-investigator | hm STRICT |
-| hm-l2-refactor | hm-l2-architect, hf-l2-refactorer (FLEXIBLE) | hm+hf |
+| hm-l2-refactor | hm-l2-architect, hf-refactorer (FLEXIBLE) | hm+hf |
 
 ### Routing Skills
 | Skill | Consumed By | Lineage |
@@ -209,18 +209,18 @@ Each skill declares which agent types consume it. This enables orphan detection 
 ### Meta-Builder Skills (hf-* lineage)
 | Skill | Consumed By | Lineage |
 |-------|------------|---------|
-| hf-l2-agent-composition | hf-l0-orchestrator, hf-l1-coordinator, hf-l2-agent-builder, hf-l2-prompter | hf STRICT |
-| hf-l2-agents-and-subagents-dev | hf-l0-orchestrator, hf-l1-coordinator, hf-l2-agent-builder | hf STRICT |
-| hf-l2-delegation-gates | hf-l0-orchestrator | hf STRICT |
-| hf-l2-skill-synthesis | hf-l2-skill-builder, hf-l2-synthesizer | hf STRICT |
-| hf-l2-use-authoring-skills | hf-l2-skill-builder, hf-l2-refactorer | hf STRICT |
-| hf-l2-naming-syndicate | hf-l2-agent-builder, hf-l2-skill-builder, hf-l2-command-builder, hf-l2-tool-builder | hf STRICT |
-| hf-l2-command-dev | hf-l2-command-builder | hf STRICT |
-| hf-l2-command-parser | hf-l2-command-builder | hf STRICT |
-| hf-l2-custom-tools-dev | hf-l2-tool-builder | hf STRICT |
-| hf-l2-context-absorb | hf-l2-prompter | hf STRICT |
-| hf-l2-agents-md-sync | hf-l2-auditor | hf STRICT |
-| hf-l2-meta-builder | hf-l0-orchestrator, hf-l1-coordinator | hf STRICT |
+| hf-agent-composition | hf-l0-orchestrator, hf-coordinator, hf-agent-builder, hf-prompter | hf STRICT |
+| hf-agents-and-subagents-dev | hf-l0-orchestrator, hf-coordinator, hf-agent-builder | hf STRICT |
+| hf-delegation-gates | hf-l0-orchestrator | hf STRICT |
+| hf-skill-synthesis | hf-skill-builder, hf-synthesizer | hf STRICT |
+| hf-use-authoring-skills | hf-skill-builder, hf-refactorer | hf STRICT |
+| hf-naming-syndicate | hf-agent-builder, hf-skill-builder, hf-command-builder, hf-tool-builder | hf STRICT |
+| hf-command-dev | hf-command-builder | hf STRICT |
+| hf-command-parser | hf-command-builder | hf STRICT |
+| hf-custom-tools-dev | hf-tool-builder | hf STRICT |
+| hf-context-absorb | hf-prompter | hf STRICT |
+| hf-agents-md-sync | hf-auditor | hf STRICT |
+| hf-meta-builder | hf-l0-orchestrator, hf-coordinator | hf STRICT |
 
 ### Human-Facing Interaction Skills
 | Skill | Consumed By | Lineage |
@@ -230,17 +230,17 @@ Each skill declares which agent types consume it. This enables orphan detection 
 ### Stack Reference Skills (Read-Only, Available to Both Lineages)
 | Skill | Consumed By | Lineage |
 |-------|------------|---------|
-| stack-l3-bun-pty | hf-l2-tool-builder, hm-l2-researcher | stack (both) |
-| stack-l3-json-render | hf-l2-tool-builder, hm-l2-researcher | stack (both) |
-| stack-l3-nextjs | hf-l2-tool-builder, hm-l2-researcher | stack (both) |
-| stack-l3-opencode | hf-l2-agent-builder, hf-l2-tool-builder, hm-l2-researcher | stack (both) |
-| stack-l3-vitest | hm-l2-executor, hm-l2-builder, hf-l2-tool-builder | stack (both) |
-| stack-l3-zod | hf-l2-tool-builder, hm-l2-executor | stack (both) |
+| stack-bun-pty | hf-tool-builder, hm-l2-researcher | stack (both) |
+| stack-json-render | hf-tool-builder, hm-l2-researcher | stack (both) |
+| stack-nextjs | hf-tool-builder, hm-l2-researcher | stack (both) |
+| stack-opencode | hf-agent-builder, hf-tool-builder, hm-l2-researcher | stack (both) |
+| stack-vitest | hm-l2-executor, hm-l2-builder, hf-tool-builder | stack (both) |
+| stack-zod | hf-tool-builder, hm-l2-executor | stack (both) |
 
 ### Unprefixed
 | Skill | Consumed By | Lineage |
 |-------|------------|---------|
-| opencode-config-workflow | hf-l0-orchestrator, hf-l1-coordinator | both |
+| opencode-config-workflow | hf-l0-orchestrator, hf-coordinator | both |
 
 ## Integration Contract
 
@@ -256,7 +256,7 @@ Each skill declares which agent types consume it. This enables orphan detection 
 
 5. **Cross-Lineage Rule (D-AD-01 FLEXIBLE):** hf-* agents MAY load hm-* skills when needed for codebase investigation, quality verification, or synthesis of product-dev findings. Each cross-lineage load MUST be justified in body documentation.
 
-6. **Gate-* Skill Binding Rule (D-02):** gate-* skills are THIS PROJECT ONLY. They are consumed by internal quality workflows (hm-l2-auditor, hm-l2-reviewer, hf-l2-auditor) and MUST NOT appear in shipped agent loading lists.
+6. **Gate-* Skill Binding Rule (D-02):** gate-* skills are THIS PROJECT ONLY. They are consumed by internal quality workflows (hm-l2-auditor, hm-l2-reviewer, hf-auditor) and MUST NOT appear in shipped agent loading lists.
 
 7. **Stack-* Skill Binding Rule:** stack-* skills are read-only reference packs available to both lineages. They require no justification for cross-lineage access.
 
@@ -287,7 +287,7 @@ metadata:
       - "hm-l3-research-chain"
       - "hm-l3-tech-stack-ingest"
     quality-task:
-      - "gate-l3-evidence-truth"
+      - "gate-evidence-truth"
       - "hm-l2-test-driven-execution"
 ```
 
@@ -333,7 +333,7 @@ hm-l2-researcher loads:
   ✅ hm-l3-detective       — Research domain, matches contract
   ✅ hm-l3-deep-research    — Research domain, matches contract
   ✅ hm-l3-tech-stack-ingest — Research domain, matches contract
-  ❌ hf-l2-agent-composition — VIOLATION: hm agent loading hf skill (D-AD-01 STRICT)
+  ❌ hf-agent-composition — VIOLATION: hm agent loading hf skill (D-AD-01 STRICT)
   ⚠️  hm-l2-debug           — WARNING: Researcher loading debug skill (domain mismatch, flag)
 ```
 
@@ -345,12 +345,12 @@ hm-l2-researcher loads:
 |------|--------|----------|
 | RICH-1 Cross-referenced sources | PASS | D-AD-01, D-02 from project architecture decisions. SE-10 routers, SE-11 naming syndicate. All 5 lineages mapped against agent inventory (97 agents). |
 | RICH-2 Pattern decision documented | PASS | P2 pattern: how-to-verify with canonical tables, self-correction protocol, machine-verifiable contracts. 8 integration contract rules. |
-| RICH-3 Consistent with project conventions | PASS | hm-l3-* naming per hf-l2-naming-syndicate. lineage-scope: "hm-*" per naming convention. consumed-by in YAML frontmatter per existing skill patterns. |
+| RICH-3 Consistent with project conventions | PASS | hm-* naming per hf-naming-syndicate. lineage-scope: "hm-*" per naming convention. consumed-by in YAML frontmatter per existing skill patterns. |
 | RICH-4 Self-correction mechanism | PASS | 4 correction modes: Orphan Rescue, Cross-Lineage Fix, Gate Leak Block, Dead Ref Repair. Max 3 attempts each with gap documentation. |
 | RICH-5 Bundled executable resources | PASS | 3 reference files (agent-to-skill, skill-to-agent, cross-lineage-rules), 1 template (contract-schema), 1 validation script, evals, metrics scorecard. |
 | RICH-6 Framework-agnostic paths | PASS | Contract schema works for any skill/agent ecosystem. Cross-lineage rules generalize to any framework with multiple agent lineages. Orphan detection protocol is agent-type-agnostic. |
 | RICH-7 Gap documentation | PASS | Not all 97 agents have per-task-category skill lists (only domain-level mappings documented). Per-agent granular lists are deferred to agent-synthesis workstream (AS-0 through AS-11). Contract schema is extensible for future agent types. |
-| RICH-8 Quality scoring | PASS | D1-D8 scored at 108/120 (A-grade). Bidirectional cross-references with hm-l2-skill-router, hf-l2-skill-router, hf-l2-naming-syndicate, gate-l3-evidence-truth. |
+| RICH-8 Quality scoring | PASS | D1-D8 scored at 108/120 (A-grade). Bidirectional cross-references with hm-l2-skill-router, hf-skill-router, hf-naming-syndicate, gate-evidence-truth. |
 
 Exit decision: **PASS (8/8)**. All gates met. Self-correction, cross-references, and validation script complete.
 

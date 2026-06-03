@@ -1,5 +1,5 @@
 ---
-name: gate-l3-evidence-truth
+name: gate-evidence-truth
 description: >
   Evaluates whether implementation evidence is sufficient to pass quality gates. Enforces an
   evidence hierarchy from live runtime proof (L1) down to documentation summaries (L5), and

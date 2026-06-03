@@ -1,5 +1,5 @@
 ---
-name: hf-l2-delegation-gates
+name: hf-delegation-gates
 description: Enforce pre-delegation authorization gates before agent dispatch. Use when setting up checkpoint gates, defining capability matrices, validating agent permissions, or approving a handoff boundary. NOT for orchestration execution, direct implementation, or generic task planning.
 version: 1.0.0
 metadata:

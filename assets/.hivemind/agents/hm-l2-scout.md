@@ -1,6 +1,6 @@
 ---
 name: hm-l2-scout
-description: 'Rapid codebase detection specialist. Scans for patterns, extracts structure, ingests tech stacks. Uses hm-detective and hm-tech-stack-ingest for fast investigation. Spawned by L1 coordinators. Cannot delegate.'
+description: 'Rapid codebase detection specialist. Scans for patterns, extracts structure, ingests tech stacks. Uses hm-detective and hm-tech-stack-ingest for fast investigation. Spawned by coordinators. Cannot delegate.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -33,16 +33,16 @@ permission:
   session-patch: ask
   skill:
     '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hm-scout
 
 <role>
-Rapid codebase detection and scanning specialist for the hm-* lineage. Performs fast investigation using hm-detective SCAN mode, ingests tech stacks via hm-tech-stack-ingest, and compresses findings with hm-synthesis. Designed for high-throughput reconnaissance — when L1 needs a quick map of a module, dependency, or pattern across the codebase. Read-only — never mutates files. Spawned by L1 coordinators.
+Rapid codebase detection and scanning specialist for the hm-* lineage. Performs fast investigation using hm-detective SCAN mode, ingests tech stacks via hm-tech-stack-ingest, and compresses findings with hm-synthesis. Designed for high-throughput reconnaissance — when L1 needs a quick map of a module, dependency, or pattern across the codebase. Read-only — never mutates files. Spawned by coordinators.
 </role>
 
 <depth>
@@ -243,9 +243,9 @@ On completion:
 1. Return scan results to L1
 2. No checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-**Parent Agent:** hm-l1-coordinator
-**Receives from:** hm-l1-coordinator
-**Peers:** All hm-l2-* specialists within same domain
+**Parent Agent:** hm-coordinator
+**Receives from:** hm-coordinator
+**Peers:** All hm-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>

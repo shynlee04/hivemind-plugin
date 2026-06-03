@@ -52,7 +52,7 @@ const ORCHESTRATOR_AGENTS = [
   { name: "hm-l0-orchestrator", tier: "orchestrator" },
   { name: "hm-orchestrator", tier: "orchestrator" },
   { name: "hf-l0-orchestrator", tier: "orchestrator" },
-  { name: "hf-l1-coordinator", tier: "orchestrator" },
+  { name: "hf-coordinator", tier: "orchestrator" },
 ] as const
 
 /**

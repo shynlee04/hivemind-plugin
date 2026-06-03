@@ -1,5 +1,5 @@
 ---
-name: gate-l3-lifecycle-integration
+name: gate-lifecycle-integration
 description: >
   Internal quality gate that evaluates whether Hivemind harness implementations
   correctly participate in the runtime lifecycle — covering 9-surface mutation

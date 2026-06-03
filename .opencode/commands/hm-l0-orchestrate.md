@@ -21,7 +21,7 @@ tools:
 ---
 
 <objective>
-Front-facing L0 strategist for hm-* lineage — coordinate high-level phase routing and intent classification. Classifies user intent, forms landscapes, maps paths, and delegates to L1 coordinators or L2/L3 specialists.
+Front-facing L0 strategist for hm-* lineage — coordinate high-level phase routing and intent classification. Classifies user intent, forms landscapes, maps paths, and delegates to coordinators or L2/L3 specialists.
 
 Routes to hm-l0-orchestrator agent which executes the orchestration workflow.
 </objective>

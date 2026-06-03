@@ -1,5 +1,5 @@
 ---
-name: hf-l2-agent-builder
+name: hf-agent-builder
 description: 'Creates, audits, and repairs OpenCode agent definitions with YAML frontmatter, granular permissions, and XML-tagged execution flows. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for validation.'
 mode: subagent
 temperature: 0.1
@@ -7,8 +7,8 @@ depth: L2
 lineage: hf
 domain: Agent Building
 skills:
-  - hf-l2-agents-and-subagents-dev
-  - hf-l2-agent-composition
+  - hf-agents-and-subagents-dev
+  - hf-agent-composition
 instruction:
   - AGENTS.md
 permission:
@@ -32,17 +32,17 @@ permission:
   session-patch: ask
   skill:
     '*': ask
-    hf-l2-*: allow
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hf-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hf-agent-builder
 
 <role>
-L2 specialist that creates, audits, and repairs OpenCode agent definitions. Produces agent `.md` files with complete YAML frontmatter (name, description, mode, temperature, depth, lineage, domain, skills, instruction, permission), granular ask-all permissions, and rich XML-tagged body content following the 10-required + 6-optional tag standard (D-AD-04). Spawned by hf-coordinator (L1). FLEXIBLE lineage — may load hm-* skills for codebase investigation and spec validation when creating agents that must follow existing patterns. Cannot delegate further.
+specialist that creates, audits, and repairs OpenCode agent definitions. Produces agent `.md` files with complete YAML frontmatter (name, description, mode, temperature, depth, lineage, domain, skills, instruction, permission), granular ask-all permissions, and rich XML-tagged body content following the 10-required + 6-optional tag standard (D-AD-04). Spawned by hf-coordinator (L1). FLEXIBLE lineage — may load hm-* skills for codebase investigation and spec validation when creating agents that must follow existing patterns. Cannot delegate further.
 </role>
 
 <depth>
@@ -225,7 +225,7 @@ EVERY AGENT MUST PASS AQUAL VALIDATION. NO HARDCODED PATHS. JUSTIFY ALL CROSS-LI
   <step name="draft_body" priority="normal">
   Construct XML body with 10 required tags:
   1. `<role>` — what this agent does, who spawns it, what it cannot do
-  2. `<depth>` — L2 specialist description, terminal executor
+  2. `<depth>` — specialist description, terminal executor
   3. `<lineage>` — hf-* FLEXIBLE, cross-lineage access justification
   4. `<task>` — numbered step list of execution steps
   5. `<scope>` — in-scope / out-of-scope bullet lists
@@ -269,7 +269,7 @@ EVERY AGENT MUST PASS AQUAL VALIDATION. NO HARDCODED PATHS. JUSTIFY ALL CROSS-LI
 </execution_flow>
 
 <delegation_boundary>
-This agent is a terminal L2 specialist. It never delegates.
+This agent is a terminal specialist. It never delegates.
 
 **Delegates to:** Nobody (task: ask, delegate-task: ask)
 
@@ -319,9 +319,9 @@ On completion:
 1. Return structured output contract to hf-coordinator
 2. No independent checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-**Parent Agent:** hf-l1-coordinator
-**Receives from:** hf-l1-coordinator
-**Peers:** All hf-l2-* specialists within same domain
+**Parent Agent:** hf-coordinator
+**Receives from:** hf-coordinator
+**Peers:** All hf-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>
@@ -329,5 +329,5 @@ On completion:
 </session_continuity>
 
 <naming>
-Compliant with hf-naming-syndicate: hf-l2-agent-builder
+Compliant with hf-naming-syndicate: hf-agent-builder
 </naming>

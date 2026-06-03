@@ -13,7 +13,7 @@ export const UNKNOWN_AGENT_CAPABILITY_PROFILE: AgentCapabilityProfile = {
 export const AGENT_CAPABILITY_PROFILES: readonly AgentCapabilityProfile[] = [
   {
     id: "front-facing-orchestration",
-    match: { includes: ["l0-orchestrator", "l1-coordinator", "orchestrator", "coordinator"] },
+    match: { includes: ["l0-orchestrator", "orchestrator", "coordinator"] },
     categories: [ToolCategory.Read, ToolCategory.Delegate, ToolCategory.Govern, ToolCategory.Session],
     tools: ["task", "execute-slash-command", "delegate-task", "delegation-status", "hivemind-command-engine"],
     rationale: "Front-facing orchestration roles route work, inspect session state, and use native task as the primary subagent dispatch path.",
@@ -27,7 +27,7 @@ export const AGENT_CAPABILITY_PROFILES: readonly AgentCapabilityProfile[] = [
   },
   {
     id: "l2-implementation-specialists",
-    match: { includes: ["l2", "executor", "code-fixer", "debugger", "integration-checker"] },
+    match: { includes: ["executor", "code-fixer", "debugger", "integration-checker"] },
     categories: [ToolCategory.Read, ToolCategory.Write, ToolCategory.Session],
     tools: ["hivemind-sdk-supervisor", "session-tracker", "session-context"],
     rationale: "Implementation specialists need local source inspection, bounded mutation tools, and session context for recovery and evidence.",

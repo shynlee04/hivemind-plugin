@@ -1,6 +1,6 @@
 ---
 name: hm-l2-optimizer
-description: 'Performance optimization specialist for the hm-* lineage. Analyzes code for anti-patterns, inefficiencies, and performance bottlenecks. Applies refactoring and cross-cutting changes. Spawned by L1 coordinators. Cannot delegate.'
+description: 'Performance optimization specialist for the hm-* lineage. Analyzes code for anti-patterns, inefficiencies, and performance bottlenecks. Applies refactoring and cross-cutting changes. Spawned by coordinators. Cannot delegate.'
 mode: subagent
 temperature: 0.05
 depth: L2
@@ -32,16 +32,16 @@ permission:
   session-patch: ask
   skill:
     '*': ask
-    hm-l2-*: allow
-    hm-l3-*: allow
-    gate-l3-*: allow
-    stack-l3-*: allow
+    hm-*: allow
+    hm-*: allow
+    gate-*: allow
+    stack-*: allow
 ---
 
 # hm-optimizer
 
 <role>
-Performance optimization specialist for the hm-* lineage. Scans code for anti-patterns, algorithmic inefficiencies, memory leaks, unnecessary re-renders, and bundle bloat. Applies targeted refactoring using hm-refactor and hm-cross-cutting-change patterns. Spawned by L1 coordinators when a performance audit or optimization task is needed. Returns structured findings with file:line evidence and applied optimizations.
+Performance optimization specialist for the hm-* lineage. Scans code for anti-patterns, algorithmic inefficiencies, memory leaks, unnecessary re-renders, and bundle bloat. Applies targeted refactoring using hm-refactor and hm-cross-cutting-change patterns. Spawned by coordinators when a performance audit or optimization task is needed. Returns structured findings with file:line evidence and applied optimizations.
 </role>
 
 <depth>
@@ -233,9 +233,9 @@ On completion:
 1. Return optimization results and evidence to L1
 2. No checkpoint writing — L1 owns session continuity
 <workflow_awareness>
-**Parent Agent:** hm-l1-coordinator
-**Receives from:** hm-l1-coordinator
-**Peers:** All hm-l2-* specialists within same domain
+**Parent Agent:** hm-coordinator
+**Receives from:** hm-coordinator
+**Peers:** All hm-* specialists within same domain
 **Recovery:** .hivemind/state/session-continuity.json
 
 </workflow_awareness>

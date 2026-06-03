@@ -1,5 +1,5 @@
 ---
-name: hf-l2-use-authoring-skills
+name: hf-use-authoring-skills
 description: This skill should be used when the user asks to "create a skill", "audit this skill", "refactor skills", "doctor agent skills", "check skill quality", "fix frontmatter", "skill pattern selection", "TDD for skills", "cross-platform skill compatibility", or "score skill quality".
 metadata:
   layer: "4"
@@ -194,7 +194,7 @@ When intent is unclear:
 **STEP 5:** Write frontmatter:
 ```yaml
 ---
-name: hf-l2-use-authoring-skills
+name: hf-use-authoring-skills
 description: Synthesizes Repomix-packed codebase analysis into structured research reports with citations. Use when the user asks to analyze a codebase deeply, create research reports from Repomix output, or synthesize findings from multiple code sources.
 ---
 ```

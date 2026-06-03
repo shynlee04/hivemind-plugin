@@ -22,7 +22,7 @@ Unlike traditional orchestration engines that pollute the codebase workspace, al
 
 Hivemind tracks multi-level agent dispatches programmatically.
 - **Root Sessions**: Created when a front-facing agent is invoked by a user.
-- **Child Sessions**: Spatially and contextually nested sessions created when L0/L1 orchestrators delegate to L2 specialists.
+- **Child Sessions**: Spatially and contextually nested sessions created when L0/L1 orchestrators delegate to specialists.
 - **Parent Session Stacking**: Using the `task_id` or `parentSessionId` parameter, child dispatches can attach directly to any existing complete or active session. Context is dynamically inherited from the parent to avoid redundant prompt packets.
 
 ## Execution Journaling & Compaction

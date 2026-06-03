@@ -1,5 +1,5 @@
 ---
-name: stack-l3-json-render
+name: stack-json-render
 version: 0.18.x
 description: >
   @json-render/react by Vercel Labs — Generative UI framework that constrains AI output
