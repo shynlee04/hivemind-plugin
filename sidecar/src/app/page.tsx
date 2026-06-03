@@ -1,26 +1,48 @@
 /**
- * Sidecar root page — Phase 42 foundation stub.
+ * Sidecar root page — dynamically imports the dashboard shell.
  *
- * Real dashboard tabs are deferred to SIDECAR-01. This stub renders a
- * placeholder so the Next.js skeleton has a valid entrypoint and the
- * foundation PR doesn't leave a 404 at the root route.
+ * The dashboard shell is loaded via `next/dynamic({ ssr: false })` to
+ * prevent hydration mismatches, since json-render's Renderer depends
+ * on browser APIs for streaming UI rendering.
+ *
+ * @module sidecar/app/page
  */
 
+import dynamic from "next/dynamic"
+
 /**
- * Foundation-only landing page. Will be replaced by the dashboard
- * tab router in SIDECAR-01.
+ * Dynamically import the DashboardShell with SSR disabled.
+ * This is required because json-render's Renderer and SSE hooks
+ * depend on browser APIs (EventSource, etc.) that are not available
+ * during server-side rendering.
+ */
+const DashboardShell = dynamic(
+  () => import("@components/dashboard-shell").then((mod) => ({ default: mod.DashboardShell })),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", height: "100vh", gap: "1px", background: "#e2e8f0", padding: "16px" }}>
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            data-skeleton="true"
+            style={{
+              background: "#ffffff",
+              borderRadius: "8px",
+              animation: "pulse 2s ease-in-out infinite",
+            }}
+          />
+        ))}
+      </div>
+    ),
+  },
+)
+
+/**
+ * Main page component rendered at the root route.
  *
- * @returns A placeholder React element documenting the deferred scope.
+ * @returns The dynamic dashboard shell.
  */
 export default function HomePage() {
-  return (
-    <main>
-      <h1>OpenCode Harness Sidecar</h1>
-      <p>
-        Phase 42 foundation. Dashboard tabs (SIDECAR-01) and OpenCode SDK bridge (SIDECAR-02) are
-        deferred to follow-up phases. Read-only enforcement against canonical state (SIDECAR-03) is
-        live; see <code>../src/sidecar/readonly-state.ts</code>.
-      </p>
-    </main>
-  )
+  return <DashboardShell />
 }
