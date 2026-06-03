@@ -1,25 +1,37 @@
 {
   "name": "@opencode-harness/sidecar",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
-  "description": "Read-only sidecar dashboard for the OpenCode harness — Phase 42 foundation. UI deferred to SIDECAR-01/02 follow-up phases.",
+  "description": "Hivemind Sidecar — Next.js 16 standalone GUI dashboard for the Hivemind runtime composition engine.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "next": "^15.0.0",
+    "next": "^16.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@json-render/react": "^0.1.0"
+    "@json-render/core": "^0.19.0",
+    "@json-render/react": "^0.19.0",
+    "@json-render/shadcn": "^0.19.0",
+    "@json-render/directives": "^0.19.0",
+    "tailwindcss": "^4.0.0",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "jsdom": "^25.0.0"
   },
   "engines": {
     "node": ">=20.0.0"

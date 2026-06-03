@@ -1,23 +1,39 @@
 /**
- * Sidecar Next.js configuration — Phase 42 foundation stub.
+ * Sidecar Next.js 16 configuration — standalone output, port 3099.
  *
- * This file is deliberately minimal. SIDECAR-01 dashboard tabs and
- * SIDECAR-02 OpenCode SDK bridge wiring will extend this configuration
- * (e.g. `serverActions`, custom rewrites for the SDK proxy) in
- * follow-up phases.
+ * The sidecar runs as a separate process from the plugin HTTP server,
+ * communicating exclusively via localhost HTTP through plugin-client.
  *
- * Per Phase 42 PLAN.md, Next.js itself is **not installed** by the
- * foundation PR — this config exists so the directory layout is
- * complete and the typed configuration shape is locked in.
+ * @see {@link ../src/sidecar/server/} for the plugin-side server routes.
  */
 
 import type { NextConfig } from "next"
 
 const config: NextConfig = {
   reactStrictMode: true,
-  // The sidecar must never bundle harness write paths. The actual
-  // SIDECAR-03 enforcement lives at ../src/sidecar/readonly-state.ts
-  // and is consumed by sidecar code via the harness package.
+
+  /** Standalone output for production deployment without Vercel. */
+  output: "standalone",
+
+  /** Bind to localhost:3099, distinct from the plugin server's random port. */
+  server: {
+    host: "127.0.0.1",
+    port: parseInt(process.env.PORT || "3099", 10),
+  },
+
+  /** CORS headers for localhost plugin communication. */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "http://127.0.0.1:3099" },
+          { key: "Access-Control-Allow-Methods", value: "GET, POST, OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type" },
+        ],
+      },
+    ]
+  },
 }
 
 export default config

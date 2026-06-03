@@ -1,49 +1,92 @@
-# Sidecar — Phase 42 Foundation
+# Hivemind Sidecar
 
-This directory holds the artifact-focused sidecar dashboard scaffold per
-the V3 Q2 architectural decision (Next.js + `@json-render/react`).
+Next.js 16 standalone application serving as the sidecar GUI for the
+Hivemind runtime composition engine. Part of the Sidecar Control Plane
+(SC) phase sequence.
 
-## What ships in this foundation PR
+## Architecture
 
-**SIDECAR-03 only** — read-only enforcement against canonical harness
-state (`.hivemind/state/`, `.planning/`). `.hivemind/event-tracker/` removed in CP-ST-03.
+Two-server model:
 
-The actual enforcement library lives at
-`../src/sidecar/readonly-state.ts` because it must be importable by
-both the harness package and the eventual sidecar Next.js app. Tests
-live at `../tests/sidecar/readonly-state.test.ts` and run under the
-root vitest config.
+- **Plugin server** (SC-01/SC-02): Embedded HTTP server inside the Hivemind
+  OpenCode plugin. Serves REST state endpoints, SSE events, and tool proxy
+  POST routes on a random localhost port. Port is published to
+  `.hivemind/state/sidecar-port.json`.
 
-This `sidecar/` directory itself contains the **directory scaffold and
-deferred-ready package metadata** — Next.js, React, and
-`@json-render/react` are declared as dependencies in `package.json`
-but **not installed in this PR**. Future SIDECAR-01/02 phases will
-run `npm install` here when UI work begins.
+- **Sidecar app** (SC-03): This Next.js 16 standalone app. Runs on port 3099
+  (default). Discovers the plugin port from the sentinel file and communicates
+  exclusively via localhost HTTP. No direct filesystem access to Hivemind state.
 
-## Deferred to follow-up phases
+## Getting Started
 
-- **SIDECAR-01** — dashboard tab rendering. Needs UI design decisions,
-  per-tab JSON schemas, and `@json-render/react` wiring.
-- **SIDECAR-02** — OpenCode SDK server bridge. Needs SDK auth model,
-  request shape, and a server-side proxy route.
-- **`npm install`** inside this directory — heavy install footprint;
-  deferred until UI work begins.
-- **Independent CI** — until UI lands, the sidecar has no build
-  pipeline of its own; the SIDECAR-03 enforcement test runs under the
-  root vitest config.
+### Development
 
-## Read-only contract
+```bash
+# Install dependencies
+cd sidecar && npm install
 
-The sidecar **must never** write to harness canonical state. The
-contract is enforced by three exports of `readonly-state.ts`:
+# Start the plugin server (separate terminal)
+# From the project root: npm run dev (or equivalent)
 
-| Export | Purpose |
-|--------|---------|
-| `isCanonicalStatePath(p, opts)` | Tests whether a path is inside `.hivemind/state/` or `.planning/` relative to the project root. |
-| `readCanonicalState(p, opts)` | Reads a file under a canonical surface. Throws `[Harness]` SIDECAR-03 for any path outside the canonical surface. |
-| `refuseCanonicalWrite(p, opts)` | Always throws `[Harness]` SIDECAR-03. Use as a guard at any call site that should be unreachable in a read-only sidecar. |
+# Start the sidecar in dev mode
+cd sidecar && npx next dev
+```
 
-Path containment is checked logically (`path.relative()` followed by
-`..` rejection) so the guard does not require canonical directories to
-exist on disk and cannot be bypassed via traversal or absolute-path
-escapes.
+Browse to http://localhost:3099.
+
+### Production Build
+
+```bash
+cd sidecar && npm run build
+```
+
+Standalone output at `.next/standalone/server.js`.
+
+### Production Run
+
+```bash
+# HIVEMIND_DIR must point to the project root
+HIVEMIND_DIR=/path/to/project node .next/standalone/server.js
+```
+
+The `HIVEMIND_DIR` env var is required in standalone mode because `process.cwd()`
+resolves to `.next/standalone/`, not the project root.
+
+## Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| next | ^16.2.2 | App framework with standalone output |
+| react/react-dom | ^19.0.0 | UI runtime |
+| @json-render/core | ^0.19.0 | Catalog definition (defineCatalog) |
+| @json-render/react | ^0.19.0 | Renderer, StateProvider, createStateStore |
+| @json-render/shadcn | ^0.19.0 | 36 pre-built shadcn component definitions |
+| tailwindcss | ^4.0.0 | CSS framework |
+| zod | ^4.0.0 | Schema validation for json-render |
+
+## Port Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| PORT | 3099 | Sidecar Next.js app port |
+| NEXT_PUBLIC_PLUGIN_PORT | — | Plugin server port (set when sentinel file not used) |
+
+## Fallback Port
+
+When the plugin server is not running and no port is configured, the
+sidecar falls back to port 3199 and shows a "not available" state.
+This enables independent development of the sidecar UI without
+requiring the plugin server.
+
+## Verification Commands
+
+```bash
+# Typecheck
+cd sidecar && npx tsc --noEmit
+
+# Unit tests
+cd sidecar && npx vitest run
+
+# Production build
+cd sidecar && npx next build
+```
