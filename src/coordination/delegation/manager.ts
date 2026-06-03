@@ -9,6 +9,8 @@ import type { DelegationMonitor } from "./monitor.js"
 import type { NotificationRouter } from "./notification-router.js"
 import type { DelegationStateMachine } from "./state-machine.js"
 import type { Delegation, DelegationResult } from "./types.js"
+import type { DelegationPool, DelegationPoolEntry, DelegationLifecycleStatus } from "./pool-types.js"
+import { freezeDelegationPool, sanitizePreview } from "./pool-types.js"
 
 type NativeTask = (params: { agent: string; prompt: string; disabledTools: string[] }) => Promise<unknown>
 
@@ -142,6 +144,47 @@ export class DelegationManager {
     // Single source: lifecycle and runtime share the same state machine after consolidation.
     const delegations = this.options.lifecycle?.list() ?? this.runtime?.getAllDelegations() ?? []
     return sessionId ? delegations.filter((delegation) => delegation.parentSessionId === sessionId) : delegations
+  }
+
+  /**
+   * P58 (G2, REQ-58-02, D-58-04): Returns a frozen, JSON-serializable snapshot
+   * of every delegation known to the in-memory map. The snapshot is a pure
+   * read of runtime state — no mutation, no async I/O. Used by tmux-copilot,
+   * SC-01 SSE pool, and SC-04/05 dashboards.
+   *
+   * @returns A deep-frozen DelegationPool with `schemaVersion: 1` (numeric
+   *   literal per D-53-13) and `promptPreview` sanitized to <= 200 chars
+   *   single-line per the frozen contract documented in pool-types.ts.
+   */
+  getPoolSnapshot(): DelegationPool {
+    const delegations = this.options.lifecycle?.list() ?? this.runtime?.getAllDelegations() ?? []
+    const now = Date.now()
+    const entries: DelegationPoolEntry[] = delegations.map((d): DelegationPoolEntry => {
+      const status: DelegationLifecycleStatus = ((): DelegationLifecycleStatus => {
+        if (d.status === "dispatched" || d.status === "running" || d.status === "completed" ||
+            d.status === "aborted") {
+          return d.status
+        }
+        if (d.status === "error" || d.status === "timeout") return "failed"
+        if (d.status === "cancelled") return "aborted"
+        return "queued"
+      })()
+      return {
+        id: d.id,
+        agent: d.agent,
+        status,
+        depth: d.nestingDepth ?? 1,
+        parentId: d.parentSessionId ?? null,
+        startedAt: d.createdAt,
+        promptPreview: sanitizePreview(d.prompt ?? ""),
+      }
+    })
+    const snapshot: DelegationPool = {
+      schemaVersion: 1,
+      capturedAt: now,
+      delegations: entries,
+    }
+    return freezeDelegationPool(snapshot)
   }
 
   /** Historical name retained for existing status tool callers. */
@@ -378,6 +421,15 @@ export class DelegationManager {
 
   get stabilityTimers(): Map<string, NodeJS.Timeout> { return this.requireRuntime().stabilityTimers }
   get delegations(): Map<string, Delegation> { return this.requireRuntime().delegations }
+  /**
+   * P58 (G2, REQ-58-02, D-58-03): Read-only test seam exposing the in-memory
+   * delegation map. **TEST-ONLY:** do not call from production code; for
+   * BATS test fixtures only. Returns a `ReadonlyMap` view — consumers MUST
+   * NOT cast away the readonly modifier to mutate state.
+   */
+  get __getDelegationsForTesting(): ReadonlyMap<string, Delegation> {
+    return this.runtime?.delegations ?? new Map<string, Delegation>()
+  }
   get delegationsBySession(): Map<string, string> { return this.requireRuntime().delegationsBySession }
   get safetyTimers(): Map<string, NodeJS.Timeout> { return this.requireRuntime().safetyTimers }
   get semaphore(): { acquire: (...args: unknown[]) => Promise<() => void> } {
