@@ -208,6 +208,34 @@ export class DelegationManager {
     if (spawnQueueKey !== acquireQueueKey) {
       throw new Error("[Harness] Canonical delegation queue-key drift detected.")
     }
+    // REQ-58-09 S3 (P58.8): light structural pre-send validation. We assert
+    // required-field presence and queue-key shape BEFORE acquiring a
+    // semaphore slot so mis-formed dispatches fail fast without contending
+    // for queue capacity. This is intentionally NOT a full schema check —
+    // the spawner (buildSdkSpawnRequest) and the delegate-task tool's Zod
+    // schema own that authority; this layer only catches the case where a
+    // caller bypassed those layers and reached the dispatch entry point
+    // with a structurally invalid payload.
+    if (typeof params.parentSessionId !== "string" || params.parentSessionId.length === 0) {
+      throw new Error(
+        "[Harness] dispatch pre-send validation failed: parentSessionId is required and must be a non-empty string.",
+      )
+    }
+    if (typeof params.agent !== "string" || params.agent.length === 0) {
+      throw new Error(
+        "[Harness] dispatch pre-send validation failed: agent is required and must be a non-empty string.",
+      )
+    }
+    if (typeof params.prompt !== "string" || params.prompt.length === 0) {
+      throw new Error(
+        "[Harness] dispatch pre-send validation failed: prompt is required and must be a non-empty string.",
+      )
+    }
+    if (!/^(?:[a-z][a-z0-9-]*:.+|default)$/.test(acquireQueueKey)) {
+      throw new Error(
+        `[Harness] dispatch pre-send validation failed: queueKey "${acquireQueueKey}" does not match canonical shape (provider|model|agent):<id> or "default".`,
+      )
+    }
     const concurrency = resolveAcquireArgs(this.runtimePolicy, acquireQueueKey)
     // CA-03 (D-14): When parallelization is false, force sequential dispatch
     const effectiveLimit = parallelizationEnabled ? concurrency.limit : 1
