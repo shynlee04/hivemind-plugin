@@ -4,7 +4,7 @@
  * Phase 43 design notes (D-43-02, REQ-04, REQ-05, REQ-06):
  * - 4 actions: send-keys, list-panes, compute-grid, respawn
  * - Discriminated union Zod schema; each branch has its own payload shape
- * - Permission-gated: only orchestrator-tier agents may invoke (T-43-05)
+ * - Permission-gated: orchestrator-tier agents may invoke any action (T-43-05)
  *   The OpenCode SDK `tool()` helper does NOT support a `requiresPermission`
  *   field — the gate is enforced at execute() runtime via context.agent.
  *   REQUIRES_PERMISSIONS is exported as a module const so future
@@ -20,6 +20,14 @@
  * `getForkSessionManager` (from `../features/tmux/fork-bridge.js`).
  * The bridge pattern (module-level mutable state populated by the
  * integration factory at plugin-init time) is preserved.
+ *
+ * Phase 58.8 (P58 gap-fix S2, REQ-58-08): a second tier of callers
+ * (`USER_SESSION` — agent name `user` / `__user__`) is permitted past
+ * the gate, but only for a restricted action subset (D-58-22 LOCKED):
+ * take-over, release, peek. All other actions remain orchestrator-only.
+ * This closes the S2 symptom where a human operator had no
+ * orchestrator-context affordance to inspect or intervene on a
+ * delegate pane.
  */
 import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
@@ -67,6 +75,36 @@ export const REQUIRES_PERMISSIONS = [
 const ORCHESTRATOR_AGENT_NAMES = new Set<string>(
   ORCHESTRATOR_AGENTS.map((a) => a.name),
 )
+
+// ---------------------------------------------------------------------------
+// P58.8 (S2, REQ-58-08): USER_SESSION tier — second tier of callers that
+// may invoke a restricted subset of tmux-copilot actions.
+//
+// Rationale (D-58-22 LOCKED): the user / human operator needs read-side
+// affordances against delegate panes (peek capture, take over a session
+// for manual intervention, release back to auto-dispatch) but does NOT
+// need write-side affordances (send-keys, list-panes, compute-grid,
+// respawn, forward-prompt) — those remain orchestrator-only because they
+// mutate tmux server state on behalf of the automation pipeline.
+//
+// Two sentinel agent names are accepted to accommodate OpenCode's
+// heterogeneous naming of the human caller:
+//   - "user"      — runtime-emitted by the SDK user-tier
+//   - "__user__"  — internal convention used by handoff/test seams
+// ---------------------------------------------------------------------------
+
+const USER_SESSION_AGENT_NAMES = new Set<string>(["user", "__user__"])
+
+/**
+ * Action set invokable from USER_SESSION tier (D-58-22 LOCKED).
+ * Anything outside this set is rejected with `permission-denied` when the
+ * caller is a user-tier agent, mirroring the orchestrator-tier guard.
+ */
+const USER_SESSION_ALLOWED_ACTIONS = new Set<string>([
+  "take-over",
+  "release",
+  "peek",
+])
 
 // ---------------------------------------------------------------------------
 // Zod schema — discriminated union of 4 actions
@@ -186,7 +224,9 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
   async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
     // 1. Permission gate
     const callerAgent = context.agent
-    if (!callerAgent || !ORCHESTRATOR_AGENT_NAMES.has(callerAgent)) {
+    const isOrchestrator = callerAgent !== undefined && ORCHESTRATOR_AGENT_NAMES.has(callerAgent)
+    const isUserSession = callerAgent !== undefined && USER_SESSION_AGENT_NAMES.has(callerAgent)
+    if (!isOrchestrator && !isUserSession) {
       return renderToolResult({
         error: { kind: "permission-denied", agent: callerAgent ?? "unknown" },
       })
@@ -200,6 +240,19 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
       })
     }
     const input = parsed.data
+
+    // 2.5 Per-tier action restriction (P58.8 S2, D-58-22 LOCKED).
+    // USER_SESSION callers may ONLY invoke the actions enumerated in
+    // USER_SESSION_ALLOWED_ACTIONS. All other actions remain
+    // orchestrator-only. This keeps write-side affordances (send-keys,
+    // forward-prompt, list-panes, compute-grid, respawn) out of the
+    // human operator's reach while preserving read/control
+    // affordances (peek, take-over, release).
+    if (isUserSession && !USER_SESSION_ALLOWED_ACTIONS.has(input.action)) {
+      return renderToolResult({
+        error: { kind: "permission-denied", agent: callerAgent ?? "unknown" },
+      })
+    }
 
     // 3. Bridge check
     const adapter = getSessionManagerAdapter()
