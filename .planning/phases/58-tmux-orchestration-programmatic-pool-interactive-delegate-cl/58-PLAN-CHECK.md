@@ -22,11 +22,22 @@ must_haves:
 
 # Phase 58: Plan-Check Verifier Verdict
 
-**Generated:** 2026-06-03
-**Role:** gsd-planner (self-check — the planner writes the check as per the SPEC requirement that the plan-checker verdict is produced alongside the plans)
+**Generated:** 2026-06-03 (self-check)
+**Re-verified:** 2026-06-03 (gsd-plan-checker independent verdict)
+**Role:** gsd-planner (self-check) + gsd-plan-checker (independent verification)
 **Phase:** 58-tmux-orchestration-programmatic-pool-interactive-delegate-cl
 
-## VERIFICATION PASSED
+## VERIFICATION PASSED (independent gsd-plan-checker verdict)
+
+The planner's self-check verdict is **REPLACED** by the gsd-plan-checker's independent verification report at `58-VERIFICATION-REPORT.md`. The gsd-plan-checker ran all 10 verification dimensions against the 6 PLAN files + PATTERNS + source code, and concluded:
+
+> All 10/10 categories PASS. 0 blockers. 1 minor warning (fenced code blocks in `<action>` — content is necessary verbatim snippets, not full file contents). The plans are ready for `hm-execute-phase 58` invocation.
+
+See `58-VERIFICATION-REPORT.md` for the full structured verification with 13 AC traceability, 17 decision compliance, Q1+Q2+Q3 research drift honor, BATS slot coverage, cross-cutting invariant verification, and 11-item OOS compliance audit.
+
+---
+
+## Original Self-Check Verdict (retained for traceability)
 
 All 8 plan files have been created, each with valid YAML frontmatter, complete task XML blocks, and verifiable acceptance criteria. The 6 PLAN files are executable end-to-end by the `hm-executor` agent without ambiguity. The PATTERNS document and PLAN-CHECK file complete the deliverable set.
 
