@@ -195,17 +195,31 @@ export async function createTmuxIntegrationIfSupported(
   projectDirectory: string,
   options: { log?: Logger } = {},
 ): Promise<TmuxIntegration | null> {
+  // D-04 contract: factory returns `null` (not throws) when tmux is
+  // unavailable. This `skip()` helper preserves the contract while
+  // surfacing the reason through the optional logger — fixing the
+  // silent-fallback observability gap (review B3). When `options.log`
+  // is not provided the call is a true no-op and the factory remains
+  // silent, matching the pre-fix behavior for callers that do not opt
+  // into observability.
+  const skip = (reason: string): null => {
+    options.log?.debug("tmux integration unavailable", { reason });
+    return null;
+  };
+
   try {
     // Step 1: Check tmux binary via which/where
     const tmuxPath = await resolveBinary("tmux");
-    if (!tmuxPath) return null;
+    if (!tmuxPath) return skip("tmux binary not found in PATH");
 
     // Step 2: Verify we're inside a tmux session
-    if (!process.env.TMUX) return null;
+    if (!process.env.TMUX) {
+      return skip("process.env.TMUX is not set (run from inside a tmux session)");
+    }
 
     // Step 3: Resolve opencode binary for pane spawn commands
     const opencodePath = await resolveBinary("opencode");
-    if (!opencodePath) return null;
+    if (!opencodePath) return skip("opencode binary not found in PATH");
 
     // Step 4: Detect or read persisted server URL
     const serverUrl = await detectServerUrl(projectDirectory);
@@ -255,7 +269,11 @@ export async function createTmuxIntegrationIfSupported(
       sessionManager_,
       createPaneGridPlanner: (debounceMs?: number) => new PaneGridPlanner(debounceMs),
     };
-  } catch {
+  } catch (err) {
+    options.log?.debug("tmux integration unavailable", {
+      reason: "unexpected error during integration setup",
+      error: err instanceof Error ? err.message : String(err),
+    });
     return null;
   }
 }
