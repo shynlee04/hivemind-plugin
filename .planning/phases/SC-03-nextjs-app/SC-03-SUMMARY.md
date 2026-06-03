@@ -241,5 +241,19 @@ Each wave was committed atomically:
 
 ---
 
+## Self-Check
+
+**Result: ✅ PASSED**
+
+| Check | Result |
+|-------|--------|
+| All 18 key-files created exist on disk | ✅ PASS |
+| All 6 commits found in git history | ✅ PASS |
+| No `## Self-Check: FAILED` marker | ✅ PASS |
+| Typecheck clean (0 errors) | ✅ PASS |
+| No plugin-side imports in sidecar/ | ✅ PASS |
+
+---
+
 *Phase: SC-03-nextjs-app*
 *Completed: 2026-06-03*
