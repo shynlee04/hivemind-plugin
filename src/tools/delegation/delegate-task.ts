@@ -29,7 +29,7 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike, config?: { 
 
   return tool({
     description:
-      "Delegate work to a specialist agent via SDK child-session dispatch. Returns immediately with a delegation ID (always-background WaiterModel). " +
+      "Delegate work to a specialist agent via SDK child-session dispatch. Returns immediately with a delegation ID (true-fire-and-forget WaiterModel (P58.3)). " +
       "**STACKING (PREFERRED):** Use `stackOnSessionId` to attach new work onto an existing session (completed, failed, aborted, cancelled, or even active). " +
       "This PRESERVES full context from the previous session. The SDK supports stacking on ANY valid session ID, both within the current delegation tree AND across independent sessions. " +
       "**ALWAYS prefer stacking onto existing sessions over creating new ones** — especially when retrying after failure. " +
