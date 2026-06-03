@@ -81,6 +81,7 @@ import { resolveWorkspaceRuntimePolicy } from "./shared/workspace-runtime-policy
 import { runAutoLoop } from "./coordination/spawner/auto-loop.js"
 import { runRalphLoop, escalationMessage } from "./coordination/spawner/ralph-loop.js"
 import { SessionTracker } from "./features/session-tracker/index.js"
+import { getManualOverrideState } from "./features/session-tracker/index.js"
 import { getConfig, getFreshConfig } from "./config/subscriber.js"
 import { createSidecarServer } from "./sidecar/server/factory.js"
 import { SidecarDependencyRegistry } from "./sidecar/server/registry.js"
@@ -914,6 +915,14 @@ export async function replayPendingDelegationNotifications(client: OpenCodeClien
     const sessionId = record.sessionID
     if (!sessionId) continue
     for (const notification of pending) {
+      // P58 (G5, REQ-58-05, D-58-11): respect manualOverride flag — if a human
+      // operator has taken over the session, do NOT auto-inject orchestrator
+      // notifications. The sessionId is the parent session that owns the
+      // notification; if a take-over was issued, suppress the replay.
+      const overrideState = getManualOverrideState(sessionId)
+      if (overrideState?.manualOverride === true) {
+        continue
+      }
       const line = notification.resultPreview ??
         `Delegation ${notification.metadata?.delegationId ?? "unknown"} ${notification.status}`
       try {

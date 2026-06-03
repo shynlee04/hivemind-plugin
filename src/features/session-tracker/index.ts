@@ -32,6 +32,41 @@ export { SessionRecovery } from "./recovery/session-recovery.js"
 export type { ReconsumptionResult, SessionContext } from "./recovery/session-recovery.js"
 
 // ---------------------------------------------------------------------------
+// Phase 58 (G5, REQ-58-05, D-58-11): Per-session manualOverride state
+// ---------------------------------------------------------------------------
+
+/**
+ * P58 G5: Module-level map holding the per-session manualOverride state.
+ * The map is exported via getManualOverrideState / setManualOverrideState
+ * helpers so callers (tmux-copilot, appendTuiPrompt wrapper) can access it
+ * without holding a SessionTracker instance reference.
+ *
+ * This is a deliberate departure from the SessionRecord disk-persistence
+ * pattern (per SPEC OOS line 260 — audit trail persistence is deferred).
+ * The in-memory state is sufficient for the take-over/release cycle
+ * (no restart-recovery requirement).
+ */
+const sessionOverrideMap = new Map<string, { manualOverride: boolean; takenAt?: number; takenBy?: string }>()
+
+/**
+ * P58 G5: Read the per-session manualOverride state. Returns undefined when
+ * no override has been set. Used by forward-prompt (suppression check) and
+ * appendTuiPrompt (early-return check).
+ */
+export function getManualOverrideState(sessionId: string | undefined): { manualOverride: boolean; takenAt?: number; takenBy?: string } | undefined {
+  if (!sessionId) return undefined
+  return sessionOverrideMap.get(sessionId)
+}
+
+/**
+ * P58 G5: Write the per-session manualOverride state. Called by
+ * tmux-copilot take-over and release actions.
+ */
+export function setManualOverrideState(sessionId: string, state: { manualOverride: boolean; takenAt?: number; takenBy?: string }): void {
+  sessionOverrideMap.set(sessionId, state)
+}
+
+// ---------------------------------------------------------------------------
 // SessionTracker class
 
 import type { OpenCodeClient } from "../../shared/session-api.js"
