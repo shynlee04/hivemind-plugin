@@ -37,6 +37,66 @@ export interface ChildRef {
   childFile: string
 }
 
+// ---------------------------------------------------------------------------
+// Phase 58 (G6, REQ-58-06): SessionTrackerEvent discriminated union
+// ---------------------------------------------------------------------------
+
+/**
+ * Phase 58 G6: Lifecycle status of a delegation. Mirrors the
+ * `DelegationLifecycleStatus` from `src/coordination/delegation/pool-types.ts`
+ * (the 7-literal superset: queued, dispatched, running, completed, failed,
+ * aborted, paused). Re-declared here to keep the session-tracker module
+ * self-contained (the G6 plan accepts the duplication per SPEC).
+ */
+export type DelegationLifecycleStatus =
+  | "queued"
+  | "dispatched"
+  | "running"
+  | "completed"
+  | "failed"
+  | "aborted"
+  | "paused"
+
+/**
+ * Phase 58 G6 (REQ-58-06, D-58-13): Base shape for all 3 delegation lifecycle
+ * events. Numeric `emittedAt` epoch enables monotonic ordering assertions
+ * in BATS slot 66.
+ */
+export interface DelegationEventBase {
+  /** Delegation id (child session id). */
+  delegationId: string
+  /** Agent name dispatched. */
+  agent: string
+  /** Lifecycle status at the time of emission. */
+  status: DelegationLifecycleStatus
+  /** Delegation nesting depth. */
+  depth: number
+  /** Parent delegation id, or null for top-level delegations. */
+  parentId: string | null
+  /** Tmux session id if attached; null otherwise. */
+  tmuxSessionId: string | null
+  /** Date.now() ms epoch — monotonic, sort-friendly. */
+  emittedAt: number
+}
+
+/**
+ * Phase 58 G6 (REQ-58-06): 3-event delegation lifecycle contract.
+ *
+ * Each delegation emits:
+ *   - `delegation-queued` (when `recordChildTaskDelegation` is called)
+ *   - `delegation-dispatched` (after SDK child-session creation)
+ *   - `delegation-terminal` (when status transitions to a terminal state)
+ *
+ * Monotonic via `emittedAt` numeric epoch. The 3 events flow through the
+ * existing "delegation" SSE filter category at
+ * `src/sidecar/server/routes/events.ts:15-31` without any filter array
+ * changes (Q2 finding).
+ */
+export type SessionTrackerEvent =
+  | (DelegationEventBase & { type: "delegation-queued" })
+  | (DelegationEventBase & { type: "delegation-dispatched" })
+  | (DelegationEventBase & { type: "delegation-terminal" })
+
 /**
  * Main session file frontmatter (YAML section of the `.md` knowledge file).
  * Mirrors the SPEC.md Section 5.1 format with camelCase field names.

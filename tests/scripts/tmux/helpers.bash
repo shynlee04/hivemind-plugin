@@ -28,6 +28,10 @@ tmux_bats_require_dist() {
   if [[ ! -f "${TMUX_BATS_ROOT}/dist/tools/tmux-copilot.js" ]]; then
     skip "dist/tools/tmux-copilot.js missing — run 'npx tsc' first"
   fi
+  # P58 addition (D-58-16) — pool-types.js dist artifact
+  if [[ ! -f "${TMUX_BATS_ROOT}/dist/coordination/delegation/pool-types.js" ]]; then
+    skip "dist/coordination/delegation/pool-types.js missing — run 'npx tsc' first"
+  fi
 }
 
 # Run a Node ESM script that imports the in-tree tmux modules.
