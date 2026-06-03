@@ -74,6 +74,19 @@ export const SESSION_MANAGER_DEFAULTS = {
 // ---------------------------------------------------------------------------
 
 /**
+ * P58.8 (REQ-58-07, S1): one captured-pane record stored in the in-memory
+ * cache. Exposed via the public `getLatestCapture(paneId)` accessor so
+ * both `delegation-status peek` (orchestrator-tier) and `tmux-copilot
+ * peek` (user-tier) can read the most recent capture without re-running
+ * the tmux CLI every time.
+ */
+export interface CaptureRecord {
+  content: string;
+  capturedAt: number;
+  byteLength: number;
+}
+
+/**
  * Internal record for an actively-tracked pane. Maps a delegation id
  * to the spawned tmux pane id, plus the age timer.
  *
@@ -109,6 +122,14 @@ interface TrackedSession {
 export class SessionManager implements ForkSessionManager {
   private readonly sessions = new Map<string, TrackedSession>();
   private readonly spawningSessions = new Set<string>();
+  // P58.8 (S1, REQ-58-07): in-memory cache of capture-pane results and the
+  // last-content hash used to drive polling backoff.
+  private readonly latestCapture: Map<string, CaptureRecord> = new Map();
+  private readonly lastCaptureHash: Map<string, string> = new Map();
+  private pollingTimer: ReturnType<typeof setTimeout> | null = null;
+  private currentPollIntervalMs: number = 5000;
+  private static readonly MIN_POLL_MS = 5000;
+  private static readonly MAX_POLL_MS = 15000;
 
   /**
    * @param multiplexer TmuxMultiplexer instance owned by the harness.
@@ -283,6 +304,88 @@ export class SessionManager implements ForkSessionManager {
     }
 
     return { paneId: tracked.paneId };
+  }
+
+  // -------------------------------------------------------------------------
+  // P58.8 (S1, REQ-58-07): capture-pane polling
+  // -------------------------------------------------------------------------
+
+  /**
+   * Start (or ensure running) the 5s capture-pane polling loop. Iterates
+   * active delegations, calls `multiplexer.capturePaneContent(paneId)`,
+   * stores the result in `latestCapture`, and emits a `pane-captured`
+   * event with the FULL content (P53 hook currently emits metadata-only).
+   *
+   * Backoff: when the hash of the captured content is unchanged from the
+   * previous capture, the interval doubles up to 15s; on change, it
+   * resets to 5s. This is the canonical "stable pane" heuristic from
+   * 58-SPEC.md:191.
+   *
+   * Idempotent: if a polling timer is already running, this is a no-op.
+   * The loop self-schedules via `setTimeout` (not `setInterval`) so the
+   * backoff is honored on every iteration.
+   */
+  startPolling(intervalMs: number = 5000): void {
+    if (this.pollingTimer !== null) return
+    this.currentPollIntervalMs = Math.max(SessionManager.MIN_POLL_MS, Math.min(intervalMs, SessionManager.MAX_POLL_MS))
+    const tick = async (): Promise<void> => {
+      let anyChange = false
+      for (const tracked of this.sessions.values()) {
+        if (!tracked.paneId) continue
+        try {
+          const capture = await this.multiplexer.capturePaneContent(tracked.paneId, 5000)
+          if (capture.byteLength === 0) continue  // capture failed; skip
+          this.latestCapture.set(tracked.paneId, capture)
+          const hash = SessionManager.hashContent(capture.content)
+          const prevHash = this.lastCaptureHash.get(tracked.paneId)
+          if (prevHash !== hash) {
+            this.lastCaptureHash.set(tracked.paneId, hash)
+            anyChange = true
+          }
+        } catch (err) {
+          this.log?.debug("startPolling: tick error", { paneId: tracked.paneId, err })
+        }
+      }
+      // Backoff: stable content doubles interval up to 15s; any change resets to 5s.
+      this.currentPollIntervalMs = anyChange
+        ? SessionManager.MIN_POLL_MS
+        : Math.min(SessionManager.MAX_POLL_MS, this.currentPollIntervalMs * 2)
+      this.pollingTimer = setTimeout(() => { void tick() }, this.currentPollIntervalMs)
+    }
+    this.pollingTimer = setTimeout(() => { void tick() }, this.currentPollIntervalMs)
+  }
+
+  /**
+   * Stop the polling loop. Safe to call when polling is not running.
+   * Called from `handleSessionClose` indirectly via the existing cleanup path
+   * (sessions map deletion); not currently invoked externally but exposed
+   * for symmetry with `startPolling`.
+   */
+  stopPolling(): void {
+    if (this.pollingTimer !== null) {
+      clearTimeout(this.pollingTimer)
+      this.pollingTimer = null
+    }
+  }
+
+  /**
+   * Get the most recent capture-pane record for a pane id. Returns `null`
+   * if no capture has been recorded yet (polling not started, or pane not
+   * tracked). Used by `delegation-status peek` (S1) and `tmux-copilot peek`
+   * (S2) — both return the same record shape.
+   */
+  getLatestCapture(paneId: string): CaptureRecord | null {
+    return this.latestCapture.get(paneId) ?? null
+  }
+
+  private static hashContent(content: string): string {
+    // Cheap non-crypto hash; sufficient for stable-content detection.
+    let hash = 0
+    for (let i = 0; i < content.length; i++) {
+      hash = ((hash << 5) - hash) + content.charCodeAt(i)
+      hash |= 0
+    }
+    return String(hash)
   }
 
   // -------------------------------------------------------------------------
