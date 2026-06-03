@@ -2044,11 +2044,18 @@ Plans:
 **Goal:** Close 6 architectural gaps in the in-tree tmux visual orchestration layer: (1) delegate-task must not invoke native task tool; (2) programmatic pool status API for all active delegations; (3) abort+resume cycle preserving tmux session state; (4) main-agent-to-delegate prompt forwarding via appendTuiPrompt; (5) mid-flight user override (takeover/release) bypassing orchestrator auto-prompting; (6) deep session-tracker integration emitting delegation lifecycle events.
 **Requirements:** REQ-58-01, REQ-58-02, REQ-58-03, REQ-58-04, REQ-58-05, REQ-58-06.
 **Depends on:** Phase 55.
-**Plans:** 0 plans
+**Plans:** 7 plans
+**Status:** ✓ Complete (2026-06-04) — VERIFIED, ready to ship
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 58 to break down)
+- [x] 58-01: Foundation files (pool-types + tmuxSessionId + POLICY + SessionTrackerEvent + helpers.bash) + PATTERNS document
+- [x] 58-02: G2+G3 — getPoolSnapshot + abort/resume persistence + BATS slots 62+63
+- [x] 58-03: G4+G5 — forward-prompt + take-over/release + manualOverride + BATS slots 64+65
+- [x] 58-04: G6 — SessionTrackerEvent emissions + recordDelegationTerminal + BATS slot 66
+- [x] 58-05: Regression — BATS slot 61 G1 grep-guard scaffold + regression commands doc
+- [x] 58-06: Acceptance — 13 ACs + 7 cross-cutting invariants verification report
+- [x] 58-07: 5 execution gaps fix — createForTest factory + __setTmuxMultiplexerForTesting seam + module-level recordDelegationTerminal + BATS slot 67 (P56 collision slot 61) + 3 BATS files fixed (62, 64, 65)
 
 ---
 
