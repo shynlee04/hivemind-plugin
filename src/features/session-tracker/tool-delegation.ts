@@ -15,12 +15,36 @@ import type { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import type { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
 import type { HierarchyManifestWriter } from "./persistence/hierarchy-manifest.js"
-import type { ChildSessionRecord } from "./types.js"
+import type { ChildSessionRecord, SessionTrackerEvent, DelegationLifecycleStatus } from "./types.js"
 import { isValidSessionID } from "./types.js"
 import { asRecord, deriveAgentNameFromSession, extractTaskID, extractTaskResult, pruneToolInput, pruneToolOutput } from "./tool-delegation-utils.js"
 
 // Re-export pure utilities for backward compatibility
 export { pruneToolInput, pruneToolOutput, extractTaskID, extractTaskResult, deriveSubagentType, deriveAgentNameFromSession, asRecord } from "./tool-delegation-utils.js"
+
+// ---------------------------------------------------------------------------
+// Phase 58 (G6, REQ-58-06): In-memory event log for the 3 delegation lifecycle
+// events. P25.1 trajectory precedent. Exposed via getDelegationEventLog for
+// BATS slot 66 monotonicity assertions. Single source of truth across all
+// ToolDelegation instances — module-level array, not a class field.
+// ---------------------------------------------------------------------------
+
+const delegationEventLog: SessionTrackerEvent[] = []
+
+/** P58 G6: Test seam — returns the in-memory event log for BATS assertions. */
+export function getDelegationEventLog(): readonly SessionTrackerEvent[] {
+  return delegationEventLog
+}
+
+/** P58 G6: Test seam — clears the in-memory event log (test isolation). */
+export function clearDelegationEventLog(): void {
+  delegationEventLog.length = 0
+}
+
+/** P58 G6: Internal helper to append a delegation event to the in-memory log. */
+function appendDelegationEvent(event: SessionTrackerEvent): void {
+  delegationEventLog.push(event)
+}
 
 /** Dependencies injected by SessionTracker for tool delegation operations. */
 export interface ToolDelegationDeps {
@@ -254,6 +278,18 @@ export class ToolDelegation {
     const rootMain = this.hierarchyIndex.getRootMain(input.sessionID) ?? parentID
     this.hierarchyIndex.registerChild(input.sessionID, childSessionID)
     const depth = this.hierarchyIndex.getDepth(childSessionID)
+
+    // P58 G6 (REQ-58-06, D-58-13): emit delegation-queued event
+    appendDelegationEvent({
+      type: "delegation-queued",
+      delegationId: childSessionID,
+      agent: subagentType,
+      status: "queued",
+      depth,
+      parentId: input.sessionID,
+      tmuxSessionId: null,
+      emittedAt: Date.now(),
+    })
     const now = new Date().toISOString()
     const childMetadata: ChildSessionRecord = {
       sessionID: childSessionID,
@@ -336,6 +372,19 @@ export class ToolDelegation {
       `${rootMain}/`,
       `${childSessionID}.json`,
     )
+
+    // P58 G6 (REQ-58-06, D-58-13): emit delegation-dispatched event after SDK child-session creation
+    appendDelegationEvent({
+      type: "delegation-dispatched",
+      delegationId: childSessionID,
+      agent: subagentType,
+      status: "dispatched",
+      depth,
+      parentId: input.sessionID,
+      tmuxSessionId: null,  // tmuxSessionId wired in PLAN-02 G3 (always null at queue/dispatch time)
+      emittedAt: Date.now(),
+    })
+
     // REQ-25.1-01, REQ-25.1-02: Create trajectory record and agent-work-contract
     await this.createDelegationTrajectoryAndContract(
       childSessionID, input.sessionID, subagentType, description, rootMain, input.tool,
@@ -368,6 +417,33 @@ export class ToolDelegation {
       await this.sessionIndexWriter.updateChildStatus(rootMain, childSessionID, "completed")
       await this.manifestWriter.updateChildStatus(rootMain, childSessionID, "completed")
     }
+  }
+
+  /**
+   * P58 G6 (REQ-58-06, D-58-14): Emit a delegation-terminal event when a
+   * delegation reaches a final state. Called from DelegationManager's
+   * terminalFallback path and abortDelegation path.
+   *
+   * @param delegationId - The delegation id reaching terminal state.
+   * @param status - The final status. Must be a DelegationLifecycleStatus.
+   * @param tmuxSessionId - Optional tmux session id (null for delegations
+   *   without a tmux pane attachment; set for delegations that had a pane).
+   */
+  recordDelegationTerminal(
+    delegationId: string,
+    status: DelegationLifecycleStatus,
+    tmuxSessionId: string | null = null,
+  ): void {
+    appendDelegationEvent({
+      type: "delegation-terminal",
+      delegationId,
+      agent: "unknown",  // terminal events may fire after the record is pruned; agent is optional
+      status,
+      depth: 0,  // depth is not available at terminal time without record lookup
+      parentId: null,
+      tmuxSessionId,
+      emittedAt: Date.now(),
+    })
   }
 
   /**
