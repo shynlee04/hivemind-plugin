@@ -82,10 +82,10 @@ describe("createSidecarServer", () => {
       const server = await createSidecarServer({ registry, ssePool, projectDirectory })
       try {
         const res = await fetch(`http://127.0.0.1:${server.port}/`)
-        expect(res.status).toBe(501)
-        expect(res.headers.get("content-type")).toMatch(/text\/plain/)
-        const text = await res.text()
-        expect(text).toContain("Not Implemented")
+        expect(res.status).toBe(404)
+        const body = await res.json()
+        expect(body).toHaveProperty("error")
+        expect(body.error).toHaveProperty("code", "NOT_FOUND")
       } finally {
         await server.close()
       }
@@ -95,7 +95,7 @@ describe("createSidecarServer", () => {
       const server = await createSidecarServer({ registry, ssePool, projectDirectory })
       try {
         const res = await fetch(`http://127.0.0.1:${server.port}/nonexistent`)
-        expect(res.status).toBe(501)
+        expect(res.status).toBe(404)
       } finally {
         await server.close()
       }

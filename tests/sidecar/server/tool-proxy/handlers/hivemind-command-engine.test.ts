@@ -5,7 +5,7 @@
  */
 // @ts-ignore — module doesn't exist yet (W0 TDD red phase)
 import { handleHivemindCommandEngine } from "../../../../../src/sidecar/server/tool-proxy/handlers/hivemind-command-engine.js"
-import { createMockRegistry } from "../../../../__mocks__/registry.js"
+import { createMockRegistry } from "../../../__mocks__/registry.js"
 import type { SidecarDependencyRegistry } from "../../../../../src/sidecar/server/registry.js"
 import { describe, it, expect, beforeEach } from "vitest"
 
