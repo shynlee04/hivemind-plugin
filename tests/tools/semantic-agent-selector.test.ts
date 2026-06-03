@@ -102,4 +102,41 @@ describe("semantic-agent-selector", () => {
       expect(result.fallback).toBe(true)
     })
   })
+
+  describe("smart context-aware matching and exact-match stem checks", () => {
+    it("should evaluate all stems to award exact-stem match bonus instead of breaking early on short stem matches", async () => {
+      // Shorter stem "plan" matches "gsd-planner", but it should continue and match exact stem "planner" for bonus
+      const agents = [{ name: "gsd-planner", description: "Plans features" }]
+      const result = await selectAgent("gsd-plan", agents)
+      expect(result.agent).toBe("gsd-planner")
+      expect(result.score).toBeGreaterThanOrEqual(2.0)
+    })
+
+    it("should use command description mentions to strongly route to the correct agent", async () => {
+      const agents = [
+        { name: "hm-phase-researcher", description: "Researches phases" },
+        { name: "hm-planner", description: "Creates phase plans" }
+      ]
+      const commandCtx = {
+        name: "hm-plan-phase",
+        description: "Create detailed phase plan. Routes through hm-phase-researcher and hm-planner."
+      }
+      // Both agents match words in description, but "hm-planner" has specific verb-priority match for primary verb "plan"
+      const result = await selectAgent("hm-plan-phase", agents, commandCtx)
+      expect(result.agent).toBe("hm-planner")
+    })
+
+    it("should prioritize primary verb of command name over domain noun", async () => {
+      const agents = [
+        { name: "gsd-phase-researcher", description: "Researches phase details" },
+        { name: "gsd-planner", description: "Plans milestones" }
+      ]
+      const commandCtx = {
+        name: "gsd-plan-phase",
+        description: "Create detailed phase plan. Routes through gsd-phase-researcher, gsd-planner."
+      }
+      const result = await selectAgent("gsd-plan-phase 58", agents, commandCtx)
+      expect(result.agent).toBe("gsd-planner")
+    })
+  })
 })

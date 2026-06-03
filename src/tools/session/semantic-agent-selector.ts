@@ -64,13 +64,18 @@ export function getWordStems(word: string): string[] {
   return Array.from(new Set(stems))
 }
 
+const FUNCTIONAL_VERBS = new Set([
+  "plan", "verify", "validate", "audit", "review", "debug", "fix", "spec", "write", "doc", "research", "run"
+])
+
 /**
  * Selects an agent based on natural language intent.
  * Keyword + similarity matching with suffix stemming and lineage constraints (no LLM).
  */
 export async function selectAgent(
   intent: string,
-  agents: Array<{ name: string; id?: string; description?: string }> = []
+  agents: Array<{ name: string; id?: string; description?: string }> = [],
+  commandContext?: { name: string; description?: string }
 ): Promise<AgentMatchResult> {
   // Normalize agents to Agent object
   const normalizedAgents: Agent[] = agents
@@ -90,11 +95,6 @@ export async function selectAgent(
   // Dynamic extraction of command prefix/lineage (e.g., "gsd-stats" -> "gsd", "hm-plan" -> "hm", "custom-run" -> "custom")
   const prefixMatch = intent.trim().replace(/^\//, "").match(/^([a-zA-Z0-9]+)-/)
   const commandPrefix = prefixMatch ? prefixMatch[1].toLowerCase() : null
-
-  // Define common functional verbs/keywords that should not be treated as lineage prefixes
-  const FUNCTIONAL_VERBS = new Set([
-    "plan", "verify", "validate", "audit", "review", "debug", "fix", "spec", "write", "doc", "research", "run"
-  ])
 
   const isLineagePrefix = commandPrefix && !FUNCTIONAL_VERBS.has(commandPrefix)
 
@@ -117,7 +117,7 @@ export async function selectAgent(
     // Score prefix-aligned candidates
     const scored = prefixCandidates.map((agent) => ({
       agent,
-      score: calculateSimilarityScore(matchKeywords, agent),
+      score: calculateSimilarityScore(matchKeywords, agent, commandContext),
     }))
 
     scored.sort((a, b) => b.score - a.score)
@@ -191,7 +191,11 @@ function extractKeywords(text: string): string[] {
     .filter((word) => word.length > 0 && !STOP_WORDS.has(word))
 }
 
-function calculateSimilarityScore(keywords: string[], agent: Agent): number {
+function calculateSimilarityScore(
+  keywords: string[],
+  agent: Agent,
+  commandContext?: { name: string; description?: string }
+): number {
   let score = 0
   const nameLower = agent.name.toLowerCase()
   // Strip lineage prefix (e.g., "gsd-" or "hm-") for exact match checks
@@ -199,15 +203,19 @@ function calculateSimilarityScore(keywords: string[], agent: Agent): number {
   
   keywords.forEach((keyword) => {
     const stems = getWordStems(keyword)
+    let maxKeywordScore = 0
     for (const stem of stems) {
       if (nameLower.includes(stem)) {
-        score += 1.0
+        let stemScore = 1.0
         if (nameLower === stem || nameWithoutPrefix === stem) {
-          score += 1.0
+          stemScore += 1.0
         }
-        break
+        if (stemScore > maxKeywordScore) {
+          maxKeywordScore = stemScore
+        }
       }
     }
+    score += maxKeywordScore
   })
 
   if (agent.description) {
@@ -221,6 +229,112 @@ function calculateSimilarityScore(keywords: string[], agent: Agent): number {
         }
       }
     })
+  }
+
+  // Smart Context-Aware Matching
+  if (commandContext) {
+    const cmdDescLower = commandContext.description?.toLowerCase() || ""
+
+    // 1. Exact/Alias Agent Mention in Command Description (Massive signal)
+    if (cmdDescLower) {
+      if (cmdDescLower.includes(nameLower)) {
+        score += 10.0
+      } else if (cmdDescLower.includes(nameWithoutPrefix)) {
+        score += 5.0
+      }
+    }
+
+    // Extract command keywords
+    const cmdNameKeywords = extractKeywords(commandContext.name)
+    const cmdPrefixMatch = commandContext.name.trim().replace(/^\//, "").match(/^([a-zA-Z0-9]+)-/)
+    const cmdPrefix = cmdPrefixMatch ? cmdPrefixMatch[1].toLowerCase() : null
+    const isCmdLineage = cmdPrefix && !FUNCTIONAL_VERBS.has(cmdPrefix)
+    const filteredCmdKeywords = isCmdLineage
+      ? cmdNameKeywords.filter((kw) => kw !== cmdPrefix)
+      : cmdNameKeywords
+
+    // 2. Verb-Match Priority: Check the primary action verb of the command against the agent name
+    if (filteredCmdKeywords.length > 0) {
+      const primaryVerb = filteredCmdKeywords[0]
+      const stems = getWordStems(primaryVerb)
+      for (const stem of stems) {
+        if (nameLower.includes(stem)) {
+          score += 3.0 // Verb-match bonus!
+          if (nameLower === stem || nameWithoutPrefix === stem) {
+            score += 2.0 // Exact verb-match bonus!
+          }
+          break
+        }
+      }
+    }
+
+    // 3. Command Name Keywords matching Agent Name
+    filteredCmdKeywords.forEach((kw) => {
+      const stems = getWordStems(kw)
+      let maxKwScore = 0
+      for (const stem of stems) {
+        if (nameLower.includes(stem)) {
+          let stemScore = 1.0
+          if (nameLower === stem || nameWithoutPrefix === stem) {
+            stemScore += 1.0
+          }
+          if (stemScore > maxKwScore) {
+            maxKwScore = stemScore
+          }
+        }
+      }
+      score += maxKwScore
+    })
+
+    // 4. Command Description Keywords matching Agent Description
+    if (cmdDescLower && agent.description) {
+      const cmdDescKeywords = extractKeywords(commandContext.description || "")
+      const agentDescLower = agent.description.toLowerCase()
+      cmdDescKeywords.forEach((kw) => {
+        const stems = getWordStems(kw)
+        for (const stem of stems) {
+          if (agentDescLower.includes(stem)) {
+            score += 0.5
+            break
+          }
+        }
+      })
+    }
+
+    // 5. Command Name Keywords matching Agent Description
+    if (agent.description) {
+      const agentDescLower = agent.description.toLowerCase()
+      filteredCmdKeywords.forEach((kw) => {
+        const stems = getWordStems(kw)
+        for (const stem of stems) {
+          if (agentDescLower.includes(stem)) {
+            score += 0.5
+            break
+          }
+        }
+      })
+    }
+
+    // 6. Agent Name Keywords matching Command Description
+    if (cmdDescLower) {
+      const agentNameKeywords = extractKeywords(agent.name)
+      const agentPrefixMatch = agent.name.trim().match(/^([a-zA-Z0-9]+)-/)
+      const agentPrefix = agentPrefixMatch ? agentPrefixMatch[1].toLowerCase() : null
+      const isAgentLineage = agentPrefix && !FUNCTIONAL_VERBS.has(agentPrefix)
+      const filteredAgentKeywords = isAgentLineage
+        ? agentNameKeywords.filter((kw) => kw !== agentPrefix)
+        : agentNameKeywords
+
+      filteredAgentKeywords.forEach((kw) => {
+        const stems = getWordStems(kw)
+        for (const stem of stems) {
+          if (cmdDescLower.includes(stem)) {
+            score += 1.0
+            break
+          }
+        }
+      })
+    }
   }
 
   return score

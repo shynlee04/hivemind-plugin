@@ -60,16 +60,16 @@ This skill is framework-agnostic: it describes delegation using OpenCode runtime
 
 ## The Differentiation Matrix
 
-| Dimension | `task` tool | `delegate-task` | `execute-slash-command` |
-|-----------|------------|-----------------|------------------------|
+| Dimension | `task` tool (PREFERRED & STANDARD) | `delegate-task` (ON MAINTENANCE) | `execute-slash-command` |
+|-----------|----------------------------------|----------------------------------|------------------------|
 | **Mechanism** | Native OpenCode subagent dispatch | WaiterModel SDK child-session dispatch | Command dispatch + synthetic parent prompt |
-| **When to use** | Code editing, governance documents, state/roadmap/plan/artifact modification | Async background: research, audit, review, verification | Command execution, agent override, one-shot dispatch |
+| **When to use** | **All tasks** (Code editing, plans, artifacts, research, audit, review, verification) | Deprecated/maintenance — do not use | Command execution, agent override, one-shot dispatch |
 | **Monitoring** | User-visible progress (click to view); runtime manages lifecycle | Manual polling via `delegation-status` tool | Return value + synthetic response from agent |
-| **Stacking** | Automatic via `task_id` resume parameter | Explicit via `parentSessionId` in context JSON | N/A — one-shot, no session attachment |
-| **Limitations** | None significant for code/artifact tasks (handles 40+ tool calls) | Async-only (WaiterModel — returns immediately); NOT for code editing | Agent override must exist as a definition |
+| **Stacking** | Automatic via `task_id` parameter (completed, failed, active sessions) | Explicit via `parentSessionId` in context JSON | N/A — one-shot, no session attachment |
+| **Limitations** | Synchronous/blocking per call | Maintenance status — disabled on some agents | Agent override must exist as a definition |
 | **Output** | Final message from subagent to caller | Pollable via `delegation-status` — returns state + output | Command result + optional synthetic prompt output |
-| **Use case profile** | Code editing, governance docs, multi-step code changes (40+ tool calls) | Research, audit, review, verification — low-risk background work | Agent override, discover commands, proxy dispatch |
-| **Budget control** | Inherits from parent session | Explicit turn/token limits via delegate-task config | Inherits from target agent definition |
+| **Use case profile** | Standard tool for all subagent tasks (handles 40+ tool calls) | Maintenance fallback only | Agent override, discover commands, proxy dispatch |
+| **Budget control** | Inherits from parent session | Explicit turn/token limits via config | Inherits from target agent definition |
 
 ### Quick Decision Flow
 
@@ -77,15 +77,11 @@ This skill is framework-agnostic: it describes delegation using OpenCode runtime
 Is the work a one-shot command or agent override?
   YES → execute-slash-command (command, agent parameter)
 
-Is the work code editing, governance documents, or artifact modification?
-  YES → task tool (HIGH CONTROL, user-visible, handles 40+ tool calls for code/artifacts)
+Is the work a multi-step task (code editing, planning, research, audit, review, or verification)?
+  YES → task tool (PREFERRED for all work; delegate-task is on maintenance)
 
-Is the work research, audit, review, or verification?
-  YES → delegate-task (async background, WaiterModel, polling via delegation-status)
-
-Do you need to attach work to an existing completed session?
-  YES → delegate-task with parentSessionId (session stacking)
-  OR → task tool with task_id (session stacking)
+Do you need to attach work to an existing completed, failed, or active session?
+  YES → ALWAYS use task tool with task_id (session stacking)
 
 Are you unsure which agent has the right tools?
   → Use hivemind-command-engine to discover commands
@@ -118,43 +114,31 @@ Are you unsure which agent has the right tools?
 - Any task where the user needs to monitor what is happening
 
 **When NOT to use:**
-- Research tasks (use `delegate-task` — no code is changed)
-- Audit/review tasks (use `delegate-task` — read-only, can run in background)
-- Verification against specifications (use `delegate-task` — async background)
-- Purely informational lookups (use `delegate-task` or inline tools)
+- Research tasks (use `task` tool)
+- Audit/review tasks (use `task` tool)
+- Verification against specifications (use `task` tool)
+- Purely informational lookups (use `task` tool)
 
 **Stacking onto an existing session:** Pass `task_id` parameter to resume the same subagent session. This continues the previous session rather than creating a new one.
 
-## Pattern 2: Delegate-Task — Research, Audit, Review (ASYNC BACKGROUND)
+## Pattern 2: Delegate-Task — On Maintenance (DO NOT USE)
 
-**Use for low-risk research, audit, review, and verification ONLY.** `delegate-task` returns immediately with a delegation ID — it does not block the caller. The subagent runs asynchronously in a child session via WaiterModel, and the caller polls for completion using `delegation-status`.
+Per project rules in AGENTS.md, the `delegate-task` tool is on maintenance. Use the native `task` tool for all delegations instead.
 
-**Why delegate-task for research/audit/review:**
-- **Async** — dispatch and continue working; check results when ready
-- **Non-blocking** — the caller never waits; useful for parallel batch dispatch
-- **Mechanisms** — dual-signal completion detection, polling via delegation-status, synthetic injection
-- **Low-risk** — research/audit/review tasks are read-mostly, do not modify codebase
+Why delegate-task is avoided:
+- Maintenance status — disabled on primary product developer agents (e.g., `hm-l0-orchestrator`).
+- Mismatched permissions — causes routing confusion and LLM hallucinations.
 
-**Example:**
+Example:
 
 ```
-# Research task — delegate-task runs in background
-# Audit task — delegate-task runs asynchronously  
-# Review task — delegate-task for parallel batch review
+# DO NOT use delegate-task
+# Always use the native task tool with task_id for stacking
 ```
 
-**When it works best:**
-- Research tasks (multi-source investigation, evidence gathering, deep research)
-- Audit tasks (code review, quality analysis, compliance checking)
-- Review tasks (spec review, plan review, architecture review)
-- Verification against specifications (read-only verification)
-- Low-risk background work that benefits from async parallelism
-
-**When NOT to use:**
-- **Code editing** — use `task` tool (code changes need user visibility and control)
-- **Artifact/governance document modification** — use `task` tool (state changes need audit trail)
-- **Any task that directly modifies the codebase** — use `task` tool
-- Simple one-step tasks (use `task` tool — less overhead)
+When to use task tool instead:
+- Research, planning, implementation, review, debug, quality, documentation.
+- Any task requiring subagent dispatch. The native `task` tool is fully verified.
 
 **Session stacking:** See Pattern 4.
 

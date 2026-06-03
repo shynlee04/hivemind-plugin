@@ -218,7 +218,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
             return { name: obj.name || obj.id || "", description: obj.description }
           }).filter((a) => a.name.length > 0)
           const selectIntent = executionArgs.command + (executionArgs.arguments ? " " + executionArgs.arguments : "")
-          const agentResult = await selectAgent(selectIntent, normalizedAgents)
+          const agentResult = await selectAgent(selectIntent, normalizedAgents, commandBundle)
           if (agentResult.agent) {
             suggestedAgent = agentResult.agent
           }
@@ -247,7 +247,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               return { name: obj.name || obj.id || "", description: obj.description }
             }).filter((a) => a.name.length > 0)
             const selectIntent = executionArgs.command + (executionArgs.arguments ? " " + executionArgs.arguments : "")
-            const agentResult = await selectAgent(selectIntent, normalizedAgents)
+            const agentResult = await selectAgent(selectIntent, normalizedAgents, commandBundle)
             if (agentResult.agent) {
               resolvedAgent = agentResult.agent
             }
