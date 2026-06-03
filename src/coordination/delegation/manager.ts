@@ -12,6 +12,7 @@ import type { Delegation, DelegationResult } from "./types.js"
 import type { DelegationPool, DelegationPoolEntry, DelegationLifecycleStatus } from "./pool-types.js"
 import { freezeDelegationPool, sanitizePreview } from "./pool-types.js"
 import type { PersistedSession } from "../../features/tmux/persistence.js"
+import type { ToolDelegation } from "../../features/session-tracker/tool-delegation.js"
 
 type NativeTask = (params: { agent: string; prompt: string; disabledTools: string[] }) => Promise<unknown>
 
@@ -44,6 +45,13 @@ export type DelegationManagerOptions = {
     persist: (record: PersistedSession) => Promise<void>
     respawnIfKnown: (sessionId: string) => Promise<{ paneId: string } | null>
   }
+  /**
+   * P58 (G6, REQ-58-06, D-58-14): Optional ToolDelegation reference for
+   * emitting `delegation-terminal` events. Narrow Pick<>-typed — only the
+   * `recordDelegationTerminal` method is needed. Existing callers that
+   * don't inject `toolDelegation` see the G6 wiring as a no-op.
+   */
+  toolDelegation?: Pick<ToolDelegation, "recordDelegationTerminal">
 }
 
 export type DelegationControlRequest = {
@@ -216,6 +224,14 @@ export class DelegationManager {
     const record = this.getStatus(delegationId)
     if (record?.tmuxSessionId && this.options.sessionManager?.persist) {
       void this.options.sessionManager.persist({ ...record, state: "paused", lastTransitionAt: Date.now(), schemaVersion: 1 } as unknown as PersistedSession)
+    }
+    // P58 (G6, REQ-58-06, D-58-14): emit delegation-terminal event with status="aborted"
+    if (this.options.toolDelegation) {
+      void this.options.toolDelegation.recordDelegationTerminal(
+        delegationId,
+        "aborted",
+        record?.tmuxSessionId ?? null,
+      )
     }
     return result
   }
@@ -479,6 +495,10 @@ export class DelegationManager {
   }
 
   private terminalFallback(delegationId: string, error: string): DelegationResult {
+    // P58 (G6, REQ-58-06, D-58-14): emit delegation-terminal event with status="failed"
+    if (this.options.toolDelegation) {
+      void this.options.toolDelegation.recordDelegationTerminal(delegationId, "failed", null)
+    }
     return { delegationId, error, status: "error" }
   }
 
