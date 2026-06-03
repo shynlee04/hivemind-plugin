@@ -18,12 +18,16 @@ import { join } from "node:path"
 
 import type { SidecarDependencyRegistry } from "./registry.js"
 import type { SseConnectionPool } from "./sse/pool.js"
+import type { Route } from "./handler.js"
+import { SidecarRouter } from "./handler.js"
 
 /** Options for {@link createSidecarServer}. */
 export interface SidecarServerOptions {
   registry: SidecarDependencyRegistry
   ssePool: SseConnectionPool
   projectDirectory: string
+  /** Optional routes for the SidecarRouter (SC-02 extension). */
+  routes?: Route[]
 }
 
 /** Handle returned by {@link createSidecarServer}. */
@@ -47,7 +51,9 @@ export async function createSidecarServer(
   options: SidecarServerOptions,
 ): Promise<SidecarServerHandle> {
   const startTime = Date.now()
-  const { registry: _registry, ssePool, projectDirectory } = options
+  const { registry: _registry, ssePool, projectDirectory, routes } = options
+
+  const router = new SidecarRouter(routes ?? [], options.registry)
 
   const server = http.createServer((req, res) => {
     // GET /health -> 200 { status: "ok", uptime: <ms> }
@@ -57,9 +63,8 @@ export async function createSidecarServer(
       return
     }
 
-    // All other routes -> 501 Not Implemented
-    res.writeHead(501, { "Content-Type": "text/plain" })
-    res.end("Not Implemented")
+    // All other routes -> SidecarRouter
+    void router.handle(req, res)
   })
 
   // Register cleanup on process signals

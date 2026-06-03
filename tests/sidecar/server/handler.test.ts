@@ -21,7 +21,7 @@
  */
 // @ts-ignore — module doesn't exist yet (W0 TDD red phase)
 import { createServer } from "../../../src/sidecar/server/handler.js"
-import { createMockRegistry } from "../../../__mocks__/registry.js"
+import { createMockRegistry } from "../__mocks__/registry.js"
 // @ts-ignore — module doesn't exist yet (W0 TDD red phase)
 import type { Route } from "../../../src/sidecar/server/handler.js"
 import type { SidecarDependencyRegistry } from "../../../src/sidecar/server/registry.js"
