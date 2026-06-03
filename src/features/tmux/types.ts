@@ -147,11 +147,20 @@ export type { EnrichedSessionEvent };
  * - `SessionManager.onSessionCreated` / `respawnIfKnown` (session-manager.ts)
  * - `TmuxMultiplexer.getMainPaneId` / `sendKeys` / `listPanes` (tmux-multiplexer.ts)
  * - `new PaneGridPlanner(debounceMs?)` constructor
+ *
+ * P58.8 (S1, REQ-58-07) extension: `getLatestCapture` and `startPolling`
+ * are added to the adapter so the `tmux-copilot peek` action (S2, user
+ * tier) and any other future tool can read the most recent capture-pane
+ * content without re-running the tmux CLI.
  */
 export interface SessionManagerAdapter {
   // From SessionManager
   onSessionCreated: (event: EnrichedSessionEvent) => Promise<void>;
   respawnIfKnown: (sessionId: string) => Promise<{ paneId: string } | null>;
+  /** P58.8 S1: read the most recent capture-pane record for a pane id. */
+  getLatestCapture?: (paneId: string) => { content: string; capturedAt: number; byteLength: number } | null;
+  /** P58.8 S1: ensure the 5s capture-pane polling loop is running. */
+  startPolling?: (intervalMs?: number) => void;
   // From TmuxMultiplexer
   getMainPaneId: () => Promise<string | null>;
   sendKeys: (paneId: string, text: string, literal?: boolean) => Promise<void>;

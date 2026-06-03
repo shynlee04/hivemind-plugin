@@ -400,6 +400,11 @@ export async function createTmuxIntegrationIfSupported(
     const adapter: SessionManagerAdapter = {
       onSessionCreated: (event) => sessionManager_.onSessionCreated(event),
       respawnIfKnown: (sessionId: string) => sessionManager_.respawnIfKnown(sessionId),
+      // P58.8 S1 (REQ-58-07): expose the capture-pane accessors so
+      // tmux-copilot peek (S2, user-tier) and delegation-status peek
+      // (S1, orchestrator-tier) can read the in-memory cache.
+      getLatestCapture: (paneId) => sessionManager_.getLatestCapture(paneId),
+      startPolling: (intervalMs) => sessionManager_.startPolling(intervalMs),
       getMainPaneId: () => multiplexer.getMainPaneId(),
       sendKeys: (paneId: string, text: string, literal?: boolean) =>
         multiplexer.sendKeys(paneId, text, literal),

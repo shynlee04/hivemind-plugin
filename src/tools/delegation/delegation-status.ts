@@ -34,9 +34,13 @@ export const DelegationControlSchema = z.object({
 const DelegationStatusInputSchema = z.object({
   delegationId: z.string().min(1).optional(),
   status: z.string().optional(),
-  action: z.enum(["status", "get", "list", "control", "find-stackable", "pool"]).default("status"),
+  action: z.enum(["status", "get", "list", "control", "find-stackable", "pool", "peek", "progress"]).default("status"),
   control: DelegationControlSchema.optional(),
   agentFilter: z.string().optional(),
+  /** P58.8 S1 (REQ-58-07): paneId for the peek action. */
+  paneId: z.string().min(1).optional(),
+  /** P58.8 S1 (REQ-58-07): maxBytes cap for the peek action content. */
+  maxBytes: z.number().int().positive().optional(),
 })
 
 type DelegationStatusInput = z.infer<typeof DelegationStatusInputSchema>
@@ -58,6 +62,10 @@ type StatusDeps = {
   readPersisted?: () => Delegation[]
   terminateChild?: (sessionId: string) => Promise<unknown>
   projectRoot?: string
+  /** P58.8 S1 (REQ-58-07): read the latest capture-pane content for a pane id. */
+  getPaneContent?: (paneId: string) => { content: string; capturedAt: number; byteLength: number } | null
+  /** P58.8 S4 (REQ-58-10): read the latest event for a child session id. */
+  getLastChildEvent?: (childSessionId: string) => { eventType: string; emittedAt: number; payload: Record<string, unknown> } | null
 }
 
 const UNSUPPORTED_REPLACEMENT_MESSAGE =
@@ -462,9 +470,11 @@ export function createDelegationStatusTool(
     args: {
       delegationId: s.string().optional().describe("Specific delegation ID to check"),
       status: s.string().optional().describe("Filter by status: dispatched, running, completed, error, timeout"),
-      action: s.string().optional().describe("status, list, control, or find-stackable"),
+      action: s.string().optional().describe("status, list, control, find-stackable, pool, peek, or progress"),
       control: s.object({}).optional().describe("Control action payload"),
       agentFilter: s.string().optional().describe("Filter stackable sessions by agent name (for find-stackable action)"),
+      paneId: s.string().optional().describe("(peek) target tmux pane id"),
+      maxBytes: s.number().optional().describe("(peek) cap the returned content length"),
     },
     async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
       // Clear per-invocation cache at start to prevent stale data across rapid tool calls
@@ -481,6 +491,12 @@ export function createDelegationStatusTool(
         if (args.action === "find-stackable") return await handleFindStackable(args, context.sessionID, delegationManager, readPersisted, deps)
         if (args.action === "list") return renderList(args, context.sessionID, delegationManager, readPersisted, deps)
         if (args.action === "control") return await handleControl(args, context.sessionID, delegationManager, readPersisted, deps)
+        // P58.8 S1 (REQ-58-07): "peek" action returns the most recent
+        // capture-pane content for a pane id (or a delegation's pane).
+        if (args.action === "peek") return handlePeek(args, deps)
+        // P58.8 S4 (REQ-58-10): "progress" action returns live counters
+        // and the latest event from the in-memory child event bus.
+        if (args.action === "progress") return handleProgress(args, context.sessionID, delegationManager, readPersisted, deps)
         // P58 (G2, REQ-58-02): "pool" action returns the frozen DelegationPool
         // JSON snapshot. The ManagerLike interface declares `getPoolSnapshot`
         // as optional so older managers (without G2) skip this branch gracefully.
@@ -790,3 +806,86 @@ async function handleFindStackable(
 
 export { DelegationStatusInputSchema }
 export { UNSUPPORTED_REPLACEMENT_MESSAGE }
+
+// ---------------------------------------------------------------------------
+// P58.8 (S1, REQ-58-07) peek action handler
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the latest capture-pane record for either an explicit `paneId`
+ * or a `delegationId`-derived pane. Returns a `renderToolResult` envelope
+ * with `{ paneId, content, capturedAt, byteLength }`. The `maxBytes`
+ * optional cap truncates the content from the END (most-recent).
+ */
+function handlePeek(args: DelegationStatusInput, deps: StatusDeps): string {
+  const paneId = args.paneId
+  if (!paneId && !args.delegationId) {
+    return renderToolResult(error("[Harness] peek action requires either paneId or delegationId"))
+  }
+  if (typeof deps.getPaneContent !== "function") {
+    return renderToolResult(error("[Harness] peek action requires getPaneContent() wiring on the deps"))
+  }
+  // When delegationId is supplied but paneId is not, we resolve paneId from
+  // the delegation record. The peek action is a small surface; we do not
+  // thread delegationId → paneId through the manager API yet — when paneId
+  // is absent, callers should pass it explicitly. We still validate that
+  // paneId is present.
+  if (!paneId) {
+    return renderToolResult(error("[Harness] peek action: delegationId→paneId resolution not yet wired; pass paneId explicitly"))
+  }
+  const capture = deps.getPaneContent(paneId)
+  if (!capture) {
+    return renderToolResult(error(`[Harness] No capture recorded for pane "${paneId}"; polling may not have run yet`))
+  }
+  const content = args.maxBytes && capture.content.length > args.maxBytes
+    ? capture.content.slice(-args.maxBytes)
+    : capture.content
+  return renderToolResult(success(`Captured pane ${paneId} content (${content.length} chars)`, {
+    paneId,
+    content,
+    capturedAt: capture.capturedAt,
+    byteLength: Buffer.byteLength(content, "utf8"),
+  }))
+}
+
+// ---------------------------------------------------------------------------
+// P58.8 (S4, REQ-58-10) progress action handler
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns live counters and the latest event from the in-memory bus.
+ * Counters come from the delegation record (or the manager's projection
+ * if v2 is wired); `lastEvent` comes from `deps.getLastChildEvent(childSessionId)`.
+ */
+function handleProgress(
+  args: DelegationStatusInput,
+  callerSessionId: string,
+  manager: ManagerLike,
+  readPersisted: () => Delegation[],
+  deps: StatusDeps,
+): string {
+  if (!args.delegationId) {
+    return renderToolResult(error("[Harness] progress action requires delegationId"))
+  }
+  const delegation = (manager.getStatus(args.delegationId)
+    ?? manager.getAllDelegations().find((d) => d.childSessionId === args.delegationId)
+    ?? readPersisted().find((d) => d.id === args.delegationId || d.childSessionId === args.delegationId))
+  if (!delegation) {
+    return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
+  }
+  const lastEvent = typeof deps.getLastChildEvent === "function"
+    ? deps.getLastChildEvent(delegation.childSessionId)
+    : null
+  return renderToolResult(success(
+    `Progress for delegation ${delegation.id}`,
+    {
+      delegationId: delegation.id,
+      actionCount: delegation.actionCount ?? 0,
+      messageCount: delegation.messageCount ?? 0,
+      toolCallCount: delegation.toolCallCount ?? 0,
+      lastEvent: lastEvent ?? null,
+      capturedAt: Date.now(),
+      callerSessionId,
+    },
+  ))
+}
