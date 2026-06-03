@@ -46,6 +46,40 @@ function appendDelegationEvent(event: SessionTrackerEvent): void {
   delegationEventLog.push(event)
 }
 
+/**
+ * P58 PLAN-07 (Gap 4 fix): Module-level re-export of the
+ * `recordDelegationTerminal` class method so BATS tests and any other
+ * module-level consumer can emit a delegation-terminal event WITHOUT
+ * instantiating `ToolDelegation` (which requires a full plugin context
+ * with sessionApi, hierarchyIndex, manifestWriter, etc.).
+ *
+ * The function appends to the same module-level `delegationEventLog`
+ * (line 32) that the class method appends to, so consumers reading via
+ * `getDelegationEventLog()` observe both module-level and class-level
+ * emissions uniformly.
+ *
+ * @param delegationId - The delegation id reaching terminal state.
+ * @param status - The final status. Must be a DelegationLifecycleStatus.
+ * @param tmuxSessionId - Optional tmux session id; null when no tmux
+ *   pane was attached to the delegation.
+ */
+export function recordDelegationTerminal(
+  delegationId: string,
+  status: DelegationLifecycleStatus,
+  tmuxSessionId: string | null = null,
+): void {
+  appendDelegationEvent({
+    type: "delegation-terminal",
+    delegationId,
+    agent: "unknown",  // terminal events may fire after the record is pruned; agent is optional
+    status,
+    depth: 0,  // depth is not available at terminal time without record lookup
+    parentId: null,
+    tmuxSessionId,
+    emittedAt: Date.now(),
+  })
+}
+
 /** Dependencies injected by SessionTracker for tool delegation operations. */
 export interface ToolDelegationDeps {
   client: OpenCodeClient
