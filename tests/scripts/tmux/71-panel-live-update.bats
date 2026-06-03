@@ -57,23 +57,46 @@ teardown() {
   # discriminated union" / Zod parse failure. The test must FAIL until
   # delegation-status Zod union is extended with `action: "peek"`.
   run tmux_node_eval "
+    const { execSync } = await import('node:child_process');
     const { createDelegationStatusTool } = await import('${TMUX_BATS_ROOT}/dist/tools/delegation/delegation-status.js');
-    const tool = createDelegationStatusTool({
-      getAllDelegations: () => [],
-      getStatus: () => undefined,
-      canSessionAccessDelegation: () => true,
-    });
+    // P58.8 S1 (REQ-58-07): createDelegationStatusTool(manager, deps) — split
+    // ManagerLike (getAllDelegations/getStatus/canSessionAccessDelegation) into
+    // arg #1 and StatusDeps (getPaneContent) into arg #2. Earlier drafts
+    // merged both into one object literal, causing getPaneContent to be
+    // silently dropped (treated as a ManagerLike field).
+    const tool = createDelegationStatusTool(
+      {
+        getAllDelegations: () => [],
+        getStatus: () => undefined,
+        canSessionAccessDelegation: () => true,
+      },
+      {
+        getPaneContent: (paneId) => {
+          const content = execSync('tmux capture-pane -p -t ' + JSON.stringify(paneId)).toString();
+          return { content, capturedAt: Date.now(), byteLength: Buffer.byteLength(content, 'utf8') };
+        },
+      },
+    );
     const result = await tool.execute(
       { action: 'peek', paneId: '${live_pane_id}' },
       { sessionID: 'ses-p58-71-$$' }
     );
-    process.stdout.write('result=' + result);
+    // Extract just data.content from the renderToolResult envelope so the
+    // bash assertion can match the probe verbatim (no JSON-escaping
+    // ambiguity). renderToolResult returns a JSON string of
+    // {kind, message, data:{paneId, content, ...}}.
+    const envelope = JSON.parse(result);
+    if (envelope.kind !== 'success' || !envelope.data || typeof envelope.data.content !== 'string') {
+      process.stdout.write('result=' + result);
+      process.exit(0);
+    }
+    process.stdout.write('content=' + envelope.data.content);
   "
   [ "$status" -eq 0 ]
   # RED: until peek action lands, output contains a Zod invalid-input error
   # and the probe is NOT in the content field. This assertion MUST fail in RED
-  # state (no "content" key) and pass once peek is implemented.
-  if [[ "$output" != *"\"content\":\"${probe}"* ]]; then
+  # state and pass once peek is implemented.
+  if [[ "$output" != *"content=${probe}"* ]]; then
     echo "RED-EXPECTED-FAIL: peek did not return capture-pane content; output:"
     echo "$output"
     return 1

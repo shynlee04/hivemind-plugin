@@ -26,6 +26,7 @@ import {
 import type { BehavioralOverrides } from "../../routing/behavioral-profile/types.js"
 import type { DelegationMonitor } from "./monitor.js"
 import type { NotificationRouter } from "./notification-router.js"
+import type { SessionManager } from "../../features/tmux/session-manager.js"
 
 type QueueContext = { provider?: string; model?: string; agent?: string }
 
@@ -35,6 +36,15 @@ interface DelegationManagerOptions {
   monitor?: Pick<DelegationMonitor, "start">
   notificationRouter?: Pick<NotificationRouter, "register">
   stateMachine?: DelegationStateMachine
+  /**
+   * P58.8 (S1, REQ-58-07): optional tmux SessionManager used to start the
+   * capture-pane polling loop after a child delegation is dispatched. When
+   * omitted (or when tmux is unavailable), polling is not started and the
+   * `peek` action will return "no capture recorded" until polling begins.
+   * Idempotent: the SessionManager's `startPolling` short-circuits if the
+   * timer is already running (see `src/features/tmux/session-manager.ts:329`).
+   */
+  sessionManager?: Pick<SessionManager, "startPolling">
 }
 
 const DEFAULT_MANAGER_RUNTIME_POLICY: RuntimePolicy = {
@@ -84,6 +94,7 @@ export class DelegationManager {
   private readonly runtimePolicy: RuntimePolicy
   private readonly monitor: Pick<DelegationMonitor, "start"> | undefined
   private readonly notificationRouter: Pick<NotificationRouter, "register"> | undefined
+  private readonly sessionManager: Pick<SessionManager, "startPolling"> | undefined
   private completionDetector: CompletionDetector | undefined
 
   constructor(
@@ -93,6 +104,7 @@ export class DelegationManager {
     this.runtimePolicy = options.runtimePolicy ?? DEFAULT_MANAGER_RUNTIME_POLICY
     this.monitor = options.monitor
     this.notificationRouter = options.notificationRouter
+    this.sessionManager = options.sessionManager
     // Late-binding closure for clearExternalTimers — handlers are created
     // after the DSM but the closure captures `this` which is already allocated.
     this.state = options.stateMachine ?? new DelegationStateMachine({
@@ -244,6 +256,12 @@ export class DelegationManager {
         await sendPromptAsync(this.client, delegation.childSessionId, promptBody)
         this.state.transition(delegation.id, "running")
         this.monitor?.start(delegation.id, params.parentSessionId)
+        // P58.8 (S1, REQ-58-07): start the capture-pane polling loop now that
+        // the child session is running. SessionManager's `startPolling` is
+        // idempotent (returns immediately if the timer is already active) and
+        // iterates `this.sessions` populated by the SDK `session.created`
+        // event — no paneId argument is needed here.
+        this.sessionManager?.startPolling()
       } catch {
         this.state.transitionToTerminal(delegation.id, "error", "Failed to send prompt to child session")
         return buildDelegationResult(this.state.get(delegation.id) ?? delegation)
