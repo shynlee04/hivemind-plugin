@@ -3,6 +3,10 @@ import { z } from "zod"
 
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
+// POLICY (P58, G1): This tool MUST route via coordinator.dispatch only.
+//   Do NOT import the native `task` tool from "@opencode-ai/plugin" —
+//   bypassing coordinator.dispatch skips the Hivemind delegation
+//   lifecycle, session-tracker events, and tmux pane projection.
 export const DelegateTaskV2Schema = z.object({
   agent: z.string().min(1, { error: "agent is required" }),
   prompt: z.string().min(1, { error: "prompt is required" }),

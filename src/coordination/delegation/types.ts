@@ -72,6 +72,13 @@ export interface Delegation {
   evidenceLevel?: DelegationEvidenceLevel
   finalMessageExcerpt?: string
   v2?: boolean
+  /**
+   * Optional tmux session ID attached when this delegation has a tmux pane
+   * projection. Default: null (no tmux attachment).
+   * Set by SessionManager.onSessionCreated.
+   * @phase 58 (G3, REQ-58-03)
+   */
+  tmuxSessionId?: string | null
 }
 
 export interface DelegationResult {
