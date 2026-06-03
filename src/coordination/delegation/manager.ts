@@ -74,8 +74,21 @@ export type DelegationControlRequest = {
  */
 export class DelegationManager {
   private readonly runtime?: RuntimeDelegationManager
+  /**
+   * P58 PLAN-07 (Gap 2 fix): Optional test-only override map. When set by
+   * `createForTest()`, the `__getDelegationsForTesting` getter returns this
+   * map instead of falling back to a new empty Map. The same map is also
+   * the source of truth for the injected noop `lifecycle.list()` so that
+   * `getPoolSnapshot()` observes entries added via the test seam.
+   */
+  private readonly __testPoolMap?: Map<string, Delegation>
 
-  constructor(client?: OpenCodeClient, private readonly options: DelegationManagerOptions = {}) {
+  constructor(
+    client?: OpenCodeClient,
+    private readonly options: DelegationManagerOptions = {},
+    testPoolMap?: Map<string, Delegation>,
+  ) {
+    this.__testPoolMap = testPoolMap
     if (client) {
       this.runtime = new RuntimeDelegationManager(client, {
         monitor: options.monitor,
@@ -87,6 +100,53 @@ export class DelegationManager {
     } else if (!options.coordinator || !options.lifecycle) {
       throw new Error("[Harness] DelegationManager requires a client when v2 modules are not injected.")
     }
+  }
+
+  /**
+   * P58 PLAN-07 (Gap 2 fix): Static factory that constructs a no-arg
+   * `DelegationManager` suitable for BATS / unit tests. Returns a manager
+   * whose `runtime` is undefined (no SDK client) and whose `options` carry
+   * a noop `coordinator` and a noop `lifecycle` that share a single
+   * in-memory map (the `__testPoolMap`).
+   *
+   * The resulting instance supports:
+   *   - `getPoolSnapshot()` — returns a frozen pool reflecting the entries
+   *     added to the test map via `__getDelegationsForTesting`
+   *   - `__getDelegationsForTesting` — returns the writable test map so
+   *     BATS tests can populate it via `Map.set()`
+   *   - `__getDelegationsForTesting` mutations are observed by
+   *     `getPoolSnapshot()` because both read from the same `__testPoolMap`
+   *
+   * BATS tests should:
+   *   1. Call `const instance = DelegationManager.createForTest()`
+   *   2. Populate `instance.__getDelegationsForTesting` via `Map.set()`
+   *   3. Call `instance.getPoolSnapshot()` to assert the frozen contract
+   *
+   * NOT for production code — only for BATS slots 62 and similar in-memory
+   * tests. Real wiring still requires `new DelegationManager(client)`.
+   */
+  static createForTest(): DelegationManager {
+    // Shared map: exposed via __getDelegationsForTesting AND read by the
+    // noop lifecycle.list() so getPoolSnapshot() observes the same entries.
+    const testMap = new Map<string, Delegation>()
+    const noopLifecycle: FacadeLifecycle = {
+      getChildSessionId: () => undefined,
+      getStatus: () => undefined,
+      list: () => Array.from(testMap.values()),
+      markAborted: () => ({ delegationId: "", error: "noop", status: "error" as const }),
+      markCancelled: () => ({ delegationId: "", error: "noop", status: "error" as const }),
+    }
+    const noopCoordinator = {
+      chain: () => ({ delegationId: "", error: "noop", status: "error" as const }),
+      dispatch: () => ({ delegationId: "", error: "noop", status: "error" as const }),
+    } as unknown as DelegationManagerOptions["coordinator"]
+    // The 3rd constructor arg `testPoolMap` is test-only and bypasses the
+    // readonly field at construction time. The noop `coordinator` + `lifecycle`
+    // short-circuit the constructor guard at line 87 (`!coordinator || !lifecycle`).
+    return new DelegationManager(undefined, {
+      coordinator: noopCoordinator,
+      lifecycle: noopLifecycle,
+    }, testMap)
   }
 
   /** Wires the lifecycle-owned completion detector into the legacy runtime adapter. */
@@ -482,6 +542,7 @@ export class DelegationManager {
    * NOT cast away the readonly modifier to mutate state.
    */
   get __getDelegationsForTesting(): ReadonlyMap<string, Delegation> {
+    if (this.__testPoolMap) return this.__testPoolMap
     return this.runtime?.delegations ?? new Map<string, Delegation>()
   }
   get delegationsBySession(): Map<string, string> { return this.requireRuntime().delegationsBySession }

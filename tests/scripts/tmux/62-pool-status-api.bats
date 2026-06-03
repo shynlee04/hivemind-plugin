@@ -27,7 +27,12 @@ teardown() {
     const { freezeDelegationPool, sanitizePreview } = await import('${TMUX_BATS_ROOT}/dist/coordination/delegation/pool-types.js');
     // Construct a minimal DelegationManager via the v2 coordinator seam
     const Manager = mgr.DelegationManager;
-    const instance = new Manager();
+    // P58 PLAN-07 (Gap 2 fix): Use createForTest() factory so we don't need
+    // a real OpenCodeClient or v2 coordinator/lifecycle wiring. The factory
+    // wires a shared in-memory map between __getDelegationsForTesting and
+    // the noop lifecycle.list(), so mutations via the test seam are observed
+    // by getPoolSnapshot().
+    const instance = Manager.createForTest();
     const map = instance.__getDelegationsForTesting;
     map.set('dt-1', { id: 'dt-1', agent: 'hm-l2-researcher', parentSessionId: 'root', childSessionId: 'ses_1', nestingDepth: 1, createdAt: Date.now(), status: 'running', prompt: 'Investigate the auth flow in module X.' });
     map.set('dt-2', { id: 'dt-2', agent: 'hm-l2-coder', parentSessionId: 'root', childSessionId: 'ses_2', nestingDepth: 1, createdAt: Date.now(), status: 'completed', prompt: 'Fix the bug with newline' });
