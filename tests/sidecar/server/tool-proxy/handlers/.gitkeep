@@ -1,0 +1,5 @@
+# Placeholder so the directory is tracked by git.
+# SC-02 W2: 7 tool handler test scaffolds
+# (delegate-task, delegation-status, execute-slash-command,
+#  hivemind-trajectory, hivemind-session-view, session-patch,
+#  hivemind-command-engine).

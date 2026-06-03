@@ -1,49 +1,14 @@
 ---
 sessionID: ses_17743befcffewaXqGZ8tDIoCCn
 created: 2026-06-02T14:28:19.384Z
-updated: 2026-06-02T15:38:03.328Z
+updated: 2026-06-03T01:03:35.297Z
 parentSessionID: null
 delegationDepth: 0
-children:
-  - sessionID: ses_176eff659ffe3uWnKxkcxYEpTy
-    childFile: ses_176eff659ffe3uWnKxkcxYEpTy.json
-  - sessionID: ses_176e73ac2ffe697LNSFimtPvkx
-    childFile: ses_176e73ac2ffe697LNSFimtPvkx.json
-  - sessionID: ses_176df5e63ffe5CEPMuwpYG2ihz
-    childFile: ses_176df5e63ffe5CEPMuwpYG2ihz.json
-  - sessionID: ses_176d78648ffeP7wkk2kstwd0BF
-    childFile: ses_176d78648ffeP7wkk2kstwd0BF.json
+children: []
 continuityIndex: session-continuity.json
-status: completed
+status: active
 title: New session - 2026-06-02T14:28:19.332Z
-lastMessage: |-
-  Cần 3 answers Round 2 để agent viết SPEC. Nếu bạn OK với tất cả defaults, chỉ cần reply `yes all` (một từ).
-
-  ### Q1: URL grammar + dual-channel error pattern
-
-  - Write: `POST /api/tools/{toolName}` (kebab-case)
-  - Read: `GET /api/state/sessions/{sid}/{delegations|trajectory|pressure}`
-  - Catalog: `GET /api/catalog/tools` (12 tool list) tách riêng `GET /api/catalog` (json-render spec)
-  - Error: HTTP 4xx/5xx = transport; HTTP 200 + `ToolResponse.error.code` = application (discriminator: `VALIDATION_*`, `FORBIDDEN_PATH`, `TOOL_ERROR_*`, `DELEGATION_*`, `INTERNAL_*`)
-
-  `yes` = accept | khác → nói rõ chỗ đổi
-
-  ### Q2: SSE event filtering
-
-  - `GET /api/events?filter=session,delegation,trajectory,pressure,invalidate,heartbeat` (allowlist, mặc định all)
-  - 50 connections = per-process global
-
-  `yes` = accept | khác → nói rõ
-
-  ### Q3: Catalog refresh model
-
-  - Option A: tạo 1 lần lúc startup, immutable, in-memory
-
-  `yes` = accept Option A | `B` = file-watcher hot-reload | `C` = TTL + `?fresh=true`
-
-  ---
-
-  **Reply nhanh:** `yes all` để accept tất cả defaults, hoặc ghi rõ từng câu nếu muốn chỉnh.
+lastMessage: Research phase complete. Continuing loop with plan-phase dispatch.
 ---
 
 ## USER (turn 1)
@@ -11673,3 +11638,2214 @@ Agent auto-mode'd through 0 questions, locked 12 decisions (best-in-class defaul
 CONTEXT.md verified — 12 decisions locked, dual-channel errors, cache invalidation, WS backpressure, catalog versioning all in place. **Governance note:** SC-02 surface is pure HTTP/SSE/WS, no PTY/terminal projection — independent of CP-PTY runway. Continuing loop.
 
 Dispatching research-phase:
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "SC-02 research-phase — validate stack + patterns",
+  "subagent_type": "gsd-phase-researcher",
+  "task_id": "ses_176d78648ffeP7wkk2kstwd0BF"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_176d78648ffeP7wkk2kstwd0BF
+```
+
+
+## ASSISTANT (turn 26)
+
+## Goal
+- Design and implement Hivemind Sidecar — a Next.js 16 + @json-render/react bidirectional control plane bridging browser, Hivemind plugin, and native OpenCode.
+
+## Constraints & Preferences
+- Use gsd commands via execute-slash-command for phase loop, not hm-* (project uses GSD as development tooling)
+- Phase loop: SPEC → DISCUSS → RESEARCH → PATTERNS → PLAN → CHECK → EXECUTE → VERIFY → SHIP, one phase at a time
+- Atomic commits required for both documents and code at each checkpoint
+- Sidecar is bidirectional: browser ↔ plugin HTTP server ↔ OpenCode via REST + SSE + WebSocket
+- json-render v0.19.0 with 36 shadcn components + 8 custom for the UI catalog
+- Two-server model: plugin-embedded HTTP/WS server + Next.js 16 standalone app
+- ~85 integration surfaces across delegation (27 tools), tmux (7), session-tracker (25+), trajectory (5), pressure (6), config (8)
+- **User "automate the loop"**: apply best-in-class defaults, no Socratic ping-pong, minimize back-and-forth
+- Use task tool with gsd-phase-researcher (NOT gsd-eval-auditor) when execute-slash-command returns wrong agent intent
+- L0 reports at phase boundaries only, not per-checkpoint
+
+## Progress
+### Done
+- Landscape formed: `.hivemind/planning/sidecar-vision/landscape.md`
+- 5 research+architecture artifacts: json-render API, Next.js patterns, ecosystem refs, codebase audit (85 surfaces), full architecture (1,113 LOC)
+- ROADMAP.md + STATE.md updated with SC-01..SC-06 phase table
+- **SC-01 Sidecar Foundation fully complete** — 7 commits, 3 waves, 59 tests pass, typecheck clean
+  - `src/sidecar/types.ts`, `readonly-state-extensions.ts`, `server/registry.ts`, `server/sse/pool.ts`, `server/factory.ts`, `src/plugin.ts` step 5.5 wiring
+  - SC-01 UAT: 8/8 PASS, `/gsd-secure-phase SC-01` PASS (7/7 threats: 6 mitigated, 1 accepted T-SC01-02), SECURITY.md at `0bdf1e04`
+- **SC-02 SPEC complete** — commit `9e5d386c`, file `.planning/phases/SC-02-rest-api-tool-proxy/02-SPEC.md` (24KB, 24074 bytes)
+  - Composite ambiguity 0.1875 (under 0.20 gate)
+  - Socratic R1 (3Q answered): Q1=A delegation-only WS, Q2=12 tools per §6.4, Q3=no auth/rate-limit (deferred to OpenCode)
+  - Socratic R2 (3Q auto-applied): URL grammar + dual-channel error, allowlist SSE filter + per-process 50 cap, Option A immutable catalog
+- **SC-02 DISCUSS complete** — commit `d66c1055`, file `.planning/phases/SC-02-rest-api-tool-proxy/02-CONTEXT.md` (306 lines, 12 decisions locked: 6 from SPEC Open Items + 6 emergent, auto-mode 0 questions)
+  - 17 endpoint surface: 6 read state (snapshot, sessions, sessions/{id}/children|context|delegations|docs), 7 write tool proxy, 1 SSE `/api/events`, 1 WS `/ws/delegation`, 2 catalog (`/api/catalog`, `/api/catalog/tools`)
+
+### In Progress
+- Awaiting dispatch of `/gsd-research-phase SC-02` (likely fast — SC-01 research covers most)
+
+### Blocked
+- (none)
+
+## Key Decisions
+- Two-server model: plugin HTTP/WS server (raw Node http) ↔ Next.js 16 standalone app, communicated via localhost REST+SSE+WS
+- Single unified json-render catalog (44 components: 36 shadcn + 8 custom), not per-panel catalogs
+- SSE for event push (90% use cases), WebSocket reserved for delegation streaming only
+- Lazy dependency binding via SidecarDependencyRegistry — server starts early (step 5.5) before delegation modules exist
+- Sidecar server start is fire-and-forget, non-blocking to plugin init
+- SC-01 accepted risk T-SC01-02: `.opencode/` exposure via CANONICAL_PREFIXES — localhost-only, no secrets
+- **SC-02 BOUNDED sidecar**: strictly aligned to OpenCode's client-server architecture, uses OpenCode SDK + server API, NO auth/rate-limit (deferred to native OpenCode runtime)
+- **SC-02 dual-channel error pattern**: HTTP 4xx/5xx = transport; HTTP 200 + `ToolResponse.error.code` = application (discriminator prefixes: `VALIDATION_*`, `FORBIDDEN_PATH`, `TOOL_ERROR_*`, `DELEGATION_*`, `INTERNAL_*`)
+- **SC-02 catalog**: Option A immutable, generated once at server startup, in-memory constant; no TTL/file-watcher/hot-reload
+- **SC-02 SSE filter**: allowlist comma-separated `?filter=session,delegation,trajectory,pressure,invalidate,heartbeat`, default=all, per-process 50-conn global cap
+- **SC-02 WS scope**: delegation-only (subscribe/unsubscribe/abort + delegation.output/status/notification); SSE is sole source for session/trajectory/pressure
+- L0 must NOT do inline scout/spec work; always delegate to gsd-* subagent (gsd-phase-researcher is the generic phase worker)
+
+## Next Steps
+1. Dispatch `/gsd-research-phase SC-02` — likely thin, reuse SC-01 research where possible
+2. Dispatch `/gsd-plan-phase SC-02` — write PLAN.md + plan-N.md files (with plan-checker loop)
+3. Dispatch `/gsd-execute-phase SC-02` — wave-based atomic commits, 3-7 expected
+4. Dispatch `/gsd-verify-work SC-02` — UAT, goal-backward verification
+5. Dispatch `/gsd-secure-phase SC-02` — STRIDE threat verification
+6. Continue through SC-03 (Next.js app), SC-04 (Session Explorer), SC-05 (Delegation Dashboard), SC-06 (MEMS + Control Panel)
+
+## Critical Context
+- Tmux workflow (P50-P55) runs in parallel — trajectory and agent-contract must isolate sidecar work from tmux
+- json-render v0.19.0 upgrade: no breaking changes from 0.18.x, purely additive (defineDirective API, @json-render/directives)
+- `gsd-research-phase` command does not exist — research falls into gsd-plan-phase internally (or reuse SC-01 research)
+- execute-slash-command's intent detection can return wrong agent (suggested gsd-eval-auditor for spec-phase); override with task tool + subagent_type=gsd-phase-researcher
+- SC-02 architecture surface (from ARCHITECTURE.md §4-6):
+  - REST state (§4.1): 4 endpoints with 5s/2s TTL cache, ETag-based
+  - REST tool proxy (§4.2): 7 endpoints with `ToolResponse<T>` envelope `{ok, data, error, meta:{duration, tool}}`
+  - SSE (§4.3): `GET /api/events` — 11 event types, 30s heartbeat, max 50 connections
+  - WebSocket (§4.4): `WS /ws/delegation` — subscribe/unsubscribe/abort + delegation.output/status/notification
+  - Catalog (§4.5): `GET /api/catalog` — pre-generated json-render spec (for SC-03 to consume)
+  - Tool proxy selection (§6.4): 12 exposed / 15 not exposed with rationale table
+  - Path safety (§6.3): `isSidecarSessionFilePath()` gates `session-patch` to only `**/session-context-prompt.md` + `.hivemind/**` (no canonical state writes per SIDECAR-03)
+- Stacking protocol: same task_id `ses_176d78648ffeP7wkk2kstwd0BF` reused across SC-02 spec + discuss phases (preserve context); can stack on completed sessions
+- Stale task_id: agent in last discuss return asked for clarification — was correct behavior, just L0 verifies artifacts + dispatches next
+- Phase dir: `.planning/phases/SC-02-rest-api-tool-proxy/`
+
+## Relevant Files
+- `.hivemind/planning/sidecar-vision/`: Full sidecar landscape (landscape.md), architecture (ARCHITECTURE.md), research, codebase audit (85 surfaces)
+- `.planning/phases/SC-01-sidecar-foundation/`: Phase documents (SPEC, CONTEXT, PLANs, UAT, SUMMARY, SECURITY)
+- `.planning/phases/SC-02-rest-api-tool-proxy/02-SPEC.md`: SC-02 SPEC, committed `9e5d386c`, 24KB — defines 17 endpoints
+- `.planning/phases/SC-02-rest-api-tool-proxy/02-CONTEXT.md`: SC-02 CONTEXT, committed `d66c1055`, 306 lines, 12 decisions locked
+- `src/sidecar/`: Sidecar source code (types.ts, readonly-state-extensions.ts, server/registry.ts, server/sse/pool.ts, server/factory.ts, readonly-state.ts)
+- `src/plugin.ts`: Step 5.5 sidecar server startup wiring
+- `.planning/ROADMAP.md`: SC-01..SC-06 phase table (line ~149)
+- `.planning/STATE.md`: Sidecar state section
+- `.opencode/get-shit-done/workflows/spec-phase.md`: Socratic spec workflow reference
+- `.opencode/get-shit-done/templates/spec.md`: SPEC.md template reference
+
+## COMPACTED (2026-06-02T17:28:05.545Z)
+
+**compact_summary (from children):**
+
+**ses_1774086acffe6D5Hl6owaiJ7ou:** ## Research Complete
+
+**File:** `.hivemind/planning/sidecar-vision/RESEARCH-json-render.md`
+
+---
+
+### Key Findings Summary
+
+**Upgrade is safe — no breaking changes.** v0.19.0 is purely additive.
+
+| Research Question | Answer |
+|---|---|
+| API differences 0.18→0.19? | **None.** All APIs (`defineCatalog`, `defineRegistry`, `Renderer`, `JSONUIProvider`, `useUIStream`) unchanged |
+| `catalog.prompt({ mode })`? | Stable. Use `"standalone"` / `"inline"` — `"generate"` / `"chat"` are deprecated aliases |
+| `@json-render/shadcn` stable? | **Yes.** 36 pre-built components, stable since v0.12. Suitable for dashboard |
+| Zod peer dep requirement? | `zod@^4.0.0` — project's `^4.4.3` is fully compatible |
+| `validateSpec` / `autoFixSpec` / `formatSpecIssues`? | **All exist** in `@json-render/core` exports — unchanged |
+| `catalog.toCode()`? | **Does not exist.** No code export API in any version |
+| SpecStream / JSON Patch streaming? | **Fully supported.** All streaming APIs confirmed: `compileSpecStream`, `applySpecStreamPatch`, `pipeJsonRender`, etc. |
+| Breaking changes? | **Zero between 0.18→0.19.** Last BCs were v0.6.0 (already absorbed) |
+
+### What's new in 0.19.0
+- `defineDirective` API — custom computed directives
+- `@json-render/directives` package — 7 ready-made directives (`$format`, `$math`, `$concat`, etc.)
+
+### Upgrade actions needed
+```
+npm install @json-render/core@^0.19.0 @json-render/react@^0.19.0 @json-render/next@^0.19.0 @json-render/shadcn@^0.19.0
+```
+---
+**ses_1773d2d01ffeWqP0birHn4Y6WE:** **File written:** `.hivemind/planning/sidecar-vision/RESEARCH-nextjs.md` (615 lines)
+
+### Key Architectural Recommendations
+
+| # | Decision | What & Why |
+|---|----------|------------|
+| 1 | **`output: "standalone"`** | Standard Next.js app, not a plugin child process. Full RSC/API/SSE support. Production server via `node server.js`. |
+| 2 | **`fs.readFileSync` in RSC** | Server Components read `.hivemind/state/*.json` directly with `process.cwd()` + `node:fs`. Official Next.js pattern (blog-starter example). No database needed. |
+| 3 | **SSE via `ReadableStream`** | App Router Route Handler with Web Streams API. Plugin hooks `POST` to `/api/events`, SSE broadcasts to browser `EventSource` clients. |
+| 4 | **`next/dynamic({ ssr: false })`** for json-render `Renderer` | Prevents hydration mismatch. Each panel becomes a separate JS chunk (~50-70 KB) loaded in parallel. |
+| 5 | **CSS Grid layout, not parallel routes** | Simpler than parallel route groups since all panels share the same data source. Each panel lazy-loaded with `dynamic()`. |
+| 6 | **`HIVEMIND_DIR` env var** | Path resolution flexible — sidecar can live in `tools/sidecar/` or as a sibling. |
+| 7 | **`output: "export"` rejected** | SSE + dynamic API routes require a running server. Static export fundamentally incompatible. |
+| 8 | **No `fs.watch` for cache invalidation** | SSE events are the live channel; filesystem is just persistence. Plugin hooks push deltas. |
+---
+**ses_17739d246ffezWeLl2tgQMb59X:** **Research complete.** File written to `.hivemind/planning/sidecar-vision/RESEARCH-ecosystem.md` (23KB, 7 major sections).
+
+## 3 Most Valuable References Found
+
+### 1. **OpenChamber** (`openchamber/openchamber`)
+Full GUI for OpenCode with 3.1k+ stars, 1,464 commits. Proves the "GUI on top of OpenCode server API" pattern at scale. Ships web/PWA, Tauri desktop, and VS Code extension from the same codebase. Key takeaway: the sidecar should **never modify OpenCode** — OpenChamber doesn't, and it works.
+
+### 2. **opencode-pty Plugin** (`shekohex/opencode-pty`)
+The only OpenCode plugin that ships its own browser web UI. Provides the canonical **plugin-embedded HTTP server** pattern: plugin starts a local port, React browser UI connects via REST API. REST endpoints for session CRUD (`GET/POST/DELETE /api/sessions`), terminal buffer retrieval, and health checks. This is the exact pattern the sidecar should follow.
+
+### 3. **json-render/shadcn** (`vercel-labs/json-render`)
+36 pre-built shadcn/ui components in a 3-layer architecture (Schema → Catalog → Registry). Built-in state management (`setState`, `pushState`, `removeState`) via `@json-render/zustand` / `@json-render/jotai`. The sidecar should **not build custom UI primitives** — use all 36 components from `@json-render/shadcn` and extend with 5-10 custom components (`SessionCard`, `DelegationTree`, `PressureGauge`, etc.).
+
+### Key Recommendation
+**Hybrid REST + WebSocket** communication model: REST for control/CRUD, WebSocket for streaming delegation output. Start Phase 1 with REST-only (read-only dashboard), add WebSocket in Phase 3. Localhost-only binding with optional password auth for network access.
+---
+**ses_17739d25fffeN0oxD2o0OeOJsn:** ## Mapping Complete
+
+**Focus:** Sidecar codebase surfaces audit
+
+**Document written:**
+- `.hivemind/planning/sidecar-vision/AUDIT-codebase-surfaces.md` (523 lines)
+
+**Surface count:** ~85 unique integration surfaces identified across 9 categories:
+
+| Category | Count |
+|----------|-------|
+| State files on disk | 5 |
+| Registered plugin tools | 27 |
+| Plugin hooks | 5 |
+| Delegation module files | 21 |
+| Tmux integration files | 7 |
+| Session-tracker source files | 25+ |
+| Trajectory files | 5 |
+| Pressure files | 6 |
+| Config files | 8 |
+| Public API exports | 30 modules |
+
+**Key findings:**
+- 10 critical gaps identified (CANONICAL_PREFIXES missing `.hivemind/session-tracker/`, no HTTP/SSE server, types not exported, tmux-state-query returns placeholder data, no sidecar UI components)
+- Event hook observer pipeline is the ideal SSE injection point
+- SIDECAR-03 guard must be extended to cover session-tracker paths
+---
+**ses_17736aabeffeyMrj37UJuNCHtg:** **File written:** `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` (1,113 lines)
+
+---
+
+## 5 Key Architectural Decisions Made
+
+### 1. Two-Server Model (Plugin HTTP + Next.js Standalone)
+Two separate servers communicating over localhost HTTP. The **plugin-embedded HTTP/WS server** owns all data access; the **Next.js 16 standalone app** owns all UI rendering. This avoids React/Next.js dependency bloat in the plugin, prevents version conflicts with the host OpenCode runtime, and lets the sidecar be developed and deployed independently. Port discovery via `.hivemind/state/sidecar-port.json` sentinel file.
+
+### 2. Single Unified json-render Catalog (Not Per-Panel)
+One catalog defining all **44 components** (36 shadcn/ui + 8 custom). Enables cross-panel component references (clicking a session in Explorer opens detail in Delegation Dashboard), simplifies AI spec generation, and eliminates lazy-loading complexity. Panel filtering happens at render time via a `panel` prop on the container, not at catalog definition time.
+
+### 3. Lazy Dependency Binding via Registry
+The sidecar server starts with an empty `SidecarDependencyRegistry`. Plugin modules register themselves *after* construction (e.g., `sidecarRegistry.setDelegationManager(delMods.delegationManager)`). This is necessary because the server must start early (step 5.5 in the init sequence) before delegation modules (step 7) and session tracker (step 6) exist. Prevents circular init dependencies. Unregistered endpoints return `503`.
+
+### 4. SSE for Push Events, WebSocket Only for Delegation Streaming
+SSE handles 90% of use cases — session events, state invalidation, delegation status updates. It's simpler than WebSocket (unidirectional, built-in reconnection via `EventSource` with `last-event-id`). WebSocket is reserved exclusively for the `/ws/delegation` endpoint where bidirectional streaming is needed (abort commands during live delegation output). Two protocols instead of one, but each is simpler than a WS-only s
+---
+**ses_177310218ffefT2Bmy3y3De7m1:** <task id="ses_177310218ffefT2Bmy3y3De7m1" state="completed">
+<task_result>
+ 
+</task_result>
+</task>
+---
+**ses_1772c1e74ffeChL4vae9Tkkkm3:** ## SPEC.md written — 7 requirements locked.
+
+**Phase SC-01:** Sidecar Foundation — Plugin HTTP Server + State Bridge
+**Ambiguity:** 0.14 (gate: ≤ 0.20) ✓ All dimensions met minimums
+
+### Key requirements:
+1. **Extended CANONICAL_PREFIXES** — add `.hivemind/session-tracker` and `.opencode` (4 total)
+2. **Directory listing** — `listCanonicalDirectory()` with `DirectoryEntry[]` output
+3. **Sidecar-specific types** — `SidecarEventType` union, `SidecarEvent` interface
+4. **SidecarDependencyRegistry** — 6 lazy setters, `[Harness]` errors before binding
+5. **Plugin HTTP server** — `createSidecarServer()` using raw `http.createServer`, random port, localhost-only
+6. **SseConnectionPool** — add/remove/broadcast, 30s heartbeat, 50 max connections
+7. **Plugin wiring + package bumps** — step 5.5 startup, json-render 0.18→0.19, `ws` optional dep
+
+**Next:** `/gsd-discuss-phase SC-01` — discuss-phase will detect SPEC.md and focus on implementation decisions (server factory shape, registry binding order, test plan).
+
+---
+
+## RESEARCH COMPLETE
+
+**Phase:** SC-01 - Sidecar Foundation
+**Confidence:** HIGH
+
+### Key Findings
+- Phase has detailed PLAN.md and ARCHITECTURE.md but no SPEC.md — now resolved
+- Current codebase has only `src/sidecar/readonly-state.ts` with 2 canonical prefixes
+- No server infrastructure, registry, SSE pool, or extended state functions exist
+- json-render packages at ^0.18.0 need bumping; `ws` needs addition to optional deps
+- 7 requirements locked across 4 domains (state bridge, server, registry, SSE, wiring)
+
+### File Created
+`.planning/phases/SC-01-sidecar-foundation/SC-01-SPEC.md`
+
+### Confidence Assessment
+| Area | Level | Reason |
+|------|-------|--------|
+| Standard Stack | HIGH | Raw Node http + ws — zero framework deps per architecture decision |
+| Architecture | HIGH | Two-server model fully documented in ARCHITECTURE.md (1,113 LOC) |
+| Pitfalls | MEDIUM | Startup ordering (step 5.5 constraint) is the main risk |
+
+### Open Questions
+None — phase scope 
+---
+**ses_1772bae34ffekKwxXkllz6kqc4:** Tôi sẽ thực thi spec-phase workflow cho phase **SC-01** với flag `--auto`. Hãy bắt đầu.
+
+---
+
+## Step 1: Initialize Phase Context
+---
+**ses_17729f6b3ffesz68RQ0A5Tnu7t:** Found the existing SC-01 phase directory with an existing SPEC.md and PLAN.md. Let me read them.
+---
+**ses_17727a3f0ffe7iL35uT71DMw01:** ```
+SPEC.md updated — 7 requirements locked.
+
+  Phase SC-01: Sidecar Foundation — Plugin HTTP Server + State Bridge
+  Ambiguity: 0.12 (gate: ≤ 0.20)
+  All 4 dimensions above minimum ✓
+
+  Dependencies: P39 (Integration Hardening) — verify P39 gates passed before SC-01 execution
+
+Next: /gsd-discuss-phase SC-01
+  discuss-phase will detect SPEC.md and focus on implementation decisions only.
+  (Server factory shape, registry binding order, SSE pool config, plugin.ts wiring strategy)
+```
+
+---
+
+**Research Summary:**
+
+| Step | Result |
+|------|--------|
+| Codebase scouted | ✅ `src/sidecar/` has 1 file (readonly-state.ts, 139 LOC). No server/, no types.ts, no plugin.ts wiring. `ws` not in package.json. `@json-render/*` at ^0.18.0. |
+| First ambiguity scored | 0.14 — all dimensions above minima → skip interview |
+| SPEC.md updated | ✅ Codebase evidence injected into Background; event types explicitly enumerated; ambiguity improved to 0.12 |
+| Commit | ✅ `c0391092` — `spec(phase-sc-01): update SPEC.md for Sidecar Foundation — 7 requirements with codebase-verified current state` |
+
+The existing SC-01-PLAN.md (created before this spec update) should be reviewed during discuss-phase for consistency with the updated SPEC.md requirement details.
+---
+**ses_177223683ffeV35hLVotl2ZqqI:** ```markdown
+## RESEARCH COMPLETE — DISCUSS
+
+**Phase:** SC-01 — Sidecar Foundation
+**Confidence:** HIGH — SPEC locked 7 requirements, architecture docs comprehensive
+
+### Key Findings
+- 7 SPEC requirements locked (cannot be re-opened)
+- 14 implementation decisions captured in CONTEXT.md across 7 categories
+- P39 dependency resolved — SC-01 proceeds independently
+- Existing codebase: `src/sidecar/readonly-state.ts` (139 LOC), `sidecar/` Next.js scaffold
+- Architecture doc: `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` (1113 LOC)
+
+### Files Created
+- `.planning/phases/SC-01-sidecar-foundation/SC-01-CONTEXT.md`
+- `.planning/phases/SC-01-sidecar-foundation/SC-01-DISCUSSION-LOG.md`
+
+### Ready for Planning
+Research complete — planner can now create PLAN.md files using CONTEXT.md + SPEC.md as inputs.
+
+**Next:** `/clear` then `/gsd-plan-phase SC-01 --auto`
+```
+---
+**ses_177191049ffex2SX6zz4IwPIoZ:** **Phase SC-01 planning complete.** 3 commits made:
+
+| Commit | Artifacts |
+|--------|-----------|
+| `6955ed0d` | SC-01-RESEARCH.md, SC-01-VALIDATION.md |
+| Planner revision | SC-01-PLAN.md (6 BLOCKER + 4 WARNING → all fixed) |
+| `566c1ed3` | SC-01-PLAN.md (final, verified clean) |
+
+The plan is ready for `/gsd-execute-phase SC-01`.
+---
+**ses_17714da5cffeRqX6lQb3ZGLqS3:** Good, all references loaded. Now let me execute Step 1 — Initialize.
+---
+**ses_177141682ffeKhK5QmOMlNvIE5:** All 3 PLAN.md files created. Here's the complete planning summary:
+
+---
+
+## PLANNING COMPLETE
+
+**Phase:** SC-01-sidecar-foundation
+**Plans:** 3 plans in 3 waves
+**Source items covered:** 7 REQs + 14 decisions + 2 research artifacts — **100% coverage** (verified via Multi-Source Coverage Audit)
+
+### Decision Coverage Self-Check
+
+| Decision | Plan | Status |
+|----------|------|--------|
+| D-SC01-01: async factory, {port, close} | 03 T1 | ✓ |
+| D-SC01-02: 127.0.0.1:0, port from listening event | 03 T1 | ✓ |
+| D-SC01-03: server start failure ≠ block init | 03 T2 | ✓ |
+| D-SC01-04: port file failure non-fatal | 03 T1 | ✓ |
+| D-SC01-05: GET /health → 200 JSON | 03 T1 | ✓ |
+| D-SC01-06: other routes → 501 | 03 T1 | ✓ |
+| D-SC01-07: SSE format, 30s heartbeat | 02 T2 | ✓ |
+| D-SC01-08: max 50 clients | 02 T2 | ✓ |
+| D-SC01-09: `import type` for registry | 02 T1 | ✓ |
+| D-SC01-10: typed setters | 02 T1 | ✓ |
+| D-SC01-11: independent of P39 | all | ✓ |
+| D-SC01-12: verify plugin.ts steps | 03 T2 | ✓ |
+| D-SC01-13: TDD approach | all | ✓ (`tdd="true"` + `<behavior>`) |
+| D-SC01-14: tests use port 0 | 03 T1 | ✓ |
+
+### Wave Structure
+
+| Wave | Plans | Files Modified |
+|------|-------|---------------|
+| **1** | **SC-01-01** — Types + Readonly-State Extensions | `src/sidecar/types.ts`, `src/sidecar/readonly-state-extensions.ts`, tests |
+| **2** | **SC-01-02** — DependencyRegistry + SseConnectionPool | `src/sidecar/server/registry.ts`, `src/sidecar/server/sse/pool.ts`, tests |
+| **3** | **SC-01-03** — Server Factory + Plugin Wiring + Package Bumps | `src/sidecar/server/factory.ts`, `src/plugin.ts`, `package.json`, tests |
+
+### Plans Created
+
+| Plan | Objective | Tasks | New Files | Total Tests |
+|------|-----------|-------|-----------|-------------|
+| **01** | Types + Readonly-State | 2 | `types.ts`, `readonly-state-extensions.ts` | 13+ |
+| **02** | Registry + SSE Pool | 2 | `server/registry.ts`, `server/sse/pool.ts` | 13+ |
+| **03** | Factory + Plugin Wiring + Bumps | 3 | `server/f
+---
+**ses_1770e6b02ffeixmZexS9i1am6B:** [Harness] Delegation safety ceiling reached after 1800000ms
+---
+**ses_1770c89dbffeBOzjSPW4ClcfAC:** ## PLAN COMPLETE
+
+**Plan:** SC-01-sidecar-foundation
+**Tasks:** 3/3 plans, 7/7 tasks
+**SUMMARY:** `.planning/phases/SC-01-sidecar-foundation/SC-01-SUMMARY.md`
+
+### Commits
+
+| Hash | Message |
+|------|---------|
+| `86ca11ce` | feat(sc-01): create sidecar type definitions |
+| `e612559e` | feat(sc-01): extend CANONICAL_PREFIXES to 4 entries + listCanonicalDirectory |
+| `4daca4f1` | feat(sc-01): create SidecarDependencyRegistry and SseConnectionPool |
+| `a76828d6` | feat(sc-01): create createSidecarServer() HTTP server factory |
+| `2f183051` | feat(sc-01): wire sidecar server into plugin init and bump deps |
+| `dd9f9466` | chore(sc-01): update lockfile after package bumps |
+| `30cf357f` | docs(sc-01): complete Sidecar Foundation plan |
+
+### What was built
+
+| Artifact | Purpose |
+|----------|---------|
+| `src/sidecar/types.ts` | SidecarEventType (11 members), SidecarEvent, DirectoryEntry |
+| `src/sidecar/readonly-state-extensions.ts` | 4-prefix CANONICAL_PREFIXES, listCanonicalDirectory(), createReadOnlyStateOptions() |
+| `src/sidecar/server/registry.ts` | SidecarDependencyRegistry — 6 lazy getter/setter pairs, `[Harness]` guards, isReady() |
+| `src/sidecar/server/sse/pool.ts` | SseConnectionPool — add/remove/broadcast, 30s heartbeat, max 50 clients, dead-conn cleanup |
+| `src/sidecar/server/factory.ts` | createSidecarServer() — Node HTTP on 127.0.0.1:0, /health→200, other→501, SIGTERM cleanup |
+| `src/plugin.ts` | Step 5.5 — fire-and-forget server start, 3 core deps bound (client, sessionTracker, delegationManager) |
+| `package.json` | @json-render/*@0.19, ws@8.18 added to optionalDependencies |
+
+### Verification
+
+**Typecheck:** ✅ Clean
+**Tests:** ✅ 5 files, 59 tests, all passing
+**Package bumps:** ✅ json-render@0.19, ws@8.18 in optionalDependencies
+
+**Duration:** ~2h
+---
+**ses_1770abdc2ffeYuKJvP35igvtvo:** Child session ses_1770abdc2ffeYuKJvP35igvtvo reached terminal status completed
+---
+**ses_176eff659ffe3uWnKxkcxYEpTy:** ## UAT Complete: Phase SC-01
+
+| Result | Count |
+|--------|-------|
+| Passed | **8** |
+| Issues | **0** |
+| Skipped | **0** |
+
+### Test Results Summary
+
+| # | Test | Result | Notes |
+|---|------|--------|-------|
+| 1 | Sidecar Types | ✅ PASS | 3 exports: SidecarEventType (11), SidecarEvent, DirectoryEntry |
+| 2 | Canonical Prefixes | ✅ PASS | 4 prefixes + listCanonicalDirectory() |
+| 3 | Dependency Registry | ✅ PASS | 6 lazy [Harness]-guarded getter/setter pairs (note: `configSubscriber` not `lifecycleManager`) |
+| 4 | SSE Connection Pool | ✅ PASS | addClient/removeClient/broadcast, 30s heartbeat, max 50 |
+| 5 | HTTP Server Factory | ✅ PASS | 127.0.0.1:0, GET /health→200, other→501, SIGTERM cleanup |
+| 6 | Plugin Step 5.5 | ✅ PASS | Fire-and-forget start, binds client+sessionTracker+delegationManager |
+| 7 | Package Dependencies | ✅ PASS | 5 @json-render/*@^0.19.0, ws@^8.18.0 |
+| 8 | Tests & Typecheck | ✅ PASS | 5 files, 59 tests all pass, tsc --noEmit exit 0 |
+
+**UAT file:** `.planning/phases/SC-01-sidecar-foundation/SC-01-UAT.md` (committed)
+
+⚠ Security enforcement enabled — `/gsd-secure-phase SC-01` has not run. Run before advancing to the next phase.
+
+**Next steps:**
+- `/gsd-secure-phase SC-01` — security review (required before advancing)
+- `/gsd-plan-phase SC-02` — Plan next phase (REST API + Tool Proxy)
+- `/gsd-execute-phase SC-02` — Execute next phase
+---
+**ses_176e73ac2ffe697LNSFimtPvkx:** ## Step 8: Results + Routing
+
+```
+GSD > PHASE SC-01 THREAT-SECURE
+threats_open: 0 — all threats have dispositions.
+▶ /gsd-validate-phase SC-01    validate test coverage
+▶ /gsd-verify-work SC-01       run UAT
+```
+
+---
+
+## RESEARCH COMPLETE
+
+**Phase:** SC-01 — Sidecar Foundation
+**Confidence:** HIGH
+
+### Key Findings
+- **Input State:** B (State B — SECURITY.md created from PLAN.md threat model + SUMMARY.md evidence)
+- **Threat Register:** 7 threats total (T-SC01-01 through T-SC01-SC)
+- **Status:** ✅ All 7 CLOSED — 6 mitigated, 1 accepted risk (T-SC01-02)
+- **Short-circuit applied:** `register_authored_at_plan_time: true` + `threats_open: 0` → skipped to Step 6 directly
+- **Accepted risk:** `.opencode/` exposure via CANONICAL_PREFIXES — localhost-only, no secrets
+
+### File Created
+`.planning/phases/SC-01-sidecar-foundation/SC-01-SECURITY.md` — committed at `0bdf1e04`
+
+### Security Audit Summary
+
+| Metric | Count |
+|--------|-------|
+| Threats found | 7 |
+| Closed | 7 |
+| Open | **0** |
+
+### Routing
+Phase SC-01 is threat-secure. Proceed to:
+- `/gsd-validate-phase SC-01` — validate test coverage
+- `/gsd-verify-work SC-01` — run UAT
+---
+**ses_176df5e63ffe5CEPMuwpYG2ihz:** ## Trạng thái
+
+**Đã scout (inline, vi phạm L0 inline banishment rule):**
+- ✅ `workflows/spec-phase.md` + `templates/spec.md`
+- ✅ `delegation-status({action:"find-stackable"})` — không có session stackable
+- ✅ `SC-01-SPEC.md` (140 dòng), `SC-01-SUMMARY.md` (159 dòng) — đã rõ 7 deliverables + 59 tests pass
+
+**Còn cần scout trước khi bắt đầu Socratic interview:**
+- ⏳ `.planning/STATE.md` (trunc ở 60/800+ dòng)
+- ⏳ `.planning/REQUIREMENTS.md` + `ROADMAP.md` (SC-02 entry)
+- ⏳ `SC-01-CONTEXT.md`
+- ⏳ `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` §3 REST API + tool proxy
+- ⏳ `src/sidecar/server/factory.ts`, `types.ts`, `registry.ts`, `sse/pool.ts`
+
+## Vấn đề cần bạn quyết
+
+Tôi đang ở L0 (`hm-l0-orchestrator`). Theo `universal-rules.md` §1, L0 bị **cấm** đọc file để comprehend, analyze code, hoặc execute command tasks inline. Tôi vừa vi phạm khi đọc SC-01-SPEC.md / SUMMARY.md. Spec-phase là detail work cần delegate.
+
+**3 lựa chọn:**
+
+| # | Cách làm | Ưu | Nhược |
+|---|---------|-----|------|
+| **A** | Delegate sang `gsd-spec-phase` subagent | Đúng L0 rules, subagent lo toàn bộ scout + interview + write + commit | Mất quyền kiểm soát trực tiếp, phải viết packet kỹ |
+| **B** | Tiếp tục inline trong main session | Nhanh, bạn điều khiển Socratic interview trực tiếp | Tôi tiếp tục vi phạm L0 inline banishment |
+| **C** | Dừng, chuyển task khác | Không vi phạm, giữ scope | Bỏ lửng spec-phase |
+
+## Câu hỏi
+
+Bạn chọn **A / B / C**?
+
+Nếu **A**: tôi cần bạn xác nhận `gsd-spec-phase` là agent hợp lệ để delegate (theo `delegation-status` thì không tìm thấy stackable session cho agent filter đó, nhưng agent có thể chưa có session nào). Tôi sẽ dispatch qua `task` tool với subagent_type="gsd-spec-phase".
+
+Nếu **B**: tôi tiếp tục scout 6 files còn lại, rồi mở Socratic interview Round 1 (Researcher perspective) với bạn ngay trong turn này.
+---
+**ses_176d78648ffeP7wkk2kstwd0BF:** Commit captured: `adbdde35b7f30e84e167e6f7f30f46b7ae303c88` (short: `adbdde35`). Working tree correctly retains 7 runtime-state files in `.hivemind/session-tracker/**` (excluded from atomic commit per inherited constraint).
+
+Now returning the structured result to L0. Per my domain, this is the terminal action for the research phase.
+
+---
+
+# RESEARCH COMPLETE
+
+**Phase:** SC-02 — REST API + Tool Proxy  
+**Subagent:** `gsd-phase-researcher` (delegated via `/gsd-research-phase SC-02`)  
+**Confidence:** **HIGH** (12 of 12 CONTEXT decisions VERIFIED verbatim, 6 of 6 research areas VERIFIED via Context7 + node_modules + codebase reads, 9 of 10 STRIDE threats mitigated, 1 accepted)
+
+## Deliverables
+
+| Artifact | Path | Commit | LOC |
+|----------|------|--------|-----|
+| RESEARCH | `.planning/phases/SC-02-rest-api-tool-proxy/02-RESEARCH.md` | `adbdde35` | 1,084 |
+| SPEC (locked) | `.planning/phases/SC-02-rest-api-tool-proxy/02-SPEC.md` | `9e5d386c` | (unchanged) |
+| CONTEXT (locked) | `.planning/phases/SC-02-rest-api-tool-proxy/02-CONTEXT.md` | `d66c1055` | (unchanged) |
+
+## Key Findings
+
+1. **12/12 CONTEXT decisions VERIFIED verbatim** (D-SC02-01..12) — research did not re-decide, only validated against code, package.json, and Context7 docs. No drift detected.
+2. **CRITICAL SIMPLIFICATION:** SC-02 does NOT register 7 new plugin tools. Those 7 write tools are **already in the 26-tool `Hooks.tool` map** at `src/plugin.ts:727-749`. SC-02 is purely a thin HTTP→tool-call adapter. D-SC02-09's `TOOL_HANDLERS` is the separate HTTP-level dispatch map (kept in sync via 7-tool whitelist from ARCHITECTURE §6.4).
+3. **Endpoint count reconciled:** 12 exposed tools = **5 read** (state routes) + **7 write** (TOOL_HANDLERS). 17 HTTP routes total = 4 read-state + 7 write + 1 SSE + 1 WS + 2 catalog.
+4. **Stack validated against actual package versions** (not the stale STACK.md): `@json-render/core@0.19.0` (real, not 0.18.0 documented), `@opencode-ai/plugin@1.15.13` (async `Plugin = (input, op
+
+**Continuity index:** See `session-continuity.json` for active delegations and pending work at time of compaction.
+
+## ASSISTANT (turn 27)
+
+Research phase complete. Continuing loop with plan-phase dispatch.
+
+## ASSISTANT (turn 456)
+
+Tools: delegation-status, glob, glob, glob
+
+## ASSISTANT (turn 457)
+
+Tools: read, read, glob, glob
+
+## ASSISTANT (turn 458)
+
+Tools: read, read, context7_resolve-library-id, read
+
+## ASSISTANT (turn 459)
+
+Tools: sequential-thinking_sequentialthinking, sequential-thinking_sequentialthinking, sequential-thinking_sequentialthinking
+
+## ASSISTANT (turn 460)
+
+Chạy scouting và deep research. Load session-foundation skill để tra cứu thông tin session.
+
+## ASSISTANT (turn 461)
+
+I am hm-orchestrator, L0 strategist. Đã scouting complete — hình thành landscape đầy đủ. Dưới đây là tổng hợp chiến lược.
+
+---
+
+## Landscape: Hivemind Sidecar GUI Layer
+
+### Tình trạng hiện tại
+
+| Item | Status |
+|------|--------|
+| `src/sidecar/readonly-state.ts` | **Unwired** — 2/10 readiness, 120 LOC path containment logic nhưng không được import bởi bất kỳ module nào |
+| `@json-render/* v0.18.x` | **Outdated** — npm hiện là **v0.19.0** (cần update package.json) |
+| `next` | **Missing** — chưa có trong package.json. Latest: **v16.2.7** |
+| Phase roadmap | **Không có** — chưa có phase nào cho sidecar |
+| Q2 Decision | **Mandates**: "Artifact-Focused Sidecar — Next.js + @json-render/react, reads .hivemind/ and .planning/, READ-ONLY" |
+| tmux layer (P50-P55) | **Separate concern** — terminal orchestration ≠ GUI dashboard |
+
+### Phân tích 3 Options
+
+| Option | Phù hợp? | Lý do |
+|--------|----------|-------|
+| **A: json-render + Next.js** | ✅ **Khuyến nghị** | Spec-driven AI UI, đọc .hivemind/ read-only, đúng Q2, 15 components catalog |
+| **B: TUI graphic (Ink/etc)** | ❌ | Trùng với tmux layer, không đáp ứng được rich dashboard |
+| **C: Pure React (no json-render)** | ⚠️ OK nhưng lỡ cơ hội | Mất generative spec pattern, phải hardcode mọi panel |
+
+**Kết luận: Option A** — json-render v0.19.0 + Next.js 16 sidecar.
+
+### Kiến trúc đề xuất — 4 Panel Dashboard
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Sidecar: Next.js 16 App Router                      │
+│  ├─ /sessions      → Session Explorer (delegation    │
+│  │                    tree, timeline, continuity)     │
+│  ├─ /delegations   → Delegation Dashboard (active,   │
+│  │                    slots, completion, metrics)     │
+│  ├─ /memory        → MEMS Browser (knowledge graph,  │
+│  │                    decision anchors, retrievals)   │
+│  └─ /config        → Configuration Panel (policy,    │
+│                       pressure, tools, registrations)│
+│                                                     │
+│  Data source: .hivemind/ (READ-ONLY via              │
+│  src/sidecar/readonly-state.ts)                       │
+│  Live updates: SSE từ plugin hook events             │
+└─────────────────────────────────────────────────────┘
+```
+
+### Catalog Components (15, ngưỡng sweet-spot)
+
+```typescript
+// json-render catalog — Layout
+Grid, Stack, TabPanel
+// Data visualization
+MetricCard, DataTable, ProgressBar, StatusBadge
+// Structural
+TreeView, TimelineChart, GraphView
+// Interactive
+SearchBar, FilterChips, Select, DateRangePicker
+// Actions
+RefreshButton, ExportButton
+```
+
+### Package cần update
+
+| Package | package.json | npm latest | Action |
+|---------|-------------|------------|--------|
+| `@json-render/core` | ^0.18.0 | **0.19.0** | Bump |
+| `@json-render/react` | ^0.18.0 | **0.19.0** | Bump |
+| `@json-render/next` | ^0.18.0 | **0.19.0** | Bump |
+| `@json-render/shadcn` | missing | **0.19.0** | Add |
+| `next` | missing | **16.2.7** | Add |
+| `react` | ^19.2.6 | **19.2.7** | Optional bump |
+
+### Tại sao json-render là lựa chọn đúng
+
+1. **Q2 mandate** — decision đã locked từ 2026-04-25
+2. **Spec-driven** — AI generates dashboard specs constrained by catalog, không thể render component lạ
+3. **CQRS compliant** — `readonly-state.ts` đã guard path containment, chỉ đọc từ `.hivemind/` và `.planning/`
+4. **Phân biệt rõ** — tmux = operational/terminal (cho dev đang code), sidecar = analytical/GUI (cho human review)
+
+### Cần làm tiếp theo
+
+Đây là **NEW domain** — cần research phase để validate json-render v0.19.0 API surface, Next.js 16 App Router patterns, và thiết kế catalog schema. Sau đó plan → execute → verify.
+
+---
+
+Bạn muốn tôi tạo governance session để research sidecar design? Hay muốn discuss thêm về thiết kế catalog/components trước?
+
+## ASSISTANT (turn 462)
+
+Tools: bash
+
+## ASSISTANT (turn 463)
+
+Tools: write
+
+## ASSISTANT (turn 464)
+
+Landscape đã viết tại `.hivemind/planning/sidecar-vision/landscape.md`. Bắt đầu delegation Wave 1 — Research.
+
+## ASSISTANT (turn 465)
+
+json-render v0.19.0 safe, no breaking changes. Tiếp tục Wave 1.2.
+
+## ASSISTANT (turn 466)
+
+Rõ ràng. Scope sidecar đã mở rộng — không chỉ `.hivemind/state/` mà toàn bộ session-tracker, delegate-task, tmux integration. Sẽ
+
+## ASSISTANT (turn 467)
+
+Hiểu rồi — sidecar là **bidirectional control plane**, không chỉ read-only dashboard. Browser ↔ Hivemind plugin ↔ OpenCode runtime, qua SSE + tool calls.
+
+Tiếp tục Wave 1 — các research task còn lại với scope đã mở rộng.
+
+## ASSISTANT (turn 468)
+
+Cả 4 research tasks đã hoàn tất. Hai phát hiện chính thay đổi toàn bộ kiến trúc:
+
+1. **opencode-pty pattern**: Plugin tự start local HTTP server, browser React UI kết nối qua REST — đây là pattern canonical cho sidecar
+2. **Bidirectional**: Repository REST endpoints + WebSocket cho streaming delegation output
+
+Chuyển sang **Wave 2 — Architecture Design**.
+
+## ASSISTANT (turn 469)
+
+Tất cả research và architecture design đã hoàn tất. Đây là tổng hợp chiến lược:
+
+---
+
+## Sidecar Vision — Synthesis sau 5 Delegations
+
+### Kiến trúc tổng thể
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  BROWSER (Next.js 16 + @json-render/react + shadcn)      │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │  Session Explorer  │  Delegation Dashboard         │  │
+│  │  MEMS Browser      │  Control Panel                │  │
+│  └────────────────────────────────────────────────────┘  │
+│           ↕ REST (reads) + SSE (events)                   │
+├──────────────────────────────────────────────────────────┤
+│  PLUGIN HTTP SERVER (Node http + ws)                     │
+│  ├─ State Bridge (reads .hivemind/ via readonly-state.ts)│
+│  ├─ Tool Proxy (invokes 27 plugin tools via REST)        │
+│  ├─ SSE Publisher (hooks push events → browser)          │
+│  └─ WebSocket (delegation streaming)                     │
+│           ↕ SDK                                           │
+├──────────────────────────────────────────────────────────┤
+│  HIVEMIND PLUGIN (delegation, session-tracker, tmux...)  │
+│           ↕ @opencode-ai/plugin SDK                       │
+├──────────────────────────────────────────────────────────┤
+│  OPENCODE RUNTIME + AGENTS                               │
+└──────────────────────────────────────────────────────────┘
+```
+
+### 5 Architectural Decisions đã Lock
+
+| # | Decision | Rationale |
+|---|----------|-----------|
+| 1 | **Two-server model** (plugin HTTP + Next.js standalone) | Tránh React/Next.js dependency bloat trong plugin, port discovery qua sentinel file |
+| 2 | **Single unified catalog** (44 components: 36 shadcn + 8 custom) | Cross-panel component references, AI spec generation đơn giản |
+| 3 | **Lazy dependency binding** (SidecarDependencyRegistry) | Plugin init sequence cần server start sớm trước khi delegation modules ready |
+| 4 | **SSE for events, WS only for streaming** | SSE đơn giản hơn cho 90% use case, WS chỉ cho delegation output streaming |
+| 5 | **Extended CANONICAL_PREFIXES** (+session-tracker, +.opencode) | Reuse `readonly-state.ts` path containment đã battle-tested |
+
+### ~85 Integration Surfaces Identified
+
+| Category | Count | Sidecar Panel |
+|----------|-------|---------------|
+| State files (.hivemind/) | 5 | Session Explorer, Delegation Dashboard |
+| Plugin tools (REST proxy) | 27 | Control Panel |
+| Plugin hooks (SSE events) | 5 | All panels (live updates) |
+| Delegation modules | 21 | Delegation Dashboard |
+| Tmux integration | 7 | Session Explorer (pane visualization) |
+| Session-tracker | 25+ | Session Explorer (timeline) |
+| Trajectory + Pressure | 11 | MEMS Browser, metrics |
+| Config | 8 | Control Panel |
+
+### Artifacts Produced
+
+```
+.hivemind/planning/sidecar-vision/
+├── landscape.md                           ← Strategy, wave ordering
+├── RESEARCH-json-render.md                ← v0.19.0 safe, no BCs
+├── RESEARCH-nextjs.md                     ← standalone mode, SSE pattern
+├── RESEARCH-ecosystem.md                  ← OpenChamber, opencode-pty refs
+├── AUDIT-codebase-surfaces.md             ← 85 surfaces, 10 critical gaps
+└── ARCHITECTURE.md                        ← 1,113 lines, full design
+```
+
+### Next: Wave 3 — Planning
+
+Bước tiếp theo: decompose thành execution phases (Wave 3) — phase ưu tiên nào làm trước, dependencies giữa chúng, deliverable của mỗi phase.
+
+---
+Bạn muốn review các artifacts trước, hay proceed thẳng vào planning?
+
+## ASSISTANT (turn 470)
+
+Tuân thủ universal rules checkpoint 2 (Phase CRUD). Tạo phase structure rồi delegate planning.
+
+## ASSISTANT (turn 471)
+
+Tools: hivemind-trajectory, hivemind-agent-work-create
+
+## ASSISTANT (turn 472)
+
+Tools: hivemind-agent-work-create
+
+## ASSISTANT (turn 473)
+
+Contract và trajectory initialized. Giờ delegate phase decomposition cho gsd-planner.
+
+## ASSISTANT (turn 474)
+
+User đúng — tôi đã sai khi plan tất cả 6 phases cùng lúc. Phải loop từng phase một qua full cycle: SPEC → CONTEXT → RESEARCH → PATTERNS → PLAN → CHECK → EXECUTE → VERIFY, dùng `execute-slash-command` cho gsd commands.
+
+Bắt đầu lại với **SC-01: Foundation**. Kiểm tra commands availability trước.
+
+## ASSISTANT (turn 475)
+
+Trajectory ready. Commands available. Giờ khởi động phase loop cho **SC-01** — checkpoint 4: SPEC.
+
+## ASSISTANT (turn 476)
+
+Tools: task
+
+## ASSISTANT (turn 477)
+
+Tools: task
+
+## ASSISTANT (turn 478)
+
+Mày đúng. Tôi skip checkpoint 1 và 2 — không đọc ROADMAP, STATE, không update chúng trước khi làm SPEC.
+
+Fix ngay.
+
+## ASSISTANT (turn 479)
+
+Roadmap kết thúc ở P40, STATE cũng không có SC phases. Cần CRUD chúng trước. Check phần cuối ROADMAP và tìm chỗ insert.
+
+## ASSISTANT (turn 480)
+
+Insert SC phases vào ROADMAP.md và STATE.md.
+
+## ASSISTANT (turn 481)
+
+ROADMAP và STATE đã update. Commit atomic documents change, rồi tiếp tục SPEC checkpoint cho SC-01.
+
+## ASSISTANT (turn 482)
+
+Documents committed. Tiếp tục checkpoint 4 — SPEC cho SC-01.
+
+## ASSISTANT (turn 483)
+
+Tools: task
+
+## ASSISTANT (turn 484)
+
+Tools: task
+
+## ASSISTANT (turn 485)
+
+**Kết quả CP4 SPEC:** ✅ PASS — 7 requirements locked, ambiguity 0.12, committed `c0391092`.
+
+Tiếp theo CP5: **gsd-discuss-phase SC-01** (xác định implementation decisions, gray areas, assumptions).
+
+## ASSISTANT (turn 486)
+
+Tools: task
+
+## ASSISTANT (turn 487)
+
+**CP5 DISCUSS:** ✅ PASS — 14 implementation decisions locked in CONTEXT.md, 7 categories covered.
+
+Tiếp theo: **CP6 RESEARCH** — gsd-research-phase SC-01.
+
+## ASSISTANT (turn 488)
+
+CP6 RESEARCH: command `gsd-research-phase` không tồn tại. Research đã done qua sidecar vision research. Tiếp CP8 PLANNING — `gsd-plan-phase` (bao gồm research internally).
+
+## ASSISTANT (turn 489)
+
+Tools: task
+
+## ASSISTANT (turn 490)
+
+Tools: task
+
+## ASSISTANT (turn 491)
+
+Tools: task
+
+## ASSISTANT (turn 492)
+
+**CP8 PLANNING:** ✅ PASS — 3 plans in 3 waves, 100% coverage (7 REQs + 14 decisions).
+
+Bắt đầu CP9 EXECUTION — gsd-execute-phase SC-01.
+
+## ASSISTANT (turn 493)
+
+Tools: task
+
+## ASSISTANT (turn 494)
+
+Tools: task
+
+## ASSISTANT (turn 495)
+
+Mày đúng. Tôi dispatch `execute-slash-command` cho gsd-execute-phase, session đã chạy. Rồi tôi lại dispatch `task` tool với cùng command — tạo dupe. Lỗi double-session — inexcusable.
+
+Tôi không thể abort session từ đây. User phải disconnect để kill cả 2.
+
+Sau khi reconnect, tôi sẽ:
+1. Check `delegation-status({ action: "find-stackable" })` → tìm session đúng duy nhất
+2. Stack onto cái đã chạy, không tạo mới
+3. Verify kết quả CP9 EXECUTE rồi bước tiếp CP10 VERIFY
+
+## ASSISTANT (turn 496)
+
+Session đã được abort. Check state để biết CP9 EXECUTE tới đâu rồi.
+
+## ASSISTANT (turn 497)
+
+gsd-executor session `ses_1770c89dbffeBOzjSPW4ClcfAC` đã **completed** — CP9 EXECUTE có thể đã chạy xong. Verify artifacts.
+
+## ASSISTANT (turn 498)
+
+CP9 EXECUTE đã chạy được Wave 1 (`86ca11ce feat(sc-01): create sidecar type definitions`). Kiểm tra uncommitted changes.
+
+## ASSISTANT (turn 499)
+
+Wave 1 completed (`types.ts`, `readonly-state.ts` mods). Waves 2-3 (registry, SSE pool, server factory, plugin wiring) chưa chạy. Stack onto gsd-executor session để hoàn tất.
+
+## ASSISTANT (turn 500)
+
+**CP9 EXECUTE:** ✅ **HOÀN TẤT!** 3 waves, 7 commits, 59 tests pass, typecheck clean.
+
+```
+86ca11ce → feat(sc-01): create sidecar type definitions
+e612559e → feat(sc-01): extend CANONICAL_PREFIXES + listCanonicalDirectory
+4daca4f1 → feat(sc-01): create SidecarDependencyRegistry + SseConnectionPool
+a76828d6 → feat(sc-01): create createSidecarServer() HTTP server factory
+2f183051 → feat(sc-01): wire sidecar server into plugin init + bump deps
+dd9f9466 → chore(sc-01): update lockfile after package bumps
+30cf357f → docs(sc-01): complete Sidecar Foundation plan
+```
+
+Tiếp CP10 VERIFY — gsd-verify-work SC-01.
+
+## ASSISTANT (turn 501)
+
+Tools: task
+
+## ASSISTANT (turn 502)
+
+Gửi SC-01 để verify.
+
+## ASSISTANT (turn 503)
+
+Gửi tiếp lệnh — auto-verify phần còn lại.
+
+## ASSISTANT (turn 504)
+
+**SC-01 Sidecar Foundation ✅ HOÀN TẤT!**
+
+### Kết quả cuối cùng
+
+| Checkpoint | Status |
+|-----------|--------|
+| CP1-3 Scout + CRUD + Contract | ✅ PASS — ROADMAP/STATE updated (e80cf712) |
+| CP4 SPEC | ✅ PASS — 7 reqs, ambiguity 0.12 |
+| CP5 DISCUSS | ✅ PASS — 14 decisions locked |
+| CP6 RESEARCH | ⏭️ Skipped (research done) |
+| CP8 PLANNING | ✅ PASS — 3 plans, 100% coverage |
+| CP9 EXECUTE | ✅ **PASS** — 7 commits, 59 tests, typecheck clean |
+| CP10 VERIFY | ✅ **8/8 PASS** |
+
+### Built
+
+```
+src/sidecar/
+├── types.ts                          ← 3 type exports
+├── readonly-state.ts                 ← Extended (139→LOC)
+├── readonly-state-extensions.ts      ← 4 CANONICAL_PREFIXES + listCanonicalDirectory()
+└── server/
+    ├── registry.ts                   ← 6 lazy getter/setter pairs
+    ├── sse/pool.ts                   ← 50 conn, 30s heartbeat
+    └── factory.ts                    ← 127.0.0.1:0, /health→200, other→501
+
+src/plugin.ts                         ← Step 5.5 sidecar server start
+package.json                          ← @json-render/*@0.19, ws@8.18
+```
+
+Verifier khuyến nghị chạy `/gsd-secure-phase SC-01` trước khi qua SC-02. Bạn muốn:
+
+1. **Chạy secure-phase** rồi proceed SC-02?
+2. **Skip secure**, qua thẳng SC-02?
+3. **Nghỉ** — đây là chặng đường dài, cần commit context?
+
+## ASSISTANT (turn 505)
+
+Run secure-phase theo workflow. State B (no SECURITY.md, no threat model in PLANS) → retroactive-STRIDE mode.
+
+## ASSISTANT (turn 506)
+
+Tools: task
+
+## ASSISTANT (turn 507)
+
+**SC-01 SECURITY:** ✅ 7/7 threats CLOSED, SECURITY.md committed (`0bdf1e04`).
+
+### Phase SC-01 Full Completion
+
+| Checkpoint | Status |
+|-----------|--------|
+| CP1-3 Scout + CRUD + Contract | ✅ PASS |
+| CP4 SPEC | ✅ PASS — 7 reqs, ambiguity 0.12 |
+| CP5 DISCUSS | ✅ PASS — 14 decisions locked |
+| CP6 RESEARCH | ⏭️ Skipped (done pre-phase) |
+| CP8 PLANNING | ✅ PASS — 3 plans, 100% coverage |
+| CP9 EXECUTE | ✅ PASS — 7 commits, 59 tests |
+| CP10 VERIFY | ✅ PASS — 8/8 UAT |
+| CP11 SECURE | ✅ PASS — 7/7 threats CLOSED |
+
+**SC-01 ✅ SHIP-READY.** Sẵn sàng qua **SC-02 — REST API + Tool Proxy**.
+
+Bạn muốn:
+1. **Proceed SC-02 ngay?**
+2. **Commit context, nghỉ, resume sau?**
+
+## ASSISTANT (turn 508)
+
+## Goal
+- Design and implement Hivemind Sidecar — a Next.js 16 + @json-render/react bidirectional control plane bridging human operators (browser), Hivemind runtime (plugin), and native OpenCode.
+
+## Constraints & Preferences
+- Use gsd commands (gsd-*) via execute-slash-command for phase loop, not hm-* (project uses GSD as development tooling)
+- Phase loop: SPEC → DISCUSS → RESEARCH → PATTERNS → PLAN → CHECK → EXECUTE → VERIFY → SHIP, one phase at a time
+- Atomic commits required for both documents and code at each checkpoint
+- Sidecar is bidirectional (not read-only): browser ↔ plugin HTTP server ↔ OpenCode via REST + SSE + WebSocket
+- json-render v0.19.0 with 36 shadcn components + 8 custom for the UI catalog
+- Two-server model: plugin-embedded HTTP/WS server + Next.js 16 standalone app
+- ~85 integration surfaces across delegation (27 tools), tmux (7), session-tracker (25+), trajectory (5), pressure (6), config (8)
+
+## Progress
+### Done
+- Landscape formed: `.hivemind/planning/sidecar-vision/landscape.md`
+- 5 research+architecture artifacts produced: json-render API, Next.js patterns, ecosystem references, codebase audit (85 surfaces), full architecture (1,113 LOC)
+- ROADMAP.md and STATE.md updated with SC-01..SC-06 phase table
+- **SC-01 Sidecar Foundation fully complete** — 7 commits, 3 waves, 59 tests pass, typecheck clean
+  - `src/sidecar/types.ts` — 3 type exports (SidecarEventType 11 members, SidecarEvent, DirectoryEntry)
+  - `src/sidecar/readonly-state-extensions.ts` — 4 CANONICAL_PREFIXES + listCanonicalDirectory()
+  - `src/sidecar/server/registry.ts` — SidecarDependencyRegistry (6 lazy getter/setter pairs, `[Harness]` errors)
+  - `src/sidecar/server/sse/pool.ts` — SseConnectionPool (50 max conn, 30s heartbeat, broadcast)
+  - `src/sidecar/server/factory.ts` — createSidecarServer (127.0.0.1:0, /health→200, other→501, SIGTERM cleanup)
+  - `src/plugin.ts` — Step 5.5 fire-and-forget server start, binds client+sessionTracker+delegationManager
+  - `package.json` — @json-render/*@0.19.0, ws@8.18 in optionalDependencies
+- SC-01 UAT: 8/8 PASS, typecheck clean, all 59 tests passing
+- Phase docs: SC-01-SPEC.md (ambiguity 0.12), SC-01-CONTEXT.md (14 decisions), SC-01-RESEARCH.md, SC-01-VALIDATION.md, 3 PLAN.md files, SC-01-UAT.md
+
+### In Progress
+- `/gsd-secure-phase SC-01` dispatched — awaiting gsd-security-auditor result for retroactive-STRIDE threat verification
+
+### Blocked
+- (none currently — secure-phase in flight)
+
+## Key Decisions
+- Two-server model: plugin HTTP/WS server (raw Node http) ↔ Next.js 16 standalone app, communicated via localhost REST+SSE+WS
+- Single unified json-render catalog (44 components: 36 shadcn + 8 custom), not per-panel catalogs
+- SSE for event push (90% use cases), WebSocket reserved for delegation streaming only
+- Lazy dependency binding via SidecarDependencyRegistry — server starts early (step 5.5) before delegation modules exist
+- Sidecar server start is fire-and-forget, non-blocking to plugin init
+
+## Next Steps
+1. Await `/gsd-secure-phase SC-01` completion
+2. Run `/gsd-execute-phase SC-01` if security gaps found (fix them)
+3. Run `/gsd-plan-phase SC-02` — REST API + Tool Proxy (API endpoints for all 27 tools + SSE + WS)
+4. Continue through SC-03 (Next.js app), SC-04 (Session Explorer), SC-05 (Delegation Dashboard), SC-06 (MEMS + Control Panel)
+
+## Critical Context
+- Tmux workflow (P50-P55) runs in parallel — trajectory and agent-contract must isolate sidecar work from tmux
+- SC-01 must pass gsd-secure-phase before SC-02 can begin
+- json-render v0.19.0 upgrade: no breaking changes from 0.18.x, purely additive (defineDirective API, @json-render/directives)
+- `gsd-research-phase` command does not exist — research falls into gsd-plan-phase internally
+
+## Relevant Files
+- `.hivemind/planning/sidecar-vision/`: Full sidecar landscape (landscape.md), architecture (ARCHITECTURE.md), research (json-render, nextjs, ecosystem), codebase audit (85 surfaces)
+- `.planning/phases/SC-01-sidecar-foundation/`: Phase documents (SPEC, CONTEXT, PLANs, UAT, SUMMARY)
+- `src/sidecar/`: Sidecar source code (types.ts, readonly-state-extensions.ts, server/registry.ts, server/sse/pool.ts, server/factory.ts, readonly-state.ts)
+- `src/plugin.ts`: Step 5.5 sidecar server startup wiring
+- `.planning/ROADMAP.md`: SC-01..SC-06 phase table (line ~149)
+- `.planning/STATE.md`: Sidecar state section
+
+## ASSISTANT (turn 509)
+
+## SC-01 FINAL STATUS
+
+`gsd-secure-phase` ✅ PASS. 7/7 threats CLOSED, SECURITY.md committed (`0bdf1e04`).
+
+| CP | Checkpoint | Result |
+|----|-----------|--------|
+| 1-3 | Scout/CRUD/Contract | ✅ |
+| 4 | SPEC | ✅ (ambig 0.12) |
+| 5 | DISCUSS | ✅ (14 decisions) |
+| 6 | RESEARCH | ⏭️ (pre-done) |
+| 8 | PLAN | ✅ (3 plans) |
+| 9 | EXECUTE | ✅ (7 commits) |
+| 10 | VERIFY | ✅ (8/8 UAT) |
+| 11 | SECURE | ✅ (7/7) |
+
+**SC-01 SHIP-READY. Tổng cộng 8 atomic commits.**
+
+---
+
+## KẾ HOẠCH ĐA-VÒNG — SC-02 (REST API + Tool Proxy)
+
+Theo AGENTS.md: mỗi cycle cần user authorization. Plan dưới là **orchestration guide** (không phải implementation spec) — mỗi vòng là 1 gsd command riêng biệt với gate kiểm tra.
+
+### Wave Map (8 vòng, có thể gộp 1 số)
+
+| # | Vòng | Lệnh | Output Artifacts | Auth Gate | Wave |
+|---|------|------|------------------|-----------|------|
+| 1 | **SPEC** | `/gsd-spec-phase SC-02` | `SC-02-SPEC.md` | User review SPEC | Solo |
+| 2 | **DISCUSS** | `/gsd-discuss-phase SC-02` | `SC-02-CONTEXT.md` | User confirm decisions | Solo |
+| 3 | **RESEARCH** | `/gsd-research-phase SC-02` (skip) | — | — | Skip (reuse SC-01) |
+| 4 | **PATTERNS** | internal (research) | `SC-02-PATTERNS.md` | Auto via plan-phase | Solo |
+| 5 | **PLAN** | `/gsd-plan-phase SC-02` | `SC-02-PLAN.md` + plan-N.md | User approve plan | Solo |
+| 6 | **EXECUTE** | `/gsd-execute-phase SC-02` | source + tests + commits | Per-wave checkpoint | Wave-based |
+| 7 | **VERIFY** | `/gsd-verify-work SC-02` | `SC-02-UAT.md` | User accept UAT | Solo |
+| 8 | **SECURE** | `/gsd-secure-phase SC-02` | `SC-02-SECURITY.md` | User accept threats | Solo |
+
+### Authorization Gates (CHECKPOINT)
+
+- **G1 (SPEC→DISCUSS):** User xác nhận spec đủ rõ trước khi discuss
+- **G2 (DISCUSS→PLAN):** User xác nhận decisions locked
+- **G3 (PLAN→EXECUTE):** User xét plan trước khi code
+- **G4 (per-wave EXECUTE):** Sau mỗi wave, xác nhận hoặc dừng
+- **G5 (VERIFY→SECURE):** User accept UAT
+- **G6 (SECURE→SHIP):** User accept threats closed
+
+### SC-02 Scope (để chuẩn bị cho vòng 1 SPEC)
+
+Dựa trên landscape đã khóa:
+- **27 tool proxy endpoints** — HTTP routes cho mỗi Hivemind tool
+- **SSE event subscriptions** — `/events`, `/events/:category`
+- **WebSocket delegation streaming** — `/ws/delegations`
+- **Auth middleware** — localhost-only (127.0.0.1) + dev token
+- **Error envelope** — consistent JSON error shape
+- **Request validation** — Zod schemas
+
+### Routing
+
+- `/gsd-spec-phase` → tự resolve agents (gsd-specifier hoặc tương đương)
+- Tôi dùng `execute-slash-command` cho mỗi vòng
+- Sau mỗi vòng: tôi tự động commit artifacts (theo AGENTS.md "do not ask if commit needed")
+
+---
+
+## VÒNG 1 — SPEC (SẴN SÀNG KHỞI CHẠY)
+
+Lệnh sẽ chạy: `/gsd-spec-phase SC-02`
+
+Dự kiến output: `.planning/phases/SC-02-rest-api-tool-proxy/SC-02-SPEC.md`
+
+Câu hỏi cần clarify cho vòng SPEC (agent sẽ tự hỏi bạn):
+1. **Scope 27 tools:** Tất cả 27 tools, hay chỉ subset MVP (vd: delegate-task, delegation-status, session-info)?
+2. **Auth model:** Chỉ localhost-bind, hay thêm dev-token header check?
+3. **Error envelope shape:** Chuẩn RFC 7807 (Problem Details) hay custom JSON?
+4. **Rate limiting:** Cần hay không cho internal tool proxy?
+5. **Streaming vs polling:** SSE đẩy events vs client poll — đã confirm SSE đúng chưa?
+
+---
+
+**Bạn authorize tôi chạy vòng 1 SPEC ngay bây giờ không?** 
+
+Trả lời: "go" / "yes" / "ok" → tôi chạy `/gsd-spec-phase SC-02` ngay
+Trả lời khác → cho tôi biết điều chỉnh gì trước khi chạy
+
+## ASSISTANT (turn 510)
+
+## VÒNG 1 — SPEC KHỞI CHẠY
+
+Dispatching `/gsd-spec-phase SC-02` qua execute-slash-command.
+
+## ASSISTANT (turn 511)
+
+Tools: task
+
+## ASSISTANT (turn 512)
+
+## Tóm tắt output trước
+
+**Vấn đề:** Dispatch `/gsd-spec-phase SC-02` đã chọn sai agent. `execute-slash-command` suggested `gsd-eval-auditor` (đó là agent cho `/gsd-eval-review`, không phải spec). Khi dispatch với `gsd-eval-auditor`, agent từ chối inline scout vì:
+- Đó là L0 inline banishment violation
+- Agent nhận ra không phải domain của mình
+- Trả về 3 lựa chọn A/B/C thay vì thực thi
+
+**Quyết định:** Chọn **A** (delegate đúng cách) — không làm inline.
+
+## Re-dispatch với đúng agent
+
+Theo pattern đã thành công trước đó (`gsd-secure-phase` → `gsd-phase-researcher`), tôi sẽ dispatch `/gsd-spec-phase` với cùng agent.
+
+## ASSISTANT (turn 513)
+
+## Socratic Interview — Round 1 (SPEC SC-02)
+
+Agent (gsd-phase-researcher) đã scout xong codebase + initial ambiguity assessment. **Composite ambiguity: 0.36** (gate 0.20) — cần 1-3 rounds interview để pin down requirements.
+
+Agent có 3 câu hỏi cần bạn quyết:
+
+---
+
+### Q1: WebSocket scope — delegation only hay full event mirror?
+
+| Option | Mô tả | Pros | Cons |
+|--------|-------|------|------|
+| **A** ⭐ recommendation | `WS /ws/delegation` chỉ cho delegation messages (subscribe/unsubscribe/abort + delegation.output/status/notification). SSE giữ nguyên là nguồn duy nhất cho session/trajectory/pressure events. | Đơn giản, đúng theo ARCHITECTURE §4.4 | Một số event phải qua 2 kênh |
+| **B** | `WS /ws/delegation` cũng push subset của SSE events (session.created, session.idle) cho panel updates real-time. Cần `subscribe` mode riêng cho delegation vs event-stream. | Latency thấp cho UI panels | Phức tạp hơn, contract rộng hơn |
+
+**Recommend A** cho SC-02. Nếu cần event-mirror WS sau, SC-03+ sẽ thêm.
+
+---
+
+### Q2: Tool proxy list — 7 endpoints hay 12 tools?
+
+- ARCHITECTURE §**6.4** định nghĩa **12 tools exposed** (delegate-task, delegation-status, execute-slash-command, hivemind-trajectory, hivemind-session-view, session-patch restricted, session-tracker read-only, session-hierarchy, session-context, session-delegation-query, hivemind-doc read-only, hivemind-command-engine discover-only)
+- ARCHITECTURE §**4.2** chỉ list **7 REST tool proxy endpoints**
+
+**Recommend:** §6.4 (12 tools) là source of truth. Phân bổ lại:
+- 7 tools write-capable → `POST /api/tools/*`
+- 5 tools read-only → `GET /api/state/sessions/...` hoặc `GET /api/catalog/tools`
+
+---
+
+### Q3: Auth & rate limiting — vẫn none, hay thêm token + throttle?
+
+Hiện tại: bind 127.0.0.1 = không auth, không rate limit (SC-01 assumption).
+
+**Recommend:** **Giữ không auth cho SC-02** (vì localhost bind vẫn giữ, Next.js app cũng ở localhost). Thêm `X-Sidecar-Local-Token` HMAC header **chỉ khi** bạn dự định mở port ra ngoài loopback sau này.
+
+---
+
+## Trả lời (chỉ cần ngắn gọn)
+
+| Q | Recommend của agent | Bạn đồng ý? |
+|---|---------------------|-------------|
+| Q1 | A (delegation-only WS) | yes / no → chọn B |
+| Q2 | §6.4 = 12 tools, phân bổ lại | yes / no → giữ 7 / khác |
+| Q3 | No auth (127.0.0.1 đủ) | yes / no → thêm HMAC token |
+
+Reply kiểu: `Q1: A, Q2: 12 tools, Q3: no auth` hoặc bất kỳ format nào tôi hiểu.
+
+## ASSISTANT (turn 514)
+
+## Cảm ơn answers!
+
+Ghi nhận 3 quyết định + **architectural insight quan trọng** từ bạn:
+
+> Sidecar là component "bounded" align strictly với **OpenCode's client-server architecture**, dùng **OpenCode SDK + server API**. Không cần auth/rate limit vì OpenCode native đã lo phần đó.
+
+Đây là constraint quan trọng cần khóa trong SPEC. Tôi sẽ pass sang agent để chạy Round 2 với context này.
+
+## ASSISTANT (turn 515)
+
+## Socratic Interview — Round 2
+
+**Ambiguity: 0.36 → 0.1875** ✅ dưới gate 0.20. Còn 3 câu nữa là đủ để viết SPEC.
+
+### Q1: URL grammar + HTTP error mapping
+
+| Layer | URL/Behavior |
+|-------|-------------|
+| **Write tools** | `POST /api/tools/{toolName}` — kebab-case names: `delegate-task`, `execute-slash-command`, `session-patch`, `hivemind-trajectory`, `hivemind-session-view`, `delegation-status`, `hivemind-command-engine` |
+| **Read tools** | Nested under session: `GET /api/state/sessions/{sessionId}`, `GET /api/state/sessions/{sessionId}/delegations`, `GET /api/state/sessions/{sessionId}/trajectory`, `GET /api/state/sessions/{sessionId}/pressure` |
+| **Tool catalog** | `GET /api/catalog/tools` (12 tool list) — tách riêng `GET /api/catalog` (json-render spec cho SC-03) |
+| **Error pattern (dual-channel)** | HTTP 4xx/5xx = transport lỗi (JSON sai, body quá lớn, route 404, WS upgrade fail). HTTP 200 + `ToolResponse.error.code` = application lỗi (validation, forbidden path, tool threw, delegated child failed). Discriminator: `VALIDATION_*`, `FORBIDDEN_PATH`, `TOOL_ERROR_*`, `DELEGATION_*`, `INTERNAL_*` |
+
+**Recommend:** Khóa dual-channel pattern (match OpenCode SDK error handling). OK?
+
+---
+
+### Q2: SSE event filtering
+
+| Aspect | Recommend |
+|--------|-----------|
+| Filter syntax | `GET /api/events?filter=session,delegation,trajectory,pressure,invalidate,heartbeat` — allowlist comma-separated. Mặc định = tất cả. |
+| 50 connections cap | **Per-process global**, không per-client |
+| Filter style | Allowlist (fail-safe) thay vì blocklist |
+
+OK?
+
+---
+
+### Q3: Catalog refresh model
+
+| Option | Mô tả |
+|--------|-------|
+| **A** ⭐ recommend | Tạo 1 lần lúc server startup, immutable suốt đời server. In-memory constant. Match §4.5 "pre-generated JSON, loaded at startup". |
+| B | File-watcher hot-reload + emit `invalidate.cache` event |
+| C | TTL + `?fresh=true` override |
+
+**Recommend A** cho SC-02. Size budget < 1MB (json-render 44 components theo §7.1 fit). Phase-change-driven updates là follow-on, không nằm scope SC-02.
+
+OK?
+
+---
+
+## Trả lời (chỉ cần ngắn)
+
+| Q | Recommend | Đồng ý? |
+|---|----------|---------|
+| Q1 | URL grammar + dual-channel error (match OpenCode SDK) | yes / chỉnh |
+| Q2 | Allowlist filter + per-process 50 cap | yes / chỉnh |
+| Q3 | Option A (immutable, startup) | yes / chọn B/C |
+
+Sau khi trả lời → agent re-score → nếu ≤ 0.20 → viết `02-SPEC.md` → commit → return.
+
+## ASSISTANT (turn 516)
+
+## Goal
+- Design and implement Hivemind Sidecar — a Next.js 16 + @json-render/react bidirectional control plane bridging human operators (browser), Hivemind runtime (plugin), and native OpenCode.
+
+## Constraints & Preferences
+- Use gsd commands (gsd-*) via execute-slash-command for phase loop, not hm-* (project uses GSD as development tooling)
+- Phase loop: SPEC → DISCUSS → RESEARCH → PATTERNS → PLAN → CHECK → EXECUTE → VERIFY → SHIP, one phase at a time
+- Atomic commits required for both documents and code at each checkpoint
+- Sidecar is bidirectional (not read-only): browser ↔ plugin HTTP server ↔ OpenCode via REST + SSE + WebSocket
+- json-render v0.19.0 with 36 shadcn components + 8 custom for the UI catalog
+- Two-server model: plugin-embedded HTTP/WS server + Next.js 16 standalone app
+- ~85 integration surfaces across delegation (27 tools), tmux (7), session-tracker (25+), trajectory (5), pressure (6), config (8)
+- Multi-round orchestration: each gsd command cycle requires user authorization before proceeding
+- Use task tool with gsd-phase-researcher (NOT gsd-eval-auditor) when execute-slash-command returns wrong agent intent
+
+## Progress
+### Done
+- Landscape formed: `.hivemind/planning/sidecar-vision/landscape.md`
+- 5 research+architecture artifacts produced: json-render API, Next.js patterns, ecosystem references, codebase audit (85 surfaces), full architecture (1,113 LOC)
+- ROADMAP.md and STATE.md updated with SC-01..SC-06 phase table
+- **SC-01 Sidecar Foundation fully complete** — 7 commits, 3 waves, 59 tests pass, typecheck clean
+  - `src/sidecar/types.ts` — 3 type exports (SidecarEventType 11 members, SidecarEvent, DirectoryEntry)
+  - `src/sidecar/readonly-state-extensions.ts` — 4 CANONICAL_PREFIXES + listCanonicalDirectory()
+  - `src/sidecar/server/registry.ts` — SidecarDependencyRegistry (6 lazy getter/setter pairs, `[Harness]` errors)
+  - `src/sidecar/server/sse/pool.ts` — SseConnectionPool (50 max conn, 30s heartbeat, broadcast)
+  - `src/sidecar/server/factory.ts` — createSidecarServer (127.0.0.1:0, /health→200, other→501, SIGTERM cleanup)
+  - `src/plugin.ts` — Step 5.5 fire-and-forget server start, binds client+sessionTracker+delegationManager
+  - `package.json` — @json-render/*@0.19.0, ws@8.18 in optionalDependencies
+- SC-01 UAT: 8/8 PASS, typecheck clean, all 59 tests passing
+- **SC-01 SECURITY:** `/gsd-secure-phase SC-01` PASS — 7/7 threats CLOSED (6 mitigated, 1 accepted risk T-SC01-02), SECURITY.md committed at `0bdf1e04`
+- SC-01 fully complete through all 11 checkpoints (CP1-3 Scout/CRUD/Contract, CP4 SPEC ambig 0.12, CP5 DISCUSS 14 decisions, CP6 RESEARCH pre-done, CP8 PLAN 3 plans, CP9 EXECUTE 7 commits, CP10 VERIFY 8/8 UAT, CP11 SECURE 7/7 threats)
+- **SC-02 SPEC dispatch**: re-dispatched via task tool with subagent_type=gsd-phase-researcher (NOT gsd-eval-auditor as execute-slash-command suggested)
+  - Initial ambiguity assessment from spec-phase: composite 0.36 (Goal 0.20, Scope 0.35, Reqs 0.40, AC 0.50)
+  - Round 1 questions started (3 of 6 max), Q1 = WebSocket scope: delegation-only or full event mirror
+  - Output truncated at 2296 chars
+
+### In Progress
+- `/gsd-spec-phase SC-02` Round 1 Socratic interview — agent awaiting user answers to Q1-Q3
+
+### Blocked
+- (none — waiting for user to answer Socratic interview questions)
+
+## Key Decisions
+- Two-server model: plugin HTTP/WS server (raw Node http) ↔ Next.js 16 standalone app, communicated via localhost REST+SSE+WS
+- Single unified json-render catalog (44 components: 36 shadcn + 8 custom), not per-panel catalogs
+- SSE for event push (90% use cases), WebSocket reserved for delegation streaming only
+- Lazy dependency binding via SidecarDependencyRegistry — server starts early (step 5.5) before delegation modules exist
+- Sidecar server start is fire-and-forget, non-blocking to plugin init
+- SC-01 accepted risk T-SC01-02: `.opencode/` exposure via CANONICAL_PREFIXES — localhost-only, no secrets
+- SC-01 all 7 threats: 6 mitigated, 1 accepted (T-SC01-02)
+- L0 must NOT do inline scout/spec work; always delegate to gsd-* subagent (gsd-phase-researcher is the generic phase worker used for both gsd-secure-phase and gsd-spec-phase)
+
+## Next Steps
+1. User answers Socratic Round 1 questions (Q1-Q3) for SC-02 SPEC
+2. After all rounds pass (ambiguity ≤ 0.20), agent writes `02-SPEC.md` and commits atomically
+3. Run `/gsd-discuss-phase SC-02` (locks 8-12 gray area decisions)
+4. Run `/gsd-research-phase SC-02` (likely skip, reuse SC-01 research)
+5. Run `/gsd-plan-phase SC-02` (write PLAN.md + plan-N.md files)
+6. Run `/gsd-execute-phase SC-02` (wave-based atomic commits, 3-7 expected)
+7. Run `/gsd-verify-work SC-02` (UAT, goal-backward verification)
+8. Run `/gsd-secure-phase SC-02` (STRIDE threat verification)
+9. Continue through SC-03 (Next.js app), SC-04 (Session Explorer), SC-05 (Delegation Dashboard), SC-06 (MEMS + Control Panel)
+
+## Critical Context
+- Tmux workflow (P50-P55) runs in parallel — trajectory and agent-contract must isolate sidecar work from tmux
+- json-render v0.19.0 upgrade: no breaking changes from 0.18.x, purely additive (defineDirective API, @json-render/directives)
+- `gsd-research-phase` command does not exist — research falls into gsd-plan-phase internally
+- execute-slash-command's intent detection can return wrong agent (suggested gsd-eval-auditor for spec-phase); override with task tool + subagent_type=gsd-phase-researcher
+- SC-02 architecture surface (from ARCHITECTURE.md §4-6):
+  - REST state (§4.1): 4 endpoints with 5s/2s TTL cache, ETag-based
+  - REST tool proxy (§4.2): 7 endpoints with `ToolResponse<T>` envelope `{ok, data, error, meta:{duration, tool}}`
+  - SSE (§4.3): `GET /api/events` — 11 event types, 30s heartbeat, max 50 connections
+  - WebSocket (§4.4): `WS /ws/delegation` — subscribe/unsubscribe/abort + delegation.output/status/notification
+  - Catalog (§4.5): `GET /api/catalog` — pre-generated json-render spec (for SC-03 to consume)
+  - Tool proxy selection (§6.4): 12 exposed / 15 not exposed with rationale table
+  - Path safety (§6.3): `isSidecarSessionFilePath()` gates `session-patch` to only `**/session-context-prompt.md` + `.hivemind/**` (no canonical state writes per SIDECAR-03)
+- Phase directory: `.planning/phases/SC-02-rest-api-tool-proxy/`
+- Delegation path for SC-02: fast-path direct to gsd-phase-researcher (single specialist, known routing)
+
+## Relevant Files
+- `.hivemind/planning/sidecar-vision/`: Full sidecar landscape (landscape.md), architecture (ARCHITECTURE.md), research (json-render, nextjs, ecosystem), codebase audit (85 surfaces)
+- `.planning/phases/SC-01-sidecar-foundation/`: Phase documents (SPEC, CONTEXT, PLANs, UAT, SUMMARY, SECURITY)
+- `src/sidecar/`: Sidecar source code (types.ts, readonly-state-extensions.ts, server/registry.ts, server/sse/pool.ts, server/factory.ts, readonly-state.ts)
+- `src/plugin.ts`: Step 5.5 sidecar server startup wiring
+- `.planning/ROADMAP.md`: SC-01..SC-06 phase table (line ~149)
+- `.planning/STATE.md`: Sidecar state section
+- `.planning/phases/SC-02-rest-api-tool-proxy/`: Target dir for SC-02 SPEC.md (needs creation)
+- `.opencode/get-shit-done/workflows/spec-phase.md`: Socratic spec workflow reference
+- `.opencode/get-shit-done/templates/spec.md`: SPEC.md template reference
+
+## ASSISTANT (turn 517)
+
+Cần 3 answers Round 2 để agent viết SPEC. Nếu bạn OK với tất cả defaults, chỉ cần reply `yes all` (một từ).
+
+### Q1: URL grammar + dual-channel error pattern
+
+- Write: `POST /api/tools/{toolName}` (kebab-case)
+- Read: `GET /api/state/sessions/{sid}/{delegations|trajectory|pressure}`
+- Catalog: `GET /api/catalog/tools` (12 tool list) tách riêng `GET /api/catalog` (json-render spec)
+- Error: HTTP 4xx/5xx = transport; HTTP 200 + `ToolResponse.error.code` = application (discriminator: `VALIDATION_*`, `FORBIDDEN_PATH`, `TOOL_ERROR_*`, `DELEGATION_*`, `INTERNAL_*`)
+
+`yes` = accept | khác → nói rõ chỗ đổi
+
+### Q2: SSE event filtering
+
+- `GET /api/events?filter=session,delegation,trajectory,pressure,invalidate,heartbeat` (allowlist, mặc định all)
+- 50 connections = per-process global
+
+`yes` = accept | khác → nói rõ
+
+### Q3: Catalog refresh model
+
+- Option A: tạo 1 lần lúc startup, immutable, in-memory
+
+`yes` = accept Option A | `B` = file-watcher hot-reload | `C` = TTL + `?fresh=true`
+
+---
+
+**Reply nhanh:** `yes all` để accept tất cả defaults, hoặc ghi rõ từng câu nếu muốn chỉnh.
+
+## ASSISTANT (turn 518)
+
+Locking 3 defaults (đều là best-in-class):
+
+| Q | Locked |
+|---|--------|
+| Q1 | URL grammar as proposed + dual-channel error pattern (matches OpenCode SDK) |
+| Q2 | Allowlist filter, per-process 50-conn cap |
+| Q3 | Option A — immutable catalog tạo 1 lần lúc startup |
+
+Starting autonomous SC-02 phase loop. Báo cáo ở phase boundary, không ping giữa các checkpoint.
+
+## ASSISTANT (turn 519)
+
+SPEC.md đã commit `9e5d386c` — verified. Accepting agent's "stop here" report. Tiếp tục loop.
+
+Quick verify + dispatch discuss-phase:
+
+## ASSISTANT (turn 520)
+
+Verified: SPEC.md committed `9e5d386c`, 24KB, ready. Dispatching discuss-phase on same session (preserve context):
+
+## ASSISTANT (turn 521)
+
+Agent auto-mode'd through 0 questions, locked 12 decisions (best-in-class defaults), committed `d66c1055`. Verify + next:
+
+## ASSISTANT (turn 522)
+
+CONTEXT.md verified — 12 decisions locked, dual-channel errors, cache invalidation, WS backpressure, catalog versioning all in place. **Governance note:** SC-02 surface is pure HTTP/SSE/WS, no PTY/terminal projection — independent of CP-PTY runway. Continuing loop.
+
+Dispatching research-phase:
+
+## ASSISTANT (turn 523)
+
+## Goal
+- Design and implement Hivemind Sidecar — a Next.js 16 + @json-render/react bidirectional control plane bridging browser, Hivemind plugin, and native OpenCode.
+
+## Constraints & Preferences
+- Use gsd commands via execute-slash-command for phase loop, not hm-* (project uses GSD as development tooling)
+- Phase loop: SPEC → DISCUSS → RESEARCH → PATTERNS → PLAN → CHECK → EXECUTE → VERIFY → SHIP, one phase at a time
+- Atomic commits required for both documents and code at each checkpoint
+- Sidecar is bidirectional: browser ↔ plugin HTTP server ↔ OpenCode via REST + SSE + WebSocket
+- json-render v0.19.0 with 36 shadcn components + 8 custom for the UI catalog
+- Two-server model: plugin-embedded HTTP/WS server + Next.js 16 standalone app
+- ~85 integration surfaces across delegation (27 tools), tmux (7), session-tracker (25+), trajectory (5), pressure (6), config (8)
+- **User "automate the loop"**: apply best-in-class defaults, no Socratic ping-pong, minimize back-and-forth
+- Use task tool with gsd-phase-researcher (NOT gsd-eval-auditor) when execute-slash-command returns wrong agent intent
+- L0 reports at phase boundaries only, not per-checkpoint
+
+## Progress
+### Done
+- Landscape formed: `.hivemind/planning/sidecar-vision/landscape.md`
+- 5 research+architecture artifacts: json-render API, Next.js patterns, ecosystem refs, codebase audit (85 surfaces), full architecture (1,113 LOC)
+- ROADMAP.md + STATE.md updated with SC-01..SC-06 phase table
+- **SC-01 Sidecar Foundation fully complete** — 7 commits, 3 waves, 59 tests pass, typecheck clean
+  - `src/sidecar/types.ts`, `readonly-state-extensions.ts`, `server/registry.ts`, `server/sse/pool.ts`, `server/factory.ts`, `src/plugin.ts` step 5.5 wiring
+  - SC-01 UAT: 8/8 PASS, `/gsd-secure-phase SC-01` PASS (7/7 threats: 6 mitigated, 1 accepted T-SC01-02), SECURITY.md at `0bdf1e04`
+- **SC-02 SPEC complete** — commit `9e5d386c`, file `.planning/phases/SC-02-rest-api-tool-proxy/02-SPEC.md` (24KB, 24074 bytes)
+  - Composite ambiguity 0.1875 (under 0.20 gate)
+  - Socratic R1 (3Q answered): Q1=A delegation-only WS, Q2=12 tools per §6.4, Q3=no auth/rate-limit (deferred to OpenCode)
+  - Socratic R2 (3Q auto-applied): URL grammar + dual-channel error, allowlist SSE filter + per-process 50 cap, Option A immutable catalog
+- **SC-02 DISCUSS complete** — commit `d66c1055`, file `.planning/phases/SC-02-rest-api-tool-proxy/02-CONTEXT.md` (306 lines, 12 decisions locked: 6 from SPEC Open Items + 6 emergent, auto-mode 0 questions)
+  - 17 endpoint surface: 6 read state (snapshot, sessions, sessions/{id}/children|context|delegations|docs), 7 write tool proxy, 1 SSE `/api/events`, 1 WS `/ws/delegation`, 2 catalog (`/api/catalog`, `/api/catalog/tools`)
+
+### In Progress
+- Awaiting dispatch of `/gsd-research-phase SC-02` (likely fast — SC-01 research covers most)
+
+### Blocked
+- (none)
+
+## Key Decisions
+- Two-server model: plugin HTTP/WS server (raw Node http) ↔ Next.js 16 standalone app, communicated via localhost REST+SSE+WS
+- Single unified json-render catalog (44 components: 36 shadcn + 8 custom), not per-panel catalogs
+- SSE for event push (90% use cases), WebSocket reserved for delegation streaming only
+- Lazy dependency binding via SidecarDependencyRegistry — server starts early (step 5.5) before delegation modules exist
+- Sidecar server start is fire-and-forget, non-blocking to plugin init
+- SC-01 accepted risk T-SC01-02: `.opencode/` exposure via CANONICAL_PREFIXES — localhost-only, no secrets
+- **SC-02 BOUNDED sidecar**: strictly aligned to OpenCode's client-server architecture, uses OpenCode SDK + server API, NO auth/rate-limit (deferred to native OpenCode runtime)
+- **SC-02 dual-channel error pattern**: HTTP 4xx/5xx = transport; HTTP 200 + `ToolResponse.error.code` = application (discriminator prefixes: `VALIDATION_*`, `FORBIDDEN_PATH`, `TOOL_ERROR_*`, `DELEGATION_*`, `INTERNAL_*`)
+- **SC-02 catalog**: Option A immutable, generated once at server startup, in-memory constant; no TTL/file-watcher/hot-reload
+- **SC-02 SSE filter**: allowlist comma-separated `?filter=session,delegation,trajectory,pressure,invalidate,heartbeat`, default=all, per-process 50-conn global cap
+- **SC-02 WS scope**: delegation-only (subscribe/unsubscribe/abort + delegation.output/status/notification); SSE is sole source for session/trajectory/pressure
+- L0 must NOT do inline scout/spec work; always delegate to gsd-* subagent (gsd-phase-researcher is the generic phase worker)
+
+## Next Steps
+1. Dispatch `/gsd-research-phase SC-02` — likely thin, reuse SC-01 research where possible
+2. Dispatch `/gsd-plan-phase SC-02` — write PLAN.md + plan-N.md files (with plan-checker loop)
+3. Dispatch `/gsd-execute-phase SC-02` — wave-based atomic commits, 3-7 expected
+4. Dispatch `/gsd-verify-work SC-02` — UAT, goal-backward verification
+5. Dispatch `/gsd-secure-phase SC-02` — STRIDE threat verification
+6. Continue through SC-03 (Next.js app), SC-04 (Session Explorer), SC-05 (Delegation Dashboard), SC-06 (MEMS + Control Panel)
+
+## Critical Context
+- Tmux workflow (P50-P55) runs in parallel — trajectory and agent-contract must isolate sidecar work from tmux
+- json-render v0.19.0 upgrade: no breaking changes from 0.18.x, purely additive (defineDirective API, @json-render/directives)
+- `gsd-research-phase` command does not exist — research falls into gsd-plan-phase internally (or reuse SC-01 research)
+- execute-slash-command's intent detection can return wrong agent (suggested gsd-eval-auditor for spec-phase); override with task tool + subagent_type=gsd-phase-researcher
+- SC-02 architecture surface (from ARCHITECTURE.md §4-6):
+  - REST state (§4.1): 4 endpoints with 5s/2s TTL cache, ETag-based
+  - REST tool proxy (§4.2): 7 endpoints with `ToolResponse<T>` envelope `{ok, data, error, meta:{duration, tool}}`
+  - SSE (§4.3): `GET /api/events` — 11 event types, 30s heartbeat, max 50 connections
+  - WebSocket (§4.4): `WS /ws/delegation` — subscribe/unsubscribe/abort + delegation.output/status/notification
+  - Catalog (§4.5): `GET /api/catalog` — pre-generated json-render spec (for SC-03 to consume)
+  - Tool proxy selection (§6.4): 12 exposed / 15 not exposed with rationale table
+  - Path safety (§6.3): `isSidecarSessionFilePath()` gates `session-patch` to only `**/session-context-prompt.md` + `.hivemind/**` (no canonical state writes per SIDECAR-03)
+- Stacking protocol: same task_id `ses_176d78648ffeP7wkk2kstwd0BF` reused across SC-02 spec + discuss phases (preserve context); can stack on completed sessions
+- Stale task_id: agent in last discuss return asked for clarification — was correct behavior, just L0 verifies artifacts + dispatches next
+- Phase dir: `.planning/phases/SC-02-rest-api-tool-proxy/`
+
+## Relevant Files
+- `.hivemind/planning/sidecar-vision/`: Full sidecar landscape (landscape.md), architecture (ARCHITECTURE.md), research, codebase audit (85 surfaces)
+- `.planning/phases/SC-01-sidecar-foundation/`: Phase documents (SPEC, CONTEXT, PLANs, UAT, SUMMARY, SECURITY)
+- `.planning/phases/SC-02-rest-api-tool-proxy/02-SPEC.md`: SC-02 SPEC, committed `9e5d386c`, 24KB — defines 17 endpoints
+- `.planning/phases/SC-02-rest-api-tool-proxy/02-CONTEXT.md`: SC-02 CONTEXT, committed `d66c1055`, 306 lines, 12 decisions locked
+- `src/sidecar/`: Sidecar source code (types.ts, readonly-state-extensions.ts, server/registry.ts, server/sse/pool.ts, server/factory.ts, readonly-state.ts)
+- `src/plugin.ts`: Step 5.5 sidecar server startup wiring
+- `.planning/ROADMAP.md`: SC-01..SC-06 phase table (line ~149)
+- `.planning/STATE.md`: Sidecar state section
+- `.opencode/get-shit-done/workflows/spec-phase.md`: Socratic spec workflow reference
+- `.opencode/get-shit-done/templates/spec.md`: SPEC.md template reference
+
+## ASSISTANT (turn 524)
+
+Research phase complete. Continuing loop with plan-phase dispatch.
+
+## ASSISTANT (turn 525)
+
+Research phase complete. Continuing loop with plan-phase dispatch.
+
+## USER (turn 29)
+
+**source:** real-human
+
+please resume i was disconnected
+
+## ASSISTANT (turn 28)
+
+Resuming. Research phase complete (commit `adbdde35`). Dispatching plan-phase now.
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "SC-02 plan-phase — write PLAN.md + plan-N.md",
+  "subagent_type": "gsd-planner",
+  "task_id": "ses_176d78648ffeP7wkk2kstwd0BF"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_176d78648ffeP7wkk2kstwd0BF
+```
+
+
+## ASSISTANT (turn 29)
+
+Plan-phase returned empty. Let me verify disk state and re-dispatch if needed.
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_function_pjkfu3pgneqy_1"
+}
+```
+
+
+## ASSISTANT (turn 30)
+
+Plan-phase complete (commit `eab8d1bf`). 7 must_haves, 5 waves, plan-checker PASS. Verifying plan structure and dispatching execute-phase.
+
+### Tool: read
+
+**Input:**
+```json
+{
+  "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/SC-02-rest-api-tool-proxy/02-PLAN.md"
+}
+```
+
+
+## ASSISTANT (turn 31)
+
+Plan validated. **Governance compliance check:** Plan is L5 docs-only, explicitly disclaims runtime readiness, identifies allowed/forbidden surfaces, verification commands, and stop conditions. SC-02 surface is pure HTTP/SSE/WS — no PTY/terminal projection, so no CP-PTY runway dependency. Dispatching execute-phase.
+
+## USER (turn 30)
+
+**source:** real-human
+
+please resume and stack on the aborted session above I was disconnected due to internet disconnection 
+
+## ASSISTANT (turn 1)
+
+Checking SC-02 execute-phase progress before re-dispatching.
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_function_elzy5legywwb_1"
+}
+```
+
+
+### Tool: bash
+
+**Input:**
+```json
+{
+  "callID": "call_function_v32cg68pvyuu_1"
+}
+```
+
+
+## ASSISTANT (turn 2)
+
+## Goal
+- Design and implement Hivemind Sidecar — a Next.js 16 + @json-render/react bidirectional control plane bridging browser, Hivemind plugin, and native OpenCode.
+
+## Constraints & Preferences
+- Use gsd commands via execute-slash-command for phase loop, not hm-* (project uses GSD as development tooling)
+- Phase loop: SPEC → DISCUSS → RESEARCH → PATTERNS → PLAN → CHECK → EXECUTE → VERIFY → SHIP, one phase at a time
+- Atomic commits required for both documents and code at each checkpoint
+- Sidecar is bidirectional: browser ↔ plugin HTTP server ↔ OpenCode via REST + SSE + WebSocket
+- json-render v0.19.0 with 36 shadcn components + 8 custom for the UI catalog
+- Two-server model: plugin-embedded HTTP/WS server + Next.js 16 standalone app
+- ~85 integration surfaces across delegation (27 tools), tmux (7), session-tracker (25+), trajectory (5), pressure (6), config (8)
+- **User "automate the loop"**: apply best-in-class defaults, no Socratic ping-pong, minimize back-and-forth
+- Use task tool with gsd-phase-researcher (NOT gsd-eval-auditor) when execute-slash-command returns wrong agent intent
+- L0 reports at phase boundaries only, not per-checkpoint
+- L0 prose = vi, planning docs = en
+- SC-02 module size budget: 11 modules all ≤500 LOC
+
+## Progress
+### Done
+- Landscape formed: `.hivemind/planning/sidecar-vision/landscape.md`
+- 5 research+architecture artifacts: json-render API, Next.js patterns, ecosystem refs, codebase audit (85 surfaces), full architecture (1,113 LOC)
+- ROADMAP.md + STATE.md updated with SC-01..SC-06 phase table
+- **SC-01 Sidecar Foundation fully complete** — 7 commits, 3 waves, 59 tests pass, typecheck clean
+  - `src/sidecar/types.ts`, `readonly-state-extensions.ts`, `server/registry.ts`, `server/sse/pool.ts`, `server/factory.ts`, `src/plugin.ts` step 5.5 wiring
+  - SC-01 UAT: 8/8 PASS, `/gsd-secure-phase SC-01` PASS (7/7 threats: 6 mitigated, 1 accepted T-SC01-02), SECURITY.md at `0bdf1e04`
+- **SC-02 SPEC complete** — commit `9e5d386c`, file `.planning/phases/SC-02-rest-api-tool-proxy/02-SPEC.md` (24KB, 24074 bytes)
+  - Composite ambiguity 0.1875 (under 0.20 gate)
+  - Socratic R1 (3Q answered): Q1=A delegation-only WS, Q2=12 tools per §6.4, Q3=no auth/rate-limit (deferred to OpenCode)
+  - Socratic R2 (3Q auto-applied): URL grammar + dual-channel error, allowlist SSE filter + per-process 50 cap, Option A immutable catalog
+- **SC-02 DISCUSS complete** — commit `d66c1055`, file `.planning/phases/SC-02-rest-api-tool-proxy/02-CONTEXT.md` (306 lines, 12 decisions locked: 6 from SPEC Open Items + 6 emergent, auto-mode 0 questions)
+- **SC-02 RESEARCH complete** — commit `adbdde35`, file `.planning/phases/SC-02-rest-api-tool-proxy/02-RESEARCH.md` (1084 lines, 73746 bytes)
+  - 12/12 CONTEXT decisions VERIFIED verbatim (D-SC02-01..12)
+  - Stack validated: @json-render/core@0.19.0, @json-render/react@0.19.0, ws@8.18, @opencode-ai/plugin
+  - OpenCode SDK integration path validated (existing 26-tool Hooks.tool map)
+  - 9/10 STRIDE mini-pass mitigated, 1 accepted
+  - 8 open risks documented
+  - New dep candidate: @types/ws (slopcheck legitimacy audit required)
+- **SC-02 PLAN complete** — commit `eab8d1bf`, file `.planning/phases/SC-02-rest-api-tool-proxy/02-PLAN.md` (24814 bytes)
+  - 7 must_haves (goal-backward), 5 waves, gsd-plan-checker PASS
+  - 5 plan-N.md files: plan-0.md (test scaffolding), plan-1.md (core infra), plan-2.md (REST routes), plan-3.md (real-time), plan-4.md (integration)
+  - L5 docs-only evidence level; does not claim runtime readiness
+
+### In Progress
+- Awaiting dispatch of `/gsd-execute-phase SC-02` — 5 waves, atomic commits per wave, TDD discipline
+- User disconnected after plan-phase commit verification, asked to "resume"
+
+### Blocked
+- (none)
+
+## Key Decisions
+- Two-server model: plugin HTTP/WS server (raw Node http) ↔ Next.js 16 standalone app, communicated via localhost REST+SSE+WS
+- Single unified json-render catalog (44 components: 36 shadcn + 8 custom), not per-panel catalogs
+- SSE for event push (90% use cases), WebSocket reserved for delegation streaming only
+- Lazy dependency binding via SidecarDependencyRegistry — server starts early (step 5.5) before delegation modules exist
+- Sidecar server start is fire-and-forget, non-blocking to plugin init
+- SC-01 accepted risk T-SC01-02: `.opencode/` exposure via CANONICAL_PREFIXES — localhost-only, no secrets
+- **SC-02 BOUNDED sidecar**: strictly aligned to OpenCode's client-server architecture, uses OpenCode SDK + server API, NO auth/rate-limit (deferred to native OpenCode runtime)
+- **SC-02 dual-channel error pattern**: HTTP 4xx/5xx = transport; HTTP 200 + `ToolResponse.error.code` = application (discriminator prefixes: `VALIDATION_*`, `FORBIDDEN_PATH`, `TOOL_ERROR_*`, `DELEGATION_*`, `INTERNAL_*`)
+- **SC-02 catalog**: Option A immutable, generated once at server startup, in-memory constant; no TTL/file-watcher/hot-reload; SHA-256 ETag
+- **SC-02 SSE filter**: allowlist comma-separated `?filter=session,delegation,trajectory,pressure,invalidate,heartbeat`, default=all, per-process 50-conn global cap
+- **SC-02 WS scope**: delegation-only (subscribe/unsubscribe/abort + delegation.output/status/notification); 64KB buffer, close code 1013 on overflow
+- **SC-02 12-tool breakdown (reconciled)**: 5 read (state) + 7 write (TOOL_HANDLERS). 17 HTTP routes = 4 read-state patterns + 7 write + 1 SSE + 1 WS + 2 catalog
+- **CRITICAL**: SC-02 is thin HTTP→tool-call adapter, NOT tool registration. 7 write tools ALREADY in 26-tool `Hooks.tool` map at `src/plugin.ts:727-749`. `TOOL_HANDLERS` is separate HTTP-level dispatch map (whitelist proxy), invariant: TOOL_HANDLERS keys ⊆ Hooks.tool keys
+- L0 must NOT do inline scout/spec/work; always delegate to gsd-* subagent (gsd-phase-researcher is the generic phase worker)
+- execute-phase: 11 files all ≤500 LOC, 0 new runtime deps expected, @types/ws requires slopcheck legitimacy audit (fallback: ambient .d.ts in `src/sidecar/ws/types.d.ts`)
+
+## Next Steps
+1. Dispatch `/gsd-execute-phase SC-02` — 5 waves sequentially, TDD (tests first), atomic commit per wave
+   - Wave 0: Test scaffolding (vitest mocks for SidecarDependencyRegistry)
+   - Wave 1: Core infra (SidecarRouter, SidecarStateCache, tool lookup extension)
+   - Wave 2: REST routes (state, tools, catalog)
+   - Wave 3: Real-time (SSE filter, WS delegation + heartbeat)
+   - Wave 4: Integration + verification (1 real integration test, typecheck, lint, full suite)
+2. Dispatch `/gsd-verify-work SC-02` — UAT, goal-backward verification, 7 must_haves
+3. Dispatch `/gsd-secure-phase SC-02` — STRIDE threat verification (8 open risks from research)
+4. Continue through SC-03 (Next.js app), SC-04 (Session Explorer), SC-05 (Delegation Dashboard), SC-06 (MEMS + Control Panel)
+
+## Critical Context
+- Tmux workflow (P50-P55) runs in parallel — trajectory and agent-contract must isolate sidecar work from tmux
+- json-render v0.19.0 upgrade: no breaking changes from 0.18.x, purely additive (defineDirective API, @json-render/directives)
+- `gsd-research-phase` command does not exist as a slash command — research falls into gsd-plan-phase internally OR dispatch directly to gsd-phase-researcher subagent via task tool (works correctly, returns structured output)
+- execute-slash-command's intent detection can return wrong agent (suggested gsd-eval-auditor for spec-phase); override with task tool + subagent_type=gsd-phase-researcher
+- **Tool call result truncation**: subagent returns may include "(Tool output truncated for compaction: omitted N chars)" footer — always verify via disk state (ls + git log) before reacting
+- **Empty task_result**: gsd-planner returned empty task_result on plan-phase, but disk verification (`ls .planning/phases/SC-02-rest-api-tool-proxy/`) showed all files present and committed — verify disk before re-dispatching
+- SC-02 architecture surface (from ARCHITECTURE.md §4-6):
+  - REST state (§4.1): 4 endpoints with 5s/2s TTL cache, ETag-based
+  - REST tool proxy (§4.2): 7 endpoints with `ToolResponse<T>` envelope `{ok, data, error, meta:{duration, tool}}`
+  - SSE (§4.3): `GET /api/events` — 11 event types, 30s heartbeat, max 50 connections
+  - WebSocket (§4.4): `WS /ws/delegation` — subscribe/unsubscribe/abort + delegation.output/status/notification
+  - Catalog (§4.5): `GET /api/catalog` — pre-generated json-render spec (for SC-03 to consume)
+  - Tool proxy selection (§6.4): 12 exposed / 15 not exposed with rationale table
+  - Path safety (§6.3): `isSidecarSessionFilePath()` gates `session-patch` to only `**/session-context-prompt.md` + `.hivemind/**` (no canonical state writes per SIDECAR-03)
+- Stacking protocol: same task_id `ses_176d78648ffeP7wkk2kstwd0BF` reused across SC-02 spec + discuss + research + plan phases (preserve context); can stack on completed sessions
+- 7 runtime-state files in `.hivemind/session-tracker/**` are excluded from atomic commits per inherited constraint
+- Test gating: per-task `npx vitest run tests/sidecar/ -t "<behavior>"`, per-wave `npx vitest run tests/sidecar/`, phase `SIDECAR_INTEGRATION=1 npx vitest run tests/sidecar/integration/`, perf `SIDECAR_PERF=1 npx vitest run tests/sidecar/integration/performance.test.ts` (3 perf tests gated)
+- Coverage target: 75/62/80/77 (statements/branches/functions/lines) per TESTING.md
+- Phase dir: `.planning/phases/SC-02-rest-api-tool-proxy/`
+
+## Relevant Files
+- `.hivemind/planning/sidecar-vision/`: Full sidecar landscape (landscape.md), architecture (ARCHITECTURE.md), research, codebase audit (85 surfaces)
+- `.planning/phases/SC-01-sidecar-foundation/`: Phase documents (SPEC, CONTEXT, PLANs, UAT, SUMMARY, SECURITY)
+- `.planning/phases/SC-02-rest-api-tool-proxy/02-SPEC.md`: SC-02 SPEC, committed `9e5d386c`, 24KB — defines 17 endpoints
+- `.planning/phases/SC-02-rest-api-tool-proxy/02-CONTEXT.md`: SC-02 CONTEXT, committed `d66c1055`, 306 lines, 12 decisions locked
+- `.planning/phases/SC-02-rest-api-tool-proxy/02-RESEARCH.md`: SC-02 RESEARCH, committed `adbdde35`, 1084 lines — stack validation, pattern refs, 8 open risks
+- `.planning/phases/SC-02-rest-api-tool-proxy/02-PLAN.md`: SC-02 PLAN, committed `eab8d1bf`, 24814 bytes — 7 must_haves, 5 waves
+- `.planning/phases/SC-02-rest-api-tool-proxy/plan-0.md` through `plan-4.md`: per-wave plans (test scaffolding → integration)
+- `src/sidecar/`: Sidecar source code (types.ts, readonly-state-extensions.ts, server/registry.ts, server/sse/pool.ts, server/factory.ts, readonly-state.ts)
+- `src/plugin.ts:727-749`: 26-tool Hooks.tool map (includes the 7 write tools SC-02 proxies)
+- `src/plugin.ts`: Step 5.5 sidecar server startup wiring
+- `package.json`: deps `@json-render/core@0.19.0`, `@json-render/react@0.19.0`, `ws@8.18` (optionalDependencies)
+- `.planning/ROADMAP.md`: SC-01..SC-06 phase table (line ~149)
+- `.planning/STATE.md`: Sidecar state section
+- `.opencode/get-shit-done/workflows/spec-phase.md`: Socratic spec workflow reference
+- `.opencode/get-shit-done/templates/spec.md`: SPEC.md template reference
+
+## COMPACTED (2026-06-03T01:04:54.271Z)
+
+**compact_summary (from children):**
+
+**ses_1774086acffe6D5Hl6owaiJ7ou:** ## Research Complete
+
+**File:** `.hivemind/planning/sidecar-vision/RESEARCH-json-render.md`
+
+---
+
+### Key Findings Summary
+
+**Upgrade is safe — no breaking changes.** v0.19.0 is purely additive.
+
+| Research Question | Answer |
+|---|---|
+| API differences 0.18→0.19? | **None.** All APIs (`defineCatalog`, `defineRegistry`, `Renderer`, `JSONUIProvider`, `useUIStream`) unchanged |
+| `catalog.prompt({ mode })`? | Stable. Use `"standalone"` / `"inline"` — `"generate"` / `"chat"` are deprecated aliases |
+| `@json-render/shadcn` stable? | **Yes.** 36 pre-built components, stable since v0.12. Suitable for dashboard |
+| Zod peer dep requirement? | `zod@^4.0.0` — project's `^4.4.3` is fully compatible |
+| `validateSpec` / `autoFixSpec` / `formatSpecIssues`? | **All exist** in `@json-render/core` exports — unchanged |
+| `catalog.toCode()`? | **Does not exist.** No code export API in any version |
+| SpecStream / JSON Patch streaming? | **Fully supported.** All streaming APIs confirmed: `compileSpecStream`, `applySpecStreamPatch`, `pipeJsonRender`, etc. |
+| Breaking changes? | **Zero between 0.18→0.19.** Last BCs were v0.6.0 (already absorbed) |
+
+### What's new in 0.19.0
+- `defineDirective` API — custom computed directives
+- `@json-render/directives` package — 7 ready-made directives (`$format`, `$math`, `$concat`, etc.)
+
+### Upgrade actions needed
+```
+npm install @json-render/core@^0.19.0 @json-render/react@^0.19.0 @json-render/next@^0.19.0 @json-render/shadcn@^0.19.0
+```
+---
+**ses_1773d2d01ffeWqP0birHn4Y6WE:** **File written:** `.hivemind/planning/sidecar-vision/RESEARCH-nextjs.md` (615 lines)
+
+### Key Architectural Recommendations
+
+| # | Decision | What & Why |
+|---|----------|------------|
+| 1 | **`output: "standalone"`** | Standard Next.js app, not a plugin child process. Full RSC/API/SSE support. Production server via `node server.js`. |
+| 2 | **`fs.readFileSync` in RSC** | Server Components read `.hivemind/state/*.json` directly with `process.cwd()` + `node:fs`. Official Next.js pattern (blog-starter example). No database needed. |
+| 3 | **SSE via `ReadableStream`** | App Router Route Handler with Web Streams API. Plugin hooks `POST` to `/api/events`, SSE broadcasts to browser `EventSource` clients. |
+| 4 | **`next/dynamic({ ssr: false })`** for json-render `Renderer` | Prevents hydration mismatch. Each panel becomes a separate JS chunk (~50-70 KB) loaded in parallel. |
+| 5 | **CSS Grid layout, not parallel routes** | Simpler than parallel route groups since all panels share the same data source. Each panel lazy-loaded with `dynamic()`. |
+| 6 | **`HIVEMIND_DIR` env var** | Path resolution flexible — sidecar can live in `tools/sidecar/` or as a sibling. |
+| 7 | **`output: "export"` rejected** | SSE + dynamic API routes require a running server. Static export fundamentally incompatible. |
+| 8 | **No `fs.watch` for cache invalidation** | SSE events are the live channel; filesystem is just persistence. Plugin hooks push deltas. |
+---
+**ses_17739d246ffezWeLl2tgQMb59X:** **Research complete.** File written to `.hivemind/planning/sidecar-vision/RESEARCH-ecosystem.md` (23KB, 7 major sections).
+
+## 3 Most Valuable References Found
+
+### 1. **OpenChamber** (`openchamber/openchamber`)
+Full GUI for OpenCode with 3.1k+ stars, 1,464 commits. Proves the "GUI on top of OpenCode server API" pattern at scale. Ships web/PWA, Tauri desktop, and VS Code extension from the same codebase. Key takeaway: the sidecar should **never modify OpenCode** — OpenChamber doesn't, and it works.
+
+### 2. **opencode-pty Plugin** (`shekohex/opencode-pty`)
+The only OpenCode plugin that ships its own browser web UI. Provides the canonical **plugin-embedded HTTP server** pattern: plugin starts a local port, React browser UI connects via REST API. REST endpoints for session CRUD (`GET/POST/DELETE /api/sessions`), terminal buffer retrieval, and health checks. This is the exact pattern the sidecar should follow.
+
+### 3. **json-render/shadcn** (`vercel-labs/json-render`)
+36 pre-built shadcn/ui components in a 3-layer architecture (Schema → Catalog → Registry). Built-in state management (`setState`, `pushState`, `removeState`) via `@json-render/zustand` / `@json-render/jotai`. The sidecar should **not build custom UI primitives** — use all 36 components from `@json-render/shadcn` and extend with 5-10 custom components (`SessionCard`, `DelegationTree`, `PressureGauge`, etc.).
+
+### Key Recommendation
+**Hybrid REST + WebSocket** communication model: REST for control/CRUD, WebSocket for streaming delegation output. Start Phase 1 with REST-only (read-only dashboard), add WebSocket in Phase 3. Localhost-only binding with optional password auth for network access.
+---
+**ses_17739d25fffeN0oxD2o0OeOJsn:** ## Mapping Complete
+
+**Focus:** Sidecar codebase surfaces audit
+
+**Document written:**
+- `.hivemind/planning/sidecar-vision/AUDIT-codebase-surfaces.md` (523 lines)
+
+**Surface count:** ~85 unique integration surfaces identified across 9 categories:
+
+| Category | Count |
+|----------|-------|
+| State files on disk | 5 |
+| Registered plugin tools | 27 |
+| Plugin hooks | 5 |
+| Delegation module files | 21 |
+| Tmux integration files | 7 |
+| Session-tracker source files | 25+ |
+| Trajectory files | 5 |
+| Pressure files | 6 |
+| Config files | 8 |
+| Public API exports | 30 modules |
+
+**Key findings:**
+- 10 critical gaps identified (CANONICAL_PREFIXES missing `.hivemind/session-tracker/`, no HTTP/SSE server, types not exported, tmux-state-query returns placeholder data, no sidecar UI components)
+- Event hook observer pipeline is the ideal SSE injection point
+- SIDECAR-03 guard must be extended to cover session-tracker paths
+---
+**ses_17736aabeffeyMrj37UJuNCHtg:** **File written:** `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` (1,113 lines)
+
+---
+
+## 5 Key Architectural Decisions Made
+
+### 1. Two-Server Model (Plugin HTTP + Next.js Standalone)
+Two separate servers communicating over localhost HTTP. The **plugin-embedded HTTP/WS server** owns all data access; the **Next.js 16 standalone app** owns all UI rendering. This avoids React/Next.js dependency bloat in the plugin, prevents version conflicts with the host OpenCode runtime, and lets the sidecar be developed and deployed independently. Port discovery via `.hivemind/state/sidecar-port.json` sentinel file.
+
+### 2. Single Unified json-render Catalog (Not Per-Panel)
+One catalog defining all **44 components** (36 shadcn/ui + 8 custom). Enables cross-panel component references (clicking a session in Explorer opens detail in Delegation Dashboard), simplifies AI spec generation, and eliminates lazy-loading complexity. Panel filtering happens at render time via a `panel` prop on the container, not at catalog definition time.
+
+### 3. Lazy Dependency Binding via Registry
+The sidecar server starts with an empty `SidecarDependencyRegistry`. Plugin modules register themselves *after* construction (e.g., `sidecarRegistry.setDelegationManager(delMods.delegationManager)`). This is necessary because the server must start early (step 5.5 in the init sequence) before delegation modules (step 7) and session tracker (step 6) exist. Prevents circular init dependencies. Unregistered endpoints return `503`.
+
+### 4. SSE for Push Events, WebSocket Only for Delegation Streaming
+SSE handles 90% of use cases — session events, state invalidation, delegation status updates. It's simpler than WebSocket (unidirectional, built-in reconnection via `EventSource` with `last-event-id`). WebSocket is reserved exclusively for the `/ws/delegation` endpoint where bidirectional streaming is needed (abort commands during live delegation output). Two protocols instead of one, but each is simpler than a WS-only s
+---
+**ses_177310218ffefT2Bmy3y3De7m1:** <task id="ses_177310218ffefT2Bmy3y3De7m1" state="completed">
+<task_result>
+ 
+</task_result>
+</task>
+---
+**ses_1772c1e74ffeChL4vae9Tkkkm3:** ## SPEC.md written — 7 requirements locked.
+
+**Phase SC-01:** Sidecar Foundation — Plugin HTTP Server + State Bridge
+**Ambiguity:** 0.14 (gate: ≤ 0.20) ✓ All dimensions met minimums
+
+### Key requirements:
+1. **Extended CANONICAL_PREFIXES** — add `.hivemind/session-tracker` and `.opencode` (4 total)
+2. **Directory listing** — `listCanonicalDirectory()` with `DirectoryEntry[]` output
+3. **Sidecar-specific types** — `SidecarEventType` union, `SidecarEvent` interface
+4. **SidecarDependencyRegistry** — 6 lazy setters, `[Harness]` errors before binding
+5. **Plugin HTTP server** — `createSidecarServer()` using raw `http.createServer`, random port, localhost-only
+6. **SseConnectionPool** — add/remove/broadcast, 30s heartbeat, 50 max connections
+7. **Plugin wiring + package bumps** — step 5.5 startup, json-render 0.18→0.19, `ws` optional dep
+
+**Next:** `/gsd-discuss-phase SC-01` — discuss-phase will detect SPEC.md and focus on implementation decisions (server factory shape, registry binding order, test plan).
+
+---
+
+## RESEARCH COMPLETE
+
+**Phase:** SC-01 - Sidecar Foundation
+**Confidence:** HIGH
+
+### Key Findings
+- Phase has detailed PLAN.md and ARCHITECTURE.md but no SPEC.md — now resolved
+- Current codebase has only `src/sidecar/readonly-state.ts` with 2 canonical prefixes
+- No server infrastructure, registry, SSE pool, or extended state functions exist
+- json-render packages at ^0.18.0 need bumping; `ws` needs addition to optional deps
+- 7 requirements locked across 4 domains (state bridge, server, registry, SSE, wiring)
+
+### File Created
+`.planning/phases/SC-01-sidecar-foundation/SC-01-SPEC.md`
+
+### Confidence Assessment
+| Area | Level | Reason |
+|------|-------|--------|
+| Standard Stack | HIGH | Raw Node http + ws — zero framework deps per architecture decision |
+| Architecture | HIGH | Two-server model fully documented in ARCHITECTURE.md (1,113 LOC) |
+| Pitfalls | MEDIUM | Startup ordering (step 5.5 constraint) is the main risk |
+
+### Open Questions
+None — phase scope 
+---
+**ses_1772bae34ffekKwxXkllz6kqc4:** Tôi sẽ thực thi spec-phase workflow cho phase **SC-01** với flag `--auto`. Hãy bắt đầu.
+
+---
+
+## Step 1: Initialize Phase Context
+---
+**ses_17729f6b3ffesz68RQ0A5Tnu7t:** Found the existing SC-01 phase directory with an existing SPEC.md and PLAN.md. Let me read them.
+---
+**ses_17727a3f0ffe7iL35uT71DMw01:** ```
+SPEC.md updated — 7 requirements locked.
+
+  Phase SC-01: Sidecar Foundation — Plugin HTTP Server + State Bridge
+  Ambiguity: 0.12 (gate: ≤ 0.20)
+  All 4 dimensions above minimum ✓
+
+  Dependencies: P39 (Integration Hardening) — verify P39 gates passed before SC-01 execution
+
+Next: /gsd-discuss-phase SC-01
+  discuss-phase will detect SPEC.md and focus on implementation decisions only.
+  (Server factory shape, registry binding order, SSE pool config, plugin.ts wiring strategy)
+```
+
+---
+
+**Research Summary:**
+
+| Step | Result |
+|------|--------|
+| Codebase scouted | ✅ `src/sidecar/` has 1 file (readonly-state.ts, 139 LOC). No server/, no types.ts, no plugin.ts wiring. `ws` not in package.json. `@json-render/*` at ^0.18.0. |
+| First ambiguity scored | 0.14 — all dimensions above minima → skip interview |
+| SPEC.md updated | ✅ Codebase evidence injected into Background; event types explicitly enumerated; ambiguity improved to 0.12 |
+| Commit | ✅ `c0391092` — `spec(phase-sc-01): update SPEC.md for Sidecar Foundation — 7 requirements with codebase-verified current state` |
+
+The existing SC-01-PLAN.md (created before this spec update) should be reviewed during discuss-phase for consistency with the updated SPEC.md requirement details.
+---
+**ses_177223683ffeV35hLVotl2ZqqI:** ```markdown
+## RESEARCH COMPLETE — DISCUSS
+
+**Phase:** SC-01 — Sidecar Foundation
+**Confidence:** HIGH — SPEC locked 7 requirements, architecture docs comprehensive
+
+### Key Findings
+- 7 SPEC requirements locked (cannot be re-opened)
+- 14 implementation decisions captured in CONTEXT.md across 7 categories
+- P39 dependency resolved — SC-01 proceeds independently
+- Existing codebase: `src/sidecar/readonly-state.ts` (139 LOC), `sidecar/` Next.js scaffold
+- Architecture doc: `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` (1113 LOC)
+
+### Files Created
+- `.planning/phases/SC-01-sidecar-foundation/SC-01-CONTEXT.md`
+- `.planning/phases/SC-01-sidecar-foundation/SC-01-DISCUSSION-LOG.md`
+
+### Ready for Planning
+Research complete — planner can now create PLAN.md files using CONTEXT.md + SPEC.md as inputs.
+
+**Next:** `/clear` then `/gsd-plan-phase SC-01 --auto`
+```
+---
+**ses_177191049ffex2SX6zz4IwPIoZ:** **Phase SC-01 planning complete.** 3 commits made:
+
+| Commit | Artifacts |
+|--------|-----------|
+| `6955ed0d` | SC-01-RESEARCH.md, SC-01-VALIDATION.md |
+| Planner revision | SC-01-PLAN.md (6 BLOCKER + 4 WARNING → all fixed) |
+| `566c1ed3` | SC-01-PLAN.md (final, verified clean) |
+
+The plan is ready for `/gsd-execute-phase SC-01`.
+---
+**ses_17714da5cffeRqX6lQb3ZGLqS3:** Good, all references loaded. Now let me execute Step 1 — Initialize.
+---
+**ses_177141682ffeKhK5QmOMlNvIE5:** All 3 PLAN.md files created. Here's the complete planning summary:
+
+---
+
+## PLANNING COMPLETE
+
+**Phase:** SC-01-sidecar-foundation
+**Plans:** 3 plans in 3 waves
+**Source items covered:** 7 REQs + 14 decisions + 2 research artifacts — **100% coverage** (verified via Multi-Source Coverage Audit)
+
+### Decision Coverage Self-Check
+
+| Decision | Plan | Status |
+|----------|------|--------|
+| D-SC01-01: async factory, {port, close} | 03 T1 | ✓ |
+| D-SC01-02: 127.0.0.1:0, port from listening event | 03 T1 | ✓ |
+| D-SC01-03: server start failure ≠ block init | 03 T2 | ✓ |
+| D-SC01-04: port file failure non-fatal | 03 T1 | ✓ |
+| D-SC01-05: GET /health → 200 JSON | 03 T1 | ✓ |
+| D-SC01-06: other routes → 501 | 03 T1 | ✓ |
+| D-SC01-07: SSE format, 30s heartbeat | 02 T2 | ✓ |
+| D-SC01-08: max 50 clients | 02 T2 | ✓ |
+| D-SC01-09: `import type` for registry | 02 T1 | ✓ |
+| D-SC01-10: typed setters | 02 T1 | ✓ |
+| D-SC01-11: independent of P39 | all | ✓ |
+| D-SC01-12: verify plugin.ts steps | 03 T2 | ✓ |
+| D-SC01-13: TDD approach | all | ✓ (`tdd="true"` + `<behavior>`) |
+| D-SC01-14: tests use port 0 | 03 T1 | ✓ |
+
+### Wave Structure
+
+| Wave | Plans | Files Modified |
+|------|-------|---------------|
+| **1** | **SC-01-01** — Types + Readonly-State Extensions | `src/sidecar/types.ts`, `src/sidecar/readonly-state-extensions.ts`, tests |
+| **2** | **SC-01-02** — DependencyRegistry + SseConnectionPool | `src/sidecar/server/registry.ts`, `src/sidecar/server/sse/pool.ts`, tests |
+| **3** | **SC-01-03** — Server Factory + Plugin Wiring + Package Bumps | `src/sidecar/server/factory.ts`, `src/plugin.ts`, `package.json`, tests |
+
+### Plans Created
+
+| Plan | Objective | Tasks | New Files | Total Tests |
+|------|-----------|-------|-----------|-------------|
+| **01** | Types + Readonly-State | 2 | `types.ts`, `readonly-state-extensions.ts` | 13+ |
+| **02** | Registry + SSE Pool | 2 | `server/registry.ts`, `server/sse/pool.ts` | 13+ |
+| **03** | Factory + Plugin Wiring + Bumps | 3 | `server/f
+---
+**ses_1770e6b02ffeixmZexS9i1am6B:** ## PLANNING COMPLETE
+
+**Phase:** SC-01-sidecar-foundation
+**Revision:** Fix all 6 BLOCKER + 4 WARNING issues from checker feedback
+
+### Issues Resolved
+
+| ID | Status | Fix |
+|----|--------|-----|
+| **BLOCKER 1** — D-SC01-05/06 (/health + 501) | ✅ | Task 2 factory.ts: explicit request handler routes GET /health → 200, all other → 501 |
+| **BLOCKER 2** — D-SC01-03 (try-catch server.start) | ✅ | Task 3: plugin.ts wiring wraps `await sidecarServer.start()` in try-catch |
+| **BLOCKER 3** — D-SC01-04 (try-catch writeFileSync) | ✅ | Task 3: nested try-catch around `writeFileSync` for sidecar-port.json |
+| **BLOCKER 4** — D-SC01-13 (Wave 0 test files) | ✅ | Test files distributed across all 3 tasks: `types.test.ts`, `registry.test.ts`, `factory.test.ts`, `pool.test.ts`, `readonly-state-extensions.test.ts` |
+| **BLOCKER 5** — Wrong requirement ID | ✅ | Changed `SIDECAR-FOUNDATION-01` → `SIDECAR-01` in frontmatter |
+| **BLOCKER 6** — Graceful degradation success criteria | ✅ | Added criteria #3 (server start failure) and #4 (port.json write failure) |
+| **WARNING 7** — 4 missing SPEC ACs | ✅ | Added to success_criteria: event types (#7), unbound getter (#9), max 50 conns (#10), test files pass (#14) |
+| **WARNING 8** — 3 missing STRIDE threats | ✅ | Added T-SC01-04 (path traversal), T-SC01-05 (server start DoS), T-SC01-06 (SSE dead connection) |
+| **WARNING 9** — D-SC01-12 (step numbering verify) | ✅ | Task 3: pre-edit `grep -n` command to verify insertion point before modifying plugin.ts |
+| **WARNING 10** — Missing verification checks | ✅ | Added `[ ]` checks for listCanonicalDirectory, event types, unbound getter, max 50 SSE connections |
+
+### Other Improvements
+- All 3 tasks now use `type: auto` + `tdd: "true"` with explicit `<behavior>` blocks per TDD convention
+- Test files listed in `files_modified` frontmatter
+- Interface contracts (D-SC01-XX) documented in `<context>` section for executor reference
+- frontmatter `must_haves` expanded to include graceful degradation 
+---
+**ses_1770c89dbffeBOzjSPW4ClcfAC:** ## PLAN COMPLETE
+
+**Plan:** SC-01-sidecar-foundation
+**Tasks:** 3/3 plans, 7/7 tasks
+**SUMMARY:** `.planning/phases/SC-01-sidecar-foundation/SC-01-SUMMARY.md`
+
+### Commits
+
+| Hash | Message |
+|------|---------|
+| `86ca11ce` | feat(sc-01): create sidecar type definitions |
+| `e612559e` | feat(sc-01): extend CANONICAL_PREFIXES to 4 entries + listCanonicalDirectory |
+| `4daca4f1` | feat(sc-01): create SidecarDependencyRegistry and SseConnectionPool |
+| `a76828d6` | feat(sc-01): create createSidecarServer() HTTP server factory |
+| `2f183051` | feat(sc-01): wire sidecar server into plugin init and bump deps |
+| `dd9f9466` | chore(sc-01): update lockfile after package bumps |
+| `30cf357f` | docs(sc-01): complete Sidecar Foundation plan |
+
+### What was built
+
+| Artifact | Purpose |
+|----------|---------|
+| `src/sidecar/types.ts` | SidecarEventType (11 members), SidecarEvent, DirectoryEntry |
+| `src/sidecar/readonly-state-extensions.ts` | 4-prefix CANONICAL_PREFIXES, listCanonicalDirectory(), createReadOnlyStateOptions() |
+| `src/sidecar/server/registry.ts` | SidecarDependencyRegistry — 6 lazy getter/setter pairs, `[Harness]` guards, isReady() |
+| `src/sidecar/server/sse/pool.ts` | SseConnectionPool — add/remove/broadcast, 30s heartbeat, max 50 clients, dead-conn cleanup |
+| `src/sidecar/server/factory.ts` | createSidecarServer() — Node HTTP on 127.0.0.1:0, /health→200, other→501, SIGTERM cleanup |
+| `src/plugin.ts` | Step 5.5 — fire-and-forget server start, 3 core deps bound (client, sessionTracker, delegationManager) |
+| `package.json` | @json-render/*@0.19, ws@8.18 added to optionalDependencies |
+
+### Verification
+
+**Typecheck:** ✅ Clean
+**Tests:** ✅ 5 files, 59 tests, all passing
+**Package bumps:** ✅ json-render@0.19, ws@8.18 in optionalDependencies
+
+**Duration:** ~2h
+---
+**ses_1770abdc2ffeYuKJvP35igvtvo:** Child session ses_1770abdc2ffeYuKJvP35igvtvo reached terminal status completed
+---
+**ses_176eff659ffe3uWnKxkcxYEpTy:** ## UAT Complete: Phase SC-01
+
+| Result | Count |
+|--------|-------|
+| Passed | **8** |
+| Issues | **0** |
+| Skipped | **0** |
+
+### Test Results Summary
+
+| # | Test | Result | Notes |
+|---|------|--------|-------|
+| 1 | Sidecar Types | ✅ PASS | 3 exports: SidecarEventType (11), SidecarEvent, DirectoryEntry |
+| 2 | Canonical Prefixes | ✅ PASS | 4 prefixes + listCanonicalDirectory() |
+| 3 | Dependency Registry | ✅ PASS | 6 lazy [Harness]-guarded getter/setter pairs (note: `configSubscriber` not `lifecycleManager`) |
+| 4 | SSE Connection Pool | ✅ PASS | addClient/removeClient/broadcast, 30s heartbeat, max 50 |
+| 5 | HTTP Server Factory | ✅ PASS | 127.0.0.1:0, GET /health→200, other→501, SIGTERM cleanup |
+| 6 | Plugin Step 5.5 | ✅ PASS | Fire-and-forget start, binds client+sessionTracker+delegationManager |
+| 7 | Package Dependencies | ✅ PASS | 5 @json-render/*@^0.19.0, ws@^8.18.0 |
+| 8 | Tests & Typecheck | ✅ PASS | 5 files, 59 tests all pass, tsc --noEmit exit 0 |
+
+**UAT file:** `.planning/phases/SC-01-sidecar-foundation/SC-01-UAT.md` (committed)
+
+⚠ Security enforcement enabled — `/gsd-secure-phase SC-01` has not run. Run before advancing to the next phase.
+
+**Next steps:**
+- `/gsd-secure-phase SC-01` — security review (required before advancing)
+- `/gsd-plan-phase SC-02` — Plan next phase (REST API + Tool Proxy)
+- `/gsd-execute-phase SC-02` — Execute next phase
+---
+**ses_176e73ac2ffe697LNSFimtPvkx:** ## Step 8: Results + Routing
+
+```
+GSD > PHASE SC-01 THREAT-SECURE
+threats_open: 0 — all threats have dispositions.
+▶ /gsd-validate-phase SC-01    validate test coverage
+▶ /gsd-verify-work SC-01       run UAT
+```
+
+---
+
+## RESEARCH COMPLETE
+
+**Phase:** SC-01 — Sidecar Foundation
+**Confidence:** HIGH
+
+### Key Findings
+- **Input State:** B (State B — SECURITY.md created from PLAN.md threat model + SUMMARY.md evidence)
+- **Threat Register:** 7 threats total (T-SC01-01 through T-SC01-SC)
+- **Status:** ✅ All 7 CLOSED — 6 mitigated, 1 accepted risk (T-SC01-02)
+- **Short-circuit applied:** `register_authored_at_plan_time: true` + `threats_open: 0` → skipped to Step 6 directly
+- **Accepted risk:** `.opencode/` exposure via CANONICAL_PREFIXES — localhost-only, no secrets
+
+### File Created
+`.planning/phases/SC-01-sidecar-foundation/SC-01-SECURITY.md` — committed at `0bdf1e04`
+
+### Security Audit Summary
+
+| Metric | Count |
+|--------|-------|
+| Threats found | 7 |
+| Closed | 7 |
+| Open | **0** |
+
+### Routing
+Phase SC-01 is threat-secure. Proceed to:
+- `/gsd-validate-phase SC-01` — validate test coverage
+- `/gsd-verify-work SC-01` — run UAT
+---
+**ses_176df5e63ffe5CEPMuwpYG2ihz:** ## Trạng thái
+
+**Đã scout (inline, vi phạm L0 inline banishment rule):**
+- ✅ `workflows/spec-phase.md` + `templates/spec.md`
+- ✅ `delegation-status({action:"find-stackable"})` — không có session stackable
+- ✅ `SC-01-SPEC.md` (140 dòng), `SC-01-SUMMARY.md` (159 dòng) — đã rõ 7 deliverables + 59 tests pass
+
+**Còn cần scout trước khi bắt đầu Socratic interview:**
+- ⏳ `.planning/STATE.md` (trunc ở 60/800+ dòng)
+- ⏳ `.planning/REQUIREMENTS.md` + `ROADMAP.md` (SC-02 entry)
+- ⏳ `SC-01-CONTEXT.md`
+- ⏳ `.hivemind/planning/sidecar-vision/ARCHITECTURE.md` §3 REST API + tool proxy
+- ⏳ `src/sidecar/server/factory.ts`, `types.ts`, `registry.ts`, `sse/pool.ts`
+
+## Vấn đề cần bạn quyết
+
+Tôi đang ở L0 (`hm-l0-orchestrator`). Theo `universal-rules.md` §1, L0 bị **cấm** đọc file để comprehend, analyze code, hoặc execute command tasks inline. Tôi vừa vi phạm khi đọc SC-01-SPEC.md / SUMMARY.md. Spec-phase là detail work cần delegate.
+
+**3 lựa chọn:**
+
+| # | Cách làm | Ưu | Nhược |
+|---|---------|-----|------|
+| **A** | Delegate sang `gsd-spec-phase` subagent | Đúng L0 rules, subagent lo toàn bộ scout + interview + write + commit | Mất quyền kiểm soát trực tiếp, phải viết packet kỹ |
+| **B** | Tiếp tục inline trong main session | Nhanh, bạn điều khiển Socratic interview trực tiếp | Tôi tiếp tục vi phạm L0 inline banishment |
+| **C** | Dừng, chuyển task khác | Không vi phạm, giữ scope | Bỏ lửng spec-phase |
+
+## Câu hỏi
+
+Bạn chọn **A / B / C**?
+
+Nếu **A**: tôi cần bạn xác nhận `gsd-spec-phase` là agent hợp lệ để delegate (theo `delegation-status` thì không tìm thấy stackable session cho agent filter đó, nhưng agent có thể chưa có session nào). Tôi sẽ dispatch qua `task` tool với subagent_type="gsd-spec-phase".
+
+Nếu **B**: tôi tiếp tục scout 6 files còn lại, rồi mở Socratic interview Round 1 (Researcher perspective) với bạn ngay trong turn này.
+---
+**ses_176d78648ffeP7wkk2kstwd0BF:** <task id="ses_176d78648ffeP7wkk2kstwd0BF" state="completed">
+<task_result>
+
+</task_result>
+</task>
+
+**Continuity index:** See `session-continuity.json` for active delegations and pending work at time of compaction.
+
+## ASSISTANT (turn 3)
+
+Resume: re-dispatching execute-phase on same task_id. No W0–W4 commits exist; only `.gitkeep` stubs. Continuing from W0.
