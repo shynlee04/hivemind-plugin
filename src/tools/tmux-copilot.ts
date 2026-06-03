@@ -30,6 +30,7 @@ import {
   type SplitCommand,
 } from "../features/tmux/types.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
+import { getManualOverrideState, setManualOverrideState } from "../features/session-tracker/index.js"
 
 // ---------------------------------------------------------------------------
 // Permission gate (T-43-05 mitigation)
@@ -99,11 +100,35 @@ const RespawnActionSchema = z.object({
   sessionId: z.string().min(1),
 })
 
+// P58 G4 (REQ-58-04): forward-prompt — main-agent-to-delegate prompt with sentinel
+const ForwardPromptActionSchema = z.object({
+  action: z.literal("forward-prompt"),
+  paneId: z.string().min(1),
+  text: z.string(),
+  literal: z.boolean().optional(),
+})
+
+// P58 G5 (REQ-58-05): take-over — set manualOverride=true on a session
+const TakeOverActionSchema = z.object({
+  action: z.literal("take-over"),
+  sessionId: z.string().min(1),
+  paneId: z.string().min(1),
+})
+
+// P58 G5 (REQ-58-05): release — clear manualOverride=false on a session
+const ReleaseActionSchema = z.object({
+  action: z.literal("release"),
+  sessionId: z.string().min(1),
+})
+
 const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
   SendKeysActionSchema,
   ListPanesActionSchema,
   ComputeGridActionSchema,
   RespawnActionSchema,
+  ForwardPromptActionSchema,  // P58 G4
+  TakeOverActionSchema,        // P58 G5
+  ReleaseActionSchema,         // P58 G5
 ])
 
 // ---------------------------------------------------------------------------
@@ -119,6 +144,10 @@ export type TmuxCopilotResult =
   | { commands: SplitCommand[] }
   | { respawned: true; paneId: string }
   | { respawned: false; error: { reason: string } }
+  | { paneId: string; deliveredAt: string; byteLength: number }  // P58 G4: forward-prompt success
+  | { suppressed: true; reason: "manualOverride" | "session-not-found"; paneId: string; textPreview: string; evaluatedAt: string }  // P58 G5
+  | { sessionId: string; paneId: string; takenBy: string; takenAt: string }  // P58 G5: take-over success
+  | { sessionId: string; releasedAt: string }  // P58 G5: release success
   | { error: { kind: "invalid-input"; issues: z.ZodIssue[] } }
   | { error: { kind: "permission-denied"; agent: string } }
 
@@ -229,6 +258,61 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
           })
         }
         return renderToolResult({ respawned: true, paneId: result.paneId })
+      }
+      case "forward-prompt": {
+        // P58 G5 (REQ-58-05, D-58-12): suppression check FIRST — if manualOverride
+        // is set, return suppressed envelope without sending keys.
+        const sessionId = context.sessionID
+        const overrideState = getManualOverrideState(sessionId)
+        if (overrideState?.manualOverride === true) {
+          return renderToolResult({
+            suppressed: true,
+            reason: "manualOverride",
+            paneId: input.paneId,
+            textPreview: input.text.slice(0, 80),
+            evaluatedAt: new Date().toISOString(),
+          })
+        }
+        // P58 G4 (REQ-58-04, D-58-09/10): prepend sentinel, then sendKeys.
+        const sentinel = `[orchestrator-forward ${new Date().toISOString()}]\n`
+        const payload = sentinel + input.text
+        const byteLength = Buffer.byteLength(payload, "utf8")
+        try {
+          await adapter.sendKeys(input.paneId, payload, input.literal ?? true)
+          return renderToolResult({
+            paneId: input.paneId,
+            deliveredAt: new Date().toISOString(),
+            byteLength,
+          })
+        } catch (err) {
+          return renderToolResult({
+            sent: false,
+            paneId: input.paneId,
+            error: { message: err instanceof Error ? err.message : String(err) },
+          })
+        }
+      }
+      case "take-over": {
+        // P58 G5 (REQ-58-05, D-58-11): set manualOverride=true with audit fields.
+        setManualOverrideState(input.sessionId, {
+          manualOverride: true,
+          takenAt: Date.now(),
+          takenBy: "human-operator",
+        })
+        return renderToolResult({
+          sessionId: input.sessionId,
+          paneId: input.paneId,
+          takenBy: "human-operator",
+          takenAt: new Date().toISOString(),
+        })
+      }
+      case "release": {
+        // P58 G5 (REQ-58-05): clear manualOverride=false.
+        setManualOverrideState(input.sessionId, { manualOverride: false })
+        return renderToolResult({
+          sessionId: input.sessionId,
+          releasedAt: new Date().toISOString(),
+        })
       }
     }
   },
