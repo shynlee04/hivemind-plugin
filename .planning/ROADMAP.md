@@ -2039,6 +2039,19 @@ Plans:
 
 ---
 
+### Phase 58: tmux-orchestration-programmatic-pool
+
+**Goal:** Close 6 architectural gaps in the in-tree tmux visual orchestration layer: (1) delegate-task must not invoke native task tool; (2) programmatic pool status API for all active delegations; (3) abort+resume cycle preserving tmux session state; (4) main-agent-to-delegate prompt forwarding via appendTuiPrompt; (5) mid-flight user override (takeover/release) bypassing orchestrator auto-prompting; (6) deep session-tracker integration emitting delegation lifecycle events.
+**Requirements:** REQ-58-01, REQ-58-02, REQ-58-03, REQ-58-04, REQ-58-05, REQ-58-06.
+**Depends on:** Phase 55.
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 58 to break down)
+
+---
+
 ### Phase 48: CI/CD Release Pipeline (2026-06-01)
 
 **Goal:** Stand up a GitHub Actions workflow that builds the vendored fork, runs the test suite, and publishes `@hivemind/opencode-tmux` to npm with version synchronization against the main `hivemind` package (no drift allowed between the two package versions on a release). Include a pre-release channel (`canary` dist-tag) for trunk-based publishing. Tests: a CI dry-run job that exercises the workflow against a fixture package and verifies the produced tarball contains the expected entry points and excludes source-only files; the publish job is gated on this verification.
