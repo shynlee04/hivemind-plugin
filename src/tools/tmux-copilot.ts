@@ -160,6 +160,18 @@ const ReleaseActionSchema = z.object({
   sessionId: z.string().min(1),
 })
 
+// P58.8 (S2, REQ-58-08): peek — read the most recent capture-pane
+// content for a pane id without re-running the tmux CLI. Surfaces an
+// affordance for the USER_SESSION tier to inspect a delegate pane
+// between dispatches. If the in-tree integration has not yet cached
+// a capture for the pane, returns a zero-byte envelope (NOT an
+// error) so callers can distinguish "no content yet" from "lookup
+// failed".
+const PeekActionSchema = z.object({
+  action: z.literal("peek"),
+  paneId: z.string().min(1),
+})
+
 const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
   SendKeysActionSchema,
   ListPanesActionSchema,
@@ -168,6 +180,7 @@ const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
   ForwardPromptActionSchema,  // P58 G4
   TakeOverActionSchema,        // P58 G5
   ReleaseActionSchema,         // P58 G5
+  PeekActionSchema,            // P58.8 S2 (REQ-58-08)
 ])
 
 // ---------------------------------------------------------------------------
@@ -187,6 +200,7 @@ export type TmuxCopilotResult =
   | { suppressed: true; reason: "manualOverride" | "session-not-found"; paneId: string; textPreview: string; evaluatedAt: string }  // P58 G5
   | { sessionId: string; paneId: string; takenBy: string; takenAt: string }  // P58 G5: take-over success
   | { sessionId: string; releasedAt: string }  // P58 G5: release success
+  | { paneId: string; content: string; capturedAt: string; byteLength: number }  // P58.8 S2: peek success (empty content when no capture cached)
   | { error: { kind: "invalid-input"; issues: z.ZodIssue[] } }
   | { error: { kind: "permission-denied"; agent: string } }
 
@@ -205,8 +219,11 @@ const s = tool.schema
 export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
   description:
     "Co-pilot affordance for the tmux visual orchestration layer. Sends keys, " +
-    "lists panes, computes split grids, and respawns closed-pane sessions. " +
-    "Orchestrator-tier only.",
+    "lists panes, computes split grids, respawns closed-pane sessions, " +
+    "forwards prompts to delegates, and surfaces session takeover/release/" +
+    "peek affordances for the human operator. " +
+    "Orchestrator-tier may invoke all actions; USER_SESSION tier may invoke " +
+    "take-over, release, peek only (D-58-22 LOCKED).",
   // `args` is a structural hint for the framework (uses SDK-bundled
   // tool.schema to satisfy the type contract); we do the canonical
   // parse inside execute() via TmuxCopilotActionSchema.safeParse so we
@@ -366,6 +383,27 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
         return renderToolResult({
           sessionId: input.sessionId,
           releasedAt: new Date().toISOString(),
+        })
+      }
+      case "peek": {
+        // P58.8 S2 (REQ-58-08): read the most recent capture-pane record
+        // for the requested pane. Uses the optional `getLatestCapture`
+        // method on the adapter (added by S1, types.ts:160-161). When
+        // the adapter is a BATS mock without `getLatestCapture`, or
+        // when no capture has been cached yet, we return a zero-byte
+        // envelope with `capturedAt` = now() — NOT an error — so
+        // callers can distinguish "no content yet" from "lookup
+        // failed" without coupling to the bridge lifecycle.
+        const capture = adapter.getLatestCapture?.(input.paneId) ?? null
+        const content = capture?.content ?? ""
+        const byteLength = capture?.byteLength ?? Buffer.byteLength(content, "utf8")
+        return renderToolResult({
+          paneId: input.paneId,
+          content,
+          capturedAt: capture?.capturedAt
+            ? new Date(capture.capturedAt).toISOString()
+            : new Date().toISOString(),
+          byteLength,
         })
       }
     }
