@@ -30,16 +30,37 @@ teardown() {
   [ -n "$live_pane_id" ]
 
   run tmux_node_eval "
-    const { tmuxCopilotTool } = await import('${TMUX_BATS_ROOT}/dist/tools/tmux-copilot.js');
+    const { tmuxCopilotTool, __setTmuxMultiplexerForTesting } = await import('${TMUX_BATS_ROOT}/dist/tools/tmux-copilot.js');
+    // P58 PLAN-07 (Gap 3 fix): Inject a hybrid multiplexer mock. The mock
+    // captures sendKeys calls (so we can assert the paneId was passed through)
+    // AND forwards to the real tmux send-keys (so capture-pane can verify
+    // the actual key delivery to the live cat process).
+    const { execFile } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    const execFileP = promisify(execFile);
+    const captured = { sentToPaneId: null, sentText: null };
+    __setTmuxMultiplexerForTesting({
+      sendKeys: async (paneId, text, literal) => {
+        captured.sentToPaneId = paneId;
+        captured.sentText = text;
+        // Forward to real tmux so capture-pane can verify delivery
+        if (literal) {
+          await execFileP('tmux', ['send-keys', '-t', paneId, '-l', text]);
+        } else {
+          await execFileP('tmux', ['send-keys', '-t', paneId, text]);
+        }
+      },
+    });
     const result = await tmuxCopilotTool.execute(
       { action: 'forward-prompt', paneId: '${live_pane_id}', text: '${probe}' },
       { sessionID: 'ses-p58-64-$$', agent: 'hm-l0-orchestrator' }
     );
-    process.stdout.write(result);
+    process.stdout.write('result=' + result + ' captured=' + JSON.stringify(captured));
   "
   [ "$status" -eq 0 ]
   [[ "$output" == *"deliveredAt"* ]]
   [[ "$output" == *"byteLength"* ]]
+  [[ "$output" == *"\"sentToPaneId\":\"${live_pane_id}\""* ]]
 
   sleep 0.2
 
@@ -50,6 +71,13 @@ teardown() {
   run bash -c "tmux capture-pane -t '${live_pane_id}' -p | grep -c '${probe}'"
   [ "$status" -eq 0 ]
   [ "$output" -ge 1 ]
+
+  # P58 PLAN-07 (Gap 3 fix): Restore the multiplexer to null so subsequent
+  # tests in the same process don't see the mock.
+  run tmux_node_eval "
+    const { __setTmuxMultiplexerForTesting } = await import('${TMUX_BATS_ROOT}/dist/tools/tmux-copilot.js');
+    __setTmuxMultiplexerForTesting(null);
+  " 2>/dev/null || true
 
   tmux kill-session -t "$tmux_session"
 }

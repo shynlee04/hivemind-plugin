@@ -25,6 +25,7 @@ import { tool } from "@opencode-ai/plugin/tool"
 import { z } from "zod"
 import {
   getSessionManagerAdapter,
+  setSessionManagerAdapter,
   type PaneState,
   type PaneTreeNode,
   type SplitCommand,
@@ -317,3 +318,34 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
     }
   },
 })
+
+// ---------------------------------------------------------------------------
+// Test seam (P58 PLAN-07, Gap 3 fix)
+// ---------------------------------------------------------------------------
+
+/**
+ * P58 PLAN-07 (Gap 3 fix): BATS-friendly test seam that injects a mock
+ * `SessionManagerAdapter` (alias "TmuxMultiplexer") so the tool can run
+ * without a real tmux session. Delegates to the existing
+ * `setSessionManagerAdapter()` at `src/features/tmux/types.ts`
+ * (already wired by the P51 migration per tmux-copilot.ts:18-22).
+ *
+ * BATS tests should:
+ *   1. Construct a mock with a `sendKeys` method that captures calls
+ *   2. Call `__setTmuxMultiplexerForTesting(mock)` before invoking the tool
+ *   3. Invoke the tool action
+ *   4. Assert the mock captured the expected call
+ *   5. Restore via `__setTmuxMultiplexerForTesting(null)` in teardown
+ *
+ * The seam is intentionally NOT prefixed with `_` (which is the convention
+ * for "private" in some codebases) because the leading double-underscore
+ * `__` is the project's TEST-ONLY marker (per the
+ * `__getDelegationsForTesting` pattern at `src/coordination/delegation/manager.ts`).
+ *
+ * NOT for production code. Production wiring still goes through
+ * `src/features/tmux/integration.ts` which calls
+ * `setSessionManagerAdapter()` directly.
+ */
+export function __setTmuxMultiplexerForTesting(mux: unknown): void {
+  setSessionManagerAdapter(mux as Parameters<typeof setSessionManagerAdapter>[0])
+}
