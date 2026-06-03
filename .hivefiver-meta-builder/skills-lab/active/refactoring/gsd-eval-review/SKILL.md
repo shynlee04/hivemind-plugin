@@ -10,8 +10,8 @@ Produces EVAL-REVIEW.md with score, verdict, gaps, and remediation plan.
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/eval-review.md
-@~/.gemini/antigravity/get-shit-done/references/ai-evals.md
+@.agent/get-shit-done/workflows/eval-review.md
+@.agent/get-shit-done/references/ai-evals.md
 </execution_context>
 
 <context>
@@ -19,6 +19,6 @@ Phase: $ARGUMENTS — optional, defaults to last completed phase.
 </context>
 
 <process>
-Execute end-to-end.
+Execute @.agent/get-shit-done/workflows/eval-review.md end-to-end.
 Preserve all workflow gates.
 </process>

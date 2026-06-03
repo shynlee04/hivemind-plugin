@@ -26,9 +26,9 @@ Mode routing:
 </routing>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/settings.md
-@~/.gemini/antigravity/get-shit-done/workflows/settings-advanced.md
-@~/.gemini/antigravity/get-shit-done/workflows/settings-integrations.md
+@.agent/get-shit-done/workflows/settings.md
+@.agent/get-shit-done/workflows/settings-advanced.md
+@.agent/get-shit-done/workflows/settings-integrations.md
 </execution_context>
 
 <context>

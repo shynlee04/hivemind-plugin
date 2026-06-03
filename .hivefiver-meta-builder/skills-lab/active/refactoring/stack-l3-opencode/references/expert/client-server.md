@@ -1,6 +1,6 @@
 # Expert: Client-Server Protocol Internals
 
-> OpenCode SDK v1.14.44 | Source: `packages/sdk/js/src/`
+> OpenCode SDK v1.14.28 | Source: `packages/sdk/js/src/`
 > Classification: BEYOND-DOCS — not in official documentation
 
 ## Mental Model: Architecture

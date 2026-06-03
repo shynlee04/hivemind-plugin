@@ -17,8 +17,8 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/autonomous.md
-@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
+@.agent/get-shit-done/workflows/autonomous.md
+@.agent/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -32,6 +32,6 @@ Project context, phase list, and state are resolved inside the workflow using in
 </context>
 
 <process>
-Execute end-to-end.
+Execute the autonomous workflow from @.agent/get-shit-done/workflows/autonomous.md end-to-end.
 Preserve all workflow gates (phase discovery, per-phase execution, blocker handling, progress display).
 </process>

@@ -2,6 +2,10 @@
 name: hf-l2-custom-tools-dev
 description: This skill should be used when the user asks to "create a custom tool", "build an OpenCode plugin", "write a tool with Zod schema", "add a plugin hook", "create CLI script", "build a tool for agent", mentions tool() helper, Zod validation, plugin lifecycle, hooks (PreToolUse, PostToolUse), bin/ scripts, or needs guidance on OpenCode plugin SDK and custom tool architecture.
 metadata:
+  consumed-by:
+    - "hf-l2-tool-builder"
+  lineage-scope: "hf-*"
+  access: "STRICT"
   layer: "2"
   role: "domain-execution"
   pattern: P2

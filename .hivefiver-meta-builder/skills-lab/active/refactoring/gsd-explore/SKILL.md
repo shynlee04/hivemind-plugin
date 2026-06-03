@@ -12,9 +12,9 @@ Accepts an optional topic argument: `/gsd-explore authentication strategy`
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/explore.md
+@.agent/get-shit-done/workflows/explore.md
 </execution_context>
 
 <process>
-Execute end-to-end.
+Execute the explore workflow from @.agent/get-shit-done/workflows/explore.md end-to-end.
 </process>

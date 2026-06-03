@@ -3,6 +3,10 @@ name: hf-l2-context-absorb
 description: >
   Multi-wave swarm protocol for absorbing dense context (links, text, files, stories, events, actors) into persistent session-context-prompt.md. Orchestrates parallel subagent waves for parsing, deep extraction, narrative synthesis, and YAML-managed appending. Triggers on: absorb context, process prompt dump, extract links, interpret narrative, update session context, merge context, append context, ingest context, import session state, load external context.
 metadata:
+  consumed-by:
+    - "hf-l2-prompter"
+  lineage-scope: "hf-*"
+  access: "STRICT"
   layer: "2"
   role: "domain-execution"
   pattern: P2

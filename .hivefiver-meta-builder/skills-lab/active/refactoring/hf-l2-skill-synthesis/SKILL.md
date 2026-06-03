@@ -2,6 +2,11 @@
 name: hf-l2-skill-synthesis
 description: "Use when synthesizing skills from GitHub repos, classifying skill patterns, building template libraries, generating eval frameworks, or creating eval-driven skill scaffolds. Triggers on: 'create skills from GitHub', 'find skill patterns', 'classify skills', 'generate evals', 'synthesize a skill from a codebase'."
 metadata:
+  consumed-by:
+    - "hf-l2-skill-builder"
+    - "hf-l2-synthesizer"
+  lineage-scope: "hf-*"
+  access: "STRICT"
   layer: "3"
   role: "synthesis"
   pattern: P2

@@ -15,8 +15,8 @@ Requirements: Claude Code v2.1.91+, claude.ai account, GitHub repository.
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/ultraplan-phase.md
-@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
+@.agent/get-shit-done/workflows/ultraplan-phase.md
+@.agent/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

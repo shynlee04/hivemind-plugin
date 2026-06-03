@@ -10,8 +10,8 @@ Flow: Validate → Research UI → Verify UI-SPEC → Done
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/ui-phase.md
-@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
+@.agent/get-shit-done/workflows/ui-phase.md
+@.agent/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -19,6 +19,6 @@ Phase number: $ARGUMENTS — optional, auto-detects next unplanned phase if omit
 </context>
 
 <process>
-Execute end-to-end.
+Execute @.agent/get-shit-done/workflows/ui-phase.md end-to-end.
 Preserve all workflow gates.
 </process>

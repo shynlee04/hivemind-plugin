@@ -12,7 +12,7 @@ Output: Forensic report saved to `.planning/forensics/`, presented inline, with 
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/forensics.md
+@.agent/get-shit-done/workflows/forensics.md
 </execution_context>
 
 <context>
@@ -29,7 +29,7 @@ Output: Forensic report saved to `.planning/forensics/`, presented inline, with 
 </context>
 
 <process>
-Execute end-to-end.
+Read and execute the forensics workflow from @.agent/get-shit-done/workflows/forensics.md end-to-end.
 </process>
 
 <success_criteria>

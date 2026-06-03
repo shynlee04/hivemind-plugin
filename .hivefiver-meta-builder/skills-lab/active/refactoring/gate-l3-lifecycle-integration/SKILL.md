@@ -6,7 +6,7 @@ description: >
   authority, CQRS boundaries, actor hierarchy, event-driven wiring, classification
   fit (src/ vs .opencode/ vs .hivemind/), and OpenCode SDK surface compliance.
   Synthesized from .planning/codebase/ARCHITECTURE.md (9-surface authority table)
-  and ingested @opencode-ai/plugin SDK v1.14.44 from anomalyco/opencode (tool(), hook() signatures).
+  and ingested @opencode-ai/plugin SDK v1.14.28 docs (tool(), hook() signatures).
   Use when performing a lifecycle gate check, auditing harness module integration,
   verifying CQRS boundary compliance, checking delegation hierarchy constraints,
   evaluating tool/hook registration correctness, running a harness quality gate,
@@ -14,7 +14,11 @@ description: >
   Activates during code review of src/ files, phase audit, milestone verification,
   integration check, and deployment readiness workflows.
 metadata:
-  layer: "3"
+  consumed-by:
+    - "hm-l2-auditor"
+  lineage-scope: "gate-*"
+  access: "STRICT"
+  layer: "2"
   role: "domain-execution"
   pattern: P2
   version: "2.0.0"
@@ -80,80 +84,13 @@ Quick summary — write-side: `continuity.ts`, `delegation-persistence.ts`,
 `session-journal.ts`, `DelegationManager`. Read-side: hooks, tools, sidecar.
 Assembly: `plugin.ts`.
 
-## 🔨 IRON CLAW: Tech-Stack References & Assets Consumption Governance
-
-> **ABSOLUTE RULE:** No bundled reference, cached asset, or stale pattern from this skill shall be consumed for tech-stack API interface decisions without MCP-verified validation against the project's ACTUAL versions (package.json + lockfile), canonical source mappings (`.hivemind/STACKS-REFERENCES.md`), AND a raw codebase context scan of the current implementation state.
-
-### Rationale
-
-Skills bundle references and assets as ORIENTATION tools — they help you understand WHAT exists and WHERE to look. But every bundled reference is a SNAPSHOT, frozen at the moment of ingestion. Stacks evolve: packages release breaking changes, APIs shift, SDKs deprecate surfaces. Using stale bundled signatures as implementation authority produces silent runtime errors.
-
-### Mandatory 5-Step Validation Chain
-
-Before ANY tech-stack API interface from this skill's references/assets is used for implementation, code generation, or quality gate decisions:
-
-```
-STEP 1 — CONSUME .hivemind/STACKS-REFERENCES.md
- ├─ Read the canonical stack→repo→version mapping table
- ├─ Identify the correct GitHub repo for each dependency
- └─ Confirm the repo is active (not archived), version is current
-
-STEP 2 — READ package.json + lockfile
- ├─ Extract the ACTUAL installed version (npm ls / grep lockfile)
- ├─ Cross-reference repo URL from STACKS-REFERENCES.md against npm registry
- └─ Flag any discrepancy between bundled version and installed version
-
-STEP 3 — RAW CODEBASE CONTEXT SCAN
- ├─ grep/glob the actual src/ directory structure for current implementation
- ├─ Read current implementation files — not stale docs or bundled references
- ├─ Verify the claimed API signatures match current codebase reality
- └─ Check import paths, type definitions, and function signatures exist in actual code
-
-STEP 4 — MCP LIVE VALIDATION (minimum 2 tools)
- ├─ Context7: resolve-library-id → query-docs (API signatures at installed version)
- ├─ DeepWiki: ask-question (architecture patterns, behavioral semantics)
- ├─ Repomix: pack-remote-repository (full repo analysis at correct version tag)
- ├─ Exa: web-search (latest docs, tutorials, migration guides)
- ├─ Tavily: search + extract (version-specific migration info)
- ├─ GitHub: get-file-contents (exact source verification at correct version)
- └─ GitMCP: search-code (source-level pattern matching)
-
-STEP 5 — VERIFICATION RECORD
- ├─ Source URL + version confirmed to match package.json
- ├─ MCP tool(s) used + fetch timestamp
- ├─ Codebase scan paths + findings
- ├─ Version match status (MATCHED / MISMATCHED / UNVERIFIED)
- └─ Flag as BLOCKING if version mismatch or critical staleness detected
-```
-
-### Consumption Rules
-
-| Action | Rule |
-|--------|------|
-| **Orientation** (understanding WHAT exists, WHERE to look) | ✅ Reference-tier allowed from bundled assets without live validation |
-| **API signature lookup** for implementation | 🚫 BLOCKED without live MCP validation (Step 4) + codebase scan (Step 3) |
-| **Interface verification** for quality gates | 🚫 BLOCKED without live MCP validation (Step 4) + version match (Step 2) |
-| **Version-sensitive behavioral claims** | 🚫 BLOCKED without live MCP validation (Step 4) |
-| **Architecture pattern understanding** | ✅ Reference-tier allowed, but recommend live verification for production decisions |
-| **Generating code from bundled patterns** | 🚫 BLOCKED — route to live MCP tools for current API surface |
-
-### Integrated Enforcement Points
-
-| Workflow Phase | IRON CLAW Trigger | Required Validation |
-|---------------|-------------------|---------------------|
-| Implementation | Before using any API from bundled refs | Steps 2-4 minimum |
-| Code review | When verifying API usage against docs | Steps 2-4 minimum |
-| Quality gate | Before PASS verdict on interface claims | Steps 1-5 full |
-| Research | When synthesizing findings from cached assets | Steps 4-5 minimum |
-| Audit | When reporting version-based findings | Steps 1-5 full |
-
 ## OpenCode SDK Surface Compliance
 
-Validate against the real `@opencode-ai/plugin` v1.14.44 API surface from `anomalyco/opencode`. Three areas:
+Validate against the real `@opencode-ai/plugin` v1.14.28 API surface. Three areas:
 
-1. **tool() factory**: `ToolDefinition` is now `ReturnType<typeof tool>` (derived, not explicit inline type). Still `description`, `args` (Zod via `tool.schema`), `execute` → string. Registered in plugin.ts.
-2. **Hook handlers**: 4 core hooks plus new types: `chat.params` now requires `model: Model` (non-optional), `ProviderHookContext` is a named exported type, `AuthOAuthResult` replaces deprecated `AuthOuathResult`, `WorkspaceAdapter` spelling corrected.
-3. **Plugin composition**: Async function, type-only imports, no inline business logic, lazy PTY. ACP (Agent Client Protocol) awareness — harness hooks must not interfere with ACP stdio JSON-RPC transport.
+1. **tool() factory**: `description`, `args` (Zod), `execute` → string. Registered in plugin.ts.
+2. **Hook handlers**: Exactly 4 hooks (`tool.execute.before/after`, `experimental.session.compacting`, `shell.env`).
+3. **Plugin composition**: Async function, type-only imports, no inline business logic, lazy PTY.
 
 > **Full checklists with real signatures**: `references/sdk-compliance.md`
 >

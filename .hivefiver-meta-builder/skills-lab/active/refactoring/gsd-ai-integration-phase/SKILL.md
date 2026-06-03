@@ -10,9 +10,9 @@ Flow: Select Framework → Research Docs → Research Domain → Design Eval Str
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/ai-integration-phase.md
-@~/.gemini/antigravity/get-shit-done/references/ai-frameworks.md
-@~/.gemini/antigravity/get-shit-done/references/ai-evals.md
+@.agent/get-shit-done/workflows/ai-integration-phase.md
+@.agent/get-shit-done/references/ai-frameworks.md
+@.agent/get-shit-done/references/ai-evals.md
 </execution_context>
 
 <context>
@@ -20,6 +20,6 @@ Phase number: $ARGUMENTS — optional, auto-detects next unplanned phase if omit
 </context>
 
 <process>
-Execute end-to-end.
+Execute @.agent/get-shit-done/workflows/ai-integration-phase.md end-to-end.
 Preserve all workflow gates.
 </process>

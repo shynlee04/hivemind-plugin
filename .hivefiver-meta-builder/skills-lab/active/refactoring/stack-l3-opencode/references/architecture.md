@@ -1,6 +1,6 @@
 # Architecture — OpenCode SDK + Plugin
 
-> Version 1.14.44 | Source: [anomalyco/opencode](https://github.com/anomalyco/opencode)
+> Version 1.14.28 | Source: [sst/opencode](https://github.com/sst/opencode)
 
 ## System Overview
 

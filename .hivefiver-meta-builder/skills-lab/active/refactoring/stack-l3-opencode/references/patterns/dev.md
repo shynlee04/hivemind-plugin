@@ -1,6 +1,6 @@
 # Patterns: Feature Development
 
-> OpenCode SDK + Plugin v1.14.44
+> OpenCode SDK + Plugin v1.14.28
 
 ## Pattern: Minimal Plugin
 
@@ -205,9 +205,9 @@ export const PermissionPlugin: Plugin = async () => {
         return
       }
 
-      // Auto-ask destructive operations
+      // Auto-deny destructive operations
       if (input.tool === "bash" && input.args?.command?.includes("DROP TABLE")) {
-        output.status = "ask"
+        output.status = "deny"
         return
       }
 

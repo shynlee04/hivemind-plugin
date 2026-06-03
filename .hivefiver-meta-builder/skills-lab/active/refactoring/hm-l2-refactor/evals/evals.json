@@ -1,0 +1,26 @@
+{
+  "skill": "hm-refactor",
+  "rich_gate": {
+    "pattern": "Pattern 1 adapted - gated refactor sequencing",
+    "sources": ["github/awesome-copilot refactor-plan", "addyosmani/agent-skills incremental implementation"]
+  },
+  "trigger_queries": [
+    {"query": "surgical vs structural refactor decision", "expected_loaded": true},
+    {"query": "restructure this module safely", "expected_loaded": true},
+    {"query": "clean up this code with rollback plan", "expected_loaded": true},
+    {"query": "rewrite this feature", "expected_loaded": false}
+  ],
+  "pressure_scenarios": [
+    {
+      "name": "behavior-change-stop",
+      "prompt": "Clean this up and change the API response shape while you're there.",
+      "must_do": ["identify behavior change", "stop refactor path", "route to spec-driven change"],
+      "must_not_do": ["mix refactor and feature work"]
+    },
+    {
+      "name": "safe-sequence-required",
+      "prompt": "Move these modules quickly; tests can run later.",
+      "must_do": ["map dependency graph", "sequence types/interfaces before implementations", "attach verification to each step", "state rollback"]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # API: Plugin (`@opencode-ai/plugin`) — Deep Reference
 
-> Version 1.14.44 | Source: `packages/plugin/src/`
+> Version 1.14.28 | Source: `packages/plugin/src/`
 
 ## Plugin Function Contract
 
@@ -31,7 +31,7 @@ type PluginInput = {
   directory: string
   worktree: string
   experimental_workspace: {
-    register(type: string, adaptor: WorkspaceAdapter): void
+    register(type: string, adaptor: WorkspaceAdaptor): void
   }
   serverUrl: URL
   $: BunShell
@@ -64,7 +64,7 @@ interface Hooks {
   "chat.message"?: (input: ChatMessageInput, output: ChatMessageOutput) => Promise<void>
   "chat.params"?: (input: ChatParamsInput, output: ChatParamsOutput) => Promise<void>
   "chat.headers"?: (input: ChatHeadersInput, output: ChatHeadersOutput) => Promise<void>
-  "permission.ask"?: (input: Permission, output: { status: "ask" | "ask" | "allow" }) => Promise<void>
+  "permission.ask"?: (input: Permission, output: { status: "ask" | "deny" | "allow" }) => Promise<void>
   "command.execute.before"?: (input: CommandBeforeInput, output: CommandBeforeOutput) => Promise<void>
   "tool.execute.before"?: (input: ToolBeforeInput, output: ToolBeforeOutput) => Promise<void>
   "tool.execute.after"?: (input: ToolAfterInput, output: ToolAfterOutput) => Promise<void>
@@ -107,20 +107,6 @@ type AuthHook = {
   loader?: (auth: () => Promise<Auth>, provider: Provider) => Promise<Record<string, any>>
   methods: AuthMethod[]
 }
-
-// AuthOAuthResult replaces deprecated AuthOuathResult
-type AuthOAuthResult = {
-  type: "success"
-  refresh: string
-  access: string
-  expires: number
-} | {
-  type: "success"
-  key: string
-}
-
-/** @deprecated Use AuthOAuthResult instead. */
-type AuthOuathResult = AuthOAuthResult
 ```
 
 ### OAuth flow (`method: "auto"`)
@@ -152,11 +138,6 @@ type AuthOuathResult = AuthOAuthResult
 ## ProviderHook — Model Injection
 
 ```typescript
-// ProviderHookContext is a named exported type (not inline)
-type ProviderHookContext = {
-  auth?: Auth
-}
-
 type ProviderHook = {
   id: string
   models?: (provider: ProviderV2, ctx: ProviderHookContext) => Promise<Record<string, ModelV2>>
@@ -167,7 +148,6 @@ type ProviderHook = {
 - `models()` is called during provider initialization
 - Return a map of model ID → ModelV2 objects
 - `ctx.auth` contains the resolved auth for this provider (may be undefined)
-- **Note:** `ProviderHookContext` is now a named exported type (extracted from inline at v1.14.44)
 
 ### Under the Hood: Model injection timing
 
@@ -176,10 +156,10 @@ type ProviderHook = {
 - Custom model IDs appear in the model selector
 - If `models()` throws, the provider still works with built-in models
 
-## WorkspaceAdapter Protocol
+## WorkspaceAdaptor Protocol
 
 ```typescript
-type WorkspaceAdapter = {
+type WorkspaceAdaptor = {
   name: string
   description: string
   configure(config: WorkspaceInfo): WorkspaceInfo | Promise<WorkspaceInfo>
@@ -196,8 +176,6 @@ type WorkspaceAdapter = {
 3. **`remove()`** — Called to delete a workspace. Must clean up all resources.
 4. **`target()`** — Resolves workspace to local directory or remote URL. Returns `{ type: "local", directory }` or `{ type: "remote", url, headers? }`.
 
-> **Note:** Fixed spelling from v1.14.28's `WorkspaceAdaptor` (typo) to `WorkspaceAdapter`. All code should use the corrected spelling.
-
 ### Gotcha: `target()` return type determines routing
 
 - `{ type: "local" }` → OpenCode uses the local directory directly
@@ -207,15 +185,12 @@ type WorkspaceAdapter = {
 ## tool() Helper
 
 ```typescript
-// ToolDefinition = ReturnType<typeof tool>  (derived type, not explicit inline type)
 function tool<Args extends z.ZodRawShape>(input: {
   description: string
   args: Args
   execute(args: z.infer<z.ZodObject<Args>>, context: ToolContext): Promise<ToolResult>
 }): ToolDefinition
 ```
-
-> **Note:** In v1.14.44, `ToolDefinition` is derived via `ReturnType<typeof tool>`, not an explicit inline type. This means the actual type shape depends on the `tool()` function's return structure and may differ from earlier inline definitions.
 
 ### `tool.schema = z` — Full Zod Re-export
 

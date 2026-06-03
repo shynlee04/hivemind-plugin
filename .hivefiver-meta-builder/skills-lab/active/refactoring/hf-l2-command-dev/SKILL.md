@@ -3,6 +3,10 @@ name: hf-l2-command-dev
 description: >
   This skill should be used when the user asks to "create a command", "add a command", "write a custom command", "update a command", "set up a command with arguments", "create a command with bash injection", "configure command agent", mentions $ARGUMENTS, !bash, @file, agent:, subtask: in command context, or needs guidance on OpenCode command structure and non-interactive shell safety.
 metadata:
+  consumed-by:
+    - "hf-l2-command-builder"
+  lineage-scope: "hf-*"
+  access: "STRICT"
   layer: "2"
   role: "domain-execution"
   pattern: P2

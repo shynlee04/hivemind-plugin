@@ -21,8 +21,8 @@ Clarify phase requirements through structured Socratic questioning with quantita
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/spec-phase.md
-@~/.gemini/antigravity/get-shit-done/templates/spec.md
+@.agent/get-shit-done/workflows/spec-phase.md
+@.agent/get-shit-done/templates/spec.md
 </execution_context>
 
 <runtime_note>
@@ -40,7 +40,7 @@ Context files are resolved in-workflow using `init phase-op`.
 </context>
 
 <process>
-Execute end-to-end.
+Execute the spec-phase workflow from @.agent/get-shit-done/workflows/spec-phase.md end-to-end.
 
 **MANDATORY:** Read the workflow file BEFORE taking any action. The workflow contains the complete step-by-step process including the Socratic interview loop, ambiguity scoring gate, and SPEC.md generation. Do not improvise from the objective summary above.
 </process>

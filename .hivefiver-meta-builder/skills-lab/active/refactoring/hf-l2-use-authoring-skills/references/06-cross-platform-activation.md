@@ -47,7 +47,7 @@ The Agent loads a skill by calling: `skill({ name: "git-release" })`
   "permission": {
     "skill": {
       "*": "allow",
-      "internal-*": "ask",
+      "internal-*": "deny",
       "experimental-*": "ask"
     }
   }
@@ -57,7 +57,7 @@ The Agent loads a skill by calling: `skill({ name: "git-release" })`
 | Permission | Behavior |
 |------------|----------|
 | `allow` | Skill loads immediately |
-| `ask` | Skill hidden from Agent |
+| `deny` | Skill hidden from Agent |
 | `ask` | User prompted before loading |
 
 ### Troubleshooting OpenCode
@@ -66,7 +66,7 @@ If a skill does not show up:
 1. Verify `SKILL.md` is spelled in all caps
 2. Check frontmatter includes `name` and `description`
 3. Ensure skill names are unique across all locations
-4. Check permissions — skills with `ask` are hidden
+4. Check permissions — skills with `deny` are hidden
 
 ## Claude Code Activation
 

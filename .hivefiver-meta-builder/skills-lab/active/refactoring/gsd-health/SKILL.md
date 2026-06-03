@@ -16,10 +16,10 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/health.md
+@.agent/get-shit-done/workflows/health.md
 </execution_context>
 
 <process>
-Execute end-to-end.
+Execute the health workflow from @.agent/get-shit-done/workflows/health.md end-to-end.
 Parse `--repair` and `--context` flags from arguments and pass to workflow.
 </process>

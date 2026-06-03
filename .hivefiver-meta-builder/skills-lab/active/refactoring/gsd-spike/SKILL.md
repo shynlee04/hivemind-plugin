@@ -13,13 +13,13 @@ Two modes:
 - **Idea mode** (default) — describe an idea to spike
 - **Frontier mode** (no argument or "frontier") — analyzes existing spike landscape and proposes integration and frontier spikes
 
-Does not require prior new-project setup — auto-creates `.planning/spikes/` if needed.
+Does not require `/gsd-new-project` — auto-creates `.planning/spikes/` if needed.
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/spike.md
-@~/.gemini/antigravity/get-shit-done/workflows/spike-wrap-up.md
-@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
+@.agent/get-shit-done/workflows/spike.md
+@.agent/get-shit-done/workflows/spike-wrap-up.md
+@.agent/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>
@@ -37,8 +37,8 @@ Idea: $ARGUMENTS
 
 <process>
 Parse the first token of $ARGUMENTS:
-- If it is `--wrap-up`: strip the flag, execute the spike-wrap-up workflow
-- Otherwise: pass all of $ARGUMENTS as the idea to the spike workflow end-to-end.
+- If it is `--wrap-up`: strip the flag, execute the spike-wrap-up workflow from @.agent/get-shit-done/workflows/spike-wrap-up.md.
+- Otherwise: pass all of $ARGUMENTS as the idea to the spike workflow from @.agent/get-shit-done/workflows/spike.md end-to-end.
 
 Preserve all workflow gates (prior spike check, decomposition, research, risk ordering, observability assessment, verification, MANIFEST updates, commit patterns).
 </process>

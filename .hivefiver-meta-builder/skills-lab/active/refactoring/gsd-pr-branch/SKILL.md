@@ -13,9 +13,9 @@ changes that are irrelevant to code review.
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/pr-branch.md
+@.agent/get-shit-done/workflows/pr-branch.md
 </execution_context>
 
 <process>
-Execute end-to-end.
+Execute the pr-branch workflow from @.agent/get-shit-done/workflows/pr-branch.md end-to-end.
 </process>

@@ -10,7 +10,7 @@ Verify milestone achieved its definition of done. Check requirements coverage, c
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/audit-milestone.md
+@.agent/get-shit-done/workflows/audit-milestone.md
 </execution_context>
 
 <context>
@@ -24,6 +24,6 @@ Glob: .planning/phases/*/*-VERIFICATION.md
 </context>
 
 <process>
-Execute end-to-end.
+Execute the audit-milestone workflow from @.agent/get-shit-done/workflows/audit-milestone.md end-to-end.
 Preserve all workflow gates (scope determination, verification reading, integration check, requirements coverage, routing).
 </process>

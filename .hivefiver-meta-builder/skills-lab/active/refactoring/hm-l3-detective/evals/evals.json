@@ -1,0 +1,16 @@
+{
+  "skill": "hm-detective",
+  "rich_gate_patterns": ["assumption_verification", "not_found_reporting", "evidence_paths"],
+  "cases": [
+    {
+      "prompt": "Verify whether this codebase already has a queue-key validation pattern before we add one.",
+      "expected_load": true,
+      "must_include": ["falsifiable assumption", "two evidence paths", "classification"]
+    },
+    {
+      "prompt": "Write the new queue-key validator now.",
+      "expected_load": false,
+      "reason": "implementation belongs to execution/refactor skills, not detective"
+    }
+  ]
+}

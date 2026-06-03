@@ -3,7 +3,11 @@ name: hf-l2-agents-md-sync
 description: "Detects and fixes drift between AGENTS.md documentation and actual codebase state. Scans source files and .opencode/ directories, compares claims against reality, produces a structured drift report, then applies targeted edits. Triggers on: 'sync agents md', 'update AGENTS.md', 'fix agents md drift', 'AGENTS.md out of date', 'check agent instruction drift'. NOT for generic documentation writing or README refreshes."
 version: "1.0.0"
 metadata:
-  layer: "2"
+  consumed-by:
+    - "hf-l2-auditor"
+  lineage-scope: "hf-*"
+  access: "STRICT"
+  layer: "domain-execution"
   role: "sync"
   pattern: "scan-diff-apply"
 allowed-tools:

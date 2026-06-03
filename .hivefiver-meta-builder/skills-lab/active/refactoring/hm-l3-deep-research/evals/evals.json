@@ -1,0 +1,16 @@
+{
+  "skill": "hm-deep-research",
+  "rich_gate_patterns": ["sequential_research_gates", "source_evaluation", "contradiction_matrix", "provenance_continuation"],
+  "cases": [
+    {
+      "prompt": "Do deep research on which OpenCode plugin architecture pattern we should use and produce a report.",
+      "expected_load": true,
+      "must_include": ["source evaluation", "contradiction matrix", "artifact", "continuation"]
+    },
+    {
+      "prompt": "Quickly check one API signature in the docs.",
+      "expected_load": false,
+      "reason": "single-source quick lookup belongs to direct docs lookup, not deep research"
+    }
+  ]
+}

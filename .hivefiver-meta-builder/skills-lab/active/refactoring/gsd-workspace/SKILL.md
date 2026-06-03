@@ -24,10 +24,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/new-workspace.md
-@~/.gemini/antigravity/get-shit-done/workflows/list-workspaces.md
-@~/.gemini/antigravity/get-shit-done/workflows/remove-workspace.md
-@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
+@.agent/get-shit-done/workflows/new-workspace.md
+@.agent/get-shit-done/workflows/list-workspaces.md
+@.agent/get-shit-done/workflows/remove-workspace.md
+@.agent/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

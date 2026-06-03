@@ -1,6 +1,6 @@
 # Expert: Tool Definition & Schema Validation Internals
 
-> OpenCode SDK v1.14.44 | Source: `packages/plugin/src/tool.ts`, `packages/sdk/js/src/v2/gen/types.gen.ts`
+> OpenCode SDK v1.14.28 | Source: `packages/plugin/src/tool.ts`, `packages/sdk/js/src/v2/gen/types.gen.ts`
 > Classification: BEYOND-DOCS — not in official documentation
 
 ## Mental Model: Tool Lifecycle

@@ -1,25 +1,15 @@
 {
   "stack_name": "opencode",
   "packages": ["@opencode-ai/sdk", "@opencode-ai/plugin"],
-  "version": "1.14.44",
-  "source_repo": "https://github.com/anomalyco/opencode",
+  "version": "1.14.28",
+  "source_repo": "https://github.com/sst/opencode",
   "source_paths": ["packages/sdk/js/src/", "packages/plugin/src/"],
-  "ingest_date": "2026-05-10",
-  "ingest_tools": ["deepwiki", "context7", "github-api", "repomix"],
-  "last_validated": "2026-05-10",
+  "ingest_date": "2026-04-28",
+  "ingest_tools": ["deepwiki", "context7", "github-api"],
+  "last_validated": "2026-04-28",
   "update_command": "scripts/update.sh",
   "tags": ["sdk", "plugin", "typescript", "session", "tools", "hooks", "delegation", "zod", "effect"],
-  "repomix_status": "SUCCESS — re-ingested 2026-05-10 from anomalyco/opencode (55 files, 127K tokens)",
-  "constitutional_override": {
-    "trust_model": "two-tier",
-    "validation_tier": "live-primary",
-    "reference_tier": "bundled-supplementary",
-    "staleness_severity_scale": true,
-    "live_verification_required": true
-  },
-  "last_live_verified": null,
-  "staleness_window_days": 7,
-  "version_drift_detection": true,
+  "repomix_status": "TIMEOUT — repo too large for repomix download; source fetched via GitHub API instead",
   "source_files": {
     "plugin": {
       "index.ts": { "size_bytes": 8785, "sha": "71a3278cbb074604270945fe061f18ffa7faa05a" },

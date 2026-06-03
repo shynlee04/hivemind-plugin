@@ -12,7 +12,7 @@ Output: MILESTONE_SUMMARY written to `.planning/reports/`, presented inline, opt
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/milestone-summary.md
+@.agent/get-shit-done/workflows/milestone-summary.md
 </execution_context>
 
 <context>
@@ -30,7 +30,7 @@ Output: MILESTONE_SUMMARY written to `.planning/reports/`, presented inline, opt
 </context>
 
 <process>
-Execute end-to-end.
+Read and execute the milestone-summary workflow from @.agent/get-shit-done/workflows/milestone-summary.md end-to-end.
 </process>
 
 <success_criteria>

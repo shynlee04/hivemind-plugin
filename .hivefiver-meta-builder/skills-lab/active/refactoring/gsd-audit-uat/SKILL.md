@@ -8,7 +8,7 @@ Scan all phases for pending, skipped, blocked, and human_needed UAT items. Cross
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/audit-uat.md
+@.agent/get-shit-done/workflows/audit-uat.md
 </execution_context>
 
 <context>

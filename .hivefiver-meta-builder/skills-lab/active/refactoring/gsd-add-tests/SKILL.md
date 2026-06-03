@@ -12,7 +12,7 @@ Output: Test files committed with message `test(phase-{N}): add unit and E2E tes
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/add-tests.md
+@.agent/get-shit-done/workflows/add-tests.md
 </execution_context>
 
 <context>
@@ -23,6 +23,6 @@ Phase: $ARGUMENTS
 </context>
 
 <process>
-Execute end-to-end.
+Execute the add-tests workflow from @.agent/get-shit-done/workflows/add-tests.md end-to-end.
 Preserve all workflow gates (classification approval, test plan approval, RED-GREEN verification, gap reporting).
 </process>

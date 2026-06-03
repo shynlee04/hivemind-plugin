@@ -1,8 +1,7 @@
 # RICH Gate Scorecard — gate-lifecycle-integration
 
-**Evaluated:** 2026-05-10
-**Evaluated by:** hf-l2-skill-builder (audit-refresh pass)
-**Source:** anomalyco/opencode v1.14.44 (verified against STACKS-REFERENCES.md + repomix)
+**Evaluated:** 2026-04-29
+**Evaluated by:** gsd-executor (SE-5.5 hardening pass)
 **RICH Classification:** INTERNAL-USE (this project only, not shipped)
 **Skill Pattern:** P2 (Hybrid)
 
@@ -27,7 +26,7 @@
 | **RICH-2 — Transform-improve-adopt decision** | PASS | CQRS: adopted from Clean Architecture, transformed for tool/hook boundary. 9-surface: adopted from architecture-proposal, codified as mutation authority table. Delegation hierarchy: adopted from runtime constants, transformed into check protocol. |
 | **RICH-3 — Horizontal integration** | PASS | Integration with: hm-gate-orchestrator (triad management), gate-spec-compliance (downstream), hm-coordinating-loop (remediation), hm-phase-execution (wiring fixes), hm-refactor (structural), hm-debug (root-cause), hm-completion-looping (verification). |
 | **RICH-4 — Routing integration** | PASS | Triad position: ENTRY. Routes to gate-spec-compliance on PASS. Remediation routing table with 8 specific skill targets. hm-gate-orchestrator for full triad lifecycle. |
-| **RICH-5 — Professional bundled resources** | PASS | 10 reference files with domain-specific content (not generic). Evaluation-checklist per artifact type. Nine-surface authority table from architecture source. SDK compliance checklists from v1.14.44 docs (anomalyco/opencode). |
+| **RICH-5 — Professional bundled resources** | PASS | 10 reference files with domain-specific content (not generic). Evaluation-checklist per artifact type. Nine-surface authority table from architecture source. SDK compliance checklists from v1.14.28 docs. |
 | **RICH-6 — Independence audit** | PASS | This gate validates harness architecture specifically — harness paths ARE the domain. Self-correction Mode 1 handles classification ambiguity. Decision tree is artifact-type agnostic within the harness domain. |
 | **RICH-7 — Completeness** | PASS | All sections present: Activation, Classification, 9-Surface, SDK Compliance, CQRS, Delegation, Decision Tree, Routing, Remediation, Self-Correction (4 modes), Orchestrator Integration, Bundled Resources. |
 | **RICH-8 — Overall quality** | PASS | Professional quality. 4 self-correction modes. hm-gate-orchestrator cross-reference. 8 eval scenarios with 38 assertions. Metrics scorecard on disk. |

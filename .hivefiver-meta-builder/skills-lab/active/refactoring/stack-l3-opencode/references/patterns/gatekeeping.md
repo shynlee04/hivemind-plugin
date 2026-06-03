@@ -1,6 +1,6 @@
 # Patterns: Gatekeeping
 
-> OpenCode SDK + Plugin v1.14.44
+> OpenCode SDK + Plugin v1.14.28
 
 ## Quality Gates for Plugin Code
 
@@ -76,7 +76,7 @@ return {
 | `chat.params` | `{ sessionID, agent, model, provider, message }` | `{ temperature, topP, topK, maxOutputTokens, options }` |
 | `chat.headers` | `{ sessionID, agent, model, provider, message }` | `{ headers }` |
 | `shell.env` | `{ cwd, sessionID?, callID? }` | `{ env }` |
-| `permission.ask` | `Permission` | `{ status: "ask" \| "ask" \| "allow" }` |
+| `permission.ask` | `Permission` | `{ status: "ask" \| "deny" \| "allow" }` |
 
 ### Gate 4: Tool Registration Compliance
 

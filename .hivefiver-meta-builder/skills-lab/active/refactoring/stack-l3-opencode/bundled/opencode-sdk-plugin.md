@@ -417,7 +417,7 @@ export interface Hooks {
     input: { sessionID: string; agent: string; model: Model; provider: ProviderContext; message: UserMessage },
     output: { headers: Record<string, string> },
   ) => Promise<void>
-  "permission.ask"?: (input: Permission, output: { status: "ask" | "ask" | "allow" }) => Promise<void>
+  "permission.ask"?: (input: Permission, output: { status: "ask" | "deny" | "allow" }) => Promise<void>
   "command.execute.before"?: (
     input: { command: string; sessionID: string; arguments: string },
     output: { parts: Part[] },
@@ -5150,15 +5150,15 @@ export type AgentConfig = {
    */
   maxSteps?: number
   permission?: {
-    edit?: "ask" | "allow" | "ask"
+    edit?: "ask" | "allow" | "deny"
     bash?:
-      | ("ask" | "allow" | "ask")
+      | ("ask" | "allow" | "deny")
       | {
-          [key: string]: "ask" | "allow" | "ask"
+          [key: string]: "ask" | "allow" | "deny"
         }
-    webfetch?: "ask" | "allow" | "ask"
-    doom_loop?: "ask" | "allow" | "ask"
-    external_directory?: "ask" | "allow" | "ask"
+    webfetch?: "ask" | "allow" | "deny"
+    doom_loop?: "ask" | "allow" | "deny"
+    external_directory?: "ask" | "allow" | "deny"
   }
   [key: string]:
     | unknown
@@ -5171,15 +5171,15 @@ export type AgentConfig = {
     | ("subagent" | "primary" | "all")
     | number
     | {
-        edit?: "ask" | "allow" | "ask"
+        edit?: "ask" | "allow" | "deny"
         bash?:
-          | ("ask" | "allow" | "ask")
+          | ("ask" | "allow" | "deny")
           | {
-              [key: string]: "ask" | "allow" | "ask"
+              [key: string]: "ask" | "allow" | "deny"
             }
-        webfetch?: "ask" | "allow" | "ask"
-        doom_loop?: "ask" | "allow" | "ask"
-        external_directory?: "ask" | "allow" | "ask"
+        webfetch?: "ask" | "allow" | "deny"
+        doom_loop?: "ask" | "allow" | "deny"
+        external_directory?: "ask" | "allow" | "deny"
       }
     | undefined
 }
@@ -5479,15 +5479,15 @@ export type Config = {
   instructions?: Array<string>
   layout?: LayoutConfig
   permission?: {
-    edit?: "ask" | "allow" | "ask"
+    edit?: "ask" | "allow" | "deny"
     bash?:
-      | ("ask" | "allow" | "ask")
+      | ("ask" | "allow" | "deny")
       | {
-          [key: string]: "ask" | "allow" | "ask"
+          [key: string]: "ask" | "allow" | "deny"
         }
-    webfetch?: "ask" | "allow" | "ask"
-    doom_loop?: "ask" | "allow" | "ask"
-    external_directory?: "ask" | "allow" | "ask"
+    webfetch?: "ask" | "allow" | "deny"
+    doom_loop?: "ask" | "allow" | "deny"
+    external_directory?: "ask" | "allow" | "deny"
   }
   tools?: {
     [key: string]: boolean
@@ -5746,13 +5746,13 @@ export type Agent = {
   temperature?: number
   color?: string
   permission: {
-    edit: "ask" | "allow" | "ask"
+    edit: "ask" | "allow" | "deny"
     bash: {
-      [key: string]: "ask" | "allow" | "ask"
+      [key: string]: "ask" | "allow" | "deny"
     }
-    webfetch?: "ask" | "allow" | "ask"
-    doom_loop?: "ask" | "allow" | "ask"
-    external_directory?: "ask" | "allow" | "ask"
+    webfetch?: "ask" | "allow" | "deny"
+    doom_loop?: "ask" | "allow" | "deny"
+    external_directory?: "ask" | "allow" | "deny"
   }
   model?: {
     modelID: string
@@ -12632,7 +12632,7 @@ export class Permission extends HeyApiClient {
   /**
    * Respond to permission
    *
-   * Approve or ask a permission request from the AI assistant.
+   * Approve or deny a permission request from the AI assistant.
    *
    * @deprecated
    */
@@ -12675,7 +12675,7 @@ export class Permission extends HeyApiClient {
   /**
    * Respond to permission request
    *
-   * Approve or ask a permission request from the AI assistant.
+   * Approve or deny a permission request from the AI assistant.
    */
   public reply<ThrowOnError extends boolean = false>(
     parameters: {
@@ -15383,7 +15383,7 @@ export type EventMessagePartRemoved = {
   }
 }
 
-export type PermissionAction = "allow" | "ask" | "ask"
+export type PermissionAction = "allow" | "deny" | "ask"
 
 export type PermissionRule = {
   permission: string
@@ -15659,7 +15659,7 @@ export type ServerConfig = {
   cors?: Array<string>
 }
 
-export type PermissionActionConfig = "ask" | "allow" | "ask"
+export type PermissionActionConfig = "ask" | "allow" | "deny"
 
 export type PermissionObjectConfig = {
   [key: string]: PermissionActionConfig
@@ -16152,7 +16152,7 @@ export type Config = {
     /**
      * Continue the agent loop when a tool call is denied
      */
-    continue_loop_on_ask?: boolean
+    continue_loop_on_deny?: boolean
     /**
      * Timeout in milliseconds for model context protocol (MCP) requests
      */

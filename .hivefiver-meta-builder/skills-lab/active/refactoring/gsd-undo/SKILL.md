@@ -14,9 +14,9 @@ Three modes:
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/undo.md
-@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
-@~/.gemini/antigravity/get-shit-done/references/gate-prompts.md
+@.agent/get-shit-done/workflows/undo.md
+@.agent/get-shit-done/references/ui-brand.md
+@.agent/get-shit-done/references/gate-prompts.md
 </execution_context>
 
 <context>
@@ -24,5 +24,5 @@ $ARGUMENTS
 </context>
 
 <process>
-Execute end-to-end.
+Execute the undo workflow from @.agent/get-shit-done/workflows/undo.md end-to-end.
 </process>

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "eval-1",
+    "scenario": "Orchestrator starts a complex multi-phase task spanning multiple subagent delegations. User says 'build the auth system with login, registration, and token refresh.'",
+    "expected_behavior": "Agent loads hm-planning-persistence, determines session ID, creates all 3 files (task_plan.md, findings.md, progress.md) in .hivemind/state/planning/<session-id>/, and initializes task_plan.md with goal + phases for each auth component.",
+    "pass_condition": "All 3 files created in session-isolated directory. task_plan.md has clear Goal and at least 3 phases. progress.md records session start. findings.md is initialized with empty sections."
+  },
+  {
+    "id": "eval-2",
+    "scenario": "After context compaction, agent loses session memory and needs to resume. User says 'continue where we left off with the auth system.'",
+    "expected_behavior": "Agent reads all 3 planning files from session directory, cross-references with git diff to reconcile state, updates last_updated timestamps, and resumes from current phase.",
+    "pass_condition": "Agent successfully recovers task state from filesystem: identifies current phase, reads findings, and continues work without re-asking the user for already-answered questions. Updates last_updated in frontmatter."
+  },
+  {
+    "id": "eval-3",
+    "scenario": "A researcher subagent returns findings that need to be persisted. Coordinator needs to absorb subagent output. User says 'the researcher found some API patterns, save them.'",
+    "expected_behavior": "Agent follows ABSORB tier: writes findings into findings.md (appends to Research Findings section), updates task_plan.md phase status to reflect subagent completion, and logs the handoff in progress.md.",
+    "pass_condition": "Subagent findings appear in findings.md with source attribution. task_plan.md shows phase status update. progress.md records the subagent handoff event with timestamp."
+  }
+]

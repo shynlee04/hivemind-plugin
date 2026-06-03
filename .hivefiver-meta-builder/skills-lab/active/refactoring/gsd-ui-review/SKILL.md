@@ -10,8 +10,8 @@ Output: {phase_num}-UI-REVIEW.md
 </objective>
 
 <execution_context>
-@~/.gemini/antigravity/get-shit-done/workflows/ui-review.md
-@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
+@.agent/get-shit-done/workflows/ui-review.md
+@.agent/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -19,6 +19,6 @@ Phase: $ARGUMENTS — optional, defaults to last completed phase.
 </context>
 
 <process>
-Execute end-to-end.
+Execute @.agent/get-shit-done/workflows/ui-review.md end-to-end.
 Preserve all workflow gates.
 </process>

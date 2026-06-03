@@ -1,6 +1,6 @@
 # Patterns: Testing
 
-> OpenCode SDK + Plugin v1.14.44
+> OpenCode SDK + Plugin v1.14.28
 
 ## Pattern: Plugin Unit Test
 
@@ -264,6 +264,6 @@ For every plugin:
 - [ ] `tool.execute.after` correctly sets `output.title`, `output.output`, `output.metadata`
 - [ ] `shell.env` correctly sets `output.env` keys
 - [ ] `chat.params` correctly sets output parameters
-- [ ] Permission hook returns valid status: `"ask" | "ask" | "allow"`
+- [ ] Permission hook returns valid status: `"ask" | "deny" | "allow"`
 - [ ] Compaction hook sets `output.context` array and/or `output.prompt` string
 - [ ] Error handling: hooks don't throw unhandled exceptions
