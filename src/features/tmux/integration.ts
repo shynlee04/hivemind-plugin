@@ -25,6 +25,7 @@ import { promisify } from "node:util";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
+import { Socket } from "node:net";
 import { PaneGridPlanner } from "./grid-planner.js";
 import { SessionManager } from "./session-manager.js";
 import { TmuxMultiplexer } from "./tmux-multiplexer.js";
@@ -58,11 +59,18 @@ export async function resolveBinary(name: string): Promise<string | null> {
 // ---------------------------------------------------------------------------
 
 /**
- * Get the tmux version string by running `{tmuxPath} --version`.
+ * Get the tmux version string by running `{tmuxPath} -V`.
+ *
+ * Note: `tmux --version` is parsed by the C entrypoint as a CLI shorthand
+ * and the `--` token is interpreted as "end of options" by some tmux
+ * builds (e.g. 3.6b on macOS Homebrew returns
+ *   "tmux: unknown option -- -"
+ * when called via `execFile`). The portable shorthand is `tmux -V`
+ * which is accepted by tmux 2.x and later.
  */
 export async function getTmuxVersion(tmuxPath: string): Promise<string | null> {
   try {
-    const { stdout } = await execFileAsync(tmuxPath, ["--version"]);
+    const { stdout } = await execFileAsync(tmuxPath, ["-V"]);
     return stdout.trim();
   } catch {
     return null;
@@ -145,6 +153,149 @@ export async function detectServerUrl(projectDir: string): Promise<string | null
 }
 
 // ---------------------------------------------------------------------------
+// opencode.json server port detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Try to read `opencode.json` in the project root and extract an explicit
+ * `server.port` configuration. This is the user-friendly path: when a user
+ * adds `"server": { "port": 4096 }` to their `opencode.json`, we use that
+ * port verbatim for `opencode attach <url>` calls.
+ *
+ * Why this matters: `opencode attach <url>` needs the EXACT port the
+ * running opencode server is listening on. The in-tree integration
+ * previously relied on a hash-derived port (from `readOrMigratePort`),
+ * which only matches the running server if the user happened to start
+ * opencode with that port. Reading `opencode.json` makes the wiring
+ * deterministic — the user configures the port in one place.
+ *
+ * Returns `null` if:
+ * - `opencode.json` does not exist
+ * - JSON parse fails
+ * - `server.port` is not a positive integer
+ * - `server.port` is 0 (means "OS-assigned" in opencode — we can't predict it)
+ *
+ * D-04 mirror: any file-read error is swallowed and returns `null`.
+ *
+ * @param projectDir - absolute path to the project root.
+ * @returns the configured port number, or `null` if not set / unparseable.
+ */
+export function loadOpencodeServerPort(projectDir: string): number | null {
+  const configPath = join(projectDir, "opencode.json");
+  if (!existsSync(configPath)) return null;
+  try {
+    const raw = readFileSync(configPath, "utf-8");
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const server = parsed.server;
+    if (typeof server !== "object" || server === null) return null;
+    const port = (server as Record<string, unknown>).port;
+    if (typeof port !== "number" || !Number.isInteger(port) || port <= 0 || port > 65535) {
+      return null;
+    }
+    return port;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve the opencode server URL by combining three sources in priority order:
+ * 1. `opencode.json` `server.port` (explicit user config — most authoritative)
+ * 2. Active localhost scan (probe common opencode ports for a live server)
+ * 3. Persisted port from `.hivemind/state/tmux-port.json` (cross-session stable)
+ * 4. Deterministic hash-derived port (cold start fallback — may not match running server)
+ *
+ * Returns the URL string or `null` when no port can be derived. Callers
+ * should still wire the integration (D-04 silent-fallback) but log a TUI-visible
+ * warning so the user knows pane spawns may fail until they either
+ * configure `opencode.json` or start opencode with `--port <p>`.
+ *
+ * @param projectDir - absolute path to the project root.
+ * @returns the server URL (e.g. `http://localhost:4096`), or `null`.
+ */
+export async function resolveOpencodeServerUrl(projectDir: string): Promise<string | null> {
+  // 1. Explicit `server.port` in opencode.json (best — deterministic)
+  const configuredPort = loadOpencodeServerPort(projectDir);
+  if (configuredPort !== null) {
+    return `http://localhost:${configuredPort}`;
+  }
+
+  // 2. Active localhost scan — probe common opencode ports for a live server.
+  //    Cheap (single connect with 250ms timeout per port), and catches the
+  //    common case where the user just runs `opencode` and the server
+  //    binds to 4096 (the opencode default).
+  const livePort = await probeLocalhostForOpencodeServer();
+  if (livePort !== null) {
+    return `http://localhost:${livePort}`;
+  }
+
+  // 3. Persisted port or deterministic hash fallback (cross-session stable
+  //    but may not match running server if user started opencode elsewhere)
+  return detectServerUrl(projectDir);
+}
+
+// ---------------------------------------------------------------------------
+// Localhost port probe — find the running opencode server
+// ---------------------------------------------------------------------------
+
+/**
+ * Common opencode server ports to probe, in priority order. The first
+ * entry (4096) is opencode's documented default per
+ * `opencode --port 0` behavior in opencode v1.1+ (tries 4096 first,
+ * then OS-assigned). The rest are sensible dev-environment alternatives.
+ */
+const PROBE_PORTS: readonly number[] = [4096, 3000, 8080, 8000, 5328]
+
+/**
+ * Probe a single TCP port on localhost with a short timeout. Returns
+ * `true` if the port accepts a connection within `timeoutMs`, `false`
+ * otherwise (refused, timeout, or any other error).
+ *
+ * Implemented via `net.connect()` rather than HTTP so we don't depend
+ * on the opencode API surface (which may change between versions). Any
+ * listening socket is enough to confirm a server is up.
+ */
+function probeLocalhostPort(port: number, timeoutMs: number = 250): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    let settled = false
+    const socket = new Socket()
+    const finish = (ok: boolean): void => {
+      if (settled) return
+      settled = true
+      try { socket.destroy() } catch { /* ignore */ }
+      resolve(ok)
+    }
+    socket.setTimeout(timeoutMs)
+    socket.once("connect", () => finish(true))
+    socket.once("timeout", () => finish(false))
+    socket.once("error", () => finish(false))
+    socket.connect(port, "127.0.0.1")
+  })
+}
+
+/**
+ * Try to find a running opencode server on localhost by probing a
+ * small set of common ports. Returns the first port that accepts a
+ * connection within 250ms, or `null` if no port responds.
+ *
+ * Total worst-case latency: 5 ports × 250ms = 1.25 seconds. In
+ * practice this returns in <50ms when opencode is on its default
+ * port (4096). The probe is intentionally sequential — we stop at
+ * the first hit and don't burn the full budget when found early.
+ *
+ * Used by `resolveOpencodeServerUrl` as the live-detection fallback
+ * when `opencode.json` doesn't declare an explicit `server.port`.
+ */
+export async function probeLocalhostForOpencodeServer(): Promise<number | null> {
+  for (const port of PROBE_PORTS) {
+    if (await probeLocalhostPort(port)) {
+      return port
+    }
+  }
+  return null
+}
+
+// ---------------------------------------------------------------------------
 // TmuxIntegration interface
 // ---------------------------------------------------------------------------
 
@@ -221,9 +372,13 @@ export async function createTmuxIntegrationIfSupported(
     const opencodePath = await resolveBinary("opencode");
     if (!opencodePath) return skip("opencode binary not found in PATH");
 
-    // Step 4: Detect or read persisted server URL
-    const serverUrl = await detectServerUrl(projectDirectory);
-    // Null serverUrl is OK — will be detected from PluginInput at plugin time
+    // Step 4: Detect server URL — try opencode.json server.port first,
+    // then persisted port, then deterministic hash fallback. The URL
+    // must point to the EXACT port the running opencode server is
+    // listening on (used by `opencode attach` in spawned panes).
+    const serverUrl = await resolveOpencodeServerUrl(projectDirectory);
+    // Null serverUrl is rare (only when the persisted port file is
+    // malformed). Log so the user knows pane spawns may fail.
 
     // Step 5: Get tmux version string
     const version = await getTmuxVersion(tmuxPath);

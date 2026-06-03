@@ -6,6 +6,9 @@
   "plugin": [
     "./dist/plugin.js"
   ],
+  "server": {
+    "port": 4096
+  },
   "compaction": {
     "auto": true,
     "prune": false,

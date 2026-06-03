@@ -292,6 +292,56 @@ export interface DelegationModuleSetupOptions {
   onChildSessionCreated?: (childSessionId: string, parentSessionId: string) => void
 }
 
+// ---------------------------------------------------------------------------
+// TUI logger adapter for the tmux integration factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a `Logger` (the shape expected by `createTmuxIntegrationIfSupported`'s
+ * `options.log` parameter) that forwards every call into the OpenCode TUI
+ * `client.app.log` envelope. This makes the integration's silent-null
+ * factory (`f4dd77ac` B3 fix) actually visible to the user — the factory's
+ * `skip(reason)` calls now show up in the TUI log instead of being swallowed.
+ *
+ * The `info` and `warn` levels surface at "info" in the TUI; `debug` is
+ * forwarded at "debug" (typically hidden by default in the OpenCode TUI
+ * but visible in verbose mode). `error` is forwarded at "error".
+ *
+ * The returned logger is purely additive — if `client.app.log` is
+ * unavailable (older OpenCode builds, or partial SDK), every call is a
+ * safe no-op, preserving the factory's existing D-04 silent-fallback
+ * contract.
+ */
+function buildTuiTmuxLogger(client: OpenCodeClient | undefined): {
+  debug: (msg: string, data?: unknown) => void
+  info: (msg: string, data?: unknown) => void
+  warn: (msg: string, data?: unknown) => void
+  error: (msg: string, data?: unknown) => void
+} {
+  return {
+    debug: (msg, data) => {
+      void client?.app?.log?.({
+        body: { service: "tmux-integration", level: "debug", message: msg, extra: data as Record<string, unknown> | undefined },
+      })
+    },
+    info: (msg, data) => {
+      void client?.app?.log?.({
+        body: { service: "tmux-integration", level: "info", message: msg, extra: data as Record<string, unknown> | undefined },
+      })
+    },
+    warn: (msg, data) => {
+      void client?.app?.log?.({
+        body: { service: "tmux-integration", level: "warn", message: msg, extra: data as Record<string, unknown> | undefined },
+      })
+    },
+    error: (msg, data) => {
+      void client?.app?.log?.({
+        body: { service: "tmux-integration", level: "error", message: msg, extra: data as Record<string, unknown> | undefined },
+      })
+    },
+  }
+}
+
 export interface DelegationModuleSetup {
   coordinator: DelegationCoordinator
   delegationManager: DelegationManager
@@ -411,14 +461,68 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const ptyManager = await createPtyManagerIfSupported()
 
   // Tmux integration: optional visual orchestration layer.
-  // REQUIRES: OpenCode server mode to be enabled via opencode.json:
-  //   "server": { "port": <port> }
-  // Without server.port, PluginInput.serverUrl is empty and the fork plugin
-  // cannot construct attach URLs for spawned panes.
+  //
+  // The integration auto-detects the opencode server URL by reading
+  // `opencode.json` for `server.port`, then falls back to the persisted
+  // port in `.hivemind/state/tmux-port.json`, then to a deterministic
+  // hash-derived port. For "just works" behavior, add to `opencode.json`:
+  //   "server": { "port": 4096 }
+  // matching the port your opencode server listens on (default: 4096).
+  //
   // See .planning/phases/42-tmux-visual-orchestration-layer-fork-extension/42-RESEARCH.md
-  // for the rationale: in-plugin auto-init is impossible (plugin runs inside
-  // an already-started OpenCode process). Auto-init wrapper deferred to Phase 43.
-  const tmuxIntegration = await createTmuxIntegrationIfSupported(projectDirectory)
+  // for the auto-init rationale (in-plugin server-mode bootstrap is
+  // impossible — plugin runs inside an already-started opencode process).
+  //
+  // We pass a TUI logger so the integration's silent-null factory emits
+  // a user-visible message in the OpenCode TUI log instead of failing
+  // silently. After the factory call we emit a single ENABLED / DISABLED
+  // banner so the user immediately knows whether sub-agents will spawn
+  // visible tmux panes.
+  const tmuxIntegration = await createTmuxIntegrationIfSupported(projectDirectory, {
+    log: buildTuiTmuxLogger(client),
+  })
+
+  // Emit a single TUI-visible status line for the tmux subsystem. This
+  // is the one line the user will look for in the OpenCode TUI log
+  // ("/harness: tmux ENABLED" or "/harness: tmux DISABLED — <reason>").
+  if (tmuxIntegration) {
+    void client?.app?.log?.({
+      body: {
+        service: "hivemind",
+        level: "info",
+        message:
+          `[Harness] Tmux visual orchestration: ENABLED ` +
+          `(${tmuxIntegration.version ?? "unknown version"}, ` +
+          `server=${tmuxIntegration.serverUrl ?? "auto-detect"}, ` +
+          `binary=${tmuxIntegration.binaryPath ?? "n/a"}) — ` +
+          `sub-agents will spawn in tmux panes`,
+        extra: {
+          tmuxVersion: tmuxIntegration.version,
+          opencodeBinary: tmuxIntegration.opencodeBinaryPath,
+          serverUrl: tmuxIntegration.serverUrl,
+          projectDirectory,
+        },
+      },
+    })
+  } else {
+    // The factory already logged the precise reason via buildTuiTmuxLogger
+    // (info-level on success, debug-level on skip — the latter is silent
+    // in the TUI). Emit a single user-facing banner so they at least
+    // know the visual layer is off, and what to do.
+    void client?.app?.log?.({
+      body: {
+        service: "hivemind",
+        level: "info",
+        message:
+          `[Harness] Tmux visual orchestration: DISABLED — ` +
+          `sub-agents will run inline (no tmux panes). ` +
+          `To enable: run opencode inside a tmux session with ` +
+          `'opencode --port 4096' and add "server": { "port": 4096 } ` +
+          `to opencode.json.`,
+        extra: { projectDirectory, hasTmux: Boolean(process.env.TMUX) },
+      },
+    })
+  }
 
   // ── Step 5.5: Sidecar HTTP server ──────────────────────────────
   // Per D-SC01-03: server start failure must NOT block plugin init.
