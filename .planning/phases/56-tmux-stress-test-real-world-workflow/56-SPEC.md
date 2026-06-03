@@ -1,6 +1,7 @@
 # Phase 56: Stress Test for Real-Life Tmux Use — Specification
 
 **Created:** 2026-06-03
+**Re-audited:** 2026-06-03 (re-spec / comprehensive-e2e re-scope; auto-mode gate still PASS)
 **Ambiguity score:** 0.08 (gate: ≤ 0.20)
 **Requirements:** 6 locked (one per stress-test sub-flow)
 
@@ -183,18 +184,22 @@ While the stress test scenario runs to completion (REQ-56-01..05 all PASS) and `
 | Boundary Clarity | 0.91 | 0.70 | ✓ | In-scope = 1 BATS file + 1 evidence doc; out-of-scope = no new src/tests, no new tool keys, no new deps, no src/** mutations, no sidecar/dashboard |
 | Constraint Clarity | 0.89 | 0.65 | ✓ | Q6, R-P50-03, D-04, P20, 27-tool-key, atomic commits, real OS process survival, SC-isolation, runtime budget, timing tolerance all locked |
 | Acceptance Criteria | 0.93 | 0.70 | ✓ | 21 pass/fail checks; 1 BATS + 1 evidence doc + 1 vitest regression + 2 atomic commits; L1 + L2 evidence per REQ |
-| **Ambiguity** | 0.08 | ≤0.20 | ✓ | Composite = 1 − mean(0.94, 0.91, 0.89, 0.93) ≈ 0.0825 → 0.08 (floor to 2 decimals) |
+| **Ambiguity** | 0.08 | ≤0.20 | ✓ | Composite = 1 − (0.35×0.94 + 0.25×0.91 + 0.20×0.89 + 0.20×0.93) ≈ 1 − 0.9205 = 0.0795 → 0.08 (floor to 2 decimals) |
 
 All dimensions meet or exceed minimums. No dimensions below threshold. Composite ambiguity 0.08 ≤ 0.20 gate: **PASS**.
+
+**Re-audit 2026-06-03 (auto-mode re-scope):** No new evidence collected; existing ambiguity 0.08 verified. The 6-REQ structure is the comprehensive-e2e scope: 4 P55 stress sub-flows (spawn, grid, sendKeys, journal) + persistence round-trip + 27-tool-key invariant = the full P50–P55 surface in one scenario. No re-scoping needed; existing CONTEXT.md (12 decisions) + PATTERNS.md (7 patterns) + 56-01-PLAN.md (4 tasks) are all aligned with these 6 REQs. Gate still PASS.
 
 ## Interview Log
 
 | Round | Perspective | Question summary | Decision locked |
 |-------|-------------|-----------------|-----------------|
 | — | (auto mode) | Initial ambiguity ≤ 0.20 | Skipped interview — SPEC.md derived from ROADMAP L2029-2031 + P55 SPEC/CONTEXT/VERIFICATION format + P53/P54 BATS precedents + the 7 sub-flows in the task brief |
+| — | (auto re-audit 2026-06-03) | Re-spec / comprehensive-e2e re-scope | Skipped re-interview — existing 6 REQs already cover the comprehensive-e2e surface (4 P55 sub-flows + persistence + 27-tool-key). 12 CONTEXT.md decisions + 7 PATTERNS.md patterns + 56-01-PLAN.md 4 tasks all aligned. Ambiguity re-verified at 0.08. |
 
 ---
 
 *Phase: 56-tmux-stress-test-real-world-workflow*
 *Spec created: 2026-06-03*
-*Next step: /gsd-discuss-phase 56 — implementation decisions (BATS slot reservation rationale, runtime budget strictness, evidence format, atomic commit structure, helpers.bash extension scope, etc.)*
+*Re-audited: 2026-06-03 (comprehensive-e2e re-scope; auto-mode gate still PASS)*
+*Next step: /gsd-discuss-phase 56 — implementation decisions (already produced 56-CONTEXT.md with 12 locked decisions; /gsd-plan-phase 56 is the next natural transition)*
