@@ -74,6 +74,11 @@ export class SseConnectionPool {
     return this.#connections.size
   }
 
+  /** Returns the maximum allowed SSE connections. */
+  get maxClients(): number {
+    return this.#opts.maxClients
+  }
+
   /**
    * Broadcast a sidecar event to all connected SSE clients.
    *

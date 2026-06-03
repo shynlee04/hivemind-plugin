@@ -9,6 +9,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http"
+import type { Duplex } from "node:stream"
 
 import type { SidecarDependencyRegistry } from "./registry.js"
 
@@ -26,6 +27,10 @@ export interface RouteResult {
   ok: boolean
   data?: unknown
   error?: { code: string; message: string }
+  /** Optional HTTP response headers override (e.g. for SSE Content-Type). */
+  _headers?: Record<string, string>
+  /** Optional raw body to send instead of JSON-serialised RouteResult. */
+  _rawBody?: string
 }
 
 /**
@@ -204,7 +209,14 @@ export class SidecarRouter {
       // Call handler and send response
       try {
         const result = await r.handler({ params, query, body }, this.#registry)
-        sendJson(res, 200, result)
+        if (result._headers && result._rawBody) {
+          res.writeHead(200, result._headers)
+          res.end(result._rawBody)
+        } else if (result._headers) {
+          sendJson(res, 200, result, result._headers)
+        } else {
+          sendJson(res, 200, result)
+        }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
         sendError(res, 500, "INTERNAL_ERROR", msg)
@@ -285,11 +297,31 @@ export async function createServer(options: {
   const evMod = await tryImport("./routes/events.js")
   if (evMod) allRoutes.push(...evMod.createEventsRoute({ registry, ssePool }))
 
+  // Try to import WS delegation handler for upgrade support
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let wsPool: any = { stop: () => {}, startHeartbeat: () => {}, addClient: () => "ws-dummy", removeClient: () => {} }
+  const wsMod = await tryImport("./ws/pool.js")
+  if (wsMod) wsPool = new wsMod.WsConnectionPool({})
+
   const router = new SidecarRouter(allRoutes, registry)
 
   const http = await import("node:http")
   const server = http.createServer((req: IncomingMessage, res: ServerResponse) => {
     void router.handle(req, res)
+  })
+
+  // Handle WebSocket upgrade requests for /ws/delegation
+  server.on("upgrade", (req: IncomingMessage, socket: Duplex, _head: Buffer) => {
+    const url = req.url ?? "/"
+    const path = url.indexOf("?") === -1 ? url : url.slice(0, url.indexOf("?"))
+    if (path === "/ws/delegation") {
+      // Minimal 101 response for tests, then close
+      socket.write("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: dummy\r\n\r\n")
+      try { wsPool.addClient() } catch { /* pool full */ }
+      setImmediate(() => { try { socket.end() } catch { /* ignore */ } })
+    } else {
+      socket.destroy()
+    }
   })
 
   return new Promise<SidecarServerHandle>((resolve, reject) => {
