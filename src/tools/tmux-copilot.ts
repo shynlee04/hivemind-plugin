@@ -343,6 +343,21 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
       case "forward-prompt": {
         // P58 G5 (REQ-58-05, D-58-12): suppression check FIRST — if manualOverride
         // is set, return suppressed envelope without sending keys.
+        //
+        // [P58.8 S2 — D-58-22 DEFER] `forward-prompt` is INTENTIONALLY
+        // NOT in USER_SESSION_ALLOWED_ACTIONS. The human operator
+        // takes a delegate via `take-over` (which sets manualOverride)
+        // and then types directly into the pane via their own tmux
+        // client. The `forward-prompt` action remains orchestrator-only
+        // because (a) it pre-pends a `[orchestrator-forward ...]`
+        // sentinel that contaminates the delegate's transcript with
+        // an automation-source marker, and (b) bypassing the
+        // suppression check would let USER_SESSION race past a
+        // take-over the operator has not yet completed. If a future
+        // requirement needs USER_SESSION to inject text, route it
+        // through `send-keys` (which the operator can re-enable under
+        // a separate D-XX LOCKED decision) — do NOT add `forward-prompt`
+        // to USER_SESSION_ALLOWED_ACTIONS without re-validating D-58-22.
         const sessionId = context.sessionID
         const overrideState = getManualOverrideState(sessionId)
         if (overrideState?.manualOverride === true) {
