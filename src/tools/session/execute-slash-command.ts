@@ -119,13 +119,11 @@ function buildSuccessMetadata(
 export const createExecuteSlashCommandTool = (client: PluginInput["client"], sessionTracker?: unknown): ReturnType<typeof tool> => {
   return tool({
     description:
-      "Executes an OpenCode slash command on the active session. " +
-      "Three dispatch paths: (1) subtask:false + agent → synthetic parent prompt via session.prompt() " +
-      "(agent runs one turn, then restored), (2) subtask:true + agent → subtask delegation via session.prompt(), " +
-      "(3) no overrides → TUI appendPrompt/submitPrompt for basic command execution. " +
-      "When agent is provided without subtask, defaults to subtask:false (parent session dispatch). " +
-      "Use `stackOnSessionId` to attach command execution onto an existing session (PREFERRED for retrying or continuing work). " +
-      "Use `hivemind-command-engine` with action `discover` or `list_commands` to find available commands first.",
+      "Executes an OpenCode slash command. CRITICAL: Only when 'subtask: true' is explicitly passed or configured " +
+      "does this run as a background subtask delegation (spawning a child session, blocking, and returning the output). " +
+      "When 'subtask: false' or not specified, the command runs in the current session, simply appending the prompt template. " +
+      "In this case, the calling agent itself remains fully responsible for sequentially executing the tools (e.g. task tool, bash, write_to_file) " +
+      "to complete the steps/tasks defined in the command body. Use `stackOnSessionId` to stack on an existing session.",
     args: ExecuteSlashCommandSchema.shape as unknown as Parameters<typeof tool>[0]["args"],
     async execute(args: ExecuteInput, ctx) {
       const cmdDisplay = `/${args.command}${args.arguments ? ` ${args.arguments}` : ""}`
@@ -337,12 +335,15 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           }
 
           return {
-            output: [
-              `✓ Command ${cmdDisplay} dispatched as synthetic parent prompt.`,
-              `  Agent: ${syntheticPromptAgent}`,
-              `  Description: ${commandBundle.description}`,
-              "  Note: synthetic parent prompt creates a ## USER turn in the session body. Agent will be restored after one turn.",
-            ].join("\n"),
+            output: appendExecutionBoundaryNote(
+              [
+                `✓ Command ${cmdDisplay} dispatched as synthetic parent prompt.`,
+                `  Agent: ${syntheticPromptAgent}`,
+                `  Description: ${commandBundle.description}`,
+                "  Note: synthetic parent prompt creates a ## USER turn in the session body. Agent will be restored after one turn.",
+              ].join("\n"),
+              false
+            ),
             metadata: buildSuccessMetadata(
               args,
               validated,
@@ -621,11 +622,14 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           }, 50)
 
           return {
-            output: [
-              `✓ Command ${cmdDisplay} dispatched directly to child session ${ctx.sessionID} via SDK command API.`,
-              resolvedAgent ? `  Agent: ${resolvedAgent}` : null,
-              validated.model ? `  Model: ${validated.model}` : null,
-            ].filter(Boolean).join("\n"),
+            output: appendExecutionBoundaryNote(
+              [
+                `✓ Command ${cmdDisplay} dispatched directly to child session ${ctx.sessionID} via SDK command API.`,
+                resolvedAgent ? `  Agent: ${resolvedAgent}` : null,
+                validated.model ? `  Model: ${validated.model}` : null,
+              ].filter(Boolean).join("\n"),
+              false
+            ),
             metadata: buildSuccessMetadata(
               args,
               validated,
@@ -664,11 +668,14 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           }, 50)
 
           return {
-            output: [
-              `✓ Command ${cmdDisplay} dispatched via SDK command API.`,
-              `  Agent: ${resolvedAgent}`,
-              suggestedAgent ? `  (agent suggested by intent: ${suggestedAgent})` : null,
-            ].filter(Boolean).join("\n"),
+            output: appendExecutionBoundaryNote(
+              [
+                `✓ Command ${cmdDisplay} dispatched via SDK command API.`,
+                `  Agent: ${resolvedAgent}`,
+                suggestedAgent ? `  (agent suggested by intent: ${suggestedAgent})` : null,
+              ].filter(Boolean).join("\n"),
+              false
+            ),
             metadata: buildSuccessMetadata(
               args,
               validated,
@@ -691,11 +698,14 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
         await client.tui.submitPrompt()
 
         return {
-          output: [
-            `✓ Command ${cmdDisplay} dispatched to TUI prompt.`,
-            `  Prompt text: ${promptText}`,
-            `  The command will execute immediately after this tool call returns.`,
-          ].filter(Boolean).join("\n"),
+          output: appendExecutionBoundaryNote(
+            [
+              `✓ Command ${cmdDisplay} dispatched to TUI prompt.`,
+              `  Prompt text: ${promptText}`,
+              `  The command will execute immediately after this tool call returns.`,
+            ].filter(Boolean).join("\n"),
+            false
+          ),
           metadata: buildSuccessMetadata(
             args,
             validated,
@@ -815,12 +825,25 @@ async function getChildSessionIDs(projectRoot: string, parentSessionID: string):
         childIds.add(childId)
       }
     }
-    return childIds
+    return childIds;
   } catch {
-    return new Set()
+    return new Set();
   }
 }
 
-
-
-
+function appendExecutionBoundaryNote(output: string, isSubtask: boolean): string {
+  if (isSubtask) {
+    return output
+  }
+  return [
+    output,
+    "",
+    "⚠️ CRITICAL ARCHITECTURAL BOUNDARY WARNING:",
+    "This command was executed in the CURRENT session context, NOT as a background subtask.",
+    "No child/subtask session was created, and NO background agent is executing its tasks.",
+    "You (the calling orchestrator/delegator agent) MUST continue the execution sequentially",
+    "by calling the necessary tools (such as the task tool, bash, or write_to_file) to perform",
+    "the actions, templates, reference lookups, and steps described in the command's instructions.",
+    "Do NOT assume the command executes or resolves itself in the background."
+  ].join("\n")
+}
