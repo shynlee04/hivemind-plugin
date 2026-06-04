@@ -2,7 +2,7 @@
 
 **Created:** 2026-06-04
 **Ambiguity score:** 0.10 (gate: ≤ 0.20)
-**Requirements:** 5 locked
+**Requirements:** 6 locked
 
 ## Goal
 
@@ -60,6 +60,14 @@ Wire naming standards validation from the unified config into a runtime enforcem
 - **Target:** `create-governance-session.ts` validates session titles against `naming_standards` before session creation, rejecting non-conforming titles with a descriptive error. Agent command enforcement fires on `create-governance-session` tool calls: resolve the target agent and check its `allowedCommands`.
 - **Acceptance:** `validateNamingTitle("hm/governance/root/mapper/data-collection@0", config.naming_standards) === true`. `validateNamingTitle("invalid/title", config.naming_standards) === false`. `create-governance-session` with invalid title returns error. Agent command enforcement test proves warning/block fires on disallowed commands.
 
+### REQ-06: Full registry populate — all shipped agents and commands
+
+Populate `configs.json.governance` with ALL shipped agents and commands so governance rules have complete data for enforcement.
+
+- **Current:** `configs.json.governance.agent_configs` has only 7 of 42 shipped agents (17% coverage). `configs.json.governance.command_agent_mappings` has only 4 of 112 shipped commands (4% coverage). 35 agents and 108 commands bypass governance entirely.
+- **Target:** `agent_configs` contains all 42 shipped agents: hm-architect, hm-code-fixer, hm-code-reviewer, hm-codebase-mapper, hm-debug-session-manager, hm-debugger, hm-doc-verifier, hm-doc-writer, hm-ecologist, hm-executor, hm-integration-checker, hm-intel-updater, hm-intent-loop, hm-l0-orchestrator, hm-nyquist-auditor, hm-orchestrator, hm-pattern-mapper, hm-phase-researcher, hm-plan-checker, hm-planner, hm-project-researcher, hm-roadmapper, hm-security-auditor, hm-shipper, hm-specifier, hm-synthesizer, hm-ui-auditor, hm-ui-checker, hm-ui-researcher, hm-user-profiler, hm-verifier, hf-agent-builder, hf-auditor, hf-command-builder, hf-coordinator, hf-l0-orchestrator, hf-meta-builder, hf-prompter, hf-refactorer, hf-skill-builder, hf-synthesizer, hf-tool-builder. `command_agent_mappings` contains all shipped non-gsd-* commands. Each agent has `description` and `allowedCommands`. Each command has `description` and `agent` mapping.
+- **Acceptance:** `Object.keys(readConfigs().governance.agent_configs).length >= 42`. `Object.keys(readConfigs().governance.command_agent_mappings).length >= 100`. All 42 agents present by name. No gsd-* entries in shipped registry.
+
 ## Boundaries
 
 **In scope:**
@@ -67,7 +75,7 @@ Wire naming standards validation from the unified config into a runtime enforcem
 - Schema extension for `HivemindConfigsSchema` — add `guardrail_level`, `delegation_mode`, `tool_access_pattern`, `skill_filter`
 - Schema extension for `GovernanceRuleSchema` — add `depth` condition field
 - Reader migration — `config-reader.ts` reads from unified source with fallback
-- Config population — write actual governance content to `.hivemind/configs.json.governance`
+- Config population — write actual governance content to `.hivemind/configs.json.governance` including all 42 agents and all shipped commands
 - Behavioral profile resolver update — config values override static profile dimensions
 - Archive old governance/config.json with deprecation notice
 - Naming validation enforcement in `create-governance-session.ts`
@@ -107,12 +115,14 @@ Wire naming standards validation from the unified config into a runtime enforcem
 - [ ] SR05-AC-08: `.hivemind/governance/config.json` SHALL NOT be read by any runtime component after migration. The file MAY exist as an archived copy (`.hivemind/governance/config.json.archived`).
 - [ ] SR05-AC-09: A startup warning SHALL be emitted if `.hivemind/governance/config.json` (non-archived) still exists.
 - [ ] SR05-AC-10: When `hivemind init --yes` runs, the generated `.hivemind/configs.json` SHALL include a populated `governance` field with default rules from REQ-02.
+- [ ] SR05-AC-11: `configs.json.governance.agent_configs` SHALL contain ALL 42 shipped agents (31 hm-* + 11 hf-*). No gsd-* agents present.
+- [ ] SR05-AC-12: `configs.json.governance.command_agent_mappings` SHALL contain ALL shipped commands (non-gsd-*). Each command has `description` and `agent` fields.
 
 ## Ambiguity Report
 
 | Dimension          | Score | Min  | Status | Notes                              |
 |--------------------|-------|------|--------|------------------------------------|
-| Goal Clarity       | 0.92  | 0.75 | ✓      | 5 concrete requirements with sub-requirements |
+| Goal Clarity       | 0.95  | 0.75 | ✓      | 6 concrete requirements with sub-requirements, full agent/command registry specified |
 | Boundary Clarity   | 0.95  | 0.70 | ✓      | Explicit in-scope/out-of-scope with reasoning |
 | Constraint Clarity | 0.80  | 0.65 | ✓      | Backward compatibility, evaluator API stability, fresh config, depth tracking |
 | Acceptance Criteria| 0.90  | 0.70 | ✓      | 10 pass/fail criteria with EARS notation |
