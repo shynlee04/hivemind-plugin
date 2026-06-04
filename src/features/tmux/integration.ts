@@ -410,6 +410,17 @@ export async function createTmuxIntegrationIfSupported(
         multiplexer.sendKeys(paneId, text, literal),
       listPanes: (mainPaneId?: string) => multiplexer.listPanes(mainPaneId),
       createPaneGridPlanner: (debounceMs?: number) => new PaneGridPlanner(debounceMs),
+      // P58.9 REQ-58.9-01: forward pane-captured events from the SessionManager
+      // polling tick to the registered observer. The default implementation
+      // is a no-op; the plugin composition root wires the real observer via
+      // `sessionManager.setObserver(adapter)`. This is a synchronous
+      // delegate (the SessionManager's emit is wrapped in try/catch).
+      onPaneCaptured: (_event) => {
+        // Intentionally empty: the SessionManager's `observer` field
+        // (set by `sessionManager.setObserver(...)` in src/plugin.ts) is
+        // what actually delivers events. This adapter method exists only
+        // to satisfy the PaneObserver interface contract.
+      },
     };
 
     // Step 9: Publish the adapter to the module-level slot so the

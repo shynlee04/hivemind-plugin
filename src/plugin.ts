@@ -765,6 +765,14 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     ? createTmuxEventObserver(tmuxIntegration.adapter)
     : createTmuxEventObserver(buildInTreeSessionManager())
 
+  // P58.9 REQ-58.9-01: wire the tmuxObserver into the SessionManager so the
+  // startPolling tick emits pane-captured events. The adapter is the
+  // SessionManagerAdapter (publishes onPaneCaptured to the observer chain);
+  // the SessionManager calls observer.onPaneCaptured on every hash change.
+  if (tmuxIntegration?.sessionManager_ && typeof tmuxIntegration.sessionManager_.setObserver === "function") {
+    tmuxIntegration.sessionManager_.setObserver(tmuxIntegration.adapter)
+  }
+
   // P53: pane-monitor hook consumes pane-captured events and persists
   // them as 7-field JSON entries under .hivemind/journal/<sid>/. The
   // handle is retained (closure-captured retry timers must not be GC'd)

@@ -168,6 +168,13 @@ export interface SessionManagerAdapter {
   // Planner factory (closes over nothing — the planner is stateless
   // per call, debounceMs is forwarded to the new PaneGridPlanner)
   createPaneGridPlanner: (debounceMs?: number) => PaneGridPlanner;
+  // P58.9 REQ-58.9-01: forward pane-captured events from the SessionManager
+  // polling tick to the PaneObserver interface. The SessionManager calls
+  // this method (synchronously) inside the hash-change block. The plugin
+  // composition root wires the real TmuxEventObserver to the SessionManager
+  // via `sessionManager.setObserver(adapter)`. Errors thrown here are
+  // swallowed by the SessionManager (D-04 silent-fallback).
+  onPaneCaptured: (event: import("./observers.js").PaneCapturedEvent) => void;
 }
 
 // ---------------------------------------------------------------------------
