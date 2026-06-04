@@ -50,11 +50,17 @@ teardown() {
   # await form is absent and the void form is present.
   local mgr_runtime="src/coordination/delegation/manager-runtime.ts"
   local has_await send_block
-  has_await="$(awk 'NR>=235 && NR<=300' "$mgr_runtime" | grep -cE '^\s*await sendPromptAsync' || true)"
-  send_block="$(awk 'NR>=235 && NR<=300' "$mgr_runtime" | grep -cE '^\s*void sendPromptAsync' || true)"
+  # Wide line window (235-330) tolerates minor line shifts from sibling
+  # Wave 2A/2D additions (sessionManager wiring, childEventStream wire-up).
+  has_await="$(awk 'NR>=235 && NR<=330' "$mgr_runtime" | grep -cE '^\s*await sendPromptAsync' || true)"
+  send_block="$(awk 'NR>=235 && NR<=330' "$mgr_runtime" | grep -cE '^\s*void sendPromptAsync' || true)"
 
   if [[ "$has_await" -ge 1 ]]; then
-    echo "RED-EXPECTED-FAIL: manager-runtime.ts still has 'await sendPromptAsync' between lines 235-300; this blocks dispatch return."
+    echo "RED-EXPECTED-FAIL: manager-runtime.ts still has 'await sendPromptAsync' between lines 235-330; this blocks dispatch return."
+    return 1
+  fi
+  if [[ "$send_block" -lt 1 ]]; then
+    echo "RED-EXPECTED-FAIL: manager-runtime.ts does not yet use 'void sendPromptAsync' between lines 235-330; fire-and-forget pattern missing (send_block=$send_block)."
     return 1
   fi
   if [[ "$send_block" -lt 1 ]]; then
