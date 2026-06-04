@@ -68,6 +68,13 @@ export interface SessionStateChangedEvent {
  * Payload for `pane-captured` events. Carries metadata about a tmux pane
  * output capture so subscribers can log, aggregate, or forward the content
  * size information.
+ *
+ * P58.9 REQ-58.9-01: the optional `content` field is added so subscribers
+ * (the P53 pane-monitor hook at `src/hooks/pane-monitor.ts`) can write the
+ * full pane content as a sibling `<ts>-pane-content.txt` next to the 7-field
+ * `<ts>-pane.json` journal entry. Existing subscribers (none currently
+ * beyond the P53 hook) read only metadata and are unaffected by the
+ * addition — `content` is OPTIONAL.
  */
 export interface PaneCapturedEvent {
   type: "pane-captured";
@@ -75,6 +82,8 @@ export interface PaneCapturedEvent {
   paneId: string;
   contentLength: number;
   timestamp: number;
+  /** P58.9: optional full content of the captured pane. */
+  content?: string;
 }
 
 // ---------------------------------------------------------------------------
