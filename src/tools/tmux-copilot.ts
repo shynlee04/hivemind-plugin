@@ -60,8 +60,19 @@ const ORCHESTRATOR_AGENTS = [
   { name: "hm-l0-orchestrator", tier: "orchestrator" },
   { name: "hm-orchestrator", tier: "orchestrator" },
   { name: "hf-l0-orchestrator", tier: "orchestrator" },
-  { name: "hf-coordinator", tier: "orchestrator" },
+  { name: "hf-l1-coordinator", tier: "orchestrator" },
 ] as const
+
+/**
+ * P58.8 S2 (REQ-58-08): sentinel value for a "user" tier caller. The
+ * runtime gate recognizes `context.agent === "user"` (literal agent name
+ * from the harness) OR `context.agent === USER_SESSION` (sentinel used
+ * when invoked directly from the user's TUI session). The user tier is
+ * granted ONLY for `take-over`, `release`, and `peek` — `send-keys` and
+ * `forward-prompt` remain orchestrator-only. The user-tier allow-list
+ * lives at `USER_SESSION_ALLOWED_ACTIONS` below (D-58-22 LOCKED).
+ */
+const USER_SESSION = "__user__" as const
 
 /**
  * Exported so Hivemind can layer future authorization checks on top of
@@ -91,9 +102,9 @@ const ORCHESTRATOR_AGENT_NAMES = new Set<string>(
 // heterogeneous naming of the human caller:
 //   - "user"      — runtime-emitted by the SDK user-tier
 //   - "__user__"  — internal convention used by handoff/test seams
+//   (recognized inline in the execute() permission gate via the
+//   USER_SESSION sentinel declared at the top of this file).
 // ---------------------------------------------------------------------------
-
-const USER_SESSION_AGENT_NAMES = new Set<string>(["user", "__user__"])
 
 /**
  * Action set invokable from USER_SESSION tier (D-58-22 LOCKED).
@@ -239,11 +250,13 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
     sessionId: s.string().optional().describe("(respawn) session id to respawn"),
   },
   async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
-    // 1. Permission gate
+    // 1. Permission gate — recognize both orchestrator-tier and USER_SESSION-tier callers.
+    // P58.8 S2 (REQ-58-08): the user tier is granted take-over / release / peek ONLY.
+    // send-keys and forward-prompt remain orchestrator-only (enforced in step 2.5).
     const callerAgent = context.agent
-    const isOrchestrator = callerAgent !== undefined && ORCHESTRATOR_AGENT_NAMES.has(callerAgent)
-    const isUserSession = callerAgent !== undefined && USER_SESSION_AGENT_NAMES.has(callerAgent)
-    if (!isOrchestrator && !isUserSession) {
+    const isOrchestratorTier = callerAgent ? ORCHESTRATOR_AGENT_NAMES.has(callerAgent) : false
+    const isUserSession = callerAgent === "user" || callerAgent === USER_SESSION
+    if (!callerAgent || (!isOrchestratorTier && !isUserSession)) {
       return renderToolResult({
         error: { kind: "permission-denied", agent: callerAgent ?? "unknown" },
       })
