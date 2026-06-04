@@ -9,6 +9,8 @@ import { renderToolResult } from "../../shared/tool-helpers.js"
 import { error, success } from "../../shared/tool-response.js"
 import { generateHivemindConfigsJsonSchema, writeConfigJsonSchema } from "../../schema-kernel/generate-config-json-schema.js"
 import { BootstrapInitInputSchema, type BootstrapInitInput, type BootstrapInitResult, type BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"
+import { DEFAULT_GOVERNANCE_CONFIGS } from "../../config/defaults.js"
+import { deepMerge } from "../../shared/helpers.js"
 
 type PrimitiveKind = (typeof PRIMITIVE_TYPES)[number]
 
@@ -240,10 +242,16 @@ async function writeVersionFile(versionFilePath: string, version: string): Promi
 
 function renderConfigJson(config: BootstrapInitInput["config"], nonInteractive: boolean): string {
   if (nonInteractive || Object.keys(config).length === 0) {
-    return DEFAULT_CONFIG_JSON
+    // Merge default config with DEFAULT_GOVERNANCE_CONFIGS
+    const defaultConfig = JSON.parse(DEFAULT_CONFIG_JSON)
+    const mergedConfig = { ...defaultConfig, governance: DEFAULT_GOVERNANCE_CONFIGS }
+    return `${JSON.stringify(mergedConfig, null, 2)}\n`
   }
 
-  return `${JSON.stringify({ $schema: "./configs.schema.json", ...config }, null, 2)}\n`
+  // Merge user config with DEFAULT_GOVERNANCE_CONFIGS
+  const userConfig = { $schema: "./configs.schema.json", ...config }
+  const mergedConfig = { ...userConfig, governance: { ...DEFAULT_GOVERNANCE_CONFIGS, ...userConfig.governance } }
+  return `${JSON.stringify(mergedConfig, null, 2)}\n`
 }
 
 function backupPrimitiveTarget(primitiveTargetRoot: string): string | undefined {
