@@ -153,15 +153,16 @@ describe("createGovernanceSessionTool", () => {
     )
 
     // Title should use naming service format (agent resolved by config reader)
+    // Template expansion wraps the brief, so title reflects expanded content
     expect(mockCreateSession).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        title: expect.stringMatching(/^hm\/governance\/root\/[^/]+\/review-x@0$/),
+        title: expect.stringMatching(/^hm\/governance\/root\/[^/]+\/.+@0$/),
       }),
     )
   })
 
-  it("should call sendPrompt with brief text when no coordinator", async () => {
+  it("should call sendPrompt with expanded brief when no coordinator", async () => {
     const { createGovernanceSessionTool } = await import(
       "../../../src/features/governance-engine/create-governance-session.js"
     )
@@ -175,6 +176,7 @@ describe("createGovernanceSessionTool", () => {
     )
 
     expect(mockCreateSession).toHaveBeenCalled()
+    // SR-05: Brief is expanded with governance template from config
     expect(mockSendPrompt).toHaveBeenCalledWith(
       expect.anything(),
       "ses_gov_456",
@@ -182,7 +184,7 @@ describe("createGovernanceSessionTool", () => {
         parts: expect.arrayContaining([
           expect.objectContaining({
             type: "text",
-            text: "Review all auth modules for security compliance",
+            text: expect.stringContaining("Review all auth modules for security compliance"),
           }),
         ]),
       }),

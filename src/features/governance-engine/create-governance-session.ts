@@ -108,18 +108,37 @@ export function createGovernanceSessionTool(
 
       // --- Step 2: Resolve agent from brief via config reader ---
       let resolvedAgent = args.agent
+      let governanceConfig: ReturnType<typeof readGovernanceConfig> | undefined
       try {
-        const config = readGovernanceConfig()
-        resolvedAgent = resolveAgentForBrief(args.brief, config)
+        governanceConfig = readGovernanceConfig()
+        resolvedAgent = resolveAgentForBrief(args.brief, governanceConfig)
       } catch {
         // Config read failure is non-fatal — use provided agent
         resolvedAgent = args.agent
       }
 
+      // --- Step 2.5: SR-05 Expand governance brief template from config ---
+      let expandedBrief = args.brief
+      try {
+        if (!governanceConfig) {
+          governanceConfig = readGovernanceConfig()
+        }
+        const govTemplate = governanceConfig.templates?.["governance-brief"]
+        if (govTemplate?.content) {
+          // Template format: "You are a governance {{role}}. Review the following: {{brief}}"
+          expandedBrief = govTemplate.content
+            .replace(/\{\{role\}\}/g, resolvedAgent)
+            .replace(/\{\{brief\}\}/g, args.brief)
+        }
+      } catch {
+        // Non-fatal — use raw brief if template expansion fails
+        expandedBrief = args.brief
+      }
+
       // --- Step 3: Generate title via naming service ---
       // Sanitize user input: strip all non-alphanumeric chars (except hyphens) to prevent
       // any injection vectors in git commit messages or session titles.
-      const rawPurpose = (args.title || args.brief).slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+      const rawPurpose = (args.title || expandedBrief).slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
       const safePurpose = rawPurpose || "governance" // Fallback if sanitization strips everything
       const sessionTitle = generateSessionTitle({
         framework: "hm",
@@ -132,8 +151,10 @@ export function createGovernanceSessionTool(
 
       // --- Step 3.5: SR-05 Naming validation (soft enforcement per Decision 6) ---
       try {
-        const config = readGovernanceConfig()
-        const namingStandards = config.naming_standards
+        if (!governanceConfig) {
+          governanceConfig = readGovernanceConfig()
+        }
+        const namingStandards = governanceConfig.naming_standards
         if (namingStandards) {
           const isValid = validateNamingTitle(sessionTitle, namingStandards)
           if (!isValid) {
@@ -218,7 +239,7 @@ export function createGovernanceSessionTool(
             agent: resolvedAgent,
             currentDepth: 0,
             parentSessionId: sessionID,
-            prompt: args.brief,
+            prompt: expandedBrief,
             queueKey: `agent:${resolvedAgent}`,
             surface: "governance-dispatch",
             workingDirectory: context.directory ?? context.worktree ?? process.cwd(),
@@ -237,7 +258,7 @@ export function createGovernanceSessionTool(
         // Fallback: raw sendPrompt if no coordinator available
         try {
           await sendPrompt(client, sessionID, {
-            parts: [{ type: "text", text: args.brief }],
+            parts: [{ type: "text", text: expandedBrief }],
           })
         } catch (caughtError: unknown) {
           const msg = caughtError instanceof Error ? caughtError.message : String(caughtError)

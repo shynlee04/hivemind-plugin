@@ -19,6 +19,7 @@ import { resolveCommand } from "./resolve-command.js"
 import { dispatchCommand, validateAgentFormat, validateAgentExists } from "./dispatch-command.js"
 import { getAppAgents } from "../../shared/app-api.js"
 import { selectAgent } from "./semantic-agent-selector.js"
+import { readGovernanceConfig } from "../../features/governance-engine/config-reader.js"
 
 function getErrorName(err: unknown): string {
   if (err instanceof Error) return err.name
@@ -222,8 +223,21 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
           }
         }
 
-        // Determine agent for dispatch: explicit > frontmatter > suggested
+        // Determine agent for dispatch: explicit > frontmatter > suggested > governance config
         let resolvedAgent = overrideAgent || commandBundle?.agent || suggestedAgent
+
+        // SR-05: Check governance command_agent_mappings if no agent resolved yet
+        if (!resolvedAgent) {
+          try {
+            const govConfig = readGovernanceConfig(projectRoot)
+            const cmdMapping = govConfig.command_agent_mappings?.[executionArgs.command]
+            if (cmdMapping?.agent) {
+              resolvedAgent = cmdMapping.agent
+            }
+          } catch {
+            // Non-fatal — governance config read failure doesn't block command execution
+          }
+        }
 
         // Enforce lineage/prefix alignment (e.g. hm-* commands must pair with hm-* agents)
         const prefixMatch = executionArgs.command.trim().replace(/^\//, "").match(/^([a-zA-Z0-9]+)-/)
