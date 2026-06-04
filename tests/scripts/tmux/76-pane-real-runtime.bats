@@ -23,6 +23,8 @@ load "helpers"
 setup() {
   tmux_bats_require_dist
   tmux_bats_make_project
+  tmux_bats_require_tmux_server
+  tmux_bats_require_opencode
 }
 
 teardown() {
@@ -34,18 +36,6 @@ teardown() {
   local tmux_session="p58-9-runtime-$$"
   local journal_root="${project}/.hivemind/journal"
   local sid="bats-76-runtime-$$"
-
-  # Skip if no opencode binary available (AC-58.9-03-06)
-  if ! command -v opencode >/dev/null 2>&1; then
-    skip "no opencode binary on PATH"
-  fi
-
-  # Skip if no tmux server
-  if ! tmux has-session -t "_nonexistent_test_session_$$" 2>/dev/null; then
-    if ! tmux start-server 2>/dev/null; then
-      skip "no tmux server available"
-    fi
-  fi
 
   # Step 1: spawn tmux session with REAL `opencode` (NOT `cat`) in the pane.
   # We pipe the opencode --version output into a file the multiplexer can
