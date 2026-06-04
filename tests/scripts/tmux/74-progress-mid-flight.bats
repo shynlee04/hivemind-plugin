@@ -40,8 +40,16 @@ teardown() {
 
   # Step 2: confirm the delegation-status Zod union has the 'progress' action.
   # RED: the union is currently z.enum(['status','get','list','control','find-stackable','pool'])
-  local action_enum
-  action_enum="$(awk '/action:/ && /z\.enum/' src/tools/delegation/delegation-status.ts | head -1)"
+  # Match the second `action: z.enum(...)` (DelegationStatusInputSchema at
+  # line ~37, NOT DelegationControlSchema at line ~25). We use grep -n to
+  # capture the line number and select the second match.
+  local action_enum_line action_enum
+  action_enum_line="$(grep -nE 'z\.enum' src/tools/delegation/delegation-status.ts | sed -n '2p' | cut -d: -f1)"
+  if [[ -z "$action_enum_line" ]]; then
+    echo "RED-EXPECTED-FAIL: cannot locate DelegationStatusInputSchema enum line; current: $(cat src/tools/delegation/delegation-status.ts | head -50)"
+    return 1
+  fi
+  action_enum="$(sed -n "${action_enum_line}p" src/tools/delegation/delegation-status.ts)"
   if [[ "$action_enum" != *"progress"* ]]; then
     echo "RED-EXPECTED-FAIL: delegation-status Zod enum does not include 'progress'; current: $action_enum"
     return 1
