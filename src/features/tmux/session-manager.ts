@@ -182,9 +182,6 @@ export class SessionManager implements ForkSessionManager {
    */
   setObserver(observer: PaneObserver): void {
     this.observer = observer;
-    // Touch the field so tsc strict mode is satisfied before I3 wires the
-    // actual emit call into startPolling's tick.
-    void this.observer;
   }
 
   // -------------------------------------------------------------------------
@@ -378,6 +375,30 @@ export class SessionManager implements ForkSessionManager {
           if (prevHash !== hash) {
             this.lastCaptureHash.set(tracked.paneId, hash)
             anyChange = true
+            // P58.9 REQ-58.9-01: emit `pane-captured` event ONLY on hash
+            // CHANGE (mitigates T-58-9-01 DoS / event-flooding). The
+            // observer receives `{ type, sessionId, paneId, contentLength,
+            // timestamp, content }` with the full content so the P53
+            // pane-monitor hook can write a sibling <ts>-pane-content.txt.
+            // The emit is wrapped in try/catch (D-04 silent-fallback) so
+            // a faulty observer cannot break the polling chain.
+            if (this.observer) {
+              try {
+                this.observer.onPaneCaptured({
+                  type: "pane-captured",
+                  sessionId: tracked.sessionId,
+                  paneId: tracked.paneId,
+                  contentLength: capture.byteLength,
+                  timestamp: capture.capturedAt,
+                  content: capture.content,
+                })
+              } catch (err) {
+                this.log?.debug("startPolling: observer emit failed (D-04 silent-fallback)", {
+                  paneId: tracked.paneId,
+                  err,
+                })
+              }
+            }
           }
         } catch (err) {
           this.log?.debug("startPolling: tick error", { paneId: tracked.paneId, err })
