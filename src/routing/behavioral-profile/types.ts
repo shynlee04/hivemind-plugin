@@ -98,3 +98,17 @@ export interface BehavioralOverrides {
   /** Delegation dispatch strategy override */
   delegationMode: DelegationMode
 }
+
+/**
+ * Config-driven behavioral overrides from configs.json.
+ * Allows per-project customization of the 4 security-relevant dimensions.
+ * Values here override the static BehavioralProfiles[mode] lookup.
+ *
+ * @see SR-05 CONTEXT.md Decision 4 (snake_case config, camelCase interface)
+ */
+export interface BehavioralConfigOverrides {
+  guardrail_level?: "strict" | "moderate" | "permissive"
+  delegation_mode?: "waiter" | "direct" | "autonomous"
+  tool_access_pattern?: "restricted" | "standard" | "full"
+  skill_filter?: "curated" | "domain" | "full"
+}

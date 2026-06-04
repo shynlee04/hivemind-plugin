@@ -1,0 +1,135 @@
+{
+  "sessionID": "ses_16db8f90fffeXboaaTd2SPoLBz",
+  "parentSessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-phase-researcher",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Track incomplete tasks + stress test P49-P57",
+    "subagentType": "hm-phase-researcher"
+  },
+  "created": "2026-06-04T10:56:28.938Z",
+  "updated": "2026-06-04T10:57:06.280Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-phase-researcher",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are hm-phase-researcher. Track incomplete tasks across the project and map them to recent phases (P49-P57) for stress testing.\n\n## Output target\n.hivemind/planning/incompletion-and-stress-test-2026-06-04.md\n\n## Scope\n\n### A. Incomplete task inventory\nSearch for incomplete tasks:\n- .planning/todos/pending/ (or equivalent) — list all pending todos\n- .planning/phases/49-*/SUMMARY.md (if exists) — look for \"FOLLOW-UP\" or \"TODO\" sections\n- .planning/phases/50-*/SUMMARY.md — same\n- .planning/phases/51-*/SUMMARY.md\n- .planning/phases/52-*/SUMMARY.md\n- .planning/phases/53-*/SUMMARY.md\n- .planning/phases/54-*/SUMMARY.md\n- .planning/phases/55-*/SUMMARY.md\n- .planning/phases/56-*/SUMMARY.md\n- .planning/phases/58-*/SUMMARY.md — list all follow-ups from P58 extension\n\nAlso check:\n- .planning/ROADMAP.md — phases with status != \"Complete\"\n- Grep for \"FOLLOW-UP\", \"TODO\", \"DEFERRED\", \"BACKLOG\" across .planning/\n- .planning/USER-PAIN-BACKLOG.md (if exists) — list S1-S4 statuses\n\n### B. Map incomplete tasks to recent phases\nFor each incomplete task, identify:\n- Originating phase (P49-P58)\n- Why it's incomplete (deferred, blocked, scope-cut, lost in noise)\n- Which recent phase (P49-P57) would catch it\n- The real-life use case that exposes it\n\n### C. Stress test plan for P49-P57 in real OpenCode runtime\nFor each phase P49-P57, identify the 1-2 most stress-test-worthy scenarios:\n\n**P49 tmux-e2e-completion:** tmux session lifecycle, abort/resume, completion detection under load\n**P50 cleanup opencode-tmux fork:** verify no orphan processes after harness restart\n**P51 synthesize core tmux classes:** verify TmuxMultiplexer is the single source of truth (not fork)\n**P52 wire tmux-copilot + state query:** verify all 7 tmux-copilot actions work in real OpenCode\n**P53 live pane monitoring:** verify pane-captured events fire on real activity\n**P54 session persistence + restart-recovery:** kill harness, restart, verify sessions resume\n**P55 E2E UAT:** verify the 4 seed criteria still hold in real runtime\n**P56 stress test:** verify performance under load (10+ concurrent delegations)\n**P58 gap-fix:** verify S1-S4 in real runtime (covered separately by user)\n\nFor each scenario:\n- Setup: what the user needs to do\n- Expected: what should happen\n- Failure indicator: what would indicate the phase didn't hold\n- Verify command: BATS or vitest or manual\n\n### D. Real-life use cases (to make tasks \"real\")\nList 5-10 concrete real-life workflows the user can do in OpenCode:\n- \"Dispatch 3 parallel research tasks, monitor all 3, abort the slow one, inject into the fastest\"\n- \"Run a long-running code review task, while it runs dispatch a quick delegation to fix a typo in a different file\"\n- \"Open 5 tmux panes (one per delegation), switch between them, verify each streams correctly\"\n- \"Force a harness restart mid-delegation, verify the delegation resumes or fails gracefully\"\n- \"Run 10 sequential BATS test invocations, verify no state leaks between\"\n- \"Read a 500-line file via delegate-task, verify peek/progress update in real time\"\n\n### E. Risk-prioritized stress test sequence\nOrder the 5-10 real-life use cases by:\n- Likelihood of exposing latent issues\n- Coverage of recent phases (P49-P57)\n- Time required (start with 5-min tests, end with 30-min tests)\n\n## Output format\n\n```\n# Incompletion Inventory + P49-P57 Stress Test — 2026-06-04\n\n## Section A: Incomplete Task Inventory\n| Task | Originating Phase | Status | Why Incomplete | Last Touched |\nList with one row per incomplete task.\n\n## Section B: Task-to-Phase Mapping\n| Task | Maps To Phase | Real-Life Use Case |\n| One row per task.\n\n## Section C: P49-P57 Stress Test Scenarios\nFor each phase:\n### P[N] [name]\n- Stress test 1: [name]\n  - Setup\n  - Expected\n  - Failure indicator\n  - Verify command\n\n## Section D: Real-Life Use Cases (10)\nFor each:\n- Use case N: [title]\n- Steps (concrete commands)\n- Phase coverage (which P49-P57 phases it exercises)\n- Time required\n- Verdict criteria\n\n## Section E: Recommended Stress Test Sequence\nOrdered list of use cases to run, with rationale for ordering.\n\n## Summary\n- Total incomplete tasks: count\n- Total stress test scenarios: count\n- Total real-life use cases: count\n- Estimated total time to run all: X minutes\n- Recommended starting point: use case N\n```\n\n## Constraints\n- L5 documentation only\n- DO NOT modify any source code, tests, or .opencode/\n- ONLY write to .hivemind/planning/incompletion-and-stress-test-2026-06-04.md\n- Mark as L5\n- Use grep/glob, do not full-read large files\n- Target 250-500 lines\n\n## Return\n- File path\n- New line count\n- Total incomplete tasks found\n- Total stress test scenarios\n- Total real-life use cases\n- Recommended starting use case (1-line reason)",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll perform this research task systematically. Let me start by surveying the project structure and gathering data in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: bash, bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "hm-phase-researcher",
+      "content": "Track incomplete tasks + stress test P49-P57",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 5,
+      "actor": "hm-phase-researcher",
+      "content": "<task id=\"ses_16db8f90fffeXboaaTd2SPoLBz\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-04T10:56:43.048Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_739fkslw5wgc_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T10:56:44.218Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_739fkslw5wgc_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T10:56:44.931Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_739fkslw5wgc_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T10:56:56.524Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_i7yo8z7li6aj_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T10:56:57.594Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_i7yo8z7li6aj_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T10:56:57.599Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_i7yo8z7li6aj_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T10:57:06.256Z",
+      "type": "assistant_message",
+      "content": "<task id=\"ses_16db8f90fffeXboaaTd2SPoLBz\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_16db8f90fffeXboaaTd2SPoLBz"
+      }
+    }
+  ],
+  "lastMessage": "<task id=\"ses_16db8f90fffeXboaaTd2SPoLBz\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>"
+}

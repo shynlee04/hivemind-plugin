@@ -1,0 +1,118 @@
+{
+  "skill": "hm-roadmap-maintainability",
+  "version": "1.0.0",
+  "trigger_queries": [
+    {
+      "id": "positive-full-roadmap-eval",
+      "query": "Evaluate our 8-milestone product roadmap for maintainability — score the codebase health, order features by dependency, check extensibility, and track technical debt.",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Scores all 6 maintainability dimensions",
+        "Computes the Maintainability Index",
+        "Topologically sorts features into milestones",
+        "Catalogs technical debt with quadrant classification",
+        "Produces a product health dashboard"
+      ]
+    },
+    {
+      "id": "positive-debt-tracking",
+      "query": "Catalog all our technical debt — which items should we pay off first and how much velocity will they cost us if we defer?",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Classifies debt into Deliberate/Inadvertent × Prudent/Reckless quadrants",
+        "Assigns interest rates and principal effort",
+        "Calculates interest-on-principal formula",
+        "Prioritizes into P0-P3 with target milestones"
+      ]
+    },
+    {
+      "id": "positive-extensibility-check",
+      "query": "Will our current architecture support the features planned for milestone 4 — multi-tenancy, event-driven notifications, and third-party integrations?",
+      "expected_loaded": true,
+      "scenario_type": "positive",
+      "assertions": [
+        "Evaluates extension points for future features",
+        "Flags architecture gaps as BLOCKER or RISK",
+        "Proposes architecture runway items",
+        "Estimates breaking change inflection points"
+      ]
+    },
+    {
+      "id": "negative-near-term-design",
+      "query": "Design the API contract between checkout and payment for this sprint.",
+      "expected_loaded": false,
+      "scenario_type": "negative",
+      "assertions": [
+        "Routes to hm-feature-ecosystem",
+        "States that this is near-term feature interdependence, not roadmap maintainability"
+      ]
+    },
+    {
+      "id": "negative-no-artifacts",
+      "query": "I have no roadmap, no backlog, no milestones. Evaluate our maintainability anyway.",
+      "expected_loaded": true,
+      "scenario_type": "negative",
+      "assertions": [
+        "Surfaces the gap: no artifacts to evaluate",
+        "Presents a roadmap template",
+        "Blocks until minimal input (features, milestones) is provided"
+      ]
+    },
+    {
+      "id": "boundary-capacity-planning",
+      "query": "We have 3 milestones with 12 features total and a 2-person team. Is our roadmap realistic?",
+      "expected_loaded": true,
+      "scenario_type": "boundary",
+      "assertions": [
+        "Assigns complexity (S/M/L/XL) to each feature",
+        "Computes total days per milestone",
+        "Flags overloaded milestones",
+        "Identifies parallelization opportunities",
+        "Produces capacity-aware milestone map"
+      ]
+    }
+  ],
+  "rich_source_evidence": [
+    {
+      "source": "skillmd.ai/roadmap-planner",
+      "decision": "adopt/adapt",
+      "reviewed_materials": ["milestone dependency ordering", "capacity estimation patterns"],
+      "local_resources": ["SKILL.md Phase 3", "references/roadmap-patterns.md"]
+    },
+    {
+      "source": "AdamPaternostro/agent-skills@maintainability-scorer",
+      "decision": "adopt/adapt",
+      "reviewed_materials": ["hex-dimension scoring (complexity, coupling, coverage, docs, freshness, arch-debt)"],
+      "local_resources": ["SKILL.md Phase 2", "references/maintainability-scoring.md"]
+    },
+    {
+      "source": "phodal/tech-debt",
+      "decision": "adopt/adapt",
+      "reviewed_materials": ["technical debt quadrant model", "interest calculation"],
+      "local_resources": ["SKILL.md Phase 5", "references/debt-tracking.md"]
+    },
+    {
+      "source": "SAFe Architecture Runway",
+      "decision": "adopt/adapt",
+      "reviewed_materials": ["pre-enablement features", "architecture runway concept"],
+      "local_resources": ["SKILL.md Phase 4", "references/extensibility-checks.md"]
+    }
+  ],
+  "stacked_scenario": {
+    "id": "roadmap-to-ecosystem-to-execution",
+    "skills": ["hm-roadmap-maintainability", "hm-feature-ecosystem", "hm-phase-execution"],
+    "prompt": "We have a 6-milestone roadmap. Evaluate it for maintainability, then design the ecosystem for milestone 1's features, and set up orchestrated delivery.",
+    "expected_behavior": [
+      "hm-roadmap-maintainability scores codebase health, orders features, tracks debt",
+      "hm-feature-ecosystem designs cross-dependency graph for current-milestone features",
+      "hm-phase-execution orchestrates wave-based delivery of features"
+    ],
+    "failure_signals": [
+      "Milestone 1 features are built before their hard dependencies are satisfied",
+      "Architecture gaps flagged by roadmap assessment are ignored",
+      "Maintainability Index is below 3.0 but features proceed anyway"
+    ]
+  }
+}

@@ -240,9 +240,134 @@
             },
             "additionalProperties": false
           }
+        },
+        "naming_standards": {
+          "type": "object",
+          "properties": {
+            "allowed_frameworks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "allowed_classifications": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "naming_format": {
+              "type": "string"
+            },
+            "max_title_length": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "agent_configs": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "allowedCommands": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "tools": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "temperature": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "command_agent_mappings": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "agent": {
+                "type": "string"
+              },
+              "workflow": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "templates": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
+    },
+    "guardrail_level": {
+      "type": "string",
+      "enum": [
+        "strict",
+        "moderate",
+        "permissive"
+      ]
+    },
+    "delegation_mode": {
+      "type": "string",
+      "enum": [
+        "waiter",
+        "direct",
+        "autonomous"
+      ]
+    },
+    "tool_access_pattern": {
+      "type": "string",
+      "enum": [
+        "restricted",
+        "standard",
+        "full"
+      ]
+    },
+    "skill_filter": {
+      "type": "string",
+      "enum": [
+        "curated",
+        "domain",
+        "full"
+      ]
     }
   },
   "additionalProperties": false

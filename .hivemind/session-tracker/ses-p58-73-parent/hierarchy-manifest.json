@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses-p58-73-parent",
+  "lastUpdated": "2026-06-03T21:05:37.976Z",
+  "children": {
+    "ses-child-73-21710": {
+      "sessionID": "ses-child-73-21710",
+      "parentSessionID": "ses-p58-73-parent",
+      "rootMainSessionID": "ses-p58-73-parent",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-l2-researcher",
+      "subagentType": "",
+      "createdAt": "2026-06-03T21:05:37.976Z",
+      "updatedAt": "2026-06-03T21:05:37.976Z",
+      "status": "error",
+      "turnCount": 0,
+      "childFile": "ses-child-73-21710.json"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

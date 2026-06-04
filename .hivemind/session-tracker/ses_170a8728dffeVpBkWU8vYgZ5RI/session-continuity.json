@@ -1,0 +1,37 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_170a8728dffeVpBkWU8vYgZ5RI",
+  "lastUpdated": "2026-06-03T21:56:22.520Z",
+  "hierarchy": {
+    "root": "ses_170a8728dffeVpBkWU8vYgZ5RI",
+    "children": {
+      "ses_17098b7cdffelNFjA48iYLtq4E": {
+        "file": "ses_17098b7cdffelNFjA48iYLtq4E.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_1708ad9c8ffeMk4wLWatkxI0Di": {
+        "file": "ses_1708ad9c8ffeMk4wLWatkxI0Di.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 12,
+  "toolSummary": {
+    "bash": 35,
+    "read": 15,
+    "skill": 1,
+    "todowrite": 4,
+    "session-tracker": 1,
+    "delegation-status": 1,
+    "write": 1,
+    "grep": 3,
+    "task": 2,
+    "execute-slash-command": 2
+  }
+}

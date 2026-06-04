@@ -1,0 +1,56 @@
+{
+  "skill": "hm-l3-integration-contracts",
+  "rich_gate_patterns": ["agent_skill_validation", "orphan_detection", "cross_lineage_verification"],
+  "cases": [
+    {
+      "prompt": "Which skills should the hm-l2-researcher agent load for a deep-research task?",
+      "expected_load": true,
+      "must_include": ["hm-l3-detective", "hm-l3-deep-research", "hm-l3-tech-stack-ingest"]
+    },
+    {
+      "prompt": "Is hm-l3-detective orphaned? Which agents consume it?",
+      "expected_load": true,
+      "must_include": ["hm-l2-researcher", "hm-l2-scout", "hm-l2-investigator"]
+    },
+    {
+      "prompt": "Can an hm-l2-planner load hf-l2-agent-composition?",
+      "expected_load": true,
+      "must_include": ["NEVER", "D-AD-01 STRICT", "violation"]
+    },
+    {
+      "prompt": "Can an hf-l2-auditor load hm-l3-detective?",
+      "expected_load": true,
+      "must_include": ["FLEXIBLE", "justified", "cross-lineage"]
+    },
+    {
+      "prompt": "Which skills should the hf-l2-skill-builder load by default?",
+      "expected_load": true,
+      "must_include": ["hf-l2-skill-synthesis", "hf-l2-use-authoring-skills", "hf-l2-naming-syndicate"]
+    },
+    {
+      "prompt": "Is gate-l3-evidence-truth available to shipped agents?",
+      "expected_load": true,
+      "must_include": ["internal only", "D-02", "THIS PROJECT ONLY"]
+    },
+    {
+      "prompt": "Write a new agent definition for a code reviewer.",
+      "expected_load": false,
+      "reason": "agent creation belongs to hf-meta-builder, not integration contracts"
+    },
+    {
+      "prompt": "What is the cross-lineage justification for hf-l2-synthesizer loading hm-l3-synthesis?",
+      "expected_load": true,
+      "must_include": ["FLEXIBLE", "synthesis", "artifact compression"]
+    },
+    {
+      "prompt": "Which agent domains load hm-l2-completion-looping?",
+      "expected_load": true,
+      "must_include": ["debug", "orchestration"]
+    },
+    {
+      "prompt": "Are there any orphan skills in the ecosystem?",
+      "expected_load": true,
+      "must_include": ["orphan", "detection", "consumed-by"]
+    }
+  ]
+}

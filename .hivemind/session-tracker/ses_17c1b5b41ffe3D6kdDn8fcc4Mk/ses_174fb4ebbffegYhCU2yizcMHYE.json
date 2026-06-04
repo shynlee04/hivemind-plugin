@@ -3,17 +3,17 @@
   "parentSessionID": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
   "delegationDepth": 1,
   "delegatedBy": {
-    "agentName": "gsd-executor",
+    "agentName": "",
     "model": "",
     "tool": "task",
     "description": "",
-    "subagentType": "gsd-executor"
+    "subagentType": ""
   },
   "created": "2026-06-03T01:06:41.137Z",
-  "updated": "2026-06-03T01:07:20.637Z",
-  "status": "active",
+  "updated": "2026-06-04T14:18:29.796Z",
+  "status": "error",
   "mainAgent": {
-    "name": "gsd-executor",
+    "name": "",
     "model": ""
   },
   "turns": [
@@ -127,5 +127,7 @@
         "output": {}
       }
     }
-  ]
+  ],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
 }

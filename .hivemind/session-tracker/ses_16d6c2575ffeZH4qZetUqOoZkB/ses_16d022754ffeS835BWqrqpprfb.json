@@ -1,0 +1,85 @@
+{
+  "sessionID": "ses_16d022754ffeS835BWqrqpprfb",
+  "parentSessionID": "ses_16d6c2575ffeZH4qZetUqOoZkB",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-doc-writer",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Stack: update CONTEXT+SPEC with registry",
+    "subagentType": "hm-doc-writer"
+  },
+  "created": "2026-06-04T14:16:10.261Z",
+  "updated": "2026-06-04T14:24:55.990Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-doc-writer",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "hm-doc-writer",
+      "content": "You are hm-doc-writer. Update the CONTEXT.md and SPEC.md for Phase SR-05 with the critical registry gap findings.\n\n## What to add to CONTEXT.md\n\nAdd this section after the existing Design Decisions:\n\n```markdown\n### Decision 7: Full Registry Populate\n- **Status:** LOCKED\n- **Finding:** configs.json.governance.agent_configs only has 7 of 42 shipped agents. configs.json.governance.command_agent_mappings only has 4 of 112 shipped commands. governance.rules is empty.\n- **Approach:** Populate configs.json.governance with ALL 42 shipped agents (31 hm-* + 11 hf-*) and ALL 112 shipped commands. Each agent entry must include: description, mode (primary/subagent/all), allowed tool categories. Each command entry must include: description, agent mapping.\n- **Rationale:** Governance system cannot work if it doesn't know about the registry. 83% of agents and 96% of commands are invisible to governance.\n\n### Decision 8: Capability Profiles Config-Driven\n- **Status:** LOCKED\n- **Approach:** Move hardcoded AGENT_CAPABILITY_PROFILES from agent-capability-profiles.ts to configs.json.governance.capability_profiles. Keep hardcoded profiles as fallback when config is empty.\n- **Rationale:** Capability profiles must be configurable, not hardcoded.\n\n### Decision 9: Tool Intelligence Rules Config-Driven\n- **Status:** LOCKED\n- **Approach:** Move hardcoded rules from ToolIntelligenceEngine.evaluateToolCall() to configs.json.governance.tool_intelligence_rules. Keep hardcoded rules as defaults.\n- **Rationale:** Tool governance rules must be configurable per project.\n```\n\n## What to add to SPEC.md\n\nAdd these requirements:\n\n```markdown\n6. **Full registry populate**: configs.json.governance contains all 42 shipped agents and 112 shipped commands.\n   - Current: 7 agents and 4 commands in governance config\n   - Target: 42 agents and 112 commands with proper metadata\n   - Acceptance: `readConfigs().governance.agent_configs` returns 42 entries; `command_agent_mappings` returns 112 entries\n\n7. **Config-driven capability profiles**: AGENT_CAPABILITY_PROFILES loaded from configs.json.governance.capability_profiles.\n   - Current: Hardcoded in agent-capability-profiles.ts\n   - Target: Config-driven with hardcoded fallback\n   - Acceptance: Changing capability_profiles in configs.json changes which tools agents can use\n\n8. **Config-driven tool intelligence rules**: ToolIntelligenceEngine rules loaded from configs.json.governance.tool_intelligence_rules.\n   - Current: Hardcoded in tool-intelligence/index.ts\n   - Target: Config-driven with hardcoded defaults\n   - Acceptance: Changing tool_intelligence_rules in configs.json changes tool governance behavior\n```\n\n## Files to modify\n- `.planning/phases/SR-05-config-governance-cluster-unification-2026-06-04/SR-05-CONTEXT.md`\n- `.planning/phases/SR-05-config-governance-cluster-unification-2026-06-04/SR-05-SPEC.md`\n\nRead each file first, then append the new sections. Do NOT replace existing content.\n",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "hm-doc-writer",
+      "content": "Update SR-05 CONTEXT with registry gaps",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 3,
+      "actor": "hm-doc-writer",
+      "content": "<task id=\"ses_16d022754ffeS835BWqrqpprfb\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "hm-doc-writer",
+      "content": "Continue from where you left off. Update CONTEXT.md and SPEC.md with registry gap findings.\n\n## Add to SR-05-CONTEXT.md (append after Decision 6):\n\n### Decision 7: Full Registry Populate\n- **Status:** LOCKED\n- **Finding:** configs.json.governance.agent_configs only has 7 of 42 shipped agents. command_agent_mappings only has 4 of 112 shipped commands. governance.rules is empty.\n- **Approach:** Populate configs.json.governance with ALL 42 shipped agents (31 hm-* + 11 hf-*) and ALL 112 shipped commands. Each agent needs: description, mode. Each command needs: description, agent mapping.\n- **Rationale:** 83% of agents and 96% of commands invisible to governance. System cannot work.\n\n## Add to SR-05-SPEC.md (append after existing requirements):\n\n6. **Full registry populate**: configs.json.governance contains all 42 shipped agents and 112 shipped commands.\n   - Current: 7 agents and 4 commands\n   - Target: 42 agents and 112 commands\n   - Acceptance: readConfigs().governance.agent_configs returns 42 entries\n\nRead each file first, then append. Commit after.\n",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 5,
+      "actor": "hm-doc-writer",
+      "content": "Stack: update CONTEXT+SPEC with registry",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 6,
+      "actor": "hm-doc-writer",
+      "content": "<task id=\"ses_16d022754ffeS835BWqrqpprfb\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-04T14:16:27.654Z",
+      "type": "assistant_message",
+      "content": "<task id=\"ses_16d022754ffeS835BWqrqpprfb\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_16d022754ffeS835BWqrqpprfb"
+      }
+    },
+    {
+      "timestamp": "2026-06-04T14:24:55.821Z",
+      "type": "assistant_message",
+      "content": "<task id=\"ses_16d022754ffeS835BWqrqpprfb\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_16d022754ffeS835BWqrqpprfb"
+      }
+    }
+  ],
+  "lastMessage": "<task id=\"ses_16d022754ffeS835BWqrqpprfb\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>"
+}

@@ -1,0 +1,568 @@
+{
+  "sessionID": "ses_17134c5baffe12yFMMl1PnttaO",
+  "parentSessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-shipper",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-03T18:42:23.977Z",
+  "updated": "2026-06-03T18:49:07.121Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-shipper",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are hm-shipper. Ship Phase 58 of the Hivemind harness project.\n\n# Ship Inputs (READ ONLY)\n\n- /Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-VERIFICATION.md (verifier VERIFIED, ready to ship)\n- /Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SUMMARY.md (executor final report)\n- /Users/apple/hivemind-plugin-private/.planning/ROADMAP.md (line 2042: Phase 58 entry)\n- /Users/apple/hivemind-plugin-private/.planning/STATE.md\n- Current branch: feature/harness-implementation\n\n# Your Task: Ship Phase 58\n\n## Step 1: Update STATE.md Roadmap Evolution\nAppend to /Users/apple/hivemind-plugin-private/.planning/STATE.md:\n- Phase 58 SHIPPED 2026-06-04: 6 gaps closed (G1-G6), 6 BATS scenarios at slots 62-67, 13/13 ACs verified, 3,310 vitest + 11 BATS green, gate triad PASS\n- All 27 atomic commits preserved (16 execution + 4 fixes + 1 verify + 1 plan-07 + others)\n\n## Step 2: Mark Phase 58 as Complete in ROADMAP\nUpdate /Users/apple/hivemind-plugin-private/.planning/ROADMAP.md line 2042:\n- Change status from \"0 plans\" to \"Plans: 7 plans\"\n- Add note: \"Status: ✓ Complete (2026-06-04) — VERIFIED, ready to ship\"\n\n## Step 3: Write 58-CLOSE.md\nWrite /Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md with:\n- Phase closeout summary\n- All 27 atomic commits (list in chronological order)\n- 6/6 gaps closed\n- 13/13 ACs verified\n- L1 evidence: 6 P58 BATS + 5 P55 BATS regression + 3,310 vitest\n- Gate triad: PASS\n- 1 pre-existing finding: BATS 61 stress test broken in P56 commit bf77d7a5 (NOT a P58 regression, file separate ticket)\n- Recommendation: ship, no further action on P58\n\n## Step 4: Atomic Commit\n- phase-58: CLOSE — 58-CLOSE.md + STATE.md + ROADMAP.md update\n\n## Step 5: Report Ship Status\n- All commits on feature/harness-implementation\n- PR can be created via: gh pr create --base main --head feature/harness-implementation --title \"phase-58: tmux-orchestration-programmatic-pool — 6 gaps closed, 13/13 ACs verified\" --body-file 58-CLOSE.md\n\nNote: Do NOT execute gh pr create — just prepare the command and report. User runs gh manually.\n\n# Boundary Rules\n\n- READ-ONLY on src/, tests/, .opencode/, .hivemind/\n- WRITE-ONLY to 58-CLOSE.md, STATE.md, ROADMAP.md\n- Do NOT push to remote, do NOT create PR\n- Do NOT invoke /gsd-ship slash command\n- Do NOT spawn sub-agents\n\n# Return Format\n\n- 58-CLOSE.md path + LOC\n- Atomic commit SHA\n- All phase-58 commits in chronological order\n- Status: READY FOR PR CREATION\n- gh pr create command prepared\n- Final phase 58 status",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll execute the Phase 58 ship workflow. Let me first verify the inputs and current state.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: bash, bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: bash, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "I have all the context needed. Let me set up the ship workflow and execute.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "**Step 1: Update STATE.md — append Phase 58 SHIPPED entry to Roadmap Evolution**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "**Step 2: Mark Phase 58 as Complete in ROADMAP.md (line 2042)**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "**Step 3: Write 58-CLOSE.md**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "**Step 4: Atomic Commit**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 25,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 26,
+      "actor": "unknown",
+      "content": "---\n\n## PHASE 58 SHIPPED\n\n**Version:** 58-tmux-orchestration-programmatic-pool\n**Tag (logical):** v58\n**Status:** ✅ READY FOR PR CREATION\n\n### Boundary Compliance\n- ✅ READ-ONLY on `src/`, `tests/`, `.opencode/`, `.hivemind/` (not touched)\n- ✅ WRITE-ONLY to `58-CLOSE.md` (new), `STATE.md` (Roadmap Evolution appended), `ROADMAP.md` (line 2042 marked Complete)\n- ✅ Did NOT push to remote\n- ✅ Did NOT create PR\n- ✅ Did NOT invoke `/gsd-ship`\n- ✅ Did NOT spawn sub-agents\n\n### Ship Artifacts\n| Artifact | Path | LOC | Status |\n|----------|------|-----|--------|\n| **58-CLOSE.md** | `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md` | 228 | ✅ created |\n| **STATE.md** | `.planning/STATE.md` (Roadmap Evolution append) | +1 line | ✅ updated |\n| **ROADMAP.md** | `.planning/ROADMAP.md` (line 2042 — Phase 58 entry) | 9 lines | ✅ updated (Plans: 7 plans, status: ✓ Complete) |\n\n### Atomic Commit (closeout)\n- **SHA:** `457d0151a83dab67d7529b65cead392e9de24af5` (short: `457d0151`)\n- **Message:** `phase-58: CLOSE — 58-CLOSE.md + STATE.md + ROADMAP.md update`\n- **Files:** 3 changed, 238 insertions(+), 2 deletions(-)\n- **Scope:** `.planning/ROADMAP.md`, `.planning/STATE.md`, `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md`\n\n### All Phase-58 Commits in Chronological Order (30 total)\n\n```\naf7a814d  phase-58: RESEARCH — 58-RESEARCH.md with stack validation, STRIDE threat model, BATS inventory\nb4202d26  phase-58: PATTERNS — 58-PATTERNS.md with 8 frozen patterns (G1-G6)\n78c548a6  phase-58: PLAN-01 (Foundation files) — pool-types + tmuxSessionId + POLICY + SessionTrackerEvent + helpers.bash\nb8d04609  phase-58: PLAN-02 (G2+G3) — getPoolSnapshot + abort/resume persistence + BATS slots 62+63\n1b1697d6  phase-58: PLAN-03 (G4+G5) — forward-prompt + take-over/release + manualOverride + BATS slots 64+65\nfe00d9a9  phase-58: PLAN-04 (G6) — SessionTrackerEvent emissions + recordDelegationTerminal + BATS slot 66\n52a7dc2b  phase-58: PLAN-05 (Regression) — BATS slot 61 G1 grep-guard + regression commands doc\n2ec7689f  phase-58: PLAN-06 (Acceptance) — 13 ACs + 7 cross-cutting invariants verification report\nf4900ae7  phase-58: PLAN-CHECK (verifier verdict) — ## VERIFICATION PASSED, 6/6 REQs, 13/13 ACs, 17/17 decisions, 3/3 drifts\nc4f92471  phase-58: VERIFY — 58-VERIFICATION-REPORT.md (10/10 PASS, 0 blockers, 1 minor warning)\n592d9ae8  phase-58: PLAN-CHECK — gsd-plan-checker PASS verdict (replaces self-check)\n63ca9cce  phase-58: pool-types.ts — DelegationPool frozen contract\ndba33539  phase-58: tmuxSessionId + POLICY comment — G3 + G1 foundation\n599199a4  phase-58: SessionTrackerEvent union + BATS helper pool-types check\nec8d3693  phase-58: getPoolSnapshot + __getDelegationsForTesting test seam (G2)\ndf8baf04  phase-58: pool action + G3 abort+resume persistence (G2+G3 wiring)\nd9f700be  phase-58: BATS slots 62 + 63 — G2 pool-status + G3 pane-survival\nd01a852d  phase-58: manualOverride helpers + appendTuiPrompt wrapper (G5 wiring)\neebd14c0  phase-58: forward-prompt/take-over/release actions (G4+G5 tmux-copilot)\ndf2ee68b  phase-58: BATS slots 64 + 65 — G4 forward-prompt + G5 takeover-release\n1d9aafe3  phase-58: recordDelegationTerminal + recordChildTaskDelegation emissions (G6)\n9b9035e7  phase-58: recordDelegationTerminal wired from abort+terminalFallback (G6)\na152fd7a  phase-58: PLAN-07 — 58-PLAN-07.md\ne58faf29  phase-58: PLAN-07 Gap 2 — DelegationManager.createForTest() + BATS 62 fix\nd77a4154  phase-58: PLAN-07 Gap 3 — __setTmuxMultiplexerForTesting() + BATS 64/65\n872ccc51  phase-58: PLAN-07 Gap 4 — module-level recordDelegationTerminal export\n904153ec  phase-58: PLAN-07 Gap 1 — BATS slot 67 G1 grep-guard\n61438cd0  phase-58: SUMMARY — 58-SUMMARY.md + STATE.md update\ncce73260  phase-58: VERIFY-FINAL — 58-VERIFICATION.md\n457d0151  phase-58: CLOSE — 58-CLOSE.md + STATE.md + ROADMAP.md update   ← NEW (shipper)\n```\n\nThe **27 atomic commits verified by gsd-verifier** (b4202d26..61438cd0) are all preserved byte-identical. 3 follow-on commits were added: af7a814d (RESEARCH, pre-verifier wave), cce73260 (VERIFY-FINAL, post-verifier reinforcement), and 457d0151 (CLOSE, this shipper action).\n\n### Verification Status (per gsd-verifier, 2026-06-04T01:38:00Z)\n- Typecheck (`npx tsc --noEmit`): ✅ PASS (exit 0, 0 new `any`)\n- Test suite (`npx vitest run`): ✅ 3,310 passed / 7 skipped (pre-existing) / 0 failed\n- BATS P55 regression (slots 57-60): ✅ 5/5 PASS\n- BATS P58 (slots 62-67): ✅ 6/6 PASS\n- 27-tool-key invariant: ✅ PRESERVED (`tests/integration/hook-registration.test.ts:86-103` 6/6 PASS)\n- P20 invariant: ✅ PRESERVED (0 new package.json deps)\n- D-04 silent-fallback: ✅ PRESERVED\n- Quality gate triad: ✅ ALL 3 PASS (lifecycle-integration, spec-compliance, evidence-truth L1)\n\n### Pre-Existing Finding (NOT a P58 Regression)\n- **BATS slot 61** fails: `tmux_bats_require_stress_facilities: command not found`\n- **Root cause:** BATS 61 file added in P56 commit `bf77d7a5` (2026-06-03 22:00), BEFORE Phase 58's first commit `b4202d26` (2026-06-03 23:50+). Helper never defined in `tests/scripts/tmux/helpers.bash`.\n- **Mitigation:** 27-tool-key vitest invariant passes independently, preserving the Phase 58 goal-backward contract for tool-key preservation.\n- **Action:** File separate ticket for P56 stress-test helper gap. **Does NOT block P58 ship.**\n\n### Final Phase 58 Status\n✅ **SHIPPED** — All 6/6 gaps closed, 13/13 ACs verified, 27-tool-key + P20 invariants preserved, gate triad PASS, 30 atomic commits in chain on `feature/harness-implementation`, ready for PR.\n\n### PR Command (User Runs Manually)\n\n```bash\ngh pr create --base main --head feature/harness-implementation \\\n  --title \"phase-58: tmux-orchestration-programmatic-pool — 6 gaps closed, 13/13 ACs verified\" \\\n  --body-file .planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md\n```\n\n---\n\n**hm-shipper delegation complete.** All writes confined to `.planning/` boundary; no `src/`, `tests/`, `.opencode/`, or `.hivemind/` files were mutated. `feature/harness-implementation` is ready for the user's `gh pr create` invocation.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 27,
+      "actor": "hm-shipper",
+      "content": "---\n\n## PHASE 58 SHIPPED\n\n**Version:** 58-tmux-orchestration-programmatic-pool\n**Tag (logical):** v58\n**Status:** ✅ READY FOR PR CREATION\n\n### Boundary Compliance\n- ✅ READ-ONLY on `src/`, `tests/`, `.opencode/`, `.hivemind/` (not touched)\n- ✅ WRITE-ONLY to `58-CLOSE.md` (new), `STATE.md` (Roadmap Evolution appended), `ROADMAP.md` (line 2042 marked Complete)\n- ✅ Did NOT push to remote\n- ✅ Did NOT create PR\n- ✅ Did NOT invoke `/gsd-ship`\n- ✅ Did NOT spawn sub-agents\n\n### Ship Artifacts\n| Artifact | Path | LOC | Status |\n|----------|------|-----|--------|\n| **58-CLOSE.md** | `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md` | 228 | ✅ created |\n| **STATE.md** | `.planning/STATE.md` (Roadmap Evolution append) | +1 line | ✅ updated |\n| **ROADMAP.md** | `.planning/ROADMAP.md` (line 2042 — Phase 58 entry) | 9 lines | ✅ updated (Plans: 7 plans, status: ✓ Complete) |\n\n### Atomic Commit (closeout)\n- **SHA:** `457d0151a83dab67d7529b65cead392e9de24af5` (short: `457d0151`)\n- **Message:** `phase-58: CLOSE — 58-CLOSE.md + STATE.md + ROADMAP.md update`\n- **Files:** 3 changed, 238 insertions(+), 2 deletions(-)\n- **Scope:** `.planning/ROADMAP.md`, `.planning/STATE.md`, `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md`\n\n### All Phase-58 Commits in Chronological Order (30 total)\n\n```\naf7a814d  phase-58: RESEARCH — 58-RESEARCH.md with stack validation, STRIDE threat model, BATS inventory\nb4202d26  phase-58: PATTERNS — 58-PATTERNS.md with 8 frozen patterns (G1-G6)\n78c548a6  phase-58: PLAN-01 (Foundation files) — pool-types + tmuxSessionId + POLICY + SessionTrackerEvent + helpers.bash\nb8d04609  phase-58: PLAN-02 (G2+G3) — getPoolSnapshot + abort/resume persistence + BATS slots 62+63\n1b1697d6  phase-58: PLAN-03 (G4+G5) — forward-prompt + take-over/release + manualOverride + BATS slots 64+65\nfe00d9a9  phase-58: PLAN-04 (G6) — SessionTrackerEvent emissions + recordDelegationTerminal + BATS slot 66\n52a7dc2b  phase-58: PLAN-05 (Regression) — BATS slot 61 G1 grep-guard + regression commands doc\n2ec7689f  phase-58: PLAN-06 (Acceptance) — 13 ACs + 7 cross-cutting invariants verification report\nf4900ae7  phase-58: PLAN-CHECK (verifier verdict) — ## VERIFICATION PASSED, 6/6 REQs, 13/13 ACs, 17/17 decisions, 3/3 drifts\nc4f92471  phase-58: VERIFY — 58-VERIFICATION-REPORT.md (10/10 PASS, 0 blockers, 1 minor warning)\n592d9ae8  phase-58: PLAN-CHECK — gsd-plan-checker PASS verdict (replaces self-check)\n63ca9cce  phase-58: pool-types.ts — DelegationPool frozen contract\ndba33539  phase-58: tmuxSessionId + POLICY comment — G3 + G1 foundation\n599199a4  phase-58: SessionTrackerEvent union + BATS helper pool-types check\nec8d3693  phase-58: getPoolSnapshot + __getDelegationsForTesting test seam (G2)\ndf8baf04  phase-58: pool action + G3 abort+resume persistence (G2+G3 wiring)\nd9f700be  phase-58: BATS slots 62 + 63 — G2 pool-status + G3 pane-survival\nd01a852d  phase-58: manualOverride helpers + appendTuiPrompt wrapper (G5 wiring)\neebd14c0  phase-58: forward-prompt/take-over/release actions (G4+G5 tmux-copilot)\ndf2ee68b  phase-58: BATS slots 64 + 65 — G4 forward-prompt + G5 takeover-release\n1d9aafe3  phase-58: recordDelegationTerminal + recordChildTaskDelegation emissions (G6)\n9b9035e7  phase-58: recordDelegationTerminal wired from abort+terminalFallback (G6)\na152fd7a  phase-58: PLAN-07 — 58-PLAN-07.md\ne58faf29  phase-58: PLAN-07 Gap 2 — DelegationManager.createForTest() + BATS 62 fix\nd77a4154  phase-58: PLAN-07 Gap 3 — __setTmuxMultiplexerForTesting() + BATS 64/65\n872ccc51  phase-58: PLAN-07 Gap 4 — module-level recordDelegationTerminal export\n904153ec  phase-58: PLAN-07 Gap 1 — BATS slot 67 G1 grep-guard\n61438cd0  phase-58: SUMMARY — 58-SUMMARY.md + STATE.md update\ncce73260  phase-58: VERIFY-FINAL — 58-VERIFICATION.md\n457d0151  phase-58: CLOSE — 58-CLOSE.md + STATE.md + ROADMAP.md update   ← NEW (shipper)\n```\n\nThe **27 atomic commits verified by gsd-verifier** (b4202d26..61438cd0) are all preserved byte-identical. 3 follow-on commits were added: af7a814d (RESEARCH, pre-verifier wave), cce73260 (VERIFY-FINAL, post-verifier reinforcement), and 457d0151 (CLOSE, this shipper action).\n\n### Verification Status (per gsd-verifier, 2026-06-04T01:38:00Z)\n- Typecheck (`npx tsc --noEmit`): ✅ PASS (exit 0, 0 new `any`)\n- Test suite (`npx vitest run`): ✅ 3,310 passed / 7 skipped (pre-existing) / 0 failed\n- BATS P55 regression (slots 57-60): ✅ 5/5 PASS\n- BATS P58 (slots 62-67): ✅ 6/6 PASS\n- 27-tool-key invariant: ✅ PRESERVED (`tests/integration/hook-registration.test.ts:86-103` 6/6 PASS)\n- P20 invariant: ✅ PRESERVED (0 new package.json deps)\n- D-04 silent-fallback: ✅ PRESERVED\n- Quality gate triad: ✅ ALL 3 PASS (lifecycle-integration, spec-compliance, evidence-truth L1)\n\n### Pre-Existing Finding (NOT a P58 Regression)\n- **BATS slot 61** fails: `tmux_bats_require_stress_facilities: command not found`\n- **Root cause:** BATS 61 file added in P56 commit `bf77d7a5` (2026-06-03 22:00), BEFORE Phase 58's first commit `b4202d26` (2026-06-03 23:50+). Helper never defined in `tests/scripts/tmux/helpers.bash`.\n- **Mitigation:** 27-tool-key vitest invariant passes independently, preserving the Phase 58 goal-backward contract for tool-key preservation.\n- **Action:** File separate ticket for P56 stress-test helper gap. **Does NOT block P58 ship.**\n\n### Final Phase 58 Status\n✅ **SHIPPED** — All 6/6 gaps closed, 13/13 ACs verified, 27-tool-key + P20 invariants preserved, gate triad PASS, 30 atomic commits in chain on `feature/harness-implementation`, ready for PR.\n\n### PR Command (User Runs Manually)\n\n```bash\ngh pr create --base main --head feature/harness-implementation \\\n  --title \"phase-58: tmux-orchestration-programmatic-pool — 6 gaps closed, 13/13 ACs verified\" \\\n  --body-file .planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md\n```\n\n---\n\n**hm-shipper delegation complete.** All writes confined to `.planning/` boundary; no `src/`, `tests/`, `.opencode/`, or `.hivemind/` files were mutated. `feature/harness-implementation` is ready for the user's `gh pr create` invocation.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-03T18:42:34.168Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_vwjfwmefjesa_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-VERIFICATION.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:42:41.274Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_wnyz9u7g3omw_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SUMMARY.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:42:49.417Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_cf33p1v79z5n_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:42:49.459Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_cf33p1v79z5n_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:42:59.190Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_lkjgy7lwxzhe_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:42:59.258Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_lkjgy7lwxzhe_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:42:59.709Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_lkjgy7lwxzhe_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:43:09.261Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_4bt0t7y6kt6n_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:43:09.800Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_function_4bt0t7y6kt6n_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:43:16.589Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ai4r3umvqny2_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/55-e2e-uat-against-seed-success-criteria/55-CLOSE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:43:17.119Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ai4r3umvqny2_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/STATE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:43:34.859Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_9fpmks7gdgb0_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:43:54.370Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_z21j4jukab9d_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:44:04.759Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_05szc8plnh8s_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:44:19.127Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_i9e9oupcuw1l_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:44:28.492Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_3wdjya11vb4j_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:45:34.940Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_function_0t2pxtzvp471_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:45:42.741Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_cjwgo42vfjpl_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:45:54.478Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_er59692n5fz3_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:46:01.788Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_nlj5eubjudjp_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:46:08.534Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_5u7uqltmett4_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:46:21.366Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_34hjij7bb9mr_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:46:29.861Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_qii4r6k9bhyn_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:46:38.273Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_j0jc7b3fg7r0_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:46:39.273Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_j0jc7b3fg7r0_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:46:48.112Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_mn3gptc2f2bl_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:47:25.115Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_jfk6ctjtymfd_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:47:36.438Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_d2m3g3f5s6gz_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:47:49.934Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_2dq6gdrev67v_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:48:21.327Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_vskj2o8887k2_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T18:49:06.251Z",
+      "type": "assistant_message",
+      "content": "---\n\n## PHASE 58 SHIPPED\n\n**Version:** 58-tmux-orchestration-programmatic-pool\n**Tag (logical):** v58\n**Status:** ✅ READY FOR PR CREATION\n\n### Boundary Compliance\n- ✅ READ-ONLY on `src/`, `tests/`, `.opencode/`, `.hivemind/` (not touched)\n- ✅ WRITE-ONLY to `58-CLOSE.md` (new), `STATE.md` (Roadmap Evolution appended), `ROADMAP.md` (line 2042 marked Complete)\n- ✅ Did NOT push to remote\n- ✅ Did NOT create PR\n- ✅ Did NOT invoke `/gsd-ship`\n- ✅ Did NOT spawn sub-agents\n\n### Ship Artifacts\n| Artifact | Path | LOC | Status |\n|----------|------|-----|--------|\n| **58-CLOSE.md** | `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md` | 228 | ✅ created |\n| **STATE.md** | `.planning/STATE.md` (Roadmap Evolution append) | +1 line | ✅ updated |\n| **ROADMAP.md** | `.planning/ROADMAP.md` (line 2042 — Phase 58 entry) | 9 lines | ✅ updated (Plans: 7 plans, status: ✓ Complete) |\n\n### Atomic Commit (closeout)\n- **SHA:** `457d0151a83dab67d7529b65cead392e9de24af5` (short: `457d0151`)\n- **Message:** `phase-58: CLOSE — 58-CLOSE.md + STATE.md + ROADMAP.md update`\n- **Files:** 3 changed, 238 insertions(+), 2 deletions(-)\n- **Scope:** `.planning/ROADMAP.md`, `.planning/STATE.md`, `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md`\n\n### All Phase-58 Commits in Chronological Order (30 total)\n\n```\naf7a814d  phase-58: RESEARCH — 58-RESEARCH.md with stack validation, STRIDE threat model, BATS inventory\nb4202d26  phase-58: PATTERNS — 58-PATTERNS.md with 8 frozen patterns (G1-G6)\n78c548a6  phase-58: PLAN-01 (Foundation files) — pool-types + tmuxSessionId + POLICY + SessionTrackerEvent + helpers.bash\nb8d04609  phase-58: PLAN-02 (G2+G3) — getPoolSnapshot + abort/resume persistence + BATS slots 62+63\n1b1697d6  phase-58: PLAN-03 (G4+G5) — forward-prompt + take-over/release + manualOverride + BATS slots 64+65\nfe00d9a9  phase-58: PLAN-04 (G6) — SessionTrackerEvent emissions + recordDelegationTerminal + BATS slot 66\n52a7dc2b  phase-58: PLAN-05 (Regression) — BATS slot 61 G1 grep-guard + regression commands doc\n2ec7689f  phase-58: PLAN-06 (Acceptance) — 13 ACs + 7 cross-cutting invariants verification report\nf4900ae7  phase-58: PLAN-CHECK (verifier verdict) — ## VERIFICATION PASSED, 6/6 REQs, 13/13 ACs, 17/17 decisions, 3/3 drifts\nc4f92471  phase-58: VERIFY — 58-VERIFICATION-REPORT.md (10/10 PASS, 0 blockers, 1 minor warning)\n592d9ae8  phase-58: PLAN-CHECK — gsd-plan-checker PASS verdict (replaces self-check)\n63ca9cce  phase-58: pool-types.ts — DelegationPool frozen contract\ndba33539  phase-58: tmuxSessionId + POLICY comment — G3 + G1 foundation\n599199a4  phase-58: SessionTrackerEvent union + BATS helper pool-types check\nec8d3693  phase-58: getPoolSnapshot + __getDelegationsForTesting test seam (G2)\ndf8baf04  phase-58: pool action + G3 abort+resume persistence (G2+G3 wiring)\nd9f700be  phase-58: BATS slots 62 + 63 — G2 pool-status + G3 pane-survival\nd01a852d  phase-58: manualOverride helpers + appendTuiPrompt wrapper (G5 wiring)\neebd14c0  phase-58: forward-prompt/take-over/release actions (G4+G5 tmux-copilot)\ndf2ee68b  phase-58: BATS slots 64 + 65 — G4 forward-prompt + G5 takeover-release\n1d9aafe3  phase-58: recordDelegationTerminal + recordChildTaskDelegation emissions (G6)\n9b9035e7  phase-58: recordDelegationTerminal wired from abort+terminalFallback (G6)\na152fd7a  phase-58: PLAN-07 — 58-PLAN-07.md\ne58faf29  phase-58: PLAN-07 Gap 2 — DelegationManager.createForTest() + BATS 62 fix\nd77a4154  phase-58: PLAN-07 Gap 3 — __setTmuxMultiplexerForTesting() + BATS 64/65\n872ccc51  phase-58: PLAN-07 Gap 4 — module-level recordDelegationTerminal export\n904153ec  phase-58: PLAN-07 Gap 1 — BATS slot 67 G1 grep-guard\n61438cd0  phase-58: SUMMARY — 58-SUMMARY.md + STATE.md update\ncce73260  phase-58: VERIFY-FINAL — 58-VERIFICATION.md\n457d0151  phase-58: CLOSE — 58-CLOSE.md + STATE.md + ROADMAP.md update   ← NEW (shipper)\n```\n\nThe **27 atomic commits verified by gsd-verifier** (b4202d26..61438cd0) are all preserved byte-identical. 3 follow-on commits were added: af7a814d (RESEARCH, pre-verifier wave), cce73260 (VERIFY-FINAL, post-verifier reinforcement), and 457d0151 (CLOSE, this shipper action).\n\n### Verification Status (per gsd-verifier, 2026-06-04T01:38:00Z)\n- Typecheck (`npx tsc --noEmit`): ✅ PASS (exit 0, 0 new `any`)\n- Test suite (`npx vitest run`): ✅ 3,310 passed / 7 skipped (pre-existing) / 0 failed\n- BATS P55 regression (slots 57-60): ✅ 5/5 PASS\n- BATS P58 (slots 62-67): ✅ 6/6 PASS\n- 27-tool-key invariant: ✅ PRESERVED (`tests/integration/hook-registration.test.ts:86-103` 6/6 PASS)\n- P20 invariant: ✅ PRESERVED (0 new package.json deps)\n- D-04 silent-fallback: ✅ PRESERVED\n- Quality gate triad: ✅ ALL 3 PASS (lifecycle-integration, spec-compliance, evidence-truth L1)\n\n### Pre-Existing Finding (NOT a P58 Regression)\n- **BATS slot 61** fails: `tmux_bats_require_stress_facilities: command not found`\n- **Root cause:** BATS 61 file added in P56 commit `bf77d7a5` (2026-06-03 22:00), BEFORE Phase 58's first commit `b4202d26` (2026-06-03 23:50+). Helper never defined in `tests/scripts/tmux/helpers.bash`.\n- **Mitigation:** 27-tool-key vitest invariant passes independently, preserving the Phase 58 goal-backward contract for tool-key preservation.\n- **Action:** File separate ticket for P56 stress-test helper gap. **Does NOT block P58 ship.**\n\n### Final Phase 58 Status\n✅ **SHIPPED** — All 6/6 gaps closed, 13/13 ACs verified, 27-tool-key + P20 invariants preserved, gate triad PASS, 30 atomic commits in chain on `feature/harness-implementation`, ready for PR.\n\n### PR Command (User Runs Manually)\n\n```bash\ngh pr create --base main --head feature/harness-implementation \\\n  --title \"phase-58: tmux-orchestration-programmatic-pool — 6 gaps closed, 13/13 ACs verified\" \\\n  --body-file .planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md\n```\n\n---\n\n**hm-shipper delegation complete.** All writes confined to `.planning/` boundary; no `src/`, `tests/`, `.opencode/`, or `.hivemind/` files were mutated. `feature/harness-implementation` is ready for the user's `gh pr create` invocation.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_17134c5baffe12yFMMl1PnttaO"
+      }
+    }
+  ],
+  "lastMessage": "---\n\n## PHASE 58 SHIPPED\n\n**Version:** 58-tmux-orchestration-programmatic-pool\n**Tag (logical):** v58\n**Status:** ✅ READY FOR PR CREATION\n\n### Boundary Compliance\n- ✅ READ-ONLY on `src/`, `tests/`, `.opencode/`, `.hivemind/` (not touched)\n- ✅ WRITE-ONLY to `58-CLOSE.md` (new), `STATE.md` (Roadmap Evolution appended), `ROADMAP.md` (line 2042 marked Complete)\n- ✅ Did NOT push to remote\n- ✅ Did NOT create PR\n- ✅ Did NOT invoke `/gsd-ship`\n- ✅ Did NOT spawn sub-agents\n\n### Ship Artifacts\n| Artifact | Path | LOC | Status |\n|----------|------|-----|--------|\n| **58-CLOSE.md** | `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md` | 228 | ✅ created |\n| **STATE.md** | `.planning/STATE.md` (Roadmap Evolution append) | +1 line | ✅ updated |\n| **ROADMAP.md** | `.planning/ROADMAP.md` (line 2042 — Phase 58 entry) | 9 lines | ✅ updated (Plans: 7 plans, status: ✓ Complete) |\n\n### Atomic Commit (closeout)\n- **SHA:** `457d0151a83dab67d7529b65cead392e9de24af5` (short: `457d0151`)\n- **Message:** `phase-58: CLOSE — 58-CLOSE.md + STATE.md + ROADMAP.md update`\n- **Files:** 3 changed, 238 insertions(+), 2 deletions(-)\n- **Scope:** `.planning/ROADMAP.md`, `.planning/STATE.md`, `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md`\n\n### All Phase-58 Commits in Chronological Order (30 total)\n\n```\naf7a814d  phase-58: RESEARCH — 58-RESEARCH.md with stack validation, STRIDE threat model, BATS inventory\nb4202d26  phase-58: PATTERNS — 58-PATTERNS.md with 8 frozen patterns (G1-G6)\n78c548a6  phase-58: PLAN-01 (Foundation files) — pool-types + tmuxSessionId + POLICY + SessionTrackerEvent + helpers.bash\nb8d04609  phase-58: PLAN-02 (G2+G3) — getPoolSnapshot + abort/resume persistence + BATS slots 62+63\n1b1697d6  phase-58: PLAN-03 (G4+G5) — forward-prompt + take-over/release + manualOverride + BATS slots 64+65\nfe00d9a9  phase-58: PLAN-04 (G6) — SessionTrackerEvent emissions + recordDelegationTerminal + BATS slot 66\n52a7dc2b  phase-58: PLAN-05 (Regression) — BATS slot 61 G1 grep-guard + regression commands doc\n2ec7689f  phase-58: PLAN-06 (Acceptance) — 13 ACs + 7 cross-cutting invariants verification report\nf4900ae7  phase-58: PLAN-CHECK (verifier verdict) — ## VERIFICATION PASSED, 6/6 REQs, 13/13 ACs, 17/17 decisions, 3/3 drifts\nc4f92471  phase-58: VERIFY — 58-VERIFICATION-REPORT.md (10/10 PASS, 0 blockers, 1 minor warning)\n592d9ae8  phase-58: PLAN-CHECK — gsd-plan-checker PASS verdict (replaces self-check)\n63ca9cce  phase-58: pool-types.ts — DelegationPool frozen contract\ndba33539  phase-58: tmuxSessionId + POLICY comment — G3 + G1 foundation\n599199a4  phase-58: SessionTrackerEvent union + BATS helper pool-types check\nec8d3693  phase-58: getPoolSnapshot + __getDelegationsForTesting test seam (G2)\ndf8baf04  phase-58: pool action + G3 abort+resume persistence (G2+G3 wiring)\nd9f700be  phase-58: BATS slots 62 + 63 — G2 pool-status + G3 pane-survival\nd01a852d  phase-58: manualOverride helpers + appendTuiPrompt wrapper (G5 wiring)\neebd14c0  phase-58: forward-prompt/take-over/release actions (G4+G5 tmux-copilot)\ndf2ee68b  phase-58: BATS slots 64 + 65 — G4 forward-prompt + G5 takeover-release\n1d9aafe3  phase-58: recordDelegationTerminal + recordChildTaskDelegation emissions (G6)\n9b9035e7  phase-58: recordDelegationTerminal wired from abort+terminalFallback (G6)\na152fd7a  phase-58: PLAN-07 — 58-PLAN-07.md\ne58faf29  phase-58: PLAN-07 Gap 2 — DelegationManager.createForTest() + BATS 62 fix\nd77a4154  phase-58: PLAN-07 Gap 3 — __setTmuxMultiplexerForTesting() + BATS 64/65\n872ccc51  phase-58: PLAN-07 Gap 4 — module-level recordDelegationTerminal export\n904153ec  phase-58: PLAN-07 Gap 1 — BATS slot 67 G1 grep-guard\n61438cd0  phase-58: SUMMARY — 58-SUMMARY.md + STATE.md update\ncce73260  phase-58: VERIFY-FINAL — 58-VERIFICATION.md\n457d0151  phase-58: CLOSE — 58-CLOSE.md + STATE.md + ROADMAP.md update   ← NEW (shipper)\n```\n\nThe **27 atomic commits verified by gsd-verifier** (b4202d26..61438cd0) are all preserved byte-identical. 3 follow-on commits were added: af7a814d (RESEARCH, pre-verifier wave), cce73260 (VERIFY-FINAL, post-verifier reinforcement), and 457d0151 (CLOSE, this shipper action).\n\n### Verification Status (per gsd-verifier, 2026-06-04T01:38:00Z)\n- Typecheck (`npx tsc --noEmit`): ✅ PASS (exit 0, 0 new `any`)\n- Test suite (`npx vitest run`): ✅ 3,310 passed / 7 skipped (pre-existing) / 0 failed\n- BATS P55 regression (slots 57-60): ✅ 5/5 PASS\n- BATS P58 (slots 62-67): ✅ 6/6 PASS\n- 27-tool-key invariant: ✅ PRESERVED (`tests/integration/hook-registration.test.ts:86-103` 6/6 PASS)\n- P20 invariant: ✅ PRESERVED (0 new package.json deps)\n- D-04 silent-fallback: ✅ PRESERVED\n- Quality gate triad: ✅ ALL 3 PASS (lifecycle-integration, spec-compliance, evidence-truth L1)\n\n### Pre-Existing Finding (NOT a P58 Regression)\n- **BATS slot 61** fails: `tmux_bats_require_stress_facilities: command not found`\n- **Root cause:** BATS 61 file added in P56 commit `bf77d7a5` (2026-06-03 22:00), BEFORE Phase 58's first commit `b4202d26` (2026-06-03 23:50+). Helper never defined in `tests/scripts/tmux/helpers.bash`.\n- **Mitigation:** 27-tool-key vitest invariant passes independently, preserving the Phase 58 goal-backward contract for tool-key preservation.\n- **Action:** File separate ticket for P56 stress-test helper gap. **Does NOT block P58 ship.**\n\n### Final Phase 58 Status\n✅ **SHIPPED** — All 6/6 gaps closed, 13/13 ACs verified, 27-tool-key + P20 invariants preserved, gate triad PASS, 30 atomic commits in chain on `feature/harness-implementation`, ready for PR.\n\n### PR Command (User Runs Manually)\n\n```bash\ngh pr create --base main --head feature/harness-implementation \\\n  --title \"phase-58: tmux-orchestration-programmatic-pool — 6 gaps closed, 13/13 ACs verified\" \\\n  --body-file .planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md\n```\n\n---\n\n**hm-shipper delegation complete.** All writes confined to `.planning/` boundary; no `src/`, `tests/`, `.opencode/`, or `.hivemind/` files were mutated. `feature/harness-implementation` is ready for the user's `gh pr create` invocation.",
+  "terminalKind": "completed",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
+}

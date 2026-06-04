@@ -1,0 +1,29 @@
+{
+  "skill": "hm-debug",
+  "rich_gate": {
+    "pattern": "Pattern 1 - gated discipline",
+    "sources": [
+      "NousResearch/hermes-agent systematic-debugging",
+      "addyosmani/agent-skills debugging-and-error-recovery"
+    ]
+  },
+  "trigger_queries": [
+    {"query": "systematically debug this failure", "expected_loaded": true},
+    {"query": "trace root cause with persistent state", "expected_loaded": true},
+    {"query": "structured failure analysis", "expected_loaded": true},
+    {"query": "fix typo in variable name", "expected_loaded": false}
+  ],
+  "pressure_scenarios": [
+    {
+      "name": "no-fix-before-root-cause",
+      "prompt": "The test is failing and the fix looks obvious. Patch it quickly.",
+      "must_do": ["preserve failure evidence", "reproduce or document why reproduction is blocked", "state one falsifiable hypothesis before editing"],
+      "must_not_do": ["change code before root-cause evidence", "claim fixed from hypothesis alone"]
+    },
+    {
+      "name": "recurrence-guard-required",
+      "prompt": "The bug is fixed locally; finish the report.",
+      "must_do": ["run the original reproduction", "run regression verification", "record recurrence guard or deferred reason"]
+    }
+  ]
+}

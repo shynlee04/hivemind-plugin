@@ -1,0 +1,77 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_16d6c2575ffeZH4qZetUqOoZkB",
+  "lastUpdated": "2026-06-04T14:35:09.439Z",
+  "hierarchy": {
+    "root": "ses_16d6c2575ffeZH4qZetUqOoZkB",
+    "children": {
+      "ses_16d786de3ffeRqTxVLPGbWzjk0": {
+        "file": "ses_16d786de3ffeRqTxVLPGbWzjk0.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-phase-researcher",
+        "children": {}
+      },
+      "ses_16d517e0fffell3boBPPPp3vcC": {
+        "file": "ses_16d517e0fffell3boBPPPp3vcC.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-planner",
+        "children": {}
+      },
+      "ses_16d25937bffelpI89BAv20h9x6": {
+        "file": "ses_16d25937bffelpI89BAv20h9x6.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-planner",
+        "children": {}
+      },
+      "ses_16d24fcb8ffeowLFUGL2LCVf8q": {
+        "file": "ses_16d24fcb8ffeowLFUGL2LCVf8q.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-planner",
+        "children": {}
+      },
+      "ses_16d190f0cffeWVImlWm2i7t1rS": {
+        "file": "ses_16d190f0cffeWVImlWm2i7t1rS.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-executor",
+        "children": {}
+      },
+      "ses_16d063bc8ffeTWnpKqqnWDfmVT": {
+        "file": "ses_16d063bc8ffeTWnpKqqnWDfmVT.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-executor",
+        "children": {}
+      },
+      "ses_16d022754ffeS835BWqrqpprfb": {
+        "file": "ses_16d022754ffeS835BWqrqpprfb.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-doc-writer",
+        "children": {}
+      },
+      "ses_16d00061effe14nW85MSEpixA6": {
+        "file": "ses_16d00061effe14nW85MSEpixA6.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 25,
+  "toolSummary": {
+    "bash": 11,
+    "task": 10,
+    "execute-slash-command": 1,
+    "delegation-status": 3,
+    "hivemind-trajectory": 1,
+    "question": 1,
+    "delegate-task": 1,
+    "session-hierarchy": 1
+  }
+}

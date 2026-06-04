@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
-  "lastUpdated": "2026-06-03T14:52:31.789Z",
+  "lastUpdated": "2026-06-04T13:34:04.765Z",
   "hierarchy": {
     "root": "ses_1723d915effe0g1RAXPAJ7yH4v",
     "children": {
@@ -53,21 +53,84 @@
         "status": "active",
         "delegatedBy": "gsd-planner",
         "children": {}
+      },
+      "ses_170babd7cffeK92yiCCS1t8UG3": {
+        "file": "ses_170babd7cffeK92yiCCS1t8UG3.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_16db98d2affekwFUDDuCkTk021": {
+        "file": "ses_16db98d2affekwFUDDuCkTk021.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-code-reviewer",
+        "children": {}
+      },
+      "ses_16db8f90fffeXboaaTd2SPoLBz": {
+        "file": "ses_16db8f90fffeXboaaTd2SPoLBz.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-phase-researcher",
+        "children": {}
+      },
+      "ses_16db5fcddfferQcCGuQROEpLTC": {
+        "file": "ses_16db5fcddfferQcCGuQROEpLTC.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-debugger",
+        "children": {}
+      },
+      "ses_16d9b7dffffe0iACJuZCIIMxTQ": {
+        "file": "ses_16d9b7dffffe0iACJuZCIIMxTQ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-code-reviewer",
+        "children": {}
+      },
+      "ses_16d9ace2bffeKgBdtL56ewon2E": {
+        "file": "ses_16d9ace2bffeKgBdtL56ewon2E.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_16d7cf648ffe2Ru8a2Xf5jsltu": {
+        "file": "ses_16d7cf648ffe2Ru8a2Xf5jsltu.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_16d6e9674ffeDF8mwHzXMppsUy": {
+        "file": "ses_16d6e9674ffeDF8mwHzXMppsUy.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      },
+      "ses_16d4119feffeFpJIW3uuRWVvit": {
+        "file": "ses_16d4119feffeFpJIW3uuRWVvit.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-executor",
+        "children": {}
       }
     }
   },
-  "turnCount": 13,
+  "turnCount": 50,
   "toolSummary": {
     "hivemind-doc": 1,
     "hivemind-command-engine": 1,
     "session-tracker": 2,
-    "delegation-status": 3,
-    "bash": 39,
+    "delegation-status": 11,
+    "bash": 46,
     "read": 5,
     "write": 2,
     "question": 1,
     "execute-slash-command": 5,
-    "task": 6,
+    "task": 17,
     "invalid": 2
   }
 }

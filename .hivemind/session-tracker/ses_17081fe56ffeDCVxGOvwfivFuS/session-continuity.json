@@ -1,0 +1,41 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+  "lastUpdated": "2026-06-03T23:38:15.439Z",
+  "hierarchy": {
+    "root": "ses_17081fe56ffeDCVxGOvwfivFuS",
+    "children": {
+      "ses_17071a451ffekRhSJ3CJvG3dFR": {
+        "file": "ses_17071a451ffekRhSJ3CJvG3dFR.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-executor",
+        "children": {}
+      },
+      "ses_1703f4388ffe5x7tVxt73dhwmo": {
+        "file": "ses_1703f4388ffe5x7tVxt73dhwmo.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-executor",
+        "children": {}
+      },
+      "ses_17025e816ffebrdTUwnbuJPSJF": {
+        "file": "ses_17025e816ffebrdTUwnbuJPSJF.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 6,
+  "toolSummary": {
+    "read": 21,
+    "bash": 9,
+    "todowrite": 3,
+    "delegation-status": 3,
+    "write": 1,
+    "task": 3,
+    "hivemind-trajectory": 1
+  }
+}

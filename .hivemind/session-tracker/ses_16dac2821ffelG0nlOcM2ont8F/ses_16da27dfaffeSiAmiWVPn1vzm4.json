@@ -1,0 +1,55 @@
+{
+  "sessionID": "ses_16da27dfaffeSiAmiWVPn1vzm4",
+  "parentSessionID": "ses_16dac2821ffelG0nlOcM2ont8F",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Create config governance remediation plan",
+    "subagentType": "gsd-planner"
+  },
+  "created": "2026-06-04T11:21:02.282Z",
+  "updated": "2026-06-04T11:21:08.399Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-planner",
+      "content": "You are a subagent tasked with creating a comprehensive remediation plan for the Hivemind config/governance system. You CANNOT delegate — you MUST create the plan yourself.\n\n## Context\n\nRead this research artifact first: `.planning/research/config-governance-forensic-research-2026-06-04.md`\n\n### Current Architecture\nThe Hivemind governance system has **5 critical problems**:\n\n#### Problem 1: Two separate governance configs\n- `.hivemind/configs.json` has a `governance.rules` field (for tool block/warn/escalate) but it's **completely missing from the actual file** — falls back to default `{rules: []}`\n- `.hivemind/governance/config.json` has agent descriptions, allowedCommands, naming standards — but is **never enforced at runtime**\n- These two configs have **zero connection** between them\n\n#### Problem 2: Governance evaluator wired but empty\n- `src/hooks/guards/tool-guard-hooks.ts:158` calls `evaluateGovernance()` on every tool.execute.before\n- But since `configs.json` has no `governance` field, it always returns `{blocked: false, warnings: [], blocks: [], escalations: []}`\n- The full evaluator infrastructure exists but does nothing\n\n#### Problem 3: Language governance is partial\n- `buildGovernanceBlock()` injects system prompt for language\n- `tool-guard-hooks.ts` has document language guard\n- But behavioral profile propagation to child agents is incomplete\n\n#### Problem 4: SR-05 config reconciliation never implemented\n- `.planning/phases/SR-05-config-to-config-realm/` is an empty directory\n- The plan to reconcile the two config spaces was started but never completed\n\n#### Problem 5: `.hivemind/governance/config.json` has no runtime enforcement\n- `allowedCommands` in agent entries is documentation-only\n- `naming_standards` is never validated at runtime\n- No agent in the system enforces these rules\n\n### Key Source Files (read these):\n- `src/schema-kernel/hivemind-configs.schema.ts` - The Zod schema for configs.json (especially lines 266-305 for GovernanceRuleSchema and GovernanceConfigsSchema)\n- `src/hooks/guards/tool-guard-hooks.ts` - How governance rules are evaluated (lines 156-174)\n- `src/features/governance-engine/evaluator.ts` - The evaluateGovernance function\n- `src/features/governance-engine/config-reader.ts` - Reads `.hivemind/governance/config.json`\n- `src/hooks/guards/governance-block.ts` - buildGovernanceBlock for system prompt\n- `src/routing/behavioral-profile/resolve-behavioral-profile.ts` - How config propagates\n- `src/plugin.ts:475-480,725-760` - Config loading and hook wiring\n- `.hivemind/configs.json` - Current config (30 lines, missing governance field)\n- `.hivemind/governance/config.json` - Separate governance config (67 lines)\n\n## Task\n\nCreate a phased remediation plan as PLAN.md. The plan MUST address all 5 problems in order of dependency.\n\n### Phase 1: Unify governance configs (HIGHEST PRIORITY)\nMerge `.hivemind/governance/config.json` into `.hivemind/configs.json` by:\n- Adding a `governance.naming_standards` field to the Zod schema\n- Adding a `governance.agent_configs` field for agent descriptions/commands\n- Adding a `governance.command_agent_mappings` for command→agent routing\n- Updating `src/features/governance-engine/config-reader.ts` to read from `configs.json` instead\n- Populating the actual `.hivemind/configs.json` with real governance rules\n\n### Phase 2: Populate governance rules (HIGHEST PRIORITY)\n- Add actual `governance.rules` to `.hivemind/configs.json` that restrict tools per agent type\n- Define rules for: delegate-task (subagent only), write (planner/executor only), etc.\n\n### Phase 3: Reconcile behavioral profile with config\n- Connect `guardrailLevel`, `delegationMode`, `toolAccessPattern`, `skillFilter` to config-driven values\n- Ensure child agents inherit governance rules from parent\n\n### Phase 4: Implement SR-05 (config reconciliation)\n- What SR-05 was supposed to do: reconcile the two config spaces into one\n- Create the actual implementation\n\n### Phase 5: Enforce naming standards at runtime\n- Wire the naming standards validation into `create-governance-session` tool\n\n## Output format\nReturn a structured PLAN.md with:\n1. **Phase breakdown** - Each phase with dependencies, tasks, files to modify\n2. **Schema changes** - Exact Zod schema modifications needed\n3. **Config changes** - Exact `.hivemind/configs.json` content changes\n4. **Wire changes** - How to connect evaluator to actual rules\n5. **Test strategy** - How to verify each phase\n6. **Risk assessment** - What could go wrong\n\nBe specific: include file:line references, exact code snippets for changes, and exact JSON content for the new config.\n",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-planner",
+      "content": "Create config governance remediation plan",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-planner",
+      "content": "<task id=\"ses_16da27dfaffeSiAmiWVPn1vzm4\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-04T11:21:08.272Z",
+      "type": "assistant_message",
+      "content": "<task id=\"ses_16da27dfaffeSiAmiWVPn1vzm4\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_16da27dfaffeSiAmiWVPn1vzm4"
+      }
+    }
+  ],
+  "lastMessage": "<task id=\"ses_16da27dfaffeSiAmiWVPn1vzm4\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>"
+}

@@ -1,0 +1,5 @@
+{
+  "description": "Master index of ingested tech stacks. Populated when end users run ingestion for their project dependencies.",
+  "stacks": [],
+  "last_updated": null
+}

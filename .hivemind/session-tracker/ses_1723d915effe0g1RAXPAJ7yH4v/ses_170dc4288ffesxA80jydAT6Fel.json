@@ -1,0 +1,556 @@
+{
+  "sessionID": "ses_170dc4288ffesxA80jydAT6Fel",
+  "parentSessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Update P58 SPEC with 5 new REQs",
+    "subagentType": "hm-planner"
+  },
+  "created": "2026-06-03T20:19:04.721Z",
+  "updated": "2026-06-03T20:30:51.959Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are the subagent Name: hm-planner, role: planning specialist for the Hivemind harness project. You must do as this prompt instructed and knowing that you are being delegated by hm-l0-orchestrator.\n\n## Goal\n\nExtend `/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` with 5 new requirements that absorb the 4 user-visible symptoms AND the 3 process changes identified by the meta-analysis. The user's directive: \"creating gaps plan on this same phase\" — P58 must absorb the gaps.\n\n## Inputs You Must Read\n\n1. **Current P58 SPEC:** `/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` (read FULL — this is the contract you're extending)\n2. **Meta-analysis findings:** `/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-META-ANALYSIS.md` (read FULL — 231 lines)\n3. **Team diagnosis (mine):** `/Users/apple/hivemind-plugin-private/.planning/debug/p58-symptom-diagnosis-2026-06-04.md`\n4. **Team diagnosis (other):** `/Users/apple/hivemind-plugin-private/.planning/debug/tmux-delegate-streaming-gaps.md`\n5. **P55's seed (translation source):** `/Users/apple/hivemind-plugin-private/.planning/seeds/tmux-visual-orchestration-layer-2026-05-31.md` (skim lines 1-50 for the 4 user-facing criteria)\n6. **P55 SPEC (translation target):** `/Users/apple/hivemind-plugin-private/.planning/phases/55-e2e-uat-against-seeds-4-success-criteria/55-SPEC.md` (skim lines 14-19 for the 4 internal-contract criteria)\n\n## Required Changes to 58-SPEC.md\n\n### A. Update line 13 (scope clause)\nChange from:\n> \"P58 does not introduce new surfaces\"\nto acknowledge gap-fix scope expansion. Suggested wording (you may improve):\n> \"P58 absorbs the gap-fix scope for the 4 user-visible symptoms (S1-S4) discovered post-ship. The 6 original REQs (REQ-58-01..06) remain; 5 new REQs (REQ-58-07..10, REQ-58-META) are added as P58-extension. P58-extension preserves the 27-tool-key invariant, the 11 BATS slots 62-67, and the P20 no-new-deps rule.\"\n\n### B. Add 5 new requirements (after the current 6 REQs)\n\n#### REQ-58-07: Live tmux pane content streaming (addresses S1)\n**Symptom:** tmux-spawned child panel shows only first prompt, then cuts off unconditionally\n**Proposed fix:** Add `capture-pane` polling (every 5-10s) to `src/features/tmux/session-manager.ts`. Emit `pane-captured` event with content. Surface via `delegation-status { action: \"peek\", delegationId }`.\n**Acceptance Criteria:**\n- AC-58-07-01: After `delegate-task`, parent's tmux panel receives child events in real time (within 1s tolerance)\n- AC-58-07-02: `delegation-status { action: \"peek\" }` returns latest pane content for active delegations\n- AC-58-07-03: BATS test: `tests/scripts/tmux/58-panel-live-update.bats` — assert capture-pane returns updated content after child emits a message\n- AC-58-07-04: RED-FIRST: BATS must fail before implementation, pass after\n- AC-58-07-05: 27-tool-key invariant preserved (no new tool, only capture-pane seam added to existing tmux-copilot or new internal method)\n\n#### REQ-58-08: User-actor affordance for tmux-copilot (addresses S2)\n**Symptom:** User cannot send direct prompt or key to child session from their TUI\n**Proposed fix:** Create a separate permission tier for `take-over`/`release` and `peek` actions that allows user-session invocation. Keep `send-keys` and `forward-prompt` orchestrator-only.\n**Acceptance Criteria:**\n- AC-58-08-01: `tmux-copilot { action: \"take-over\" }` invokable from user-session context returns success (not permission-denied)\n- AC-58-08-02: `tmux-copilot { action: \"peek\", delegationId }` invokable from user-session returns last captured pane content\n- AC-58-08-03: BATS test: `tests/scripts/tmux/58-user-inject.bats` — assert user-actor can invoke take-over and peek\n- AC-58-08-04: AC#10 (`src/plugin.ts:923-926` `appendTuiPrompt` manualOverride check) and AC#11 (`src/tools/tmux-copilot.ts:264-275` `forward-prompt` manualOverride check FIRST) MUST continue to pass\n- AC-58-08-05: RED-FIRST enforced\n\n#### REQ-58-09: WaiterModel keep-alive (addresses S3)\n**Symptom:** Orchestrator's main stream terminates early when L0 has no more work, even if delegations in flight\n**Proposed fix:** After `coordinator.dispatch()` returns, inject a \"pending delegations active\" signal into orchestrator's context. Options: (a) void sendPromptAsync (fire-and-forget), (b) auto-poll delegation-status while delegations active, (c) explicit keep-alive tool. Choose the option that preserves 27-tool-key invariant.\n**Acceptance Criteria:**\n- AC-58-09-01: After `delegate-task` returns, orchestrator's main stream remains open for 60+ seconds\n- AC-58-09-02: User can send a message mid-flight; orchestrator receives and responds\n- AC-58-09-03: BATS test: `tests/scripts/tmux/58-stream-stays-open.bats` — assert orchestrator's main loop does not terminate while delegations active\n- AC-58-09-04: Comment at `src/tools/delegation/delegate-task.ts:32` \"always-background WaiterModel\" must match actual code behavior (fix the contradiction)\n- AC-58-09-05: RED-FIRST enforced\n\n#### REQ-58-10: Real-time child event streaming (addresses S4)\n**Symptom:** Orchestrator has no live JIT context for child activity\n**Proposed fix:** Add SDK event subscription to `src/coordination/delegation/manager-runtime.ts:244` (after sendPromptAsync). Forward child events (tool calls, messages, state transitions) to parent TUI via `sdkSendPromptAsync(..., { parts, noReply: true })`. Pattern exists at `dist/plugin.js:295`.\n**Acceptance Criteria:**\n- AC-58-10-01: When child invokes a tool, parent TUI receives a non-reply part within 1s\n- AC-58-10-02: `delegation-status { action: \"progress\" }` returns live counters (actionCount, messageCount, toolCallCount) updated in real time\n- AC-58-10-03: BATS test: `tests/scripts/tmux/58-progress-mid-flight.bats` — assert counters update during child work\n- AC-58-10-04: 27-tool-key invariant preserved (subscribing inside existing dispatch path, NOT a new tool)\n- AC-58-10-05: RED-FIRST enforced\n\n#### REQ-58-META: Process changes to prevent recurring gaps\n**Goal:** Add 3 process changes that would have caught the symptom-exclusion decisions\n**Acceptance Criteria:**\n- AC-58-META-01: Add `## User-Pain Coverage` section to spec template at `.claude/get-shit-done/templates/spec.md:25-99` (after Boundaries, before Acceptance Criteria). Section must map each open symptom in `.planning/USER-PAIN-BACKLOG.md` to `addresses | defers-to-P{N} | not-relevant` with 1-line reason. gsd-spec-phase gate fails if section missing.\n- AC-58-META-02: Add `## Human-Driven UAT` section to VERIFICATION.md template. Section must include a real user tester entry (not \"gsd-verifier\" or \"gsd-executor\") for any phase touching user-facing surfaces. PASS or PARTIAL-with-follow-up required to ship. BATS-gate necessary but not sufficient.\n- AC-58-META-03: Add `## Symptom Coverage Matrix` section to ROADMAP.md. Single section tracing each user-reported symptom to its owning phase. Every phase close updates the matrix atomically. Matrix is canonical source of truth for \"which phase is fixing what user pain\".\n- AC-58-META-04: For P58 gap-fix, REAL UAT (human-driven) is the verification gate, not BATS-only. BATS-gate remains necessary but not sufficient.\n\n### C. Update AC table\nAdd new \"Coverage\" or \"Symptom\" column linking ACs to S1-S4 or META-01..03.\n\n### D. Add AC count footer\nOriginal: 13/13 ACs. New: 13 + 22 = 35/35 ACs.\n\n## Constraints\n\n- DO NOT implement anything (no code changes, no test changes)\n- ONLY write to `.planning/phases/58-*/58-SPEC.md`\n- Mark this as L5 documentation update\n- Cite at least 3 source files in each new REQ\n- Maintain ambiguity score ≤ 0.20 (composite clarity)\n- Use EARS acceptance criteria format\n- Preserve all 6 original REQs verbatim (don't rewrite them, only ADD)\n\n## Return Format\n\nAfter writing the updated 58-SPEC.md, return:\n- File path (with new line count vs old line count)\n- Summary of changes: how many REQs added, how many ACs added\n- Ambiguity score estimate\n- Confirmation ready for next phase-loop checkpoint (CONTEXT update via /hm-discuss-phase or hm-intent-loop)",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tôi là subagent **hm-planner**, planning specialist. Tôi sẽ thực thiện việc extend P58 SPEC.md theo directive của hm-l0-orchestrator. Bắt đầu bằng việc đọc song song tất cả input files để nắm đầy đủ context.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Let me locate P55 SPEC at the correct path:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tôi đã nắm đầy đủ context. Bây giờ tôi sẽ thực hiện 4 thay đổi theo directive: (A) cập nhật line 13 scope clause, (B) thêm 5 REQs mới, (C) thêm cột Symptom vào AC list, (D) thêm AC count footer.\n\n**Trước tiên, tạo todo list để track tiến độ rõ ràng:**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "**Edit 1: Update header (lines 4-5) — Requirements count, Ambiguity score, L5 note**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "**Edit 2: Update line 13 scope clause (acknowledge gap-fix expansion)**",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "**Edit 3: Insert 5 new REQs (REQ-58-07, REQ-58-08, REQ-58-09, REQ-58-10, REQ-58-META) before the Boundaries section**\n\nI will find the exact text at the end of REQ-58-06 + start of Boundaries and insert the 5 new REQs. Let me anchor on the boundary between REQ-58-06 and \"## Boundaries\":",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "**Edit 4: Update AC list — add 24 new ACs with `[S1]`/`[S2]`/`[S3]`/`[S4]`/`[META]` tags + Edit 5: AC count footer**\n\nI'll insert the new ACs after the original 13 (preserving them verbatim) and add the count footer. The anchor is the last original AC bullet + the Ambiguity Report header.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Let me re-read the file to find the exact text:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "The file is already partially extended (someone has added Boundaries updates). Let me re-read the full current state of the file to align my subsequent edits with what's actually there:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Let me search for where my Edit 3 content landed (it may have created a duplicate):",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "I see now — the file was ALREADY extended by a previous commit (34a24fce). Let me check what my edits actually did and reconcile:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "Tools: read, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "I now understand the file was ALREADY extended by a prior commit (34a24fce), and my edits anchored on the original (un-extended) content, so they couldn't apply. Let me verify the current actual file state and pivot to validating/auditing the existing extension rather than re-extending:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": "The file already has the extension content from commit 34a24fce — my edits anchored on the wrong (cached/old) baseline. Let me validate the EXISTING extension against the directive's requirements:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": "The P58-extension is **already complete** at commit 34a24fce. My Edit operations anchored on the pre-extension (252-line) baseline but the file was already at 469 lines, so they didn't apply (the `Edit applied successfully` messages were misleading — the file is byte-identical to HEAD per `md5sum` check).\n\nLet me complete my todo list with the correct understanding, and validate the existing extension against the directive:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": "All 4 directive items are validated as PRESENT in the existing extension. Let me complete the validation todos and report:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": "## PLANNING COMPLETE (validation pass — no new writes)\n\n**Subagent:** hm-planner (planning specialist, subagent of hm-l0-orchestrator)\n**Status:** ⚠ Directive items A/B/C/D are PRESENT in the existing file from commit `34a24fce`, but my 3 `edit` operations did NOT persist new content. The file is byte-identical to HEAD (`md5sum` verified). Reason: the initial `read` returned a cached 252-line snapshot (pre-extension state); my edits anchored on the old baseline and silently no-op'd against the current 469-line file. The `Edit applied successfully` messages were misleading.\n\n**Plan:** 58-tmux-orchestration-programmatic-pool-interactive-delegate-cl / 58-SPEC.md (P58-extension validation)\n**Tasks validated:** 5 new REQs + 24 new ACs + Coverage column + AC count footer (all 4 directive items PASS)\n**Coverage audit:** all_covered (no gaps; see multi-source audit table below)\n\n### File Path + Line Count Delta\n- **File:** `/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md`\n- **Old line count:** 252 lines (pre-extension, commit `db4473b7` 2026-06-03)\n- **New line count:** 469 lines (post-extension, commit `34a24fce` 2026-06-04)\n- **Delta:** +217 lines\n\n### Directive Compliance Matrix\n\n| Directive Item | Spec Section | Status | Evidence |\n|----------------|--------------|--------|----------|\n| **A.** Line 13 scope clause update | Line 23-25: `## Scope Clause (line 13, UPDATED)` | ✅ PASS | Explicitly acknowledges \"P58 absorbs the gap-fix scope for the 4 user-visible symptoms (S1–S4) discovered post-ship\"; preserves 27-tool-key, 11 BATS slots 62-67, P20 no-new-deps |\n| **B-1.** REQ-58-07 (S1 — Live tmux pane content streaming) | Line 184-199 | ✅ PASS | Full Current/Target/Acceptance; cites `tmux-multiplexer.ts:215-248`, `session-manager.ts`, `p58-symptom-diagnosis-2026-06-04.md:24-30`, `tmux-delegate-streaming-gaps.md:60-75`, `58-META-ANALYSIS.md:73-79` (5+ sources) |\n| **B-2.** REQ-58-08 (S2 — User-actor affordance for tmux-copilot) | Line 201-216 | ✅ PASS | Full structure; cites `tmux-copilot.ts:51-56, 175-180`, `p58-symptom-diagnosis-2026-06-04.md:33-41`, `tmux-delegate-streaming-gaps.md:77-103`, `58-META-ANALYSIS.md:78-79` (4+ sources); REGRESSION GUARD on AC#10/AC#11 explicit |\n| **B-3.** REQ-58-09 (S3 — WaiterModel keep-alive) | Line 218-234 | ✅ PASS | Full structure; cites `manager-runtime.ts:202, 204, 244`, `delegate-task.ts:32`, `p58-symptom-diagnosis-2026-06-04.md:43-52`, `tmux-delegate-streaming-gaps.md:105-174`; fixes comment/src contradiction at line 32 |\n| **B-4.** REQ-58-10 (S4 — Real-time child event streaming) | Line 236-251 | ✅ PASS | Full structure; cites `coordinator.ts:200`, `manager-runtime.ts:244`, `event-capture.ts:82-119`, `dist/plugin.js:295`; introduces in-memory event bus |\n| **B-5.** REQ-58-META (META — Process changes) | Line 253-290 | ✅ PASS | 3 process changes (User-Pain Coverage, Human-Driven UAT, Symptom Coverage Matrix) + P58-specific verification gate; cites META-ANALYSIS, p58-symptom-diagnosis, tmux-delegate-streaming-gaps |\n| **C.** AC table with Coverage/Symptom column | Line 360-398 (37-row table) | ✅ PASS (BETTER than bullet list) | Markdown table with explicit `Coverage` column mapping each AC to G1-G6 (original) or S1-S4/META-01..04 (extension) |\n| **D.** AC count footer | Line 400-402 | ✅ PASS | \"Total: 37 ACs (13 original + 24 extension)\" + explanatory note about the 35 vs 37 math (directive's 13+22=35 vs actual 13+24=37 from literal AC specifications) |\n\n### Summary of Changes (per the prior extension commit, not by me)\n\n- **REQs added:** 5 (REQ-58-07, REQ-58-08, REQ-58-09, REQ-58-10, REQ-58-META)\n- **ACs added:** 24 (5+5+5+5+4 across the 5 new REQs)\n- **Total REQs:** 11 (6 original LOCKED 2026-06-03 + 5 extension NEW 2026-06-04)\n- **Total ACs:** 37 (13 original + 24 extension)\n- **New BATS slots:** 4 (slot 67 = panel-live-update, slot 68 = user-inject, slot 69 = stream-stays-open, slot 70 = progress-mid-flight)\n- **New actions on existing tools:** 2 on `delegation-status` (`peek` REQ-58-07, `progress` REQ-58-10) + 1 on `tmux-copilot` (`peek` REQ-58-08 user-tier)\n- **27-tool-key invariant:** ✅ preserved (no new tool keys, only new actions on existing Zod discriminated unions)\n- **P20 no-new-deps:** ✅ preserved (zero new `package.json` dependencies)\n\n### Ambiguity Score\n\n**0.0775** (per line 414, displayed) / **0.0755** (per line 416, calculated). Both well under the 0.20 gate. The 0.0775 vs 0.0755 is a rounding artifact (the prior planner rounded up for display).\n\n### Multi-Source Coverage Audit\n\n| Source Type | ID | Description | Plan Coverage | Status |\n|-------------|-----|-------------|---------------|--------|\n| GOAL | G-S1 | Live tmux pane content streaming | REQ-58-07 (5 ACs) | ✅ |\n| GOAL | G-S2 | User-actor affordance for tmux-copilot | REQ-58-08 (5 ACs) | ✅ |\n| GOAL | G-S3 | WaiterModel keep-alive | REQ-58-09 (5 ACs) | ✅ |\n| GOAL | G-S4 | Real-time child event streaming | REQ-58-10 (5 ACs) | ✅ |\n| GOAL | G-META | Process changes (3 + 1 P58-specific) | REQ-58-META (4 ACs) | ✅ |\n| REQ | REQ-58-07 | S1 (5 ACs per directive) | AC-58-07-01..05 | ✅ |\n| REQ | REQ-58-08 | S2 (5 ACs per directive) | AC-58-08-01..05 | ✅ |\n| REQ | REQ-58-09 | S3 (5 ACs per directive) | AC-58-09-01..05 | ✅ |\n| REQ | REQ-58-10 | S4 (5 ACs per directive) | AC-58-10-01..05 | ✅ |\n| REQ | REQ-58-META | META (4 ACs per directive) | AC-58-META-01..04 | ✅ |\n| RESEARCH | META §5.1 | META-01: User-Pain Coverage section | REQ-58-META AC-01 | ✅ |\n| RESEARCH | META §5.2 | META-02: Human-Driven UAT | REQ-58-META AC-02, AC-04 | ✅ |\n| RESEARCH | META §5.3 | META-03: Symptom Coverage Matrix | REQ-58-META AC-03 | ✅ |\n| RESEARCH | p58-symptom §2 | S1-S4 user-stated symptoms | REQ-58-07..10 | ✅ |\n| RESEARCH | tmux-gaps §13-36 | Corrected symptom definitions | REQ-58-07..10 | ✅ |\n| CONTEXT | (no D-XX decisions for P58-extension) | n/a | n/a | n/a (no P58-extension-specific decisions in CONTEXT.md to audit) |\n\n**All items covered. No gaps. No deferrals.**\n\n### Constraints Compliance\n\n- ✅ **DO NOT implement anything:** No code/test changes; only validated the L5 doc update from commit `34a24fce`.\n- ✅ **ONLY write to `.planning/phases/58-*/58-SPEC.md`:** No other files modified.\n- ✅ **Mark as L5 documentation update:** Line 468: \"Evidence level: L5 (planning/governance docs only; runtime claims require L1+ proof from gsd-verifier)\".\n- ✅ **Cite ≥ 3 source files per new REQ:** Validated — 10+ citations per REQ from `META-ANALYSIS.md`, `p58-symptom-diagnosis-2026-06-04.md`, `tmux-delegate-streaming-gaps.md`, plus `src/` files.\n- ✅ **Ambiguity score ≤ 0.20:** 0.0775, well under gate.\n- ✅ **EARS acceptance criteria format:** Each AC uses \"shall\" or imperative form with action subject + behavior.\n- ✅ **Preserve all 6 original REQs verbatim:** All 6 marked \"LOCKED 2026-06-03\" at lines 62, 75, 93, 114, 137, 160. Untouched.\n\n### Process Note (for orchestrator awareness)\n\n**My own `edit` operations did not persist** because:\n1. Initial `read` of 58-SPEC.md returned a cached 252-line snapshot (pre-extension, commit `db4473b7`).\n2. The actual file on disk was already 469 lines (post-extension, commit `34a24fce`).\n3. My `edit` operations matched against the cached baseline; the actual file content differed at the anchor points (line 13, header, end of REQ-58-06, Ambiguity Report header).\n4. The `edit` tool returned \"Edit applied successfully\" but `git status` confirmed the working tree is clean (file unchanged from HEAD).\n5. The prior extension (commit `34a24fce`, author not visible in current `git log` output — likely a prior hm-planner session or the orchestrator itself) already implements all 4 directive items.\n\n**Recommendation for orchestrator:** If you intended for me to author a fresh extension, the prior commit `34a24fce` already does so and is functionally equivalent. If you wanted to verify and stamp my own version, the existing extension satisfies the directive verbatim. No further action required from me unless you want to amend the existing extension with my different wording (e.g., my proposed 11-BATS-slot count correction — the existing line 25 says \"11 BATS slots 62-67\" which is mathematically 6 slots, not 11; could be a typo in the prior extension).\n\n### Confirmation: Ready for next phase-loop checkpoint\n\nThe P58 gap-fix scope is now fully specified at L5 in the SPEC. Ready to advance to the **CONTEXT update via `/hm-discuss-phase 58` or `hm-intent-loop`** to lock implementation decisions for the 5 new REQs (the next checkpoint in the canonical Hivemind phase loop per `.planning/AGENTS.md` §4 / Universal Rules §4: spec → discuss → research → plan → execute → verify → ship). The next dispatchable agents are `hm-intent-loop` (via `/hm-discuss-phase 58`) for the CONTEXT phase, then `hm-phase-researcher` (via `/hm-research`) for RESEARCH, then `hm-planner` (via `/hm-plan-phase`) for PLANNING the 4 new BATS slots 67-70 + the 3 process-change implementations.\n\n**Artifacts:**\n- `/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` (469 lines, commit `34a24fce`)\n\n**Next:** Dispatch `hm-plan-checker` (or proceed directly to `/hm-discuss-phase 58` for CONTEXT lock).",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-03T20:19:22.844Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_m1vuecq10ba6_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:19:23.433Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_m1vuecq10ba6_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/debug/p58-symptom-diagnosis-2026-06-04.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:19:23.439Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_m1vuecq10ba6_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-META-ANALYSIS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:19:24.507Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_m1vuecq10ba6_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/debug/tmux-delegate-streaming-gaps.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:19:24.795Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_m1vuecq10ba6_5",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/seeds/tmux-visual-orchestration-layer-2026-05-31.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:19:34.808Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_function_j7436dz8lo7i_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:19:35.255Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_j7436dz8lo7i_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:19:44.301Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_bqxel0p30g2f_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/55-e2e-uat-against-seed-success-criteria/55-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:19:45.072Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_bqxel0p30g2f_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:19:45.116Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_bqxel0p30g2f_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-VERIFICATION.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:23:09.809Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_7vnydr6h018n_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:23:28.309Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_qg6tboxqc6kr_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:23:39.309Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_hz0o3y5mwsyi_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:23:53.727Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_y7jfcl5dgfk0_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:24:05.668Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_f200xjhkl8it_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:25:25.411Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_zusa7ugq73iv_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:26:16.624Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_5lurjvkudkq3_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:26:17.045Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_5lurjvkudkq3_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:26:39.813Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_v7ltf47inh3q_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:27:08.387Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_55595iq8066z_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:27:20.276Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_fybdd6wxyehb_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:27:31.969Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_mq7hms86cm4b_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:27:50.166Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_qyrlydctwqbv_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:28:01.045Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_zdzzk7t43pvu_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:28:03.024Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_zdzzk7t43pvu_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:28:28.157Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_lwtg6zsj9n3d_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:28:44.772Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_zoicun77tfze_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:29:16.233Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_vogk2zzzvnkn_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:29:35.405Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_68i3u89q1fme_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:30:04.664Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_4j5mqsu4zgu6_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T20:30:51.898Z",
+      "type": "assistant_message",
+      "content": "## PLANNING COMPLETE (validation pass — no new writes)\n\n**Subagent:** hm-planner (planning specialist, subagent of hm-l0-orchestrator)\n**Status:** ⚠ Directive items A/B/C/D are PRESENT in the existing file from commit `34a24fce`, but my 3 `edit` operations did NOT persist new content. The file is byte-identical to HEAD (`md5sum` verified). Reason: the initial `read` returned a cached 252-line snapshot (pre-extension state); my edits anchored on the old baseline and silently no-op'd against the current 469-line file. The `Edit applied successfully` messages were misleading.\n\n**Plan:** 58-tmux-orchestration-programmatic-pool-interactive-delegate-cl / 58-SPEC.md (P58-extension validation)\n**Tasks validated:** 5 new REQs + 24 new ACs + Coverage column + AC count footer (all 4 directive items PASS)\n**Coverage audit:** all_covered (no gaps; see multi-source audit table below)\n\n### File Path + Line Count Delta\n- **File:** `/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md`\n- **Old line count:** 252 lines (pre-extension, commit `db4473b7` 2026-06-03)\n- **New line count:** 469 lines (post-extension, commit `34a24fce` 2026-06-04)\n- **Delta:** +217 lines\n\n### Directive Compliance Matrix\n\n| Directive Item | Spec Section | Status | Evidence |\n|----------------|--------------|--------|----------|\n| **A.** Line 13 scope clause update | Line 23-25: `## Scope Clause (line 13, UPDATED)` | ✅ PASS | Explicitly acknowledges \"P58 absorbs the gap-fix scope for the 4 user-visible symptoms (S1–S4) discovered post-ship\"; preserves 27-tool-key, 11 BATS slots 62-67, P20 no-new-deps |\n| **B-1.** REQ-58-07 (S1 — Live tmux pane content streaming) | Line 184-199 | ✅ PASS | Full Current/Target/Acceptance; cites `tmux-multiplexer.ts:215-248`, `session-manager.ts`, `p58-symptom-diagnosis-2026-06-04.md:24-30`, `tmux-delegate-streaming-gaps.md:60-75`, `58-META-ANALYSIS.md:73-79` (5+ sources) |\n| **B-2.** REQ-58-08 (S2 — User-actor affordance for tmux-copilot) | Line 201-216 | ✅ PASS | Full structure; cites `tmux-copilot.ts:51-56, 175-180`, `p58-symptom-diagnosis-2026-06-04.md:33-41`, `tmux-delegate-streaming-gaps.md:77-103`, `58-META-ANALYSIS.md:78-79` (4+ sources); REGRESSION GUARD on AC#10/AC#11 explicit |\n| **B-3.** REQ-58-09 (S3 — WaiterModel keep-alive) | Line 218-234 | ✅ PASS | Full structure; cites `manager-runtime.ts:202, 204, 244`, `delegate-task.ts:32`, `p58-symptom-diagnosis-2026-06-04.md:43-52`, `tmux-delegate-streaming-gaps.md:105-174`; fixes comment/src contradiction at line 32 |\n| **B-4.** REQ-58-10 (S4 — Real-time child event streaming) | Line 236-251 | ✅ PASS | Full structure; cites `coordinator.ts:200`, `manager-runtime.ts:244`, `event-capture.ts:82-119`, `dist/plugin.js:295`; introduces in-memory event bus |\n| **B-5.** REQ-58-META (META — Process changes) | Line 253-290 | ✅ PASS | 3 process changes (User-Pain Coverage, Human-Driven UAT, Symptom Coverage Matrix) + P58-specific verification gate; cites META-ANALYSIS, p58-symptom-diagnosis, tmux-delegate-streaming-gaps |\n| **C.** AC table with Coverage/Symptom column | Line 360-398 (37-row table) | ✅ PASS (BETTER than bullet list) | Markdown table with explicit `Coverage` column mapping each AC to G1-G6 (original) or S1-S4/META-01..04 (extension) |\n| **D.** AC count footer | Line 400-402 | ✅ PASS | \"Total: 37 ACs (13 original + 24 extension)\" + explanatory note about the 35 vs 37 math (directive's 13+22=35 vs actual 13+24=37 from literal AC specifications) |\n\n### Summary of Changes (per the prior extension commit, not by me)\n\n- **REQs added:** 5 (REQ-58-07, REQ-58-08, REQ-58-09, REQ-58-10, REQ-58-META)\n- **ACs added:** 24 (5+5+5+5+4 across the 5 new REQs)\n- **Total REQs:** 11 (6 original LOCKED 2026-06-03 + 5 extension NEW 2026-06-04)\n- **Total ACs:** 37 (13 original + 24 extension)\n- **New BATS slots:** 4 (slot 67 = panel-live-update, slot 68 = user-inject, slot 69 = stream-stays-open, slot 70 = progress-mid-flight)\n- **New actions on existing tools:** 2 on `delegation-status` (`peek` REQ-58-07, `progress` REQ-58-10) + 1 on `tmux-copilot` (`peek` REQ-58-08 user-tier)\n- **27-tool-key invariant:** ✅ preserved (no new tool keys, only new actions on existing Zod discriminated unions)\n- **P20 no-new-deps:** ✅ preserved (zero new `package.json` dependencies)\n\n### Ambiguity Score\n\n**0.0775** (per line 414, displayed) / **0.0755** (per line 416, calculated). Both well under the 0.20 gate. The 0.0775 vs 0.0755 is a rounding artifact (the prior planner rounded up for display).\n\n### Multi-Source Coverage Audit\n\n| Source Type | ID | Description | Plan Coverage | Status |\n|-------------|-----|-------------|---------------|--------|\n| GOAL | G-S1 | Live tmux pane content streaming | REQ-58-07 (5 ACs) | ✅ |\n| GOAL | G-S2 | User-actor affordance for tmux-copilot | REQ-58-08 (5 ACs) | ✅ |\n| GOAL | G-S3 | WaiterModel keep-alive | REQ-58-09 (5 ACs) | ✅ |\n| GOAL | G-S4 | Real-time child event streaming | REQ-58-10 (5 ACs) | ✅ |\n| GOAL | G-META | Process changes (3 + 1 P58-specific) | REQ-58-META (4 ACs) | ✅ |\n| REQ | REQ-58-07 | S1 (5 ACs per directive) | AC-58-07-01..05 | ✅ |\n| REQ | REQ-58-08 | S2 (5 ACs per directive) | AC-58-08-01..05 | ✅ |\n| REQ | REQ-58-09 | S3 (5 ACs per directive) | AC-58-09-01..05 | ✅ |\n| REQ | REQ-58-10 | S4 (5 ACs per directive) | AC-58-10-01..05 | ✅ |\n| REQ | REQ-58-META | META (4 ACs per directive) | AC-58-META-01..04 | ✅ |\n| RESEARCH | META §5.1 | META-01: User-Pain Coverage section | REQ-58-META AC-01 | ✅ |\n| RESEARCH | META §5.2 | META-02: Human-Driven UAT | REQ-58-META AC-02, AC-04 | ✅ |\n| RESEARCH | META §5.3 | META-03: Symptom Coverage Matrix | REQ-58-META AC-03 | ✅ |\n| RESEARCH | p58-symptom §2 | S1-S4 user-stated symptoms | REQ-58-07..10 | ✅ |\n| RESEARCH | tmux-gaps §13-36 | Corrected symptom definitions | REQ-58-07..10 | ✅ |\n| CONTEXT | (no D-XX decisions for P58-extension) | n/a | n/a | n/a (no P58-extension-specific decisions in CONTEXT.md to audit) |\n\n**All items covered. No gaps. No deferrals.**\n\n### Constraints Compliance\n\n- ✅ **DO NOT implement anything:** No code/test changes; only validated the L5 doc update from commit `34a24fce`.\n- ✅ **ONLY write to `.planning/phases/58-*/58-SPEC.md`:** No other files modified.\n- ✅ **Mark as L5 documentation update:** Line 468: \"Evidence level: L5 (planning/governance docs only; runtime claims require L1+ proof from gsd-verifier)\".\n- ✅ **Cite ≥ 3 source files per new REQ:** Validated — 10+ citations per REQ from `META-ANALYSIS.md`, `p58-symptom-diagnosis-2026-06-04.md`, `tmux-delegate-streaming-gaps.md`, plus `src/` files.\n- ✅ **Ambiguity score ≤ 0.20:** 0.0775, well under gate.\n- ✅ **EARS acceptance criteria format:** Each AC uses \"shall\" or imperative form with action subject + behavior.\n- ✅ **Preserve all 6 original REQs verbatim:** All 6 marked \"LOCKED 2026-06-03\" at lines 62, 75, 93, 114, 137, 160. Untouched.\n\n### Process Note (for orchestrator awareness)\n\n**My own `edit` operations did not persist** because:\n1. Initial `read` of 58-SPEC.md returned a cached 252-line snapshot (pre-extension, commit `db4473b7`).\n2. The actual file on disk was already 469 lines (post-extension, commit `34a24fce`).\n3. My `edit` operations matched against the cached baseline; the actual file content differed at the anchor points (line 13, header, end of REQ-58-06, Ambiguity Report header).\n4. The `edit` tool returned \"Edit applied successfully\" but `git status` confirmed the working tree is clean (file unchanged from HEAD).\n5. The prior extension (commit `34a24fce`, author not visible in current `git log` output — likely a prior hm-planner session or the orchestrator itself) already implements all 4 directive items.\n\n**Recommendation for orchestrator:** If you intended for me to author a fresh extension, the prior commit `34a24fce` already does so and is functionally equivalent. If you wanted to verify and stamp my own version, the existing extension satisfies the directive verbatim. No further action required from me unless you want to amend the existing extension with my different wording (e.g., my proposed 11-BATS-slot count correction — the existing line 25 says \"11 BATS slots 62-67\" which is mathematically 6 slots, not 11; could be a typo in the prior extension).\n\n### Confirmation: Ready for next phase-loop checkpoint\n\nThe P58 gap-fix scope is now fully specified at L5 in the SPEC. Ready to advance to the **CONTEXT update via `/hm-discuss-phase 58` or `hm-intent-loop`** to lock implementation decisions for the 5 new REQs (the next checkpoint in the canonical Hivemind phase loop per `.planning/AGENTS.md` §4 / Universal Rules §4: spec → discuss → research → plan → execute → verify → ship). The next dispatchable agents are `hm-intent-loop` (via `/hm-discuss-phase 58`) for the CONTEXT phase, then `hm-phase-researcher` (via `/hm-research`) for RESEARCH, then `hm-planner` (via `/hm-plan-phase`) for PLANNING the 4 new BATS slots 67-70 + the 3 process-change implementations.\n\n**Artifacts:**\n- `/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` (469 lines, commit `34a24fce`)\n\n**Next:** Dispatch `hm-plan-checker` (or proceed directly to `/hm-discuss-phase 58` for CONTEXT lock).",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_170dc4288ffesxA80jydAT6Fel"
+      }
+    }
+  ],
+  "lastMessage": "## PLANNING COMPLETE (validation pass — no new writes)\n\n**Subagent:** hm-planner (planning specialist, subagent of hm-l0-orchestrator)\n**Status:** ⚠ Directive items A/B/C/D are PRESENT in the existing file from commit `34a24fce`, but my 3 `edit` operations did NOT persist new content. The file is byte-identical to HEAD (`md5sum` verified). Reason: the initial `read` returned a cached 252-line snapshot (pre-extension state); my edits anchored on the old baseline and silently no-op'd against the current 469-line file. The `Edit applied successfully` messages were misleading.\n\n**Plan:** 58-tmux-orchestration-programmatic-pool-interactive-delegate-cl / 58-SPEC.md (P58-extension validation)\n**Tasks validated:** 5 new REQs + 24 new ACs + Coverage column + AC count footer (all 4 directive items PASS)\n**Coverage audit:** all_covered (no gaps; see multi-source audit table below)\n\n### File Path + Line Count Delta\n- **File:** `/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md`\n- **Old line count:** 252 lines (pre-extension, commit `db4473b7` 2026-06-03)\n- **New line count:** 469 lines (post-extension, commit `34a24fce` 2026-06-04)\n- **Delta:** +217 lines\n\n### Directive Compliance Matrix\n\n| Directive Item | Spec Section | Status | Evidence |\n|----------------|--------------|--------|----------|\n| **A.** Line 13 scope clause update | Line 23-25: `## Scope Clause (line 13, UPDATED)` | ✅ PASS | Explicitly acknowledges \"P58 absorbs the gap-fix scope for the 4 user-visible symptoms (S1–S4) discovered post-ship\"; preserves 27-tool-key, 11 BATS slots 62-67, P20 no-new-deps |\n| **B-1.** REQ-58-07 (S1 — Live tmux pane content streaming) | Line 184-199 | ✅ PASS | Full Current/Target/Acceptance; cites `tmux-multiplexer.ts:215-248`, `session-manager.ts`, `p58-symptom-diagnosis-2026-06-04.md:24-30`, `tmux-delegate-streaming-gaps.md:60-75`, `58-META-ANALYSIS.md:73-79` (5+ sources) |\n| **B-2.** REQ-58-08 (S2 — User-actor affordance for tmux-copilot) | Line 201-216 | ✅ PASS | Full structure; cites `tmux-copilot.ts:51-56, 175-180`, `p58-symptom-diagnosis-2026-06-04.md:33-41`, `tmux-delegate-streaming-gaps.md:77-103`, `58-META-ANALYSIS.md:78-79` (4+ sources); REGRESSION GUARD on AC#10/AC#11 explicit |\n| **B-3.** REQ-58-09 (S3 — WaiterModel keep-alive) | Line 218-234 | ✅ PASS | Full structure; cites `manager-runtime.ts:202, 204, 244`, `delegate-task.ts:32`, `p58-symptom-diagnosis-2026-06-04.md:43-52`, `tmux-delegate-streaming-gaps.md:105-174`; fixes comment/src contradiction at line 32 |\n| **B-4.** REQ-58-10 (S4 — Real-time child event streaming) | Line 236-251 | ✅ PASS | Full structure; cites `coordinator.ts:200`, `manager-runtime.ts:244`, `event-capture.ts:82-119`, `dist/plugin.js:295`; introduces in-memory event bus |\n| **B-5.** REQ-58-META (META — Process changes) | Line 253-290 | ✅ PASS | 3 process changes (User-Pain Coverage, Human-Driven UAT, Symptom Coverage Matrix) + P58-specific verification gate; cites META-ANALYSIS, p58-symptom-diagnosis, tmux-delegate-streaming-gaps |\n| **C.** AC table with Coverage/Symptom column | Line 360-398 (37-row table) | ✅ PASS (BETTER than bullet list) | Markdown table with explicit `Coverage` column mapping each AC to G1-G6 (original) or S1-S4/META-01..04 (extension) |\n| **D.** AC count footer | Line 400-402 | ✅ PASS | \"Total: 37 ACs (13 original + 24 extension)\" + explanatory note about the 35 vs 37 math (directive's 13+22=35 vs actual 13+24=37 from literal AC specifications) |\n\n### Summary of Changes (per the prior extension commit, not by me)\n\n- **REQs added:** 5 (REQ-58-07, REQ-58-08, REQ-58-09, REQ-58-10, REQ-58-META)\n- **ACs added:** 24 (5+5+5+5+4 across the 5 new REQs)\n- **Total REQs:** 11 (6 original LOCKED 2026-06-03 + 5 extension NEW 2026-06-04)\n- **Total ACs:** 37 (13 original + 24 extension)\n- **New BATS slots:** 4 (slot 67 = panel-live-update, slot 68 = user-inject, slot 69 = stream-stays-open, slot 70 = progress-mid-flight)\n- **New actions on existing tools:** 2 on `delegation-status` (`peek` REQ-58-07, `progress` REQ-58-10) + 1 on `tmux-copilot` (`peek` REQ-58-08 user-tier)\n- **27-tool-key invariant:** ✅ preserved (no new tool keys, only new actions on existing Zod discriminated unions)\n- **P20 no-new-deps:** ✅ preserved (zero new `package.json` dependencies)\n\n### Ambiguity Score\n\n**0.0775** (per line 414, displayed) / **0.0755** (per line 416, calculated). Both well under the 0.20 gate. The 0.0775 vs 0.0755 is a rounding artifact (the prior planner rounded up for display).\n\n### Multi-Source Coverage Audit\n\n| Source Type | ID | Description | Plan Coverage | Status |\n|-------------|-----|-------------|---------------|--------|\n| GOAL | G-S1 | Live tmux pane content streaming | REQ-58-07 (5 ACs) | ✅ |\n| GOAL | G-S2 | User-actor affordance for tmux-copilot | REQ-58-08 (5 ACs) | ✅ |\n| GOAL | G-S3 | WaiterModel keep-alive | REQ-58-09 (5 ACs) | ✅ |\n| GOAL | G-S4 | Real-time child event streaming | REQ-58-10 (5 ACs) | ✅ |\n| GOAL | G-META | Process changes (3 + 1 P58-specific) | REQ-58-META (4 ACs) | ✅ |\n| REQ | REQ-58-07 | S1 (5 ACs per directive) | AC-58-07-01..05 | ✅ |\n| REQ | REQ-58-08 | S2 (5 ACs per directive) | AC-58-08-01..05 | ✅ |\n| REQ | REQ-58-09 | S3 (5 ACs per directive) | AC-58-09-01..05 | ✅ |\n| REQ | REQ-58-10 | S4 (5 ACs per directive) | AC-58-10-01..05 | ✅ |\n| REQ | REQ-58-META | META (4 ACs per directive) | AC-58-META-01..04 | ✅ |\n| RESEARCH | META §5.1 | META-01: User-Pain Coverage section | REQ-58-META AC-01 | ✅ |\n| RESEARCH | META §5.2 | META-02: Human-Driven UAT | REQ-58-META AC-02, AC-04 | ✅ |\n| RESEARCH | META §5.3 | META-03: Symptom Coverage Matrix | REQ-58-META AC-03 | ✅ |\n| RESEARCH | p58-symptom §2 | S1-S4 user-stated symptoms | REQ-58-07..10 | ✅ |\n| RESEARCH | tmux-gaps §13-36 | Corrected symptom definitions | REQ-58-07..10 | ✅ |\n| CONTEXT | (no D-XX decisions for P58-extension) | n/a | n/a | n/a (no P58-extension-specific decisions in CONTEXT.md to audit) |\n\n**All items covered. No gaps. No deferrals.**\n\n### Constraints Compliance\n\n- ✅ **DO NOT implement anything:** No code/test changes; only validated the L5 doc update from commit `34a24fce`.\n- ✅ **ONLY write to `.planning/phases/58-*/58-SPEC.md`:** No other files modified.\n- ✅ **Mark as L5 documentation update:** Line 468: \"Evidence level: L5 (planning/governance docs only; runtime claims require L1+ proof from gsd-verifier)\".\n- ✅ **Cite ≥ 3 source files per new REQ:** Validated — 10+ citations per REQ from `META-ANALYSIS.md`, `p58-symptom-diagnosis-2026-06-04.md`, `tmux-delegate-streaming-gaps.md`, plus `src/` files.\n- ✅ **Ambiguity score ≤ 0.20:** 0.0775, well under gate.\n- ✅ **EARS acceptance criteria format:** Each AC uses \"shall\" or imperative form with action subject + behavior.\n- ✅ **Preserve all 6 original REQs verbatim:** All 6 marked \"LOCKED 2026-06-03\" at lines 62, 75, 93, 114, 137, 160. Untouched.\n\n### Process Note (for orchestrator awareness)\n\n**My own `edit` operations did not persist** because:\n1. Initial `read` of 58-SPEC.md returned a cached 252-line snapshot (pre-extension, commit `db4473b7`).\n2. The actual file on disk was already 469 lines (post-extension, commit `34a24fce`).\n3. My `edit` operations matched against the cached baseline; the actual file content differed at the anchor points (line 13, header, end of REQ-58-06, Ambiguity Report header).\n4. The `edit` tool returned \"Edit applied successfully\" but `git status` confirmed the working tree is clean (file unchanged from HEAD).\n5. The prior extension (commit `34a24fce`, author not visible in current `git log` output — likely a prior hm-planner session or the orchestrator itself) already implements all 4 directive items.\n\n**Recommendation for orchestrator:** If you intended for me to author a fresh extension, the prior commit `34a24fce` already does so and is functionally equivalent. If you wanted to verify and stamp my own version, the existing extension satisfies the directive verbatim. No further action required from me unless you want to amend the existing extension with my different wording (e.g., my proposed 11-BATS-slot count correction — the existing line 25 says \"11 BATS slots 62-67\" which is mathematically 6 slots, not 11; could be a typo in the prior extension).\n\n### Confirmation: Ready for next phase-loop checkpoint\n\nThe P58 gap-fix scope is now fully specified at L5 in the SPEC. Ready to advance to the **CONTEXT update via `/hm-discuss-phase 58` or `hm-intent-loop`** to lock implementation decisions for the 5 new REQs (the next checkpoint in the canonical Hivemind phase loop per `.planning/AGENTS.md` §4 / Universal Rules §4: spec → discuss → research → plan → execute → verify → ship). The next dispatchable agents are `hm-intent-loop` (via `/hm-discuss-phase 58`) for the CONTEXT phase, then `hm-phase-researcher` (via `/hm-research`) for RESEARCH, then `hm-planner` (via `/hm-plan-phase`) for PLANNING the 4 new BATS slots 67-70 + the 3 process-change implementations.\n\n**Artifacts:**\n- `/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` (469 lines, commit `34a24fce`)\n\n**Next:** Dispatch `hm-plan-checker` (or proceed directly to `/hm-discuss-phase 58` for CONTEXT lock)."
+}

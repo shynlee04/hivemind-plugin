@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_16dac2821ffelG0nlOcM2ont8F",
+  "lastUpdated": "2026-06-04T14:23:07.674Z",
+  "hierarchy": {
+    "root": "ses_16dac2821ffelG0nlOcM2ont8F",
+    "children": {
+      "ses_16da7e216ffesJ1Ll78Rr98mdd": {
+        "file": "ses_16da7e216ffesJ1Ll78Rr98mdd.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-phase-researcher",
+        "children": {}
+      },
+      "ses_16da27dfaffeSiAmiWVPn1vzm4": {
+        "file": "ses_16da27dfaffeSiAmiWVPn1vzm4.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_16d9f91a3ffe1sNhG6dnd44HT7": {
+        "file": "ses_16d9f91a3ffe1sNhG6dnd44HT7.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-doc-writer",
+        "children": {}
+      },
+      "ses_16d9ce08cffeOHzDaAngVojt0M": {
+        "file": "ses_16d9ce08cffeOHzDaAngVojt0M.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-doc-writer",
+        "children": {}
+      },
+      "ses_16d9a7a75ffehBL4gcrAwa39xJ": {
+        "file": "ses_16d9a7a75ffehBL4gcrAwa39xJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-intent-loop",
+        "children": {}
+      },
+      "ses_16d936610ffe96DYAn5f2webSZ": {
+        "file": "ses_16d936610ffe96DYAn5f2webSZ.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-planner",
+        "children": {}
+      },
+      "ses_16d87f87effeIzlCEeYPxTx7EZ": {
+        "file": "ses_16d87f87effeIzlCEeYPxTx7EZ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-planner",
+        "children": {}
+      },
+      "ses_16d84a43bffewv4uDBAj68Wf2D": {
+        "file": "ses_16d84a43bffewv4uDBAj68Wf2D.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-intent-loop",
+        "children": {}
+      },
+      "ses_16d786de3ffeRqTxVLPGbWzjk0": {
+        "file": "ses_16d786de3ffeRqTxVLPGbWzjk0.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-phase-researcher",
+        "children": {}
+      },
+      "ses_16d6f5a84ffeZpLWiI48rIhJ6R": {
+        "file": "ses_16d6f5a84ffeZpLWiI48rIhJ6R.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-pattern-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 13,
+  "toolSummary": {
+    "todowrite": 3,
+    "glob": 10,
+    "read": 20,
+    "hivemind-doc": 4,
+    "grep": 4,
+    "task": 9,
+    "skill": 1,
+    "bash": 5,
+    "hivemind-trajectory": 10,
+    "hivemind-agent-work-create": 2,
+    "hivemind-command-engine": 1,
+    "execute-slash-command": 3,
+    "write": 3,
+    "question": 7
+  }
+}

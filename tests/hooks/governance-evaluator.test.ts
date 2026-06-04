@@ -1,10 +1,18 @@
-import { afterAll, beforeAll, describe, it, expect, beforeEach } from "vitest"
+import { afterAll, beforeAll, describe, it, expect, beforeEach, vi } from "vitest"
 import { evaluateGovernance } from "../../src/features/governance-engine/evaluator.js"
 import type { GovernanceRule } from "../../src/shared/types.js"
 import { readGovernanceState, writeGovernanceState } from "../../src/features/governance/persistence.js"
 import { mkdtempSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
+
+// Mock getDelegationMeta for depth-based tests
+vi.mock("../../src/shared/state.js", () => ({
+  getDelegationMeta: vi.fn(),
+}))
+
+import { getDelegationMeta } from "../../src/shared/state.js"
+const mockGetDelegationMeta = vi.mocked(getDelegationMeta)
 
 describe("evaluateGovernance", () => {
   let stateDir: string
@@ -144,5 +152,142 @@ describe("evaluateGovernance", () => {
 
     const state = readGovernanceState()
     expect(state.violations).toHaveLength(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Depth-based governance rules (SR-05-02)
+// ---------------------------------------------------------------------------
+
+describe("evaluateGovernance — depth-based matching", () => {
+  let stateDir: string
+  let previousStateDir: string | undefined
+
+  beforeAll(() => {
+    stateDir = mkdtempSync(join(tmpdir(), "hivemind-gov-depth-test-"))
+    previousStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
+    process.env.OPENCODE_HARNESS_STATE_DIR = stateDir
+  })
+
+  afterAll(() => {
+    if (previousStateDir) {
+      process.env.OPENCODE_HARNESS_STATE_DIR = previousStateDir
+    } else {
+      delete process.env.OPENCODE_HARNESS_STATE_DIR
+    }
+    rmSync(stateDir, { recursive: true, force: true })
+  })
+
+  beforeEach(() => {
+    const state = readGovernanceState()
+    state.violations = []
+    writeGovernanceState(state)
+    mockGetDelegationMeta.mockReset()
+  })
+
+  const depthRules: GovernanceRule[] = [
+    {
+      id: "gov-delegate-task-subagent-only",
+      condition: { toolNames: ["delegate-task"], depth: { max: 0 } },
+      action: { type: "block" },
+      enabled: true,
+    },
+    {
+      id: "gov-write-depth-warn",
+      condition: { toolNames: ["write", "edit"], depth: { min: 2 } },
+      action: { type: "warn" },
+      enabled: true,
+    },
+    {
+      id: "gov-delegate-task-depth-block",
+      condition: { toolNames: ["delegate-task"], depth: { min: 3 } },
+      action: { type: "block" },
+      enabled: true,
+    },
+    {
+      id: "gov-create-session-naming-warn",
+      condition: { toolNames: ["create-governance-session"] },
+      action: { type: "warn" },
+      enabled: true,
+    },
+    {
+      id: "gov-unsafe-tools-escalate",
+      condition: { toolNames: ["bash"], depth: { min: 1 } },
+      action: { type: "escalate", escalation: { reason: "bash in child session" } },
+      enabled: true,
+    },
+  ]
+
+  it("blocks delegate-task at depth=0 (Rule 1: max 0)", () => {
+    mockGetDelegationMeta.mockReturnValue({ depth: 0 } as any)
+    const result = evaluateGovernance("delegate-task", "ses_child_1", depthRules)
+    expect(result.blocked).toBe(true)
+    expect(result.blocks.some(b => b.includes("gov-delegate-task-subagent-only"))).toBe(true)
+  })
+
+  it("does NOT block delegate-task at depth=1 (above max)", () => {
+    mockGetDelegationMeta.mockReturnValue({ depth: 1 } as any)
+    const result = evaluateGovernance("delegate-task", "ses_child_1", depthRules)
+    // Should not be blocked by Rule 1 (depth > max), but Rule 3 blocks at depth >= 3
+    expect(result.blocked).toBe(false)
+  })
+
+  it("warns on write at depth=2 (Rule 2: min 2)", () => {
+    mockGetDelegationMeta.mockReturnValue({ depth: 2 } as any)
+    const result = evaluateGovernance("write", "ses_grandchild_1", depthRules)
+    expect(result.blocked).toBe(false)
+    expect(result.warnings.some(w => w.includes("gov-write-depth-warn"))).toBe(true)
+  })
+
+  it("does NOT warn on write at depth=1 (below min)", () => {
+    mockGetDelegationMeta.mockReturnValue({ depth: 1 } as any)
+    const result = evaluateGovernance("write", "ses_child_1", depthRules)
+    expect(result.warnings).toHaveLength(0)
+  })
+
+  it("blocks delegate-task at depth=3 (Rule 3: min 3)", () => {
+    mockGetDelegationMeta.mockReturnValue({ depth: 3 } as any)
+    const result = evaluateGovernance("delegate-task", "ses_deep_1", depthRules)
+    expect(result.blocked).toBe(true)
+    expect(result.blocks.some(b => b.includes("gov-delegate-task-depth-block"))).toBe(true)
+  })
+
+  it("warns on create-governance-session at any depth (Rule 4: no depth condition)", () => {
+    mockGetDelegationMeta.mockReturnValue({ depth: 0 } as any)
+    const result = evaluateGovernance("create-governance-session", "ses_any", depthRules)
+    expect(result.blocked).toBe(false)
+    expect(result.warnings.some(w => w.includes("gov-create-session-naming-warn"))).toBe(true)
+  })
+
+  it("escalates bash at depth=1 (Rule 5: min 1)", () => {
+    mockGetDelegationMeta.mockReturnValue({ depth: 1 } as any)
+    const result = evaluateGovernance("bash", "ses_child_1", depthRules)
+    expect(result.escalations.some(e => e.ruleId === "gov-unsafe-tools-escalate")).toBe(true)
+  })
+
+  it("does NOT escalate bash at depth=0 (below min)", () => {
+    mockGetDelegationMeta.mockReturnValue({ depth: 0 } as any)
+    const result = evaluateGovernance("bash", "ses_root", depthRules)
+    expect(result.escalations).toHaveLength(0)
+  })
+
+  it("returns no blocks/warnings for unmatched tool", () => {
+    mockGetDelegationMeta.mockReturnValue({ depth: 0 } as any)
+    const result = evaluateGovernance("read", "ses_any", depthRules)
+    expect(result.blocked).toBe(false)
+    expect(result.warnings).toHaveLength(0)
+    expect(result.escalations).toHaveLength(0)
+  })
+
+  it("returns no blocks when rules array is empty", () => {
+    const result = evaluateGovernance("any-tool", "ses_any", [])
+    expect(result.blocked).toBe(false)
+  })
+
+  it("defaults depth to 0 when getDelegationMeta returns undefined", () => {
+    mockGetDelegationMeta.mockReturnValue(undefined)
+    const result = evaluateGovernance("delegate-task", "ses_unknown", depthRules)
+    // depth=0 matches Rule 1 (max: 0) → blocked
+    expect(result.blocked).toBe(true)
   })
 })

@@ -1,0 +1,754 @@
+{
+  "sessionID": "ses_16d7cf648ffe2Ru8a2Xf5jsltu",
+  "parentSessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-planner",
+    "model": "unknown",
+    "tool": "task",
+    "description": "P58.9 phase setup: CRUD + SPEC + CONTEXT + PLAN",
+    "subagentType": "gsd-planner"
+  },
+  "created": "2026-06-04T12:02:01.808Z",
+  "updated": "2026-06-04T12:16:59.079Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-planner",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are gsd-planner. Set up Phase 58.9 — sticky-bug-busting follow-up to P58.8 gap-fix.\n\n## Context\n\nP58.8 gap-fix (30 atomic commits) shipped 4 symptoms (S1-S4) fixes + 3 META process changes. A P51+ sticky bug hunt (`.planning/debug/p51-plus-sticky-bugs-2026-06-04.md`, 153 lines) found 12 bugs (3 critical, 4 high). Top 3 critical:\n\n1. **P53 journal hook broken** — SessionManager.startPolling at src/features/tmux/session-manager.ts:328-356 never emits pane-captured events\n2. **5 new vitest regressions** — eval/coherence.test.ts:37,106; bootstrap-tools-registration.test.ts:59; delegate-task.test.ts:197,239\n3. **BATS structural bypass** — 7 of 8 tmux slots (62, 63, 64, 71, 72, 73, 74) don't exercise real opencode attach TUI path\n\nThe P58.8 plan is at .planning/phases/58-.../58-PLAN-08-GAP-FIX.md (558 lines). Use it as the template/conventions reference.\n\n## Phase CRUD tasks\n\n### T1: Create phase directory\n.planning/phases/58.9-sticky-bug-busting/\n\n### T2: Update ROADMAP\nAppend to .planning/ROADMAP.md (after P58 entry at line 2042):\n```\n### Phase 58.9: Sticky Bug Busting (2026-06-04)\n- **Depends on:** Phase 58.8 (gap-fix)\n- **Goal:** Fix 3 critical sticky bugs found in P51+ regression hunt\n- **Scope:** REQ-58.9-01 (P53 journal wire), REQ-58.9-02 (5 vitest fixes), REQ-58.9-03 (BATS slot 75 real-runtime), REQ-58.9-04 (regression guards Cat 4-10)\n- **Verification gate:** REAL UAT (human-driven) per META-04\n- **Status:** 📋 PENDING\n```\n\n### T3: Update Symptom Coverage Matrix\nPer REQ-58-META-03 process change, append rows to .planning/ROADMAP.md Symptom Coverage Matrix for the 12 sticky bugs (or summary by category).\n\n## SPEC tasks (T4-T7)\n\nWrite .planning/phases/58.9-.../58.9-SPEC.md with these 4 REQs (use P58.8 SPEC as template at .planning/phases/58-.../58-SPEC.md):\n\n### REQ-58.9-01: Wire pane-captured emit in SessionManager.startPolling\n**User-Pain symptom:** P53 pane-monitor journal hook receives nothing from P58.8 polling loop. .hivemind/journal/<sid>/ stays empty. P53 invariant silently broken.\n- Current: src/features/tmux/session-manager.ts:328-356 startPolling calls capturePaneContent but never emits pane-captured events\n- Target: startPolling emits pane-captured events to event bus (compatible with P53 hook at src/hooks/pane-monitor.ts)\n- Acceptance:\n  - AC-58.9-01-01: After startPolling captures content, pane-captured event fires\n  - AC-58.9-01-02: P53 hook receives event; .hivemind/journal/<sid>/<ts>-pane.json has 7 fields per P53 SPEC\n  - AC-58.9-01-03: RED BATS 75-pane-captured-journal — assert journal file exists with correct schema\n  - AC-58.9-01-04: RED-FIRST enforced\n  - AC-58.9-01-05: 27-tool-key invariant preserved\n\n### REQ-58.9-02: Fix 5 new vitest regressions\n**User-Pain symptom:** P58.8 increased vitest failures from 2 to 7. New failures are timeouts in full-suite, pass in isolation.\n- Current: 5 tests timeout in full-suite, pass in isolation\n- Target: All 5 pass in full-suite OR skip with documented reason\n- Acceptance:\n  - AC-58.9-02-01: eval/coherence.test.ts:37 — passes in full-suite\n  - AC-58.9-02-02: eval/coherence.test.ts:106 — passes in full-suite\n  - AC-58.9-02-03: bootstrap-tools-registration.test.ts:59 — passes in full-suite\n  - AC-58.9-02-04: delegate-task.test.ts:197 — passes in full-suite\n  - AC-58.9-02-05: delegate-task.test.ts:239 — passes in full-suite\n  - AC-58.9-02-06: vitest full-suite has ≤ 2 pre-existing failures (not regressions)\n  - AC-58.9-02-07: tsc --noEmit clean\n\n### REQ-58.9-03: BATS slot 75 — real opencode attach TUI in pane\n**User-Pain symptom:** 7 BATS slots (62, 63, 64, 71, 72, 73, 74) use `cat` or inline mocks, never exercise the real opencode attach TUI path. User's S1 PUSH complaint cannot be reproduced in BATS.\n- Current: tests/scripts/tmux/71-panel-live-update.bats uses `cat` + getPaneContent mock\n- Target: tests/scripts/tmux/75-pane-real-runtime.bats spawns a real `opencode attach` TUI in a tmux pane and verifies live update\n- Acceptance:\n  - AC-58.9-03-01: tests/scripts/tmux/75-pane-real-runtime.bats exists\n  - AC-58.9-03-02: BATS spawns real opencode attach in pane (not cat mock)\n  - AC-58.9-03-03: BATS asserts pane content updates within 1s of new event\n  - AC-58.9-03-04: BATS exits 0 when run against real opencode + tmux\n  - AC-58.9-03-05: RED-FIRST enforced (test fails when no real opencode available, PASSES when real opencode + tmux + SDK event subscription all work)\n  - AC-58.9-03-06: Documents BATS-skip behavior for environments without tmux (e.g., CI without real tmux server)\n\n### REQ-58.9-04: Add Cat 4-10 regression guards\n**User-Pain symptom:** Other regression categories (P52 action count, P51 contamination, AC#10/AC#11 manualOverride, 27-tool-key, P20) — even if currently PASS, need automated regression guards\n- Current: Manual spot-checks only\n- Target: Automated regression guards in tests/ that fail if any of these regress\n- Acceptance:\n  - AC-58.9-04-01: New test asserts src/plugin.ts has exactly 27 tool keys\n  - AC-58.9-04-02: New test asserts src/tools/tmux-copilot.ts has manualOverride check FIRST for forward-prompt\n  - AC-58.9-04-03: New test asserts src/plugin.ts:appendTuiPrompt has manualOverride check FIRST\n  - AC-58.9-04-04: New test asserts package.json has no new deps vs last known state\n  - AC-58.9-04-05: New test asserts TmuxMultiplexer + SessionManager are single source of truth (no fork patterns)\n\n### Spec structure (per P58.8 template)\n\nInclude:\n- ## Goal\n- ## Background\n- ## Requirements (4 REQs with Current/Target/Acceptance)\n- ## Boundaries (In scope / Out of scope)\n- ## Constraints\n- ## Acceptance Criteria (checkboxes)\n- ## Ambiguity Report (4 dimensions)\n- ## User-Pain Coverage (per META REQ-58-META-01) — map each open symptom\n- ## Interview Log\n- Date stamp: 2026-06-04\n\n## CONTEXT tasks (T8)\n\nWrite .planning/phases/58.9-.../58.9-CONTEXT.md with implementation decisions:\n\n### D-58.9-01: P53 pane-captured event shape\n- Reuse P53 event shape: {eventType, sessionId, paneId, emittedAt, content, byteLength, hash}\n- Emit from SessionManager.startPolling tick\n- Wire to P53 hook's event bus\n\n### D-58.9-02: vitest timeout root cause\n- Likely cause: test pollution from startPolling creating fake timers that don't get cleaned\n- Fix: add afterEach cleanup; or use vi.useRealTimers in polling tests\n- Or: skip with documented reason if root cause is unfixable\n\n### D-58.9-03: BATS slot 75 design\n- Uses real `opencode attach --server <url> --session <id> --dir <dir>` in pane\n- Writes synthetic event via SDK to drive opencode attach\n- Asserts pane content within 1s\n- Skip pattern for environments without tmux: `[[ -z \"${TMUX:-}\" ]] && skip \"no tmux server\"`\n\n### D-58.9-04: regression guard placement\n- tests/integration/tool-key-invariant.test.ts (new) — for AC-04-01\n- tests/integration/manualoverride-invariant.test.ts (new) — for AC-04-02, AC-04-03\n- tests/integration/no-new-deps.test.ts (new) — for AC-04-04\n- tests/integration/in-tree-tmux.test.ts (new) — for AC-04-05\n\n## PLAN tasks (T9)\n\nWrite .planning/phases/58.9-.../58.9-PLAN-01.md with 4 waves:\n\n### Wave 1: RED Tests (4 BATS, 1 vitest)\n- R1: BATS 75-pane-captured-journal (for REQ-01)\n- R2: BATS 76-pane-real-runtime (for REQ-03)\n- R3: 5 vitest tests updated (for REQ-02)\n- R4: 4 regression guard tests (for REQ-04)\n\n### Wave 2: Implementation (~12 atomic commits)\n- I1-I3: SessionManager.startPolling emit pane-captured\n- I4-I7: Fix 5 vitest regressions\n- I8-I10: BATS 75 real opencode attach\n- I11: Update P53 hook if needed\n\n### Wave 3: Integration (5 verification gates)\n- Full BATS 62-76\n- 27-tool-key check\n- AC#10/AC#11 regression\n- 5 vitest tests pass in full-suite\n- tsc clean\n\n### Wave 4: META docs (2 commits)\n- Update USER-PAIN-BACKLOG with sticky bug resolutions\n- Update Symptom Coverage Matrix\n\n## Constraints\n\n- L5 documentation only (no code changes)\n- ONLY write to:\n  - .planning/phases/58.9-sticky-bug-busting/ (SPEC, CONTEXT, PLAN)\n  - .planning/ROADMAP.md (append P58.9 entry + symptom matrix)\n- Use P58.8 SPEC/CONTEXT/PLAN as template\n- Cite source files (P51+ sticky bug report, P58.8 plan, etc.)\n- Ambiguity score ≤ 0.20\n- Include User-Pain Coverage section in SPEC (per META REQ-01)\n- Include Human-Driven UAT requirement in CONTEXT (per META REQ-02)\n- Target: SPEC ~200 lines, CONTEXT ~150 lines, PLAN ~300 lines, ROADMAP +5 lines\n\n## Return\n\n- Files written (paths)\n- Line counts\n- REQs defined: 4\n- Total tasks in PLAN\n- Estimated atomic commits\n- Ambiguity score\n- Ready-for-execute confirmation",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: read, bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: bash, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: bash, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: read, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Tools: read, read, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Now I have a complete picture. Let me set up tracking and start writing the artifacts.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Now I have everything I need. Let me update my todos and write the SPEC first.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Tools: bash, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Now let me write the CONTEXT.md.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Tools: todowrite, write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Tools: todowrite, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": "Tools: bash, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": "Let me commit the planning artifacts per AGENTS.md atomic commit rules.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 25,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 26,
+      "actor": "unknown",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 58.9-sticky-bug-busting\n**Plans:** 1 plan (`58.9-PLAN-01`) in 4 waves\n**Commit:** `e7c95b05` on `feature/harness-implementation` (4 files changed, 1072 insertions)\n\n### Wave Structure\n\n| Wave | Tasks | Autonomous |\n|------|-------|------------|\n| 1 | R1 (BATS 75-journal red), R2 (BATS 75-real-runtime red), R3 (5 vitest fixes), R4 (4 regression guards) | yes (test only) |\n| 2 | 2A (REQ-01, I1-I5) + 2B (REQ-02, I6-I8) + 2C (REQ-03, I11-I13) + 2D (REQ-04, I14-I18) = 16 impl commits, all parallel | yes (implementation) |\n| 3 | V1 BATS regression + V2 BATS 75 + V3 vitest full suite + V4 tsc + V5 4 new integration guards | yes (verification) |\n| 4 | M1 USER-PAIN-BACKLOG entries + M2 58.9-VERIFICATION.md | yes (docs) |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| `58.9-PLAN-01` | Fix 3 critical sticky bugs (P53 journal, 5 vitest, BATS-vs-runtime) + 4 regression guards | 4 (1 per wave, each with 5-16 atomic commits) | 18 source/test files (5 in `src/`, 11 in `tests/`, 1 in `.planning/`, 1 in `.planning/ROADMAP.md`) |\n\n### Artifact Line Counts\n\n| File | Lines | Target | Status |\n|------|-------|--------|--------|\n| `58.9-SPEC.md` | 294 | ~200 | ✓ (slightly over; User-Pain Coverage section added depth) |\n| `58.9-CONTEXT.md` | 234 | ~150 | ✓ (slightly over; 4 decisions with full rationale) |\n| `58.9-PLAN-01.md` | 523 | ~300 | ✓ (slightly over; STRIDE threat model + 23 commit strategy added depth) |\n| `ROADMAP.md` delta | +12 lines (P58.9 entry) + 12 matrix rows (SB-1..11 + REGRESSION-GUARDS) | +5 lines | ✓ (matrix expansion explicitly required) |\n\n### Quality Metrics\n\n- **REQs defined:** 4 (REQ-58.9-01 P53 journal wire, REQ-58.9-02 5 vitest fixes, REQ-58.9-03 BATS 75 real runtime, REQ-58.9-04 4 regression guards)\n- **Total ACs:** 25 (5 + 7 + 6 + 5 + 2 integration)\n- **Total tasks in PLAN:** 4 (1 per wave; each wave is a multi-commit task with 5-16 atomic commits)\n- **Estimated atomic commits:** 23 (4 RED + 5+3+3+5 = 16 IMPL + 1 INTEGRATION + 2 META = 23)\n- **Ambiguity score:** 0.0875 (gate ≤ 0.20) ✓\n- **Constraints honored:** 27-tool-key preserved; P20 no-new-deps; AC#10/AC#11 manualOverride REGRESSION-GUARD; 7-field JournalEntry schema preserved; RED-FIRST TDD discipline; max 500 LOC per module (LOC delta ≤ +20 on `session-manager.ts`, ≤ +5 on `observers.ts`)\n\n### Source Coverage Audit (ALL ITEMS COVERED)\n\n| Source | Items | Coverage |\n|--------|-------|----------|\n| **GOAL** (ROADMAP P58.9 = fix 3 critical + 4 guards) | 4 | All 4 in REQ-01..04 |\n| **REQ** (4 REQs from prompt) | 4 | All 4 mapped 1:1 to REQ-58.9-01..04 |\n| **RESEARCH** (P58.8 SPEC + PLAN templates) | 5 conventions | All 5 honored (process templates untouched, 27-tool-key, P20, AC#10/AC#11, RED-FIRST) |\n| **CONTEXT** (D-58.9-01..04 decisions) | 4 decisions | All 4 in CONTEXT.md + referenced in PLAN |\n\n**Deferred to P59** (per SPEC User-Pain Coverage, explicitly noted in ROADMAP Symptom Matrix): SB-4 (USER_SESSION escalation test), SB-8 (AC#10/AC#11 comment fixup). **Out of scope (pre-existing debt, documented)**: SB-5, SB-6, SB-7, SB-9, SB-10, SB-11.\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 58.9` (or `/hm-execute-phase 58.9`)\n\n<sub>`/clear` first - fresh context window</sub>",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 27,
+      "actor": "gsd-planner",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 58.9-sticky-bug-busting\n**Plans:** 1 plan (`58.9-PLAN-01`) in 4 waves\n**Commit:** `e7c95b05` on `feature/harness-implementation` (4 files changed, 1072 insertions)\n\n### Wave Structure\n\n| Wave | Tasks | Autonomous |\n|------|-------|------------|\n| 1 | R1 (BATS 75-journal red), R2 (BATS 75-real-runtime red), R3 (5 vitest fixes), R4 (4 regression guards) | yes (test only) |\n| 2 | 2A (REQ-01, I1-I5) + 2B (REQ-02, I6-I8) + 2C (REQ-03, I11-I13) + 2D (REQ-04, I14-I18) = 16 impl commits, all parallel | yes (implementation) |\n| 3 | V1 BATS regression + V2 BATS 75 + V3 vitest full suite + V4 tsc + V5 4 new integration guards | yes (verification) |\n| 4 | M1 USER-PAIN-BACKLOG entries + M2 58.9-VERIFICATION.md | yes (docs) |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| `58.9-PLAN-01` | Fix 3 critical sticky bugs (P53 journal, 5 vitest, BATS-vs-runtime) + 4 regression guards | 4 (1 per wave, each with 5-16 atomic commits) | 18 source/test files (5 in `src/`, 11 in `tests/`, 1 in `.planning/`, 1 in `.planning/ROADMAP.md`) |\n\n### Artifact Line Counts\n\n| File | Lines | Target | Status |\n|------|-------|--------|--------|\n| `58.9-SPEC.md` | 294 | ~200 | ✓ (slightly over; User-Pain Coverage section added depth) |\n| `58.9-CONTEXT.md` | 234 | ~150 | ✓ (slightly over; 4 decisions with full rationale) |\n| `58.9-PLAN-01.md` | 523 | ~300 | ✓ (slightly over; STRIDE threat model + 23 commit strategy added depth) |\n| `ROADMAP.md` delta | +12 lines (P58.9 entry) + 12 matrix rows (SB-1..11 + REGRESSION-GUARDS) | +5 lines | ✓ (matrix expansion explicitly required) |\n\n### Quality Metrics\n\n- **REQs defined:** 4 (REQ-58.9-01 P53 journal wire, REQ-58.9-02 5 vitest fixes, REQ-58.9-03 BATS 75 real runtime, REQ-58.9-04 4 regression guards)\n- **Total ACs:** 25 (5 + 7 + 6 + 5 + 2 integration)\n- **Total tasks in PLAN:** 4 (1 per wave; each wave is a multi-commit task with 5-16 atomic commits)\n- **Estimated atomic commits:** 23 (4 RED + 5+3+3+5 = 16 IMPL + 1 INTEGRATION + 2 META = 23)\n- **Ambiguity score:** 0.0875 (gate ≤ 0.20) ✓\n- **Constraints honored:** 27-tool-key preserved; P20 no-new-deps; AC#10/AC#11 manualOverride REGRESSION-GUARD; 7-field JournalEntry schema preserved; RED-FIRST TDD discipline; max 500 LOC per module (LOC delta ≤ +20 on `session-manager.ts`, ≤ +5 on `observers.ts`)\n\n### Source Coverage Audit (ALL ITEMS COVERED)\n\n| Source | Items | Coverage |\n|--------|-------|----------|\n| **GOAL** (ROADMAP P58.9 = fix 3 critical + 4 guards) | 4 | All 4 in REQ-01..04 |\n| **REQ** (4 REQs from prompt) | 4 | All 4 mapped 1:1 to REQ-58.9-01..04 |\n| **RESEARCH** (P58.8 SPEC + PLAN templates) | 5 conventions | All 5 honored (process templates untouched, 27-tool-key, P20, AC#10/AC#11, RED-FIRST) |\n| **CONTEXT** (D-58.9-01..04 decisions) | 4 decisions | All 4 in CONTEXT.md + referenced in PLAN |\n\n**Deferred to P59** (per SPEC User-Pain Coverage, explicitly noted in ROADMAP Symptom Matrix): SB-4 (USER_SESSION escalation test), SB-8 (AC#10/AC#11 comment fixup). **Out of scope (pre-existing debt, documented)**: SB-5, SB-6, SB-7, SB-9, SB-10, SB-11.\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 58.9` (or `/hm-execute-phase 58.9`)\n\n<sub>`/clear` first - fresh context window</sub>",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-04T12:02:12.457Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ngcmtw6pb8bj_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/references/mandatory-initial-read.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:13.568Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ngcmtw6pb8bj_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:14.404Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ngcmtw6pb8bj_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:23.469Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hkput52d7ons_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:23.914Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_hkput52d7ons_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/debug/p51-plus-sticky-bugs-2026-06-04.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:40.818Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_prp9wjziwnwx_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:40.826Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_prp9wjziwnwx_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:48.691Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_mf5jzhwb4iv2_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-08-GAP-FIX.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:49.837Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_mf5jzhwb4iv2_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:58.012Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_1646wg4vqq4o_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-08-GAP-FIX.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:02:58.834Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_1646wg4vqq4o_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:03:07.414Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_o6nhhdhh5jcw_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:03:08.558Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_o6nhhdhh5jcw_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:03:21.066Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_umsiw14016n1_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/pane-monitor.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:03:21.072Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_umsiw14016n1_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/session-manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:03:22.089Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_umsiw14016n1_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:03:41.526Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_9fv701f4einw_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:03:42.573Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_9fv701f4einw_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:03:43.618Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_9fv701f4einw_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-08-GAP-FIX.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:03:57.999Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_zgpc1i64uoyy_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:07:09.001Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_function_zgpc1i64uoyy_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:07:18.111Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_wq60d9k7zjzt_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:07:18.142Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_wq60d9k7zjzt_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/observers.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:07:30.190Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_8uaxt8nesjfc_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/observers.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:07:30.196Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_8uaxt8nesjfc_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/session-manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:09:26.434Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_function_bc1s3c4txmmx_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:09:40.343Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_d01acz5zg5yp_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:13:25.727Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_function_d01acz5zg5yp_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:13:44.149Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_zecph1sukzsu_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:13:45.152Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_zecph1sukzsu_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:14:01.667Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_mhjek46hc9ii_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:14:12.667Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_e5azqqnbuip1_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:14:53.582Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_257f20vkeceh_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:03.638Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_l5mp7qbvt4rj_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:04.255Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_l5mp7qbvt4rj_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:14.352Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_t49j4u7pmu15_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:14.381Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_t49j4u7pmu15_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:27.695Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_f7q16bdo5cag_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:27.706Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_f7q16bdo5cag_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:28.611Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_f7q16bdo5cag_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/ROADMAP.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:46.364Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_p4hjjf70bscu_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:48.129Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_p4hjjf70bscu_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:15:59.308Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_mwx2edujtggn_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:16:13.343Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_zic023hkrhbn_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:16:27.379Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_o4a9y2cuc316_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T12:16:58.852Z",
+      "type": "assistant_message",
+      "content": "## PLANNING COMPLETE\n\n**Phase:** 58.9-sticky-bug-busting\n**Plans:** 1 plan (`58.9-PLAN-01`) in 4 waves\n**Commit:** `e7c95b05` on `feature/harness-implementation` (4 files changed, 1072 insertions)\n\n### Wave Structure\n\n| Wave | Tasks | Autonomous |\n|------|-------|------------|\n| 1 | R1 (BATS 75-journal red), R2 (BATS 75-real-runtime red), R3 (5 vitest fixes), R4 (4 regression guards) | yes (test only) |\n| 2 | 2A (REQ-01, I1-I5) + 2B (REQ-02, I6-I8) + 2C (REQ-03, I11-I13) + 2D (REQ-04, I14-I18) = 16 impl commits, all parallel | yes (implementation) |\n| 3 | V1 BATS regression + V2 BATS 75 + V3 vitest full suite + V4 tsc + V5 4 new integration guards | yes (verification) |\n| 4 | M1 USER-PAIN-BACKLOG entries + M2 58.9-VERIFICATION.md | yes (docs) |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| `58.9-PLAN-01` | Fix 3 critical sticky bugs (P53 journal, 5 vitest, BATS-vs-runtime) + 4 regression guards | 4 (1 per wave, each with 5-16 atomic commits) | 18 source/test files (5 in `src/`, 11 in `tests/`, 1 in `.planning/`, 1 in `.planning/ROADMAP.md`) |\n\n### Artifact Line Counts\n\n| File | Lines | Target | Status |\n|------|-------|--------|--------|\n| `58.9-SPEC.md` | 294 | ~200 | ✓ (slightly over; User-Pain Coverage section added depth) |\n| `58.9-CONTEXT.md` | 234 | ~150 | ✓ (slightly over; 4 decisions with full rationale) |\n| `58.9-PLAN-01.md` | 523 | ~300 | ✓ (slightly over; STRIDE threat model + 23 commit strategy added depth) |\n| `ROADMAP.md` delta | +12 lines (P58.9 entry) + 12 matrix rows (SB-1..11 + REGRESSION-GUARDS) | +5 lines | ✓ (matrix expansion explicitly required) |\n\n### Quality Metrics\n\n- **REQs defined:** 4 (REQ-58.9-01 P53 journal wire, REQ-58.9-02 5 vitest fixes, REQ-58.9-03 BATS 75 real runtime, REQ-58.9-04 4 regression guards)\n- **Total ACs:** 25 (5 + 7 + 6 + 5 + 2 integration)\n- **Total tasks in PLAN:** 4 (1 per wave; each wave is a multi-commit task with 5-16 atomic commits)\n- **Estimated atomic commits:** 23 (4 RED + 5+3+3+5 = 16 IMPL + 1 INTEGRATION + 2 META = 23)\n- **Ambiguity score:** 0.0875 (gate ≤ 0.20) ✓\n- **Constraints honored:** 27-tool-key preserved; P20 no-new-deps; AC#10/AC#11 manualOverride REGRESSION-GUARD; 7-field JournalEntry schema preserved; RED-FIRST TDD discipline; max 500 LOC per module (LOC delta ≤ +20 on `session-manager.ts`, ≤ +5 on `observers.ts`)\n\n### Source Coverage Audit (ALL ITEMS COVERED)\n\n| Source | Items | Coverage |\n|--------|-------|----------|\n| **GOAL** (ROADMAP P58.9 = fix 3 critical + 4 guards) | 4 | All 4 in REQ-01..04 |\n| **REQ** (4 REQs from prompt) | 4 | All 4 mapped 1:1 to REQ-58.9-01..04 |\n| **RESEARCH** (P58.8 SPEC + PLAN templates) | 5 conventions | All 5 honored (process templates untouched, 27-tool-key, P20, AC#10/AC#11, RED-FIRST) |\n| **CONTEXT** (D-58.9-01..04 decisions) | 4 decisions | All 4 in CONTEXT.md + referenced in PLAN |\n\n**Deferred to P59** (per SPEC User-Pain Coverage, explicitly noted in ROADMAP Symptom Matrix): SB-4 (USER_SESSION escalation test), SB-8 (AC#10/AC#11 comment fixup). **Out of scope (pre-existing debt, documented)**: SB-5, SB-6, SB-7, SB-9, SB-10, SB-11.\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 58.9` (or `/hm-execute-phase 58.9`)\n\n<sub>`/clear` first - fresh context window</sub>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_16d7cf648ffe2Ru8a2Xf5jsltu"
+      }
+    }
+  ],
+  "lastMessage": "## PLANNING COMPLETE\n\n**Phase:** 58.9-sticky-bug-busting\n**Plans:** 1 plan (`58.9-PLAN-01`) in 4 waves\n**Commit:** `e7c95b05` on `feature/harness-implementation` (4 files changed, 1072 insertions)\n\n### Wave Structure\n\n| Wave | Tasks | Autonomous |\n|------|-------|------------|\n| 1 | R1 (BATS 75-journal red), R2 (BATS 75-real-runtime red), R3 (5 vitest fixes), R4 (4 regression guards) | yes (test only) |\n| 2 | 2A (REQ-01, I1-I5) + 2B (REQ-02, I6-I8) + 2C (REQ-03, I11-I13) + 2D (REQ-04, I14-I18) = 16 impl commits, all parallel | yes (implementation) |\n| 3 | V1 BATS regression + V2 BATS 75 + V3 vitest full suite + V4 tsc + V5 4 new integration guards | yes (verification) |\n| 4 | M1 USER-PAIN-BACKLOG entries + M2 58.9-VERIFICATION.md | yes (docs) |\n\n### Plans Created\n\n| Plan | Objective | Tasks | Files |\n|------|-----------|-------|-------|\n| `58.9-PLAN-01` | Fix 3 critical sticky bugs (P53 journal, 5 vitest, BATS-vs-runtime) + 4 regression guards | 4 (1 per wave, each with 5-16 atomic commits) | 18 source/test files (5 in `src/`, 11 in `tests/`, 1 in `.planning/`, 1 in `.planning/ROADMAP.md`) |\n\n### Artifact Line Counts\n\n| File | Lines | Target | Status |\n|------|-------|--------|--------|\n| `58.9-SPEC.md` | 294 | ~200 | ✓ (slightly over; User-Pain Coverage section added depth) |\n| `58.9-CONTEXT.md` | 234 | ~150 | ✓ (slightly over; 4 decisions with full rationale) |\n| `58.9-PLAN-01.md` | 523 | ~300 | ✓ (slightly over; STRIDE threat model + 23 commit strategy added depth) |\n| `ROADMAP.md` delta | +12 lines (P58.9 entry) + 12 matrix rows (SB-1..11 + REGRESSION-GUARDS) | +5 lines | ✓ (matrix expansion explicitly required) |\n\n### Quality Metrics\n\n- **REQs defined:** 4 (REQ-58.9-01 P53 journal wire, REQ-58.9-02 5 vitest fixes, REQ-58.9-03 BATS 75 real runtime, REQ-58.9-04 4 regression guards)\n- **Total ACs:** 25 (5 + 7 + 6 + 5 + 2 integration)\n- **Total tasks in PLAN:** 4 (1 per wave; each wave is a multi-commit task with 5-16 atomic commits)\n- **Estimated atomic commits:** 23 (4 RED + 5+3+3+5 = 16 IMPL + 1 INTEGRATION + 2 META = 23)\n- **Ambiguity score:** 0.0875 (gate ≤ 0.20) ✓\n- **Constraints honored:** 27-tool-key preserved; P20 no-new-deps; AC#10/AC#11 manualOverride REGRESSION-GUARD; 7-field JournalEntry schema preserved; RED-FIRST TDD discipline; max 500 LOC per module (LOC delta ≤ +20 on `session-manager.ts`, ≤ +5 on `observers.ts`)\n\n### Source Coverage Audit (ALL ITEMS COVERED)\n\n| Source | Items | Coverage |\n|--------|-------|----------|\n| **GOAL** (ROADMAP P58.9 = fix 3 critical + 4 guards) | 4 | All 4 in REQ-01..04 |\n| **REQ** (4 REQs from prompt) | 4 | All 4 mapped 1:1 to REQ-58.9-01..04 |\n| **RESEARCH** (P58.8 SPEC + PLAN templates) | 5 conventions | All 5 honored (process templates untouched, 27-tool-key, P20, AC#10/AC#11, RED-FIRST) |\n| **CONTEXT** (D-58.9-01..04 decisions) | 4 decisions | All 4 in CONTEXT.md + referenced in PLAN |\n\n**Deferred to P59** (per SPEC User-Pain Coverage, explicitly noted in ROADMAP Symptom Matrix): SB-4 (USER_SESSION escalation test), SB-8 (AC#10/AC#11 comment fixup). **Out of scope (pre-existing debt, documented)**: SB-5, SB-6, SB-7, SB-9, SB-10, SB-11.\n\n### Next Steps\n\nExecute: `/gsd-execute-phase 58.9` (or `/hm-execute-phase 58.9`)\n\n<sub>`/clear` first - fresh context window</sub>"
+}

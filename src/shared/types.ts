@@ -333,8 +333,8 @@ export type SessionContinuityRecord = {
 
 export type GovernanceRule = {
   id: string
-  condition: { toolNames?: string[]; sessionIDs?: string[];[key: string]: unknown }
-  action: { type: string; escalation?: Record<string, unknown>;[key: string]: unknown }
+  condition: { toolNames?: string[]; sessionIDs?: string[]; depth?: { min?: number; max?: number }; [key: string]: unknown }
+  action: { type: string; escalation?: Record<string, unknown>; [key: string]: unknown }
   enabled: boolean
 }
 

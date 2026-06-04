@@ -1,0 +1,135 @@
+{
+  "skill_name": "hm-coordinating-loop",
+  "evals": [
+    {
+      "id": "TC-001",
+      "prompt": "Create 3 reference files for the deep-research skill in parallel",
+      "expected_output": {
+        "should_trigger": true,
+        "mode": "parallel",
+        "task_count": 3,
+        "file_overlap": false
+      },
+      "assertions": [
+        {"text": "check-gate.sh exits 0 for G1", "passed": false, "evidence": ""},
+        {"text": "output contains PASS", "passed": false, "evidence": ""},
+        {"text": "output contains task(s) identified", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "coordination-active"
+    },
+    {
+      "id": "TC-002",
+      "prompt": "Fix the typo in SKILL.md line 42",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Single task — execute directly"
+      },
+      "assertions": [
+        {"text": "check-gate.sh exits 2", "passed": false, "evidence": ""},
+        {"text": "output contains Session directory not found", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "base-state"
+    },
+    {
+      "id": "TC-003",
+      "prompt": "Update the SKILL.md and then update its reference files to match",
+      "expected_output": {
+        "should_trigger": true,
+        "mode": "sequential",
+        "reason": "Tasks share mutable state"
+      },
+      "assertions": [
+        {"text": "check-gate.sh exits 0 for G1", "passed": false, "evidence": ""},
+        {"text": "output contains PASS", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "coordination-active"
+    },
+    {
+      "id": "TC-004",
+      "prompt": "Dispatch an agent to write a skill",
+      "expected_output": {
+        "should_trigger": true,
+        "envelope_sections": 5,
+        "validation_required": true
+      },
+      "assertions": [
+        {"text": "check-gate.sh exits 0 for G2", "passed": false, "evidence": ""},
+        {"text": "output contains envelope(s) valid", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "coordination-active"
+    },
+    {
+      "id": "TC-005",
+      "prompt": "Fix the validation errors in the skill",
+      "expected_output": {
+        "should_trigger": true,
+        "ralph_loop": true,
+        "max_cycles": 3,
+        "escalation_on_3rd_failure": true
+      },
+      "assertions": [
+        {"text": "check-gate.sh exits 0 for G5", "passed": false, "evidence": ""},
+        {"text": "output contains PASS", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "coordination-active"
+    },
+    {
+      "id": "TC-006",
+      "prompt": "Create 3 reference files for the deep-research skill in parallel — one for the API spec, one for the prompt templates, and one for the eval harness — then validate them all against the agentskills.io spec before merging.",
+      "expected_output": {
+        "should_trigger": true,
+        "mode": "parallel",
+        "task_count": 3,
+        "envelopes_required": 3,
+        "ralph_loop_validation": true
+      },
+      "assertions": [
+        {"text": "check-gate.sh exits 0 for G1", "passed": false, "evidence": ""},
+        {"text": "output contains PASS", "passed": false, "evidence": ""},
+        {"text": "output contains task(s) identified", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "coordination-active"
+    },
+    {
+      "id": "TC-007",
+      "prompt": "Update SKILL.md first, then update all 12 reference files to match the new frontmatter format — the description field changed and every reference file that mentions it needs to be updated in order.",
+      "expected_output": {
+        "should_trigger": true,
+        "mode": "sequential",
+        "reason": "Tasks share mutable state — SKILL.md must be updated before references",
+        "gate_chain": ["G1", "G2", "G3", "G4", "G5"]
+      },
+      "assertions": [
+        {"text": "check-gate.sh exits 0 for G1", "passed": false, "evidence": ""},
+        {"text": "output contains PASS", "passed": false, "evidence": ""},
+        {"text": "output contains task(s) identified", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "coordination-active"
+    },
+    {
+      "id": "TC-008",
+      "prompt": "Fix the validation errors from the last ralph-loop cycle — there are 3 critical issues in the frontmatter: the description is too short, the triggers pattern is too narrow, and the references section has broken links.",
+      "expected_output": {
+        "should_trigger": true,
+        "ralph_loop": true,
+        "max_cycles": 3,
+        "escalation_on_3rd_failure": true,
+        "previous_cycle_failed": true
+      },
+      "assertions": [
+        {"text": "check-gate.sh exits 0 for G1", "passed": false, "evidence": ""},
+        {"text": "output contains PASS", "passed": false, "evidence": ""},
+        {"text": "output contains task(s) identified", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "ralph-loop-failed"
+    }
+  ]
+}

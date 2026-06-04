@@ -263,11 +263,22 @@ export function migrateKeys(raw: Record<string, unknown>): Record<string, unknow
  * const configs = readConfigs("/path/to/project")
  * ```
  */
+/**
+ * Schema for delegation depth conditions in governance rules.
+ * Enables depth-based rule matching: rules fire only when session depth
+ * falls within the specified min/max range (inclusive).
+ */
+export const DepthConditionSchema = z.object({
+  min: z.number().optional(),
+  max: z.number().optional(),
+})
+
 export const GovernanceRuleSchema = z.object({
   id: z.string(),
   condition: z.object({
     toolNames: z.array(z.string()).optional(),
     sessionIDs: z.array(z.string()).optional(),
+    depth: DepthConditionSchema.optional(),
   }).catchall(z.unknown()),
   action: z.object({
     type: z.string(), // e.g. "block", "warn", "escalate"

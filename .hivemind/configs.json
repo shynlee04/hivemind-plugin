@@ -28,58 +28,723 @@
     "use_worktrees": true
   },
   "governance": {
-    "rules": [],
+    "rules": [
+      {
+        "id": "gov-delegate-task-subagent-only",
+        "condition": {
+          "toolNames": [
+            "delegate-task"
+          ],
+          "depth": {
+            "max": 0
+          }
+        },
+        "action": {
+          "type": "block"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-write-depth-warn",
+        "condition": {
+          "toolNames": [
+            "write",
+            "edit"
+          ],
+          "depth": {
+            "min": 2
+          }
+        },
+        "action": {
+          "type": "warn"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-delegate-task-depth-block",
+        "condition": {
+          "toolNames": [
+            "delegate-task"
+          ],
+          "depth": {
+            "min": 3
+          }
+        },
+        "action": {
+          "type": "block"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-create-session-naming-warn",
+        "condition": {
+          "toolNames": [
+            "create-governance-session"
+          ]
+        },
+        "action": {
+          "type": "warn"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-unsafe-tools-escalate",
+        "condition": {
+          "toolNames": [
+            "bash"
+          ],
+          "depth": {
+            "min": 1
+          }
+        },
+        "action": {
+          "type": "escalate",
+          "escalation": {
+            "reason": "bash in child session"
+          }
+        },
+        "enabled": true
+      }
+    ],
     "naming_standards": {
-      "allowed_frameworks": ["hm", "hf", "gate", "stack"],
-      "allowed_classifications": ["root", "child", "grandchild", "fork"],
+      "allowed_frameworks": [
+        "hm",
+        "hf",
+        "gate",
+        "stack"
+      ],
+      "allowed_classifications": [
+        "root",
+        "child",
+        "grandchild",
+        "fork"
+      ],
       "naming_format": "{framework}/{workflow}/{classification}/{agent}/{purpose}@{depth}"
     },
     "agent_configs": {
-      "hm-codebase-mapper": {
-        "description": "Quick context discovery and codebase investigation",
-        "allowedCommands": ["context", "read", "glob", "grep"]
+      "hf-agent-builder": {
+        "description": "Creates, audits, and repairs OpenCode agent definitions with YAML frontmatter, granular permissions, and XML-tagged execution flows. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage \u2014 may "
       },
-      "hm-project-researcher": {
-        "description": "Multi-source research with evidence tracking",
-        "allowedCommands": ["tavily-search", "tavily-extract", "deep-research"]
+      "hf-auditor": {
+        "description": "Audits OpenCode primitives (agents, skills, commands, tools) for quality compliance, drift detection, anti-pattern discovery, and structural integrity. Spawned by hf-coordinator. Cannot delegate. FLEX"
       },
-      "hm-debugger": {
-        "description": "Systematic debugging with persistent state",
-        "allowedCommands": ["debug", "investigate", "trace"]
+      "hf-command-builder": {
+        "description": "Creates and audits OpenCode command definitions with YAML frontmatter, $ARGUMENTS parsing, and non-interactive shell safety. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage \u2014 may load hm-"
       },
-      "hm-code-reviewer": {
-        "description": "Code review and quality gate evaluation",
-        "allowedCommands": ["code-review", "gate-check"]
+      "hf-coordinator": {
+        "description": "Meta-builder category coordinator for hf-* lineage. Dispatches meta-concept specialists (agent builders, skill authors, tool builders), manages creation waves, validates AQUAL compliance, and returns "
+      },
+      "hf-l0-orchestrator": {
+        "description": "Front-facing high-reasoning L0 strategist and battle commander for hf-* meta-builder lineage. Forms complete end-to-end task landscape before delegating. Routes all execution through L1/L2/L3 speciali"
+      },
+      "hf-meta-builder": {
+        "description": "Meta-concept workflow specialist for the hf-* lineage. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts (skil"
+      },
+      "hf-prompter": {
+        "description": "Expert prompt engineering and validation specialist for creating, optimizing, and testing high-quality prompts through multi-agent workflows. Spawned by hf-coordinator for prompt engineering tasks. Ca"
+      },
+      "hf-refactorer": {
+        "description": "Refactors OpenCode skills and agents to improve structural quality, reduce technical debt, eliminate anti-patterns, and align with lineage standards. Spawned by hf-coordinator. Cannot delegate. FLEXIB"
+      },
+      "hf-skill-builder": {
+        "description": "Creates and audits SKILL.md packages with progressive disclosure, trigger phrases, and agentskills.io compliance. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage \u2014 may load hm-* skills fo"
+      },
+      "hf-synthesizer": {
+        "description": "Synthesizes OpenCode skills from GitHub repositories, codebase patterns, and documentation by extracting reusable patterns and generating conformant SKILL.md packages. Spawned by hf-coordinator. Canno"
+      },
+      "hf-tool-builder": {
+        "description": "Creates custom OpenCode tools with Zod schemas, plugin hooks, and TypeScript implementation. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage \u2014 may load hm-* skills for stack validation."
       },
       "hm-architect": {
-        "description": "Architecture analysis and design proposals",
-        "allowedCommands": ["design", "architecture-review"]
+        "description": "Designs technical architecture and produces Architecture Decision Records. Produces ARCHITECTURE.md and ADR-*.md artifacts documenting system design, component boundaries, and dependency decisions. Ca"
       },
-      "hm-synthesizer": {
-        "description": "Research synthesis and artifact compression",
-        "allowedCommands": ["synthesize", "pack"]
+      "hm-code-fixer": {
+        "description": "Applies code review fixes atomically, producing one commit per fix and generating REVIEW-FIX.md. Called by hm-orchestrator during hm-code-review with the --fix flag after hm-code-reviewer produces REV"
+      },
+      "hm-code-reviewer": {
+        "description": "Performs adversarial code review against spec compliance and code quality standards. Produces REVIEW.md with categorized findings. Called by hm-orchestrator during hm-code-review after hm-executor com"
+      },
+      "hm-codebase-mapper": {
+        "description": "Extracts codebase structure, dependency graphs, and pattern maps, producing .planning/codebase/*.md artifacts for the planning layer. Called by hm-orchestrator during new project initialization or whe"
+      },
+      "hm-debug-session-manager": {
+        "description": "Orchestrates multi-cycle debugging sessions with checkpoint state persistence and investigator dispatch. Called by hm-orchestrator during hm-debug after a bug is reported during execution or verificat"
+      },
+      "hm-debugger": {
+        "description": "Investigates bugs through hypothesis-driven root cause analysis, producing DEBUG.md with findings and fix recommendations. Called by hm-debug-session-manager during multi-cycle debug sessions when a s"
+      },
+      "hm-doc-verifier": {
+        "description": "Verifies documentation claims against actual code implementation, producing per-document JSON verification reports. Called by hm-orchestrator during hm-docs-update after hm-doc-writer produces documen"
+      },
+      "hm-doc-writer": {
+        "description": "Authors project documentation including README, API references, and usage guides based on implemented code and architecture decisions. Called by hm-orchestrator during hm-docs-update after implementat"
+      },
+      "hm-ecologist": {
+        "description": "Maps feature dependencies and cross-cutting impact across the project ecosystem. Produces ECOSYSTEM.md with dependency graphs and impact analysis. Called by hm-orchestrator during hm-ecologist when fe"
+      },
+      "hm-executor": {
+        "description": "Executes PLAN.md tasks atomically with wave-based parallelization, deviation handling, and checkpoint protocols, producing code changes and SUMMARY.md artifacts. Called by hm-orchestrator during the h"
+      },
+      "hm-integration-checker": {
+        "description": "Validates cross-phase integration and end-to-end flow correctness, producing integration reports. Called by hm-orchestrator during hm-audit-milestone after multiple phases complete and cross-phase coh"
+      },
+      "hm-intel-updater": {
+        "description": "Maintains codebase intelligence files in .planning/intel/ with structured JSON summaries of project state, module boundaries, and key interfaces. Called by hm-orchestrator during hm-map-codebase after"
+      },
+      "hm-intent-loop": {
+        "description": "Clarifies user intent through structured Q&A sessions when requirements are ambiguous or incomplete. Produces INTENT.md documenting clarified requirements and design decisions. Called by hm-orchestrat"
+      },
+      "hm-l0-orchestrator": {
+        "description": "Front-facing high-reasoning L0 strategist and battle commander for hm-* product development. Forms complete end-to-end task landscape before delegating any piece. Routes user intent through intelligen"
+      },
+      "hm-nyquist-auditor": {
+        "description": "Performs Nyquist validation gap analysis on completed phases, identifying untested behaviors and verification blind spots. Produces VALIDATION.md and fills gaps with targeted test cases. Called by hm-"
+      },
+      "hm-orchestrator": {
+        "description": "L0 front-facing agent for session orchestration, routing, and governance. Dispatches specialist agents, validates results, and manages delegation state. Called by user commands and serves as the prima"
+      },
+      "hm-pattern-mapper": {
+        "description": "Maps code patterns and conventions for new file creation, producing PATTERNS.md reference documents. Called by hm-orchestrator during hm-plan-phase to ensure new code follows established patterns."
+      },
+      "hm-phase-researcher": {
+        "description": "Conducts phase-specific implementation research before planning, producing a RESEARCH.md artifact with approach recommendations and risk assessment. Called by hm-planner during the hm-plan-phase workf"
+      },
+      "hm-plan-checker": {
+        "description": "Validates plan completeness through goal-backward analysis, producing a PASS/FAIL verdict with detailed findings. Called by hm-planner during the hm-plan-phase workflow as a quality gate before plan i"
+      },
+      "hm-planner": {
+        "description": "Decomposes phase objectives into executable tasks with dependency analysis, producing PLAN.md artifacts. Called by hm-orchestrator during the hm-plan-phase workflow after hm-phase-researcher completes"
+      },
+      "hm-project-researcher": {
+        "description": "Conducts domain ecosystem research before roadmap creation, producing STACK.md, FEATURES.md, ARCHITECTURE.md, and PITFALLS.md artifacts. Called by hm-orchestrator during new project initialization to "
+      },
+      "hm-roadmapper": {
+        "description": "Breaks project scope into phases and maps requirements, producing ROADMAP.md with phase definitions, dependency tracking, and requirement traceability. Called by hm-orchestrator during hm-new-project "
+      },
+      "hm-security-auditor": {
+        "description": "Performs STRIDE threat model verification against implemented code, producing SECURITY.md with threat assessments and mitigations. Called by hm-orchestrator during hm-secure-phase after implementation"
+      },
+      "hm-shipper": {
+        "description": "Coordinates release preparation including CHANGELOG.md generation, version bumping, and release manifest creation. Called by hm-orchestrator during hm-ship after all milestone phases complete and the "
       },
       "hm-specifier": {
-        "description": "Spec compliance and requirements validation",
-        "allowedCommands": ["spec-check", "verify"]
+        "description": "Performs spec-driven authoring, transforming requirements into falsifiable SPEC.md documents with acceptance criteria and verification methods. Called by hm-orchestrator during hm-plan-phase after int"
+      },
+      "hm-synthesizer": {
+        "description": "Combines outputs from parallel research agents into a consolidated SUMMARY.md artifact with cross-referenced findings and confidence assessments. Called by hm-orchestrator after parallel researcher di"
+      },
+      "hm-ui-auditor": {
+        "description": "Performs 6-pillar visual audit of implemented frontend screens, producing UI-REVIEW.md with per-pillar scores and improvement recommendations. Called by hm-orchestrator during hm-ui-review after front"
+      },
+      "hm-ui-checker": {
+        "description": "Validates frontend implementation against UI design contracts, producing BLOCK/FLAG/PASS verdicts per component. Called by hm-orchestrator during hm-ui-phase after hm-ui-researcher produces UI-SPEC.md"
+      },
+      "hm-ui-researcher": {
+        "description": "Creates UI design contracts as UI-SPEC.md documents defining component structure, layout, states, and visual design tokens. Called by hm-orchestrator during hm-ui-phase when frontend screens need form"
+      },
+      "hm-user-profiler": {
+        "description": "Analyzes developer session interactions to build a behavioral profile, producing USER-PROFILE.md with communication style and decision speed dimensions. Called by hm-orchestrator during hm-profile-use"
+      },
+      "hm-verifier": {
+        "description": "Verifies implementation completeness through goal-backward validation against plan must_haves, producing VERIFICATION.md with evidence truth assessment. Called by hm-orchestrator during the hm-execute"
       }
     },
     "command_agent_mappings": {
-      "plan": {
-        "description": "Create executable phase plans",
+      "deep-init": {
+        "description": "Generate hierarchical AGENTS.md files with root + complexity-scored subdirectories. Supports update mode, full regeneration, and depth limiting.",
+        "agent": ""
+      },
+      "deep-research-synthesis-repomix": {
+        "description": "Reference document: Advanced Repomix + OpenCode orchestration cheat sheet. NOT an executable command \u2014 serves as knowledge base for deep research patterns.",
+        "agent": "hm-l2-researcher"
+      },
+      "harness-audit": {
+        "description": "Comprehensive harness audit: boundary integrity, claim-vs-reality, governance, context poisoning, cross-platform compatibility. Triggers: 'audit harness', 'check boundaries', 'verify architecture', 'a",
+        "agent": "hf-l0-orchestrator"
+      },
+      "harness-doctor": {
+        "description": "Run harness diagnostics. Checks configuration, agents, plugin control path, and harness health.",
+        "agent": "hm-l0-orchestrator"
+      },
+      "hf-absorb": {
+        "description": "Absorb dense context (links, text, files, stories, events, actors) into persistent session context through multi-wave swarm processing. Use when you have a packed prompt with URLs, file references, mu",
+        "agent": "hf-l0-orchestrator"
+      },
+      "hf-audit": {
+        "description": "Audit existing skills, agents, commands, or tools for quality, overlaps, and dead references. Triggers: 'audit skills', 'check agents', 'doctor commands', 'what's wrong with...'",
+        "agent": "hf-l0-orchestrator"
+      },
+      "hf-configure": {
+        "description": "Configure OpenCode primitives (agents, commands, skills) programmatically. Supports --from-file, --scope, --dry-run flags. Triggers: 'configure agent', 'batch configure', 'agent setup', 'configure com",
+        "agent": "hf-l0-orchestrator"
+      },
+      "hf-create": {
+        "description": "Create a new skill, agent, command, or tool. Routes to the right specialist. Triggers: 'create a skill', 'add an agent', 'build a command', 'make a tool'.",
+        "agent": "hf-l0-orchestrator"
+      },
+      "hf-prompt-enhance-to-plan": {
+        "description": "Enhance, improve, and export as plan repack a prompt through selection of suitable template and references: using question tool to ask for clarification, do few shot research, loading skill to make a ",
+        "agent": "hf-prompter"
+      },
+      "hf-prompt-enhance": {
+        "description": "Enhance, audit, or repack a prompt through skim, investigation lanes, clarification gating, and structured final assembly. Triggers: 'enhance this prompt', 'audit this prompt', 'repack this prompt'.",
+        "agent": "hm-coordinator"
+      },
+      "hf-stack": {
+        "description": "Stack multiple skills together for a specific workflow. Triggers: 'stack skills', 'combine skills', 'chain skills for...'",
+        "agent": "hf-l0-orchestrator"
+      },
+      "hm-add-tests": {
+        "description": "Generate tests for a completed phase based on UAT criteria and implementation",
+        "agent": "hm-orchestrator"
+      },
+      "hm-ai-integration-phase": {
+        "description": "Generate an AI-SPEC.md design contract for phases that involve building AI systems.",
         "agent": "hm-planner"
       },
-      "audit": {
-        "description": "Audit codebase or phase artifacts",
+      "hm-architect": {
+        "description": "Design technical architecture and produce Architecture Decision Records (ARCHITECTURE.md, ADR-*.md).",
+        "agent": "hm-architect"
+      },
+      "hm-audit-fix": {
+        "description": "Autonomous audit-to-fix pipeline \u2014 find issues, classify, fix, test, commit",
+        "agent": "hm-code-fixer"
+      },
+      "hm-audit-milestone": {
+        "description": "Audit milestone completion against original intent before archiving",
         "agent": "hm-nyquist-auditor"
       },
-      "research": {
-        "description": "Conduct multi-source research",
+      "hm-audit-uat": {
+        "description": "Cross-phase audit of all outstanding UAT and verification items",
+        "agent": "hm-nyquist-auditor"
+      },
+      "hm-audit": {
+        "description": "Run codebase and primitive audit to identify structure drift, orphaned configurations, or type check warnings.",
+        "agent": "hm-nyquist-auditor"
+      },
+      "hm-autonomous": {
+        "description": "Run all remaining phases autonomously \u2014 discuss\u2192plan\u2192execute per phase",
+        "agent": "hm-orchestrator"
+      },
+      "hm-capture": {
+        "description": "Capture ideas, tasks, notes, and seeds to their destination",
+        "agent": "hm-orchestrator"
+      },
+      "hm-cleanup": {
+        "description": "Archive accumulated phase directories from completed milestones",
+        "agent": "hm-orchestrator"
+      },
+      "hm-code-review": {
+        "description": "Review source files for bugs, security issues, spec compliance, and code quality. Routes through hm-code-reviewer (primary) and hm-code-fixer (with --fix flag).",
+        "agent": "hm-code-reviewer"
+      },
+      "hm-complete-milestone": {
+        "description": "Archive completed milestone and prepare for next version",
+        "agent": "hm-roadmapper"
+      },
+      "hm-config": {
+        "description": "Configure Hivemind settings \u2014 workflow toggles, advanced knobs, integrations, and model profile",
+        "agent": "hm-orchestrator"
+      },
+      "hm-debug": {
+        "description": "Start systematic debugging session to diagnose and repair connection, compilation, or logic errors.",
+        "agent": "hm-debugger"
+      },
+      "hm-deep-init": {
+        "description": "Generate hierarchical AGENTS.md files with root + complexity-scored subdirectories. Supports update mode, full regeneration, and depth limiting.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-deep-research-synthesis-repomix": {
+        "description": "Reference document: Advanced Repomix + OpenCode orchestration cheat sheet. NOT an executable command \u2014 serves as knowledge base for deep research patterns.",
+        "agent": "hm-phase-researcher"
+      },
+      "hm-discuss-phase": {
+        "description": "Gather phase context through adaptive questioning before planning.",
+        "agent": "hm-intent-loop"
+      },
+      "hm-discuss": {
+        "description": "Start phase discussion to clarify intent, lock decisions, and establish boundaries before planning.",
+        "agent": "hm-intent-loop"
+      },
+      "hm-docs-update": {
+        "description": "Generate or update project documentation verified against the codebase",
+        "agent": "hm-orchestrator"
+      },
+      "hm-doctor": {
+        "description": "Run a comprehensive health check on the Hivemind project: verify directory structure integrity, config file validity, agent and command file consistency, git state, and dependency status. Use when som",
+        "agent": "hm-nyquist-auditor"
+      },
+      "hm-ecologist": {
+        "description": "Map feature dependencies and cross-cutting impact across the project ecosystem \u2014 produces ECOSYSTEM.md.",
+        "agent": "hm-ecologist"
+      },
+      "hm-eval-review": {
+        "description": "Audit an executed AI phase's evaluation coverage and produce an EVAL-REVIEW.md remediation plan.",
+        "agent": "hm-code-reviewer"
+      },
+      "hm-execute-phase": {
+        "description": "Execute all plans in a phase with wave-based parallelization, atomic commits, deviation handling, and checkpoint recovery. Routes through hm-executor and hm-verifier agents.",
+        "agent": "hm-executor"
+      },
+      "hm-execute": {
+        "description": "Execute a created phase plan using TDD, atomic commits, and regression checks.",
+        "agent": "hm-executor"
+      },
+      "hm-explore": {
+        "description": "Socratic ideation and idea routing \u2014 think through ideas before committing to plans",
+        "agent": "hm-orchestrator"
+      },
+      "hm-extract-learnings": {
+        "description": "Extract decisions, lessons, patterns, and surprises from completed phase artifacts",
+        "agent": "hm-orchestrator"
+      },
+      "hm-fast": {
+        "description": "Execute a trivial task inline \u2014 no subagents, no planning overhead",
+        "agent": "hm-executor"
+      },
+      "hm-forensics": {
+        "description": "Post-mortem investigation for failed Hivemind workflows \u2014 diagnoses what went wrong.",
+        "agent": "hm-debugger"
+      },
+      "hm-gate": {
+        "description": "Run the L3 quality gate triad (lifecycle, spec compliance, evidence truth) for the target phase.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-graphify": {
+        "description": "Build, query, and inspect the project knowledge graph in .planning/graphs/",
+        "agent": "hm-codebase-mapper"
+      },
+      "hm-harness-audit": {
+        "description": "Comprehensive harness audit: boundary integrity, claim-vs-reality, governance, context poisoning, cross-platform compatibility. Triggers: 'audit harness', 'check boundaries', 'verify architecture', 'a",
+        "agent": "hm-nyquist-auditor"
+      },
+      "hm-harness-doctor": {
+        "description": "Run harness diagnostics. Checks configuration, agents, plugin control path, and harness health.",
+        "agent": "hm-nyquist-auditor"
+      },
+      "hm-health": {
+        "description": "Diagnose planning directory health and optionally repair issues",
+        "agent": "hm-orchestrator"
+      },
+      "hm-help": {
+        "description": "Show available Hivemind commands and usage guide",
+        "agent": "hm-orchestrator"
+      },
+      "hm-hf-absorb": {
+        "description": "Absorb dense context (links, text, files, stories, events, actors) into persistent session context through multi-wave swarm processing. Use when you have a packed prompt with URLs, file references, mu",
+        "agent": "hm-orchestrator"
+      },
+      "hm-hf-audit": {
+        "description": "Audit existing skills, agents, commands, or tools for quality, overlaps, and dead references. Triggers: 'audit skills', 'check agents', 'doctor commands', 'what's wrong with...'",
+        "agent": "hm-nyquist-auditor"
+      },
+      "hm-hf-configure": {
+        "description": "Configure OpenCode primitives (agents, commands, skills) programmatically. Supports --from-file, --scope, --dry-run flags. Triggers: 'configure agent', 'batch configure', 'agent setup', 'configure com",
+        "agent": "hm-orchestrator"
+      },
+      "hm-hf-create": {
+        "description": "Create a new skill, agent, command, or tool. Routes to the right specialist. Triggers: 'create a skill', 'add an agent', 'build a command', 'make a tool'.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-hf-prompt-enhance-to-plan": {
+        "description": "Enhance, improve, and export as plan repack a prompt through selection of suitable template and references: using question tool to ask for clarification, do few shot research, loading skill to make a ",
+        "agent": "hm-planner"
+      },
+      "hm-hf-prompt-enhance": {
+        "description": "Enhance, audit, or repack a prompt through skim, investigation lanes, clarification gating, and structured final assembly. Triggers: 'enhance this prompt', 'audit this prompt', 'repack this prompt'.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-hf-stack": {
+        "description": "Stack multiple skills together for a specific workflow. Triggers: 'stack skills', 'combine skills', 'chain skills for...'",
+        "agent": "hm-orchestrator"
+      },
+      "hm-import": {
+        "description": "Ingest external plans with conflict detection against project decisions before writing anything.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-inbox": {
+        "description": "Triage and review open GitHub issues and PRs against project templates and contribution guidelines.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-ingest-docs": {
+        "description": "Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo.",
         "agent": "hm-project-researcher"
       },
-      "gate": {
-        "description": "Run quality gate triad",
+      "hm-init-project": {
+        "description": "Initialize a new Hivemind-powered project structure with namespaces, directories, and standard config files.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-intel-updater": {
+        "description": "Maintain codebase intelligence files in .planning/intel/ with structured JSON summaries.",
+        "agent": "hm-intel-updater"
+      },
+      "hm-l0-orchestrate": {
+        "description": "Front-facing L0 strategist for hm-* lineage \u2014 coordinate high-level phase routing and intent classification.",
+        "agent": "hm-l0-orchestrator"
+      },
+      "hm-manager": {
+        "description": "Interactive command center for managing multiple phases from one terminal",
+        "agent": "hm-orchestrator"
+      },
+      "hm-map-codebase": {
+        "description": "Analyze codebase with parallel mapper agents to produce .planning/codebase/ documents",
+        "agent": "hm-codebase-mapper"
+      },
+      "hm-milestone-summary": {
+        "description": "Generate a comprehensive project summary from milestone artifacts for team onboarding and review",
+        "agent": "hm-roadmapper"
+      },
+      "hm-mvp-phase": {
+        "description": "Plan a phase as a vertical MVP slice \u2014 user story, SPIDR splitting, then plan-phase",
+        "agent": "hm-planner"
+      },
+      "hm-new-milestone": {
+        "description": "Start a new milestone cycle \u2014 update PROJECT.md and route to requirements",
+        "agent": "hm-roadmapper"
+      },
+      "hm-new-project": {
+        "description": "Initialize a new project with deep context gathering and PROJECT.md",
+        "agent": "hm-roadmapper"
+      },
+      "hm-ns-context": {
+        "description": "codebase intelligence | map graphify docs learnings",
+        "agent": "hm-orchestrator"
+      },
+      "hm-ns-ideate": {
+        "description": "exploration capture | explore sketch spike spec capture",
+        "agent": "hm-orchestrator"
+      },
+      "hm-ns-manage": {
+        "description": "config workspace | workstreams thread update ship inbox",
+        "agent": "hm-orchestrator"
+      },
+      "hm-ns-project": {
+        "description": "project lifecycle | milestones audits summary",
+        "agent": "hm-orchestrator"
+      },
+      "hm-ns-review": {
+        "description": "quality gates | code review debug audit security eval ui",
+        "agent": "hm-code-reviewer"
+      },
+      "hm-ns-workflow": {
+        "description": "workflow | discuss plan execute verify phase progress",
+        "agent": "hm-orchestrator"
+      },
+      "hm-pause-work": {
+        "description": "Create context handoff when pausing work mid-phase",
+        "agent": "hm-orchestrator"
+      },
+      "hm-phase": {
+        "description": "CRUD for phases in ROADMAP.md \u2014 add, insert, remove, or edit phases",
+        "agent": "hm-orchestrator"
+      },
+      "hm-plan-phase": {
+        "description": "Create detailed phase plan (PLAN.md) with research, task breakdown, dependency analysis, and goal-backward validation. Routes through hm-phase-researcher, hm-planner, hm-pattern-mapper, hm-plan-checke",
+        "agent": "hm-planner"
+      },
+      "hm-plan-review-convergence": {
+        "description": "Cross-AI plan convergence loop \u2014 replan with review feedback until no HIGH concerns remain.",
+        "agent": "hm-planner"
+      },
+      "hm-plan": {
+        "description": "Enter strategic planning mode. Agent interviews you to build a detailed plan before any code is written.",
+        "agent": "hm-planner"
+      },
+      "hm-pr-branch": {
+        "description": "Create a clean PR branch by filtering out .planning/ commits \u2014 ready for code review",
+        "agent": "hm-orchestrator"
+      },
+      "hm-profile-user": {
+        "description": "Generate developer behavioral profile and create Claude-discoverable artifacts",
+        "agent": "hm-user-profiler"
+      },
+      "hm-profile": {
+        "description": "View or switch the behavioral profile for Hivemind agents. Supports profiles: quality (thorough, multi-gate), balanced (default), budget (fast, minimal gates), inherit (follow parent session). Use whe",
+        "agent": "hm-orchestrator"
+      },
+      "hm-progress": {
+        "description": "Check progress, advance workflow, or dispatch freeform intent \u2014 the unified Hivemind situational command",
+        "agent": "hm-orchestrator"
+      },
+      "hm-quick": {
+        "description": "Execute a quick task with Hivemind guarantees (atomic commits, state tracking) but skip optional agents",
+        "agent": "hm-executor"
+      },
+      "hm-research": {
+        "description": "Conduct dense stack research and codebase investigation for a roadmap phase.",
+        "agent": "hm-phase-researcher"
+      },
+      "hm-resume-work": {
+        "description": "Resume work from previous session with full context restoration",
+        "agent": "hm-orchestrator"
+      },
+      "hm-review-backlog": {
+        "description": "Review and promote backlog items to active milestone",
+        "agent": "hm-code-reviewer"
+      },
+      "hm-review": {
+        "description": "Request cross-AI peer review of phase plans from external AI CLIs",
+        "agent": "hm-code-reviewer"
+      },
+      "hm-roadmap": {
+        "description": "Roadmap management: view current roadmap, analyze phase dependencies, add/remove phases, check for gaps, or export roadmap report. Use when you need to plan, inspect, or update the project delivery ti",
+        "agent": "hm-orchestrator"
+      },
+      "hm-secure-phase": {
+        "description": "Retroactively verify threat mitigations for a completed phase",
+        "agent": "hm-nyquist-auditor"
+      },
+      "hm-session": {
+        "description": "Session management: list active sessions, resume an interrupted session, stack new work onto an existing session, check session status, or view session hierarchy. Use when you need to manage multi-ses",
+        "agent": "hm-orchestrator"
+      },
+      "hm-settings": {
+        "description": "Configure Hivemind workflow toggles and model profile",
+        "agent": "hm-orchestrator"
+      },
+      "hm-ship": {
+        "description": "Create PR, run review, and prepare for merge after verification passes",
+        "agent": "hm-orchestrator"
+      },
+      "hm-shipper": {
+        "description": "Coordinate release preparation including CHANGELOG.md generation, version bumping, and release manifest creation.",
+        "agent": "hm-shipper"
+      },
+      "hm-sketch": {
+        "description": "Sketch UI/design ideas with throwaway HTML mockups, or propose what to sketch next (frontier mode)",
+        "agent": "hm-phase-researcher"
+      },
+      "hm-spec-phase": {
+        "description": "Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase.",
+        "agent": "hm-planner"
+      },
+      "hm-specifier": {
+        "description": "Author formal design contracts (SPEC.md, UI-SPEC.md, AI-SPEC.md) from requirements and context.",
+        "agent": "hm-specifier"
+      },
+      "hm-spike": {
+        "description": "Spike an idea through experiential exploration, or propose what to spike next (frontier mode)",
+        "agent": "hm-phase-researcher"
+      },
+      "hm-start-work": {
+        "description": "Execute a task plan with full orchestration. Reads plan and runs pending phases through controlled delegation.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-state": {
+        "description": "View project state and progress: current phase status, completed phases, pending work, blockers, and next recommended action. Use when you need a quick status check or to determine what to work on nex",
+        "agent": "hm-orchestrator"
+      },
+      "hm-stats": {
+        "description": "Display project statistics \u2014 phases, plans, requirements, git metrics, and timeline",
+        "agent": "hm-orchestrator"
+      },
+      "hm-surface": {
+        "description": "Toggle which skills are surfaced \u2014 apply a profile, list, or disable a cluster without reinstall",
+        "agent": "hm-orchestrator"
+      },
+      "hm-sync-agents-md": {
+        "description": "Sync AGENTS.md files with current codebase state. Detects drift between documentation and actual source code, produces a report, and applies fixes.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-synthesize": {
+        "description": "Synthesize research outputs from parallel agents into a consolidated SUMMARY.md with cross-referenced findings, confidence assessments, and gap analysis. Use after parallel research dispatch to produc",
+        "agent": "hm-orchestrator"
+      },
+      "hm-test-echo": {
+        "description": "Echo back the user's message",
+        "agent": "hm-orchestrator"
+      },
+      "hm-test-list": {
+        "description": "List files in the current directory",
+        "agent": "hm-orchestrator"
+      },
+      "hm-test-spike-execute": {
+        "description": "Tests the programmatic execution of slash commands by an agent.",
+        "agent": "hm-executor"
+      },
+      "hm-test-status": {
+        "description": "Show git status",
+        "agent": "hm-orchestrator"
+      },
+      "hm-thread": {
+        "description": "Manage persistent context threads for cross-session work",
+        "agent": "hm-orchestrator"
+      },
+      "hm-ui-phase": {
+        "description": "Generate UI design contract (UI-SPEC.md) for frontend phases",
+        "agent": "hm-planner"
+      },
+      "hm-ui-review": {
+        "description": "Retroactive 6-pillar visual audit of implemented frontend code",
+        "agent": "hm-code-reviewer"
+      },
+      "hm-ultraplan-phase": {
+        "description": "[BETA] Offload plan phase to Claude Code's ultraplan cloud; review in browser and import back.",
+        "agent": "hm-planner"
+      },
+      "hm-ultrawork": {
+        "description": "Activate full autonomous orchestration. Agent explores, plans, and executes until done.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-undo": {
+        "description": "Safe git revert. Roll back phase or plan commits using the phase manifest with dependency checks.",
+        "agent": "hm-orchestrator"
+      },
+      "hm-update": {
+        "description": "Update Hivemind to latest version with changelog display",
+        "agent": "hm-orchestrator"
+      },
+      "hm-validate-phase": {
+        "description": "Retroactively audit and fill Nyquist validation gaps for a completed phase",
+        "agent": "hm-nyquist-auditor"
+      },
+      "hm-verify-work": {
+        "description": "Validate built features through conversational UAT",
         "agent": "hm-verifier"
+      },
+      "hm-verify": {
+        "description": "Verify completed phase deliverables against plan must-haves, truths, and links.",
+        "agent": "hm-verifier"
+      },
+      "hm-workspace": {
+        "description": "Manage Hivemind workspaces \u2014 create, list, or remove isolated workspace environments",
+        "agent": "hm-orchestrator"
+      },
+      "hm-workstreams": {
+        "description": "Manage parallel workstreams \u2014 list, create, switch, status, progress, complete, and resume",
+        "agent": "hm-orchestrator"
+      },
+      "plan": {
+        "description": "Enter strategic planning mode. Agent interviews you to build a detailed plan before any code is written.",
+        "agent": "hm-l0-orchestrator"
+      },
+      "start-work": {
+        "description": "Execute a task plan with full orchestration. Reads plan and runs pending phases through controlled delegation.",
+        "agent": "hm-l0-orchestrator"
+      },
+      "sync-agents-md": {
+        "description": "Sync AGENTS.md files with current codebase state. Detects drift between documentation and actual source code, produces a report, and applies fixes.",
+        "agent": "hm-l0-orchestrator"
+      },
+      "test-echo": {
+        "description": "Echo back the user's message",
+        "agent": ""
+      },
+      "test-list": {
+        "description": "List files in the current directory",
+        "agent": ""
+      },
+      "test-spike-execute": {
+        "description": "Tests the programmatic execution of slash commands by an agent.",
+        "agent": "build"
+      },
+      "test-status": {
+        "description": "Show git status",
+        "agent": ""
+      },
+      "ultrawork": {
+        "description": "Activate full autonomous orchestration. Agent explores, plans, and executes until done.",
+        "agent": "hm-l0-orchestrator"
       }
     },
     "templates": {

@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+  "lastUpdated": "2026-06-04T14:18:29.904Z",
+  "children": {
+    "ses_17071a451ffekRhSJ3CJvG3dFR": {
+      "sessionID": "ses_17071a451ffekRhSJ3CJvG3dFR",
+      "parentSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+      "rootMainSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-executor",
+      "createdAt": "2026-06-03T22:15:32.089Z",
+      "updatedAt": "2026-06-03T23:08:37.087Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_17071a451ffekRhSJ3CJvG3dFR.json"
+    },
+    "ses_170596470ffeCTZH3bSNBV9rPk": {
+      "sessionID": "ses_170596470ffeCTZH3bSNBV9rPk",
+      "parentSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+      "rootMainSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-executor",
+      "subagentType": "",
+      "createdAt": "2026-06-04T04:53:01.315Z",
+      "updatedAt": "2026-06-04T04:53:01.315Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_170596470ffeCTZH3bSNBV9rPk.json"
+    },
+    "ses_1703f4388ffe5x7tVxt73dhwmo": {
+      "sessionID": "ses_1703f4388ffe5x7tVxt73dhwmo",
+      "parentSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+      "rootMainSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+      "delegationDepth": 1,
+      "delegatedBy": "task",
+      "subagentType": "hm-executor",
+      "createdAt": "2026-06-03T23:10:33.806Z",
+      "updatedAt": "2026-06-03T23:37:36.657Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_1703f4388ffe5x7tVxt73dhwmo.json"
+    },
+    "ses_17025e816ffebrdTUwnbuJPSJF": {
+      "sessionID": "ses_17025e816ffebrdTUwnbuJPSJF",
+      "parentSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+      "rootMainSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-executor",
+      "subagentType": "",
+      "createdAt": "2026-06-04T14:18:29.904Z",
+      "updatedAt": "2026-06-04T14:18:29.904Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_17025e816ffebrdTUwnbuJPSJF.json"
+    }
+  },
+  "totalChildren": 4,
+  "maxDepth": 1
+}

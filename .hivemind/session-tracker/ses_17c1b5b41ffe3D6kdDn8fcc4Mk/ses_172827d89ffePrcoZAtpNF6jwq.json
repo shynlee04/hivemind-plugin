@@ -7,11 +7,11 @@
     "model": "",
     "tool": "task",
     "description": "",
-    "subagentType": "gsd-code-reviewer"
+    "subagentType": ""
   },
   "created": "2026-06-03T12:37:53.427Z",
-  "updated": "2026-06-03T12:48:53.185Z",
-  "status": "active",
+  "updated": "2026-06-04T14:18:29.798Z",
+  "status": "error",
   "mainAgent": {
     "name": "gsd-code-reviewer",
     "model": ""
@@ -509,5 +509,7 @@
         "output": {}
       }
     }
-  ]
+  ],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
 }

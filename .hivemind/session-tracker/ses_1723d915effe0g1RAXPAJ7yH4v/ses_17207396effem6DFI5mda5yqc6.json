@@ -3,17 +3,17 @@
   "parentSessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
   "delegationDepth": 1,
   "delegatedBy": {
-    "agentName": "gsd-planner",
+    "agentName": "",
     "model": "",
-    "tool": "execute-slash-command",
+    "tool": "task",
     "description": "",
-    "subagentType": "gsd-planner"
+    "subagentType": ""
   },
   "created": "2026-06-03T14:52:31.773Z",
-  "updated": "2026-06-03T15:00:00.501Z",
-  "status": "active",
+  "updated": "2026-06-04T14:18:29.797Z",
+  "status": "error",
   "mainAgent": {
-    "name": "gsd-planner",
+    "name": "",
     "model": ""
   },
   "turns": [
@@ -373,5 +373,7 @@
         "output": {}
       }
     }
-  ]
+  ],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
 }

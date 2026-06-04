@@ -1,0 +1,643 @@
+{
+  "sessionID": "ses_17104df3bffepJGW3UuEGt7G0B",
+  "parentSessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-debug-session-manager",
+    "model": "unknown",
+    "tool": "task",
+    "description": "Re-diagnose with corrected symptom 3",
+    "subagentType": "gsd-debug-session-manager"
+  },
+  "created": "2026-06-03T19:34:43.165Z",
+  "updated": "2026-06-03T19:38:26.788Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-debug-session-manager",
+    "model": "unknown"
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are the subagent Name: gsd-debug-session-manager role: debug orchestrator. You must do as this prompt instructed and know that you are being delegated. You CANNOT delegate further — execute the diagnose cycle yourself, then return a single handoff report.\n\n# Context\n\nPhase 58 `tmux-orchestration-programmatic-pool` is SHIPPED on branch `feature/harness-implementation`. Prior UAT via delegate-task failed. Previous diagnosis attempt rejected for misrepresenting symptom 3. Re-diagnose with the CORRECTED 4 user-stated symptoms below.\n\n# User's 4 explicit symptoms (verbatim, 2026-06-04, source of truth)\n\n**Symptom 1**: Session spawns but no live activities shown on the session\n- When a child session is spawned (via `delegate-task` or native `task` tool), the main TUI does not stream the child's tool calls, progress, intermediate thoughts, or state changes in real time\n- User sees only initial dispatch event, then silence, then final result (or cancellation)\n\n**Symptom 2**: User has no direct interaction to the child session\n- User cannot send a direct prompt into a running child session\n- User cannot send a key (pause/abort/resume signal) to a running child session\n- There is no `inject` or `intervene` affordance from the user's TUI into an active child session\n\n**Symptom 3 (CORRECTED)**: The orchestrator's main stream terminates instead of remaining open while delegated tasks are still running\n- The orchestrator (L0) is allowed to end the main stream early when it has no more work to do, even if `delegate-task` dispatches are still in flight\n- This is NOT the same as \"blocking\" — the orchestrator's main loop does NOT block. It actually ends and returns control to the user while delegations are still running\n- The expected WaiterModel behavior is: main stream STAYS OPEN so the orchestrator can keep monitoring delegations and accept new user instructions mid-flight\n- For `delegate-task` (the truly async/background variant): the agent can dispatch multiple tasks and shift focus between them. The MAIN STREAM MUST STAY OPEN as long as delegated tasks are still running, so the user can send messages mid-flight that the orchestrator can route to the right child or use to steer the workflow\n- For native `task` tool (synchronous variant): the tool BLOCKS the main stream until the child returns. The orchestrator cannot interleave other work. The user's mid-flight messages are QUEUED behind the blocking call\n- The KEY DIFFERENTIATOR between the two: `delegate-task` is non-blocking + allows the main stream to STAY OPEN + allows the user to communicate with the workflow mid-flight. Native `task` is blocking + queues user messages\n- Current observed behavior contradicts this: the orchestrator ends its main stream early and the user loses the ability to interject\n\n**Symptom 4**: The orchestrator has no live JIT context\n- The orchestrator (L0) does not know in real time what tools the child is invoking, what state transitions the child is making, or what intermediate artifacts the child is producing\n- When the user asks \"progress?\" mid-flight, the orchestrator cannot answer because it has no visibility into the child's in-flight work\n- Therefore, reports are not filed because the session has not completed the run, AND the orchestrator has no idea what the sub-agent is doing while the user prompts the main session asking for progress\n\n# Your job\n\nFollow `gsd-debug-session-manager` skill protocol (Phase 1-6 of diagnose loop). Use `gsd-debugger` as the investigator specialist inside your session.\n\n# Mandatory questions to answer (READ-ONLY diagnosis, no code changes)\n\n1. **Why are child session activities not streamed live to the main TUI?** Trace the streaming/event channel between a child session and the orchestrator. What is the OpenCode SDK event surface for child tool calls? Is there a `session.event` subscriber? Does `hivemind-trajectory` track delegated session events? Does `tmux-copilot list-panes` even see child session panes? Map the gap: where in `dist/plugin.js` or `dist/coordination/` is the parent→child telemetry channel supposed to live?\n\n2. **Why is there no direct interaction affordance from the user into a running child session?** Check if `tmux-copilot forward-prompt` was wired for user→child. Check if `take-over` was scoped correctly. Check if `release` covers child resume. Are these tools orchestrator-tier gated (which would block the user from invoking them directly)? If so, is there a separate `hivemind` user tool for direct child intervention?\n\n3. **Why does the orchestrator's main stream end early instead of staying open while delegations run?** This is the WaiterModel contract gap.\n   - Read `src/coordination/coordination/delegate-task-tool.ts` or `src/tools/delegation/delegate-task.ts` — does it actually return a delegation ID immediately and YIELD (truly non-blocking)? Or does it return a delegation ID but the SDK's parent agent loop terminates anyway?\n   - Look at the OpenCode SDK runtime contract for `delegate-task` / background sessions. Is the parent agent supposed to poll `delegation-status` in a loop, or is the runtime supposed to keep the parent stream alive automatically?\n   - Is there a \"still has running delegations\" check in the orchestrator's main loop? If not, the orchestrator returns control to the user prematurely\n   - Is the issue in Hivemind's wrapper around delegate-task, or in the OpenCode SDK behavior itself?\n   - Check `src/coordination/coordination/delegation-status.ts` and `src/coordination/coordination/session-intelligence.ts` (if exists) — does `delegation-status` have a `peek` or `progress` action that returns mid-flight state? Is it being called by the orchestrator's main loop?\n   - For native `task` tool: read `dist/plugin.js` to see how it wraps the tool. Does it correctly block? Does the user's mid-flight message get queued?\n   - For `delegate-task`: read the wrapper. Does the main agent loop return after dispatch? Or does it run a monitoring loop until delegations complete?\n\n4. **Why does the orchestrator have no live JIT context for child sessions?** Check `hivemind-trajectory({action: \"traverse\", trajectoryId})` — does it return child session events as they happen, or only at end? Check `session-tracker` write semantics — is it append-only during child run, or batched? Is there an event bus that the orchestrator can subscribe to without polling?\n\n5. **Was the Phase 58 spec actually capable of addressing the 4 symptoms, or was it a different scope?** Read `58-SPEC.md` REQ-58-01..06 and `58-CONTEXT.md` D-58-01..17. Which of the 4 symptoms are in-scope, which are out-of-scope? Which upstream phases (49-56) own which symptoms? Map symptom→phase→REQ to identify which symptoms are real P58 gaps vs which are pre-existing system limitations that P58 cannot fix.\n\n6. **For each in-scope symptom, what is the missing primitive that would fix it?** For each of the 4 symptoms: which tool/hook/event surface is missing? Where in the source tree would it live? Is the missing primitive listed in `58-PATTERNS.md` patterns or omitted? Did `gsd-executor` skip the implementation, or did the spec never call for it?\n\n# Hard constraints\n\n- You CANNOT delegate further. Run the diagnose cycle yourself using `gsd-debugger` and `gsd-codebase-mapper` as specialist helpers within your session.\n- READ-ONLY diagnosis. No code modifications, no file writes, no commits, no PRs. Output is a single handoff report only.\n- Use disk-first loading. Read files from disk, do not inline.\n- All evidence must be file:line referenced.\n- Read these files in full:\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md`\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CONTEXT.md`\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PATTERNS.md`\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-01..06.md`\n  - `src/tools/delegation/delegate-task.ts` (the full file)\n  - `src/tools/delegation/delegation-status.ts` (the full file)\n  - `src/tools/tmux-copilot.ts` (the full file, 7 actions)\n  - `src/coordination/delegation/manager.ts` (the full file)\n  - `src/coordination/delegation/session-intelligence.ts` (if exists)\n  - `dist/plugin.js` lines 400-700 (the HarnessControlPlane function body)\n- Run `npx bats tests/bats/slots/62-tmux-pool-types.bats 2>&1 | head -50` and `npx bats tests/bats/slots/63-tmux-pool-snapshot.bats 2>&1 | head -50` to confirm BATS state.\n- Read `.hivemind/session-tracker/ses_17125ea08ffeqGFcR38RaB7I62/session-continuity.json` and child message log if they exist.\n\n# Return format (single message)\n\n## Symptom → Spec → Phase mapping\n[For each of the 4 symptoms: which phase (49-58) owns it, which REQ addresses it, which source file implements it, what the BATS test covers]\n\n## Root cause per symptom\n[For each of the 4 symptoms: the specific file:line gap, the missing primitive, why it was not implemented]\n\n## What the WaiterModel actually does\n[Read the source. Is delegate-task truly async? Does it return a delegation ID immediately? Does the main stream actually block, or is it returning control? What is the documented vs actual behavior? file:line evidence. Pay SPECIAL attention to the corrected symptom 3: the issue is the main stream ENDS EARLY (not blocks) and the orchestrator loses the ability to interleave work / accept mid-flight user messages.]\n\n## In-scope vs out-of-scope assessment\n[For each symptom: was it within P58 to fix? If yes, why didn't the plans cover it. If no, which follow-up phase is needed.]\n\n## Specific fix recommendations (DO NOT IMPLEMENT)\n[3 options ranked. File paths, line numbers, what the fix should change, why it addresses root cause.]\n\n## Verification plan\n[What test would prove each fix works — must be runnable today]\n\n## Risk assessment\n[What else could break — adjacent surfaces to re-verify]\n\nReturn ONLY this report. No preamble, no postamble, no assistant-friendly commentary.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "I'll acknowledge the planning sector guidance. Per the hard constraints, I'm performing READ-ONLY diagnosis — no mutations to `.planning/**`, `src/**`, `tests/**`, `.opencode/**`, or `.hivemind/**`. Let me continue gathering evidence.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: read, bash, bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "## Goal\n- Re-diagnose Phase 58 `tmux-orchestration-programmatic-pool` (SHIPPED on `feature/harness-implementation`) against 4 corrected user-stated symptoms; deliver single handoff report in specified format, READ-ONLY.\n\n## Constraints & Preferences\n- READ-ONLY: no code changes, no file writes, no commits, no PRs.\n- Cannot delegate further; must run diagnose cycle using `gsd-debugger` and `gsd-codebase-mapper` as in-session helpers.\n- All evidence must be file:line referenced.\n- Source of truth for symptoms: verbatim 2026-06-04 user statement; symptom 3 is CORRECTED (main stream ENDS EARLY, not blocks).\n- Operating under `gsd-debug-session-manager` role with strict guardrails, fast decisions, junior expertise, mixed style.\n- Conversation language: vi; document language: en.\n- Final output: ONLY the 7-section handoff report, no preamble/postamble.\n\n## Progress\n### Done\n- Read `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` (truncated at 36292 chars; needs remainder).\n- Read `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CONTEXT.md` (truncated at 31196 chars).\n- Read `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PATTERNS.md` (truncated at 18902 chars).\n- Listed Phase 58 directory: 58-CLOSE.md, 58-CONTEXT.md, 58-PATTERNS.md, 58-PLAN-01..07.md, 58-PLAN-CHECK.md, 58-RESEARCH.md, 58-SPEC.md, 58-SUMMARY.md, 58-VERIFICATION-REPORT.md, 58-VERIFICATION.md.\n- Read all 7 PLAN files: 58-PLAN-01.md through 58-PLAN-07.md.\n- Read `src/tools/delegation/delegate-task.ts` (truncated at 4468 chars; verified `POLICY (P58, G1)` block at line 6-9 and `createDelegateTaskTool` factory at line 27).\n- Confirmed: PLAN-01 covers G1/G2/G3/G6 setup; PLAN-02 covers G2/G3 (pool snapshot + abort/resume); PLAN-03 covers G4/G5 (forward-prompt + take-over/release + manualOverride); PLAN-04 covers G6 (lifecycle events); PLAN-05 covers BATS slot 61 + regression; PLAN-06 covers verification; PLAN-07 covers test seam injection (createForTest, __setTmuxMultiplexerForTesting, module-level recordDelegationTerminal, BATS slot 67).\n\n### In Progress\n- Gathering evidence for the 6 mandatory questions; need to read remaining source files and run BATS before synthesizing handoff report.\n\n### Blocked\n- (none)\n\n## Key Decisions\n- PLAN-07 (wave 7) exists separately from PLAN-05's BATS slot 61, indicating an additional retrofit: BATS slot 67 at `tests/scripts/tmux/67-delegate-task-no-native-task-tool.bats`, suggesting initial BATS slot 61 was insufficient or test seams required post-hoc factory methods.\n- Phase 58 has 7 plans but 6 REQs (REQ-58-01..06) and 6 gaps (G1..G6); PLAN-07 does not map to a new REQ but to test-seam retrofit (createForTest, __setTmuxMultiplexerForTesting, module-level recordDelegationTerminal).\n- P58 is \"production-readiness hardening\" of P51–P55 tmux layer; 0 new tool keys, 0 new modules, 0 new `.hivemind/` storage formats — i.e., no streaming channel, no JIT context layer, no main-loop refactor.\n\n## Next Steps\n- Read remainder of 58-SPEC.md, 58-CONTEXT.md, 58-PATTERNS.md (each truncated) to confirm REQ-58-01..06 exact wording and D-58-01..17.\n- Read `src/tools/delegation/delegation-status.ts` (full) for `peek`/`progress`/`pool` actions.\n- Read `src/tools/tmux-copilot.ts` (full, 7 actions) — confirm `forward-prompt`, `take-over`, `release` wired; check if orchestrator-tier gated vs user-accessible.\n- Read `src/coordination/delegation/manager.ts` (full) — check `getPoolSnapshot`, `dispatch`, `abortDelegation`, `resume`, `createForTest`, \"still has running delegations\" check.\n- Check `src/coordination/delegation/session-intelligence.ts` (may not exist).\n- Read `dist/plugin.js` lines 400-700 (HarnessControlPlane) — confirm native `task` tool wrapping and how it blocks.\n- Run `npx bats tests/bats/slots/62-tmux-pool-types.bats 2>&1 | head -50` and `npx bats tests/bats/slots/63-tmux-pool-snapshot.bats 2>&1 | head -50`.\n- Read `.hivemind/session-tracker/ses_17125ea08ffeqGFcR38RaB7I62/session-continuity.json` and child message log.\n- Synthesize 7-section handoff report: Symptom→Spec→Phase mapping, Root cause per symptom, What the WaiterModel actually does, In-scope vs out-of-scope, Fix recommendations (3 ranked), Verification plan, Risk assessment.\n\n## Critical Context\n- **Symptom 3 CORRECTED (critical):** orchestrator's main stream ENDS EARLY (returns control to user) while delegations still in flight; not \"blocks\". WaiterModel requires main stream STAY OPEN for `delegate-task` (non-blocking, true background) to allow mid-flight user interjection and orchestrator interleaving. Native `task` tool blocks + queues user messages; `delegate-task` should not block AND should not end main stream either.\n- **Symptom 1:** no live activity stream for child sessions → user sees only initial dispatch then silence then final result.\n- **Symptom 2:** no user→child `inject`/`intervene` affordance; `forward-prompt` is orchestrator→child, not user→child.\n- **Symptom 4:** orchestrator has no JIT context — `hivemind-trajectory` may not surface mid-flight child events; `session-tracker` write semantics unclear (append-only vs batched).\n- **P58 scope (in-scope hypothesis):** G2 (pool snapshot API), G3 (abort/resume state), G4 (forward-prompt orchestrator→child), G5 (take-over/release manualOverride), G6 (3-event lifecycle), G1 (no-native-task guard). Out-of-scope hypothesis: parent↔child live streaming channel, user→child direct prompt affordance, orchestrator main-loop refactor to monitor delegations, JIT context for orchestrator.\n- **Symptoms 1, 2, 4 likely out-of-scope for P58** (P58 explicitly does not create new event channels or refactor agent loop). Symptom 3 (main stream early termination) likely also out-of-scope — P58 documents `delegate-task` as \"Returns immediately with a delegation ID (always-background WaiterModel)\" per `src/tools/delegation/delegate-task.ts:32` but does not specify what parent agent does after return.\n- **Open question:** does the OpenCode SDK runtime keep parent stream alive automatically when a background delegation is in flight, or does the parent agent need a `monitorDelegations` loop? Symptom 3 hinges on this.\n- **Read context truncation note:** 58-SPEC.md (36292 chars), 58-CONTEXT.md (31196 chars), 58-PATTERNS.md (18902 chars), 58-PLAN-02 (34226), 58-PLAN-03 (30905), 58-PLAN-04 (30824), 58-PLAN-06 (20018), 58-PLAN-07 (51685) all truncated; remainder must be read.\n\n## Relevant Files\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md`: defines REQ-58-01..06 and 13 acceptance criteria (lines 197-211).\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CONTEXT.md`: D-58-01..17 decisions; G1–G6 gap definitions.\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PATTERNS.md`: 8 frozen patterns including `POLICY (P58, G1)` block pattern (Pattern 1).\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-01..07.md`: wave-by-wave execution plans; PLAN-07 retrofit indicates test-seam refactor.\n- `src/tools/delegation/delegate-task.ts`: `createDelegateTaskTool` factory; \"Returns immediately with a delegation ID (always-background WaiterModel)\" at line 32; `POLICY (P58, G1)` block at lines 6-9.\n- `src/tools/delegation/delegation-status.ts` (pending read): `peek`/`progress`/`pool` action handlers; key for symptom 4.\n- `src/tools/tmux-copilot.ts` (pending read): 7 actions including `forward-prompt`, `take-over`, `release`; check orchestrator-tier gating.\n- `src/coordination/delegation/manager.ts` (pending read): `getPoolSnapshot`, `dispatch`, `abortDelegation`, `resume`, `createForTest`; key for symptom 3.\n- `src/coordination/delegation/session-intelligence.ts` (existence TBD): mid-flight child state surface.\n- `dist/plugin.js` lines 400-700 (pending read): HarnessControlPlane — native `task` tool wrapping, blocking semantics.\n- `tests/bats/slots/62-tmux-pool-types.bats`, `tests/bats/slots/63-tmux-pool-snapshot.bats` (pending run): BATS state confirmation.\n- `.hivemind/session-tracker/ses_17125ea08ffeqGFcR38RaB7I62/session-continuity.json` (pending read): evidence of actual child session activity.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "user",
+      "content": "Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "I have clear next steps. Let me continue gathering evidence — find BATS tests, read remaining source files, and read the session tracker.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "BATS tests are at `tests/scripts/tmux/` (not `tests/bats/slots/`). `pool-types.ts` and `session-intelligence.ts` are now fully read. Let me read the remaining critical files in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Excellent. Now let me read the remaining P58 BATS files, the session-tracker, and the plugin body.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Let me run the BATS tests, find the relevant session-tracker data, and read the remainder of the planning docs.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "## Goal\n- Re-diagnose Phase 58 `tmux-orchestration-programmatic-pool` (SHIPPED on `feature/harness-implementation`) against 4 corrected user-stated symptoms; deliver single handoff report in specified format, READ-ONLY.\n\n## Constraints & Preferences\n- READ-ONLY: no code changes, no file writes, no commits, no PRs.\n- Cannot delegate further; must run diagnose cycle using `gsd-debugger` and `gsd-codebase-mapper` as in-session helpers.\n- All evidence must be file:line referenced.\n- Source of truth for symptoms: verbatim 2026-06-04 user statement; symptom 3 is CORRECTED (main stream ENDS EARLY, not blocks).\n- Operating under `gsd-debug-session-manager` role with strict guardrails, fast decisions, junior expertise, mixed style.\n- Conversation language: vi; document language: en.\n- Final output: ONLY the 7-section handoff report, no preamble/postamble.\n\n## Progress\n### Done\n- Read `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md` (truncated at 36292 chars; needs remainder).\n- Read `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CONTEXT.md` (truncated at 31196 chars).\n- Read `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PATTERNS.md` (truncated at 18902 chars).\n- Listed Phase 58 directory: 58-CLOSE.md, 58-CONTEXT.md, 58-PATTERNS.md, 58-PLAN-01..07.md, 58-PLAN-CHECK.md, 58-RESEARCH.md, 58-SPEC.md, 58-SUMMARY.md, 58-VERIFICATION-REPORT.md, 58-VERIFICATION.md.\n- Read all 7 PLAN files: 58-PLAN-01.md through 58-PLAN-07.md.\n- Read `src/tools/delegation/delegate-task.ts` (truncated at 4468 chars; verified `POLICY (P58, G1)` block at line 6-9 and `createDelegateTaskTool` factory at line 27).\n- Confirmed BATS path corrected: tests live at `tests/scripts/tmux/` (NOT `tests/bats/slots/`).\n- Read `src/coordination/delegation/pool-types.ts` (full, 126 lines): exports `DelegationPool`, `DelegationPoolEntry`, `DelegationLifecycleStatus` (incl. G3 `paused` literal), `sanitizePreview`, `freezeDelegationPool`; numeric `schemaVersion = 1`; deep-frozen both top-level and per-entry.\n- Read `src/coordination/delegation/session-intelligence.ts` (full, 280 lines): **NOT a live activity stream** — it's static session stacking intelligence (`findStackableSessions`, `findResumableSessions`, `getRetryRecommendation`, `buildStackingGuidanceBanner`); scans terminal `Delegation` records for stacking/resuming past sessions, no real-time child event surface.\n- Read `src/coordination/delegation/manager.ts` (truncated at 29021 chars): imports `freezeDelegationPool, sanitizePreview`; `FacadeLifecycle` type exposes `getChildSessionId`, `getStatus`, `list`, `markAborted`, `markCancelled`, optional `register`; `DelegationManagerOptions`; `Manager.createForTest()` factory used by BATS slot 62.\n- Read `src/tools/delegation/delegation-status.ts` (truncated at 38804 chars): `DelegationControlSchema` z.enum = `[abort, cancel, restart, resume, chain, adjust-prompt, change-agent]`; imports session-intelligence stacking helpers; `HierarchyManifestChildSchema` validation; per-invocation manifestCache 5s TTL / 10 entries.\n- Read `src/tools/tmux-copilot.ts` (truncated at 14105 chars): **4 actions** (send-keys, list-panes, compute-grid, respawn) — NOT 7; `forward-prompt`/`take-over`/`release` are NOT here; permission-gated at execute() via `context.agent`; gracefully returns `{available: false, reason: \"tmux-not-wired\"}`; uses `getSessionManagerAdapter` from `../features/tmux/types.js`.\n- Read `tests/scripts/tmux/62-pool-status-api.bats` (truncated at 2158 chars): uses `Manager.createForTest()` + `__getDelegationsForTesting` seam; asserts frozen pool, 3 entries, schemaVersion=1, sanitizePreview, JSON round-trip.\n- Read `tests/scripts/tmux/63-abort-resume-pane-survival.bats` (truncated at 1826 chars): spawns real tmux session with `sleep 600`, pre-seeds `.hivemind/state/tmux-sessions/${sid}.json` state=ready, asserts abort→state=paused, resume→respawn pane, final state=ready.\n\n### In Progress\n- Gathering evidence for the 6 mandatory questions; need to finish reading truncated source files, find `forward-prompt`/`take-over`/`release` actions (NOT in tmux-copilot.ts), read remaining BATS slots 64-67, read session tracker, run BATS at corrected path, then synthesize handoff report.\n\n### Blocked\n- (none)\n\n## Key Decisions\n- PLAN-07 (wave 7) exists separately from PLAN-05's BATS slot 61, indicating an additional retrofit: BATS slot 67 at `tests/scripts/tmux/67-delegate-task-no-native-task-tool.bats`, suggesting initial BATS slot 61 was insufficient or test seams required post-hoc factory methods.\n- Phase 58 has 7 plans but 6 REQs (REQ-58-01..06) and 6 gaps (G1..G6); PLAN-07 does not map to a new REQ but to test-seam retrofit (createForTest, __setTmuxMultiplexerForTesting, module-level recordDelegationTerminal).\n- P58 is \"production-readiness hardening\" of P51–P55 tmux layer; 0 new tool keys, 0 new modules, 0 new `.hivemind/` storage formats — i.e., no streaming channel, no JIT context layer, no main-loop refactor.\n- **CORRECTION:** `src/tools/tmux-copilot.ts` is a 4-action pane-controller, not 7 actions; `forward-prompt`, `take-over`, `release` are GAP-04/GAP-05 tools that must live in a DIFFERENT file — still TBD.\n- **CORRECTION:** `session-intelligence.ts` is stacking-intelligence (read-side CQRS over historical delegations), NOT a real-time child activity surface; P58 does not implement live event streaming anywhere observed so far.\n- **CORRECTION:** BATS tests live at `tests/scripts/tmux/62-..67-...bats`, not `tests/bats/slots/`.\n\n## Next Steps\n- Find where `forward-prompt`, `take-over`, `release` actions live (likely `src/tools/delegation/*.ts` — grep for action names).\n- Read remainder of 58-SPEC.md, 58-CONTEXT.md, 58-PATTERNS.md, manager.ts, delegation-status.ts, BATS 62, 63 (all truncated).\n- Read BATS slots 64 (`forward-prompt`), 65 (`takeover-release`), 66 (`session-tracker-delegation-events`), 67 (`delegate-task-no-native-task-tool`).\n- Read `dist/plugin.js` lines 400-700 (HarnessControlPlane) — confirm native `task` tool wrapping and how it blocks.\n- Read `.hivemind/session-tracker/ses_17125ea08ffeqGFcR38RaB7I62/session-continuity.json` and child message log.\n- Run BATS at corrected path: `npx bats tests/scripts/tmux/62-pool-status-api.bats 2>&1 | head -50`, same for 63/64/65/66/67.\n- Synthesize 7-section handoff report: Symptom→Spec→Phase mapping, Root cause per symptom, What the WaiterModel actually does, In-scope vs out-of-scope, Fix recommendations (3 ranked), Verification plan, Risk assessment.\n\n## Critical Context\n- **Symptom 3 CORRECTED (critical):** orchestrator's main stream ENDS EARLY (returns control to user) while delegations still in flight; not \"blocks\". WaiterModel requires main stream STAY OPEN for `delegate-task` (non-blocking, true background) to allow mid-flight user interjection and orchestrator interleaving. Native `task` tool blocks + queues user messages; `delegate-task` should not block AND should not end main stream either.\n- **Symptom 1:** no live activity stream for child sessions → user sees only initial dispatch then silence then final result.\n- **Symptom 2:** no user→child `inject`/`intervene` affordance; `forward-prompt` is orchestrator→child, not user→child.\n- **Symptom 4:** orchestrator has no JIT context — `hivemind-trajectory` may not surface mid-flight child events; `session-tracker` write semantics unclear (append-only vs batched).\n- **P58 scope (in-scope hypothesis):** G2 (pool snapshot API — confirmed `pool-types.ts` exports), G3 (abort/resume state — confirmed BATS slot 63 pre-seeds state=ready), G4 (forward-prompt orchestrator→child — action location TBD), G5 (take-over/release manualOverride — action location TBD), G6 (3-event lifecycle — TBD), G1 (no-native-task guard — confirmed in `delegate-task.ts:6-9`). Out-of-scope hypothesis: parent↔child live streaming channel, user→child direct prompt affordance, orchestrator main-loop refactor to monitor delegations, JIT context for orchestrator.\n- **Symptoms 1, 2, 4 likely out-of-scope for P58** (P58 explicitly does not create new event channels or refactor agent loop). `session-intelligence.ts` is the only \"intelligence\" surface and it's a static scan, not streaming. Symptom 3 (main stream early termination) likely also out-of-scope — P58 documents `delegate-task` as \"Returns immediately with a delegation ID (always-background WaiterModel)\" per `src/tools/delegation/delegate-task.ts:32` but does not specify what parent agent does after return.\n- **Open question:** does the OpenCode SDK runtime keep parent stream alive automatically when a background delegation is in flight, or does the parent agent need a `monitorDelegations` loop? Symptom 3 hinges on this.\n- **Read context truncation note:** 58-SPEC.md (36292), 58-CONTEXT.md (31196), 58-PATTERNS.md (18902), 58-PLAN-02 (34226), 58-PLAN-03 (30905), 58-PLAN-04 (30824), 58-PLAN-06 (20018), 58-PLAN-07 (51685), tmux-copilot.ts (14105), manager.ts (29021), delegation-status.ts (38804), BATS 62 (2158), BATS 63 (1826) all truncated; remainder must be read.\n\n## Relevant Files\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md`: defines REQ-58-01..06 and 13 acceptance criteria (lines 197-211).\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CONTEXT.md`: D-58-01..17 decisions; G1–G6 gap definitions.\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PATTERNS.md`: 8 frozen patterns including `POLICY (P58, G1)` block pattern (Pattern 1).\n- `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-01..07.md`: wave-by-wave execution plans; PLAN-07 retrofit indicates test-seam refactor.\n- `src/tools/delegation/delegate-task.ts`: `createDelegateTaskTool` factory; \"Returns immediately with a delegation ID (always-background WaiterModel)\" at line 32; `POLICY (P58, G1)` block at lines 6-9.\n- `src/coordination/delegation/pool-types.ts`: G2 frozen contract — `DelegationPool`, `DelegationPoolEntry`, `DelegationLifecycleStatus` (incl. G3 `paused`), `sanitizePreview`, `freezeDelegationPool`; numeric `schemaVersion = 1`; `promptPreview` ≤ 200 chars single-line suffix-ellipsis.\n- `src/coordination/delegation/session-intelligence.ts`: stacking intelligence (NOT live activity) — `findStackableSessions`, `findResumableSessions`, `getRetryRecommendation`, `buildStackingGuidanceBanner`; STACKABLE_STATUSES = completed/error/timeout/aborted/cancelled; RESUMABLE_STATUSES = dispatched/running.\n- `src/coordination/delegation/manager.ts`: `DelegationManager` class with `createForTest()` factory, `__getDelegationsForTesting` seam, `FacadeLifecycle` (getStatus/list/markAborted/markCancelled), consumes `freezeDelegationPool, sanitizePreview` from pool-types; full `getPoolSnapshot`/`dispatch`/`abortDelegation`/`resume` impl TBD (truncated).\n- `src/tools/delegation/delegation-status.ts`: `DelegationControlSchema` actions = `[abort, cancel, restart, resume, chain, adjust-prompt, change-agent]`; consumes session-intelligence stacking helpers; `HierarchyManifestChildSchema` validation; `manifestCache` 5s TTL.\n- `src/tools/tmux-copilot.ts`: 4 actions (send-keys, list-panes, compute-grid, respawn) — PANE CONTROLLER, not G4/G5; uses `getSessionManagerAdapter` from `../features/tmux/types.js`; permission-gated at `execute()`; graceful `{available: false, reason: \"tmux-not-wired\"}` fallback.\n- `src/tools/delegation/*.ts` (UNKNOWN file): likely home of `forward-prompt`, `take-over`, `release` actions (G4/G5) — needs grep.\n- `dist/plugin.js` lines 400-700 (pending read): HarnessControlPlane — native `task` tool wrapping, blocking semantics; key for symptom 3.\n- `tests/scripts/tmux/62-pool-status-api.bats`: G2 acceptance — `createForTest()` + `__getDelegationsForTesting` seam; 3 fake delegations, frozen pool, schemaVersion=1, sanitizePreview, JSON round-trip.\n- `tests/scripts/tmux/63-abort-resume-pane-survival.bats`: G3 acceptance — real tmux session with `sleep 600`, pre-seeded state=ready `.hivemind/state/tmux-sessions/${sid}.json`, abort→state=paused, resume→respawn pane, final state=ready.\n- `tests/scripts/tmux/64-forward-prompt.bats`, `65-takeover-release.bats`, `66-session-tracker-delegation-events.bats`, `67-delegate-task-no-native-task-tool.bats` (pending read): G4, G5, G6, G1 acceptance tests.\n- `.hivemind/session-tracker/ses_17125ea08ffeqGFcR38RaB7I62/session-continuity.json` (pending read): evidence of actual child session activity.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "user",
+      "content": "Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "I'll continue gathering the remaining evidence and synthesize the 7-section handoff report. All 6 BATS tests pass (G1-G6 confirmed shipping), so P58 itself is solid — the question is the gap between P58 scope and the user's 4 symptoms.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "gsd-debug-session-manager",
+      "content": "Re-diagnose with corrected symptom 3",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 15,
+      "actor": "gsd-debug-session-manager",
+      "content": "<task id=\"ses_17104df3bffepJGW3UuEGt7G0B\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-03T19:34:55.393Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_em540uvt9uoo_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:34:56.167Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_em540uvt9uoo_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CONTEXT.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:34:56.780Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_em540uvt9uoo_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PATTERNS.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:34:56.805Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_em540uvt9uoo_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:06.839Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_3af5yw3y0okf_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-01.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:07.466Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_3af5yw3y0okf_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-02.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:08.228Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_3af5yw3y0okf_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-03.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:08.940Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_3af5yw3y0okf_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-04.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:08.945Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_3af5yw3y0okf_5",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-05.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:09.552Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_3af5yw3y0okf_6",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-06.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:10.297Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_3af5yw3y0okf_7",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-07.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:10.328Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_3af5yw3y0okf_8",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegate-task.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:21.995Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_gmdpas0gbx6y_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/tmux-copilot.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:22.621Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_gmdpas0gbx6y_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:23.524Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_gmdpas0gbx6y_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:35:23.840Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_gmdpas0gbx6y_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:10.976Z",
+      "type": "session_compacted",
+      "content": "**compact_summary:**\n\nYou are the subagent Name: gsd-debug-session-manager role: debug orchestrator. You must do as this prompt instructed and know that you are being delegated. You CANNOT delegate further — execute the diagnose cycle yourself, then return a single handoff report.\n\n# Context\n\nPhase 58 `tmux-orchestration-programmatic-pool` is SHIPPED on branch `feature/harness-implementation`. Prior UAT via delegate-task failed. Previous diagnosis attempt rejected for misrepresenting symptom 3. Re-diagnose with the CORRECTED 4 user-stated symptoms below.\n\n# User's 4 explicit symptoms (verbatim, 2026-06-04, source of truth)\n\n**Symptom 1**: Session spawns but no live activities shown on the session\n- When a child session is spawned (via `delegate-task` or native `task` tool), the main TUI does not stream the child's tool calls, progress, intermediate thoughts, or state changes in real time\n- User sees only initial dispatch event, then silence, then final result (or cancellation)\n\n**Symptom 2**: User has no direct interaction to the child session\n- User cannot send a direct prompt into a running child session\n- User cannot send a key (pause/abort/resume signal) to a running child session\n- There is no `inject` or `intervene` affordance from the user's TUI into an active child session\n\n**Symptom 3 (CORRECTED)**: The orchestrator's main stream terminates instead of remaining open while delegated tasks are still running\n- The orchestrator (L0) is allowed to end the main stream early when it has no more work to do, even if `delegate-task` dispatches are still in flight\n- This is NOT the same as \"blocking\" — the orchestrator's main loop does NOT block. It actually ends and returns control to the user while delegations are still running\n- The expected WaiterModel behavior is: main stream STAYS OPEN so the orchestrator can keep monitoring delegations and accept new user instructions mid-flight\n- For `delegate-task` (the truly async/background variant): the agent can dispatch multiple tasks and shift focus between them. The MAIN STREAM MUST STAY OPEN as long as delegated tasks are still running, so the user can send messages mid-flight that the orchestrator can route to the right child or use to steer the workflow\n- For native `task` tool (synchronous variant): the tool BLOCKS the main stream until the child returns. The orchestrator cannot interleave other work. The user's mid-flight messages are QUEUED behind the blocking call\n- The KEY DIFFERENTIATOR between the two: `delegate-task` is non-blocking + allows the main stream to STAY OPEN + allows the user to communicate with the workflow mid-flight. Native `task` is blocking + queues user messages\n- Current observed behavior contradicts this: the orchestrator ends its main stream early and the user loses the ability to interject\n\n**Symptom 4**: The orchestrator has no live JIT context\n- The orchestrator (L0) does not know in real time what tools the child is invoking, what state transitions the child is making, or what intermediate artifacts the child is producing\n- When the user asks \"progress?\" mid-flight, the orchestrator cannot answer because it has no visibility into the child's in-flight work\n- Therefore, reports are not filed because the session has not completed the run, AND the orchestrator has no idea what the sub-agent is doing while the user prompts the main session asking for progress\n\n# Your job\n\nFollow `gsd-debug-session-manager` skill protocol (Phase 1-6 of diagnose loop). Use `gsd-debugger` as the investigator specialist inside your session.\n\n# Mandatory questions to answer (READ-ONLY diagnosis, no code changes)\n\n1. **Why are child session activities not streamed live to the main TUI?** Trace the streaming/event channel between a child session and the orchestrator. What is the OpenCode SDK event surface for child tool calls? Is there a `session.event` subscriber? Does `hivemind-trajectory` track delegated session events? Does `tmux-copilot list-panes` even see child session panes? Map the gap: where in `dist/plugin.js` or `dist/coordination/` is the parent→child telemetry channel supposed to live?\n\n2. **Why is there no direct interaction affordance from the user into a running child session?** Check if `tmux-copilot forward-prompt` was wired for user→child. Check if `take-over` was scoped correctly. Check if `release` covers child resume. Are these tools orchestrator-tier gated (which would block the user from invoking them directly)? If so, is there a separate `hivemind` user tool for direct child intervention?\n\n3. **Why does the orchestrator's main stream end early instead of staying open while delegations run?** This is the WaiterModel contract gap.\n   - Read `src/coordination/coordination/delegate-task-tool.ts` or `src/tools/delegation/delegate-task.ts` — does it actually return a delegation ID immediately and YIELD (truly non-blocking)? Or does it return a delegation ID but the SDK's parent agent loop terminates anyway?\n   - Look at the OpenCode SDK runtime contract for `delegate-task` / background sessions. Is the parent agent supposed to poll `delegation-status` in a loop, or is the runtime supposed to keep the parent stream alive automatically?\n   - Is there a \"still has running delegations\" check in the orchestrator's main loop? If not, the orchestrator returns control to the user prematurely\n   - Is the issue in Hivemind's wrapper around delegate-task, or in the OpenCode SDK behavior itself?\n   - Check `src/coordination/coordination/delegation-status.ts` and `src/coordination/coordination/session-intelligence.ts` (if exists) — does `delegation-status` have a `peek` or `progress` action that returns mid-flight state? Is it being called by the orchestrator's main loop?\n   - For native `task` tool: read `dist/plugin.js` to see how it wraps the tool. Does it correctly block? Does the user's mid-flight message get queued?\n   - For `delegate-task`: read the wrapper. Does the main agent loop return after dispatch? Or does it run a monitoring loop until delegations complete?\n\n4. **Why does the orchestrator have no live JIT context for child sessions?** Check `hivemind-trajectory({action: \"traverse\", trajectoryId})` — does it return child session events as they happen, or only at end? Check `session-tracker` write semantics — is it append-only during child run, or batched? Is there an event bus that the orchestrator can subscribe to without polling?\n\n5. **Was the Phase 58 spec actually capable of addressing the 4 symptoms, or was it a different scope?** Read `58-SPEC.md` REQ-58-01..06 and `58-CONTEXT.md` D-58-01..17. Which of the 4 symptoms are in-scope, which are out-of-scope? Which upstream phases (49-56) own which symptoms? Map symptom→phase→REQ to identify which symptoms are real P58 gaps vs which are pre-existing system limitations that P58 cannot fix.\n\n6. **For each in-scope symptom, what is the missing primitive that would fix it?** For each of the 4 symptoms: which tool/hook/event surface is missing? Where in the source tree would it live? Is the missing primitive listed in `58-PATTERNS.md` patterns or omitted? Did `gsd-executor` skip the implementation, or did the spec never call for it?\n\n# Hard constraints\n\n- You CANNOT delegate further. Run the diagnose cycle yourself using `gsd-debugger` and `gsd-codebase-mapper` as specialist helpers within your session.\n- READ-ONLY diagnosis. No code modifications, no file writes, no commits, no PRs. Output is a single handoff report only.\n- Use disk-first loading. Read files from disk, do not inline.\n- All evidence must be file:line referenced.\n- Read these files in full:\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md`\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CONTEXT.md`\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PATTERNS.md`\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-01..06.md`\n  - `src/tools/delegation/delegate-task.ts` (the full file)\n  - `src/tools/delegation/delegation-status.ts` (the full file)\n  - `src/tools/tmux-copilot.ts` (the full file, 7 actions)\n  - `src/coordination/delegation/manager.ts` (the full file)\n  - `src/coordination/delegation/session-intelligence.ts` (if exists)\n  - `dist/plugin.js` lines 400-700 (the HarnessControlPlane function body)\n- Run `npx bats tests/bats/slots/62-tmux-pool-types.bats 2>&1 | head -50` and `npx bats tests/bats/slots/63-tmux-pool-snapshot.bats 2>&1 | head -50` to confirm BATS state.\n- Read `.hivemind/session-tracker/ses_17125ea08ffeqGFcR38RaB7I62/session-continuity.json` and child message log if they exist.\n\n# Return format (single message)\n\n## Symptom → Spec → Phase mapping\n[For each of the 4 symptoms: which phase (49-58) owns it, which REQ addresses it, which source file implements it, what the BATS test covers]\n\n## Root cause per symptom\n[For each of the 4 symptoms: the specific file:line gap, the missing primitive, why it was not implemented]\n\n## What the WaiterModel actually does\n[Read the source. Is delegate-task truly async? Does it return a delegation ID immediately? Does the main stream actually block, or is it returning control? What is the documented vs actual behavior? file:line evidence. Pay SPECIAL attention to the corrected symptom 3: the issue is the main stream ENDS EARLY (not blocks) and the orchestrator loses the ability to interleave work / accept mid-flight user messages.]\n\n## In-scope vs out-of-scope assessment\n[For each symptom: was it within P58 to fix? If yes, why didn't the plans cover it. If no, which follow-up phase is needed.]\n\n## Specific fix recommendations (DO NOT IMPLEMENT)\n[3 options ranked. File paths, line numbers, what the fix should change, why it addresses root cause.]\n\n## Verification plan\n[What test would prove each fix works — must be runnable today]\n\n## Risk assessment\n[What else could break — adjacent surfaces to re-verify]\n\nReturn ONLY this report. No preamble, no postamble, no assistant-friendly commentary.\n",
+      "metadata": {
+        "capturedFrom": "session.compacted"
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:23.149Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_uwckypiapcx3_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:23.164Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_uwckypiapcx3_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:23.784Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_uwckypiapcx3_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/pool-types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:23.790Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_uwckypiapcx3_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/session-intelligence.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:36.974Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_o6tvxiu1qxf8_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:36.981Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_o6tvxiu1qxf8_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegation-status.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:37.663Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_o6tvxiu1qxf8_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/scripts/tmux/62-pool-status-api.bats"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:37.690Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_o6tvxiu1qxf8_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/scripts/tmux/63-abort-resume-pane-survival.bats"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:46.145Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_qacsgsrhof6v_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/scripts/tmux/64-forward-prompt.bats"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:46.580Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_qacsgsrhof6v_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/scripts/tmux/66-session-tracker-delegation-events.bats"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:46.586Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_qacsgsrhof6v_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/scripts/tmux/65-takeover-release.bats"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:47.220Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_qacsgsrhof6v_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/tests/scripts/tmux/67-delegate-task-no-native-task-tool.bats"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:36:47.686Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_qacsgsrhof6v_5",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:37:01.501Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hpc7uq5autmm_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:37:01.612Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hpc7uq5autmm_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:37:03.088Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hpc7uq5autmm_6",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:37:03.135Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hpc7uq5autmm_7",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:37:03.154Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hpc7uq5autmm_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:37:03.476Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hpc7uq5autmm_5",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:37:04.866Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hpc7uq5autmm_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:37:53.025Z",
+      "type": "session_compacted",
+      "content": "**compact_summary:**\n\nYou are the subagent Name: gsd-debug-session-manager role: debug orchestrator. You must do as this prompt instructed and know that you are being delegated. You CANNOT delegate further — execute the diagnose cycle yourself, then return a single handoff report.\n\n# Context\n\nPhase 58 `tmux-orchestration-programmatic-pool` is SHIPPED on branch `feature/harness-implementation`. Prior UAT via delegate-task failed. Previous diagnosis attempt rejected for misrepresenting symptom 3. Re-diagnose with the CORRECTED 4 user-stated symptoms below.\n\n# User's 4 explicit symptoms (verbatim, 2026-06-04, source of truth)\n\n**Symptom 1**: Session spawns but no live activities shown on the session\n- When a child session is spawned (via `delegate-task` or native `task` tool), the main TUI does not stream the child's tool calls, progress, intermediate thoughts, or state changes in real time\n- User sees only initial dispatch event, then silence, then final result (or cancellation)\n\n**Symptom 2**: User has no direct interaction to the child session\n- User cannot send a direct prompt into a running child session\n- User cannot send a key (pause/abort/resume signal) to a running child session\n- There is no `inject` or `intervene` affordance from the user's TUI into an active child session\n\n**Symptom 3 (CORRECTED)**: The orchestrator's main stream terminates instead of remaining open while delegated tasks are still running\n- The orchestrator (L0) is allowed to end the main stream early when it has no more work to do, even if `delegate-task` dispatches are still in flight\n- This is NOT the same as \"blocking\" — the orchestrator's main loop does NOT block. It actually ends and returns control to the user while delegations are still running\n- The expected WaiterModel behavior is: main stream STAYS OPEN so the orchestrator can keep monitoring delegations and accept new user instructions mid-flight\n- For `delegate-task` (the truly async/background variant): the agent can dispatch multiple tasks and shift focus between them. The MAIN STREAM MUST STAY OPEN as long as delegated tasks are still running, so the user can send messages mid-flight that the orchestrator can route to the right child or use to steer the workflow\n- For native `task` tool (synchronous variant): the tool BLOCKS the main stream until the child returns. The orchestrator cannot interleave other work. The user's mid-flight messages are QUEUED behind the blocking call\n- The KEY DIFFERENTIATOR between the two: `delegate-task` is non-blocking + allows the main stream to STAY OPEN + allows the user to communicate with the workflow mid-flight. Native `task` is blocking + queues user messages\n- Current observed behavior contradicts this: the orchestrator ends its main stream early and the user loses the ability to interject\n\n**Symptom 4**: The orchestrator has no live JIT context\n- The orchestrator (L0) does not know in real time what tools the child is invoking, what state transitions the child is making, or what intermediate artifacts the child is producing\n- When the user asks \"progress?\" mid-flight, the orchestrator cannot answer because it has no visibility into the child's in-flight work\n- Therefore, reports are not filed because the session has not completed the run, AND the orchestrator has no idea what the sub-agent is doing while the user prompts the main session asking for progress\n\n# Your job\n\nFollow `gsd-debug-session-manager` skill protocol (Phase 1-6 of diagnose loop). Use `gsd-debugger` as the investigator specialist inside your session.\n\n# Mandatory questions to answer (READ-ONLY diagnosis, no code changes)\n\n1. **Why are child session activities not streamed live to the main TUI?** Trace the streaming/event channel between a child session and the orchestrator. What is the OpenCode SDK event surface for child tool calls? Is there a `session.event` subscriber? Does `hivemind-trajectory` track delegated session events? Does `tmux-copilot list-panes` even see child session panes? Map the gap: where in `dist/plugin.js` or `dist/coordination/` is the parent→child telemetry channel supposed to live?\n\n2. **Why is there no direct interaction affordance from the user into a running child session?** Check if `tmux-copilot forward-prompt` was wired for user→child. Check if `take-over` was scoped correctly. Check if `release` covers child resume. Are these tools orchestrator-tier gated (which would block the user from invoking them directly)? If so, is there a separate `hivemind` user tool for direct child intervention?\n\n3. **Why does the orchestrator's main stream end early instead of staying open while delegations run?** This is the WaiterModel contract gap.\n   - Read `src/coordination/coordination/delegate-task-tool.ts` or `src/tools/delegation/delegate-task.ts` — does it actually return a delegation ID immediately and YIELD (truly non-blocking)? Or does it return a delegation ID but the SDK's parent agent loop terminates anyway?\n   - Look at the OpenCode SDK runtime contract for `delegate-task` / background sessions. Is the parent agent supposed to poll `delegation-status` in a loop, or is the runtime supposed to keep the parent stream alive automatically?\n   - Is there a \"still has running delegations\" check in the orchestrator's main loop? If not, the orchestrator returns control to the user prematurely\n   - Is the issue in Hivemind's wrapper around delegate-task, or in the OpenCode SDK behavior itself?\n   - Check `src/coordination/coordination/delegation-status.ts` and `src/coordination/coordination/session-intelligence.ts` (if exists) — does `delegation-status` have a `peek` or `progress` action that returns mid-flight state? Is it being called by the orchestrator's main loop?\n   - For native `task` tool: read `dist/plugin.js` to see how it wraps the tool. Does it correctly block? Does the user's mid-flight message get queued?\n   - For `delegate-task`: read the wrapper. Does the main agent loop return after dispatch? Or does it run a monitoring loop until delegations complete?\n\n4. **Why does the orchestrator have no live JIT context for child sessions?** Check `hivemind-trajectory({action: \"traverse\", trajectoryId})` — does it return child session events as they happen, or only at end? Check `session-tracker` write semantics — is it append-only during child run, or batched? Is there an event bus that the orchestrator can subscribe to without polling?\n\n5. **Was the Phase 58 spec actually capable of addressing the 4 symptoms, or was it a different scope?** Read `58-SPEC.md` REQ-58-01..06 and `58-CONTEXT.md` D-58-01..17. Which of the 4 symptoms are in-scope, which are out-of-scope? Which upstream phases (49-56) own which symptoms? Map symptom→phase→REQ to identify which symptoms are real P58 gaps vs which are pre-existing system limitations that P58 cannot fix.\n\n6. **For each in-scope symptom, what is the missing primitive that would fix it?** For each of the 4 symptoms: which tool/hook/event surface is missing? Where in the source tree would it live? Is the missing primitive listed in `58-PATTERNS.md` patterns or omitted? Did `gsd-executor` skip the implementation, or did the spec never call for it?\n\n# Hard constraints\n\n- You CANNOT delegate further. Run the diagnose cycle yourself using `gsd-debugger` and `gsd-codebase-mapper` as specialist helpers within your session.\n- READ-ONLY diagnosis. No code modifications, no file writes, no commits, no PRs. Output is a single handoff report only.\n- Use disk-first loading. Read files from disk, do not inline.\n- All evidence must be file:line referenced.\n- Read these files in full:\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-SPEC.md`\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CONTEXT.md`\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PATTERNS.md`\n  - `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-PLAN-01..06.md`\n  - `src/tools/delegation/delegate-task.ts` (the full file)\n  - `src/tools/delegation/delegation-status.ts` (the full file)\n  - `src/tools/tmux-copilot.ts` (the full file, 7 actions)\n  - `src/coordination/delegation/manager.ts` (the full file)\n  - `src/coordination/delegation/session-intelligence.ts` (if exists)\n  - `dist/plugin.js` lines 400-700 (the HarnessControlPlane function body)\n- Run `npx bats tests/bats/slots/62-tmux-pool-types.bats 2>&1 | head -50` and `npx bats tests/bats/slots/63-tmux-pool-snapshot.bats 2>&1 | head -50` to confirm BATS state.\n- Read `.hivemind/session-tracker/ses_17125ea08ffeqGFcR38RaB7I62/session-continuity.json` and child message log if they exist.\n\n# Return format (single message)\n\n## Symptom → Spec → Phase mapping\n[For each of the 4 symptoms: which phase (49-58) owns it, which REQ addresses it, which source file implements it, what the BATS test covers]\n\n## Root cause per symptom\n[For each of the 4 symptoms: the specific file:line gap, the missing primitive, why it was not implemented]\n\n## What the WaiterModel actually does\n[Read the source. Is delegate-task truly async? Does it return a delegation ID immediately? Does the main stream actually block, or is it returning control? What is the documented vs actual behavior? file:line evidence. Pay SPECIAL attention to the corrected symptom 3: the issue is the main stream ENDS EARLY (not blocks) and the orchestrator loses the ability to interleave work / accept mid-flight user messages.]\n\n## In-scope vs out-of-scope assessment\n[For each symptom: was it within P58 to fix? If yes, why didn't the plans cover it. If no, which follow-up phase is needed.]\n\n## Specific fix recommendations (DO NOT IMPLEMENT)\n[3 options ranked. File paths, line numbers, what the fix should change, why it addresses root cause.]\n\n## Verification plan\n[What test would prove each fix works — must be runnable today]\n\n## Risk assessment\n[What else could break — adjacent surfaces to re-verify]\n\nReturn ONLY this report. No preamble, no postamble, no assistant-friendly commentary.\n",
+      "metadata": {
+        "capturedFrom": "session.compacted"
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:38:17.940Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_4m67w3rsf5wp_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/tmux-copilot.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:38:18.555Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_4m67w3rsf5wp_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/session-tracker/ses_1723d915effe0g1RAXPAJ7yH4v/ses_17125ea08ffeqGFcR38RaB7I62.json"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:38:19.454Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_4m67w3rsf5wp_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:38:20.623Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_4m67w3rsf5wp_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-03T19:38:26.755Z",
+      "type": "assistant_message",
+      "content": "<task id=\"ses_17104df3bffepJGW3UuEGt7G0B\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_17104df3bffepJGW3UuEGt7G0B"
+      }
+    }
+  ],
+  "lastMessage": "<task id=\"ses_17104df3bffepJGW3UuEGt7G0B\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>"
+}

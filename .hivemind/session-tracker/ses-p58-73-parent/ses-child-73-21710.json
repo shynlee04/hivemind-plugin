@@ -1,0 +1,25 @@
+{
+  "sessionID": "ses-child-73-21710",
+  "parentSessionID": "ses-p58-73-parent",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-l2-researcher",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-03T21:05:37.962Z",
+  "updated": "2026-06-03T21:05:37.964Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "hm-l2-researcher",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "lastMessage": "Failed to send prompt to child session",
+  "queueKey": "provider:openai:model:gpt-4",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
+}
