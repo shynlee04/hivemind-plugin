@@ -44,6 +44,13 @@ export type DelegationManagerOptions = {
   sessionManager?: {
     persist: (record: PersistedSession) => Promise<void>
     respawnIfKnown: (sessionId: string) => Promise<{ paneId: string } | null>
+    /**
+     * P58.8 S1 (REQ-58-07): start the capture-pane polling loop. Optional
+     * because not every consumer of DelegationManager has a tmux integration
+     * wired in (e.g. headless test fixtures). When undefined, dispatch
+     * skips the polling-start call (the `?.` short-circuits).
+     */
+    startPolling?: (intervalMs?: number) => void
   }
   /**
    * P58 (G6, REQ-58-06, D-58-14): Optional ToolDelegation reference for

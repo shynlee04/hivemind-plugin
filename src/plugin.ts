@@ -291,6 +291,13 @@ export interface DelegationModuleSetupOptions {
   ptyManager?: Awaited<ReturnType<typeof createPtyManagerIfSupported>>
   runtimePolicy?: RuntimePolicy
   onChildSessionCreated?: (childSessionId: string, parentSessionId: string) => void
+  /**
+   * P58.8 S1 (REQ-58-07): optional tmux integration result. When supplied,
+   * the session manager reference is wired into DelegationManager so
+   * `dispatch()` can start the capture-pane polling loop after spawning
+   * a child session.
+   */
+  tmuxIntegration?: Awaited<ReturnType<typeof createTmuxIntegrationIfSupported>>
 }
 
 // ---------------------------------------------------------------------------
@@ -425,7 +432,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const childSessionStarter = typeof options.client?.session === "object"
     ? createSdkChildSessionStarter(options.client)
     : undefined
-  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, periodicNotifier, onChildSessionCreated: options.onChildSessionCreated, client: options.client })
+  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, periodicNotifier, onChildSessionCreated: options.onChildSessionCreated, client: options.client, sessionManager: options.tmuxIntegration?.sessionManager_ })
   coordinatorRef = coordinator
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
     coordinator,
@@ -438,6 +445,17 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
       parts: [{ type: "text", text: prompt }],
     }),
     stateMachine,
+    // P58.8 S1 (REQ-58-07): wire the session manager so dispatch() can
+    // start the capture-pane polling loop after spawning a child session.
+    // The adapter satisfies the G3 historical sessionManager shape
+    // (persist + respawnIfKnown) and adds startPolling for S1.
+    sessionManager: options.tmuxIntegration?.sessionManager_
+      ? {
+          persist: (record) => options.tmuxIntegration!.sessionManager_!.persist(record),
+          respawnIfKnown: (sessionId) => options.tmuxIntegration!.sessionManager_!.respawnIfKnown(sessionId),
+          startPolling: (intervalMs) => options.tmuxIntegration!.sessionManager_!.startPolling(intervalMs),
+        }
+      : undefined,
   })
   return { coordinator, delegationManager, detector, lifecycle, notificationRouter, periodicNotifier, slotManager, monitor }
 }

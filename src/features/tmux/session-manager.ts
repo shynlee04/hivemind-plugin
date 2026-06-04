@@ -378,6 +378,17 @@ export class SessionManager implements ForkSessionManager {
     return this.latestCapture.get(paneId) ?? null
   }
 
+  /**
+   * P58.8 S1 (REQ-58-07): persist a `PersistedSession` to the configured
+   * `SessionPersistence` handle. Exposed publicly so the
+   * `manager.ts:sessionManager` option (which expects a `{ persist, ... }`
+   * shape) can be wired from the integration factory. Returns a resolved
+   * promise when no persistence handle is configured.
+   */
+  async persist(record: import("./persistence.js").PersistedSession): Promise<void> {
+    await this.persistence?.persist(record)
+  }
+
   private static hashContent(content: string): string {
     // Cheap non-crypto hash; sufficient for stable-content detection.
     let hash = 0

@@ -108,6 +108,13 @@ export interface DelegationCoordinatorDeps {
   periodicNotifier?: Pick<PeriodicNotifier, "deregister" | "register">
   onChildSessionCreated?: (childSessionId: string, parentSessionId: string) => void
   client?: OpenCodeClient
+  /**
+   * P58.8 S1 (REQ-58-07): optional session manager reference used to start
+   * the capture-pane polling loop after a child session is created. When
+   * undefined, no polling is started (tmux may be unavailable or the
+   * integration is not wired in the current environment).
+   */
+  sessionManager?: { startPolling(intervalMs?: number): void }
 }
 
 export interface ChildSessionStartParams {
@@ -210,6 +217,12 @@ export class DelegationCoordinator {
         // delegate-task are visible even when session.created events don't fire
         // for SDK-created sessions.
         this.deps.onChildSessionCreated?.(child.childSessionId, params.parentSessionId)
+
+        // P58.8 S1 (REQ-58-07): start the capture-pane polling loop on
+        // first child session creation so the parent tmux panel receives
+        // child events in real time. startPolling is idempotent — safe to
+        // call on every dispatch.
+        this.deps.sessionManager?.startPolling()
 
         // Phase 23: Notify parent session — toast + context injection
         if (this.deps.client) {

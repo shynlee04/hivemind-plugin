@@ -26,7 +26,6 @@ import {
 import type { BehavioralOverrides } from "../../routing/behavioral-profile/types.js"
 import type { DelegationMonitor } from "./monitor.js"
 import type { NotificationRouter } from "./notification-router.js"
-import type { SessionManager } from "../../features/tmux/session-manager.js"
 
 type QueueContext = { provider?: string; model?: string; agent?: string }
 
@@ -37,14 +36,12 @@ interface DelegationManagerOptions {
   notificationRouter?: Pick<NotificationRouter, "register">
   stateMachine?: DelegationStateMachine
   /**
-   * P58.8 (S1, REQ-58-07): optional tmux SessionManager used to start the
-   * capture-pane polling loop after a child delegation is dispatched. When
-   * omitted (or when tmux is unavailable), polling is not started and the
-   * `peek` action will return "no capture recorded" until polling begins.
-   * Idempotent: the SessionManager's `startPolling` short-circuits if the
-   * timer is already running (see `src/features/tmux/session-manager.ts:329`).
+   * P58.8 S1 (REQ-58-07): optional session manager reference used to start
+   * the capture-pane polling loop after a child session is spawned. When
+   * undefined, no polling is started (tmux may be unavailable or the
+   * integration is not wired in the current environment).
    */
-  sessionManager?: Pick<SessionManager, "startPolling">
+  sessionManager?: { startPolling(intervalMs?: number): void }
 }
 
 const DEFAULT_MANAGER_RUNTIME_POLICY: RuntimePolicy = {
@@ -94,7 +91,7 @@ export class DelegationManager {
   private readonly runtimePolicy: RuntimePolicy
   private readonly monitor: Pick<DelegationMonitor, "start"> | undefined
   private readonly notificationRouter: Pick<NotificationRouter, "register"> | undefined
-  private readonly sessionManager: Pick<SessionManager, "startPolling"> | undefined
+  private readonly sessionManager: { startPolling(intervalMs?: number): void } | undefined
   private completionDetector: CompletionDetector | undefined
 
   constructor(
@@ -264,6 +261,10 @@ export class DelegationManager {
       this.state.registerDelegation(delegation, true)
       // Persist is handled by the shared state machine's transition/transitionToTerminal below.
       this.notificationRouter?.register(delegation.id, params.parentSessionId)
+      // P58.8 S1 (REQ-58-07): ensure the capture-pane polling loop is
+      // running so the parent tmux panel receives child events in real
+      // time. startPolling is idempotent — safe to call on every dispatch.
+      this.sessionManager?.startPolling()
       try {
         const promptBody = {
           parts: [{ type: "text", text: params.prompt }],
