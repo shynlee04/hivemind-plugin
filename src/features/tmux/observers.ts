@@ -86,6 +86,19 @@ export interface PaneCapturedEvent {
   content?: string;
 }
 
+/**
+ * P58.9 REQ-58.9-01: minimal observer interface implemented by anything that
+ * wants to receive `pane-captured` events from `SessionManager.startPolling`.
+ * Kept as a separate, narrower interface than `TmuxEventObserver` because
+ * the SessionManager only needs the `onPaneCaptured` callback — it does not
+ * need the full observer with `onSessionStateChanged` etc. This lets
+ * `SessionManager.setObserver(...)` accept a small adapter without
+ * requiring a full TmuxEventObserver.
+ */
+export interface PaneObserver {
+  onPaneCaptured: (event: PaneCapturedEvent) => void;
+}
+
 // ---------------------------------------------------------------------------
 // Observer return type (function + registration methods)
 // ---------------------------------------------------------------------------

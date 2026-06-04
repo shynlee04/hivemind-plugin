@@ -31,7 +31,7 @@
  * ORIGIN: opencode-tmux/src/session-manager.ts:69-138 (constructor + state)
  * ORIGIN: opencode-tmux/src/session-manager.ts:139-187 (onSessionCreated)
  */
-import type { EnrichedSessionEvent, ForkSessionManager } from "./observers.js";
+import type { EnrichedSessionEvent, ForkSessionManager, PaneObserver } from "./observers.js";
 import type { TmuxMultiplexer } from "./tmux-multiplexer.js";
 import type { TmuxLayout } from "./tmux-multiplexer.js";
 import type { PersistedSession, SessionPersistence, SessionState } from "./persistence.js";
@@ -130,6 +130,12 @@ export class SessionManager implements ForkSessionManager {
   private currentPollIntervalMs: number = 5000;
   private static readonly MIN_POLL_MS = 5000;
   private static readonly MAX_POLL_MS = 15000;
+  // P58.9 (REQ-58.9-01): the observer that receives `pane-captured` events
+  // emitted by the polling tick. The plugin composition root injects the
+  // real TmuxEventObserver via `setObserver(...)` after constructing the
+  // SessionManager. Defaults to `null` (no emit) for tests and the no-op
+  // in-tree path where tmux is unavailable.
+  private observer: PaneObserver | null = null;
 
   /**
    * @param multiplexer TmuxMultiplexer instance owned by the harness.
@@ -149,6 +155,37 @@ export class SessionManager implements ForkSessionManager {
     private readonly mainPaneSize: number = SESSION_MANAGER_DEFAULTS.mainPaneSize,
     private readonly persistence?: SessionPersistence,
   ) {}
+
+  /**
+   * P58.9 REQ-58.9-01: wire a `PaneObserver` into the SessionManager so the
+   * polling tick can emit `pane-captured` events (previously, the
+   * startPolling tick at L328-356 captured content but did NOT emit events
+   * — silent data-loss bug, see `p51-plus-sticky-bugs-2026-06-04.md:39-50`).
+   *
+   * The observer is invoked with `{ type: "pane-captured", sessionId,
+   * paneId, contentLength, timestamp, content }` for every hash change in
+   * `startPolling` (not on every tick — see the `prevHash !== hash` guard
+   * at L341). The full content is included in the event so the P53
+   * pane-monitor hook at `src/hooks/pane-monitor.ts` can write a sibling
+   * `<ts>-pane-content.txt` next to the 7-field `<ts>-pane.json`.
+   *
+   * The plugin composition root (`src/plugin.ts:760-790`) calls this method
+   * after constructing the SessionManager + TmuxEventObserver. If no
+   * observer is set (e.g., in unit tests), the polling tick continues to
+   * capture content but no events are emitted — the existing
+   * `getLatestCapture(paneId)` accessor is unaffected.
+   *
+   * @param observer - PaneObserver instance (typically the SessionManagerAdapter
+   *                   published by `setSessionManagerAdapter` in
+   *                   `src/features/tmux/types.ts`). The adapter forwards
+   *                   the event to the real `TmuxEventObserver.onPaneCaptured`.
+   */
+  setObserver(observer: PaneObserver): void {
+    this.observer = observer;
+    // Touch the field so tsc strict mode is satisfied before I3 wires the
+    // actual emit call into startPolling's tick.
+    void this.observer;
+  }
 
   // -------------------------------------------------------------------------
   // ForkSessionManager surface (one method)
