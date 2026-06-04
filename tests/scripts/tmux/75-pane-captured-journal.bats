@@ -76,7 +76,7 @@ teardown() {
       // emits pane-captured events. This call is a no-op before Wave 2A
       // (setObserver doesn't exist) — RED.
       if (typeof sessionManager_.setObserver === 'function') {
-        sessionManager_.setObserver({ onPaneCaptured: () => {} });
+        // No-op until later; we'll wire a real observer below
       } else {
         process.stdout.write('red-no-setObserver');
         return;
@@ -106,11 +106,28 @@ teardown() {
         logWarn: () => {},
       });
 
-      // Start polling with a short interval
+      // Wire SessionManager observer → tmuxObserver (production-style wiring)
+      sessionManager_.setObserver({
+        onPaneCaptured: (event) => {
+          // Forward to the real tmuxObserver via its async dispatch fn
+          // (mirrors what the production adapter does in src/plugin.ts).
+          void tmuxObserver({ event });
+        },
+      });
+
+      // Start polling with a short interval (MIN_POLL_MS is 5000ms hard
+      // constant — the polling tick will fire ~5s after startPolling).
       sessionManager_.startPolling(500);
 
-      // Wait ~3s for at least 2 polling ticks + journal write
-      await new Promise((resolve) => setTimeout(resolve, 3500));
+      // Drive the pane with a probe so the first polling tick detects a
+      // hash change (otherwise the initial empty pane has the same
+      // content as the first capture, and the event is gated on hash CHANGE).
+      const { execSync } = await import('node:child_process');
+      execSync('tmux send-keys -t ' + JSON.stringify('${pane_id}') + ' -l ' + JSON.stringify('PROBE-58-9-' + Date.now()));
+      await new Promise((r) => setTimeout(r, 200));
+
+      // Wait ~7s for at least 1 polling tick + journal write
+      await new Promise((resolve) => setTimeout(resolve, 7000));
 
       // Stop polling and clean up
       sessionManager_.stopPolling();

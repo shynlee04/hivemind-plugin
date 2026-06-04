@@ -264,6 +264,19 @@ export function createPaneMonitorHook(opts: PaneMonitorOptions): PaneMonitorHand
   }
 
   /**
+   * Build the sibling content file path. P58.9 REQ-58.9-01: the journal now
+   * writes BOTH the 7-field `<ts>-pane.json` (metadata) AND a sibling
+   * `<ts>-pane-content.txt` (full pane content). The two files share the
+   * same timestamp stem so they can be paired by readers.
+   *
+   * @param timestamp - Epoch milliseconds (event.timestamp).
+   * @returns Filesystem-safe filename ending in `-pane-content.txt`.
+   */
+  function buildContentFilename(timestamp: number): string {
+    return `${new Date(timestamp).toISOString().replace(/[:.]/g, "-")}-pane-content.txt`
+  }
+
+  /**
    * Attempt a single journal write. On success resolves `void`; on failure
    * rejects with the underlying error. The write uses `flag: "wx"` for
    * exclusive create (REQ-53-02 — no clobber of existing entries).
@@ -274,6 +287,38 @@ export function createPaneMonitorHook(opts: PaneMonitorOptions): PaneMonitorHand
     // `wx` flag: exclusive create — fails if the file already exists
     // (REQ-53-02 acceptance). Mitigates T-53-02 (filename clobber).
     await writeFile(filePath, content, { encoding: "utf-8", flag: "wx" })
+  }
+
+  /**
+   * P58.9 REQ-58.9-01: write the full pane content to a sibling file next
+   * to the 7-field JSON entry. The filename shares the timestamp stem with
+   * the JSON entry (e.g. `<ts>-pane.json` and `<ts>-pane-content.txt`).
+   * Same `flag: "wx"` exclusive-create pattern to prevent clobber.
+   *
+   * Errors are caught and logged at the warn level — a content-write
+   * failure does NOT block the JSON entry from succeeding. D-04 contract.
+   */
+  async function writeContentSiblings(
+    event: PaneCapturedEvent,
+  ): Promise<void> {
+    if (event.content === undefined) return
+    const contentFilename = buildContentFilename(event.timestamp)
+    const contentFilePath = join(sessionDir, contentFilename)
+    try {
+      await mkdir(dirname(contentFilePath), { recursive: true })
+      await writeFile(contentFilePath, event.content, { encoding: "utf-8", flag: "wx" })
+    } catch (err) {
+      // `wx` fails if the file already exists — that is acceptable
+      // (idempotent on duplicate events at the same timestamp). Other
+      // errors are logged but not propagated (D-04).
+      const code = (err as NodeJS.ErrnoException)?.code
+      if (code !== "EEXIST") {
+        logWarn(
+          `pane-content sibling write failed: sessionId=${event.sessionId} paneId=${event.paneId}`,
+          err,
+        )
+      }
+    }
   }
 
   /**
@@ -296,6 +341,13 @@ export function createPaneMonitorHook(opts: PaneMonitorOptions): PaneMonitorHand
       try {
         const entry = buildEntry(event, attemptNumber)
         await writeOnce(filePath, entry)
+        // P58.9 REQ-58.9-01: write the sibling content file alongside the
+        // JSON entry. Done AFTER the JSON entry succeeds so a JSON-write
+        // failure never leaves a content file dangling. The content write
+        // itself is best-effort (errors are logged, not propagated).
+        if (attemptNumber === 0) {
+          await writeContentSiblings(event)
+        }
         counters.written++
         return true
       } catch (err) {
