@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HER-1 Documentation & Configuration Recovery (2026-05-05)
 
 ### Fixed
+- **S5b**: tmux panel now spawns for every SDK-created child session, even when the OpenCode SDK does not fire `session.created`. The `DelegationCoordinator` now synthesizes an `EnrichedSessionEvent` and calls `tmuxIntegration.adapter.onSessionCreated` directly after `childSessionStarter.start()` returns, mirroring the existing `onChildSessionCreated` fallback for session-tracker. `ChildSessionStartResult` now surfaces `title` and `workingDirectory` so the synthesized event carries the right pane description. Idempotency preserved via `SessionManager.sessions` / `spawningSessions` guards. Resolves live UAT blocker documented in `.planning/debug/s5-panel-spawn-root-cause-2026-06-04.md`.
 - Corrected agent/skill/tool counts across AGENTS.md and ARCHITECTURE.md
 - Fixed 14 broken command agent references in `.opencode/commands/`
 - Updated notification-handler status from DEPRECATED to ACTIVE in `src/lib/AGENTS.md`
