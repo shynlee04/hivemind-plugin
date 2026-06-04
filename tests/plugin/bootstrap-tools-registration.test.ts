@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, afterEach } from "vitest"
+import { describe, expect, it, vi, afterEach, beforeEach } from "vitest"
 import { mkdtempSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
