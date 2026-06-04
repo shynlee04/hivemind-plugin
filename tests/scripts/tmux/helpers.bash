@@ -42,6 +42,31 @@ tmux_node_eval() {
   (cd "${TMUX_BATS_ROOT}" && node --input-type=module -e "${script}")
 }
 
+# P58.9 REQ-58.9-03: assert that the real `opencode` binary is on PATH.
+# Tests that require a real `opencode` binary should call this in setup()
+# and `skip` if it returns 1, per AC-58.9-03-06 (BATS-skip behavior for
+# environments without tmux server or opencode binary).
+#
+# Usage: tmux_bats_require_opencode
+tmux_bats_require_opencode() {
+  if ! command -v opencode >/dev/null 2>&1; then
+    skip "no opencode binary on PATH"
+  fi
+}
+
+# P58.9 REQ-58.9-03: assert that a tmux server is available. Tests that
+# require tmux should call this in setup() and `skip` if it returns 1,
+# per AC-58.9-03-06.
+#
+# Usage: tmux_bats_require_tmux_server
+tmux_bats_require_tmux_server() {
+  if ! tmux has-session -t "_nonexistent_$$" 2>/dev/null; then
+    if ! tmux start-server 2>/dev/null; then
+      skip "no tmux server available"
+    fi
+  fi
+}
+
 # Resolve project directory for the current test (uses BATS_TEST_TMPDIR so
 # each test gets an isolated workspace).
 tmux_bats_project_dir() {
