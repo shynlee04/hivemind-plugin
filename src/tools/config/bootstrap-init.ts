@@ -10,7 +10,6 @@ import { error, success } from "../../shared/tool-response.js"
 import { generateHivemindConfigsJsonSchema, writeConfigJsonSchema } from "../../schema-kernel/generate-config-json-schema.js"
 import { BootstrapInitInputSchema, type BootstrapInitInput, type BootstrapInitResult, type BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"
 import { DEFAULT_GOVERNANCE_CONFIGS } from "../../config/defaults.js"
-import { deepMerge } from "../../shared/helpers.js"
 
 type PrimitiveKind = (typeof PRIMITIVE_TYPES)[number]
 
@@ -250,7 +249,14 @@ function renderConfigJson(config: BootstrapInitInput["config"], nonInteractive: 
 
   // Merge user config with DEFAULT_GOVERNANCE_CONFIGS
   const userConfig = { $schema: "./configs.schema.json", ...config }
-  const mergedConfig = { ...userConfig, governance: { ...DEFAULT_GOVERNANCE_CONFIGS, ...userConfig.governance } }
+  const userGovernance = (userConfig as Record<string, unknown>).governance as Record<string, unknown> | undefined
+  const mergedConfig = {
+    ...userConfig,
+    governance: {
+      ...DEFAULT_GOVERNANCE_CONFIGS,
+      ...userGovernance,
+    },
+  }
   return `${JSON.stringify(mergedConfig, null, 2)}\n`
 }
 

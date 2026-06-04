@@ -824,5 +824,10 @@ export const DEFAULT_GOVERNANCE_CONFIGS: GovernanceConfigs = {
       description: "Fast scan of prompt content: count words/lines/tokens, extract URLs, verify file paths.",
       permissions: ["read"],
     },
+    "todowrite": {
+      name: "todowrite",
+      description: "Create and maintain a structured task list for the current coding session.",
+      permissions: ["write"],
+    },
   },
 }
