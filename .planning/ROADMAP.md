@@ -2056,6 +2056,7 @@ Plans:
 - [x] 58-05: Regression — BATS slot 61 G1 grep-guard scaffold + regression commands doc
 - [x] 58-06: Acceptance — 13 ACs + 7 cross-cutting invariants verification report
 - [x] 58-07: 5 execution gaps fix — createForTest factory + __setTmuxMultiplexerForTesting seam + module-level recordDelegationTerminal + BATS slot 67 (P56 collision slot 61) + 3 BATS files fixed (62, 64, 65)
+- [x] 58-08: GAP-FIX — 5 new REQs (S1-S4 + META) closing 4 user-pain symptoms excluded from P42-P58. RED-FIRST BATS slots 71-74. 27-tool-key invariant preserved. AC#10/AC#11 regression-guarded. **Status: code-complete pending REAL UAT (AC-58-META-04)** — see Symptom Coverage Matrix below.
 
 ---
 
@@ -2069,3 +2070,49 @@ Plans:
 Plans:
 
 - [ ] TBD (run /gsd-plan-phase 48 to break down)
+
+---
+
+## Symptom Coverage Matrix
+
+> **Purpose.** A persistent, at-a-glance health view of every
+> user-visible symptom reported against the harness. Mirrors
+> `.planning/USER-PAIN-BACKLOG.md` at a higher level. A phase
+> cannot mark `[x]` in its plans list without a corresponding
+> row update here.
+>
+> **Status semantics.**
+> - `OPEN` — symptom reported, no fix planned.
+> - `OWNED-P{N}` — fix scheduled in phase P{N}, cross-link to its SPEC.
+> - `RESOLVED` — fix shipped AND Human-Driven UAT verdict is `PASS`
+>   or `PARTIAL`-with-follow-up.
+> - `WONTFIX` — explicitly deferred past product horizon.
+>
+> **Update discipline.** This matrix is updated atomically with
+> each phase's close. The `gsd-spec-phase` and `gsd-verify-work`
+> gates cross-check this matrix against the corresponding phase's
+> `## User-Pain Coverage` and `## Human-Driven UAT` sections.
+
+| Symptom | First Reported | Owned Phase | Status | Last Updated | Source |
+|---------|----------------|-------------|--------|--------------|--------|
+| S1 (panel cut-off — live tmux pane content streaming) | 2026-06-04 | P58.8 | RESOLVED (code) — pending REAL UAT | 2026-06-04 | [p58-symptom-diagnosis-2026-06-04.md:24-30](debug/p58-symptom-diagnosis-2026-06-04.md), [tmux-delegate-streaming-gaps.md:60-75](debug/tmux-delegate-streaming-gaps.md) |
+| S2 (user-actor affordance — USER_SESSION tier for tmux-copilot) | 2026-06-04 | P58.8 | RESOLVED (code) — pending REAL UAT | 2026-06-04 | [p58-symptom-diagnosis-2026-06-04.md:33-41](debug/p58-symptom-diagnosis-2026-06-04.md), [tmux-delegate-streaming-gaps.md:77-103](debug/tmux-delegate-streaming-gaps.md) |
+| S3 (orchestrator stream terminates early — WaiterModel keep-alive) | 2026-06-04 | P58.8 | RESOLVED (code) — pending REAL UAT | 2026-06-04 | [p58-symptom-diagnosis-2026-06-04.md:43-52](debug/p58-symptom-diagnosis-2026-06-04.md), [tmux-delegate-streaming-gaps.md:105-174](debug/tmux-delegate-streaming-gaps.md) |
+| S4 (no live JIT context — child event bus for mid-flight progress) | 2026-06-04 | P58.8 | RESOLVED (code) — pending REAL UAT | 2026-06-04 | [p58-symptom-diagnosis-2026-06-04.md:54-64](debug/p58-symptom-diagnosis-2026-06-04.md), [tmux-delegate-streaming-gaps.md:175-211](debug/tmux-delegate-streaming-gaps.md) |
+
+### Status transition rule (P58-META-04)
+
+`RESOLVED (code)` flips to `RESOLVED` (no qualifier) when the
+phase's `VERIFICATION.md` Human-Driven UAT section is signed by a
+real human tester with verdict `PASS` or `PARTIAL`-with-follow-up
+for every symptom enumerated in the `## User-Pain Coverage` section.
+
+Per AC-58-META-04, BATS-only verification is NOT sufficient
+closure. The REAL UAT gate is the FINAL gate.
+
+### Cross-link to the singleton source of truth
+
+This matrix is a 1:1 projection of
+[`.planning/USER-PAIN-BACKLOG.md`](USER-PAIN-BACKLOG.md) for at-a-glance
+phase health. Update the BACKLOG atomically with this matrix on
+every phase close.
