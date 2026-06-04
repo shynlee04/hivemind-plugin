@@ -259,6 +259,15 @@
 
 ## Resolved Symptoms (historical record)
 
+### S5 — tmux panel never spawns for new sub-session (CRITICAL, live UAT)
+
+- **Verbatim user report (2026-06-04):** "no panel spawn the tmux phases failed so aborted the just now delegation" / "now it has become worse no Tmux panel spawn"
+- **Reproduction:** post-P58.8/P58.9 rebuild, tool-intelligence soft governance + governance `allow`, front-facing `hm-l0-orchestrator` calls `delegate-task` to dispatch `gsd-codebase-mapper`. SDK creates child session `ses_16ca6a75affeB906LSjYxnnzip`, sub-agent runs (8 messages, 9 tool calls, 41% progress), but **no tmux panel ever opens for the sub-session**. User aborts at 2m.
+- **Severity:** CRITICAL. User cannot observe or steer any delegate-task work. Makes S1 (PULL peek), S2 (USER_SESSION tier), S4 (child-event-stream) all moot — no panel exists to read from.
+- **Causal chain:** delegate-task → SDK child session created → (missing wire) → tmux-multiplexer never called to open panel → startPolling never invoked → P53 journal hook stays empty (SB-1's root cause exposed).
+- **Source:** [uat-s5-delegate-task-panel-spawn-2026-06-04.md](debug/uat-s5-delegate-task-panel-spawn-2026-06-04.md)
+- **Status:** OPEN — FAIL in live UAT. Owned by unassigned next phase (proposed: P58.10 panel-spawn-investigation, half-day estimate).
+
 _None yet — this backlog was created by P58-META-01. Future symptom
 additions append here with `Status: RESOLVED` once verified._
 
