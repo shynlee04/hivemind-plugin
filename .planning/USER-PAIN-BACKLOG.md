@@ -122,6 +122,141 @@
 
 ---
 
+## Sticky Bugs (P51+ sticky-bug-busting, Phase 58.9)
+
+> P58.9 is the sticky-bug-busting follow-up to P58.8. A P51+ regression hunt
+> at `.planning/debug/p51-plus-sticky-bugs-2026-06-04.md` found 12 sticky
+> bugs that survived the P58.8 gap-fix. P58.9 addresses the 3 critical +
+> adds 4 regression guards. Source: `58.9-SPEC.md:31-49`.
+
+### SB-1 — P53 journal hook broken (silent data-loss)
+- **Severity:** Critical
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:39-50`
+- **Symptom:** `SessionManager.startPolling` at `src/features/tmux/session-manager.ts:328-356`
+  captures content but NEVER emits `pane-captured` events. The P53
+  pane-monitor hook at `src/hooks/pane-monitor.ts` receives zero events;
+  `.hivemind/journal/<sid>/` stays empty.
+- **Disposition:** RESOLVED (P58.9)
+- **Resolution:** P58.9 REQ-58.9-01 added the missing emit:
+  - Extended `PaneCapturedEvent` with optional `content` field
+  - Added `setObserver(observer: PaneObserver)` to `SessionManager`
+  - Wired `sessionManager.setObserver(adapter)` in `src/plugin.ts`
+  - `startPolling` tick now calls `observer.onPaneCaptured()` on hash change
+  - P53 hook writes BOTH `<ts>-pane.json` (7 fields) AND sibling `<ts>-pane-content.txt` (full content)
+- **Resolution evidence:**
+  - BATS slot 75 GREEN: `tests/scripts/tmux/75-pane-captured-journal.bats`
+  - `src/features/tmux/observers.ts` `PaneCapturedEvent.content?: string`
+  - `src/features/tmux/session-manager.ts:startPolling` emit call
+  - `src/hooks/pane-monitor.ts` `writeContentSiblings` + `buildContentFilename`
+  - AC-58.9-01-01..05 verified
+
+### SB-2 — 5 new vitest regressions introduced by P58.8
+- **Severity:** Critical
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:18-30`
+- **Symptom:** P58.8 widened vitest full-suite failure count from 2 to 7.
+  5 NEW timeouts in `eval/coherence.test.ts:37,106`,
+  `tests/plugin/bootstrap-tools-registration.test.ts:59`,
+  `tests/tools/delegate-task.test.ts:197,239`. All pass in isolation
+  (timer pollution from `SessionManager.startPolling`).
+- **Disposition:** RESOLVED (P58.9)
+- **Resolution:** P58.9 REQ-58.9-02 added `afterEach(() => vi.useRealTimers())`
+  to drain fake-timer chains from `SessionManager.startPolling`
+  setTimeout refs. Result: ZERO P58.9-introduced regressions in
+  vitest full-suite.
+- **Resolution evidence:**
+  - `eval/coherence.test.ts` `afterEach(vi.useRealTimers())` (1 commit)
+  - `tests/plugin/bootstrap-tools-registration.test.ts` beforeEach + afterEach
+    (1 commit)
+  - `tests/tools/delegate-task.test.ts` beforeEach + afterEach (1 commit)
+  - All 5 affected tests pass in full-suite (verified via `npx vitest run`)
+  - AC-58.9-02-01..05 verified
+
+### SB-3 — BATS structural bypass for tmux runtime
+- **Severity:** Critical
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:88-103`
+- **Symptom:** 7 of 8 tmux-related BATS slots (62, 63, 64, 71, 72, 73, 74)
+  use `cat` or inline mocks. BATS never exercises the real `opencode attach`
+  TUI path. User's S1 PUSH complaint cannot be reproduced in BATS.
+- **Disposition:** RESOLVED (P58.9)
+- **Resolution:** P58.9 REQ-58.9-03 added BATS slot 76 that uses a real
+  `opencode` binary in a real tmux pane. Also added BATS slot 75 that uses
+  a real tmux session with `cat` for the polling-driven journal path.
+  Both slots include skip patterns (`tmux_bats_require_opencode`,
+  `tmux_bats_require_tmux_server`) for environments without dependencies.
+- **Resolution evidence:**
+  - BATS slot 75 GREEN: `tests/scripts/tmux/75-pane-captured-journal.bats`
+  - BATS slot 76 GREEN: `tests/scripts/tmux/76-pane-real-runtime.bats`
+  - Real `opencode --version` output captured (verified end-to-end)
+  - AC-58.9-03-01..06 verified
+
+### SB-4 — USER_SESSION widening trust boundary (defers-to-P59)
+- **Severity:** High (not in P58.9 scope)
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:141`
+- **Symptom:** D-58-22 LOCKED grants USER_SESSION ability to set
+  `manualOverride = true` and read pane content. The widening is
+  intentional but no BATS test verifies that a malicious USER_SESSION
+  caller CANNOT escalate to `forward-prompt` or `send-keys`.
+- **Disposition:** defers-to-P59
+- **Mitigation in P58.9:** REQ-58.9-04-02 (regression guard for AC#11
+  manualOverride FIRST in `forward-prompt`) protects against future
+  regression. Dedicated BATS test for "USER_SESSION cannot invoke
+  `forward-prompt`" is deferred to P59.
+
+### SB-5 — BATS 2 stale (defers-to-P59)
+- **Severity:** High (not in P58.9 scope)
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:35-37`
+- **Symptom:** `tests/scripts/tmux/01-mcp-server-pty.bats:43` and
+  `tests/scripts/tmux/61-stress-test-real-world-workflow.bats:21` are
+  stale.
+- **Disposition:** defers-to-P59 (pre-existing P52/P55/P56 debt)
+
+### SB-6 — Pre-existing full-suite-only vitest fails (not in P58.9 scope)
+- **Severity:** Medium (not in P58.9 scope)
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:124-131`
+- **Symptom:** `tests/integration/tool-registration.test.ts:185` and
+  `tests/plugins/plugin-lifecycle.test.ts:175` fail in full-suite only.
+- **Disposition:** not-relevant (preserved as pre-existing per AC-58.9-02-06)
+
+### SB-7 — S4 wiring deviation (not in P58.9 scope)
+- **Severity:** Medium (not in P58.9 scope)
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:60`
+- **Symptom:** S4 SUBSCRIBE wired at `manager-runtime.ts:527` instead of
+  plan's `coordinator.ts:200`. Documented deviation, not a functional
+  break.
+- **Disposition:** not-relevant
+
+### SB-8 — AC#10/AC#11 comments don't reflect S2 invariant (defers-to-P59)
+- **Severity:** Medium (not in P58.9 scope)
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:12`
+- **Disposition:** defers-to-P59 (documentation cleanup)
+
+### SB-9 — resolveBinary regression test docs mismatch (not in P58.9 scope)
+- **Severity:** Low (not in P58.9 scope)
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:13`
+- **Disposition:** not-relevant
+
+### SB-10 — `__setTmuxMultiplexerForTesting` test seam usage (not in P58.9 scope)
+- **Severity:** Low (not in P58.9 scope)
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:13`
+- **Disposition:** not-relevant (test seam is intentional per P58.7)
+
+### SB-11 — Module size cap 4× breached (not in P58.9 scope)
+- **Severity:** High (informational only; soft target)
+- **Source:** `p51-plus-sticky-bugs-2026-06-04.md:11`
+- **Disposition:** not-relevant (P58.9 soft-warning for pane-monitor.ts +71 LOC; full refactor deferred)
+
+### SB-12 — Pre-existing test rot: delegation-manager custom-title
+- **Severity:** Pre-existing (NOT P58.9)
+- **Source:** Uncovered during V3 verification
+- **Symptom:** `tests/lib/delegation-manager.test.ts:878` "uses custom title
+  when provided" fails because the code transforms `title: "My Custom Title"`
+  to `title: "hm/delegate/child/agent/my-custom-title@1"`. Fails in
+  isolation, not introduced by P58.9.
+- **Disposition:** out-of-P58.9-scope (separate pre-existing test rot,
+  not a P58.9 regression)
+
+---
+
 ## Resolved Symptoms (historical record)
 
 _None yet — this backlog was created by P58-META-01. Future symptom
