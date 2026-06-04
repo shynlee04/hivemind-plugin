@@ -366,6 +366,78 @@ if (rule.condition.depth) {
 | `readGovernanceConfig()` reads separate file | **SR-05 TARGET:** Facade over `readConfigs().governance` | This phase | Single config source, backward compatible |
 | No naming validation enforcement | **SR-05 TARGET:** `create-governance-session` validates titles | This phase | Runtime naming standard enforcement |
 
+## Registry Gap Analysis
+
+**This is the root cause of governance non-enforcement.** The config knows about a fraction of the actual shipped primitives.
+
+### Current vs Required Coverage
+
+| Registry | Current | Required | Gap | Coverage |
+|----------|---------|----------|-----|----------|
+| `governance.agent_configs` | 7 agents | 42 agents (31 hm-* + 11 hf-*) | **35 missing** | 17% |
+| `governance.command_agent_mappings` | 4 commands | 112 commands (all shipped) | **108 missing** | 4% |
+| `governance.rules` | 0 rules | ≥5 rules (per SPEC REQ-02) | **5 missing** | 0% |
+
+### Current Agent Configs (7 of 42) [VERIFIED: .hivemind/governance/config.json]
+
+| Agent | In Config | Status |
+|-------|-----------|--------|
+| hm-codebase-mapper | ✓ | Registered |
+| hm-project-researcher | ✓ | Registered |
+| hm-debugger | ✓ | Registered |
+| hm-code-reviewer | ✓ | Registered |
+| hm-architect | ✓ | Registered |
+| hm-synthesizer | ✓ | Registered |
+| hm-specifier | ✓ | Registered |
+
+### Missing Agents (35 of 42)
+
+**hm-* agents missing (24):**
+hm-code-fixer, hm-debug-session-manager, hm-doc-verifier, hm-doc-writer, hm-ecologist, hm-executor, hm-integration-checker, hm-intel-updater, hm-intent-loop, hm-l0-orchestrator, hm-nyquist-auditor, hm-orchestrator, hm-pattern-mapper, hm-phase-researcher, hm-plan-checker, hm-planner, hm-roadmapper, hm-security-auditor, hm-shipper, hm-synthesizer, hm-ui-auditor, hm-ui-checker, hm-ui-researcher, hm-user-profiler, hm-verifier
+
+**hf-* agents missing (11):**
+hf-agent-builder, hf-auditor, hf-command-builder, hf-coordinator, hf-l0-orchestrator, hf-meta-builder, hf-prompter, hf-refactorer, hf-skill-builder, hf-synthesizer, hf-tool-builder
+
+### Current Command-Agent Mappings (4 of 112) [VERIFIED: .hivemind/governance/config.json]
+
+| Command | In Config | Status |
+|---------|-----------|--------|
+| plan | ✓ | Mapped to hm-planner |
+| audit | ✓ | Mapped to hm-nyquist-auditor |
+| research | ✓ | Mapped to hm-project-researcher |
+| gate | ✓ | Mapped to hm-verifier |
+
+### Missing Commands (108 of 112)
+
+All other shipped commands (108 total) lack agent mappings. This includes the entire `hf-*` command set, all `gsd-*` developer tooling commands, and most `hm-*` workflow commands.
+
+### Impact Assessment
+
+| Gap | Runtime Impact | Severity |
+|-----|---------------|----------|
+| **Agent registry gap (83%)** | `resolveAgentForBrief()` can only resolve to 7 agents; 35 agents will fall back to `defaultAgent` ("hm-codebase-mapper") | HIGH |
+| **Command registry gap (96%)** | `create-governance-session` cannot validate agent-command bindings for 108 commands | HIGH |
+| **Rules gap (100%)** | `evaluateGovernance()` at `tool-guard-hooks.ts:158` evaluates to no-op — zero tool governance enforcement | CRITICAL |
+| **CapabilityGate profiles** | Hardcoded in source, not config-driven — cannot be customized per-project | MEDIUM |
+| **ToolIntelligenceEngine rules** | Hardcoded in source, not config-driven — cannot be customized per-project | MEDIUM |
+
+### Root Cause
+
+The governance config at `.hivemind/governance/config.json` was manually authored with a small subset of agents and commands. As the project grew from 7 agents to 42, and from 4 commands to 112, the config was never updated. The separate config file system (no connection to `configs.json`) made it invisible to the main config pipeline.
+
+**SR-05 must populate `configs.json.governance` with all 42 agents and their `allowedCommands`, all command-agent mappings, and at least 5 governance rules.** The SPEC REQ-01 explicitly states: "All fields from `.hivemind/governance/config.json` are added to `HivemindConfigsSchema.governance` as proper Zod schema fields."
+
+### Registry Discovery Strategy
+
+To build the complete registry during implementation:
+
+1. **Agents:** Glob `.opencode/agents/hm-*/` and `.opencode/agents/hf-*/` for all agent definition files. Extract agent names from filenames.
+2. **Commands:** Glob `.opencode/commands/` and `.opencode/command/` for all command definition files. Extract command names and agent mappings from YAML frontmatter.
+3. **AllowedCommands per agent:** Each agent's definition file specifies its allowed tools/commands. Parse from agent instruction profiles.
+4. **Governance rules:** Use the 5 rules from CONTEXT.md (delegate-task subagent-only, write depth-warn, delegate-task depth-block, create-session naming-warn, unsafe-tools escalate).
+
+---
+
 ## Assumptions Log
 
 | # | Claim | Section | Risk if Wrong | Source |
@@ -458,6 +530,7 @@ if (rule.condition.depth) {
 | **T5: Session depth spoofing** | Spoofing | MEDIUM | Dual-source tracking (SDK parentID + getDelegationMeta) with cross-validation warning |
 | **T6: Naming standard bypass** | Elevation | LOW | Soft enforcement (warn) for 1 phase; graduates to block in follow-up |
 | **T7: Old config file read after migration** | Tampering | LOW | Startup deprecation warning; `readGovernanceConfig()` facade reads from unified source; old file archived |
+| **T8: Unregistered agents bypass governance** | Elevation | HIGH | 35 of 42 agents not in governance config — `resolveAgentForBrief()` defaults to hm-codebase-mapper; governance rules cannot target unregistered agents. SR-05 must populate full registry. |
 
 ## Risk Register
 
@@ -470,6 +543,8 @@ if (rule.condition.depth) {
 | R-05 | Existing tests break after schema extension | LOW | LOW | All new fields are optional with defaults; existing configs.json passes validation | Implementer |
 | R-06 | `hivemind init --yes` generates invalid config with new governance fields | MEDIUM | LOW | Test `HivemindConfigsSchema.parse()` with generated config | Implementer |
 | R-07 | Naming validation soft enforcement confused with hard enforcement | LOW | MEDIUM | Document clearly in governance rule; warn type (not block) | Implementer |
+| R-08 | Incomplete agent/command registry makes governance rules ineffective | HIGH | CERTAIN | Populate all 42 agents and command mappings; use glob discovery strategy from Registry Gap Analysis | Implementer |
+| R-09 | `resolveAgentForBrief()` falls back to default for 35 unregistered agents | MEDIUM | HIGH | Register all agents with descriptions; brief keyword matching works only for registered agents | Implementer |
 
 ## Evidence Registry
 
