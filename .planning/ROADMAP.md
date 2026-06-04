@@ -2060,6 +2060,15 @@ Plans:
 
 ---
 
+### Phase 58.9: Sticky Bug Busting (2026-06-04)
+- **Depends on:** Phase 58.8 (gap-fix)
+- **Goal:** Fix 3 critical sticky bugs found in P51+ regression hunt
+- **Scope:** REQ-58.9-01 (P53 journal wire), REQ-58.9-02 (5 vitest fixes), REQ-58.9-03 (BATS slot 75 real-runtime), REQ-58.9-04 (regression guards Cat 4-10)
+- **Verification gate:** AUTOMATED TESTS (vitest + BATS + tsc) per D-58.9 OOS — NOT human-driven UAT (P58.9 fixes bugs detectable by automated tests, not user-perceptible UX regressions)
+- **Status:** 📋 PENDING (2026-06-04)
+
+---
+
 ### Phase 48: CI/CD Release Pipeline (2026-06-01)
 
 **Goal:** Stand up a GitHub Actions workflow that builds the vendored fork, runs the test suite, and publishes `@hivemind/opencode-tmux` to npm with version synchronization against the main `hivemind` package (no drift allowed between the two package versions on a release). Include a pre-release channel (`canary` dist-tag) for trunk-based publishing. Tests: a CI dry-run job that exercises the workflow against a fixture package and verifies the produced tarball contains the expected entry points and excludes source-only files; the publish job is gated on this verification.
@@ -2099,6 +2108,18 @@ Plans:
 | S2 (user-actor affordance — USER_SESSION tier for tmux-copilot) | 2026-06-04 | P58.8 | RESOLVED (code) — pending REAL UAT | 2026-06-04 | [p58-symptom-diagnosis-2026-06-04.md:33-41](debug/p58-symptom-diagnosis-2026-06-04.md), [tmux-delegate-streaming-gaps.md:77-103](debug/tmux-delegate-streaming-gaps.md) |
 | S3 (orchestrator stream terminates early — WaiterModel keep-alive) | 2026-06-04 | P58.8 | RESOLVED (code) — pending REAL UAT | 2026-06-04 | [p58-symptom-diagnosis-2026-06-04.md:43-52](debug/p58-symptom-diagnosis-2026-06-04.md), [tmux-delegate-streaming-gaps.md:105-174](debug/tmux-delegate-streaming-gaps.md) |
 | S4 (no live JIT context — child event bus for mid-flight progress) | 2026-06-04 | P58.8 | RESOLVED (code) — pending REAL UAT | 2026-06-04 | [p58-symptom-diagnosis-2026-06-04.md:54-64](debug/p58-symptom-diagnosis-2026-06-04.md), [tmux-delegate-streaming-gaps.md:175-211](debug/tmux-delegate-streaming-gaps.md) |
+| SB-1 (P53 journal hook broken — `startPolling` never emits `pane-captured` events) | 2026-06-04 | P58.9 | OWNED-P58.9 (REQ-58.9-01) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:39-50](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-2 (5 new vitest regressions introduced by P58.8 — full-suite-only timeouts) | 2026-06-04 | P58.9 | OWNED-P58.9 (REQ-58.9-02) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:18-30](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-3 (BATS structural bypass for tmux runtime — 7 of 8 slots use `cat` or inline mocks) | 2026-06-04 | P58.9 | OWNED-P58.9 (REQ-58.9-03) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:88-103](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-4 (USER_SESSION widening trust boundary — no BATS verifies escalation is blocked) | 2026-06-04 | P59 (deferred) | OPEN (defers-to-P59) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:141](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-5 (BATS 2 stale: 01-mcp-server-pty:43 + 61-stress-test:21) | 2026-06-04 | not-owned (pre-existing P55/P56 debt) | OPEN (not-relevant per P58.9) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:35-37](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-6 (Pre-existing full-suite-only vitest fails: tool-registration:185, plugin-lifecycle:175) | 2026-06-04 | not-owned (pre-existing) | OPEN (not-relevant per P58.9) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:124-131](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-7 (S4 wiring deviation: `coordinator.ts:351` vs plan's `coordinator.ts:200`) | 2026-06-04 | not-owned (documented deviation) | OPEN (not-relevant per P58.9) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:60](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-8 (AC#10/AC#11 comments don't reflect S2 invariant at call site) | 2026-06-04 | P59 (deferred) | OPEN (defers-to-P59) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:12](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-9 (resolveBinary regression test docs mismatch) | 2026-06-04 | not-owned (pre-existing P52 debt) | OPEN (not-relevant per P58.9) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:13](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-10 (Pre-existing tests rely on `__setTmuxMultiplexerForTesting` test seam) | 2026-06-04 | not-owned (intentional test seam per P58.7) | OPEN (not-relevant per P58.9) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:13](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| SB-11 (Module size cap 4× breached) | 2026-06-04 | not-owned (soft target) | OPEN (not-relevant per P58.9) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:11](debug/p51-plus-sticky-bugs-2026-06-04.md) |
+| **SB-REGRESSION-GUARDS** (4 new vitest integration guards: 27-tool-key, AC#10/AC#11 manualOverride, P20 no-new-deps, P51 in-tree tmux) | 2026-06-04 | P58.9 | OWNED-P58.9 (REQ-58.9-04) | 2026-06-04 | [58.9-SPEC.md:175-220](phases/58.9-sticky-bug-busting/58.9-SPEC.md) |
 
 ### Status transition rule (P58-META-04)
 
