@@ -128,8 +128,8 @@ export class ToolIntelligenceEngine {
           `Session ${event.sessionID}, depth=${event.delegationDepth}, child=${event.isChildSession}`,
         );
         return {
-          kind: "block",
-          reason: "Malformed task call: missing subagent_type",
+          kind: "warn",
+          reason: "Malformed task call: missing subagent_type (soft governance — call will proceed with warning)",
           guidance,
           toolCategory: toolCategory ?? "delegate",
           fromCapabilityBaseline: false,
@@ -151,8 +151,8 @@ export class ToolIntelligenceEngine {
           `Session ${event.sessionID} is a child session at depth=${event.delegationDepth}. A JIT grant is required for recursive task dispatch.`,
         );
         return {
-          kind: "needs_jit_grant",
-          reason: "Child session blocked from recursive task without JIT grant",
+          kind: "warn",
+          reason: "Child session recursive task without JIT grant (soft governance — call will proceed with warning; orchestrator may want to review)",
           guidance,
           toolCategory: toolCategory ?? "delegate",
           fromCapabilityBaseline: false,
@@ -198,13 +198,13 @@ export class ToolIntelligenceEngine {
         const guidance = buildGuidance(
           event.agentName,
           event.toolName,
-          "delegate-task is a wrapper tool for async background delegation. Code and artifact editing work should use native task for synchronous, first-class subagent dispatch with full parent-child hierarchy tracking.",
+          "SOFT SUGGESTION: delegate-task is a wrapper for async background delegation. For code/artifact editing work, native task is generally preferred for synchronous, first-class subagent dispatch with full parent-child hierarchy tracking. This is a suggestion, not a block — the call will proceed.",
           "task({ subagent_type: 'specialist-agent', prompt: '...' })",
-          `Session ${event.sessionID} attempted delegate-task with code/artifact intent. Native task is the primary delegation method.`,
+          `Session ${event.sessionID} attempted delegate-task. User's intent takes precedence over this suggestion.`,
         );
         return {
-          kind: "block",
-          reason: "delegate-task blocked for code/artifact editing — use native task",
+          kind: "warn",
+          reason: "SOFT GOVERNANCE: delegate-task detected with code/artifact intent. Call will proceed with warning logged. User intent takes precedence.",
           guidance,
           toolCategory: toolCategory ?? "delegate",
           fromCapabilityBaseline: false,
