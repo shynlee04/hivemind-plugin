@@ -2121,6 +2121,7 @@ Plans:
 | SB-11 (Module size cap 4× breached) | 2026-06-04 | not-owned (soft target) | OPEN (not-relevant per P58.9) | 2026-06-04 | [p51-plus-sticky-bugs-2026-06-04.md:11](debug/p51-plus-sticky-bugs-2026-06-04.md) |
 | **SB-REGRESSION-GUARDS** (4 new vitest integration guards: 27-tool-key, AC#10/AC#11 manualOverride, P20 no-new-deps, P51 in-tree tmux) | 2026-06-04 | P58.9 | OWNED-P58.9 (REQ-58.9-04) | 2026-06-04 | [58.9-SPEC.md:175-220](phases/58.9-sticky-bug-busting/58.9-SPEC.md) |
 | **S5** (tmux panel never spawns for new sub-session — delegate-task in main session, no panel for `ses_xxxx`, sub-agent runs invisibly) | 2026-06-04 | **unowned (CRITICAL live-runtime UAT blocker)** | **OPEN — FAIL in live UAT** | 2026-06-04 | [uat-s5-delegate-task-panel-spawn-2026-06-04.md](debug/uat-s5-delegate-task-panel-spawn-2026-06-04.md) |
+| **S5b** (tmux panel never spawns for ANY delegation method — confirmed broken for native `task` tool too, not just `delegate-task`; root cause is fundamental panel-spawn failure, not delegate-task wire) | 2026-06-04 | **unowned (CRITICAL, superscope of S5)** | **OPEN — FAIL in live UAT** | 2026-06-04 | [uat-s5-delegate-task-panel-spawn-2026-06-04.md](debug/uat-s5-delegate-task-panel-spawn-2026-06-04.md) |
 
 ### Status transition rule (P58-META-04)
 
