@@ -8,6 +8,24 @@ pre_existing_finding:
   bats_slot: 61
   severity: WARNING (NOT a P58 regression)
   detail: "tmux_bats_require_stress_facilities is undefined in tests/scripts/tmux/helpers.bash; the stress test 61-stress-test-real-world-workflow.bats was added in commit bf77d7a5 ('phase(24.3.1): pre-governance handoff') BEFORE Phase 58 began. The setup() line 'tmux_bats_require_stress_facilities' (file line 21) was never paired with a corresponding helper definition. This pre-existed P58 — the function was absent in helpers.bash both before and after Phase 58. Vitest 27-tool-key invariant (tests/integration/hook-registration.test.ts:86-103) passes independently, proving the 27-key contract is intact. Flag this as inherited P55-invariant debt for a future phase to address — NOT a P58 gap."
+p58_8_verified: 2026-06-04T12:25:00Z
+p58_8_status: passed
+p58_8_score: 4/4 new REQs verified (S1, S2, S3, S4)
+p58_8_invariants:
+  bats_71_to_74_all_green: true
+  bats_62_to_67_regression: 6/6 PASS
+  vitest_baseline: 3308 passed / 7 skipped / 2 failed (pre-existing test-pollution timeouts, not regressions)
+  tsc_clean: true
+  tool_key_count: 27
+  ac10_append_tui_prompt_check: preserved (lines 940-947 of src/plugin.ts)
+  ac11_forward_prompt_check: preserved (lines 263-278 of src/tools/tmux-copilot.ts)
+  p20_no_new_deps: preserved (no package.json changes)
+p58_8_deviations:
+  - slot_shift: "BATS slots 67-70 (per plan) shifted to 71-74 because slot 67 was already occupied by 67-delegate-task-no-native-task-tool.bats (P58 G1 acceptance)"
+  - module_size: "child-event-stream.ts is 219 LOC vs the plan's ≤100 LOC target. JSDoc is load-bearing for S4 acceptance and was prioritized over compression"
+  - vitest_two_failures: "tool-registration.test.ts and plugin-lifecycle.test.ts timeout in full-suite runs but PASS in isolation. Test-pollution issue, not a regression. Pre-existing in the suite (verified via git stash — failures persist without my changes too in full-suite runs)"
+  - ac10_line_shift: "AC#10 line range shifted from 923-926 to 940-947 (src/plugin.ts) due to new imports for sessionManager / childEventStream. The check-FIRST ordering is preserved"
+p58_8_commits: 22
 ---
 
 # Phase 58: Final Verification Report
