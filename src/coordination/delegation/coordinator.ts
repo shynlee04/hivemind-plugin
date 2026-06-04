@@ -7,6 +7,7 @@ import type { Delegation, DelegationNotification, DelegationResult, DelegationSi
 import type { SlotHandle } from "./slot-manager.js"
 import { z } from "zod"
 import { type OpenCodeClient, getSessionMessages } from "../../shared/session-api.js"
+import { childEventStream } from "../../features/session-tracker/streaming/child-event-stream.js"
 import { notifyParentSession } from "../completion/notification-handler.js"
 
 /**
@@ -343,6 +344,11 @@ export class DelegationCoordinator {
     this.mergeCompletionResult(delegationId, result)
     this.deps.lifecycle.transition(delegationId, status)
     this.routeTerminal(delegationId, this.notificationTypeFor(status), result.result ?? result.error ?? status)
+    // P58.8 S4 (REQ-58-10): unsubscribe the child event bus on terminal
+    // so the in-memory ring buffer does not grow unboundedly across
+    // many delegations. Idempotent — the bus handles re-unsubscribe
+    // gracefully.
+    this.unsubscribeChildEventBus(delegationId)
     this.cleanup(delegationId, status, result)
   }
 
@@ -465,6 +471,31 @@ export class DelegationCoordinator {
       result: step.usePreviousResult ? `Chained from ${previousDelegationId}` : undefined,
       chainedFrom: previousDelegationId,
     }
+  }
+
+  /**
+   * P58.8 S4 (REQ-58-10): detach the child event bus subscription
+   * for the given delegation. Resolves the child session id from the
+   * active map so we do not have to pass it through every terminal
+   * path. Idempotent — the bus is a no-op if no subscription was
+   * ever registered. Errors are caught and logged via the client's
+   * app.log envelope (best-effort cleanup, do not block the
+   * terminal transition).
+   */
+  private unsubscribeChildEventBus(delegationId: string): void {
+    const active = this.active.get(delegationId)
+    const childSessionId = active?.record.childSessionId
+    if (!childSessionId) return
+    void childEventStream.unsubscribe(childSessionId).catch((err: unknown) => {
+      this.deps.client?.app?.log?.({
+        body: {
+          service: "delegation",
+          level: "warn",
+          message: `[Harness] child event bus unsubscribe failed for ${childSessionId}`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    })
   }
 
   private cleanup(delegationId: string, status: DelegationStatus, result: DelegationResult): void {
