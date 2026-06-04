@@ -27,6 +27,10 @@
     "discuss_mode": "intensive-phase-discussion",
     "use_worktrees": true
   },
+  "guardrail_level": "strict",
+  "delegation_mode": "waiter",
+  "tool_access_pattern": "restricted",
+  "skill_filter": "curated",
   "governance": {
     "rules": [
       {
