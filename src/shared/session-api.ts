@@ -3,6 +3,7 @@ import type { createOpencodeClient } from "@opencode-ai/sdk"
 import { asString, getNestedValue, unwrapData } from "./helpers.js"
 import type { ResolvedBehavioralProfile } from "../routing/behavioral-profile/types.js"
 import { resolveBehavioralProfile } from "../routing/behavioral-profile/resolve-behavioral-profile.js"
+import { generateSessionTitle, parseSessionTitle } from "./session-naming.js"
 
 export type OpenCodeClient = ReturnType<typeof createOpencodeClient>
 
@@ -43,9 +44,109 @@ function assertValidSessionID(sessionID: string, label = "session ID"): string {
 
 export async function createSession(client: OpenCodeClient, opts: CreateSessionOptions): Promise<SessionRecord> {
   const { directory, ...body } = opts
+
+  let finalTitle = body.title
+  let parsed = parseSessionTitle(finalTitle)
+
+  if (parsed) {
+    if (body.parentID) {
+      try {
+        const parentSession = await getSession(client, body.parentID)
+        const parentTitle = (parentSession.title as string) || ""
+        const parsedParent = parseSessionTitle(parentTitle)
+        const expectedDepth = parsedParent ? parsedParent.depth + 1 : 1
+        const expectedClassification = expectedDepth === 1 ? "child" : "grandchild"
+
+        if (parsed.depth !== expectedDepth || parsed.classification !== expectedClassification) {
+          finalTitle = generateSessionTitle({
+            ...parsed,
+            depth: expectedDepth,
+            classification: expectedClassification,
+          })
+        }
+      } catch {
+        // Fallback: if parent fetch fails, keep the formatted title as is
+      }
+    } else {
+      if (parsed.depth !== 0 || parsed.classification !== "root") {
+        finalTitle = generateSessionTitle({
+          ...parsed,
+          depth: 0,
+          classification: "root",
+        })
+      }
+    }
+  } else {
+    let framework = "hm"
+    let workflow = body.parentID ? "delegate" : "spawn"
+    let classification: "root" | "child" | "grandchild" | "fork" = body.parentID ? "child" : "root"
+    let agent = "agent"
+    let depth = 0
+
+    if (body.parentID) {
+      try {
+        const parentSession = await getSession(client, body.parentID)
+        const parentTitle = (parentSession.title as string) || ""
+        const parsedParent = parseSessionTitle(parentTitle)
+        if (parsedParent) {
+          framework = parsedParent.framework
+          workflow = parsedParent.workflow
+          depth = parsedParent.depth + 1
+          classification = depth === 1 ? "child" : "grandchild"
+          agent = parsedParent.agent
+        } else {
+          depth = 1
+          classification = "child"
+        }
+      } catch {
+        depth = 1
+        classification = "child"
+      }
+    }
+
+    let purpose = finalTitle || "session"
+    const agentMatch = /\b((?:hm|gsd|hf)-[a-z0-9-]+)\b/i.exec(purpose)
+    if (agentMatch) {
+      agent = agentMatch[1].toLowerCase()
+      purpose = purpose
+        .replace(agentMatch[0], "")
+        .replace(/^[:\-\s]+|[:\-\s]+$/g, "")
+        .trim()
+
+      if (agent.startsWith("gsd-")) {
+        framework = "gsd"
+      } else if (agent.startsWith("hm-") || agent.startsWith("hf-")) {
+        framework = "hm"
+      }
+    }
+
+    const lowerTitle = (finalTitle || "").toLowerCase()
+    if (lowerTitle.includes("governance")) {
+      workflow = "governance"
+    } else if (lowerTitle.includes("planning") || lowerTitle.includes("plan-")) {
+      workflow = "planning"
+    } else if (lowerTitle.includes("execute") || lowerTitle.includes("exec-")) {
+      workflow = "execute"
+    } else if (lowerTitle.includes("delegate") || lowerTitle.includes("subagent") || body.parentID) {
+      workflow = "delegate"
+    }
+
+    const safePurpose = purpose.slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || "session"
+
+    finalTitle = generateSessionTitle({
+      framework,
+      workflow,
+      classification,
+      agent,
+      purpose: safePurpose,
+      depth,
+    })
+  }
+
   const request: SessionCreateRequest = {
     body: {
       ...body,
+      title: finalTitle,
       ...(body.parentID ? { parentID: assertValidSessionID(body.parentID, "parent session ID") } : {}),
     },
     ...(directory ? { query: { directory } } : {}),

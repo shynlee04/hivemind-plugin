@@ -27,7 +27,7 @@ describe("session-api typed wrappers", () => {
       })
 
       expect(client.session.create).toHaveBeenCalledWith({
-        body: { parentID: "ses_parent_1", title: "builder: fix bug" },
+        body: { parentID: "ses_parent_1", title: "hm/delegate/child/agent/builder-fix-bug@1" },
       })
       expect(result).toEqual({ id: "ses_1", title: "test" })
     })
@@ -40,7 +40,7 @@ describe("session-api typed wrappers", () => {
       await createSession(client, { title: "test", directory: "/tmp" })
 
       expect(client.session.create).toHaveBeenCalledWith({
-        body: { title: "test" },
+        body: { title: "hm/spawn/root/agent/test@0" },
         query: { directory: "/tmp" },
       })
     })
@@ -55,7 +55,7 @@ describe("session-api typed wrappers", () => {
       })
 
       expect(client.session.create).toHaveBeenCalledWith({
-        body: { title: "test" },
+        body: { title: "hm/spawn/root/agent/test@0" },
       })
     })
 
@@ -69,6 +69,79 @@ describe("session-api typed wrappers", () => {
       )
 
       expect(client.session.create).not.toHaveBeenCalled()
+    })
+
+    it("formats a plain string title for a root session correctly", async () => {
+      const client = mockClient()
+      client.session.create.mockResolvedValue({ data: { id: "ses_root_1" } })
+
+      const { createSession } = await import("../../src/shared/session-api.js")
+      await createSession(client, { title: "gsd-planner: build-app" })
+
+      expect(client.session.create).toHaveBeenCalledWith({
+        body: { title: "gsd/spawn/root/gsd-planner/build-app@0" },
+      })
+    })
+
+    it("formats a plain string title for a child session correctly inheriting parent details", async () => {
+      const client = mockClient()
+      client.session.create.mockResolvedValue({ data: { id: "ses_child_1" } })
+      client.session.get.mockResolvedValue({
+        data: { id: "ses_parent_1", title: "hm/governance/root/hm-l0-orchestrator/fix-issue@0" },
+      })
+
+      const { createSession } = await import("../../src/shared/session-api.js")
+      await createSession(client, {
+        parentID: "ses_parent_1",
+        title: "gsd-executor: execute-fix",
+      })
+
+      expect(client.session.create).toHaveBeenCalledWith({
+        body: {
+          parentID: "ses_parent_1",
+          title: "gsd/execute/child/gsd-executor/execute-fix@1",
+        },
+      })
+    })
+
+    it("adjusts classification and depth for already-formatted titles if incorrect", async () => {
+      const client = mockClient()
+      client.session.create.mockResolvedValue({ data: { id: "ses_child_2" } })
+      client.session.get.mockResolvedValue({
+        data: { id: "ses_parent_2", title: "hm/delegate/child/gsd-planner/plan-task@1" },
+      })
+
+      const { createSession } = await import("../../src/shared/session-api.js")
+      await createSession(client, {
+        parentID: "ses_parent_2",
+        title: "hm/delegate/child/gsd-executor/run-task@1",
+      })
+
+      expect(client.session.create).toHaveBeenCalledWith({
+        body: {
+          parentID: "ses_parent_2",
+          title: "hm/delegate/grandchild/gsd-executor/run-task@2",
+        },
+      })
+    })
+
+    it("gracefully falls back when parent session lookup fails", async () => {
+      const client = mockClient()
+      client.session.create.mockResolvedValue({ data: { id: "ses_child_3" } })
+      client.session.get.mockRejectedValue(new Error("fetch failed"))
+
+      const { createSession } = await import("../../src/shared/session-api.js")
+      await createSession(client, {
+        parentID: "ses_parent_3",
+        title: "gsd-executor: run-task",
+      })
+
+      expect(client.session.create).toHaveBeenCalledWith({
+        body: {
+          parentID: "ses_parent_3",
+          title: "gsd/delegate/child/gsd-executor/run-task@1",
+        },
+      })
     })
   })
 

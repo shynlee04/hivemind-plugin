@@ -26,5 +26,69 @@
     "research_before_questions": true,
     "discuss_mode": "intensive-phase-discussion",
     "use_worktrees": true
+  },
+  "governance": {
+    "rules": [],
+    "naming_standards": {
+      "allowed_frameworks": ["hm", "hf", "gate", "stack"],
+      "allowed_classifications": ["root", "child", "grandchild", "fork"],
+      "naming_format": "{framework}/{workflow}/{classification}/{agent}/{purpose}@{depth}"
+    },
+    "agent_configs": {
+      "hm-codebase-mapper": {
+        "description": "Quick context discovery and codebase investigation",
+        "allowedCommands": ["context", "read", "glob", "grep"]
+      },
+      "hm-project-researcher": {
+        "description": "Multi-source research with evidence tracking",
+        "allowedCommands": ["tavily-search", "tavily-extract", "deep-research"]
+      },
+      "hm-debugger": {
+        "description": "Systematic debugging with persistent state",
+        "allowedCommands": ["debug", "investigate", "trace"]
+      },
+      "hm-code-reviewer": {
+        "description": "Code review and quality gate evaluation",
+        "allowedCommands": ["code-review", "gate-check"]
+      },
+      "hm-architect": {
+        "description": "Architecture analysis and design proposals",
+        "allowedCommands": ["design", "architecture-review"]
+      },
+      "hm-synthesizer": {
+        "description": "Research synthesis and artifact compression",
+        "allowedCommands": ["synthesize", "pack"]
+      },
+      "hm-specifier": {
+        "description": "Spec compliance and requirements validation",
+        "allowedCommands": ["spec-check", "verify"]
+      }
+    },
+    "command_agent_mappings": {
+      "plan": {
+        "description": "Create executable phase plans",
+        "agent": "hm-planner"
+      },
+      "audit": {
+        "description": "Audit codebase or phase artifacts",
+        "agent": "hm-nyquist-auditor"
+      },
+      "research": {
+        "description": "Conduct multi-source research",
+        "agent": "hm-project-researcher"
+      },
+      "gate": {
+        "description": "Run quality gate triad",
+        "agent": "hm-verifier"
+      }
+    },
+    "templates": {
+      "governance-brief": {
+        "content": "You are a governance {{role}}. Review the following: {{brief}}"
+      },
+      "audit-brief": {
+        "content": "Audit the following against project standards: {{brief}}"
+      }
+    }
   }
 }
