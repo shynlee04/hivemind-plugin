@@ -13,13 +13,15 @@
 # `.planning/debug/p51-plus-sticky-bugs-2026-06-04.md:39-50`.
 #
 # Test outline:
-#   1. Construct a SessionManager with a real TmuxMultiplexer + a tmux session
-#      spawned with `cat` (so capturePaneContent returns stable content).
-#   2. Construct a TmuxEventObserver wrapping the SessionManager, plus a
-#      P53 pane-monitor hook subscribing to onPaneCaptured.
-#   3. Call sessionManager.setObserver(observer) to wire the emit.
-#   4. Call sessionManager.startPolling(500) for a short interval, wait ~3s.
-#   5. Assert BOTH <ts>-pane.json (7 fields) AND <ts>-pane-content.txt (full
+#   1. Spawn a real tmux session running `cat` (so capturePaneContent returns
+#      stable content).
+#   2. Construct a TmuxMultiplexer + SessionManager directly (bypassing the
+#      createTmuxIntegrationIfSupported factory which requires TMUX env).
+#   3. Manually inject a tracked session so startPolling has work to do.
+#   4. Construct a TmuxEventObserver + pane-monitor hook.
+#   5. Call sessionManager.setObserver(observer) to wire the emit.
+#   6. Call sessionManager.startPolling(500) and wait ~3s.
+#   7. Assert BOTH <ts>-pane.json (7 fields) AND <ts>-pane-content.txt (full
 #      content) are written to .hivemind/journal/<sid>/.
 
 load "helpers"
@@ -39,61 +41,84 @@ teardown() {
   local journal_root="${project}/.hivemind/journal"
   local sid="bats-75-journal-$$"
 
-  # Step 1: spawn tmux session with `cat` so capturePaneContent returns stable content
+  # Skip if no tmux server
+  if ! tmux has-session -t "_nonexistent_test_session_$$" 2>/dev/null; then
+    if ! tmux start-server 2>/dev/null; then
+      skip "no tmux server available"
+    fi
+  fi
+
+  # Step 1: spawn tmux session with `cat` (so capture-pane returns stable content)
   tmux new-session -d -s "$tmux_session" -c "$project" "cat"
   tmux has-session -t "$tmux_session"
   local pane_id
   pane_id="$(tmux list-panes -t "$tmux_session" -F '#{pane_id}' | head -1)"
   [ -n "$pane_id" ]
 
-  # Step 2-4: construct SessionManager, observer, hook, wire, start polling
+  # Steps 2-6: construct multiplexer + SessionManager directly, manually inject
+  # a tracked session, wire observer, start polling, wait, assert journal
   run tmux_node_eval "
-    import('${TMUX_BATS_ROOT}/dist/features/tmux/integration.js').then(async (integration) => {
-      const tmuxIntegration = await integration.createTmuxIntegrationIfSupported('${project}', { log: { debug() {}, info() {}, warn() {}, error() {} } });
-      if (!tmuxIntegration) {
-        process.stdout.write('skip-no-tmux-integration');
-        return;
-      }
-      const sm = tmuxIntegration.sessionManager_;
-      const observer = tmuxIntegration.adapter;
-      // P58.9 REQ-01: wire the observer into the SessionManager so the
-      // polling tick emits pane-captured events. This call is a no-op
-      // before Wave 2A (setObserver doesn't exist) — RED.
-      if (typeof sm.setObserver === 'function') {
-        sm.setObserver(observer);
+    (async () => {
+      const mux = await import('${TMUX_BATS_ROOT}/dist/features/tmux/tmux-multiplexer.js');
+      const sm = await import('${TMUX_BATS_ROOT}/dist/features/tmux/session-manager.js');
+      const obs = await import('${TMUX_BATS_ROOT}/dist/features/tmux/observers.js');
+      const hook = await import('${TMUX_BATS_ROOT}/dist/hooks/pane-monitor.js');
+      const logger = { debug() {}, info() {}, warn() {}, error() {} };
+      const multiplexer = new mux.TmuxMultiplexer('main-vertical', 60, logger);
+      const sessionManager_ = new sm.SessionManager(
+        multiplexer,
+        'http://localhost:0',
+        '${project}',
+        logger,
+      );
+
+      // P58.9 REQ-01: wire observer into SessionManager so the polling tick
+      // emits pane-captured events. This call is a no-op before Wave 2A
+      // (setObserver doesn't exist) — RED.
+      if (typeof sessionManager_.setObserver === 'function') {
+        sessionManager_.setObserver({ onPaneCaptured: () => {} });
       } else {
-        // RED: pre-Wave-2A code path — emit is missing
         process.stdout.write('red-no-setObserver');
         return;
       }
-      // P53 hook
-      const { createPaneMonitorHook } = await import('${TMUX_BATS_ROOT}/dist/hooks/pane-monitor.js');
-      const { createTmuxEventObserver } = await import('${TMUX_BATS_ROOT}/dist/features/tmux/observers.js');
-      const tmuxObserver = createTmuxEventObserver(observer);
-      const hook = createPaneMonitorHook({
+
+      // Manually inject a tracked session so startPolling has work to do.
+      // The 'sessions' Map is private; we use a small reflection trick to
+      // reach it without changing the public API.
+      const sessionsMap = sessionManager_.sessions;
+      sessionsMap.set('${sid}', {
+        sessionId: '${sid}',
+        agent: 'bats',
+        delegationId: '${sid}',
+        directory: '${project}',
+        paneId: '${pane_id}',
+        spawnTime: Date.now(),
+        ageTimer: null,
+        state: 'ready',
+      });
+
+      // P53 hook consumes pane-captured events
+      const tmuxObserver = obs.createTmuxEventObserver({ onSessionCreated: async () => {} });
+      const paneMonitorHook = hook.createPaneMonitorHook({
         sessionId: '${sid}',
         observer: tmuxObserver,
         journalRoot: '${journal_root}',
         logWarn: () => {},
       });
 
-      // Manually add a tracked session so polling has work to do
-      // The SessionManager's sessions map is private; use the public
-      // startPolling entry point which iterates whatever is currently tracked.
-      // We simulate by calling the multiplexer capture path via startPolling.
-      sm.startPolling(500);
+      // Start polling with a short interval
+      sessionManager_.startPolling(500);
 
-      // Wait ~3s for at least one polling tick + journal write
+      // Wait ~3s for at least 2 polling ticks + journal write
       await new Promise((resolve) => setTimeout(resolve, 3500));
 
       // Stop polling and clean up
-      sm.stopPolling();
-      await hook.__waitForPendingRetries?.();
-      await hook.dispose();
-      tmuxIntegration.multiplexer.closePane?.('${pane_id}');
+      sessionManager_.stopPolling();
+      await paneMonitorHook.__waitForPendingRetries?.();
+      await paneMonitorHook.dispose();
 
-      process.stdout.write('written=' + hook.counters.written);
-    }).catch((err) => {
+      process.stdout.write('written=' + paneMonitorHook.counters.written);
+    })().catch((err) => {
       process.stdout.write('error=' + err.message);
     });
   "
@@ -112,12 +137,12 @@ teardown() {
 
   # GREEN: assert both files exist
   local journal_file
-  journal_file="$(ls "${journal_root}/${sid}/" | grep -E '\-pane\.json$' | head -1)"
-  [ -n "$journal_file" ] || { echo "FAIL: no *-pane.json found in ${journal_root}/${sid}/"; return 1; }
+  journal_file="$(ls "${journal_root}/${sid}/" 2>/dev/null | grep -E '\-pane\.json$' | head -1)"
+  [ -n "$journal_file" ] || { echo "FAIL: no *-pane.json in ${journal_root}/${sid}/"; return 1; }
 
   local content_file
-  content_file="$(ls "${journal_root}/${sid}/" | grep -E '\-pane-content\.txt$' | head -1)"
-  [ -n "$content_file" ] || { echo "FAIL: no *-pane-content.txt found in ${journal_root}/${sid}/"; return 1; }
+  content_file="$(ls "${journal_root}/${sid}/" 2>/dev/null | grep -E '\-pane-content\.txt$' | head -1)"
+  [ -n "$content_file" ] || { echo "FAIL: no *-pane-content.txt in ${journal_root}/${sid}/"; return 1; }
 
   # 7-field JSON schema assertion
   run jq -r 'keys | length' "${journal_root}/${sid}/${journal_file}"
