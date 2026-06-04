@@ -68,6 +68,49 @@ If none: "No additional constraints beyond standard project conventions."]
 [Every acceptance criterion must be a checkbox that resolves to PASS or FAIL.
 No "should feel good", "looks reasonable", or "generally works" — those are not checkboxes.]
 
+## User-Pain Coverage
+
+> **Purpose.** Every open symptom in `.planning/USER-PAIN-BACKLOG.md`
+> must be enumerated here with an explicit disposition. This makes
+> "out-of-scope" clauses for user-pain visible to spec authors,
+> verifiers, and the user. P58-META-01 (REQ-58-META) made symptom
+> exclusion a tracked decision instead of an invisible comment.
+
+For each entry in `.planning/USER-PAIN-BACKLOG.md` with status `OPEN`
+or `OWNED-P{N}`, copy the symptom id + label here and mark a
+disposition. The `gsd-spec-phase` gate fails if this section is
+missing or if any open symptom lacks a disposition.
+
+```markdown
+- [ ] S[N] ([short-label]) — [addresses | defers-to-P{N} | not-relevant] — {1-line reason}
+- [ ] S[N] ([short-label]) — [addresses | defers-to-P{N} | not-relevant] — {1-line reason}
+```
+
+**Disposition semantics:**
+
+- `addresses` — this phase fixes the symptom. The corresponding
+  requirement MUST appear in the Requirements section above and
+  the BATS acceptance MUST be in `tests/scripts/tmux/` or an
+  equivalent test surface.
+- `defers-to-P{N}` — a follow-up phase owns the fix. Cross-link to
+  that phase's SPEC.md and update the symptom's `OWNED-P{N}` status
+  in `.planning/USER-PAIN-BACKLOG.md` atomically with that phase's
+  plan lock.
+- `not-relevant` — explicit non-applicability with 1-line
+  justification. (E.g., a tmux-streaming symptom marked
+  `not-relevant` on a CLI phase because the phase does not touch
+  tmux surfaces.) Verifier may challenge these but cannot auto-fail
+  on a justified disposition.
+
+**Closure rule:** A symptom marked `addresses` is `RESOLVED` only
+after the phase ships AND the corresponding `## Human-Driven UAT`
+section in the phase's `VERIFICATION.md` is signed by a human
+tester. BATS-only verification is not sufficient closure.
+
+**Reference:** `.planning/USER-PAIN-BACKLOG.md` is the single
+source of truth for symptom status. Update atomically with phase
+close.
+
 ## Ambiguity Report
 
 | Dimension          | Score | Min  | Status | Notes                              |
