@@ -510,4 +510,90 @@ describe("DelegationCoordinator", () => {
     expect(record.executionState).toBe("stalled")
     expect(handleTimeoutSpy).toHaveBeenCalledWith(dispatched.delegationId)
   })
+
+  describe("S5b tmux panel-spawn fallback", () => {
+    it("invokes tmuxIntegration.adapter.onSessionCreated with synthesized event after dispatch", async () => {
+      const deps = createDeps()
+      const onSessionCreated = vi.fn().mockResolvedValue(undefined)
+      deps.childSessionStarter = {
+        start: vi.fn().mockResolvedValue({
+          childSessionId: "child-tmux-1",
+          title: "hm-delegate-child-gsd-executor-fix-bug",
+          workingDirectory: "/tmp/proj",
+        }),
+      }
+      deps.tmuxIntegration = { adapter: { onSessionCreated } as never }
+
+      const coordinator = new DelegationCoordinator(deps)
+      await coordinator.dispatch({ ...baseDispatchParams, parentSessionId: "parent-tmux-1", workingDirectory: "/tmp/proj" })
+
+      // Yield to the microtask so the void promise's `.catch` resolves.
+      await new Promise((resolve) => setImmediate(resolve))
+
+      expect(onSessionCreated).toHaveBeenCalledTimes(1)
+      const event = onSessionCreated.mock.calls[0]?.[0] as {
+        type: string
+        properties: { info: { id: string; parentID: string | undefined; title: string; directory: string } }
+        hivemindMeta?: { agent: string; delegationId: string; depth: number }
+      }
+      expect(event.type).toBe("session.created")
+      expect(event.properties.info.id).toBe("child-tmux-1")
+      expect(event.properties.info.parentID).toBe("parent-tmux-1")
+      expect(event.properties.info.title).toBe("hm-delegate-child-gsd-executor-fix-bug")
+      expect(event.properties.info.directory).toBe("/tmp/proj")
+      expect(event.hivemindMeta).toEqual({
+        agent: "gsd-executor",
+        delegationId: "child-tmux-1",
+        depth: 1,
+      })
+    })
+
+    it("does NOT call the adapter when tmuxIntegration is not wired", async () => {
+      const deps = createDeps()
+      const onSessionCreated = vi.fn().mockResolvedValue(undefined)
+      deps.childSessionStarter = {
+        start: vi.fn().mockResolvedValue({
+          childSessionId: "child-no-tmux",
+          title: "hm-delegate-child-gsd-executor-task",
+          workingDirectory: "/tmp/proj",
+        }),
+      }
+      // No tmuxIntegration — must silently no-op, no throw.
+      const coordinator = new DelegationCoordinator(deps)
+      await expect(coordinator.dispatch(baseDispatchParams)).resolves.toBeDefined()
+      expect(onSessionCreated).not.toHaveBeenCalled()
+    })
+
+    it("swallows adapter errors so the delegation keeps running (D-04 silent-fallback)", async () => {
+      const deps = createDeps()
+      const adapterError = new Error("tmux split-window failed")
+      const onSessionCreated = vi.fn().mockRejectedValue(adapterError)
+      deps.childSessionStarter = {
+        start: vi.fn().mockResolvedValue({
+          childSessionId: "child-tmux-fail",
+          title: "hm-delegate-child-gsd-executor-fail",
+          workingDirectory: "/tmp/proj",
+        }),
+      }
+      deps.tmuxIntegration = { adapter: { onSessionCreated } as never }
+      deps.client = { app: { log: vi.fn().mockResolvedValue(undefined) } } as never
+
+      const coordinator = new DelegationCoordinator(deps)
+      const result = await coordinator.dispatch(baseDispatchParams)
+
+      // Delegation still completes — error is logged not thrown.
+      expect(result.childSessionId).toBe("child-tmux-fail")
+      // Yield so the .catch handler runs.
+      await new Promise((resolve) => setImmediate(resolve))
+      expect(deps.client!.app!.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            service: "delegation",
+            level: "warn",
+            message: expect.stringContaining("tmux adapter.onSessionCreated failed for child-tmux-fail"),
+          }),
+        }),
+      )
+    })
+  })
 })
