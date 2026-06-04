@@ -36,7 +36,11 @@ import {
   type OpenCodeClient,
 } from "../../shared/session-api.js"
 import { generateSessionTitle } from "../../shared/session-naming.js"
-import { readGovernanceConfig, resolveAgentForBrief } from "./config-reader.js"
+import {
+  readGovernanceConfig,
+  resolveAgentForBrief,
+  validateNamingTitle,
+} from "./config-reader.js"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success, error } from "../../shared/tool-response.js"
 
@@ -105,7 +109,7 @@ export function createGovernanceSessionTool(
       // --- Step 2: Resolve agent from brief via config reader ---
       let resolvedAgent = args.agent
       try {
-        const config = await readGovernanceConfig()
+        const config = readGovernanceConfig()
         resolvedAgent = resolveAgentForBrief(args.brief, config)
       } catch {
         // Config read failure is non-fatal — use provided agent
@@ -125,6 +129,23 @@ export function createGovernanceSessionTool(
         purpose: safePurpose,
         depth: 0,
       })
+
+      // --- Step 3.5: SR-05 Naming validation (soft enforcement per Decision 6) ---
+      try {
+        const config = readGovernanceConfig()
+        const namingStandards = config.naming_standards
+        if (namingStandards) {
+          const isValid = validateNamingTitle(sessionTitle, namingStandards)
+          if (!isValid) {
+            // Soft enforcement (Decision 6): warn but don't block
+            void client.app?.log?.({
+              body: { service: "governance", level: "warn", message: `[Harness] Session title "${sessionTitle}" does not match naming standards` }
+            })
+          }
+        }
+      } catch {
+        // Non-fatal — naming validation is soft enforcement
+      }
 
       // --- Step 4: Git commit (best-effort, async) ---
       try {

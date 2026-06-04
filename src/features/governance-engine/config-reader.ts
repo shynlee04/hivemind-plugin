@@ -1,15 +1,18 @@
 /**
- * Governance config reader — typed access to `.hivemind/governance/config.json`.
+ * Governance config reader — facade over unified configs.json.
  *
- * Provides Zod schema validation, typed config access, agent resolution from
- * brief content, and naming title validation against allowed standards.
+ * Provides typed access to governance configuration via readConfigs().governance.
+ * Backward compatible: same function signatures and return types.
+ *
+ * SR-05: Migrated from reading separate .hivemind/governance/config.json to
+ * reading from the unified .hivemind/configs.json.governance via facade pattern.
+ * HIVEMIND_GOVERNANCE_CONFIG_PATH env var removed per SPEC.
  *
  * @module governance-engine/config-reader
  */
 
 import { z } from "zod"
-import { readFile } from "node:fs/promises"
-import { join } from "node:path"
+import { readConfigs } from "../../schema-kernel/hivemind-configs.schema.js"
 
 // ---------------------------------------------------------------------------
 // Zod schemas
@@ -18,40 +21,44 @@ import { join } from "node:path"
 /** Schema for the naming_standards section of the governance config. */
 export const NamingStandardsSchema = z.object({
   allowed_frameworks: z.array(z.string()),
-  allowed_workflows: z.array(z.string()),
+  allowed_workflows: z.array(z.string()).optional(),
   allowed_classifications: z.array(z.string()),
   naming_format: z.string(),
-  description: z.string(),
+  description: z.string().optional(),
 })
 
 /** Schema for an individual agent config entry. */
 const AgentConfigSchema = z.object({
   description: z.string(),
   model: z.object({ providerID: z.string(), modelID: z.string() }).optional(),
-  allowedCommands: z.array(z.string()),
+  allowedCommands: z.array(z.string()).optional(),
   defaultBrief: z.string().optional(),
 })
 
 /** Schema for a command config entry. */
 const CommandConfigSchema = z.object({
-  description: z.string(),
+  description: z.string().optional(),
   agent: z.string().optional(),
   template: z.string().optional(),
 })
 
 /** Schema for a template config entry. */
 const TemplateConfigSchema = z.object({
-  content: z.string(),
+  content: z.string().optional(),
+  description: z.string().optional(),
 })
 
 /** Schema for the full governance config. */
 export const GovernanceConfigSchema = z.object({
-  version: z.string(),
-  defaultAgent: z.string(),
+  version: z.string().optional(),
+  defaultAgent: z.string().optional(),
   naming_standards: NamingStandardsSchema.optional(),
-  agents: z.record(z.string(), AgentConfigSchema),
-  commands: z.record(z.string(), CommandConfigSchema),
-  templates: z.record(z.string(), TemplateConfigSchema),
+  agents: z.record(z.string(), AgentConfigSchema).optional(),
+  agent_configs: z.record(z.string(), AgentConfigSchema).optional(),
+  commands: z.record(z.string(), CommandConfigSchema).optional(),
+  command_agent_mappings: z.record(z.string(), CommandConfigSchema).optional(),
+  templates: z.record(z.string(), TemplateConfigSchema).optional(),
+  rules: z.array(z.unknown()).optional(),
 })
 
 // ---------------------------------------------------------------------------
@@ -68,63 +75,29 @@ export type AgentConfig = z.infer<typeof AgentConfigSchema>
 export type CommandConfig = z.infer<typeof CommandConfigSchema>
 
 // ---------------------------------------------------------------------------
-// Config path resolution
-// ---------------------------------------------------------------------------
-
-/**
- * Resolves the governance config file path.
- *
- * Supports `HIVEMIND_GOVERNANCE_CONFIG_PATH` env var override.
- * Defaults to `.hivemind/governance/config.json` under the project root.
- *
- * @param projectRoot - Absolute path to the project root directory.
- * @returns Absolute path to the governance config file.
- */
-function resolveConfigPath(projectRoot: string): string {
-  const envPath = process.env.HIVEMIND_GOVERNANCE_CONFIG_PATH
-  if (envPath) return envPath
-  return join(projectRoot, ".hivemind", "governance", "config.json")
-}
-
-// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 /**
- * Reads and validates the governance config from disk.
+ * Reads governance configuration from the unified configs.json.
  *
- * Uses Zod `safeParse` to validate the JSON payload. Returns a typed
- * `GovernanceConfig` or throws a descriptive `[Harness]`-prefixed error.
+ * SR-05: Facade pattern — reads from readConfigs().governance instead of
+ * a separate governance/config.json file. Backward compatible: same
+ * function signature and return type.
  *
  * @param projectRoot - Optional project root (defaults to `process.cwd()`).
  * @returns Validated governance configuration.
- * @throws {Error} When the config file is missing, unparseable, or invalid.
+ * @throws {Error} When governance config is missing or invalid.
  */
-export async function readGovernanceConfig(
+export function readGovernanceConfig(
   projectRoot?: string,
-): Promise<GovernanceConfig> {
+): GovernanceConfig {
   const root = projectRoot ?? process.cwd()
-  const configPath = resolveConfigPath(root)
+  const configs = readConfigs(root)
+  const governance = configs.governance
 
-  let raw: string
-  try {
-    raw = await readFile(configPath, "utf-8")
-  } catch (err) {
-    throw new Error(
-      `[Harness] Governance config not found at "${configPath}": ${err instanceof Error ? err.message : String(err)}`,
-    )
-  }
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    throw new Error(
-      `[Harness] Governance config at "${configPath}" is not valid JSON`,
-    )
-  }
-
-  const result = GovernanceConfigSchema.safeParse(parsed)
+  // Validate that governance has required structure
+  const result = GovernanceConfigSchema.safeParse(governance)
   if (!result.success) {
     throw new Error(
       `[Harness] Governance config validation failed: ${result.error.message}`,
@@ -137,9 +110,9 @@ export async function readGovernanceConfig(
 /**
  * Resolves an agent name from a brief by keyword matching.
  *
- * Scans `config.agents` descriptions for case-insensitive keyword matches
- * in the brief. Returns the first matching agent name, or `config.defaultAgent`
- * if no match is found.
+ * Scans agent descriptions for case-insensitive keyword matches
+ * in the brief. Returns the first matching agent name, or the
+ * default agent if no match is found.
  *
  * @param brief - The governance brief text to scan.
  * @param config - The governance configuration.
@@ -152,8 +125,9 @@ export function resolveAgentForBrief(
   const lowerBrief = brief.toLowerCase()
 
   // Scan agents in definition order for keyword matches
-  for (const [agentName, agentConfig] of Object.entries(config.agents)) {
-    const description = agentConfig.description.toLowerCase()
+  const agents = config.agent_configs ?? config.agents ?? {}
+  for (const [agentName, agentConfig] of Object.entries(agents)) {
+    const description = (agentConfig.description ?? "").toLowerCase()
     const descWords = description.split(/\s+/)
 
     // Match if any word from the agent description appears in the brief
@@ -164,7 +138,7 @@ export function resolveAgentForBrief(
     }
   }
 
-  return config.defaultAgent
+  return config.defaultAgent ?? "hm-codebase-mapper"
 }
 
 /**
@@ -188,7 +162,7 @@ export function validateNamingTitle(
   const [framework, workflow, classification] = segments
 
   if (!standards.allowed_frameworks.includes(framework)) return false
-  if (!standards.allowed_workflows.includes(workflow)) return false
+  if (standards.allowed_workflows && !standards.allowed_workflows.includes(workflow)) return false
   if (!standards.allowed_classifications.includes(classification)) return false
 
   // Validate last segment has @ separator with numeric depth

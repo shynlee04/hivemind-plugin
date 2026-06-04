@@ -422,6 +422,108 @@ describe("language pipeline feature evaluation", () => {
 })
 
 // ---------------------------------------------------------------------------
+// Feature Evaluation: Config-Driven Behavioral Overrides (SR-05 REQ-03)
+//
+// The 4 security-relevant dimensions (guardrailLevel, delegationMode,
+// toolAccessPattern, skillFilter) can now be overridden via configs.json.
+// Config values take precedence over static BehavioralProfiles[mode] lookup.
+// ---------------------------------------------------------------------------
+
+describe("config-driven behavioral overrides (SR-05 REQ-03)", () => {
+  beforeEach(() => {
+    mockGetFreshConfig.mockReset()
+    mockResolveProfile.mockReset()
+    mockResolveProfile.mockReturnValue(createMockProfileMatch())
+  })
+
+  it("guardrail_level: strict overrides static profile regardless of mode", () => {
+    mockGetFreshConfig.mockReturnValue(
+      createMockConfig({ guardrail_level: "strict" }),
+    )
+
+    const result = resolveBehavioralProfile("sess-override-1", "/project")
+
+    // expert-advisor static = moderate, but config says strict → strict wins
+    expect(result.behavioralProfile.guardrailLevel).toBe("strict")
+  })
+
+  it("delegation_mode: direct overrides static profile", () => {
+    mockGetFreshConfig.mockReturnValue(
+      createMockConfig({ delegation_mode: "direct" }),
+    )
+
+    const result = resolveBehavioralProfile("sess-override-2", "/project")
+
+    // expert-advisor static = waiter, but config says direct → direct wins
+    expect(result.behavioralProfile.delegationMode).toBe("direct")
+  })
+
+  it("tool_access_pattern: full overrides static profile", () => {
+    mockGetFreshConfig.mockReturnValue(
+      createMockConfig({ tool_access_pattern: "full" }),
+    )
+
+    const result = resolveBehavioralProfile("sess-override-3", "/project")
+
+    expect(result.behavioralProfile.toolAccessPattern).toBe("full")
+  })
+
+  it("skill_filter: domain overrides static profile", () => {
+    mockGetFreshConfig.mockReturnValue(
+      createMockConfig({ skill_filter: "domain" }),
+    )
+
+    const result = resolveBehavioralProfile("sess-override-4", "/project")
+
+    expect(result.behavioralProfile.skillFilter).toBe("domain")
+  })
+
+  it("undefined config fields fall back to static profile values", () => {
+    mockGetFreshConfig.mockReturnValue(createMockConfig())
+    // No guardrail_level, delegation_mode, tool_access_pattern, skill_filter set
+
+    const result = resolveBehavioralProfile("sess-override-5", "/project")
+
+    // Should use expert-advisor static values
+    expect(result.behavioralProfile.guardrailLevel).toBe("moderate")
+    expect(result.behavioralProfile.delegationMode).toBe("waiter")
+    expect(result.behavioralProfile.toolAccessPattern).toBe("full")
+    expect(result.behavioralProfile.skillFilter).toBe("all")
+  })
+
+  it("partial override: only guardrail_level set, others use static", () => {
+    mockGetFreshConfig.mockReturnValue(
+      createMockConfig({ guardrail_level: "permissive" }),
+    )
+
+    const result = resolveBehavioralProfile("sess-override-6", "/project")
+
+    expect(result.behavioralProfile.guardrailLevel).toBe("permissive")
+    // Others should be static expert-advisor values
+    expect(result.behavioralProfile.delegationMode).toBe("waiter")
+    expect(result.behavioralProfile.toolAccessPattern).toBe("full")
+    expect(result.behavioralProfile.skillFilter).toBe("all")
+  })
+
+  it("config override works for hivemind-powered mode", () => {
+    mockGetFreshConfig.mockReturnValue(
+      createMockConfig({
+        mode: "hivemind-powered",
+        guardrail_level: "moderate",
+      }),
+    )
+
+    const result = resolveBehavioralProfile("sess-override-7", "/project")
+
+    // hivemind-powered static = strict, but config says moderate → moderate wins
+    expect(result.behavioralProfile.guardrailLevel).toBe("moderate")
+    // Other fields should use hivemind-powered static values
+    expect(result.behavioralProfile.toolAccessPattern).toBe("restricted")
+    expect(result.behavioralProfile.skillFilter).toBe("curated")
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Feature Evaluation: Multi-Level Expertise Merge (D-06, REQ-CA02-03)
 //
 // The config-first merge must correctly map ALL five UserExpertLevel values
