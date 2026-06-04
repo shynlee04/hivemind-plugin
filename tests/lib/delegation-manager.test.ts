@@ -826,12 +826,22 @@ describe("DelegationManager", () => {
         prompt: "fail at prompt",
       })
 
-      expect(result.status).toBe("error")
+      // P58.8 S3 (REQ-58-09): dispatch is fire-and-forget — the result
+      // returns immediately with status "running" (or "dispatched"); the
+      // .catch() branch transitions the delegation to "error"
+      // asynchronously. Flush the microtask queue and verify the
+      // asynchronous transition.
+      expect(["running", "dispatched"]).toContain(result.status)
+
+      // Flush the microtask queue so the void .catch() handler runs.
+      await vi.advanceTimersByTimeAsync(0)
 
       // Should now be error
       const delegation = manager.getStatus(result.delegationId)
       expect(delegation?.status).toBe("error")
-      expect(delegation?.error).toBe("Failed to send prompt to child session")
+      // P58.8 S3: the error message is now prefixed with the
+      // fire-and-forget marker; verify the SDK reason is preserved.
+      expect(delegation?.error).toContain("SDK prompt failed")
       expect(delegation?.completedAt).toBeDefined()
 
       // Verify cleanup of session tracking
@@ -2969,8 +2979,16 @@ afterEach(() => {
         prompt: "fail at prompt",
       })
 
-      expect(result.status).toBe("error")
-      expect(monitorStart).not.toHaveBeenCalled()
+      // P58.8 S3 (REQ-58-09): fire-and-forget — dispatch returns
+      // synchronously with status "running" or "dispatched"; the
+      // .catch() branch transitions to "error" asynchronously.
+      expect(["running", "dispatched"]).toContain(result.status)
+      // monitor.start IS called in the synchronous dispatch path
+      // (before the await sendPromptAsync) — see manager-runtime.ts.
+      // The original assertion (monitorStart not called) is no longer
+      // accurate for the new contract; we just verify the dispatch
+      // completed.
+      expect(result.delegationId).toBeDefined()
     })
   })
 })
