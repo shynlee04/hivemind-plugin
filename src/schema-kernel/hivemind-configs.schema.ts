@@ -276,31 +276,91 @@ export const GovernanceRuleSchema = z.object({
   enabled: z.boolean().default(true),
 })
 
-export const GovernanceConfigsSchema = z.object({
-  rules: z.array(GovernanceRuleSchema).default([]),
+/**
+ * Schema for naming standards configuration.
+ * Defines allowed frameworks, classifications, naming format, and title length limits.
+ */
+export const NamingStandardsSchema = z.object({
+  allowed_frameworks: z.array(z.string()).optional(),
+  allowed_classifications: z.array(z.string()).optional(),
+  naming_format: z.string().optional(),
+  max_title_length: z.number().optional(),
 })
 
-export const HivemindConfigsSchema = z
-  .object({
-    conversation_language: SupportedLanguageSchema.default("en"),
-    documents_and_artifacts_language: SupportedLanguageSchema.default("en"),
-    /**
-     * Configurable document path prefixes for language enforcement.
-     * Flat array of strings, each relative to project root.
-     * Default: [".hivemind/planning/"] — supports recursive subdirectory globbing.
-     * @see D-08, D-09, D-10 in BOOT-09-CONTEXT.md
-     */
-    document_paths: z.array(z.string()).default([".hivemind/planning/"]),
-    mode: HivemindModeSchema.default("expert-advisor"),
-    user_expert_level: UserExpertLevelSchema.default("intermediate-high-level"),
-    delegation_systems: DelegationSystemsSchema,
-    parallelization: z.boolean().default(true),
-    atomic_commit: z.boolean().default(true),
-    commit_docs: z.boolean().default(true),
-    workflow: WorkflowConfigSchema,
-    governance: GovernanceConfigsSchema.default({ rules: [] }),
-  })
-  .strip()
+/**
+ * Schema for per-agent configuration.
+ * Defines agent description, allowed commands, tools, and temperature.
+ */
+export const AgentConfigSchema = z.object({
+  description: z.string().optional(),
+  allowedCommands: z.array(z.string()).optional(),
+  tools: z.array(z.string()).optional(),
+  temperature: z.number().optional(),
+})
+
+/**
+ * Schema for command-to-agent mapping configuration.
+ * Defines which agent handles a command and the associated workflow.
+ */
+export const CommandConfigSchema = z.object({
+  agent: z.string().optional(),
+  workflow: z.string().optional(),
+  description: z.string().optional(),
+})
+
+/**
+ * Schema for template configuration.
+ * Defines template description and content.
+ */
+export const TemplateConfigSchema = z.object({
+  description: z.string().optional(),
+  content: z.string().optional(),
+})
+
+export const GovernanceConfigsSchema = z.object({
+  rules: z.array(GovernanceRuleSchema).default([]),
+  naming_standards: NamingStandardsSchema.optional(),
+  agent_configs: z.record(z.string(), AgentConfigSchema).optional(),
+  command_agent_mappings: z.record(z.string(), CommandConfigSchema).optional(),
+  templates: z.record(z.string(), TemplateConfigSchema).optional(),
+})
+
+/**
+ * Behavioral override enums for config-driven profile customization.
+ * These fields allow per-project override of the static BehavioralProfiles lookup.
+ */
+export const GuardrailLevelSchema = z.enum(["strict", "moderate", "permissive"])
+export const DelegationModeSchema = z.enum(["waiter", "direct", "autonomous"])
+export const ToolAccessPatternSchema = z.enum(["restricted", "standard", "full"])
+export const SkillFilterSchema = z.enum(["curated", "domain", "full"])
+
+export const HivemindConfigsSchema = z.object({
+  conversation_language: SupportedLanguageSchema.default("en"),
+  documents_and_artifacts_language: SupportedLanguageSchema.default("en"),
+  /**
+   * Configurable document path prefixes for language enforcement.
+   * Flat array of strings, each relative to project root.
+   * Default: [".hivemind/planning/"] — supports recursive subdirectory globbing.
+   * @see D-08, D-09, D-10 in BOOT-09-CONTEXT.md
+   */
+  document_paths: z.array(z.string()).default([".hivemind/planning/"]),
+  mode: HivemindModeSchema.default("expert-advisor"),
+  user_expert_level: UserExpertLevelSchema.default("intermediate-high-level"),
+  delegation_systems: DelegationSystemsSchema,
+  parallelization: z.boolean().default(true),
+  atomic_commit: z.boolean().default(true),
+  commit_docs: z.boolean().default(true),
+  workflow: WorkflowConfigSchema,
+  governance: GovernanceConfigsSchema.default({ rules: [] }),
+  /** Behavioral override: guardrail intensity level (overrides static profile) */
+  guardrail_level: GuardrailLevelSchema.optional(),
+  /** Behavioral override: delegation mode (overrides static profile) */
+  delegation_mode: DelegationModeSchema.optional(),
+  /** Behavioral override: tool access pattern (overrides static profile) */
+  tool_access_pattern: ToolAccessPatternSchema.optional(),
+  /** Behavioral override: skill filter (overrides static profile) */
+  skill_filter: SkillFilterSchema.optional(),
+})
 
 export type HivemindConfigs = z.infer<typeof HivemindConfigsSchema>
 
