@@ -13,10 +13,15 @@ beforeEach(() => {
   prevStateDir = process.env.OPENCODE_HARNESS_STATE_DIR
   tempDir = mkdtempSync(join(tmpdir(), "delegate-task-test-"))
   process.env.OPENCODE_HARNESS_STATE_DIR = tempDir
+  // P58.9 R3 fix: drain any fake-timer chains (e.g., from
+  // SessionManager.startPolling setTimeout refs) that previous tests may
+  // have left behind. Prevents full-suite-only timeouts at L197 and L239.
+  vi.useRealTimers()
 })
 afterEach(() => {
   if (tempDir && existsSync(tempDir)) { rmSync(tempDir, { recursive: true, force: true }) }
   if (prevStateDir === undefined) { delete process.env.OPENCODE_HARNESS_STATE_DIR } else { process.env.OPENCODE_HARNESS_STATE_DIR = prevStateDir }
+  vi.useRealTimers()
 })
 
 const mockCtx = {
