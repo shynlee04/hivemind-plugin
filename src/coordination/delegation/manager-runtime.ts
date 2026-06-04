@@ -26,6 +26,7 @@ import {
 import type { BehavioralOverrides } from "../../routing/behavioral-profile/types.js"
 import type { DelegationMonitor } from "./monitor.js"
 import type { NotificationRouter } from "./notification-router.js"
+import { childEventStream } from "../../features/session-tracker/streaming/child-event-stream.js"
 
 type QueueContext = { provider?: string; model?: string; agent?: string }
 
@@ -265,6 +266,13 @@ export class DelegationManager {
       // running so the parent tmux panel receives child events in real
       // time. startPolling is idempotent — safe to call on every dispatch.
       this.sessionManager?.startPolling()
+      // P58.8 S4 (REQ-58-10): subscribe the child event bus to this
+      // child session. Graceful fallback: childEventStream.subscribe
+      // silently no-ops when the SDK doesn't expose session.subscribe,
+      // and logs warn on any other error. Counter-based progress
+      // (delegation.actionCount / messageCount / toolCallCount) remains
+      // the source of truth when the bus is unavailable.
+      await this.subscribeChildEventBus(child.childSessionId)
       try {
         const promptBody = {
           parts: [{ type: "text", text: params.prompt }],
@@ -505,6 +513,28 @@ export class DelegationManager {
    */
   pruneCompletedDelegations(maxAgeMs?: number): number {
     return this.state.pruneCompletedDelegations(maxAgeMs)
+  }
+
+  /**
+   * P58.8 S4 (REQ-58-10): subscribe the child event bus to a newly
+   * spawned child session. Wraps `childEventStream.subscribe` in a
+   * try/catch so a missing or failing SDK subscribe implementation
+   * does NOT abort the dispatch. The progress action falls back to
+   * counter-based counts when the bus is empty.
+   */
+  private async subscribeChildEventBus(childSessionId: string): Promise<void> {
+    try {
+      await childEventStream.subscribe(childSessionId, this.client as unknown as Parameters<typeof childEventStream.subscribe>[1])
+    } catch (err) {
+      this.client.app?.log?.({
+        body: {
+          service: "delegation",
+          level: "warn",
+          message: `[Harness] child event subscription failed for ${childSessionId}; falling back to counter-based progress.`,
+          extra: { error: err instanceof Error ? err.message : String(err) },
+        },
+      })
+    }
   }
 
   private async validateAgent(agent: string, projectRoot: string): Promise<ValidatedAgent> {
