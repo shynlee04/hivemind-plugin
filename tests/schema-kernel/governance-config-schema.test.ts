@@ -6,6 +6,7 @@ import {
   AgentConfigSchema,
   CommandConfigSchema,
   TemplateConfigSchema,
+  ToolRegistryItemSchema,
   GuardrailLevelSchema,
   DelegationModeSchema,
   ToolAccessPatternSchema,
@@ -191,6 +192,91 @@ describe("Behavioral override enums", () => {
     expect(SkillFilterSchema.safeParse("domain").success).toBe(true)
     expect(SkillFilterSchema.safeParse("full").success).toBe(true)
     expect(SkillFilterSchema.safeParse("invalid").success).toBe(false)
+  })
+})
+
+// ===========================================================================
+// ToolRegistryItemSchema
+// ===========================================================================
+
+describe("ToolRegistryItemSchema", () => {
+  it("accepts valid tool registry item", () => {
+    const result = ToolRegistryItemSchema.safeParse({
+      name: "delegate-task",
+      description: "Delegate work to a specialist agent",
+      permissions: ["delegate", "session"],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects tool registry item missing name", () => {
+    const result = ToolRegistryItemSchema.safeParse({
+      description: "Delegate work",
+      permissions: ["delegate"],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects tool registry item missing description", () => {
+    const result = ToolRegistryItemSchema.safeParse({
+      name: "delegate-task",
+      permissions: ["delegate"],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects tool registry item missing permissions", () => {
+    const result = ToolRegistryItemSchema.safeParse({
+      name: "delegate-task",
+      description: "Delegate work",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects non-array permissions", () => {
+    const result = ToolRegistryItemSchema.safeParse({
+      name: "delegate-task",
+      description: "Delegate work",
+      permissions: "delegate",
+    })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("GovernanceConfigsSchema tool_registry", () => {
+  it("accepts valid tool_registry field", () => {
+    const result = GovernanceConfigsSchema.safeParse({
+      rules: [],
+      tool_registry: {
+        "delegate-task": {
+          name: "delegate-task",
+          description: "Delegate work",
+          permissions: ["delegate"],
+        },
+      },
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.tool_registry?.["delegate-task"]?.name).toBe("delegate-task")
+    }
+  })
+
+  it("accepts empty tool_registry", () => {
+    const result = GovernanceConfigsSchema.safeParse({
+      rules: [],
+      tool_registry: {},
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts governance without tool_registry (backward compat)", () => {
+    const result = GovernanceConfigsSchema.safeParse({
+      rules: [],
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.tool_registry).toBeUndefined()
+    }
   })
 })
 

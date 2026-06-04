@@ -1,4 +1,6 @@
 import { z } from "zod"
+import { DEFAULT_GOVERNANCE_CONFIGS } from "../config/defaults.js"
+import { deepMerge } from "../shared/helpers.js"
 
 export const HIVEMIND_CONFIGS_SCHEMA_VERSION = "2.0.0"
 
@@ -328,13 +330,26 @@ export const TemplateConfigSchema = z.object({
   content: z.string().optional(),
 })
 
+/**
+ * Schema for tool registry item configuration.
+ * Defines tool name, description, and permissions.
+ */
+export const ToolRegistryItemSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  permissions: z.array(z.string()),
+})
+
 export const GovernanceConfigsSchema = z.object({
   rules: z.array(GovernanceRuleSchema).default([]),
   naming_standards: NamingStandardsSchema.optional(),
   agent_configs: z.record(z.string(), AgentConfigSchema).optional(),
   command_agent_mappings: z.record(z.string(), CommandConfigSchema).optional(),
   templates: z.record(z.string(), TemplateConfigSchema).optional(),
+  tool_registry: z.record(z.string(), ToolRegistryItemSchema).optional(),
 })
+
+export type GovernanceConfigs = z.infer<typeof GovernanceConfigsSchema>
 
 /**
  * Behavioral override enums for config-driven profile customization.
@@ -381,7 +396,7 @@ export type HivemindConfigs = z.infer<typeof HivemindConfigsSchema>
 
 /**
  * Returns the default Hivemind configuration object.
- * Equivalent to `HivemindConfigsSchema.parse({})`.
+ * Merges schema defaults with DEFAULT_GOVERNANCE_CONFIGS.
  *
  * @returns Default configuration with all fields set to their default values.
  *
@@ -393,7 +408,8 @@ export type HivemindConfigs = z.infer<typeof HivemindConfigsSchema>
  * ```
  */
 export function getDefaultConfigs(): HivemindConfigs {
-  return HivemindConfigsSchema.parse({})
+  const schemaDefaults = HivemindConfigsSchema.parse({})
+  return deepMerge(schemaDefaults, { governance: DEFAULT_GOVERNANCE_CONFIGS }) as HivemindConfigs
 }
 
 // ---------------------------------------------------------------------------

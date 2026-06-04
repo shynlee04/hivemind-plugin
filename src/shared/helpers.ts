@@ -293,3 +293,42 @@ export function hasAssistantWorkEvidence(messages: unknown[]): boolean {
 export function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
+
+/**
+ * Deep merge two objects recursively.
+ * Arrays are replaced (not merged) unless specified.
+ * Primitives are overwritten by source.
+ *
+ * @param target - The target object to merge into.
+ * @param source - The source object to merge from.
+ * @returns The merged object.
+ */
+export function deepMerge<T extends Record<string, unknown>>(
+  target: T,
+  source: Partial<T>,
+): T {
+  const result = { ...target }
+  
+  for (const key in source) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      const sourceValue = source[key]
+      const targetValue = result[key]
+      
+      if (
+        isObject(sourceValue) &&
+        isObject(targetValue) &&
+        !Array.isArray(sourceValue) &&
+        !Array.isArray(targetValue)
+      ) {
+        result[key] = deepMerge(
+          targetValue as Record<string, unknown>,
+          sourceValue as Record<string, unknown>,
+        ) as T[Extract<keyof T, string>]
+      } else {
+        result[key] = sourceValue as T[Extract<keyof T, string>]
+      }
+    }
+  }
+  
+  return result
+}

@@ -6,6 +6,7 @@ import { tmpdir } from "node:os"
 import {
   HIVEMIND_CONFIGS_SCHEMA_VERSION,
   HivemindConfigsSchema,
+  GovernanceConfigsSchema,
   SupportedLanguageSchema,
   HivemindModeSchema,
   UserExpertLevelSchema,
@@ -19,6 +20,7 @@ import {
   readConfigs,
   writeConfigs,
 } from "../../src/schema-kernel/hivemind-configs.schema.js"
+import { DEFAULT_GOVERNANCE_CONFIGS } from "../../src/config/defaults.js"
 
 // Helpers
 const sp = (schema: any, data: unknown) => schema.safeParse(data)
@@ -636,5 +638,54 @@ describe("@future-consumer annotations", () => {
     )
     const futureConsumerCount = (schemaSource.match(/@future-consumer/g) || []).length
     expect(futureConsumerCount).toBeGreaterThanOrEqual(7)
+  })
+})
+
+// ===========================================================================
+// DEFAULT_GOVERNANCE_CONFIGS validation
+// ===========================================================================
+
+describe("DEFAULT_GOVERNANCE_CONFIGS", () => {
+  it("passes GovernanceConfigsSchema validation", () => {
+    const result = GovernanceConfigsSchema.safeParse(DEFAULT_GOVERNANCE_CONFIGS)
+    expect(result.success).toBe(true)
+  })
+
+  it("contains 5 governance rules", () => {
+    expect(DEFAULT_GOVERNANCE_CONFIGS.rules).toHaveLength(5)
+    const ruleIds = DEFAULT_GOVERNANCE_CONFIGS.rules.map(r => r.id)
+    expect(ruleIds).toContain("gov-delegate-task-subagent-only")
+    expect(ruleIds).toContain("gov-write-depth-warn")
+    expect(ruleIds).toContain("gov-delegate-task-depth-block")
+    expect(ruleIds).toContain("gov-create-session-naming-warn")
+    expect(ruleIds).toContain("gov-unsafe-tools-escalate")
+  })
+
+  it("contains naming_standards with allowed_frameworks", () => {
+    expect(DEFAULT_GOVERNANCE_CONFIGS.naming_standards).toBeDefined()
+    expect(DEFAULT_GOVERNANCE_CONFIGS.naming_standards?.allowed_frameworks).toContain("hm")
+    expect(DEFAULT_GOVERNANCE_CONFIGS.naming_standards?.allowed_frameworks).toContain("hf")
+    expect(DEFAULT_GOVERNANCE_CONFIGS.naming_standards?.allowed_frameworks).toContain("gate")
+    expect(DEFAULT_GOVERNANCE_CONFIGS.naming_standards?.allowed_frameworks).toContain("stack")
+  })
+
+  it("contains agent_configs with >= 42 agents", () => {
+    const agentCount = Object.keys(DEFAULT_GOVERNANCE_CONFIGS.agent_configs || {}).length
+    expect(agentCount).toBeGreaterThanOrEqual(42)
+  })
+
+  it("contains command_agent_mappings with >= 100 commands", () => {
+    const cmdCount = Object.keys(DEFAULT_GOVERNANCE_CONFIGS.command_agent_mappings || {}).length
+    expect(cmdCount).toBeGreaterThanOrEqual(100)
+  })
+
+  it("contains tool_registry with >= 27 tools", () => {
+    const toolCount = Object.keys(DEFAULT_GOVERNANCE_CONFIGS.tool_registry || {}).length
+    expect(toolCount).toBeGreaterThanOrEqual(27)
+  })
+
+  it("contains templates", () => {
+    expect(DEFAULT_GOVERNANCE_CONFIGS.templates).toBeDefined()
+    expect(Object.keys(DEFAULT_GOVERNANCE_CONFIGS.templates || {}).length).toBeGreaterThan(0)
   })
 })
