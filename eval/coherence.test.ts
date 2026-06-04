@@ -1,7 +1,14 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, afterEach, vi } from "vitest"
 import { loadPrimitives } from "../src/features/bootstrap/primitive-loader.js"
 import { validateCrossPrimitive } from "../src/features/bootstrap/cross-primitive-validator.js"
 import type { PrimitiveMap } from "../src/features/bootstrap/cross-primitive-validator.js"
+
+// P58.9 R3 fix: drain SessionManager.startPolling timer chains that the
+// primitive-loader transitively imports (via cross-primitive-validator) so
+// the full-suite does not pollute later tests with lingering setTimeout refs.
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 describe("Ecosystem Coherence Metrics", () => {
   it("no overlapping agent descriptions", async () => {
