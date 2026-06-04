@@ -8,6 +8,8 @@ import type { SlotHandle } from "./slot-manager.js"
 import { z } from "zod"
 import { type OpenCodeClient, getSessionMessages } from "../../shared/session-api.js"
 import { childEventStream } from "../../features/session-tracker/streaming/child-event-stream.js"
+import { getDelegationMeta } from "../../shared/state.js"
+import type { EnrichedSessionEvent } from "../../features/tmux/observers.js"
 import { notifyParentSession } from "../completion/notification-handler.js"
 
 /**
@@ -116,6 +118,23 @@ export interface DelegationCoordinatorDeps {
    * integration is not wired in the current environment).
    */
   sessionManager?: { startPolling(intervalMs?: number): void }
+  /**
+   * S5b fix: optional tmux integration surface used to synthesize a
+   * `EnrichedSessionEvent` and invoke the panel-spawn adapter when the
+   * OpenCode SDK does not fire `session.created` for an SDK-created
+   * child session. Mirrors the `onChildSessionCreated` fallback for
+   * session-tracker; closes the gap documented in
+   * `.planning/debug/s5-panel-spawn-root-cause-2026-06-04.md`.
+   *
+   * The shape is intentionally narrow — only the surface the
+   * coordinator needs (synthesize event → call `onSessionCreated`). The
+   * full `TmuxIntegration` type is broader and would create a
+   * `src/coordination` → `src/features/tmux` import cycle (the tmux
+   * feature layer is a leaf for the coordination layer's purposes).
+   */
+  tmuxIntegration?: {
+    adapter: import("../../features/tmux/types.js").SessionManagerAdapter
+  }
 }
 
 export interface ChildSessionStartParams {
@@ -134,6 +153,22 @@ export interface ChildSessionStartParams {
 
 export interface ChildSessionStartResult {
   childSessionId: string
+  /**
+   * Title generated for the child session by the starter (see
+   * `generateSessionTitle` in `sdk-child-session-starter.ts`). Surfaced
+   * back to the coordinator so it can populate
+   * `EnrichedSessionEvent.properties.info.title` when synthesizing a
+   * fallback event for the tmux panel-spawn path. Without this, the
+   * synthesized event would have to fall back to a generic placeholder.
+   */
+  title: string
+  /**
+   * Resolved working directory for the child session. Mirrors the
+   * `workingDirectory` field of the corresponding
+   * `ChildSessionStartParams` and is surfaced for tmux-fallback event
+   * synthesis so the pane can be opened in the right project root.
+   */
+  workingDirectory: string
 }
 
 export interface ExecutionSignalInput {
@@ -218,6 +253,26 @@ export class DelegationCoordinator {
         // delegate-task are visible even when session.created events don't fire
         // for SDK-created sessions.
         this.deps.onChildSessionCreated?.(child.childSessionId, params.parentSessionId)
+
+        // S5b fix: mirror the session-tracker fallback for the
+        // tmux-multiplexer. When the OpenCode SDK does not fire
+        // `session.created` for an SDK-created child session, the
+        // `eventObservers → tmuxObserver → adapter.onSessionCreated`
+        // chain is never engaged and the panel-spawn workhorse at
+        // `session-manager.ts:onSessionCreated` is never called. Without
+        // this, the child runs invisibly. The synthesized event shape
+        // matches what `tmuxObserver` (`observers.ts:196-213`) would have
+        // produced from a real SDK event. The SessionManager's
+        // `sessions` / `spawningSessions` guards (session-manager.ts:223-231)
+        // make this call idempotent — if the SDK event also fires
+        // later, the second call is a no-op.
+        this.spawnTmuxPanelForChild({
+          childSessionId: child.childSessionId,
+          parentSessionId: params.parentSessionId,
+          title: child.title,
+          workingDirectory: child.workingDirectory,
+          agent: params.agent,
+        })
 
         // P58.8 S1 (REQ-58-07): start the capture-pane polling loop on
         // first child session creation so the parent tmux panel receives
@@ -601,5 +656,67 @@ export class DelegationCoordinator {
   private errorResult(delegationId: string, caughtError: unknown): DelegationResult {
     const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
     return { delegationId, error: `[Harness] Native Task dispatch failed: ${message}`, status: "error" }
+  }
+
+  /**
+   * S5b fix: synthesize an `EnrichedSessionEvent` and invoke the tmux
+   * adapter's `onSessionCreated` directly. This mirrors the
+   * `onChildSessionCreated` fallback for session-tracker at
+   * `coordinator.ts:220` and closes the panel-spawn gap documented in
+   * `.planning/debug/s5-panel-spawn-root-cause-2026-06-04.md`.
+   *
+   * Idempotency: the underlying `SessionManager.onSessionCreated` has
+   * `sessions` and `spawningSessions` guards (see session-manager.ts:223-231)
+   * that return early on duplicate calls. If the SDK also fires
+   * `session.created` and the tmuxObserver path runs, this fallback
+   * becomes a no-op.
+   *
+   * Errors are logged via the client.app log sink and swallowed
+   * (D-04 silent-fallback). The session keeps running even if pane
+   * spawn fails — visibility is degraded but not lost.
+   */
+  private spawnTmuxPanelForChild(input: {
+    childSessionId: string
+    parentSessionId: string
+    title: string
+    workingDirectory: string
+    agent: string
+  }): void {
+    const tmuxIntegration = this.deps.tmuxIntegration
+    if (!tmuxIntegration?.adapter) return
+
+    const meta = getDelegationMeta(input.childSessionId)
+    const enriched: EnrichedSessionEvent = {
+      type: "session.created",
+      properties: {
+        info: {
+          id: input.childSessionId,
+          parentID: input.parentSessionId,
+          title: input.title,
+          directory: input.workingDirectory,
+        },
+      },
+      hivemindMeta: meta
+        ? {
+            agent: meta.agent,
+            delegationId: input.childSessionId,
+            depth: meta.depth,
+          }
+        : {
+            agent: input.agent,
+            delegationId: input.childSessionId,
+            depth: 1,
+          },
+    }
+
+    void tmuxIntegration.adapter.onSessionCreated(enriched).catch((err) => {
+      void this.deps.client?.app?.log?.({
+        body: {
+          service: "delegation",
+          level: "warn",
+          message: `[Harness] tmux adapter.onSessionCreated failed for ${input.childSessionId}: ${err instanceof Error ? err.message : String(err)}`,
+        },
+      })
+    })
   }
 }

@@ -21,17 +21,18 @@ export function createSdkChildSessionStarter(client: OpenCodeClient): {
 } {
   return {
     async start(params) {
+      const title = generateSessionTitle({
+        framework: "hm",
+        workflow: "delegate",
+        classification: "child",
+        agent: params.agent,
+        purpose: params.prompt.slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+        depth: 1,
+      })
       const childSession = await createSession(client, {
         directory: params.workingDirectory,
         parentID: params.parentSessionId,
-        title: generateSessionTitle({
-          framework: "hm",
-          workflow: "delegate",
-          classification: "child",
-          agent: params.agent,
-          purpose: params.prompt.slice(0, 40).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
-          depth: 1,
-        }),
+        title,
       })
       const childSessionId = getSessionID(childSession)
       if (!childSessionId) throw new Error("[Harness] Child session creation did not return a session ID.")
@@ -52,7 +53,7 @@ export function createSdkChildSessionStarter(client: OpenCodeClient): {
         ...(params.model ? { model: params.model } : {}),
       })
 
-      return { childSessionId }
+      return { childSessionId, title, workingDirectory: params.workingDirectory }
     },
   }
 }

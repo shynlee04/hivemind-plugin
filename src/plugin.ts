@@ -432,7 +432,7 @@ export function setupDelegationModules(options: DelegationModuleSetupOptions): D
   const childSessionStarter = typeof options.client?.session === "object"
     ? createSdkChildSessionStarter(options.client)
     : undefined
-  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, periodicNotifier, onChildSessionCreated: options.onChildSessionCreated, client: options.client, sessionManager: options.tmuxIntegration?.sessionManager_ })
+  const coordinator = new DelegationCoordinator({ childSessionStarter, dispatcher, monitor, notificationRouter, lifecycle, detector, periodicNotifier, onChildSessionCreated: options.onChildSessionCreated, client: options.client, sessionManager: options.tmuxIntegration?.sessionManager_, tmuxIntegration: options.tmuxIntegration ? { adapter: options.tmuxIntegration.adapter } : undefined })
   coordinatorRef = coordinator
   const delegationManager = new DelegationManager(options.enableRuntimeAdapter ? options.client : undefined, {
     coordinator,
