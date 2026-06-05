@@ -353,6 +353,7 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
         })
 
         let promptDelivered = false
+        let promptError: string | undefined
         if (input.prompt) {
           const sendPrompt = getSendPrompt()
           if (sendPrompt) {
@@ -361,9 +362,11 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
                 noReply: input.promptMode === "steer",
               })
               promptDelivered = true
-            } catch {
-              // Prompt delivery failure does not block take-over
+            } catch (err) {
+              promptError = err instanceof Error ? err.message : String(err)
             }
+          } else {
+            promptError = "sendPrompt not wired"
           }
         }
 
@@ -372,7 +375,7 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
           paneId: input.paneId,
           takenBy: "human-operator",
           takenAt: new Date().toISOString(),
-          ...(input.prompt ? { promptDelivered, promptMode: input.promptMode } : {}),
+          ...(input.prompt ? { promptDelivered, promptMode: input.promptMode, ...(promptError ? { promptError } : {}) } : {}),
         })
       }
       case "release": {

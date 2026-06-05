@@ -505,14 +505,32 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // P59 R2: wire the module-level sendPrompt function so the tmux-copilot
   // take-over action can inject structured prompts into running child sessions.
   // Two modes: steer (noReply:true, inject context without AI response) and
-  // respond (noReply:false, child processes as new user message).
+  // respond (noReply:false, child processes as new user message — for completed
+  // sessions this first reactivates the stream, then sends the prompt).
   if (client?.session) {
-    setSendPrompt((sessionId, text, mode) =>
-      sdkSendPromptAsync(client, sessionId, {
-        parts: [{ type: "text", text }],
-        noReply: mode ? mode.noReply : true,
-      }),
-    )
+    setSendPrompt(async (sessionId, text, mode) => {
+      if (mode?.noReply === false) {
+        // Respond mode: first reactivate if stopped, then send prompt
+        try {
+          await sdkSendPromptAsync(client, sessionId, {
+            parts: [{ type: "text", text: "" }],
+            noReply: true,
+          })
+        } catch {
+          // Reactivation may fail for already-running sessions — that's fine
+        }
+        await sdkSendPromptAsync(client, sessionId, {
+          parts: [{ type: "text", text }],
+          noReply: false,
+        })
+      } else {
+        // Steer mode: inject context without triggering AI response
+        await sdkSendPromptAsync(client, sessionId, {
+          parts: [{ type: "text", text }],
+          noReply: true,
+        })
+      }
+    })
   }
 
   // Emit a single TUI-visible status line for the tmux subsystem. This
