@@ -25,7 +25,7 @@ import { SlotManager } from "./coordination/delegation/slot-manager.js"
 import { DelegationStateMachine } from "./coordination/delegation/state-machine.js"
 
 import type { Delegation, DelegationNotificationType } from "./coordination/delegation/types.js"
-import { appendTuiPrompt, sendPromptAsync as sdkSendPromptAsync, getSessionMessageCount, abortSession, type OpenCodeClient } from "./shared/session-api.js"
+import { appendTuiPrompt, sendPromptAsync as sdkSendPromptAsync, getSessionMessageCount, abortSession, getSessionMessages, type OpenCodeClient } from "./shared/session-api.js"
 import { asString, getNestedValue } from "./shared/helpers.js"
 import { taskState } from "./shared/state.js"
 import type { PendingNotification } from "./shared/types.js"
@@ -47,7 +47,7 @@ import { createSessionTrackerConsumer } from "./hooks/observers/session-tracker-
 import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.js"
 import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
 import { createTmuxIntegrationIfSupported } from "./features/tmux/integration.js"
-import { setSendPrompt } from "./features/tmux/types.js"
+import { setSendPrompt, setGetSessionMessages } from "./features/tmux/types.js"
 import { createTmuxEventObserver } from "./features/tmux/observers.js"
 import type { ForkSessionManager } from "./features/tmux/observers.js"
 import { createPaneMonitorHook } from "./hooks/pane-monitor.js"
@@ -529,6 +529,35 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
           parts: [{ type: "text", text }],
           noReply: true,
         })
+      }
+    })
+
+    // P59 R4: wire session messages fetcher so peek can return structured
+    // activity summaries (tool calls, assistant messages, file changes)
+    // instead of just raw pane content. The fetcher normalizes the raw
+    // SDK messages into a uniform {role, content, toolName, ...} shape.
+    setGetSessionMessages(async (sessionId, limit) => {
+      try {
+        const raw = await getSessionMessages(client, sessionId, { limit: limit ?? 50 })
+        return raw.map((m: any) => {
+          const role = String(m?.role ?? m?.info?.role ?? "system")
+          let content = ""
+          if (typeof m?.content === "string") content = m.content
+          else if (Array.isArray(m?.content)) {
+            content = m.content
+              .map((p: any) => (typeof p === "string" ? p : p?.text ?? JSON.stringify(p)))
+              .join("\n")
+          } else if (m?.info?.content) content = String(m.info.content)
+          return {
+            role: role as any,
+            content,
+            toolName: m?.tool ?? m?.info?.tool,
+            toolArgs: m?.args ?? m?.info?.args,
+            timestamp: m?.time?.created ? Number(m.time.created) : undefined,
+          }
+        })
+      } catch {
+        return []
       }
     })
   }

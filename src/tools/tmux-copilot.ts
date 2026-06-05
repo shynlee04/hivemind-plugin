@@ -40,7 +40,7 @@ import {
 } from "../features/tmux/types.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { getManualOverrideState, setManualOverrideState } from "../features/session-tracker/index.js"
-import { resolveSessionToPaneId, getSendPrompt } from "../features/tmux/types.js"
+import { resolveSessionToPaneId, getSendPrompt, getSessionMessagesFetcher, getSessionPaneRegistryEntries } from "../features/tmux/types.js"
 
 // ---------------------------------------------------------------------------
 // Permission gate (T-43-05 mitigation, P59 A1 fix)
@@ -134,6 +134,10 @@ const PeekActionSchema = z.object({
   action: z.literal("peek"),
   paneId: z.string().min(1),
   maxBytes: z.number().int().positive().optional(),
+  // P59 R4: format — "summary" (default) returns structured activity
+  // summary (tool calls, assistant messages, files); "raw" returns
+  // literal pane content as before.
+  format: z.enum(["summary", "raw"]).optional().default("summary"),
 })
 
 // P59 A2: peek-by-session — accepts sessionId instead of paneId, resolves
@@ -142,6 +146,7 @@ const PeekBySessionActionSchema = z.object({
   action: z.literal("peek-by-session"),
   sessionId: z.string().min(1),
   maxBytes: z.number().int().positive().optional(),
+  format: z.enum(["summary", "raw"]).optional().default("summary"),
 })
 
 const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
@@ -387,25 +392,43 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
         })
       }
       case "peek": {
-        // P58.8 S2 (REQ-58-08): read the most recent capture-pane record
-        // for the requested pane. Uses the optional `getLatestCapture`
-        // method on the adapter (added by S1, types.ts:160-161). When
-        // the adapter is a BATS mock without `getLatestCapture`, or
-        // when no capture has been cached yet, we return a zero-byte
-        // envelope with `capturedAt` = now() — NOT an error — so
-        // callers can distinguish "no content yet" from "lookup
-        // failed" without coupling to the bridge lifecycle.
-        const capture = adapter.getLatestCapture?.(input.paneId) ?? null
-        const content = capture?.content ?? ""
-        const byteLength = capture?.byteLength ?? Buffer.byteLength(content, "utf8")
-        return renderToolResult({
-          paneId: input.paneId,
-          content,
-          capturedAt: capture?.capturedAt
-            ? new Date(capture.capturedAt).toISOString()
-            : new Date().toISOString(),
-          byteLength,
-        })
+        // P59 R4: default to "summary" mode which returns structured
+        // activity (tool calls, assistant messages, file changes) instead
+        // of just raw pane content. Use format: "raw" to get the literal
+        // pane content as before.
+        if (input.format === "raw") {
+          const capture = adapter.getLatestCapture?.(input.paneId) ?? null
+          const content = capture?.content ?? ""
+          const byteLength = capture?.byteLength ?? Buffer.byteLength(content, "utf8")
+          return renderToolResult({
+            paneId: input.paneId,
+            format: "raw" as const,
+            content,
+            capturedAt: capture?.capturedAt
+              ? new Date(capture.capturedAt).toISOString()
+              : new Date().toISOString(),
+            byteLength,
+          })
+        }
+        // Summary mode: fetch messages via the module-level fetcher wired
+        // from plugin.ts. Resolve paneId → sessionId via the registry,
+        // then call the fetcher.
+        const sessionId = getSessionPaneRegistryEntries()
+          .find(([, pane]) => pane === input.paneId)?.[0]
+        if (!sessionId) {
+          return renderToolResult({
+            paneId: input.paneId,
+            format: "summary" as const,
+            activity: {
+              messageCount: 0,
+              toolCalls: [],
+              lastAssistantMessage: null,
+              files: [],
+              note: "No session registered for this paneId. Use peek-by-session if you have a sessionId.",
+            },
+          })
+        }
+        return buildSessionSummary(sessionId, input.maxBytes)
       }
       case "peek-by-session": {
         // P59 A2: resolve sessionId → paneId via the registry, then
@@ -419,24 +442,94 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
             },
           })
         }
-        const sessionCapture = adapter.getLatestCapture?.(resolvedPaneId) ?? null
-        const sessionContent = sessionCapture?.content ?? ""
-        const sessionByteLength = sessionCapture?.byteLength ?? Buffer.byteLength(sessionContent, "utf8")
-        return renderToolResult({
-          sessionId: input.sessionId,
-          paneId: resolvedPaneId,
-          content: input.maxBytes && sessionContent.length > input.maxBytes
-            ? sessionContent.slice(-input.maxBytes)
-            : sessionContent,
-          capturedAt: sessionCapture?.capturedAt
-            ? new Date(sessionCapture.capturedAt).toISOString()
-            : new Date().toISOString(),
-          byteLength: sessionByteLength,
-        })
+        if (input.format === "raw") {
+          const sessionCapture = adapter.getLatestCapture?.(resolvedPaneId) ?? null
+          const sessionContent = sessionCapture?.content ?? ""
+          const sessionByteLength = sessionCapture?.byteLength ?? Buffer.byteLength(sessionContent, "utf8")
+          return renderToolResult({
+            sessionId: input.sessionId,
+            paneId: resolvedPaneId,
+            format: "raw" as const,
+            content: input.maxBytes && sessionContent.length > input.maxBytes
+              ? sessionContent.slice(-input.maxBytes)
+              : sessionContent,
+            capturedAt: sessionCapture?.capturedAt
+                ? new Date(sessionCapture.capturedAt).toISOString()
+                : new Date().toISOString(),
+            byteLength: sessionByteLength,
+          })
+        }
+        // Summary mode: fetch messages and build structured activity
+        return buildSessionSummary(input.sessionId, input.maxBytes)
       }
     }
   },
 })
+
+// ---------------------------------------------------------------------------
+// P59 R4: buildSessionSummary — fetches session messages and returns a
+// structured activity summary (tool calls, last assistant message, files
+// touched) instead of just raw pane content. This is what peek returns
+// by default — it answers "how far has the sub session gotten" without
+// forcing the caller to parse raw TUI text.
+// ---------------------------------------------------------------------------
+
+async function buildSessionSummary(sessionId: string, maxBytes?: number): Promise<string> {
+  const resolvedPaneId = resolveSessionToPaneId(sessionId)
+  const fetcher = getSessionMessagesFetcher()
+  if (!fetcher) {
+    return renderToolResult({
+      sessionId,
+      paneId: resolvedPaneId,
+      format: "summary" as const,
+      activity: {
+        messageCount: 0,
+        toolCalls: [],
+        lastAssistantMessage: null,
+        files: [],
+        note: "Session messages fetcher not wired. Peek summary unavailable.",
+      },
+    })
+  }
+  const messages = await fetcher(sessionId, 50)
+  const toolCalls = messages
+    .filter((m) => m.toolName)
+    .slice(-20)
+    .map((m) => ({
+      tool: m.toolName,
+      args: m.toolArgs ? Object.keys(m.toolArgs).slice(0, 5) : [],
+      timestamp: m.timestamp,
+    }))
+  const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant")
+  const lastAssistantMessage = lastAssistant
+    ? maxBytes && lastAssistant.content.length > maxBytes
+      ? lastAssistant.content.slice(0, maxBytes) + "…"
+      : lastAssistant.content
+    : null
+  const files = Array.from(
+    new Set(
+      toolCalls
+        .map((t) => {
+          const args = t.args
+          const path = args.find((a) => typeof a === "string" && (a.includes("/") || a.includes(".")))
+          return path ?? null
+        })
+        .filter(Boolean) as string[]
+    ),
+  )
+  return renderToolResult({
+    sessionId,
+    paneId: resolvedPaneId,
+    format: "summary" as const,
+    activity: {
+      messageCount: messages.length,
+      toolCallCount: toolCalls.length,
+      toolCalls: toolCalls.slice(-10),
+      lastAssistantMessage,
+      files,
+    },
+  })
+}
 
 // ---------------------------------------------------------------------------
 // Test seam (P58 PLAN-07, Gap 3 fix)

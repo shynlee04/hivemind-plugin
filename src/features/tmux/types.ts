@@ -261,6 +261,32 @@ export function getSendPrompt(): ((sessionId: string, text: string, mode?: SendP
   return currentSendPrompt
 }
 
+// ---------------------------------------------------------------------------
+// Session messages (P59 R4) — wired by plugin.ts so peek can return
+// structured activity summaries (tool calls, assistant messages, file
+// changes) instead of just raw pane content.
+// ---------------------------------------------------------------------------
+
+export type SessionMessage = {
+  role: "user" | "assistant" | "system" | "tool"
+  content: string
+  toolName?: string
+  toolArgs?: Record<string, unknown>
+  timestamp?: number
+}
+
+export type SessionMessagesFetcher = (sessionId: string, limit?: number) => Promise<SessionMessage[]>
+
+let currentGetMessages: SessionMessagesFetcher | null = null
+
+export function setGetSessionMessages(fn: SessionMessagesFetcher | null): void {
+  currentGetMessages = fn
+}
+
+export function getSessionMessagesFetcher(): SessionMessagesFetcher | null {
+  return currentGetMessages
+}
+
 /**
  * Remove a session→paneId mapping when the session ends or the pane is closed.
  */
@@ -273,4 +299,12 @@ export function clearSessionToPaneId(sessionId: string): void {
  */
 export function getSessionPaneRegistrySize(): number {
   return sessionPaneRegistry.size
+}
+
+/**
+ * P59 R4: return a snapshot of the session→paneId registry for callers that
+ * need to do reverse lookups (e.g. peek needs paneId→sessionId).
+ */
+export function getSessionPaneRegistryEntries(): Array<[string, string]> {
+  return Array.from(sessionPaneRegistry.entries())
 }
