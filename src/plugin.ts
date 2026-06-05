@@ -47,6 +47,7 @@ import { createSessionTrackerConsumer } from "./hooks/observers/session-tracker-
 import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.js"
 import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
 import { createTmuxIntegrationIfSupported } from "./features/tmux/integration.js"
+import { setSendPrompt } from "./features/tmux/types.js"
 import { createTmuxEventObserver } from "./features/tmux/observers.js"
 import type { ForkSessionManager } from "./features/tmux/observers.js"
 import { createPaneMonitorHook } from "./hooks/pane-monitor.js"
@@ -500,6 +501,19 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   const tmuxIntegration = await createTmuxIntegrationIfSupported(projectDirectory, {
     log: buildTuiTmuxLogger(client),
   })
+
+  // P59 R2: wire the module-level sendPrompt function so the tmux-copilot
+  // take-over action can inject structured prompts into running child sessions.
+  // Two modes: steer (noReply:true, inject context without AI response) and
+  // respond (noReply:false, child processes as new user message).
+  if (client?.session) {
+    setSendPrompt((sessionId, text, mode) =>
+      sdkSendPromptAsync(client, sessionId, {
+        parts: [{ type: "text", text }],
+        noReply: mode ? mode.noReply : true,
+      }),
+    )
+  }
 
   // Emit a single TUI-visible status line for the tmux subsystem. This
   // is the one line the user will look for in the OpenCode TUI log

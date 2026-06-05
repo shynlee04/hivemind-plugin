@@ -238,12 +238,27 @@ export function registerSessionToPaneId(sessionId: string, paneId: string): void
   sessionPaneRegistry.set(sessionId, paneId)
 }
 
-/**
- * Look up the tmux pane ID for a given session ID.
- * Returns the paneId if found, or undefined if no mapping exists.
- */
 export function resolveSessionToPaneId(sessionId: string): string | undefined {
   return sessionPaneRegistry.get(sessionId)
+}
+
+// ---------------------------------------------------------------------------
+// Prompt injection into child sessions (P59 R2). Wired by plugin.ts during
+// integration factory so the tmux-copilot take-over action can inject
+// structured prompts into running child sessions without importing the
+// full SDK client.
+// ---------------------------------------------------------------------------
+
+export type SendPromptMode = { noReply: true } | { noReply: false }
+
+let currentSendPrompt: ((sessionId: string, text: string, mode?: SendPromptMode) => Promise<void>) | null = null
+
+export function setSendPrompt(fn: ((sessionId: string, text: string, mode?: SendPromptMode) => Promise<void>) | null): void {
+  currentSendPrompt = fn
+}
+
+export function getSendPrompt(): ((sessionId: string, text: string, mode?: SendPromptMode) => Promise<void>) | null {
+  return currentSendPrompt
 }
 
 /**

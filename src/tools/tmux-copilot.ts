@@ -40,7 +40,7 @@ import {
 } from "../features/tmux/types.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { getManualOverrideState, setManualOverrideState } from "../features/session-tracker/index.js"
-import { resolveSessionToPaneId } from "../features/tmux/types.js"
+import { resolveSessionToPaneId, getSendPrompt } from "../features/tmux/types.js"
 
 // ---------------------------------------------------------------------------
 // Permission gate (T-43-05 mitigation, P59 A1 fix)
@@ -111,10 +111,16 @@ const ForwardPromptActionSchema = z.object({
 })
 
 // P58 G5 (REQ-58-05): take-over — set manualOverride=true on a session
+// P59 R2: added optional `prompt` + `promptMode` — injects structured prompt
+// into the child session via SDK. `promptMode: "steer"` (default) uses
+// noReply:true (child absorbs context without responding). `promptMode: "respond"`
+// uses noReply:false (child processes and responds as a new user message).
 const TakeOverActionSchema = z.object({
   action: z.literal("take-over"),
   sessionId: z.string().min(1),
   paneId: z.string().min(1),
+  prompt: z.string().optional(),
+  promptMode: z.enum(["steer", "respond"]).optional().default("steer"),
 })
 
 // P58 G5 (REQ-58-05): release — clear manualOverride=false on a session
@@ -337,27 +343,36 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
       }
       case "take-over": {
         // P58 G5 (REQ-58-05, D-58-11): set manualOverride=true with audit fields.
-        //
-        // [P58.8 S2 — D-58-22 ALLOW] `take-over` is intentionally in
-        // USER_SESSION_ALLOWED_ACTIONS. The whole point of the S2
-        // affordance is for the human operator to interrupt the
-        // auto-dispatch loop and take manual control of a delegate
-        // session. The state mutation (setManualOverrideState) is
-        // idempotent and audit-trailed (takenBy = "human-operator"
-        // makes the source unambiguous in session-tracker records),
-        // so the risk surface is bounded: there is no tmux-server
-        // write, only an in-memory flag the next forward-prompt will
-        // honour. BATS 72 step 1 is the acceptance signal.
+        // P59 R2: if `prompt` is provided, inject it into the child session's
+        // conversation via the module-level sendPrompt function (wired from
+        // plugin.ts using client.session.prompt).
         setManualOverrideState(input.sessionId, {
           manualOverride: true,
           takenAt: Date.now(),
           takenBy: "human-operator",
         })
+
+        let promptDelivered = false
+        if (input.prompt) {
+          const sendPrompt = getSendPrompt()
+          if (sendPrompt) {
+            try {
+              await sendPrompt(input.sessionId, input.prompt, {
+                noReply: input.promptMode === "steer",
+              })
+              promptDelivered = true
+            } catch {
+              // Prompt delivery failure does not block take-over
+            }
+          }
+        }
+
         return renderToolResult({
           sessionId: input.sessionId,
           paneId: input.paneId,
           takenBy: "human-operator",
           takenAt: new Date().toISOString(),
+          ...(input.prompt ? { promptDelivered, promptMode: input.promptMode } : {}),
         })
       }
       case "release": {
