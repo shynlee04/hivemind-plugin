@@ -221,6 +221,12 @@ export interface HierarchyManifestChild {
   turnCount: number
   /** Filename of the child .json file. */
   childFile: string
+  /**
+   * TODO-2 (2026-06-04): Optional discriminator identifying the delegation
+   * mechanism that produced this child. See DelegationType in types.ts.
+   * Set at WRITE time only (R7). Optional for backward compat (R1).
+   */
+  delegationType?: DelegationType
 }
 
 /**
@@ -341,6 +347,13 @@ export interface ChildSessionRecord {
   compactionCheckpoint?: CompactionCheckpointData
   /** Session lifecycle state (from continuity store). REF: REQ-P41B-02 */
   lifecycle?: SessionLifecycleState
+  /**
+   * TODO-2 (2026-06-04): Optional discriminator identifying the delegation
+   * mechanism that produced this child. See DelegationType in types.ts.
+   * Mirrored on both ChildSessionRecord AND HierarchyManifestChild to
+   * prevent regeneration drift (R9 mitigation). Set at WRITE time only.
+   */
+  delegationType?: DelegationType
 }
 
 /**
@@ -377,6 +390,13 @@ export interface ChildHierarchyEntry {
   subagentType?: string
   /** Nested children map, keyed by child session ID. */
   children: Record<string, ChildHierarchyEntry>
+  /**
+   * TODO-2 (2026-06-04, R9 mitigation): Optional discriminator identifying the
+   * delegation mechanism. Type-erased `string` (not `DelegationType`) because
+   * the tree regeneration pass at hierarchy-manifest.ts:285-297 is type-agnostic.
+   * Set at WRITE time only. Optional for backward compat (R1).
+   */
+  delegationType?: string
 }
 
 /**
