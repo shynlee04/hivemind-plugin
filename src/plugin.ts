@@ -533,26 +533,46 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     })
 
     // P59 R4: wire session messages fetcher so peek can return structured
-    // activity summaries (tool calls, assistant messages, file changes)
-    // instead of just raw pane content. The fetcher normalizes the raw
-    // SDK messages into a uniform {role, content, toolName, ...} shape.
+    // activity summaries (tool calls, assistente messages, file changes,
+    // bash executions, thought output) instead of just raw pane content.
+    // The fetcher normalizes the raw SDK messages into a uniform shape
+    // and captures ALL activity types from the parts[] array.
     setGetSessionMessages(async (sessionId, limit) => {
       try {
-        const raw = await getSessionMessages(client, sessionId, { limit: limit ?? 50 })
+        const raw = await getSessionMessages(client, sessionId, { limit: limit ?? 100 })
         return raw.map((m: any) => {
           const role = String(m?.role ?? m?.info?.role ?? "system")
+          const parts = Array.isArray(m?.parts) ? m.parts : Array.isArray(m?.info?.parts) ? m.info.parts : []
+          const toolParts = parts.filter((p: any) => p?.type === "tool" || p?.type === "tool_use")
+          const textParts = parts.filter((p: any) => p?.type === "text" && p?.text && !p?.text.startsWith("<think>"))
+          const thoughtParts = parts.filter((p: any) => p?.type === "text" && p?.text?.startsWith("<think>"))
+          const toolResultParts = parts.filter((p: any) => p?.type === "tool_result" || p?.type === "tool-result")
+          // For tool parts, extract tool name + args
+          const firstTool = toolParts[0]
+          const toolName = firstTool?.tool ?? firstTool?.name ?? m?.tool ?? m?.info?.tool
+          const toolArgs = firstTool?.args ?? firstTool?.input ?? m?.args ?? m?.info?.args
+          const toolResult = toolResultParts[0]?.output ?? toolResultParts[0]?.result ?? toolResultParts[0]?.content
+          const toolCallId = firstTool?.id ?? firstTool?.call_id
+          // Content: prefer text parts, fallback to legacy content fields
           let content = ""
-          if (typeof m?.content === "string") content = m.content
-          else if (Array.isArray(m?.content)) {
+          if (textParts.length > 0) {
+            content = textParts.map((p: any) => p.text).join("\n")
+          } else if (typeof m?.content === "string") {
             content = m.content
-              .map((p: any) => (typeof p === "string" ? p : p?.text ?? JSON.stringify(p)))
-              .join("\n")
-          } else if (m?.info?.content) content = String(m.info.content)
+          } else if (Array.isArray(m?.content)) {
+            content = m.content.map((p: any) => (typeof p === "string" ? p : p?.text ?? JSON.stringify(p))).join("\n")
+          } else if (m?.info?.content) {
+            content = String(m.info.content)
+          }
           return {
             role: role as any,
             content,
-            toolName: m?.tool ?? m?.info?.tool,
-            toolArgs: m?.args ?? m?.info?.args,
+            toolName,
+            toolArgs,
+            toolResult,
+            toolCallId,
+            isThought: thoughtParts.length > 0 && toolParts.length === 0 && textParts.length === 0,
+            hasText: textParts.length > 0,
             timestamp: m?.time?.created ? Number(m.time.created) : undefined,
           }
         })

@@ -273,6 +273,14 @@ export type SessionMessage = {
   toolName?: string
   toolArgs?: Record<string, unknown>
   timestamp?: number
+  /** When role is "tool" or "assistant" with tool parts, the tool's raw result */
+  toolResult?: unknown
+  /** When role is "tool", the call ID */
+  toolCallId?: string
+  /** true if this is a thought/reasoning-only message (no tool/text output) */
+  isThought?: boolean
+  /** true if this message has text content (vs. only tool calls or only thought) */
+  hasText?: boolean
 }
 
 export type SessionMessagesFetcher = (sessionId: string, limit?: number) => Promise<SessionMessage[]>

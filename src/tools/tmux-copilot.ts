@@ -491,32 +491,61 @@ async function buildSessionSummary(sessionId: string, maxBytes?: number): Promis
       },
     })
   }
-  const messages = await fetcher(sessionId, 50)
-  const toolCalls = messages
-    .filter((m) => m.toolName)
-    .slice(-20)
-    .map((m) => ({
-      tool: m.toolName,
-      args: m.toolArgs ? Object.keys(m.toolArgs).slice(0, 5) : [],
-      timestamp: m.timestamp,
-    }))
-  const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant")
+  const messages = await fetcher(sessionId, 100)
+
+  // P59 R4.1: capture ALL activity types, not just tool calls. This
+  // answers "how far has the sub session gotten" honestly. We surface:
+  //   - toolCalls: tools with names (read, write, bash, etc.)
+  //   - bashExecutions: bash commands specifically (with the command)
+  //   - fileReads: read tool invocations (with file path)
+  //   - fileWrites: write/edit tool invocations (with file path)
+  //   - thoughts: assistant messages that are pure reasoning
+  //   - lastAssistantMessage: most recent text content from assistant
+  //   - files: deduplicated set of file paths touched
+  const toolCalls: Array<{ tool: string; args: string[]; timestamp?: number; hasResult?: boolean }> = []
+  const bashExecutions: Array<{ command: string; timestamp?: number }> = []
+  const fileReads: Array<{ path: string; timestamp?: number }> = []
+  const fileWrites: Array<{ path: string; timestamp?: number }> = []
+  let thoughtCount = 0
+
+  for (const m of messages) {
+    if (m.toolName) {
+      const args = m.toolArgs ? Object.keys(m.toolArgs) : []
+      const argValues = m.toolArgs ? Object.values(m.toolArgs).map((v) => String(v)) : []
+      toolCalls.push({ tool: m.toolName, args, timestamp: m.timestamp, hasResult: m.toolResult !== undefined })
+      if (m.toolName === "bash" || m.toolName === "shell") {
+        const cmd = argValues.find((v) => v.length > 3) ?? argValues[0] ?? ""
+        bashExecutions.push({ command: cmd, timestamp: m.timestamp })
+      }
+      if (m.toolName === "read" || m.toolName === "read_file") {
+        const path = argValues.find((v) => v.includes("/") || v.includes("."))
+        if (path) fileReads.push({ path, timestamp: m.timestamp })
+      }
+      if (m.toolName === "write" || m.toolName === "edit" || m.toolName === "create_file") {
+        const path = argValues.find((v) => v.includes("/") || v.includes("."))
+        if (path) fileWrites.push({ path, timestamp: m.timestamp })
+      }
+    } else if (m.isThought) {
+      thoughtCount++
+    }
+  }
+
+  const allFiles = Array.from(
+    new Set(
+      [...fileReads, ...fileWrites]
+        .map((f) => f.path)
+        .filter((p) => typeof p === "string" && p.length > 0)
+    )
+  )
+
+  // Find the last assistant message with text content
+  const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant" && m.hasText)
   const lastAssistantMessage = lastAssistant
     ? maxBytes && lastAssistant.content.length > maxBytes
       ? lastAssistant.content.slice(0, maxBytes) + "…"
       : lastAssistant.content
     : null
-  const files = Array.from(
-    new Set(
-      toolCalls
-        .map((t) => {
-          const args = t.args
-          const path = args.find((a) => typeof a === "string" && (a.includes("/") || a.includes(".")))
-          return path ?? null
-        })
-        .filter(Boolean) as string[]
-    ),
-  )
+
   return renderToolResult({
     sessionId,
     paneId: resolvedPaneId,
@@ -524,9 +553,13 @@ async function buildSessionSummary(sessionId: string, maxBytes?: number): Promis
     activity: {
       messageCount: messages.length,
       toolCallCount: toolCalls.length,
-      toolCalls: toolCalls.slice(-10),
+      thoughtCount,
+      toolCalls: toolCalls.slice(-15),
+      bashExecutions: bashExecutions.slice(-10),
+      fileReads: fileReads.slice(-10),
+      fileWrites: fileWrites.slice(-10),
       lastAssistantMessage,
-      files,
+      files: allFiles,
     },
   })
 }
