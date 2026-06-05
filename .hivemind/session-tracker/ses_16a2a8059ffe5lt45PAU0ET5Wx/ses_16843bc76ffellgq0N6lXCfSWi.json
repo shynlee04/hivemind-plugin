@@ -3,17 +3,17 @@
   "parentSessionID": "ses_16a2a8059ffe5lt45PAU0ET5Wx",
   "delegationDepth": 1,
   "delegatedBy": {
-    "agentName": "hm-codebase-mapper",
+    "agentName": "",
     "model": "",
     "tool": "task",
     "description": "",
     "subagentType": ""
   },
   "created": "2026-06-05T12:22:38.452Z",
-  "updated": "2026-06-05T12:22:38.452Z",
+  "updated": "2026-06-05T12:51:30.301Z",
   "status": "error",
   "mainAgent": {
-    "name": "hm-codebase-mapper",
+    "name": "",
     "model": ""
   },
   "turns": [],

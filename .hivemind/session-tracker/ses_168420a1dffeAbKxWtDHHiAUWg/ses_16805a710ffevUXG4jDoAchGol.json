@@ -1,0 +1,59 @@
+{
+  "sessionID": "ses_16805a710ffevUXG4jDoAchGol",
+  "parentSessionID": "ses_168420a1dffeAbKxWtDHHiAUWg",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-debugger",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T13:30:26.950Z",
+  "updated": "2026-06-05T13:31:04.439Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-debugger",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "gsd-debugger",
+      "content": "Test the P59 R4 peek summary feature. The user needs to restart opencode first to pick up the new build, then call tmux-copilot({action: \"peek\", paneId: \"%7\", format: \"summary\"}) and verify it returns structured activity summary (toolCalls, lastAssistantMessage, files) instead of raw pane content. Also test peek-by-session with the same format.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "gsd-debugger",
+      "content": "Test new peek summary",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 3,
+      "actor": "gsd-debugger",
+      "content": "<task id=\"ses_16805a710ffevUXG4jDoAchGol\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-05T13:31:04.429Z",
+      "type": "assistant_message",
+      "content": "<task id=\"ses_16805a710ffevUXG4jDoAchGol\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_16805a710ffevUXG4jDoAchGol"
+      }
+    }
+  ],
+  "delegationType": "sdk-direct",
+  "lastMessage": "<task id=\"ses_16805a710ffevUXG4jDoAchGol\" state=\"completed\">\n<task_result>\n\n</task_result>\n</task>",
+  "terminalKind": "completed",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
+}

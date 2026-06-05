@@ -6,11 +6,11 @@
     "agentName": "hm-codebase-mapper",
     "model": "",
     "tool": "task",
-    "description": "Long thorough audit task: Read these 9 tool files in this hivemind-plugin project and write a comprehensive audit report to .hivemind/planning/tools-audit-58-9-2026-06-05/08-long-task.md. For each file: actions, args, status values, integration points, flaws.\n\nFiles:\n1. src/tools/session/session-tracker.ts\n2. src/tools/session/session-hierarchy.ts\n3. src/tools/session/session-context.ts\n4. src/tools/session/session-delegation-query.ts\n5. src/tools/hivemind/hivemind-session-view.ts\n6. src/tools/tmux-copilot.ts\n7. src/tools/tmux-state-query.ts\n8. src/tools/delegation/delegate-task.ts\n9. src/tools/delegation/delegation-status.ts\n\nTake your time, be thorough. This should take at least 5-10 minutes.",
+    "description": "",
     "subagentType": ""
   },
   "created": "2026-06-05T12:51:28.422Z",
-  "updated": "2026-06-05T13:00:59.314Z",
+  "updated": "2026-06-05T13:00:59.281Z",
   "status": "completed",
   "mainAgent": {
     "name": "hm-codebase-mapper",
@@ -89,7 +89,6 @@
     }
   ],
   "children": [],
-  "queueKey": "agent:hm-codebase-mapper",
   "recoveryGuarantee": "resumable",
   "executionMode": "sdk",
   "delegationType": "sdk-direct",
@@ -409,5 +408,6 @@
       }
     }
   ],
-  "lastMessage": "Audit complete. `08-long-task.md` (72 KB, 759 lines) written to `.hivemind/planning/tools-audit-58-9-2026-06-05/`.\n\n**Structure per STEER:**\n- §0 Executive summary (3,094 LOC total, 9 tools, role split)\n- §1 `tmux-copilot.ts` — full deep-dive: 9 actions (send-keys / list-panes / compute-grid / respawn / forward-prompt / take-over / release / peek / peek-by-session), 13-variant result union, integration points, 10 per-action flaws (most notable: 1.6 partial-failure in take-over, 1.9 forged ZodIssue cast in peek-by-session)\n- §2 `tmux-state-query.ts` — full deep-dive: 3 actions, **CRITICAL** finding: all 3 are silent-failure stubs returning `[]`/`null`/`{total:0}` (Flaw-2.2/2.3/2.4) — registered in plugin at `src/plugin.ts:930` despite being unimplemented\n- §3-9 remaining 7 tools (session-tracker, session-hierarchy, session-context, session-delegation-query, hivemind-session-view, delegate-task, delegation-status) with actions/args/status/integration/flaw tables\n- §10-12 cross-cutting matrix, status vocabulary, 10 recurring anti-patterns\n- §13 prioritized P0/P1/P2/P3 recommendations\n- Appendix A — 22-case UAT test matrix for the two Phase 58.9 focus tools\n\n**Top 4 P0 ship-blockers:**\n1. `tmux-state-query` is a stub registered in production (Flaw-2.2/2.3/2.4)\n2. `delegation-status.mergeAllDelegations` downgrades `running` → `cancelled` when manager loses record (Flaw-9.6)\n3. `delegation-status` `progress` action misses tracker-only delegations (Flaw-9.13)\n4. `peek` action with `delegationId` advertised but non-functional (Flaw-9.19)\n\n**Recurring cross-tool issues:** envelope inconsistency (7 use `success/error`, 2 use raw unions), `readContinuity`/`findHierarchyEntry` duplicated between `session-hierarchy.ts` and `session-context.ts`, `discoverRootSessions` triplicated, N+1 read patterns in 4 tools, case-sensitivity drift in status filters.\n\n**Test coverage gap:** only 2 of 9 tools have direct unit tests (`delegate-task`, `delegation-status`); the 7 session/tmux tools have zero — which is how the `tmux-state-query` stub shipped."
+  "lastMessage": "Audit complete. `08-long-task.md` (72 KB, 759 lines) written to `.hivemind/planning/tools-audit-58-9-2026-06-05/`.\n\n**Structure per STEER:**\n- §0 Executive summary (3,094 LOC total, 9 tools, role split)\n- §1 `tmux-copilot.ts` — full deep-dive: 9 actions (send-keys / list-panes / compute-grid / respawn / forward-prompt / take-over / release / peek / peek-by-session), 13-variant result union, integration points, 10 per-action flaws (most notable: 1.6 partial-failure in take-over, 1.9 forged ZodIssue cast in peek-by-session)\n- §2 `tmux-state-query.ts` — full deep-dive: 3 actions, **CRITICAL** finding: all 3 are silent-failure stubs returning `[]`/`null`/`{total:0}` (Flaw-2.2/2.3/2.4) — registered in plugin at `src/plugin.ts:930` despite being unimplemented\n- §3-9 remaining 7 tools (session-tracker, session-hierarchy, session-context, session-delegation-query, hivemind-session-view, delegate-task, delegation-status) with actions/args/status/integration/flaw tables\n- §10-12 cross-cutting matrix, status vocabulary, 10 recurring anti-patterns\n- §13 prioritized P0/P1/P2/P3 recommendations\n- Appendix A — 22-case UAT test matrix for the two Phase 58.9 focus tools\n\n**Top 4 P0 ship-blockers:**\n1. `tmux-state-query` is a stub registered in production (Flaw-2.2/2.3/2.4)\n2. `delegation-status.mergeAllDelegations` downgrades `running` → `cancelled` when manager loses record (Flaw-9.6)\n3. `delegation-status` `progress` action misses tracker-only delegations (Flaw-9.13)\n4. `peek` action with `delegationId` advertised but non-functional (Flaw-9.19)\n\n**Recurring cross-tool issues:** envelope inconsistency (7 use `success/error`, 2 use raw unions), `readContinuity`/`findHierarchyEntry` duplicated between `session-hierarchy.ts` and `session-context.ts`, `discoverRootSessions` triplicated, N+1 read patterns in 4 tools, case-sensitivity drift in status filters.\n\n**Test coverage gap:** only 2 of 9 tools have direct unit tests (`delegate-task`, `delegation-status`); the 7 session/tmux tools have zero — which is how the `tmux-state-query` stub shipped.",
+  "terminalKind": "completed"
 }

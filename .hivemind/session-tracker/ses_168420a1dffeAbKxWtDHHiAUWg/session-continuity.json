@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_168420a1dffeAbKxWtDHHiAUWg",
-  "lastUpdated": "2026-06-05T13:00:59.280Z",
+  "lastUpdated": "2026-06-05T14:12:47.613Z",
   "hierarchy": {
     "root": "ses_168420a1dffeAbKxWtDHHiAUWg",
     "children": {
@@ -39,18 +39,61 @@
         "status": "completed",
         "delegatedBy": "hm-codebase-mapper",
         "children": {}
+      },
+      "ses_16816058bffeGsKCMiAYHHt1Rp": {
+        "file": "ses_16816058bffeGsKCMiAYHHt1Rp.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_16805a710ffevUXG4jDoAchGol": {
+        "file": "ses_16805a710ffevUXG4jDoAchGol.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_167fc9f2bffe6Dh7TF2qtjhZ6w": {
+        "file": "ses_167fc9f2bffe6Dh7TF2qtjhZ6w.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_167e6071effe2n3wClMJ9XO0m5": {
+        "file": "ses_167e6071effe2n3wClMJ9XO0m5.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_167e406caffehFUyuhXKlWQNNs": {
+        "file": "ses_167e406caffehFUyuhXKlWQNNs.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_167e3f7d6ffeTdfX4AutM4wwpQ": {
+        "file": "ses_167e3f7d6ffeTdfX4AutM4wwpQ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "unknown",
+        "children": {}
       }
     }
   },
-  "turnCount": 122,
+  "turnCount": 146,
   "toolSummary": {
-    "bash": 18,
-    "delegate-task": 3,
-    "tmux-copilot": 6,
-    "delegation-status": 2,
-    "grep": 11,
-    "read": 8,
-    "edit": 3,
-    "task": 1
+    "bash": 52,
+    "delegate-task": 8,
+    "tmux-copilot": 51,
+    "delegation-status": 9,
+    "grep": 21,
+    "read": 21,
+    "edit": 22,
+    "task": 2,
+    "tmux-state-query": 2
   }
 }
