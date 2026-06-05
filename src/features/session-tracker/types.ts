@@ -58,6 +58,32 @@ export type DelegationLifecycleStatus =
   | "paused"
 
 /**
+ * TODO-2 (2026-06-04, user-locked enum): Discriminator for the delegation
+ * mechanism that produced a child session. Differentiates Hivemind-owned
+ * tools (delegate-task, execute-slash-command) from OpenCode's native
+ * `task` tool and direct SDK calls.
+ *
+ * Mapping:
+ * - `"async-spawn"` — Hivemind's `delegate-task` custom tool (creates child
+ *   session, returns immediately with delegation ID — async WaiterModel)
+ * - `"native-task"` — OpenCode's native `task` tool (user-issued, sync
+ *   behavior in main session)
+ * - `"slash-cmd"` — Hivemind's `execute-slash-command` tool (orchestrated
+ *   command, may recurse)
+ * - `"sdk-direct"` — direct SDK calls bypassing any tool (rare, completeness)
+ *
+ * Set at WRITE time only (per R7 mitigation). Optional everywhere so
+ * existing on-disk files remain valid (R1 mitigation, zero schema breaks).
+ * MVD scope: 10 files, ~80 lines. See
+ * `.planning/research/session-tracker-cluster-map-2026-06-04.md` §12.
+ */
+export type DelegationType =
+  | "async-spawn"
+  | "native-task"
+  | "slash-cmd"
+  | "sdk-direct"
+
+/**
  * Phase 58 G6 (REQ-58-06, D-58-13): Base shape for all 3 delegation lifecycle
  * events. Numeric `emittedAt` epoch enables monotonic ordering assertions
  * in BATS slot 66.

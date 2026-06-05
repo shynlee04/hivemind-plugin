@@ -64,6 +64,10 @@ export const HierarchyManifestChildSchema = z.object({
   rootMainSessionID: z.string().optional(),
   delegatedBy: z.string().optional(),
   turnCount: z.number().optional(),
+  // TODO-2 (2026-06-04): optional discriminator (R2 mitigation — use
+  // .optional() so existing manifest entries without the field still parse).
+  // Source: src/features/session-tracker/types.ts DelegationType
+  delegationType: z.string().optional(),
 })
 
 export type HierarchyManifestChildValidated = z.infer<typeof HierarchyManifestChildSchema>
