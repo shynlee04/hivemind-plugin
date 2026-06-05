@@ -79,6 +79,13 @@ export interface Delegation {
    * @phase 58 (G3, REQ-58-03)
    */
   tmuxSessionId?: string | null
+  /**
+   * TODO-2 (2026-06-04, MVD §12): Optional discriminator identifying the
+   * delegation mechanism that produced this child. Set at write time.
+   * See `DelegationType` in `src/features/session-tracker/types.ts`.
+   * Optional for backward compat with pre-MVD Delegation records.
+   */
+  delegationType?: import("../../features/session-tracker/types.js").DelegationType
 }
 
 export interface DelegationResult {

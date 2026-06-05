@@ -18,7 +18,7 @@ import type { PendingDispatchRegistry } from "../../persistence/pending-dispatch
 import type { HierarchyManifestWriter } from "../../persistence/hierarchy-manifest.js"
 import type { LastMessageCapture } from "../last-message-capture.js"
 import { ChildBackfiller } from "../child-backfiller.js"
-import type { ChildSessionRecord } from "../../types.js"
+import type { ChildSessionRecord, DelegationType } from "../../types.js"
 
 // ---------------------------------------------------------------------------
 // HandlerDeps interface — shared dependencies for all handlers
@@ -108,6 +108,13 @@ export async function writeImmediateChildFile(
   parentID: string,
   explicitSubagentType?: string,
   explicitDelegationDepth?: number,
+  /**
+   * TODO-2 (2026-06-04, R7): Optional delegation discriminator. Set at the
+   * writer call site (never derived from event payloads). The pending-registry
+   * entry's `tool` field is the writer's source of truth for which enum value
+   * to set; the explicit parameter overrides when the caller already knows.
+   */
+  explicitDelegationType?: DelegationType,
 ): Promise<void> {
   if (!deps.childWriter) return
 
@@ -118,6 +125,18 @@ export async function writeImmediateChildFile(
   const entry = Array.isArray(pendingEntry) ? pendingEntry[0] : pendingEntry
   const subagentType = explicitSubagentType ?? entry?.subagentType ?? "unknown"
   let delegationDepth = explicitDelegationDepth ?? 1
+
+  // TODO-2 (2026-06-04, R7): Compute delegationType at write time from
+  // the tool name (per MVD §12.3). The pending-registry entry carries
+  // the tool that produced the child; the explicit parameter overrides
+  // when the caller already computed it.
+  const entryTool = entry?.tool ?? "task"
+  const delegationType: DelegationType =
+    explicitDelegationType ??
+    (entryTool === "delegate-task" ? "async-spawn" :
+     entryTool === "task" ? "native-task" :
+     entryTool === "execute-slash-command" ? "slash-cmd" :
+     "sdk-direct")
 
   try {
     if (deps.hierarchyIndex) {
@@ -146,6 +165,8 @@ export async function writeImmediateChildFile(
       turns: [],
       children: [],
       journey: [],
+      // TODO-2: mirror to child .json (R9)
+      delegationType,
     })
 
     deps.childWriter.setDelegationContext(sessionID, {
@@ -181,6 +202,8 @@ export async function writeImmediateChildFile(
             delegatedBy: entry?.tool ?? "task",
             subagentType,
             childFile: `${sessionID}.json`,
+            // TODO-2: mirror to manifest (R9)
+            delegationType,
           })
         }
         await deps.sessionWriter.addChildRef(rootMain, {

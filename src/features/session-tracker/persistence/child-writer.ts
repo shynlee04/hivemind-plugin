@@ -328,6 +328,10 @@ export class ChildWriter {
       journey: nextJourney.length > 0
         ? [...existingJourney, ...nextJourney]
         : existingJourney,
+      // TODO-2 (2026-06-04): preserve delegationType across merges (R7).
+      // If the new metadata has a delegationType, use it; otherwise keep
+      // the existing one (first-write-wins on this field).
+      delegationType: metadata.delegationType ?? existing.delegationType,
     }
   }
 

@@ -39,7 +39,7 @@ function buildChildRecordFromDelegation(d: Delegation): ChildSessionRecord {
       subagentType: "",
     },
     created: new Date(d.createdAt).toISOString(),
-    updated: d.completedAt ? new Date(d.completedAt).toISOString() : new Date().toISOString(),
+    updated: d.completedAt ? new Date(d.completedAt).toISOString() : new Date(d.createdAt).toISOString(),
     status,
     mainAgent: { name: d.agent, model: "" },
     turns: [],
@@ -50,6 +50,11 @@ function buildChildRecordFromDelegation(d: Delegation): ChildSessionRecord {
     terminalKind: d.terminalKind,
     recoveryGuarantee: d.recoveryGuarantee,
     executionMode: d.executionMode,
+    // TODO-2 (2026-06-04, R7): set at write time. The Delegation type
+    // currently lacks a `tool` field, so we default to "sdk-direct" for
+    // the dual-write path. When the v1/v2 split is settled and the
+    // Delegation type gains a `tool` field, switch to deriving from it.
+    delegationType: d.delegationType ?? "sdk-direct",
   }
 }
 
@@ -90,6 +95,10 @@ export function persistDelegations(delegations: Delegation[]): void {
         subagentType: "",
         childFile: `${d.childSessionId}.json`,
         status: d.status,
+        // TODO-2 (2026-06-04, R9): mirror delegationType into the manifest
+        // (same value used in the child record above). R5 mitigation:
+        // both writers must be updated together to prevent drift.
+        delegationType: d.delegationType ?? "sdk-direct",
       }).catch((err) => {
         console.error(`[Harness] persistDelegations dual-write (manifest): ${err instanceof Error ? err.message : String(err)}`)
       })

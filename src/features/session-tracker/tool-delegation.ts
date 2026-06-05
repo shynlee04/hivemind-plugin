@@ -15,7 +15,7 @@ import type { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import type { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
 import type { HierarchyManifestWriter } from "./persistence/hierarchy-manifest.js"
-import type { ChildSessionRecord, SessionTrackerEvent, DelegationLifecycleStatus } from "./types.js"
+import type { ChildSessionRecord, SessionTrackerEvent, DelegationLifecycleStatus, DelegationType } from "./types.js"
 import { isValidSessionID } from "./types.js"
 import { asRecord, deriveAgentNameFromSession, extractTaskID, extractTaskResult, pruneToolInput, pruneToolOutput } from "./tool-delegation-utils.js"
 
@@ -306,6 +306,15 @@ export class ToolDelegation {
       typeof args.agent === "string" ? args.agent :
       "unknown"
 
+    // TODO-2 (2026-06-04, R7): Set delegationType at WRITE time from
+    // input.tool — never derived from event payloads. The 4 locked enum
+    // values map directly to the tool that produced the child session.
+    const delegationType: DelegationType =
+      input.tool === "delegate-task" ? "async-spawn" :
+      input.tool === "task" ? "native-task" :
+      input.tool === "execute-slash-command" ? "slash-cmd" :
+      "sdk-direct"  // fallback for unrecognised tool
+
     if (!this.hierarchyIndex.isChild(input.sessionID)) {
       this.hierarchyIndex.registerChild(parentID, input.sessionID)
     }
@@ -346,6 +355,8 @@ export class ToolDelegation {
       turns: [],
       children: [],
       journey: [],
+      // TODO-2: mirror to both writers (R9 mitigation)
+      delegationType,
     }
 
     await ensureChildRoute(parentID, input.sessionID)
@@ -399,6 +410,9 @@ export class ToolDelegation {
       delegatedBy: deriveAgentNameFromSession(input as unknown as Record<string, unknown>) ?? input.tool ?? "unknown",
       subagentType,
       childFile: `${childSessionID}.json`,
+      // TODO-2 (2026-06-04): mirror delegationType into the manifest (R9).
+      // Same field on both writers — the dual-write invariant.
+      delegationType,
     })
     await this.projectIndexWriter.incrementChildCount(rootMain, depth)
     await this.projectIndexWriter.addSession(

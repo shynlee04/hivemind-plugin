@@ -68,6 +68,11 @@ export class HierarchyManifestWriter {
     subagentType: string
     childFile: string
     status?: string
+    /**
+     * TODO-2 (2026-06-04): Optional delegation discriminator. Set at the
+     * writer call site (never derived from event payloads — R7 mitigation).
+     */
+    delegationType?: import("../types.js").DelegationType
   }): Promise<void> {
     const manifest = await this.loadManifest(params.rootMainSessionID)
     const now = new Date().toISOString()
@@ -84,6 +89,7 @@ export class HierarchyManifestWriter {
       status: params.status ?? "active",
       turnCount: 0,
       childFile: params.childFile,
+      delegationType: params.delegationType,
     }
  
     manifest.children[params.childSessionID] = entry
