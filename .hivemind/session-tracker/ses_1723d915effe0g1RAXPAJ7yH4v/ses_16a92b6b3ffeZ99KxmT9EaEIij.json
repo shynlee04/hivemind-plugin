@@ -1,0 +1,1449 @@
+{
+  "sessionID": "ses_16a92b6b3ffeZ99KxmT9EaEIij",
+  "parentSessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-codebase-mapper",
+    "model": "",
+    "tool": "task",
+    "description": "READ-ONLY AUDIT INVESTIGATION. Wave 1 Agent B. Stack on existing session if possible.\n\n## Context\nComprehensive 9-track architectural audit of session management, coordination, and delegation tools. Your scope: Track T4. L5 documentation only.\n\n## Track T4: Engine/Lib/Hook/Feature topology under src/**\nTrace every tool to its source. Document the COMPLETE map of:\n- **Engines** in src/coordination/ (delegation manager, sdk-delegator, sdk-child-session-starter, completion detector, queue, etc.)\n- **Engines** in src/features/ (tmux, governance-engine, session-tracker, agent-work-contract, tool-intelligence, command-execution, prompt-packets, etc.)\n- **Engines** in src/task-management/ (continuity, journal, event-tracker, trajectory, lifecycle)\n- **Libs** in src/shared/ (helpers, types, session-api, tool-response, task-status)\n- **Libs** in src/schema-kernel/ (zod schemas, generated config schema)\n- **Hooks** in src/hooks/ (lifecycle, guards, observers, transforms, composition)\n- **Features** in src/features/ (every subfolder)\n- **Routing** in src/routing/ (session entry, behavioral profile, command engine)\n- **Config** in src/config/ (subscriber, compiler, workflow)\n\nFor each module: file:line of public API surface, what it reads/writes, which tools call it, which hooks fire it, LOC.\n\n## Output\n\nWrite to .planning/debug/audit-2026-06-04/wave-1-agent-B-engine-topology.md (500-800 lines).\n\nRequired sections:\n1. Executive summary (module count, coupling index, top 5 critical)\n2. Coordination engines map (delegation/completion/queue)\n3. Task-management engines map (continuity/journal/trajectory/lifecycle)\n4. Features map (every src/features/* module)\n5. Shared libs map\n6. Hooks map (with priority ordering if observable)\n7. Routing/config maps\n8. Cross-module coupling analysis (which modules call which, cycles if any)\n9. Top 15 critical findings (file:line, impact, severity)\n\n## Constraints\n- L5 documentation only\n- Read-only — use grep/glob/offset-read, NO source code changes\n- Cite file:line for every claim\n- Target 500-800 lines\n\n## Return\n- File path + line count\n- Total modules documented\n- Top 5 critical (file:line + impact)\n- Coupling index (which 2-3 modules are most central)\n- Confidence: high/medium/low",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T01:37:01.293Z",
+  "updated": "2026-06-05T02:04:18.036Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-codebase-mapper",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "READ-ONLY AUDIT INVESTIGATION. Wave 1 Agent B. Stack on existing session if possible.\n\n## Context\nComprehensive 9-track architectural audit of session management, coordination, and delegation tools. Your scope: Track T4. L5 documentation only.\n\n## Track T4: Engine/Lib/Hook/Feature topology under src/**\nTrace every tool to its source. Document the COMPLETE map of:\n- **Engines** in src/coordination/ (delegation manager, sdk-delegator, sdk-child-session-starter, completion detector, queue, etc.)\n- **Engines** in src/features/ (tmux, governance-engine, session-tracker, agent-work-contract, tool-intelligence, command-execution, prompt-packets, etc.)\n- **Engines** in src/task-management/ (continuity, journal, event-tracker, trajectory, lifecycle)\n- **Libs** in src/shared/ (helpers, types, session-api, tool-response, task-status)\n- **Libs** in src/schema-kernel/ (zod schemas, generated config schema)\n- **Hooks** in src/hooks/ (lifecycle, guards, observers, transforms, composition)\n- **Features** in src/features/ (every subfolder)\n- **Routing** in src/routing/ (session entry, behavioral profile, command engine)\n- **Config** in src/config/ (subscriber, compiler, workflow)\n\nFor each module: file:line of public API surface, what it reads/writes, which tools call it, which hooks fire it, LOC.\n\n## Output\n\nWrite to .planning/debug/audit-2026-06-04/wave-1-agent-B-engine-topology.md (500-800 lines).\n\nRequired sections:\n1. Executive summary (module count, coupling index, top 5 critical)\n2. Coordination engines map (delegation/completion/queue)\n3. Task-management engines map (continuity/journal/trajectory/lifecycle)\n4. Features map (every src/features/* module)\n5. Shared libs map\n6. Hooks map (with priority ordering if observable)\n7. Routing/config maps\n8. Cross-module coupling analysis (which modules call which, cycles if any)\n9. Top 15 critical findings (file:line, impact, severity)\n\n## Constraints\n- L5 documentation only\n- Read-only — use grep/glob/offset-read, NO source code changes\n- Cite file:line for every claim\n- Target 500-800 lines\n\n## Return\n- File path + line count\n- Total modules documented\n- Top 5 critical (file:line + impact)\n- Coupling index (which 2-3 modules are most central)\n- Confidence: high/medium/low",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll perform the Track T4 engine/lib/hook/feature topology audit. Let me start by exploring the codebase structure and reading the existing context.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "I have the structure. Now let me read the existing architecture documentation and dive into the deeper topology.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Now let me get the routing/config and check key shared/schema-kernel subfolders, plus a few other critical directories:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Now let me read the plugin composition root and key engine surfaces in parallel:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Let me read the existing architecture doc and key engine surfaces:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "I have L5-only constraints from the planning sector governance. Continuing read-only audit. Let me read more critical engine surfaces:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "Let me read more critical files in parallel - hooks, task-management, features:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Let me read the remaining key files - plugin.ts composition flow, observers, and features index:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Let me read more key surfaces in parallel:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Let me read the plugin.ts final section and key remaining indexes:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Let me get a few more key index files and then I have enough to write:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Let me get the final cross-module imports and confirm topology:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Let me check the existing wave-1a output for format and then start writing:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Let me get final missing details and start writing:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "Now I have enough material to write the document. Let me write it directly:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "Let me verify the file:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "I'm 252 lines over the 500-800 target. Let me trim:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": "Now let me trim the schema-kernel table and the appendix sections:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": "Now let me trim the appendix sections:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": "Let me check line count and trim more if needed:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 25,
+      "actor": "unknown",
+      "content": "Still over. Let me trim more:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 26,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 27,
+      "actor": "unknown",
+      "content": "Now let me check line count:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 28,
+      "actor": "unknown",
+      "content": "Let me check the doc and trim more:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 29,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 30,
+      "actor": "unknown",
+      "content": "Let me make substantial cuts. First, compress §6 hook section:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 31,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 32,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 33,
+      "actor": "unknown",
+      "content": "Let me compress §9 findings:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 34,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 35,
+      "actor": "unknown",
+      "content": "Let me trim §8 and §11:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 36,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 37,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 38,
+      "actor": "unknown",
+      "content": "Need 33 more lines. Let me trim §1 and §3:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 39,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 40,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 41,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 42,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 43,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 44,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 45,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 46,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 47,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 48,
+      "actor": "unknown",
+      "content": "Tools: edit",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 49,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 50,
+      "actor": "unknown",
+      "content": "798 lines — within the 500-800 target. Let me verify the file is intact:",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 51,
+      "actor": "unknown",
+      "content": "All required sections present (1-9 plus 10/11 appendices). Final return:\n\n## Mapping Complete\n\n**Focus:** T4 — Engine/Lib/Hook/Feature topology under `src/**`\n**Document:** `.planning/debug/audit-2026-06-04/wave-1-agent-B-engine-topology.md` (798 lines, within 500-800 target)\n\n**Total modules documented:** 293 TS files across 12 directories (`src/` = 51,988 LOC), organized as 33 coordination engines, 12 task-management modules, 92 feature modules (15 subdirs), 17 hooks, 18 shared libs, 22 schema-kernel files, 10 routing, 8 config.\n\n**Top 5 critical findings (file:line + impact):**\n1. **`src/plugin.ts:463`** — 970-line composition root (`HarnessControlPlane`); single-function brittleness, full-init testing required\n2. **`src/coordination/delegation/manager.ts:82`** — `DelegationManager` facade with dual v1/v2 state machines; 9+ `if (options.coordinator)` branches contradict the \"single source\" claim at line 231\n3. **`src/features/session-tracker/index.ts:100`** — 671-LOC \"central\" `SessionTracker` class with 7+ sub-modules + module-level `sessionOverrideMap` (line 49, not instance-bound)\n4. **`src/coordination/delegation/coordinator.ts:185`** — 722-LOC `DelegationCoordinator` with 8 required + 3 optional deps; S5b `tmuxIntegration` adapter is a layering workaround\n5. **`src/hooks/transforms/tool-before-guard.ts:40`** — 3-step guard chain (`toolGuardHook` → `sessionTracker` → `contractEnforcement`) with all steps best-effort and failures silently dropped\n\n**Coupling index (most central modules):**\n- `src/shared/session-api.ts` (432 LOC, 40+ importers) — OpenCode SDK wrapper\n- `src/shared/state.ts` (251 LOC, 28+ importers) — `TaskStateManager` in-memory Maps\n- `src/coordination/delegation/manager.ts` (587 LOC, 15+ importers) — `DelegationManager` facade consumed by every delegation tool + spawner + 2 hook chains\n\n**3-axis central triad:** `shared/session-api.ts` (SDK ingress) → `coordination/delegation/manager.ts` (delegation egress) → `features/session-tracker/index.ts` (session persistence). Every hook chain and tool call traverses ≥2 of these three.\n\n**Confidence:** HIGH for module counts, file paths, LOC, hook/tool wiring. MEDIUM for coupling rank (static `grep` fan-in, not dynamic call-graph). MEDIUM for \"single source of truth\" claims (e.g., `manager.ts:231`) — dual-path branches not all traced.\n\n**Constraints honored:** L5 documentation only · read-only (no source code changes) · file:line citations throughout · 798 lines (target 500-800).",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "queueKey": "agent:gsd-codebase-mapper",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": [
+    {
+      "timestamp": "2026-06-05T01:37:57.515Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_104agxao5om4_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:37:57.819Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_104agxao5om4_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:37:59.787Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_104agxao5om4_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:38:01.738Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_104agxao5om4_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:38:22.590Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_wu3jt1gwe7qa_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:38:23.621Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_wu3jt1gwe7qa_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:38:25.594Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_wu3jt1gwe7qa_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:38:27.179Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_wu3jt1gwe7qa_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:39:12.767Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_5rso5nggj7bn_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:39:15.178Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_5rso5nggj7bn_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:39:16.055Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_5rso5nggj7bn_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:39:17.090Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_5rso5nggj7bn_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:00.766Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_cvteqwx14q2a_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:03.076Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_cvteqwx14q2a_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:03.211Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_cvteqwx14q2a_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:03.251Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_cvteqwx14q2a_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/coordinator.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:22.126Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_2wg19xyu9a9h_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/codebase/ARCHITECTURE.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:26.750Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_2wg19xyu9a9h_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:27.483Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_2wg19xyu9a9h_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:27.510Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_2wg19xyu9a9h_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/state-machine.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:52.748Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_mnseaw5hi7p7_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:53.523Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_mnseaw5hi7p7_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/coordinator.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:54.623Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_mnseaw5hi7p7_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/concurrency/queue.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:40:54.669Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_mnseaw5hi7p7_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/completion/detector.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:41:38.467Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_76gszhby62c3_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/core-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:41:38.488Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_76gszhby62c3_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/session-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:41:39.701Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_76gszhby62c3_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/transforms/tool-before-guard.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:41:39.728Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_76gszhby62c3_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/transforms/tool-after-composer.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:42:01.846Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_oxevjgt4azkj_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:42:03.788Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_oxevjgt4azkj_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:42:03.833Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_oxevjgt4azkj_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:42:03.965Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_oxevjgt4azkj_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/governance-engine/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:42:52.601Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_rmq1rcbby5x9_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:42:54.638Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_rmq1rcbby5x9_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/session-entry/intake-gate.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:42:54.654Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_rmq1rcbby5x9_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:42:54.969Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_rmq1rcbby5x9_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/config/subscriber.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:12.243Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_5gwfmybv10r2_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:13.506Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_5gwfmybv10r2_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/observers/event-observers.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:14.679Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_5gwfmybv10r2_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/guards/tool-guard-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:14.710Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_5gwfmybv10r2_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/composition/cqrs-boundary.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:33.234Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_h3pg3xlzunbs_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/lifecycle/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:34.479Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_h3pg3xlzunbs_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:35.478Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_h3pg3xlzunbs_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:35.491Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_h3pg3xlzunbs_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/integration.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:52.569Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ekqp1vvsfx5e_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:54.355Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ekqp1vvsfx5e_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:55.106Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ekqp1vvsfx5e_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:57.204Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ekqp1vvsfx5e_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:43:59.736Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ekqp1vvsfx5e_5",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:44:37.693Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_rznr42db16xt_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:44:37.705Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_rznr42db16xt_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/state.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:44:37.724Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_rznr42db16xt_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:45:00.792Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_n1b7jtygchhv_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:45:01.614Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_n1b7jtygchhv_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:45:02.703Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_n1b7jtygchhv_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:52:11.980Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_function_oq8om7w45ohm_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:52:26.446Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_hq3iio81p1mu_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:52:47.501Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_c1ngo3f1wp4v_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:53:13.210Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_aptx79roiycv_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:53:32.352Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_8i8s5ch13yto_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:53:46.752Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_6bb0lk41bv7g_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:54:08.611Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_9kpla16ow3rc_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:54:39.059Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_z5runf7d7rih_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:54:50.024Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ferveybtd8r6_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:55:39.158Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_u2vbfi6fl2ay_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:56:14.294Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_0ujo2n4a1dzr_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:56:25.962Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_muiggh8weuis_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:56:38.792Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_8r5szvefq0sg_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/debug/audit-2026-06-04/wave-1-agent-B-engine-topology.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:56:50.393Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_gfjd66usanr9_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/debug/audit-2026-06-04/wave-1-agent-B-engine-topology.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:57:52.432Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_y9bdy8auyqks_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:58:02.552Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_uhloudgwhc39_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:58:22.433Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_z3uic8bw8ipp_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/debug/audit-2026-06-04/wave-1-agent-B-engine-topology.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:59:46.894Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_isih5jqk1y9x_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T01:59:58.567Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_9m41x78pzmuz_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:00:16.451Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_v12vpbnl8t0m_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:00:37.724Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_31izp4loe6zk_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:00:47.089Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_54i8h3ds1c8p_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:01:02.106Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_z60l2juuexqu_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:01:23.576Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_s25027qzky3o_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:01:34.223Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_8lw1qogh5w4a_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:01:53.947Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_9o9zpnd5jsld_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:02:03.336Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_a0k8brgdzrz8_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:02:26.142Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_t9y9zdsis7xr_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:02:36.383Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_e9ii54866rkm_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:02:49.210Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_7howaxhta784_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:02:59.612Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_1j8gsf6et6hz_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:03:11.957Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_36t9pnb8glym_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/debug/audit-2026-06-04/wave-1-agent-B-engine-topology.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:03:28.712Z",
+      "type": "tool_call",
+      "content": "Tool: edit",
+      "metadata": {
+        "tool": "edit",
+        "callID": "call_function_eflb2t46bp53_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:03:37.939Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_0k0kodr60tqn_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:03:50.948Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_u65wl1cw72i2_1",
+        "input": {},
+        "output": {}
+      }
+    }
+  ],
+  "lastMessage": "All required sections present (1-9 plus 10/11 appendices). Final return:\n\n## Mapping Complete\n\n**Focus:** T4 — Engine/Lib/Hook/Feature topology under `src/**`\n**Document:** `.planning/debug/audit-2026-06-04/wave-1-agent-B-engine-topology.md` (798 lines, within 500-800 target)\n\n**Total modules documented:** 293 TS files across 12 directories (`src/` = 51,988 LOC), organized as 33 coordination engines, 12 task-management modules, 92 feature modules (15 subdirs), 17 hooks, 18 shared libs, 22 schema-kernel files, 10 routing, 8 config.\n\n**Top 5 critical findings (file:line + impact):**\n1. **`src/plugin.ts:463`** — 970-line composition root (`HarnessControlPlane`); single-function brittleness, full-init testing required\n2. **`src/coordination/delegation/manager.ts:82`** — `DelegationManager` facade with dual v1/v2 state machines; 9+ `if (options.coordinator)` branches contradict the \"single source\" claim at line 231\n3. **`src/features/session-tracker/index.ts:100`** — 671-LOC \"central\" `SessionTracker` class with 7+ sub-modules + module-level `sessionOverrideMap` (line 49, not instance-bound)\n4. **`src/coordination/delegation/coordinator.ts:185`** — 722-LOC `DelegationCoordinator` with 8 required + 3 optional deps; S5b `tmuxIntegration` adapter is a layering workaround\n5. **`src/hooks/transforms/tool-before-guard.ts:40`** — 3-step guard chain (`toolGuardHook` → `sessionTracker` → `contractEnforcement`) with all steps best-effort and failures silently dropped\n\n**Coupling index (most central modules):**\n- `src/shared/session-api.ts` (432 LOC, 40+ importers) — OpenCode SDK wrapper\n- `src/shared/state.ts` (251 LOC, 28+ importers) — `TaskStateManager` in-memory Maps\n- `src/coordination/delegation/manager.ts` (587 LOC, 15+ importers) — `DelegationManager` facade consumed by every delegation tool + spawner + 2 hook chains\n\n**3-axis central triad:** `shared/session-api.ts` (SDK ingress) → `coordination/delegation/manager.ts` (delegation egress) → `features/session-tracker/index.ts` (session persistence). Every hook chain and tool call traverses ≥2 of these three.\n\n**Confidence:** HIGH for module counts, file paths, LOC, hook/tool wiring. MEDIUM for coupling rank (static `grep` fan-in, not dynamic call-graph). MEDIUM for \"single source of truth\" claims (e.g., `manager.ts:231`) — dual-path branches not all traced.\n\n**Constraints honored:** L5 documentation only · read-only (no source code changes) · file:line citations throughout · 798 lines (target 500-800)."
+}
