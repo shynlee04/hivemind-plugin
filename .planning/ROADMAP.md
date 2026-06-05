@@ -2122,6 +2122,7 @@ Plans:
 | **SB-REGRESSION-GUARDS** (4 new vitest integration guards: 27-tool-key, AC#10/AC#11 manualOverride, P20 no-new-deps, P51 in-tree tmux) | 2026-06-04 | P58.9 | OWNED-P58.9 (REQ-58.9-04) | 2026-06-04 | [58.9-SPEC.md:175-220](phases/58.9-sticky-bug-busting/58.9-SPEC.md) |
 | **S5** (tmux panel never spawns for new sub-session — delegate-task in main session, no panel for `ses_xxxx`, sub-agent runs invisibly) | 2026-06-04 | **unowned (CRITICAL live-runtime UAT blocker)** | **OPEN — FAIL in live UAT** | 2026-06-04 | [uat-s5-delegate-task-panel-spawn-2026-06-04.md](debug/uat-s5-delegate-task-panel-spawn-2026-06-04.md) |
 | **S5b** (tmux panel never spawns for ANY delegation method — confirmed broken for native `task` tool too, not just `delegate-task`; root cause is fundamental panel-spawn failure, not delegate-task wire) | 2026-06-04 | **unowned (CRITICAL, superscope of S5)** | **OPEN — FAIL in live UAT** | 2026-06-04 | [uat-s5-delegate-task-panel-spawn-2026-06-04.md](debug/uat-s5-delegate-task-panel-spawn-2026-06-04.md) |
+| **S5b-delegate-task** (panel-spawn fallback for delegate-task — fix Option A + 1-line plugin.ts:606 wiring; 34/34 tests, typecheck clean) | 2026-06-04 | S5b-fix | **READY for real UAT** | 2026-06-04 | [s5b-fix-verification-2026-06-04.md](debug/s5b-fix-verification-2026-06-04.md), commits `de417386`, `e2b8e4d9` |
 
 ### Status transition rule (P58-META-04)
 
