@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-06-05T10:00:00.000Z"
+last_updated: "2026-06-05T18:15:00.000Z"
 progress:
    total_phases: 64
-  completed_phases: 17
-  total_plans: 147
-  completed_plans: 104
-  percent: 27
+   completed_phases: 34
+   total_plans: 147
+   completed_plans: 107
+   percent: 53
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -29,7 +29,7 @@ progress:
 - **P42-03** — Plugin wiring: bootstrap integration + event observer registration
 - **P54-01** — Session persistence + restart-recovery: 9-field JSON persistence on every state transition, restoreAll filter to paused+detached, UUIDv7 inline generator, atomic wx-flag write, SessionManager 7th optional ctor param + 2 persist call sites, kill-parent-restart-recovery BATS L1 evidence (commit `a5c67c19`)
 
-**Current focus:** **Phase 59 — Session Backchannel & tmux-copilot Permission Rework.** Phase 58 shipped, Phase 58.9 in progress. Phase 59 fixes 4 flaw domains from Phase 58.9 UAT: tmux-copilot permission gate (Domain A), child session backchannel (Domain B), agent looping from child emissions (Domain C), universal-rules.md truncation (Domain D). **See ROADMAP.md entry and `.hivemind/planning/59-session-backchannel-tmux-permission-rework/PLAN.md`.**
+**Current focus:** **Phase 59 — Session Backchannel & tmux-copilot Permission Rework.** ✅ COMPLETE (2026-06-05). Fixed 12 sub-flaws across 3 domains (A, B, C — D deferred by scope). 10 files modified. Typecheck clean, 31/31 completion-detector tests pass. See `.planning/phases/59-session-backchannel-tmux-copilot-permission-rework-2026-06-0/59-SUMMARY.md`. **Next:** Phase 60.
 
 ---
 
