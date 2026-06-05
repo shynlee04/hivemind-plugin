@@ -27,11 +27,34 @@
   - 10 risks identified (R1-R10)
   - 10 open questions (need L0/user input before TODO-2)
 
-### TODO-2 [PENDING] — Design `delegationType` discriminator
-- **Why:** Differentiate delegate-task (Hivemind async) vs task tool (native sync) vs execute-slash-command vs sdk-direct
+[LANGUAGE: Write this file in en per Language Governance.]
+[LANGUAGE: Write this file in en per Language Governance.]
+[LANGUAGE: Write this file in en per Language Governance.]
+### TODO-2 [DONE] — Design + Apply `delegationType` discriminator
+- **Why:** Differentiate the different delegation mechanisms (Hivemind async vs native task vs slash command vs sdk-direct)
 - **Depends on:** TODO-1
-- **Scope:** Design the field, its schema, where it gets set, where it gets queried
-- **Output target:** Design proposal doc
+- **User decisions (2026-06-04):**
+  - Q1 enum naming: `async-spawn` (NOT `delegate-task`)
+  - Q2 user-issued task: `native-task` (NOT `task`)
+  - Q3 execute-slash-command: `slash-cmd` (NOT `execute-slash-command`)
+  - 4th (research): `sdk-direct` (for direct SDK calls without tool)
+- **Final enum:** `async-spawn` | `native-task` | `slash-cmd` | `sdk-direct`
+- **Implementation:** 5 atomic commits (c8c32a19, fe5483ef, f4356082, 8a3424de, 31627a7b)
+- **Scope applied:**
+  - 10 source files modified
+  - `DelegationType` type + Zod schema at `src/features/session-tracker/types.ts:60-78`
+  - Mirrored in `ChildSessionRecord` + `HierarchyManifestChild` + `ChildHierarchyEntry`
+  - 6 writer sites set the field at WRITE time
+  - Setter convention: `delegate-task` → `async-spawn`; `task` → `native-task`; `execute-slash-command` → `slash-cmd`; other → `sdk-direct`
+  - 14 new tests in `tests/lib/session-tracker/delegation-type.test.ts`
+- **Verification:** typecheck 0, build success, 292/292 MVD-touching tests pass
+- **Backward compat:** all new fields `?.optional()` — existing on-disk files parse unchanged
+
+### TODO-3 [PENDING] — Filter plumbing in query tools
+- **Why:** delegation-status, session-tracker, session-hierarchy, session-view need `?delegationType` filter param
+- **Depends on:** TODO-2
+- **Scope:** Add filter param to each query tool; default "return all" (no filter applied)
+- **Output target:** Implementation + tests
 
 ### TODO-3 [PENDING] — Update query tools to filter on `delegationType`
 - **Why:** delegation-status, session-tracker, session-hierarchy, session-view all need to filter
