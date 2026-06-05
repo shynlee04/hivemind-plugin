@@ -18,7 +18,7 @@ export interface SemanticCompletionOptions {
   minTotalToolActivityDurationMs?: number
 }
 
-const DEFAULT_TOOL_IDLE_MS = 60_000
+const DEFAULT_TOOL_IDLE_MS = 300_000 // P59 B4: raised from 60s to 300s (5 min) — research tasks need time to read files and write output
 
 const FILE_CHANGE_TOOL_NAMES = new Set([
   "write",
@@ -248,7 +248,7 @@ export function checkSemanticCompletion(
 ): SemanticCompletionResult {
   const now = options?.now ?? Date.now()
   const threshold = options?.toolIdleThresholdMs ?? DEFAULT_TOOL_IDLE_MS
-  const minDuration = options?.minTotalToolActivityDurationMs ?? 60000
+  const minDuration = options?.minTotalToolActivityDurationMs ?? DEFAULT_TOOL_IDLE_MS // P59 B4: was 60000, now uses DEFAULT_TOOL_IDLE_MS (300s)
   const lastToolActivityAt = findLastToolActivity(messages)
   const secondsSinceLastToolActivity =
     lastToolActivityAt !== null ? (now - lastToolActivityAt) / 1000 : null

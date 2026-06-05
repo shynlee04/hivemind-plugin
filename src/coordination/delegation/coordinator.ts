@@ -410,6 +410,7 @@ export class DelegationCoordinator {
   /** Marks a delegation timed out and performs the same cleanup path as terminal completion. */
   handleTimeout(delegationId: string): void {
     const result = this.deps.lifecycle.markTimeout(delegationId)
+    this.deps.periodicNotifier?.deregister(delegationId) // P59 C3: deregister BEFORE routeTerminal to prevent race window
     this.deps.monitor.onCompletion(delegationId)
     this.routeTerminal(delegationId, "timeout", result.error ?? "timed out")
     this.cleanup(delegationId, "timeout", result)
@@ -443,6 +444,7 @@ export class DelegationCoordinator {
   /** Converts a native Task dispatch failure into terminal cleanup without leaking active resources. */
   failDispatch(delegationId: string, caughtError: unknown): void {
     const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+    this.deps.periodicNotifier?.deregister(delegationId) // P59 C3: deregister BEFORE routeTerminal
     this.deps.lifecycle.transition(delegationId, "error")
     this.deps.monitor.onCompletion(delegationId)
     this.routeTerminal(delegationId, "failure", `[Harness] Native Task dispatch failed: ${message}`)

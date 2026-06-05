@@ -217,3 +217,45 @@ export function setSessionManagerAdapter(adapter: SessionManagerAdapter | null):
 export function getSessionManagerAdapter(): SessionManagerAdapter | null {
   return currentAdapter;
 }
+
+// ---------------------------------------------------------------------------
+// P59 A2: sessionId → paneId registry
+// ---------------------------------------------------------------------------
+//
+// Maps child session IDs to their tmux pane IDs so that the peek-by-session
+// action can resolve a sessionId to a paneId without requiring extra tool
+// calls. Populated by the tmux integration when a child session is spawned
+// (via `registerSessionToPaneId`). Read by tmux-copilot's peek-by-session
+// action.
+
+const sessionPaneRegistry = new Map<string, string>()
+
+/**
+ * Register a mapping from a session ID to a tmux pane ID.
+ * Called by the tmux integration when a child session is spawned in a pane.
+ */
+export function registerSessionToPaneId(sessionId: string, paneId: string): void {
+  sessionPaneRegistry.set(sessionId, paneId)
+}
+
+/**
+ * Look up the tmux pane ID for a given session ID.
+ * Returns the paneId if found, or undefined if no mapping exists.
+ */
+export function resolveSessionToPaneId(sessionId: string): string | undefined {
+  return sessionPaneRegistry.get(sessionId)
+}
+
+/**
+ * Remove a session→paneId mapping when the session ends or the pane is closed.
+ */
+export function clearSessionToPaneId(sessionId: string): void {
+  sessionPaneRegistry.delete(sessionId)
+}
+
+/**
+ * Get the total number of registered session→paneId mappings (for diagnostics).
+ */
+export function getSessionPaneRegistrySize(): number {
+  return sessionPaneRegistry.size
+}

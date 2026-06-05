@@ -35,6 +35,7 @@ import type { EnrichedSessionEvent, ForkSessionManager, PaneObserver } from "./o
 import type { TmuxMultiplexer } from "./tmux-multiplexer.js";
 import type { TmuxLayout } from "./tmux-multiplexer.js";
 import type { PersistedSession, SessionPersistence, SessionState } from "./persistence.js";
+import { registerSessionToPaneId, clearSessionToPaneId } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Logger (inlined — matches tmux-multiplexer.ts Logger shape)
@@ -272,6 +273,9 @@ export class SessionManager implements ForkSessionManager {
 
       this.sessions.set(sessionId, tracked);
 
+      // P59 A2: register sessionId → paneId mapping so peek-by-session can resolve
+      registerSessionToPaneId(sessionId, result.paneId)
+
       // P54 (D-54-08 call site #1): active → ready, persist. D-04 silent-fallback.
       tracked.state = "ready";
       void this.persistence?.persist(this.toPersistedSession(tracked));
@@ -496,6 +500,9 @@ export class SessionManager implements ForkSessionManager {
 
     this.sessions.delete(sessionId);
     this.failedSessions.delete(sessionId);
+
+    // P59 A2: clear session→paneId mapping when the session closes
+    clearSessionToPaneId(sessionId);
 
     const closed = await this.multiplexer.closePane(paneId);
     this.log?.debug("handleSessionClose: closePane result", { sessionId, closed });

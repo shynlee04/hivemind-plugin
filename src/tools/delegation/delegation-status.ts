@@ -453,6 +453,14 @@ async function mergeAllDelegations(
   return Array.from(byId.values())
 }
 
+/**
+ * P59 C5: Per-invocation sequence counter to add entropy to tool outputs.
+ * Increments on every delegation-status call so that consecutive identical
+ * queries return different-enough responses (the queryTimestamp changes),
+ * preventing the "identical tool output" loop trap.
+ */
+let delegationStatusInvocationCounter = 0
+
 export function createDelegationStatusTool(
   delegationManager: ManagerLike,
   deps: StatusDeps = {},
@@ -477,6 +485,9 @@ export function createDelegationStatusTool(
       maxBytes: s.number().optional().describe("(peek) cap the returned content length"),
     },
     async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
+      // P59 C5: Increment invocation counter for entropy
+      delegationStatusInvocationCounter++
+
       // Clear per-invocation cache at start to prevent stale data across rapid tool calls
       manifestCache.clear()
 
@@ -673,6 +684,8 @@ async function renderList(args: DelegationStatusInput, sessionID: string, manage
         stackCommand: s.delegateTaskCommand,
         reason: s.reason,
       })),
+      queryTimestamp: Date.now(), // P59 C5: cache-busting entropy — prevents identical tool output loop
+      seq: delegationStatusInvocationCounter, // P59 C5: monotonic counter — ensures every response is unique even if data is identical
     },
   ))
 }
@@ -773,7 +786,7 @@ async function handleFindStackable(
   if (stackable.length === 0 && resumable.length === 0) {
     return renderToolResult(success(
       "No stackable or resumable sessions found — new dispatch is appropriate.",
-      { stackable: [], resumable: [], guidance: banner },
+      { stackable: [], resumable: [], guidance: banner, queryTimestamp: Date.now(), seq: delegationStatusInvocationCounter },
     ))
   }
 
@@ -800,6 +813,8 @@ async function handleFindStackable(
         reason: s.reason,
         taskCommand: s.taskCommand,
       })),
+      queryTimestamp: Date.now(),
+      seq: delegationStatusInvocationCounter,
     },
   ))
 }

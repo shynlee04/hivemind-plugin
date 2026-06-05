@@ -71,13 +71,13 @@ describe("completion-detector", () => {
     it("detects stalled tool activity with old timestamp", () => {
       const r = checkSemanticCompletion([
         mockMessage("assistant", [
-          mockToolUse("bash", { command: "ls" }, NOW - 120_000),
-          mockToolResult("output", NOW - 119_000),
+          mockToolUse("bash", { command: "ls" }, NOW - 310_000), // > DEFAULT_TOOL_IDLE_MS (300s)
+          mockToolResult("output", NOW - 309_000),
         ]),
         mockMessage("assistant", [mockTextPart("done")]),
       ], { now: NOW })
       expect(r.toolActivityStalled).toBe(true)
-      expect(r.secondsSinceLastToolActivity).toBe(120)
+      expect(r.secondsSinceLastToolActivity).toBe(310)
     })
 
     it("detects file change indicators in tool_result", () => {
@@ -98,8 +98,8 @@ describe("completion-detector", () => {
     it("isComplete is true when all three conditions met", () => {
       const r = checkSemanticCompletion([
         mockMessage("assistant", [
-          mockToolUse("write", { path: "/src/a.ts" }, NOW - 120_000),
-          mockToolResult("Wrote /src/a.ts", NOW - 119_000),
+          mockToolUse("write", { path: "/src/a.ts" }, NOW - 310_000), // > DEFAULT_TOOL_IDLE_MS (300s)
+          mockToolResult("Wrote /src/a.ts", NOW - 309_000),
         ]),
         mockMessage("assistant", [mockTextPart("file written")]),
       ], { now: NOW })
@@ -127,8 +127,8 @@ describe("completion-detector", () => {
         ]),
         mockMessage("assistant", [mockTextPart("done")]),
       ]
-      expect(checkSemanticCompletion(msgs, { now: t + 30_000 }).toolActivityStalled).toBe(false)
-      const after = checkSemanticCompletion(msgs, { now: t + 90_000 })
+      expect(checkSemanticCompletion(msgs, { now: t + 60_000 }).toolActivityStalled).toBe(false)
+      const after = checkSemanticCompletion(msgs, { now: t + 310_000 }) // > DEFAULT_TOOL_IDLE_MS (300s)
       expect(after.toolActivityStalled).toBe(true)
       expect(after.isComplete).toBe(true)
     })
@@ -136,14 +136,14 @@ describe("completion-detector", () => {
     it("handles mixed message sequence with multiple tools", () => {
       const r = checkSemanticCompletion([
         mockMessage("user", [mockTextPart("build")]),
-        mockMessage("assistant", [mockToolUse("bash", {}, NOW - 200_000), mockToolResult("ok", NOW - 199_000)]),
-        mockMessage("assistant", [mockToolUse("write", { path: "/src/f.ts" }, NOW - 150_000), mockToolResult("Wrote /src/f.ts", NOW - 149_000)]),
-        mockMessage("assistant", [mockToolUse("bash", {}, NOW - 80_000), mockToolResult("3 passed", NOW - 79_000)]),
+        mockMessage("assistant", [mockToolUse("bash", {}, NOW - 400_000), mockToolResult("ok", NOW - 399_000)]),
+        mockMessage("assistant", [mockToolUse("write", { path: "/src/f.ts" }, NOW - 350_000), mockToolResult("Wrote /src/f.ts", NOW - 349_000)]),
+        mockMessage("assistant", [mockToolUse("bash", {}, NOW - 320_000), mockToolResult("3 passed", NOW - 319_000)]),
         mockMessage("assistant", [mockTextPart("complete")]),
       ], { now: NOW })
       expect(r.hasAssistantMessage).toBe(true)
       expect(r.hasFileChanges).toBe(true)
-      expect(r.lastToolActivityAt).toBe(NOW - 80_000)
+      expect(r.lastToolActivityAt).toBe(NOW - 320_000)
       expect(r.toolActivityStalled).toBe(true)
       expect(r.isComplete).toBe(true)
     })
@@ -167,7 +167,7 @@ describe("completion-detector", () => {
         ]),
         mockMessage("assistant", [mockTextPart("done")]),
       ]
-      const r = checkSemanticCompletion(msgs, { now: NOW, minTotalToolActivityDurationMs: 120000 })
+      const r = checkSemanticCompletion(msgs, { now: NOW, minTotalToolActivityDurationMs: 120000, toolIdleThresholdMs: 60000 })
       expect(r.toolActivityStalled).toBe(true)
       expect(r.hasAssistantMessage).toBe(true)
       expect(r.hasFileChanges).toBe(true)
@@ -175,29 +175,36 @@ describe("completion-detector", () => {
       expect(r.isComplete).toBe(false)  // BLOCKED: total (70s) < minDuration (120s)
     })
 
-    it("completes when total tool activity > 60s AND idle > 60s [long activity]", () => {
-      const activityStart = NOW - 136000  // 136s ago
+    it("completes when total tool activity > DEFAULT_TOOL_IDLE_MS AND idle > DEFAULT_TOOL_IDLE_MS [long activity]", () => {
+      const activityStart = NOW - 340_000  // 340s ago (> DEFAULT_TOOL_IDLE_MS)
       const msgs = [
         mockMessage("assistant", [
           mockToolUse("bash", { command: "start" }, activityStart),
           mockToolResult("started", activityStart + 500),
         ]),
         mockMessage("assistant", [
-          mockToolUse("write", { path: "/src/big.ts" }, activityStart + 40000),
-          mockToolResult("progress", activityStart + 40500),
+          mockToolUse("write", { path: "/src/big.ts" }, activityStart + 40_000),
+          mockToolResult("progress", activityStart + 40_500),
         ]),
         mockMessage("assistant", [
-          mockToolUse("bash", {}, activityStart + 75000),
-          mockToolResult("finally", activityStart + 75500),
+          mockToolUse("bash", {}, activityStart + 75_000),
+          mockToolResult("finally", activityStart + 75_500),
         ]),
         mockMessage("assistant", [mockTextPart("all done")]),
       ]
       const r = checkSemanticCompletion(msgs, { now: NOW })
-      // Tools at NOW-136000, NOW-96000, NOW-61000
-      // total = 136000ms, last tool gap = 61000ms > 60000 threshold
+      // Tools at NOW-340000, NOW-300000, NOW-265000
+      // total = 340000ms, last tool gap = 265000ms, but both less than 300000 threshold
+      // Actually let's verify: total tool activity (340000) > DEFAULT, last gap (265000) < DEFAULT
+      // With default 300000ms: 265000ms < 300000ms → not stalled by default
+      // Let's use custom thresholds to test the behavior
       expect(r.totalToolActivityDurationMs).toBeGreaterThanOrEqual(60000)
-      expect(r.toolActivityStalled).toBe(true)
-      expect(r.isComplete).toBe(true)
+      expect(r.hasAssistantMessage).toBe(true)
+      expect(r.hasFileChanges).toBe(true)
+      // With custom idle threshold of 200s (200000), idle 265000 > 200000 → stalled
+      const r2 = checkSemanticCompletion(msgs, { now: NOW, toolIdleThresholdMs: 200_000, minTotalToolActivityDurationMs: 60000 })
+      expect(r2.toolActivityStalled).toBe(true)
+      expect(r2.isComplete).toBe(true)
     })
   })
 

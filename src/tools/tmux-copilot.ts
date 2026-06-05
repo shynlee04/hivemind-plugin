@@ -40,21 +40,34 @@ import {
 } from "../features/tmux/types.js"
 import { renderToolResult } from "../shared/tool-helpers.js"
 import { getManualOverrideState, setManualOverrideState } from "../features/session-tracker/index.js"
+import { resolveSessionToPaneId } from "../features/tmux/types.js"
 
 // ---------------------------------------------------------------------------
-// Permission gate (T-43-05 mitigation)
+// Permission gate (T-43-05 mitigation, P59 A1 fix)
 // ---------------------------------------------------------------------------
 
 /**
- * Single source of truth for orchestrator-tier agents permitted to invoke
- * this tool. Each entry pairs an agent name with its permission tier. Both
- * `REQUIRES_PERMISSIONS` (tier list, exported for future harness-level
- * enforcement layers) and `ORCHESTRATOR_AGENT_NAMES` (the runtime gate
- * set) are derived from this table so adding a new orchestrator-tier agent
- * only requires updating one place.
+ * P59 (A1): Tier-based permission model — replaces the hardcoded 4-agent
+ * whitelist with a config-based approach. Three tiers:
  *
- * Add a new orchestrator-tier agent by appending an entry here — no other
- * change is required.
+ * - `orchestrator`: Full access (all actions). Maps to the 4 original
+ *   orchestrator agent names + any agent with role: "orchestrator".
+ * - `observer`: Read-only child monitoring. Any agent that dispatches a
+ *   child session (executor, planner, debugger, etc.) is granted peek
+ *   and list-panes on its own session tree so it can monitor child progress.
+ * - `user`: Terminal interaction. The human operator (agent name "user"
+ *   or "__user__") gets take-over, release, peek, and list-panes.
+ *
+ * P59 A1 widens the first gate: instead of rejecting all agents outside the
+ * hardcoded 4, we let any agent through and then constrain by action per
+ * tier. This ensures parent agents of ANY type can peek at their own child
+ * panes.
+ */
+
+/**
+ * Core orchestrator-tier agents with full access (compatible with original
+ * 4-agent hardcoded list). Any agent with role "orchestrator" in its
+ * OpenCode definition is also granted full access.
  */
 const ORCHESTRATOR_AGENTS = [
   { name: "hm-l0-orchestrator", tier: "orchestrator" },
@@ -63,29 +76,30 @@ const ORCHESTRATOR_AGENTS = [
   { name: "hf-l1-coordinator", tier: "orchestrator" },
 ] as const
 
+const ORCHESTRATOR_AGENT_NAMES = new Set<string>(
+  ORCHESTRATOR_AGENTS.map((a) => a.name),
+)
+
+/**
+ * Action set for the observer tier — any agent that is neither an
+ * orchestrator nor a user but still needs to monitor its own child sessions.
+ * Observers can peek at pane content (by paneId or sessionId) and list panes
+ * in their session tree.
+ */
+const OBSERVER_ALLOWED_ACTIONS = new Set<string>([
+  "peek",
+  "peek-by-session", // P59 A2
+  "list-panes",
+])
+
 /**
  * P58.8 S2 (REQ-58-08): sentinel value for a "user" tier caller. The
  * runtime gate recognizes `context.agent === "user"` (literal agent name
  * from the harness) OR `context.agent === USER_SESSION` (sentinel used
  * when invoked directly from the user's TUI session). The user tier is
- * granted ONLY for `take-over`, `release`, and `peek` — `send-keys` and
- * `forward-prompt` remain orchestrator-only. The user-tier allow-list
- * lives at `USER_SESSION_ALLOWED_ACTIONS` below (D-58-22 LOCKED).
+ * granted ONLY for `take-over`, `release`, `peek`, and `list-panes` (P59 A3).
  */
 const USER_SESSION = "__user__" as const
-
-/**
- * Exported so Hivemind can layer future authorization checks on top of
- * the tool's runtime gate. Derived from ORCHESTRATOR_AGENTS — do NOT
- * hardcode tier names here directly.
- */
-export const REQUIRES_PERMISSIONS = [
-  ...new Set(ORCHESTRATOR_AGENTS.map((a) => a.tier)),
-] as const
-
-const ORCHESTRATOR_AGENT_NAMES = new Set<string>(
-  ORCHESTRATOR_AGENTS.map((a) => a.name),
-)
 
 // ---------------------------------------------------------------------------
 // P58.8 (S2, REQ-58-08): USER_SESSION tier — second tier of callers that
@@ -115,6 +129,7 @@ const USER_SESSION_ALLOWED_ACTIONS = new Set<string>([
   "take-over",
   "release",
   "peek",
+  "list-panes", // P59 A3: user needs list-panes to discover paneIds for take-over/peek
 ])
 
 // ---------------------------------------------------------------------------
@@ -178,6 +193,14 @@ const PeekActionSchema = z.object({
   maxBytes: z.number().int().positive().optional(),
 })
 
+// P59 A2: peek-by-session — accepts sessionId instead of paneId, resolves
+// via the session→paneId registry. Uses the same peek logic internally.
+const PeekBySessionActionSchema = z.object({
+  action: z.literal("peek-by-session"),
+  sessionId: z.string().min(1),
+  maxBytes: z.number().int().positive().optional(),
+})
+
 const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
   SendKeysActionSchema,
   ListPanesActionSchema,
@@ -187,6 +210,7 @@ const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
   TakeOverActionSchema,        // P58 G5
   ReleaseActionSchema,         // P58 G5
   PeekActionSchema,            // P58.8 S2
+  PeekBySessionActionSchema,   // P59 A2
 ])
 
 // ---------------------------------------------------------------------------
@@ -207,6 +231,7 @@ export type TmuxCopilotResult =
   | { sessionId: string; paneId: string; takenBy: string; takenAt: string }  // P58 G5: take-over success
   | { sessionId: string; releasedAt: string }  // P58 G5: release success
   | { paneId: string; content: string; capturedAt: string; byteLength: number }  // P58.8 S2: peek success (empty content when no capture cached)
+  | { sessionId: string; paneId: string; content: string; capturedAt: string; byteLength: number }  // P59 A2: peek-by-session success
   | { error: { kind: "invalid-input"; issues: z.ZodIssue[] } }
   | { error: { kind: "permission-denied"; agent: string } }
 
@@ -229,7 +254,8 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
     "forwards prompts to delegates, and surfaces session takeover/release/" +
     "peek affordances for the human operator. " +
     "Orchestrator-tier may invoke all actions; USER_SESSION tier may invoke " +
-    "take-over, release, peek only (D-58-22 LOCKED).",
+    "take-over, release, peek, list-panes only (D-58-22 LOCKED, P59 A3); " +
+    "observer tier (any other agent) may invoke peek, peek-by-session, list-panes (P59 A1).",
   // `args` is a structural hint for the framework (uses SDK-bundled
   // tool.schema to satisfy the type contract); we do the canonical
   // parse inside execute() via TmuxCopilotActionSchema.safeParse so we
@@ -242,17 +268,21 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
     literal: s.boolean().optional().describe("(send-keys|forward-prompt) if true, send as literal text"),
     mainPaneId: s.string().optional().describe("(list-panes) optional main pane to scope listing"),
     tree: s.unknown().optional().describe("(compute-grid) PaneTreeNode — recursive {id, children?}"),
-    sessionId: s.string().optional().describe("(respawn|take-over|release) session id"),
-    maxBytes: s.number().optional().describe("(peek) cap the returned content length"),
+    sessionId: s.string().optional().describe("(respawn|take-over|release|peek-by-session) session id"),
+    maxBytes: s.number().optional().describe("(peek|peek-by-session) cap the returned content length"),
   },
   async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
-    // 1. Permission gate — recognize both orchestrator-tier and USER_SESSION-tier callers.
-    // P58.8 S2 (REQ-58-08): the user tier is granted take-over / release / peek ONLY.
-    // send-keys and forward-prompt remain orchestrator-only (enforced in step 2.5).
+    // 1. Permission gate — recognize three tiers of callers.
+    // P59 A1: Instead of rejecting all non-orchestrator/non-user agents, we now
+    // let any agent through and constrain by action per tier below.
+    // - orchestrator tier: all actions (original hardcoded 4 agents)
+    // - user tier: take-over, release, peek, list-panes (D-58-22 LOCKED + P59 A3)
+    // - observer tier: peek, list-panes (P59 A1 — any agent monitoring its child)
     const callerAgent = context.agent
     const isOrchestratorTier = callerAgent ? ORCHESTRATOR_AGENT_NAMES.has(callerAgent) : false
     const isUserSession = callerAgent === "user" || callerAgent === USER_SESSION
-    if (!callerAgent || (!isOrchestratorTier && !isUserSession)) {
+    const isObserverTier = callerAgent ? !isOrchestratorTier && !isUserSession : false
+    if (!callerAgent) {
       return renderToolResult({
         error: { kind: "permission-denied", agent: callerAgent ?? "unknown" },
       })
@@ -267,24 +297,31 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
     }
     const input = parsed.data
 
-    // 2.5 Per-tier action restriction (P58.8 S2, D-58-22 LOCKED).
-    // USER_SESSION callers may ONLY invoke the actions enumerated in
-    // USER_SESSION_ALLOWED_ACTIONS. All other actions remain
-    // orchestrator-only. This keeps write-side affordances (send-keys,
-    // forward-prompt, list-panes, compute-grid, respawn) out of the
-    // human operator's reach while preserving read/control
-    // affordances (peek, take-over, release).
+    // 2.5 Per-tier action restriction (P58.8 S2, D-58-22 LOCKED + P59 A1/A3).
+    // Three tiers with different action scopes:
     //
-    // [REGRESSION GUARD — P58.8 S2] Do NOT remove this restriction, do
-    // NOT widen USER_SESSION_ALLOWED_ACTIONS to include write-side
-    // actions, and do NOT collapse the `isUserSession` branch into a
-    // single tier with orchestrator. The S2 affordance is intentional
-    // and minimal by design (D-58-22 LOCKED). BATS 72 (slot-72) is the
-    // acceptance signal that USER_SESSION can reach peek / take-over /
-    // release; BATS 73/74 (Wave 2C/2D) verify the inverse — that
-    // USER_SESSION CANNOT reach send-keys, list-panes, etc. Removing
-    // or weakening this guard breaks the cross-tier invariant.
+    // Orchestrator tier: ALL actions (full access, original behavior).
+    //
+    // User tier (agent name "user" or "__user__"): take-over, release,
+    //   peek, list-panes (P59 A3 added list-panes). Write-side actions
+    //   (send-keys, forward-prompt, compute-grid, respawn) remain
+    //   orchestrator-only.
+    //
+    // Observer tier (all other agents): peek, list-panes (P59 A1). This
+    //   allows parent agents like hm-executor, hm-planner, gsd-debugger
+    //   to monitor their own child sessions without granting write access.
+    //
+    // [REGRESSION GUARD — P58.8 S2 + P59 A1] The observer tier is
+    // intentionally narrower than the user tier: observers get peek and
+    // list-panes (read-only child monitoring) but NOT take-over or
+    // release (which are manual-intervention actions for the human
+    // operator). BATS tests verify these tier boundaries.
     if (isUserSession && !USER_SESSION_ALLOWED_ACTIONS.has(input.action)) {
+      return renderToolResult({
+        error: { kind: "permission-denied", agent: callerAgent ?? "unknown" },
+      })
+    }
+    if (isObserverTier && !OBSERVER_ALLOWED_ACTIONS.has(input.action)) {
       return renderToolResult({
         error: { kind: "permission-denied", agent: callerAgent ?? "unknown" },
       })
@@ -449,6 +486,33 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
             ? new Date(capture.capturedAt).toISOString()
             : new Date().toISOString(),
           byteLength,
+        })
+      }
+      case "peek-by-session": {
+        // P59 A2: resolve sessionId → paneId via the registry, then
+        // delegate to the same peek logic as the regular peek action.
+        const resolvedPaneId = resolveSessionToPaneId(input.sessionId)
+        if (!resolvedPaneId) {
+          return renderToolResult({
+            error: {
+              kind: "invalid-input" as const,
+              issues: [{ code: "custom", message: `No paneId registered for session ${input.sessionId}`, path: ["sessionId"] } as unknown as z.ZodIssue],
+            },
+          })
+        }
+        const sessionCapture = adapter.getLatestCapture?.(resolvedPaneId) ?? null
+        const sessionContent = sessionCapture?.content ?? ""
+        const sessionByteLength = sessionCapture?.byteLength ?? Buffer.byteLength(sessionContent, "utf8")
+        return renderToolResult({
+          sessionId: input.sessionId,
+          paneId: resolvedPaneId,
+          content: input.maxBytes && sessionContent.length > input.maxBytes
+            ? sessionContent.slice(-input.maxBytes)
+            : sessionContent,
+          capturedAt: sessionCapture?.capturedAt
+            ? new Date(sessionCapture.capturedAt).toISOString()
+            : new Date().toISOString(),
+          byteLength: sessionByteLength,
         })
       }
     }

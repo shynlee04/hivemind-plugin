@@ -316,7 +316,39 @@ export async function replayPendingNotifications(
 }
 
 /**
+ * P59 C1/C2: In-memory deduplication guard for completion notifications.
+ * Tracks the hash of the last delivered notification per delegation to
+ * prevent the same completion notification from being re-injected on
+ * consecutive turns, which triggers the agent-looping behavior.
+ *
+ * Keyed by `delegationId`, stores the hash of the message and timestamp.
+ * The map is bounded at 100 entries to prevent unbounded memory growth.
+ */
+const deliveredNotificationHashes = new Map<string, { hash: string; deliveredAt: number }>()
+const MAX_DEDUP_ENTRIES = 100
+
+/**
+ * Compute a simple hash of the notification message string. Not
+ * cryptographically secure — sufficient for deduplication purposes.
+ */
+function computeNotificationHash(message: string): string {
+  let hash = 0
+  for (let i = 0; i < message.length; i++) {
+    const char = message.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash |= 0 // Convert to 32-bit integer
+  }
+  return hash.toString(16)
+}
+
+/**
  * Fire-and-forget notification of a delegation's terminal state to its parent session.
+ *
+ * P59 C1/C2: Deduplicates completion notifications — if the same notification
+ * message was already delivered for this delegation, skip re-injection. This
+ * prevents the <system_reminder> tag from being re-inserted into the parent's
+ * context on consecutive turns, which was the root cause of the agent-looping
+ * behavior (observed: 7 consecutive identical messages within 2 minutes).
  *
  * Step 1 implementation:
  * - Uses `showTuiToast()` for user visibility
@@ -331,6 +363,27 @@ export async function notifyDelegationTerminal(
 ): Promise<void> {
   const task = buildDelegationTaskNotification(delegation)
   const message = buildNotificationMessage(task)
+
+  // P59 C1/C2: Dedup check — if we already delivered this exact notification
+  // for this delegation, skip re-injection to prevent agent looping.
+  const msgHash = computeNotificationHash(message)
+  const alreadyDelivered = deliveredNotificationHashes.get(delegation.id)
+  if (alreadyDelivered && alreadyDelivered.hash === msgHash) {
+    void client.app?.log?.({
+      body: {
+        service: "delegation",
+        level: "info",
+        message: `[Harness] Skipping duplicate notification for delegation ${delegation.id}: already delivered at ${new Date(alreadyDelivered.deliveredAt).toISOString()}`,
+      },
+    })
+    // Still show the toast (user-visible transient notifications are fine)
+    try {
+      await showTuiToast(client, formatToastMessage(task), toastVariant(task.status))
+    } catch {
+      // Best-effort
+    }
+    return
+  }
 
   // 1. User toast (transient, agent-invisible)
   try {
@@ -361,6 +414,13 @@ export async function notifyDelegationTerminal(
       },
     })
   }
+
+  // Record delivery for dedup (bound map size)
+  if (deliveredNotificationHashes.size >= MAX_DEDUP_ENTRIES) {
+    const oldest = deliveredNotificationHashes.entries().next()
+    if (oldest.value) deliveredNotificationHashes.delete(oldest.value[0])
+  }
+  deliveredNotificationHashes.set(delegation.id, { hash: msgHash, deliveredAt: Date.now() })
 }
 
 export type { TaskNotification }
