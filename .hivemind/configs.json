@@ -92,7 +92,7 @@
         "enabled": true
       },
       {
-        "id": "gov-unsafe-tools-escalate",
+        "id": "gov-bash-in-child-warn",
         "condition": {
           "toolNames": [
             "bash"
@@ -102,10 +102,96 @@
           }
         },
         "action": {
-          "type": "escalate",
-          "escalation": {
-            "reason": "bash in child session"
-          }
+          "type": "warn"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-tmux-copilot-warn",
+        "condition": {
+          "toolNames": [
+            "tmux-copilot"
+          ]
+        },
+        "action": {
+          "type": "warn"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-tmux-state-query-warn",
+        "condition": {
+          "toolNames": [
+            "tmux-state-query"
+          ]
+        },
+        "action": {
+          "type": "warn"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-session-tools-warn",
+        "condition": {
+          "toolNames": [
+            "session-tracker",
+            "session-hierarchy",
+            "session-context",
+            "session-delegation-query",
+            "session-journal-export",
+            "session-patch"
+          ]
+        },
+        "action": {
+          "type": "warn"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-hivemind-tools-warn",
+        "condition": {
+          "toolNames": [
+            "hivemind-doc",
+            "hivemind-trajectory",
+            "hivemind-pressure",
+            "hivemind-session-view",
+            "hivemind-command-engine",
+            "hivemind-sdk-supervisor",
+            "hivemind-agent-work-create",
+            "hivemind-agent-work-export"
+          ]
+        },
+        "action": {
+          "type": "warn"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-config-tools-warn",
+        "condition": {
+          "toolNames": [
+            "configure-primitive",
+            "validate-restart",
+            "bootstrap-init",
+            "bootstrap-recover",
+            "prompt-skim",
+            "prompt-analyze"
+          ]
+        },
+        "action": {
+          "type": "warn"
+        },
+        "enabled": true
+      },
+      {
+        "id": "gov-run-background-command-warn",
+        "condition": {
+          "toolNames": [
+            "run-background-command"
+          ]
+        },
+        "action": {
+          "type": "warn"
         },
         "enabled": true
       }

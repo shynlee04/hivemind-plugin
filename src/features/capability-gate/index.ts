@@ -42,6 +42,8 @@ export const TOOL_CAPABILITY_MAP: ReadonlyMap<string, ToolCapabilityRecord> = ne
   ["hivemind-doc", { category: ToolCategory.Read, description: "Read project markdown docs", source: "harness" }],
   ["prompt-analyze", { category: ToolCategory.Read, description: "Analyze prompt structure", source: "harness" }],
   ["prompt-skim", { category: ToolCategory.Read, description: "Skim prompt content", source: "harness" }],
+  ["tmux-copilot", { category: ToolCategory.Delegate, description: "Tmux visual orchestration co-pilot", source: "harness" }],
+  ["tmux-state-query", { category: ToolCategory.Read, description: "Read-only tmux session metadata", source: "harness" }],
 ]);
 
 export class CapabilityGate {
