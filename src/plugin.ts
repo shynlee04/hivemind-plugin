@@ -502,32 +502,44 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     log: buildTuiTmuxLogger(client),
   })
 
-  // P59 R2: wire the module-level sendPrompt function so the tmux-copilot
+  // P59 R2+R5: wire the module-level sendPrompt function so the tmux-copilot
   // take-over action can inject structured prompts into running child sessions.
-  // Two modes: steer (noReply:true, inject context without AI response) and
-  // respond (noReply:false, child processes as new user message — for completed
-  // sessions this first reactivates the stream, then sends the prompt).
+  // Two modes:
+  //   - steer (noReply:true, immediate context injection, NO queue): uses
+  //     sync client.session.prompt so the context enters the child's
+  //     message stream RIGHT NOW — critical for emergency redirects
+  //     (e.g. agent about to call wrong tool, dispatch wrong sub-agent).
+  //     Does NOT wait for response.
+  //   - respond (noReply:false, fire-and-forget): uses promptAsync so the
+  //     child can process the new instruction as a user message. First
+  //     reactivates a stopped stream, then sends the prompt.
   if (client?.session) {
     setSendPrompt(async (sessionId, text, mode) => {
       if (mode?.noReply === false) {
-        // Respond mode: first reactivate if stopped, then send prompt
+        // Respond mode: first reactivate if stopped, then send prompt async
         try {
           await sdkSendPromptAsync(client, sessionId, {
             parts: [{ type: "text", text: "" }],
             noReply: true,
           })
         } catch {
-          // Reactivation may fail for already-running sessions — that's fine
+          // Reactivation may fail for already-running sessions
         }
         await sdkSendPromptAsync(client, sessionId, {
           parts: [{ type: "text", text }],
           noReply: false,
         })
       } else {
-        // Steer mode: inject context without triggering AI response
-        await sdkSendPromptAsync(client, sessionId, {
-          parts: [{ type: "text", text }],
-          noReply: true,
+        // Steer mode: immediate context injection. Use SYNC prompt so the
+        // context reaches the child's message stream NOW (not queued). This
+        // is an emergency mechanism to redirect an agent that's mid-work
+        // before it makes a wrong routing decision.
+        await (client as any).session.prompt({
+          path: { id: sessionId },
+          body: {
+            parts: [{ type: "text", text }],
+            noReply: true,
+          },
         })
       }
     })
