@@ -218,9 +218,11 @@ export class SessionManager implements ForkSessionManager {
     const directory = event.properties.info.directory || this.directory;
     const title = event.properties.info.title;
 
+    console.log("[S5C-SMOKE-DEBUG] session-manager.onSessionCreated:ENTRY", { sessionId, agent, title, directory, hasMeta: !!meta });
     this.log?.debug("onSessionCreated: ENTRY", { sessionId, agent });
 
     if (this.sessions.has(sessionId)) {
+      console.log("[S5C-SMOKE-DEBUG] session-manager.onSessionCreated:DEDUP already tracked", { sessionId });
       this.log?.debug("onSessionCreated: already tracked, ignoring", { sessionId });
       return;
     }
@@ -360,6 +362,7 @@ export class SessionManager implements ForkSessionManager {
    * backoff is honored on every iteration.
    */
   startPolling(intervalMs: number = 5000): void {
+    console.log("[S5C-SMOKE-DEBUG] session-manager.startPolling:ENTRY", { intervalMs, trackedSessions: this.sessions.size, currentPollIntervalMs: this.currentPollIntervalMs, alreadyRunning: this.pollingTimer !== null });
     if (this.pollingTimer !== null) return
     this.currentPollIntervalMs = Math.max(SessionManager.MIN_POLL_MS, Math.min(intervalMs, SessionManager.MAX_POLL_MS))
     const tick = async (): Promise<void> => {
