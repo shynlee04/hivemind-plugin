@@ -2069,6 +2069,43 @@ Plans:
 
 ---
 
+### Phase 59: Session Backchannel & tmux-copilot Permission Rework (2026-06-05)
+
+**Goal:** Fix 4 flaw domains identified during Phase 58.9 UAT (source: `.hivemind/planning/tools-audit-58-9-2026-06-05/03-flaw-elaboration.md`).
+
+**Depends on:** Phase 58.9 (sticky bug busting)
+
+**Scope — 4 Domains (14 sub-flaws):**
+
+**Domain A — tmux-copilot Permission Gate (A1-A3):**
+- A1: ORCHESTRATOR_AGENTS hardcoded to 4 specific agent names — all non-orchestrator agents (hm-executor, hm-planner, gsd-debugger, etc.) denied `peek`/`take-over`/`forward-prompt` access
+- A2: `peek` and `forward-prompt` require `paneId` (tmux pane ref `%12`) but parent knows only `sessionId` — no sessionId→paneId resolution
+- A3: `list-panes` NOT in `USER_SESSION_ALLOWED_ACTIONS` — human user cannot discover paneIds needed for `take-over`
+
+**Domain B — Child Session Backchannel (B1-B4):**
+- B1: `delegation-status` returns counts only (`actionCount`, `toolCallCount`, `messageCount`), NOT interim content — parent cannot assess child progress
+- B2: `forward-prompt` sends keystrokes to tmux pane (terminal text), NOT structured prompt to child session
+- B3: No `session.prompt` call from parent to a running child — cannot inject new instructions mid-execution
+- B4: Default delegation timeout 60s too short for research tasks — child times out with 0 tool calls
+
+**Domain C — Agent Looping from Child Emissions (C1-C5):**
+- C1: `notifyDelegationTerminal` → `sendPromptAsync` → `<system_reminder>` injected into parent context
+- C2: `<system_reminder>` notification visible on parent's next response turn — parent acknowledges completed delegation, creating a new turn
+- C3: `PeriodicNotifier.deregister()` called AFTER `routeTerminal` — window exists where stream is reawakened before deregistration
+- C4: No stream termination after N identical responses — observed 7 consecutive identical closing messages in 2 minutes
+- C5: Tool outputs (`delegation-status list`, `session-hierarchy get-manifest`) identical turn-to-turn — no new information to break the loop
+
+**Domain D — universal-rules.md TDD Governance Truncation (D1):**
+- D1: `assets/rules/universal-rules.md` is 102 lines versus HEAD committed version at 190 lines — Sections 7-10 (TDD discipline, anti-patterns, governance relationships, contributor entry) overwritten during `npm run build` sync
+
+**UAT source:** `.hivemind/planning/tools-audit-58-9-2026-06-05/03-flaw-elaboration.md`
+
+**Symptom Coverage Matrix cross-ref:** SB-4 (USER_SESSION widening trust boundary), SB-8 (AC#10/AC#11 comment drift) — both defers-to-P59 in P58.9 analysis.
+
+**Plans:** 4 domain plans (see `.hivemind/planning/59-session-backchannel-tmux-permission-rework/PLAN.md`)
+
+---
+
 ### Phase 48: CI/CD Release Pipeline (2026-06-01)
 
 **Goal:** Stand up a GitHub Actions workflow that builds the vendored fork, runs the test suite, and publishes `@hivemind/opencode-tmux` to npm with version synchronization against the main `hivemind` package (no drift allowed between the two package versions on a release). Include a pre-release channel (`canary` dist-tag) for trunk-based publishing. Tests: a CI dry-run job that exercises the workflow against a fixture package and verifies the produced tarball contains the expected entry points and excludes source-only files; the publish job is gated on this verification.

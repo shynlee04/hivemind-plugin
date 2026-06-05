@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-06-03T20:38:08.626Z"
+last_updated: "2026-06-05T10:00:00.000Z"
 progress:
-  total_phases: 63
+   total_phases: 64
   completed_phases: 17
   total_plans: 147
   completed_plans: 104
@@ -16,7 +16,7 @@ progress:
 
 # Hivemind — State
 
-**Last updated:** 2026-06-02
+**Last updated:** 2026-06-05
 **Last advance:** P55 closure — e2e-uat closed via `.planning/phases/55-e2e-uat-against-seed-success-criteria/55-CLOSE.md` (commit `d23658b5`, 2026-06-03). **P50-P55 IN-TREE SYNTHESIS SEQUENCE COMPLETE.** 4/4 EARS PASS, GATE 4/4 PASS, 5/5 P55 BATS scenarios pass, 46/46 BATS regression, 3203/3203 vitest regression, 0 .hivemind/ in P55 commits, 27 tool keys unchanged. **Seed status**: germinated. **Prior advances:** P50 + P51 + P52 + P53 + P54.
 **Completed:**
 
@@ -29,7 +29,7 @@ progress:
 - **P42-03** — Plugin wiring: bootstrap integration + event observer registration
 - **P54-01** — Session persistence + restart-recovery: 9-field JSON persistence on every state transition, restoreAll filter to paused+detached, UUIDv7 inline generator, atomic wx-flag write, SessionManager 7th optional ctor param + 2 persist call sites, kill-parent-restart-recovery BATS L1 evidence (commit `a5c67c19`)
 
-**Current focus:** **P50-P55 SEQUENCE COMPLETE. Seed germinated.** P56 stress test pending — real-life use of tmux visual orchestration in conjunction with other ecosystem features.
+**Current focus:** **Phase 59 — Session Backchannel & tmux-copilot Permission Rework.** Phase 58 shipped, Phase 58.9 in progress. Phase 59 fixes 4 flaw domains from Phase 58.9 UAT: tmux-copilot permission gate (Domain A), child session backchannel (Domain B), agent looping from child emissions (Domain C), universal-rules.md truncation (Domain D). **See ROADMAP.md entry and `.hivemind/planning/59-session-backchannel-tmux-permission-rework/PLAN.md`.**
 
 ---
 
@@ -413,6 +413,7 @@ BOOT-02 phase-local summaries report implementation and verification evidence in
 - **2026-06-03** — Phase 59 misroute cleaned up: previously added by gsd-phase as accidental add-phase result, removed
 - **2026-06-04** — **Phase 58 PLAN-07 COMPLETE** — 5 execution gaps closed. Gap 1: BATS slot 67 (G1 grep-guard) created with comment-line filter to prevent policy-comment self-match. Gap 2: `DelegationManager.createForTest()` static factory injects noop coordinator + lifecycle with shared `__testPoolMap` (bypasses constructor guard, BATS 62 GREEN). Gap 3: `__setTmuxMultiplexerForTesting(mux)` test seam delegates to `setSessionManagerAdapter`; BATS 64/65 use hybrid mock (capture + forward to real tmux) for capture-pane verification. Gap 4: Module-level `recordDelegationTerminal()` wrapper appends to same `delegationEventLog` as class method. Gap 5: BATS slot 66 was already committed in `a152fd7a` (skipped). **4 atomic commits** (e58faf29, d77a4154, 872ccc51, 904153ec). **3 source files modified** (manager.ts, tmux-copilot.ts, tool-delegation.ts) + 3 BATS files modified (62, 64, 65) + 1 BATS file created (67). **6/6 P58 BATS scenarios GREEN** (slots 62-67), 4/4 P55 BATS regression GREEN (slots 57-60), 3,310/3,310 vitest tests GREEN, `npx tsc` exit 0. **13/13 AC verified**. Gate triad PASS (lifecycle integration + spec compliance + evidence truth). 27-tool-key + P20 invariants preserved. Wave 5 → Wave 6 acceptance handoff unblocked.
 - **2026-06-04** — **Phase 58 SHIPPED** — 6 gaps closed (G1–G6), 6 BATS scenarios at slots 62–67 GREEN, 13/13 ACs verified by independent re-run, 3,310 vitest + 11 BATS green, gate triad PASS at L1 evidence. All 27 atomic commits preserved (16 execution + 4 PLAN-07 fixes + 1 verify-final + 1 plan-07 + others). Verifier verdict: VERIFIED — ready to ship. **1 pre-existing finding (NOT a P58 regression)**: BATS slot 61 stress test broken in P56 commit `bf77d7a5` — `tmux_bats_require_stress_facilities` helper undefined in `tests/scripts/tmux/helpers.bash`. The 27-tool-key vitest invariant passes independently (`tests/integration/hook-registration.test.ts:86-103`, 6/6 PASS). File separate ticket for P56 stress-test helper gap. **CLOSE**: `.planning/phases/58-tmux-orchestration-programmatic-pool-interactive-delegate-cl/58-CLOSE.md`. ROADMAP line 2042 marked `Plans: 7 plans`, status `✓ Complete (2026-06-04) — VERIFIED, ready to ship`.
+- **2026-06-05** — **Phase 59 CREATED**: Session Backchannel & tmux-copilot Permission Rework. Fixes 4 flaw domains from Phase 58.9 UAT (source: `.hivemind/planning/tools-audit-58-9-2026-06-05/03-flaw-elaboration.md`). Domains: A (tmux-copilot permission gate — 3 sub-flaws), B (child session backchannel — 4 sub-flaws), C (agent looping from child emissions — 5 sub-flaws), D (universal-rules.md truncation — 1 sub-flaw). Depends on: Phase 58.9.
 
 ### Key Restructuring Decisions
 
