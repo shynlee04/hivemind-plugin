@@ -467,3 +467,185 @@ A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpe
 - `.planning/research/phase-reordering-final-recommendation-2026-05-21.md` (543 LOC)
 - `.planning/research/hard-restructuring-synthesis-2026-05-21.md` (454 LOC)
 - `.planning/research/session-tracker-flaws-analysis-2026-05-21.md` (136 LOC)
+
+## Test-Driven Development
+
+**Status:** Active governance section. Authored 2026-06-05 from the distillation in
+`.hivemind/planning/test-driven-governance-2026-06-05/01-research-findings.md` and the
+generic guide at `.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md`.
+The source skill lives at `.opencode/skills/hm-l2-test-driven-execution/`.
+
+This section binds this project to a non-negotiable test-first discipline. It is the
+project-voice complement to the project-agnostic generic guide. When the two diverge,
+this section is authoritative for the Hivemind codebase; the generic guide is the
+authoritative reference for reusable methodology.
+
+### Why this section exists
+
+Hivemind is a runtime composition engine where the cost of a regression is
+disproportionately high: a broken tool or hook propagates to every session, every
+delegation, and every gate. Test-first execution is the only discipline that
+produces evidence with the freshness and granularity required to catch a regression
+before it ships. Coverage as a percentage is not enough; what matters is that the
+test existed before the code, and that the test was driven to green one cycle at a
+time.
+
+### The Test-First Cycle (binding)
+
+Every change to executable behavior in this repository follows this sequence:
+
+1. **RED.** Write a failing test that asserts on a public seam of the change. Run
+   the focused test command and capture the output. If the test does not fail for
+   the right reason, stop — the slice is either already implemented or the test
+   is wrong.
+2. **GREEN.** Write the minimal implementation that turns the test green. Run the
+   focused test command. If green, proceed. If not, attempt a minimal fix.
+3. **Coverage.** Run the project's coverage command and capture the percentage and
+   the four-state status (`PASS` / `PARTIAL` / `MISSING` / `BLOCKED`). Never
+   estimate.
+4. **REFACTOR (only if needed).** Clean only after green. Behavior-preserving
+   cleanup is allowed here, not before. If a refactor regresses a green test,
+   revert the refactor or split it into its own cycle.
+
+A focused test command filters to the test file or test name. For this
+repository, the canonical commands are:
+
+| Surface | Focused command |
+|---|---|
+| Source unit/integration | `npx vitest run tests/path/to/file.spec.ts -t "behavior name"` |
+| Full project suite | `npm test` |
+| Coverage on a single surface | `npx vitest run --coverage tests/path/to/file.spec.ts` |
+| Project-wide coverage | `npm run test:coverage` |
+
+Always run `npm run typecheck` after green to confirm types align with the
+implementation.
+
+### One Test at a Time (binding)
+
+Each behavior is exercised by exactly one new failing test before the next is
+written. A pile of failing tests written before any implementation hides which
+behavior independently drove which design, and produces test-after evidence by
+default. The only exception is the rare case where a requirement is genuinely
+inseparable. In that case, the bundle must be documented in the cycle notes.
+
+### Public-Interface Discipline (binding)
+
+Tests assert against externally observable surfaces of this project:
+
+- Tool entry points: the `tool()` factory's execute function, the JSON envelope
+  the tool returns to the agent, and the error envelope (`code`, `message`,
+  optional `data`).
+- Hooks: the mutation passed to the next middleware in the chain, the early
+  return value, and the side effect on shared state.
+- Plugins: the public `Plugin` interface assembled by `src/plugin.ts`, including
+  the registration of tools, hooks, and config.
+- State stores: the value read via the public `get`/`read` method, not the
+  internal `Map` or file path.
+- The session lifecycle: the phase transitions observed via the public
+  lifecycle manager API, not the internal `state.ts` module.
+
+Mocking internals is acceptable only when the helper is itself the slice's
+public contract (for example, mocking the clock for time-sensitive tests of the
+continuity store). When a test needs to mock several internals to pass, the
+public seam is in the wrong place. Pause and re-design the seam.
+
+### Evidence Labels (binding)
+
+Every test result carries an evidence label. The labels, highest to lowest:
+
+- **`runtime-truthful`** — the test exercises real behavior through a public
+  seam. Required for any acceptance claim on tool, hook, or plugin changes.
+- **`transport-mocked`** — the test exercises real behavior through a public
+  seam but replaces a transport (the SDK call layer, the file system boundary)
+  with an in-process adapter. Acceptable for SDK wrapper changes when the SDK
+  itself is not in scope.
+- **`mock-heavy`** — the test substitutes enough internals that any
+  implementation would pass. Insufficient on its own for acceptance. Must be
+  paired with `runtime-truthful` or `transport-mocked` evidence.
+- **`manual-only`** — verified by a human, not by an executable test.
+  Insufficient for automated gates.
+
+`mock-heavy` and `manual-only` cannot close `runtime-truthful` acceptance
+criteria. They may be combined with stronger evidence, never used alone.
+
+### Coverage as Evidence (binding)
+
+Coverage claims require fresh command output from the current work session.
+The four valid states:
+
+- **`PASS`** — `npm run test:coverage` ran and produced a percentage. Report
+  the command, the percentage, and the date.
+- **`PARTIAL`** — behavioral tests ran but coverage command did not finish or
+  only covered a subset. Report what ran and what was missing.
+- **`MISSING`** — tooling absent. Report the gap. Do not estimate.
+- **`BLOCKED`** — setup or dependency failure prevented coverage. Report the
+  command attempted and the failure.
+
+A high coverage percentage on a slice with invalid RED is still a blocked
+slice. Coverage is necessary, not sufficient.
+
+### Test-Size Labels (binding)
+
+Every test is labeled by size:
+
+- **`small`** — a single unit tested through a public seam. The focused
+  command runs in milliseconds.
+- **`medium`** — multiple modules or a real persistence or process boundary
+  (for example, a test that writes to the actual continuity JSON file in a
+  temporary directory). Setup and teardown must be noted.
+- **`large`** — end-to-end or browser-driven. The runtime command, the
+  environment bring-up, and a user-visible behavior note are all required.
+
+### Bug Fix Path: Prove-It (binding)
+
+For defect work, the reproduction is the RED phase:
+
+1. Reproduce. Write a test that exhibits the user-visible defect.
+2. Prove failure matches. The test must fail for the same reason the user
+   observed, not an unrelated error.
+3. Minimal fix. The smallest change that turns the test green.
+4. Prove fixed. Run the test, confirm green, and run the surrounding test
+   surface to confirm no regression.
+5. Preserve. The reproduction test stays in the suite as a permanent
+   regression guard.
+
+### Anti-Patterns and Retry Budget (binding)
+
+Five anti-patterns each have a detection signal and a correction path:
+
+| Anti-pattern | Detection in this project | Correction |
+|---|---|---|
+| Test-After Claim | Implementation existed before tests | Label as test-after or restart with a true RED |
+| Fake Green | Test would pass if implementation were removed | Rewrite assertion against observable behavior |
+| Mock Theater | Internals mocked so runtime behavior is untested | Add `runtime-truthful` or `transport-mocked` evidence |
+| Coverage Lie | Coverage cited without fresh `npm run test:coverage` output | Run coverage now, or mark coverage `MISSING` |
+| Infinite Fix Loop | Same failing test after repeated attempts | Stop after 3 focused attempts and return blocked handoff |
+
+After three focused attempts in RED or GREEN with the same hypothesis, the
+implementer must stop and return a blocked handoff. More attempts without new
+evidence is "loop theater," not test-first execution.
+
+### Relationship to Other Governance
+
+- The generic guide at `.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md`
+  is the project-agnostic reference. This section is its Hivemind-voice
+  application. When in doubt, read both: the generic guide for the principle,
+  this section for the command and the surface.
+- The discipline here is enforced by the quality gate triad in
+  `.opencode/rules/universal-rules.md`. The terminal gate
+  (`gate-evidence-truth`) refuses to pass without fresh evidence of the
+  required label.
+- The non-negotiable rules in the project root `AGENTS.md` (atomic commits,
+  spec-driven execution, integration loops) all assume the test-first cycle
+  is running. If a slice cannot be reduced to a failing test, escalate
+  before continuing.
+
+### Entry Point for New Contributors
+
+1. Read the generic guide (`.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md`).
+2. Read this section.
+3. Read the quality gate triad (`.opencode/rules/universal-rules.md`).
+4. Read the source skill (`.opencode/skills/hm-l2-test-driven-execution/`) for
+   the deep references and templates.
+5. Before opening a pull request, run `npm run typecheck` and `npm test` from
+   a clean state. The PR is not ready if either fails.
