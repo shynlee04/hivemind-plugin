@@ -3,10 +3,17 @@ import { describe, expect, it, vi } from "vitest"
 import { DelegationCoordinator } from "../../../../src/coordination/delegation/coordinator.js"
 import type { DelegationResult } from "../../../../src/coordination/delegation/types.js"
 import { getSessionMessages } from "../../../../src/shared/session-api.js"
+import { setupDelegationModules } from "../../../../src/plugin.js"
 
-vi.mock("../../../../src/shared/session-api.js", () => ({
-  getSessionMessages: vi.fn().mockResolvedValue([]),
-}))
+vi.mock("../../../../src/shared/session-api.js", async () => {
+  const actual = await vi.importActual<typeof import("../../../../src/shared/session-api.js")>(
+    "../../../../src/shared/session-api.js",
+  )
+  return {
+    ...actual,
+    getSessionMessages: vi.fn().mockResolvedValue([]),
+  }
+})
 
 const baseDispatchParams = {
   agent: "gsd-executor",
@@ -594,6 +601,63 @@ describe("DelegationCoordinator", () => {
           }),
         }),
       )
+    })
+
+    it("REGRESSION (S5b wire): setupDelegationModules threads tmuxIntegration into DelegationCoordinator", async () => {
+      // Guards against the S5b wire at src/plugin.ts:595-610 being
+      // accidentally removed. The S5b fix in coordinator.ts synthesizes
+      // an EnrichedSessionEvent and calls
+      // `tmuxIntegration.adapter.onSessionCreated` directly. This only
+      // works if `setupDelegationModules` actually threads
+      // `tmuxIntegration` from its options into the DelegationCoordinator
+      // it constructs. If the wiring is removed, the coordinator
+      // receives `tmuxIntegration: undefined` and the adapter is never
+      // called (silent no-op on the "unwired" branch).
+      const onSessionCreated = vi.fn().mockResolvedValue(undefined)
+      const tmuxIntegration = {
+        adapter: { onSessionCreated } as never,
+      }
+
+      const client = {
+        app: {
+          agents: vi.fn(async () => [{ name: "gsd-executor", tools: { read: true } }]),
+          log: vi.fn(async () => undefined),
+        },
+        session: {
+          create: vi.fn(async () => ({ data: { id: "child-s5b-wire" } })),
+          promptAsync: vi.fn(async () => ({ data: undefined })),
+        },
+      }
+
+      const modules = setupDelegationModules({
+        client: client as never,
+        projectDirectory: "/tmp/s5b-wire",
+        recordCategoryGateask: () => true,
+        tmuxIntegration: tmuxIntegration as never,
+      })
+
+      await modules.coordinator.dispatch({
+        agent: "gsd-executor",
+        currentDepth: 0,
+        parentSessionId: "parent-s5b-wire",
+        prompt: "test the wire",
+        queueKey: "agent:gsd-executor",
+        surface: "agent-delegation",
+      })
+
+      // Yield to the microtask so the void promise's `.catch` resolves.
+      await new Promise((resolve) => setImmediate(resolve))
+
+      // The wire is correct if the adapter was called once with a
+      // synthesized event matching the S5b shape.
+      expect(onSessionCreated).toHaveBeenCalledTimes(1)
+      const event = onSessionCreated.mock.calls[0]?.[0] as {
+        type: string
+        properties: { info: { id: string; parentID: string | undefined } }
+      }
+      expect(event.type).toBe("session.created")
+      expect(event.properties.info.id).toBe("child-s5b-wire")
+      expect(event.properties.info.parentID).toBe("parent-s5b-wire")
     })
   })
 })

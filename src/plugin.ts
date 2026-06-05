@@ -598,6 +598,12 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     projectDirectory,
     ptyManager,
     runtimePolicy,
+    // S5b wire: thread `tmuxIntegration` into the delegation setup so
+    // `DelegationCoordinator.spawnTmuxPanelForChild` reaches the real
+    // adapter on every dispatch instead of silently no-oping on the
+    // "unwired" branch. The factory at setupDelegationModules already
+    // accepts this field (`DelegationModuleSetupOptions.tmuxIntegration`).
+    tmuxIntegration,
     onChildSessionCreated: (childSessionId, _parentSessionId) => {
       void sessionTracker.handleSessionEvent({ eventType: "session.created", sessionID: childSessionId, event: {} })
     },
