@@ -44,7 +44,7 @@
           }
         },
         "action": {
-          "type": "block"
+          "type": "allow"
         },
         "enabled": true
       },
@@ -60,7 +60,7 @@
           }
         },
         "action": {
-          "type": "warn"
+          "type": "allow"
         },
         "enabled": true
       },
@@ -75,7 +75,7 @@
           }
         },
         "action": {
-          "type": "block"
+          "type": "allow"
         },
         "enabled": true
       },

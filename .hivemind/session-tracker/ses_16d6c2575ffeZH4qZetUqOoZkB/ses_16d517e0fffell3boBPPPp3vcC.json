@@ -3,17 +3,17 @@
   "parentSessionID": "ses_16d6c2575ffeZH4qZetUqOoZkB",
   "delegationDepth": 1,
   "delegatedBy": {
-    "agentName": "hm-planner",
+    "agentName": "",
     "model": "",
     "tool": "task",
     "description": "",
     "subagentType": ""
   },
   "created": "2026-06-04T12:49:30.809Z",
-  "updated": "2026-06-04T14:18:29.797Z",
+  "updated": "2026-06-04T15:58:30.323Z",
   "status": "error",
   "mainAgent": {
-    "name": "hm-planner",
+    "name": "",
     "model": ""
   },
   "turns": [

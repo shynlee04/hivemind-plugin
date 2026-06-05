@@ -1,0 +1,1236 @@
+{
+  "sessionID": "ses_16ca6a75affeB906LSjYxnnzip",
+  "parentSessionID": "ses_1723d915effe0g1RAXPAJ7yH4v",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "gsd-codebase-mapper",
+    "model": "",
+    "tool": "task",
+    "description": "READ-ONLY INVESTIGATION. Wave 1A of comprehensive architectural audit.\n\n## Context\n8-track architectural audit of harness intelligence surfaces. Your scope: Tracks 1, 2, 4 (foundational).\n\n## Track 1: Tool surface map (27 tools)\nEnumerate all custom tools in src/tools/. For each tool:\n- Tool name\n- Zod schema (args)\n- Actions exposed\n- Engine/lib/hook integration (trace which engine module owns it)\n- Output envelope\n- File path + LOC\n\n## Track 2: Session-tracker ecosystem\nMap these 5 surfaces and their interconnections:\n- session-tracker (src/features/session-tracker/)\n- session continuity (src/task-management/continuity/)\n- project continuity (src/task-management/continuity/project-continuity.ts)\n- trajectory (src/task-management/trajectory/)\n- agent work contract (src/features/agent-work-contract/ or src/coordination/agent-work-contract/)\n\nFor each: API surface, file path, LOC, who reads/writes, schemas.\n\n## Track 4: Engines/libs/hooks/features under src/**\nTrace every tool to its source. Document:\n- engines in src/coordination/, src/features/, src/task-management/\n- libs in src/shared/, src/schema-kernel/\n- hooks in src/hooks/ (lifecycle, guards, observers, transforms, composition)\n- features in src/features/ (tmux, governance-engine, session-tracker, agent-work-contract, tool-intelligence, etc.)\n- routing in src/routing/ (session entry, behavioral profile, command engine)\n- config in src/config/\n\n## Output\n\nWrite to .planning/debug/audit-2026-06-04/wave-1a-tool-surface-and-sessions.md\n\nRequired sections:\n1. Executive summary (issue counts, confidence, top 5 critical)\n2. Track 1 — Tool table (27 tools) with full integration map\n3. Track 2 — Session-tracker ecosystem map\n4. Track 4 — Engine/lib/hook/feature topology under src/**\n5. Cross-track conflicts identified (overlap, double-source, schema drift)\n6. Top 15 critical issues (file:line, impact, severity, proposed remedy — documentation only, NO source changes)\n\n## Constraints\n- L5 documentation only\n- Read-only — use grep/glob/offset-read, NO source code changes\n- Cite file:line everywhere\n- Target 500-800 lines\n\n## Return\n- File path\n- Line count\n- Total issues found\n- Top 5 critical (file:line + impact)\n- Confidence: high/medium/low",
+    "subagentType": ""
+  },
+  "created": "2026-06-04T15:56:05.597Z",
+  "updated": "2026-06-04T16:13:30.067Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "gsd-codebase-mapper",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "READ-ONLY INVESTIGATION. Wave 1A of comprehensive architectural audit.\n\n## Context\n8-track architectural audit of harness intelligence surfaces. Your scope: Tracks 1, 2, 4 (foundational).\n\n## Track 1: Tool surface map (27 tools)\nEnumerate all custom tools in src/tools/. For each tool:\n- Tool name\n- Zod schema (args)\n- Actions exposed\n- Engine/lib/hook integration (trace which engine module owns it)\n- Output envelope\n- File path + LOC\n\n## Track 2: Session-tracker ecosystem\nMap these 5 surfaces and their interconnections:\n- session-tracker (src/features/session-tracker/)\n- session continuity (src/task-management/continuity/)\n- project continuity (src/task-management/continuity/project-continuity.ts)\n- trajectory (src/task-management/trajectory/)\n- agent work contract (src/features/agent-work-contract/ or src/coordination/agent-work-contract/)\n\nFor each: API surface, file path, LOC, who reads/writes, schemas.\n\n## Track 4: Engines/libs/hooks/features under src/**\nTrace every tool to its source. Document:\n- engines in src/coordination/, src/features/, src/task-management/\n- libs in src/shared/, src/schema-kernel/\n- hooks in src/hooks/ (lifecycle, guards, observers, transforms, composition)\n- features in src/features/ (tmux, governance-engine, session-tracker, agent-work-contract, tool-intelligence, etc.)\n- routing in src/routing/ (session entry, behavioral profile, command engine)\n- config in src/config/\n\n## Output\n\nWrite to .planning/debug/audit-2026-06-04/wave-1a-tool-surface-and-sessions.md\n\nRequired sections:\n1. Executive summary (issue counts, confidence, top 5 critical)\n2. Track 1 — Tool table (27 tools) with full integration map\n3. Track 2 — Session-tracker ecosystem map\n4. Track 4 — Engine/lib/hook/feature topology under src/**\n5. Cross-track conflicts identified (overlap, double-source, schema drift)\n6. Top 15 critical issues (file:line, impact, severity, proposed remedy — documentation only, NO source changes)\n\n## Constraints\n- L5 documentation only\n- Read-only — use grep/glob/offset-read, NO source code changes\n- Cite file:line everywhere\n- Target 500-800 lines\n\n## Return\n- File path\n- Line count\n- Total issues found\n- Top 5 critical (file:line + impact)\n- Confidence: high/medium/low",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll perform this read-only investigation systematically. Let me start by exploring the directory structure and then drill into each track.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Now I have the tool enumeration. Let me read the plugin.ts to understand which tools are actually registered, then read the schemas/integration for each.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Tools: read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "I found a discrepancy: plugin.ts comment says \"Record of 8 hivemind tools\" but there are 9 entries. Let me read the schemas and integration for each tool.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 17,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 18,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 19,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 20,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 21,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 22,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 23,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 24,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 25,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 26,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 27,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 28,
+      "actor": "unknown",
+      "content": "Tools: bash, bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 29,
+      "actor": "unknown",
+      "content": "Tools: read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 30,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 31,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 32,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 33,
+      "actor": "unknown",
+      "content": "Now I have all the data needed. Let me write the comprehensive audit document.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 34,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 35,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 36,
+      "actor": "unknown",
+      "content": "Tools: bash",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 37,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 38,
+      "actor": "unknown",
+      "content": "## Wave 1A Audit Complete\n\n**File:** `.planning/debug/audit-2026-06-04/wave-1a-tool-surface-and-sessions.md`\n**Line count:** 695 lines (74,280 bytes) — within the 500–800 target band\n**Total issues found:** 15 (5 CRITICAL, 6 HIGH, 4 MEDIUM)\n**Confidence:** HIGH\n\n### Top 5 Critical Issues\n\n1. **`src/tools/hivemind/run-background-command.ts:1` registered as delegation tool** — File lives in `tools/hivemind/` but is wired up by `registerDelegationTools` at `src/plugin.ts:144`. Misleads maintainers searching `tools/delegation/`.\n2. **`src/features/governance-engine/create-governance-session.ts:80` outside `src/tools/`** — Breaks the \"27 tools in `src/tools/`\" invariant from AGENTS.md. Registered at `src/plugin.ts:163`.\n3. **`src/plugin.ts:173` docstring drift** — Claims \"Record of 8 hivemind tools\" but `src/plugin.ts:175-187` registers **9** entries (off by one, correlates with late addition of `session-delegation-query`).\n4. **Dual-source delegation readers return different shapes** — `src/tools/delegation/readers/session-tracker-reader.ts:15-88` vs `legacy-reader.ts:16-58`. Same `Delegation` type, different field semantics (e.g. `agent`, `queueKey`, `nestingDepth` differ). No source discriminator in tool output.\n5. **Session-tracker and continuity both own session lifecycle** — `src/features/session-tracker/index.ts:100` (SessionTracker) writes per-session `*.md`/`*.json` files while `src/task-management/continuity/index.ts:38-51` writes the single `session-continuity.json` — two parallel stores with no transactional boundary and a documented CQRS contract (`features/session-tracker/index.ts:8-12`) that the continuity module violates.\n\nDocument covers: full 27-tool table with schema source + actions + engine integration + output envelope, 5-surface session-tracker ecosystem map with readers/writers, complete engine/lib/hook/feature topology across 21 coordination files + 14 hook files + 18,948 LOC of features + 2,540 LOC of schemas, 15 cross-track conflicts (file-path vs registration domain, dual-source persistence, schema drift, read/write authority), 15 fully-cited issues with file:line + impact + proposed remedy (no source changes performed).\n\nReady for orchestrator summary.",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "queueKey": "agent:gsd-codebase-mapper",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "journey": [
+    {
+      "timestamp": "2026-06-04T15:56:57.398Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_1wxau7usgh0f_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:56:58.895Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_1wxau7usgh0f_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:57:19.645Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_oncqu65r8nfw_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:57:20.294Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_oncqu65r8nfw_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:57:41.418Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_tslgpynnnxjz_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:57:42.488Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_tslgpynnnxjz_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:57:53.512Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_wkndqpiih2u3_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:58:01.070Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_b5uj32nf6q0o_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/plugin.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:58:24.860Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_q28wy9bhu6td_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegate-task.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:58:25.648Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_q28wy9bhu6td_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-tracker.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:58:34.798Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_wck6p7o2ieon_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/tool.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:58:35.680Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_wck6p7o2ieon_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/session-tracker.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:58:35.689Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_wck6p7o2ieon_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/agent-work-contract.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:58:46.326Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ouxb61y040xx_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/execute-slash-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:58:46.335Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ouxb61y040xx_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegation-status.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:58:46.852Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ouxb61y040xx_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/run-background-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:01.149Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_4jge2zyct0xh_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-hierarchy.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:01.160Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_4jge2zyct0xh_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-context.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:01.270Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_4jge2zyct0xh_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-journal-export.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:18.747Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_7k95gemv16vo_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-doc.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:18.758Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_7k95gemv16vo_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-delegation-query.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:19.107Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_7k95gemv16vo_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-trajectory.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:29.597Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_q7qi3r5quuco_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-pressure.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:30.433Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_q7qi3r5quuco_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-command-engine.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:30.445Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_q7qi3r5quuco_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-sdk-supervisor.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:40.378Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ygugsay6gv6j_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-agent-work.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:40.389Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ygugsay6gv6j_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-session-view.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:40.895Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_ygugsay6gv6j_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-patch/tools.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:51.429Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_tjy64vmjhiza_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/config/configure-primitive.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:51.443Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_tjy64vmjhiza_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/config/bootstrap-init.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T15:59:52.002Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_tjy64vmjhiza_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/config/bootstrap-recover.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:00:08.002Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_1t20i0auci3f_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/config/validate-restart.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:00:08.585Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_1t20i0auci3f_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/tmux-copilot.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:00:08.597Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_1t20i0auci3f_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/tmux-state-query.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:00:24.663Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_v6k2fwb3nf1v_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/prompt/prompt-analyze/tools.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:00:25.440Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_v6k2fwb3nf1v_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-resolver.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:00:25.452Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_v6k2fwb3nf1v_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/prompt/prompt-skim/tools.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:00:50.178Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_e6sh7zcz8wow_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:00:54.230Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_e6sh7zcz8wow_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:10.167Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_e4a6a5auz8jw_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:11.181Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_e4a6a5auz8jw_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:11.189Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_e4a6a5auz8jw_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:11.602Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_e4a6a5auz8jw_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/trajectory/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:22.663Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_wfr4xe7mwqev_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/project-continuity.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:22.671Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_wfr4xe7mwqev_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:23.028Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_wfr4xe7mwqev_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/agent-work-contracts/operations.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:38.472Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_xh3clu2qev8a_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:43.258Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_xh3clu2qev8a_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:53.822Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_2wtsg9glcv0h_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/dispatch-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:01:54.451Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_2wtsg9glcv0h_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/resolve-command.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:02:18.340Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_sf55s6oknry5_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/readers/session-tracker-reader.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:02:18.346Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_sf55s6oknry5_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/readers/legacy-reader.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:02:18.865Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_sf55s6oknry5_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/readers/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:02:31.007Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_dqq9x4opetff_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/lifecycle/core-hooks.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:02:31.013Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_dqq9x4opetff_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/observers/event-observers.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:02:31.505Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_dqq9x4opetff_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/hooks/composition/cqrs-boundary.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:02:44.867Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_bix8mx3fvv6y_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:02:48.192Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_bix8mx3fvv6y_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:03:00.739Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_5sojrqkr2q21_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/commands.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:03:00.745Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_5sojrqkr2q21_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/session-delegation-query.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:03:01.377Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_5sojrqkr2q21_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/trajectory.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:03:18.453Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_r0sfosql9cef_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/continuity/delegation-persistence.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:03:19.412Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_r0sfosql9cef_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:03:19.433Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_r0sfosql9cef_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/routing/command-engine/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:03:36.438Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_46lhumi74f8h_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:03:39.178Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_46lhumi74f8h_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:03:59.862Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_hltensalgzyg_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/governance-engine/create-governance-session.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:04:00.461Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_hltensalgzyg_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/coordinator.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:04:13.295Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_cdyrglbcltev_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:04:26.744Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_3ip4aepk3cl6_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:04:36.309Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_herxyfbo5m95_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:11:11.073Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_function_39o4bdcdxjwe_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:11:24.229Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_ujzdun8185jv_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:11:43.710Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_qm3rx46kxv2f_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:12:07.430Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_kcbx8od7gds0_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-04T16:12:44.159Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_function_9ulxb8u6t26g_1",
+        "input": {},
+        "output": {}
+      }
+    }
+  ],
+  "lastMessage": "## Wave 1A Audit Complete\n\n**File:** `.planning/debug/audit-2026-06-04/wave-1a-tool-surface-and-sessions.md`\n**Line count:** 695 lines (74,280 bytes) — within the 500–800 target band\n**Total issues found:** 15 (5 CRITICAL, 6 HIGH, 4 MEDIUM)\n**Confidence:** HIGH\n\n### Top 5 Critical Issues\n\n1. **`src/tools/hivemind/run-background-command.ts:1` registered as delegation tool** — File lives in `tools/hivemind/` but is wired up by `registerDelegationTools` at `src/plugin.ts:144`. Misleads maintainers searching `tools/delegation/`.\n2. **`src/features/governance-engine/create-governance-session.ts:80` outside `src/tools/`** — Breaks the \"27 tools in `src/tools/`\" invariant from AGENTS.md. Registered at `src/plugin.ts:163`.\n3. **`src/plugin.ts:173` docstring drift** — Claims \"Record of 8 hivemind tools\" but `src/plugin.ts:175-187` registers **9** entries (off by one, correlates with late addition of `session-delegation-query`).\n4. **Dual-source delegation readers return different shapes** — `src/tools/delegation/readers/session-tracker-reader.ts:15-88` vs `legacy-reader.ts:16-58`. Same `Delegation` type, different field semantics (e.g. `agent`, `queueKey`, `nestingDepth` differ). No source discriminator in tool output.\n5. **Session-tracker and continuity both own session lifecycle** — `src/features/session-tracker/index.ts:100` (SessionTracker) writes per-session `*.md`/`*.json` files while `src/task-management/continuity/index.ts:38-51` writes the single `session-continuity.json` — two parallel stores with no transactional boundary and a documented CQRS contract (`features/session-tracker/index.ts:8-12`) that the continuity module violates.\n\nDocument covers: full 27-tool table with schema source + actions + engine integration + output envelope, 5-surface session-tracker ecosystem map with readers/writers, complete engine/lib/hook/feature topology across 21 coordination files + 14 hook files + 18,948 LOC of features + 2,540 LOC of schemas, 15 cross-track conflicts (file-path vs registration domain, dual-source persistence, schema drift, read/write authority), 15 fully-cited issues with file:line + impact + proposed remedy (no source changes performed).\n\nReady for orchestrator summary."
+}

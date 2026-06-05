@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "sessionID": "ses_16d6c2575ffeZH4qZetUqOoZkB",
-  "lastUpdated": "2026-06-04T14:35:09.439Z",
+  "lastUpdated": "2026-06-04T17:14:22.093Z",
   "hierarchy": {
     "root": "ses_16d6c2575ffeZH4qZetUqOoZkB",
     "children": {
@@ -57,21 +57,58 @@
       "ses_16d00061effe14nW85MSEpixA6": {
         "file": "ses_16d00061effe14nW85MSEpixA6.json",
         "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-executor",
+        "children": {}
+      },
+      "ses_16ca9f692ffeUJ72TYQwbxGnBA": {
+        "file": "ses_16ca9f692ffeUJ72TYQwbxGnBA.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-planner",
+        "children": {}
+      },
+      "ses_16ca65338ffeyTrf40CB5SSGSJ": {
+        "file": "ses_16ca65338ffeyTrf40CB5SSGSJ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-intent-loop",
+        "children": {}
+      },
+      "ses_16c9fdcc1ffefuZUVYuFHkkKnL": {
+        "file": "ses_16c9fdcc1ffefuZUVYuFHkkKnL.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-phase-researcher",
+        "children": {}
+      },
+      "ses_16c9865c9ffe81uosKOf2yFXuG": {
+        "file": "ses_16c9865c9ffe81uosKOf2yFXuG.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-planner",
+        "children": {}
+      },
+      "ses_16c92309fffe49Hu3osO0Vzjt4": {
+        "file": "ses_16c92309fffe49Hu3osO0Vzjt4.json",
+        "depth": 1,
         "status": "active",
         "delegatedBy": "hm-executor",
         "children": {}
       }
     }
   },
-  "turnCount": 25,
+  "turnCount": 34,
   "toolSummary": {
-    "bash": 11,
-    "task": 10,
+    "bash": 19,
+    "task": 18,
     "execute-slash-command": 1,
     "delegation-status": 3,
-    "hivemind-trajectory": 1,
+    "hivemind-trajectory": 4,
     "question": 1,
     "delegate-task": 1,
-    "session-hierarchy": 1
+    "session-hierarchy": 1,
+    "read": 1,
+    "grep": 3
   }
 }

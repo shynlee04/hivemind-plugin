@@ -11,7 +11,7 @@
   },
   "compaction": {
     "auto": true,
-    "prune": false,
+    "prune": true,
     "reserved": 5000
   },
   "provider": {

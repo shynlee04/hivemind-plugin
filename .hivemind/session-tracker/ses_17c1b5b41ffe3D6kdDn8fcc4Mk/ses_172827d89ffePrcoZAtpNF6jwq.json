@@ -3,17 +3,17 @@
   "parentSessionID": "ses_17c1b5b41ffe3D6kdDn8fcc4Mk",
   "delegationDepth": 1,
   "delegatedBy": {
-    "agentName": "gsd-code-reviewer",
+    "agentName": "",
     "model": "",
     "tool": "task",
     "description": "",
     "subagentType": ""
   },
   "created": "2026-06-03T12:37:53.427Z",
-  "updated": "2026-06-04T14:18:29.798Z",
+  "updated": "2026-06-04T15:58:30.324Z",
   "status": "error",
   "mainAgent": {
-    "name": "gsd-code-reviewer",
+    "name": "",
     "model": ""
   },
   "turns": [

@@ -3,17 +3,17 @@
   "parentSessionID": "ses_17081fe56ffeDCVxGOvwfivFuS",
   "delegationDepth": 1,
   "delegatedBy": {
-    "agentName": "hm-executor",
+    "agentName": "",
     "model": "",
     "tool": "task",
     "description": "",
     "subagentType": ""
   },
   "created": "2026-06-03T23:38:15.416Z",
-  "updated": "2026-06-04T14:18:29.797Z",
+  "updated": "2026-06-04T15:58:30.324Z",
   "status": "error",
   "mainAgent": {
-    "name": "hm-executor",
+    "name": "",
     "model": ""
   },
   "turns": [

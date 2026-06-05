@@ -171,16 +171,11 @@ const ReleaseActionSchema = z.object({
   sessionId: z.string().min(1),
 })
 
-// P58.8 (S2, REQ-58-08): peek — read the most recent capture-pane
-// content for a pane id without re-running the tmux CLI. Surfaces an
-// affordance for the USER_SESSION tier to inspect a delegate pane
-// between dispatches. If the in-tree integration has not yet cached
-// a capture for the pane, returns a zero-byte envelope (NOT an
-// error) so callers can distinguish "no content yet" from "lookup
-// failed".
+// P58.8 S2 (REQ-58-08): peek — user-tier read access to capture-pane content
 const PeekActionSchema = z.object({
   action: z.literal("peek"),
   paneId: z.string().min(1),
+  maxBytes: z.number().int().positive().optional(),
 })
 
 const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
@@ -191,7 +186,7 @@ const TmuxCopilotActionSchema = z.discriminatedUnion("action", [
   ForwardPromptActionSchema,  // P58 G4
   TakeOverActionSchema,        // P58 G5
   ReleaseActionSchema,         // P58 G5
-  PeekActionSchema,            // P58.8 S2 (REQ-58-08)
+  PeekActionSchema,            // P58.8 S2
 ])
 
 // ---------------------------------------------------------------------------
@@ -241,13 +236,14 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
   // can return graceful {error: {kind: "invalid-input", issues}} on
   // parse failure instead of relying on the framework to throw.
   args: {
-    action: s.string().describe("One of: send-keys, list-panes, compute-grid, respawn"),
-    paneId: s.string().optional().describe("(send-keys) target tmux pane id"),
-    text: s.string().optional().describe("(send-keys) text to send"),
-    literal: s.boolean().optional().describe("(send-keys) if true, send as literal text"),
+    action: s.string().describe("One of: send-keys, list-panes, compute-grid, respawn, take-over, release, peek, forward-prompt"),
+    paneId: s.string().optional().describe("(send-keys|forward-prompt|peek) target tmux pane id"),
+    text: s.string().optional().describe("(send-keys|forward-prompt) text to send"),
+    literal: s.boolean().optional().describe("(send-keys|forward-prompt) if true, send as literal text"),
     mainPaneId: s.string().optional().describe("(list-panes) optional main pane to scope listing"),
     tree: s.unknown().optional().describe("(compute-grid) PaneTreeNode — recursive {id, children?}"),
-    sessionId: s.string().optional().describe("(respawn) session id to respawn"),
+    sessionId: s.string().optional().describe("(respawn|take-over|release) session id"),
+    maxBytes: s.number().optional().describe("(peek) cap the returned content length"),
   },
   async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
     // 1. Permission gate — recognize both orchestrator-tier and USER_SESSION-tier callers.
@@ -428,15 +424,6 @@ export const tmuxCopilotTool: ReturnType<typeof tool> = tool({
       }
       case "release": {
         // P58 G5 (REQ-58-05): clear manualOverride=false.
-        //
-        // [P58.8 S2 — D-58-22 ALLOW] `release` is intentionally in
-        // USER_SESSION_ALLOWED_ACTIONS as the inverse of `take-over`:
-        // once the human operator has finished manual intervention
-        // they must be able to return the session to auto-dispatch
-        // without orchestrator-tier involvement. Symmetric to
-        // take-over — same idempotent state mutation, same
-        // audit-trail, no tmux-server write. BATS 72 step 2 is the
-        // acceptance signal.
         setManualOverrideState(input.sessionId, { manualOverride: false })
         return renderToolResult({
           sessionId: input.sessionId,
