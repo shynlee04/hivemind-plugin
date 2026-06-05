@@ -488,3 +488,140 @@ Tiếp tục. Tôi sẽ form landscape trước, rồi dispatch.
 ## ASSISTANT (turn 6)
 
 Landscape written. Dispatching to `gsd-executor` (fast-path within gsd lineage; gsd-* are the project tooling agents per project rules).
+
+### Tool: task
+
+**Input:**
+```json
+{
+  "description": "Update governance with TDD section",
+  "subagent_type": "gsd-executor",
+  "task_id": "ses_16a6f81d4ffeJTPAbYRU2z6Ul3"
+}
+```
+
+**Output:** (pruned)
+```
+task_id: ses_16a6f81d4ffeJTPAbYRU2z6Ul3
+```
+
+
+## ASSISTANT (turn 7)
+
+## Goal
+- Update `AGENTS.md` and `.opencode/rules/universal-rules.md` with test-driven section, and find/derive GENERIC (project-agnostic) test-driven guidance from `hm-*` skill for reuse across projects.
+
+## Constraints & Preferences
+- L0 orchestrator (`hm-l0-orchestrator`) is execution_banned — must delegate, never edit source/governance files inline (Iron Law #1).
+- L0 is ITSELF bound by `universal-rules.md` (the file being updated) — observe universal rules + agent contract profile strictly.
+- Content must be GENERIC and reusable across projects, not Hivemind-specific.
+- Write scope: L0 only allowed `.md/.xml/.json` in `.hivemind/planning/**`; cannot directly write `AGENTS.md` or `universal-rules.md` (these need delegated specialist via worktree).
+- Test-driven guidance must reflect prior judgment: real API > mock at integration layer only, mock-heavy appropriate for unit tests, real API tests have cost/determinism/CI tradeoffs.
+- **Harness-project routing rule (NEW)**: This IS a harness project — "DO NOT ROUTE any hm-* or hf-* commands, workflows nor agents — they are the subjects of developments. ROUTE everything to gsd-* from commands, agents to workflows". Use `gsd-*` agents, NOT `hm-*` specialists.
+- Tooling Consistency: checkpoints via `execute-slash-command`, not inline `task` calls.
+- Language: vi for conversation, en for documents.
+
+## Progress
+### Done
+- Provided judgment on user's mock-vs-real-API claim: partially true, overstated. Recommended testing pyramid (70% unit mock / 20% integration real local / 10% E2E real API smoke).
+- Announced L0 role; ran parallel recon.
+- Read L0's own profile at `.opencode/agents/hm-l0-orchestrator.md` to confirm identity, iron laws, read restrictions, and agent contract binding.
+- Confirmed target files exist: `AGENTS.md` (40854 bytes), `.opencode/rules/universal-rules.md` (7454 bytes).
+- Identified source skill: `hm-l2-test-driven-execution` at `.opencode/skills/hm-l2-test-driven-execution/` with subdirs: `workflows/tdd-session-workflow.md`, `templates/test-case-template.md`, `references/{red-green-refactor,source-synthesis,coverage-verification}.md`, `metrics/`, `evals/`, `scripts/`, `task_plan.md`, `SKILL.md`.
+- Skill is referenced by: `stack-zod`, `stack-vitest`, `hm-l3-integration-contracts` (roles: Executor, Builder, Reviewer, Validator, Critic, Finisher).
+- `delegation-status find-stackable`: no stackable/resumable sessions — fresh dispatch appropriate.
+- Confirmed `.hivemind/planning/` exists with naming pattern `purpose-name-YYYY-MM-DD` (33 entries incl. `agent-steering-engine`, `agents-system-overhaul-2026-05-10`, `circuit-breaker-spec-2026-05-23`, `debug`, `ideating`, `phase-12-cp-st-01-remediation-2026-05-12`, `phase-57-58-loop-2026-06-03`, `refactor`, etc.).
+
+### In Progress
+- Reassessing path decision after discovering harness-project routing rule conflicts with prior hm-coordinator choice.
+- Determining GSD-compatible delegation path: lean `gsd-executor` (coordinated sequencing) or `gsd-doc-writer` (fast-path).
+
+### Blocked
+- (none)
+
+## Key Decisions
+- **REVISED — Route to gsd-* not hm-***: This is a harness-development project; hm-* are product agents being built (not for use within this project). Use gsd-* via `task` tool.
+- **Candidate dispatch targets (gsd-*)**: `gsd-doc-writer` (fast-path for bounded doc work) OR `gsd-executor` (coordinated multi-step) OR `gsd-planner` → `gsd-executor` (classic GSD pattern for plan-then-execute).
+- **Source of truth = `hm-l2-test-driven-execution` skill**: canonical hm-* TDD skill; gsd-* specialist should extract generic principles from `SKILL.md` + `references/*` and adapt into project-agnostic guidance.
+- **Two-track output**: (1) GENERIC test-driven skill/guidance as reusable artifact; (2) targeted test-driven section appended to both governance files referencing the skill.
+- **Prior judgment anchors content**: anti-extremes stance — neither "mock-heavy" nor "real-API-only" is correct; pyramid balance is the doctrine.
+- **L0 quality gate triad (mandatory)**: lifecycle → spec → evidence on every return; reject artifact-less returns.
+- **Slash command awareness**: `/gsd-discuss-phase`, `/gsd-research-phase`, `/gsd-plan-phase`, `/gsd-execute-phase`, `/gsd-verify-work` for GSD checkpoints; project-level `/start-work`, `/plan`, `/deep-init`, `/ultrawork`, `/harness-doctor`, `/harness-audit`, `/deep-research-synthesis-repomix`, `/sync-agents-md`, `/test-*`; `/hf-*` is cross-lineage only.
+
+## Next Steps
+1. Form landscape in `.hivemind/planning/ses_16a7b4487ffeBZ12xqaWkx7d1k/landscape.md` (purpose-name-YYYY-MM-DD compatible). Wave DAG, gsd-* agent assignments, artifact expectations, gate expectations.
+2. Decide: single `gsd-doc-writer` (fast-path) vs `gsd-executor` (coordinated) — based on whether sub-research from the hm-* skill needs a separate wave.
+3. Dispatch via native `task` tool with structured context packet: path=coordinated-path|fast-path, scope=2 governance files + 1 generic skill artifact, output format, artifact requirements (disk-written, classified, file:line evidence), gate expectations, session ID.
+4. Sub-wave plan (if coordinated): (a) extract generic TDD principles from `hm-l2-test-driven-execution`; (b) draft GENERIC test-driven guidance artifact; (c) apply targeted section to `AGENTS.md` + `universal-rules.md`; (d) gate triad (lifecycle → spec → evidence).
+5. Verify artifacts (disk-written, classified, with file:line evidence) on each return; reject artifact-less returns.
+6. Update `.hivemind/state/delegations.json` post-dispatch; `.hivemind/state/session-continuity.json` on completion.
+7. Report completion with artifact inventory + gate verdicts.
+
+## Critical Context
+- Session ID: `ses_16a7b4487ffeBZ12xqaWkx7d1k`, purpose_category=discovery, delegation_depth=0, queue_key=null, preserved_at=2026-06-05T02:38:55.457Z.
+- User's exact ask phrasing: "update this portion to both agents.md and to @.opencode/rules/universal-rules.md as test-driven then find the hm-* skill about test-driven to generically teach this to the process of building test for different purposes (as they can be utilize for various other projects not just this one)".
+- Prior advice quoted: smoke test + real API is beneficial for real-life pass — accepted as judgment input but flagged as overstated.
+- Skill content hint (from grep): skill draws from `addyosmani/agent-skills@test-driven-development` (Prove-It pattern, test sizes, state-over-interactions, DAMP, real/fake/stub/mock preference) and `helderberto/skills@tdd` (one-test-at-a-time vertical TDD, public-interface discipline, refactor-after-green) and `jellydn/my-ai-tools@tdd`.
+- L0 read restrictions (regex-glob): `(\.)?(docs?|plans?|plannings?)/**/*.{md,json,xml,yaml,txt}` + `.hivemind/**/*.{md,json,xml,yaml,txt}`; all other paths denied.
+- L0 file write restrictions: ALLOWED `.md/.xml/.json` in `.hivemind/planning/**`; DENIED `src/`, `tests/`, `.opencode/agents/`, all writes outside `.hivemind/planning/**`, any edit to implementation/test/build config.
+- L0 12 Iron Laws (top 5): (1) NEVER execute; (2) form COMPLETE landscape before delegating; (3) every delegation produces durable disk artifacts; (4) tracked/monitored no fire-and-forget; (5) L0 writes only `.md/.xml/.json` to `.hivemind/planning/**`.
+- Files to be updated (`AGENTS.md`, `universal-rules.md`) are NOT in L0 write-allowed paths → must be modified by a delegated gsd-* specialist via worktree.
+- MAX 3 skills loaded at once; current loaded = `hivemind-power-on` (1) only.
+- Recon result: 51 grep matches for `test-driven|tdd|test_driven` across `.opencode/skills/**/SKILL.md`.
+- Available gsd-* agents (33): `gsd-advisor-researcher`, `gsd-ai-researcher`, `gsd-assumptions-analyzer`, `gsd-code-fixer`, `gsd-code-reviewer`, `gsd-codebase-mapper`, `gsd-debug-session-manager`, `gsd-debugger`, `gsd-doc-classifier`, `gsd-doc-synthesizer`, `gsd-doc-verifier`, `gsd-doc-writer`, `gsd-domain-researcher`, `gsd-eval-auditor`, `gsd-eval-planner`, `gsd-executor`, `gsd-framework-selector`, `gsd-integration-checker`, `gsd-intel-updater`, `gsd-nyquist-auditor`, `gsd-pattern-mapper`, `gsd-phase-researcher`, `gsd-plan-checker`, `gsd-planner`, `gsd-project-researcher`, `gsd-research-synthesizer`, `gsd-roadmapper`, `gsd-security-auditor`, `gsd-ui-auditor`, `gsd-ui-checker`, `gsd-ui-researcher`, `gsd-user-profiler`, `gsd-verifier`.
+- 11-checkpoint phase loop: Scouting → CRUD → Trajectory/Contract Init → Specification → Context → Research/Patterns → Planning → Execution → Verification → Ship.
+- Cross-lineage rule: hf-* (meta-concept) routes to hf-orchestrator; NOT to be executed in hm-lineage (and in this project, NOT via gsd-* either).
+
+## Relevant Files
+- `/Users/apple/hivemind-plugin-private/AGENTS.md`: target governance file to update with test-driven section (40854 bytes); NOT in L0 write scope.
+- `/Users/apple/hivemind-plugin-private/.opencode/rules/universal-rules.md`: target governance file to update with test-driven section (7454 bytes); NOT in L0 write scope; L0 is itself bound by this file.
+- `/Users/apple/hivemind-plugin-private/.opencode/agents/hm-l0-orchestrator.md`: L0's own agent profile — confirms identity, iron laws, restrictions.
+- `/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-test-driven-execution/SKILL.md`: canonical TDD skill — source of generic principles.
+- `/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-test-driven-execution/references/red-green-refactor.md`: TDD cycle reference.
+- `/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-test-driven-execution/references/coverage-verification.md`: evidence/coverage doctrine reference.
+- `/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-test-driven-execution/references/source-synthesis.md`: cross-source synthesis reference.
+- `/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-test-driven-execution/workflows/tdd-session-workflow.md`: workflow template.
+- `/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-test-driven-execution/templates/test-case-template.md`: test case template.
+- `/Users/apple/hivemind-plugin-private/.opencode/skills/hm-l2-test-driven-execution/task_plan.md`: in-skill task plan reference.
+- `/Users/apple/hivemind-plugin-private/.hivemind/planning/ses_16a7b4487ffeBZ12xqaWkx7d1k/landscape.md`: to be created — authoritative dispatch plan.
+- `/Users/apple/hivemind-plugin-private/.hivemind/planning/`: existing planning dir with `purpose-name-YYYY-MM-DD` convention (33 entries).
+- `/Users/apple/hivemind-plugin-private/.hivemind/state/delegations.json`: delegation tracking (to be updated post-dispatch).
+- `/Users/apple/hivemind-plugin-private/.hivemind/state/session-continuity.json`: session state (to be updated on completion).
+
+## COMPACTED (2026-06-05T02:40:19.596Z)
+
+**compact_summary (from children):**
+
+**ses_16a6f81d4ffeJTPAbYRU2z6Ul3:** ## PLAN COMPLETE
+
+**Plan:** test-driven-governance-2026-06-05 (6-wave)
+**Mode:** Sequential, single-pass (L0 stated I CANNOT delegate beyond what's required)
+
+### 6/6 Waves Complete
+
+| Wave | Output | Commit | Files | Ins | Del |
+|---|---|---|---|---|---|
+| W1 | `01-research-findings.md` (8 principles + 5 supplementaries) | `4a620d93` | 1 | +175 | 0 |
+| W2 | `GENERIC-TEST-DRIVEN-GUIDE.md` (skill-shaped, project-agnostic, 11 sections) | `40a33480` | 1 | +353 | 0 |
+| W3 | `AGENTS.md` ## Test-Driven Development (12 sub-sections) | `653bd0e0` | 1 | +182 | 0 |
+| W4 | `universal-rules.md` ## 7. TDD Discipline (7.1–7.10) | `8cc7006b` | 1 | +88 | 0 |
+| W5 | `05-verification.md` (goal-backward, 8/8 PASS) | `ef98dea1` | 1 | +238 | 0 |
+| W6 | Quality gate triad verdict (3/3 PASS) | (verification, no commit) | 0 | 0 | 0 |
+
+### Quality Gate Triad Verdict (W6)
+
+| Gate | Result | Evidence |
+|---|---|---|
+| **Lifecycle** | PASS | All 4 governance artifacts placed in correct sectors (`.hivemind/planning/` = L5 internal state; root `AGENTS.md` = project voice; `universal-rules.md` = enforceable norm). Zero runtime mutation. |
+| **Spec compliance** | PASS | 5-commit bidirectional traceability from `landscape.md` → deliverables. 0/20 banned Hivemind/agent/SDK terms in W1/W2 vocab scrub. EARS-style scope declaration in each artifact. |
+| **Evidence truth** | PASS | L5 evidence labels declared on all 4 outputs. Rule 7.9 (gate-evidence-truth refusal) fires at acceptance of EXECUTABLE CHANGES — not at governance authorship. Coverage claim: N/A (no test files changed). |
+
+**Overall: 3/3 gates PASS · 8/8 goals PASS · 5/5 commits · 5/5 files on disk · 0 deletions across all 4 binding files**
+
+### Three-Layer Authority Chain (locked)
+
+1. **`AGENTS.md` §"Test-Driven Development"** (lines 471-651) — Hivemind voice elaboration, project-specific commands and surfaces.
+2. **`GENERIC-TEST-DRIVEN-GUIDE.md`** (353 lines) — project-agnostic methodology, reusable across frameworks.
+3. **`universal-rules
+
+**Continuity index:** See `session-continuity.json` for active delegations and pending work at time of compaction.
