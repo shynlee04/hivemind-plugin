@@ -380,22 +380,30 @@ export class DelegationCoordinator {
       }
     }
 
-    // P59 R3: thinking-time-aware timeout. A child that has been initiated
-    // (session created + pane spawned) but is still thinking should NOT be
-    // marked as stalled. The 60s hard limit was killing agents that were
-    // actively producing tokens but hadn't yet called a tool. Now we use
-    // 90s as the no-activity threshold (matches SDK default) and we check
-    // for ANY session activity (action count OR message count), not just
-    // tool calls — a child producing thinking tokens has messageCount > 0.
-    const hasAnyActivity =
+    // P59 R3: thinking-time-aware timeout. A child that is still streaming
+    // (producing tokens, even before any tool call) must NOT be marked as
+    // stalled. The previous 60s hard limit killed agents that were actively
+    // thinking. The pane count alone is not a reliable activity signal
+    // (the count is updated by an event hook that may lag behind actual
+    // token production), so we ALSO do a live SDK poll: if the child has
+    // any messages or if the last message is recent, the child is alive.
+    let hasAnyActivity =
       (record.actionCount ?? 0) > 0 ||
       (record.messageCount ?? 0) > 0 ||
       (record.toolCallCount ?? 0) > 0
-    const STALL_THRESHOLD_SEC = 90
+    if (!hasAnyActivity && this.deps.client && record.childSessionId) {
+      try {
+        const messages = await getSessionMessages(this.deps.client, record.childSessionId)
+        if (messages.length > 0) hasAnyActivity = true
+      } catch {
+        // SDK poll failed — fall through to counter check
+      }
+    }
+    const STALL_THRESHOLD_SEC = 120
     if (elapsedSeconds >= STALL_THRESHOLD_SEC && !hasAnyActivity) {
       record.executionState = "stalled"
       record.evidenceLevel = record.evidenceLevel ?? "accepted-only"
-      record.error = `[Harness] Delegation stalled without any activity after ${elapsedSeconds}s (no tools, no messages)`
+      record.error = `[Harness] Delegation stalled without any activity after ${elapsedSeconds}s (no tools, no messages, no SDK messages)`
       this.handleTimeout(delegationId)
       return
     }
