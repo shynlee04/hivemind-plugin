@@ -103,11 +103,11 @@ All returned deliverables from specialist waves must pass the three-gate quality
 
 ---
 
-## 7. Test-Driven Development Discipline
+## 6. Test-Driven Development Discipline
 
 This rule enforces the test-first discipline defined in the project root `AGENTS.md` under `## Test-Driven Development` and operationalized by `.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md`. It is the enforceable surface of that governance; the AGENTS.md section is its project-voice elaboration.
 
-### 7.1 Required Cycle for Every Executable Change
+### 6.1 Required Cycle for Every Executable Change
 Every change to executable behavior in this repository must follow the sequence: **RED → GREEN → Coverage → REFACTOR (only if needed)**. The cycle is enforced by the `Evidence Truth Gate` (`gate-evidence-truth`) at acceptance.
 
 - **RED is mandatory.** A test that asserts on the public seam of the change must exist and fail before any implementation. The failure must be the asserted behavior, not an unrelated error. Test-after evidence is rejected.
@@ -115,10 +115,10 @@ Every change to executable behavior in this repository must follow the sequence:
 - **Coverage claim requires fresh command output.** `npm run test:coverage` from the current work session, or one of the four explicit states: `PASS` / `PARTIAL` / `MISSING` / `BLOCKED`. Estimates are rejected.
 - **REFACTOR is gated by GREEN.** A refactor that regresses a green test must be reverted or split into its own cycle. Refactors performed before green are rejected.
 
-### 7.2 One Test at a Time
+### 6.2 One Test at a Time
 Each behavior is exercised by exactly one new failing test before the next is written. Bundles of failing tests written before any implementation hide which behavior drove which design and produce test-after evidence by default. The exception is the rare case where a requirement is genuinely inseparable; the bundle must be documented in the cycle notes.
 
-### 7.3 Public-Interface Discipline
+### 6.3 Public-Interface Discipline
 Tests assert against externally observable surfaces. The following are the binding public seams for this project:
 
 - **Tools**: the `tool()` factory's execute function, the JSON envelope returned to the agent, and the error envelope (`code`, `message`, optional `data`).
@@ -129,7 +129,7 @@ Tests assert against externally observable surfaces. The following are the bindi
 
 Mocking internals is acceptable only when the helper is itself the slice's public contract. When a test needs to mock several internals to pass, the public seam is in the wrong place — pause and re-design.
 
-### 7.4 Evidence Labels
+### 6.4 Evidence Labels
 Every test result carries one of four labels, highest to lowest:
 
 - **`runtime-truthful`** — the test exercises real behavior through a public seam. Required for any acceptance claim on tool, hook, or plugin changes.
@@ -139,7 +139,7 @@ Every test result carries one of four labels, highest to lowest:
 
 `mock-heavy` and `manual-only` cannot close `runtime-truthful` acceptance criteria. They may be combined with stronger evidence, never used alone.
 
-### 7.5 Coverage States
+### 6.5 Coverage States
 Coverage claims must report one of:
 
 - **`PASS`** — `npm run test:coverage` ran and produced a percentage. Report the command, the percentage, and the date.
@@ -149,14 +149,14 @@ Coverage claims must report one of:
 
 A high coverage percentage on a slice with invalid RED is still a blocked slice. Coverage is necessary, not sufficient.
 
-### 7.6 Test-Size Labels
+### 6.6 Test-Size Labels
 Every test is labeled by size, and the size determines what evidence must accompany the commit:
 
 - **`small`** — single unit, public seam, focused command runs in milliseconds. Evidence: focused test command output.
 - **`medium`** — multiple modules or a real persistence or process boundary. Evidence: focused test command output plus a one-line setup/teardown note.
 - **`large`** — end-to-end or browser-driven. Evidence: focused command output plus environment bring-up, runtime command, and a user-visible behavior note.
 
-### 7.7 Bug Fix Path — Prove-It
+### 6.7 Bug Fix Path — Prove-It
 Defect work follows the reproduction-first path. The reproduction is the RED phase:
 
 1. **Reproduce.** Write a test that exhibits the user-visible defect.
@@ -167,10 +167,10 @@ Defect work follows the reproduction-first path. The reproduction is the RED pha
 
 The reproduction test is a non-negotiable deliverable of the fix. Removing it after merge is a regression of the test discipline.
 
-### 7.8 Retry Budget
+### 6.8 Retry Budget
 After three focused attempts in RED or GREEN with the same hypothesis, the implementer must stop and return a blocked handoff. More attempts without new evidence is "loop theater," not test-first execution. The blocked handoff must state the command attempted, the failure output, the hypothesis, and what evidence is needed to resume.
 
-### 7.9 Quality Gate Interaction
+### 6.9 Quality Gate Interaction
 The `Evidence Truth Gate` (`gate-evidence-truth`) refuses to pass without:
 
 - A failing-then-passing focused test command log (RED → GREEN transition), OR
@@ -180,7 +180,7 @@ The `Evidence Truth Gate` (`gate-evidence-truth`) refuses to pass without:
 
 The `Spec Compliance Gate` (`gate-spec-compliance`) refuses to pass when a slice in scope is not reducible to a failing test — the test-first reduction is part of spec compliance for executable changes.
 
-### 7.10 Authority and Sources
+### 6.10 Authority and Sources
 This rule is binding for every specialist wave and every contributor. The full methodology, including the workflow diagram and extended anti-pattern catalogue, is in:
 
 - `.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md` — project-agnostic reference.

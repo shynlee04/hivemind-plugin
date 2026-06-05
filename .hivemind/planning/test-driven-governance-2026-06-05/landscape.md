@@ -121,9 +121,63 @@ All three deliverables present + content gate passes:
 
 ---
 
+[LANGUAGE: Write this file in en per Language Governance.]
 ## 8. Delegation Tracking
 
 - To be updated in `.hivemind/state/delegations.json` after each wave returns
 - Session ID: `ses_16a7b4487ffeBZ12xqaWkx7d1k`
 - Depth: 0 → 1 (coordinator) → 2 (specialists)
 - Path: coordinated-path via gsd-coordinator (or gsd-executor as direct subagent if no coordinator)
+
+---
+
+## 9. PIVOT — Source-vs-Deploy Architectural Correction (2026-06-05)
+
+### Trigger
+After W1-W6 of the original plan completed and all 5 atomic commits landed (4a620d93, 40a33480, 653bd0e0, 8cc7006b, ef98dea1), user flagged:
+> "changes you made will be erased after `npm rebuild` they must be made with sync schema and bootstrap set up for skills and unversal-rules since I have rebuilt pretty much everything above gone"
+
+### Violation
+W3/W4 (original gsd-executor session `ses_16a6f81d4ffeJTPAbYRU2z6Ul3`) edited DEPLOYED layer directly:
+- `AGENTS.md` (root) — DEPLOYED
+- `.opencode/rules/universal-rules.md` — DEPLOYED
+- `.opencode/skills/hm-l2-test-driven-execution/` — DEPLOYED
+
+This violates AGENTS.md §"CONSTITUTION: Source vs Deploy":
+> "NEVER develop directly in `.opencode/`. Development workflow: edit in `assets/` → run `node scripts/sync-assets.js` → verify in `.opencode/`."
+
+The 5 commits survive in git history but will be WIPED on `npm rebuild` or fresh `node scripts/sync-assets.js` invocation.
+
+### User Decision (clarification question answered)
+**Option (a) — Source-level re-apply + sync (Recommended)**
+
+### Corrected Wave DAG (re-dispatched, stacked on ses_16a6f81d4ffeJTPAbYRU2z6Ul3)
+
+| Wave | Domain | Action | Output Artifact |
+|------|--------|--------|-----------------|
+| W1 | Research (source-map) | Inspect `assets/`, `scripts/sync-assets.js`, `.hivefiver-meta-builder/`, `.opencode/` to determine source-of-truth for skills, rules, AGENTS.md | `02-source-map.md` |
+| W2 | Source Edits | Per W1 findings, edit SOURCE files with test-driven content (from 01-research + GENERIC-TEST-DRIVEN-GUIDE). Atomic commit per source file at source layer. | Source files updated + atomic commit(s) |
+| W3 | Sync Exec | Run `node scripts/sync-assets.js`. Capture stdout/stderr. | `03-sync-execution.log` |
+| W4 | Deployed Verify | Read `.opencode/rules/universal-rules.md`, root `AGENTS.md`, `.opencode/skills/hm-l2-test-driven-execution/SKILL.md`. Confirm content matches source. Atomic commit for any sync-induced changes to deployed layer. | `04-deployed-verification.md` |
+| W5 | Resilience | Re-invoke `node scripts/sync-assets.js` to confirm idempotence. Document. | `05-resilience-test.md` |
+| W6 | Gate Triad | Lifecycle → Spec → Evidence on all outputs. Self-claim with file:line evidence. | `06-gate-triad.md` |
+
+### Revised Final Acceptance
+1. `.hivemind/planning/test-driven-governance-2026-06-05/02-source-map.md` — source layout + sync schema discovery
+2. Source files updated at their source-of-truth locations
+3. `.hivemind/planning/test-driven-governance-2026-06-05/03-sync-execution.log` — sync stdout/stderr
+4. `.hivemind/planning/test-driven-governance-2026-06-05/04-deployed-verification.md` — deployed layer verification with file:line evidence
+5. `.hivemind/planning/test-driven-governance-2026-06-05/05-resilience-test.md` — idempotence proof
+6. `.hivemind/planning/test-driven-governance-2026-06-05/06-gate-triad.md` — gate verdicts
+7. Atomic git commits at source layer + sync output layer
+8. Re-running `node scripts/sync-assets.js` regenerates test-driven content (does NOT wipe it)
+
+---
+
+## 10. Re-dispatch Tracking
+
+- **Stacked on:** `ses_16a6f81d4ffeJTPAbYRU2z6Ul3` (gsd-executor, completed) — preserves prior context
+- **L0 session ID:** `ses_16a7b4487ffeBZ12xqaWkx7d1k` (unchanged)
+- **Path type:** coordinated-path (re-dispatch with corrected wave DAG)
+- **Status:** IN PROGRESS — dispatched at 2026-06-05
+- **Waves status:** W1-W6 to be tracked here as they return

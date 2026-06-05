@@ -1,0 +1,34 @@
+{
+  "sessionID": "ses_16847c537ffeAWajJVnETmWtA9",
+  "parentSessionID": "ses_16a2a8059ffe5lt45PAU0ET5Wx",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T12:18:13.837Z",
+  "updated": "2026-06-05T12:37:30.780Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "hm-codebase-mapper",
+      "content": "Follow-up mission: review the 05-real-case-test.md you just wrote and add a 'Schema Conflicts' section documenting the status value inconsistencies you found. Be specific about which files use which status vocabularies.",
+      "tools": [],
+      "role": "user"
+    }
+  ],
+  "children": [],
+  "journey": [],
+  "delegationType": "sdk-direct",
+  "terminalKind": "completed",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk"
+}

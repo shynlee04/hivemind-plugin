@@ -4,25 +4,137 @@
   "delegationDepth": 1,
   "delegatedBy": {
     "agentName": "hm-architect",
-    "model": "",
+    "model": "unknown",
     "tool": "task",
-    "description": "",
+    "description": "Design end-user setup architecture",
     "subagentType": "hm-architect"
   },
   "created": "2026-06-05T02:31:26.348Z",
-  "updated": "2026-06-05T02:36:38.747Z",
-  "status": "active",
+  "updated": "2026-06-05T02:44:51.679Z",
+  "status": "completed",
   "mainAgent": {
     "name": "hm-architect",
-    "model": ""
+    "model": "unknown"
   },
   "turns": [
     {
       "turn": 1,
-      "actor": "hm-architect",
+      "actor": "user",
       "content": "You are a subagent delegated by hm-l0-orchestrator. DESIGN the end-user setup architecture for the Hivemind harness plugin. L5 design doc only — NO source code changes.\n\n## User requirements (verbatim)\n\n1. **LLM providers are OPTIONAL** at users' space — not required, not shipped as default\n2. **MCP servers REQUIRED for end users (8 servers):**\n   - context7\n   - repomix\n   - exa\n   - tavily\n   - deepwiki\n   - gitmcp\n   - bravesearch (verify name in mcp.json — it's `brave-search`)\n   - github\n3. **.env REQUIRED for end users** to enable experimental features — must research OpenCode official docs to determine which experimental flags are critical so harness features can integrate\n4. **Port directive:** OpenCode default is 4096 (verified, NOT 4069). Use 4096 with override for tmux isolation. Client-server architecture is the right pattern.\n\n## Read first (read-only state)\n- `/Users/apple/hivemind-plugin-private/opencode.json` (190 lines) — current state\n- `/Users/apple/hivemind-plugin-private/mcp.json` (142 lines) — 18 MCP servers\n- `/Users/apple/hivemind-plugin-private/.env` — 10+ keys (READ KEYS ONLY, values already redacted)\n- `/Users/apple/hivemind-plugin-private/package.json` — files field (what's shipped)\n- `/Users/apple/hivemind-plugin-private/.hivemind/configs.schema.json` — runtime config schema\n\n## Research tasks (MUST use online docs)\n\nFor each OPENCODE_EXPERIMENTAL_* flag, search:\n- https://opencode.ai/docs/ (canonical docs)\n- https://github.com/anomalyco/opencode (source code)\n- Use fetch, context7, gitmcp as needed\n\nDetermine which experimental flags are CRITICAL for the harness to work:\n- OPENCODE_EXPERIMENTAL (general)\n- OPENCODE_EXPERIMENTAL_ICON_DISCOVERY\n- OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS\n- OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX\n- OPENCODE_EXPERIMENTAL_FILEWATCHER\n- OPENCODE_EXPERIMENTAL_LSP_TOOL\n- OPENCODE_EXPERIMENTAL_LSP_TY\n- OPENCODE_EXPERIMENTAL_MARKDOWN\n- OPENCODE_EXPERIMENTAL_PLAN_MODE\n- OPENCODE_EXPERIMENTAL_EXA\n- OPENCODE_DISABLE_AUTOCOMPACT\n- OPENCODE_DISABLE_TERMINAL_TITLE\n\n## Design tasks\n\n### 1. Template scaffolding strategy\n- WHERE to put user-specific config (gitignored) vs. shipped templates\n- WHICH files to ship as `.example` templates\n- WHICH files to ship as fully-validated configs\n- Naming convention: `.opencode/opencode.json.template` vs `.opencode/opencode.json.example` vs `.opencode/opencode.json`\n\n### 2. .env.example content\n- List ALL keys that should be in .env.example\n- For each: required vs optional, default value, what it does, link to OpenCode docs\n- Distinguish:\n  - **Required for harness features** (must be set)\n  - **Required for end-user functionality** (MCP API keys)\n  - **Optional** (user preferences, experimental flags)\n\n### 3. mcp.json template\n- Ship the 8 required MCPs (context7, repomix, exa, tavily, deepwiki, gitmcp, brave-search, github)\n- Mark which require API keys\n- Disable by default; user opts in via setup workflow\n- How to handle auth (OAuth, env vars, etc.)\n\n### 4. opencode.json template\n- Port: 4096 default, override via env\n- `compaction` settings (auto, prune, reserved) — these look harness-relevant\n- NO provider config (user optional)\n- NO model list (user optional)\n- Document the \"what's NOT here\" so users know what to add\n\n### 5. /hivemind-setup command design\n- Interactive vs declarative — RECOMMEND interactive\n- Workflow steps:\n  1. Detect missing config\n  2. Walk through required sections\n  3. Optional sections (provider, extra MCPs)\n  4. Validate setup works\n- Where the command lives: assets/commands/, assets/workflows/, or both\n- How it integrates with the bootstrap (BOOT-02) workflow\n- What error states it handles\n\n### 6. Port architecture (parallel sessions)\n- Default: 4096\n- Override: via OPENCODE_SERVER_PORT env or opencode.json\n- For tmux isolation: how to bind to dedicated port\n- For parallel sessions: explicit port assignment, mDNS discovery\n- Document the port resolution priority order\n\n## Output\n\nWrite to `.planning/proposals/hivemind-setup-architecture-2026-06-04.md` (500-800 lines).\n\nRequired sections:\n1. Executive summary (decisions, file inventory, commands)\n2. OpenCode experimental flags analysis (table: flag | purpose | critical for harness? | required in .env.example? | docs link)\n3. Template scaffolding strategy (file tree: what ships, what doesn't, what .gitignore covers)\n4. .env.example content (full key list with categorization)\n5. mcp.json template (8 required MCPs, auth handling, opt-in mechanism)\n6. opencode.json template (port 4096 default, no provider, no models, minimal config)\n7. /hivemind-setup command design (workflow, file locations, error handling, integration with bootstrap)\n8. Port architecture (4096 default, override, parallel-session isolation)\n9. Migration plan (how existing users transition to the new setup)\n10. Open questions for L0\n\n## Constraints\n- L5 design doc only — NO source code changes in this dispatch\n- Read-only on current state\n- MUST research OpenCode docs for experimental flags (no assumptions)\n- Cite every claim (file:line or docs URL)\n- Target 500-800 lines\n\n## Return\n- File path + line count\n- File inventory (what ships vs. what's user-local)\n- Critical experimental flags list (with docs URLs)\n- Recommended /hivemind-setup command structure\n- Open questions for L0 escalation",
       "tools": [],
       "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I'll act as the `hm-architect` subagent. Let me first establish context by reading the read-only state files in parallel, then research OpenCode experimental flags online.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "I have the read-only state. Now I need to research the OpenCode experimental flags online, and check the existing assets/ directory structure. Let me do these in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Good, I have the project state. Now let me research OpenCode's experimental flags by fetching the source code. The previous path failed; let me try other OpenCode source paths and the docs for experimental flags.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "I confirmed port 4096. Now let me research the specific experimental flags by fetching the opencode env docs and the source code on GitHub.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Let me search for the actual experimental flag definitions in OpenCode's source code.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Let me find the actual Flag module in the core package, and look for the experimental flag definitions.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": "I found the authoritative source. Many flags in the current `.env` are NOT in the current OpenCode source — they've been migrated to `opencode.json` `experimental.*` config keys. Let me confirm with more research.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Now I have the authoritative schema. Let me check for a few more pieces: the MCP env vars, the harness-specific env vars, and the LSP/formatter config keys.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": "Let me check existing templates and the related config command, plus verify a few more details.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": "I have all the research I need. Let me verify the proposals directory and then write the design doc.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Now I have all the context I need. Let me write the design doc.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Let me verify the file was written correctly and check the line count.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "The file is 999 lines — over the 800 target. Let me trim it.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "I have the AGENTS.md confirmation that `.planning/proposals/` is the correct sector and my artifact is correctly L5 (docs only, no runtime claims). Now I need to trim the file from 999 lines to the 500-800 target.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 16,
+      "actor": "hm-architect",
+      "content": "Design end-user setup architecture",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 17,
+      "actor": "hm-architect",
+      "content": "I have the AGENTS.md confirmation that `.planning/proposals/` is the correct sector and my artifact is correctly L5 (docs only, no runtime claims). Now I need to trim the file from 999 lines to the 500-800 target.",
+      "tools": [],
+      "role": "assistant"
     }
   ],
   "children": [],
@@ -449,6 +561,62 @@
         },
         "output": {}
       }
+    },
+    {
+      "timestamp": "2026-06-05T02:43:23.321Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_function_kkklq4hwfp4l_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:43:34.987Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_o0avdnabsqyg_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:43:35.713Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_o0avdnabsqyg_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:43:51.582Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_a8sctw242xia_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.planning/proposals/hivemind-setup-architecture-2026-06-04.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T02:44:51.585Z",
+      "type": "assistant_message",
+      "content": "I have the AGENTS.md confirmation that `.planning/proposals/` is the correct sector and my artifact is correctly L5 (docs only, no runtime claims). Now I need to trim the file from 999 lines to the 500-800 target.",
+      "metadata": {
+        "capturedFrom": "task_tool_result",
+        "taskID": "ses_16a60fe91ffefsxZEmEQbgZWEk"
+      }
     }
-  ]
+  ],
+  "lastMessage": "I have the AGENTS.md confirmation that `.planning/proposals/` is the correct sector and my artifact is correctly L5 (docs only, no runtime claims). Now I need to trim the file from 999 lines to the 500-800 target."
 }

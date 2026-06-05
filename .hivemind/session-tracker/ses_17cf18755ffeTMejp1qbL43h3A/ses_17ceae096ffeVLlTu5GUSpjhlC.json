@@ -10,7 +10,7 @@
     "subagentType": ""
   },
   "created": "2026-06-01T12:07:40.243Z",
-  "updated": "2026-06-05T01:38:52.690Z",
+  "updated": "2026-06-01T12:07:40.243Z",
   "status": "error",
   "mainAgent": {
     "name": "gsd-security-auditor",
@@ -20,5 +20,6 @@
   "children": [],
   "recoveryGuarantee": "resumable",
   "executionMode": "sdk",
-  "journey": []
+  "journey": [],
+  "delegationType": "sdk-direct"
 }

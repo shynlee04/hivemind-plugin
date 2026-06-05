@@ -1,0 +1,42 @@
+{
+  "sessionID": "ses_168ccd428ffeKTO26vtg68Ywi3",
+  "parentSessionID": "ses_16a2a8059ffe5lt45PAU0ET5Wx",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "unknown",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T09:52:53.177Z",
+  "updated": "2026-06-05T09:53:14.506Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "unknown",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a test subagent. Simply respond with \"Test delegation successful\" and do nothing else.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Test delegation successful",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct",
+  "lastMessage": "[Harness] Delegation timed out",
+  "journey": [],
+  "terminalKind": "completed"
+}

@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "rootMainSessionID": "ses_16a7b4487ffeBZ12xqaWkx7d1k",
-  "lastUpdated": "2026-06-05T02:38:54.382Z",
+  "lastUpdated": "2026-06-05T12:26:05.614Z",
   "children": {
     "ses_16a6f81d4ffeJTPAbYRU2z6Ul3": {
       "sessionID": "ses_16a6f81d4ffeJTPAbYRU2z6Ul3",
@@ -15,8 +15,36 @@
       "status": "completed",
       "turnCount": 0,
       "childFile": "ses_16a6f81d4ffeJTPAbYRU2z6Ul3.json"
+    },
+    "ses_16850d268ffe3zEV5KlMf9Zi5Q": {
+      "sessionID": "ses_16850d268ffe3zEV5KlMf9Zi5Q",
+      "parentSessionID": "ses_16a6f81d4ffeJTPAbYRU2z6Ul3",
+      "rootMainSessionID": "ses_16a7b4487ffeBZ12xqaWkx7d1k",
+      "delegationDepth": 2,
+      "delegatedBy": "delegate-task",
+      "subagentType": "gsd-executor",
+      "createdAt": "2026-06-05T12:26:05.614Z",
+      "updatedAt": "2026-06-05T12:26:05.614Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_16850d268ffe3zEV5KlMf9Zi5Q.json",
+      "delegationType": "async-spawn"
+    },
+    "ses_1684092e2ffefDqNuibSbB6B4X": {
+      "sessionID": "ses_1684092e2ffefDqNuibSbB6B4X",
+      "parentSessionID": "ses_16850d268ffe3zEV5KlMf9Zi5Q",
+      "rootMainSessionID": "ses_16a7b4487ffeBZ12xqaWkx7d1k",
+      "delegationDepth": 2,
+      "delegatedBy": "task",
+      "subagentType": "unknown",
+      "createdAt": "2026-06-05T12:26:05.614Z",
+      "updatedAt": "2026-06-05T12:26:05.614Z",
+      "status": "active",
+      "turnCount": 0,
+      "childFile": "ses_1684092e2ffefDqNuibSbB6B4X.json",
+      "delegationType": "native-task"
     }
   },
-  "totalChildren": 1,
-  "maxDepth": 1
+  "totalChildren": 3,
+  "maxDepth": 2
 }

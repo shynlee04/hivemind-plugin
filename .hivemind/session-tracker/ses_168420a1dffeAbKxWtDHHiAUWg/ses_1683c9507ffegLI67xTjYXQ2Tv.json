@@ -1,0 +1,25 @@
+{
+  "sessionID": "ses_1683c9507ffegLI67xTjYXQ2Tv",
+  "parentSessionID": "ses_168420a1dffeAbKxWtDHHiAUWg",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T12:30:27.378Z",
+  "updated": "2026-06-05T12:44:06.146Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct",
+  "journey": []
+}

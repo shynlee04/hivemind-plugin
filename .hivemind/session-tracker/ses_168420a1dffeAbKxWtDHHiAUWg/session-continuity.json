@@ -1,0 +1,56 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_168420a1dffeAbKxWtDHHiAUWg",
+  "lastUpdated": "2026-06-05T13:00:59.280Z",
+  "hierarchy": {
+    "root": "ses_168420a1dffeAbKxWtDHHiAUWg",
+    "children": {
+      "ses_168406815ffeNGQ013Jg9od5iK": {
+        "file": "ses_168406815ffeNGQ013Jg9od5iK.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1683e5885ffeAcazk48mlWDTF0": {
+        "file": "ses_1683e5885ffeAcazk48mlWDTF0.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_168361ffcffeu0OnRGj7IiaHSM": {
+        "file": "ses_168361ffcffeu0OnRGj7IiaHSM.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_1682dfa4effeNzhPSyWvlSUphV": {
+        "file": "ses_1682dfa4effeNzhPSyWvlSUphV.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_168294eb9ffenaUjrj3XMJ2VHd": {
+        "file": "ses_168294eb9ffenaUjrj3XMJ2VHd.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 122,
+  "toolSummary": {
+    "bash": 18,
+    "delegate-task": 3,
+    "tmux-copilot": 6,
+    "delegation-status": 2,
+    "grep": 11,
+    "read": 8,
+    "edit": 3,
+    "task": 1
+  }
+}

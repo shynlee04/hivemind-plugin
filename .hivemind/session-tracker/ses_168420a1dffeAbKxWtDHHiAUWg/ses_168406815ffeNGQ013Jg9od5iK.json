@@ -1,0 +1,331 @@
+{
+  "sessionID": "ses_168406815ffeNGQ013Jg9od5iK",
+  "parentSessionID": "ses_168420a1dffeAbKxWtDHHiAUWg",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T12:26:14.419Z",
+  "updated": "2026-06-05T12:48:34.009Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "hm-codebase-mapper",
+      "content": "Audit the orchestration tools in this project. For each tool below, document:\n- Actions/args\n- Status values used\n- Integration points\n- Any schema conflicts between tools\n\nTools to audit:\n1. src/tools/session/session-tracker.ts\n2. src/tools/session/session-hierarchy.ts\n3. src/tools/session/session-context.ts\n4. src/tools/session/session-delegation-query.ts\n5. src/tools/hivemind/hivemind-session-view.ts\n\nWrite findings to .hivemind/planning/tools-audit-58-9-2026-06-05/06-injection-test.md",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "MID-SESSION INJECTION: after writing your file, also add a 'Cross-Tool Overlap Matrix' table showing which tools call each other or share data. Use steal format for the table.",
+      "tools": [],
+      "role": "user"
+    }
+  ],
+  "children": [],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct",
+  "lastMessage": "[Harness] Delegation timed out",
+  "journey": [
+    {
+      "timestamp": "2026-06-05T12:27:32.341Z",
+      "type": "tool_call",
+      "content": "Tool: skill",
+      "metadata": {
+        "tool": "skill",
+        "callID": "call_function_fzpgk0mrtjlo_1",
+        "input": {
+          "name": "hm-l3-detective"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:27:59.901Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_jmgngsej3qzu_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:28:00.572Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_jmgngsej3qzu_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:28:00.603Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_function_jmgngsej3qzu_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:28:00.954Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_function_jmgngsej3qzu_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:28:12.452Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_b0eebj74i7yu_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-tracker.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:28:13.649Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_b0eebj74i7yu_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-hierarchy.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:28:13.655Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_b0eebj74i7yu_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-context.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:28:14.412Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_b0eebj74i7yu_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-delegation-query.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:28:14.443Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_b0eebj74i7yu_5",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-session-view.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:28:59.307Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_function_y6h5pu7tw02b_1",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:29:00.499Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_function_y6h5pu7tw02b_2",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:29:01.735Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_function_y6h5pu7tw02b_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:29:03.089Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_function_y6h5pu7tw02b_4",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:29:04.132Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_y6h5pu7tw02b_5",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:29:04.698Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_function_y6h5pu7tw02b_6",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:29:14.180Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_sjm8cpv6emng_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/session-tracker.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:29:14.952Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_sjm8cpv6emng_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/session-delegation-query.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:29:14.957Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_sjm8cpv6emng_3",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/schema-kernel/session-view.schema.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:29:15.329Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_sjm8cpv6emng_4",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/planning/tools-audit-58-9-2026-06-05/01-tools-surface.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:30:29.915Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_jc2i87sirgys_1",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-resolver.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:30:30.974Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_function_jc2i87sirgys_2",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/.hivemind/planning/tools-audit-58-9-2026-06-05/01-tools-surface.md"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:30:31.642Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_function_jc2i87sirgys_3",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T12:30:31.956Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_function_jc2i87sirgys_4",
+        "input": {},
+        "output": {}
+      }
+    }
+  ],
+  "terminalKind": "timeout"
+}

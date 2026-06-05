@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_16850d268ffe3zEV5KlMf9Zi5Q",
+  "lastUpdated": "2026-06-05T12:15:06.197Z",
+  "children": {
+    "ses_1684b8d19ffeInAn1Ys0Q5EvCA": {
+      "sessionID": "ses_1684b8d19ffeInAn1Ys0Q5EvCA",
+      "parentSessionID": "ses_16850d268ffe3zEV5KlMf9Zi5Q",
+      "rootMainSessionID": "ses_16850d268ffe3zEV5KlMf9Zi5Q",
+      "delegationDepth": 1,
+      "delegatedBy": "gsd-executor",
+      "subagentType": "",
+      "createdAt": "2026-06-05T12:15:06.197Z",
+      "updatedAt": "2026-06-05T12:15:06.197Z",
+      "status": "timeout",
+      "turnCount": 0,
+      "childFile": "ses_1684b8d19ffeInAn1Ys0Q5EvCA.json",
+      "delegationType": "sdk-direct"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

@@ -1,0 +1,25 @@
+{
+  "sessionID": "ses_1682bff5cffeFeKt7z251mTXpz",
+  "parentSessionID": "ses_168420a1dffeAbKxWtDHHiAUWg",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-codebase-mapper",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T12:48:36.257Z",
+  "updated": "2026-06-05T12:48:36.257Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "hm-codebase-mapper",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct",
+  "journey": []
+}

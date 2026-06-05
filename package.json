@@ -51,6 +51,7 @@
     "@clack/prompts": "^1.4.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@opencode-ai/sdk": "^1.15.13",
+    "eslint": "^10.4.1",
     "gray-matter": "^4.0.3",
     "yaml": "^2.9.0",
     "zod": "^4.4.3"

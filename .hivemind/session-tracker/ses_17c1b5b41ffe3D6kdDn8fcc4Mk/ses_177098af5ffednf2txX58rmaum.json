@@ -10,7 +10,7 @@
     "subagentType": ""
   },
   "created": "2026-06-02T15:31:53.761Z",
-  "updated": "2026-06-05T01:38:52.690Z",
+  "updated": "2026-06-05T12:15:06.198Z",
   "status": "error",
   "mainAgent": {
     "name": "",
@@ -411,5 +411,6 @@
   ],
   "lastMessage": "The SC-* reference is the meta-documentation of the SC-isolation guardrail (line 89: \"0 SC-* references in any P53 artifact\"), not a path reference. The guardrail is preserved. All deliverables complete.\n\n###TASK_COMPLETED###\nP53 SHIP closed\nCommit: 1dca30aa\nFiles: 53-CLOSE.md (NEW, 122 lines), STATE.md (edit, 2 lines), ROADMAP.md (edit, 1 line)\n3 files, atomic single commit\nR-P50-03: 0 .hivemind/* in commit (verified)\nSC-isolation: preserved (only meta-statement in 53-CLOSE.md line 89, no path refs)\n27 tool keys unchanged, D-04 silent-fallback preserved, P20 invariant honored\nP54 ready to loop (Session Persistence + Restart-Recovery)",
   "recoveryGuarantee": "resumable",
-  "executionMode": "sdk"
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct"
 }

@@ -1,0 +1,42 @@
+{
+  "sessionID": "ses_1687570ccffeB1jtyghT84zQeF",
+  "parentSessionID": "ses_16a2a8059ffe5lt45PAU0ET5Wx",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T11:28:20.833Z",
+  "updated": "2026-06-05T12:29:31.537Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are a test subagent. Simply respond with \"Test delegation successful\" and do nothing else. This is UAT for Phase 59 copilot features.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "Test delegation successful",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [],
+  "delegationType": "sdk-direct",
+  "lastMessage": "[Harness] Delegation timed out",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "terminalKind": "completed"
+}

@@ -1,0 +1,559 @@
+{
+  "sessionID": "ses_168ba8039ffestNNXc2jy2bIDn",
+  "parentSessionID": "ses_16a2a8059ffe5lt45PAU0ET5Wx",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-codebase-mapper",
+    "model": "",
+    "tool": "task",
+    "description": "You are subagent hm-codebase-mapper for UAT phase 58.9. You are delegated to analyze schema conflicts and overlaps in session/coordination/delegation tools.\n\n## TASK 2: Schema & Overlap Audit\n\n### Part A: Schema Unification Audit\n\nRead these files and extract their type definitions for session status, delegation status, and session state:\n\n1. `src/shared/types.ts` — look for `SessionStatus`, `DelegationStatus`, `TaskStatus` types\n2. `src/shared/task-status.ts` — task status enum/union\n3. `src/features/tmux/persistence.ts` — `SessionState` type (\"active\" | \"ready\" | \"paused\" | \"detached\" | \"failed\")\n4. `src/tools/delegation/delegation-status.ts` — VALID_DELEGATION_STATUSES set\n5. `src/coordination/delegation/manager.ts` — delegation status transitions\n6. `src/task-management/lifecycle/` — lifecycle status definitions\n7. `src/coordination/delegation/types.ts` — DelegationResult status field\n\nDocument EVERY status value across the codebase in a unified table:\n\n| Source File | Type Name | Status Values | Used By |\n|-------------|-----------|---------------|---------|\n| persistence.ts | SessionState | active, ready, paused, detached, failed | SessionManager |\n| delegation-status.ts | VALID_DELEGATION_STATUSES | dispatched, running, completed, error, timeout, aborted, cancelled | delegation-status tool |\n| ... | ... | ... | ... |\n\nIdentify:\n- Which statuses overlap in meaning (e.g., \"active\" in SessionState vs \"running\" in delegation-status)\n- Which statuses are contradictory (e.g., can a session be \"completed\" AND \"active\"?)\n- Tools that return status values from DIFFERENT enums for the same field\n\n### Part B: Stacking/Resumable Logic Audit\n\nRead these files for stacking/resumable logic:\n1. `src/tools/delegation/delegation-status.ts` — find-stackable action logic\n2. `src/coordination/delegation/session-intelligence.ts` — stackable session detection\n3. `src/tools/session/session-context.ts` — cross-session aggregation\n\nDocument:\n- What conditions must be met for a session to be \"stackable\"?\n- What conditions for \"resumable\"?\n- Are there ANY cases where a session is NOT stackable? (user claims ALL are stackable)\n- Is the find-stackable logic too restrictive?\n\n### Part C: Progressive Disclosure Gaps\n\nRead these tools for query depth:\n1. session-tracker — does it support progressive levels (summary → detailed → full)?\n2. session-hierarchy — get-manifest vs get-children? Which gives better snapshot?\n3. session-delegation-query — does it support pagination and depth filtering?\n4. delegation-status — does the list action show enough context (title, agent, status, tools, messages)?\n5. hivemind-trajectory — does inspect support depth levels (summary, detailed, full)?\n6. hivemind-session-view — unified view: does it include delegation details + trajectory?\n\nDocument what each tool returns at each \"depth\" level. Identify gaps where a main agent cannot get quick context about child sessions.\n\n### Part D: Edge Case Analysis (Forked + Parallel Sessions)\n\n1. **Forked sessions**: Two main sessions sharing the same child. Read `session-hierarchy.ts` and `session-context.ts` — can they detect this pattern? What happens when two parents claim the same child?\n\n2. **Parallel main sessions**: Read `session-tracker.ts` — when there are multiple main sessions, does `list-sessions` return ALL sessions or only the caller's? Is there session identity isolation (non-leaking)?\n\n3. **Boundary enforcement**: Is there a mechanism to prevent main session A from seeing/controlling main session B's children? Check `session-tracker.ts` and `hivemind-session-view.ts`.\n\n## OUTPUT FORMAT\n\nWrite to `.hivemind/planning/tools-audit-58-9-2026-06-05/02-schema-overlap-audit.md`.\n\nInclude:\n- Unified status value table with conflicts marked\n- Stacking/resumable logic audit with false-negatives identified\n- Progressive disclosure gap analysis per tool\n- Edge case analysis with findings\n\n## CONSTRAINTS\n- Read-only — do NOT modify any files\n- Write ONLY to `.hivemind/planning/tools-audit-58-9-2026-06-05/`\n- Document file:line references",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T10:12:54.873Z",
+  "updated": "2026-06-05T10:16:42.622Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-codebase-mapper",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "You are subagent hm-codebase-mapper for UAT phase 58.9. You are delegated to analyze schema conflicts and overlaps in session/coordination/delegation tools.\n\n## TASK 2: Schema & Overlap Audit\n\n### Part A: Schema Unification Audit\n\nRead these files and extract their type definitions for session status, delegation status, and session state:\n\n1. `src/shared/types.ts` — look for `SessionStatus`, `DelegationStatus`, `TaskStatus` types\n2. `src/shared/task-status.ts` — task status enum/union\n3. `src/features/tmux/persistence.ts` — `SessionState` type (\"active\" | \"ready\" | \"paused\" | \"detached\" | \"failed\")\n4. `src/tools/delegation/delegation-status.ts` — VALID_DELEGATION_STATUSES set\n5. `src/coordination/delegation/manager.ts` — delegation status transitions\n6. `src/task-management/lifecycle/` — lifecycle status definitions\n7. `src/coordination/delegation/types.ts` — DelegationResult status field\n\nDocument EVERY status value across the codebase in a unified table:\n\n| Source File | Type Name | Status Values | Used By |\n|-------------|-----------|---------------|---------|\n| persistence.ts | SessionState | active, ready, paused, detached, failed | SessionManager |\n| delegation-status.ts | VALID_DELEGATION_STATUSES | dispatched, running, completed, error, timeout, aborted, cancelled | delegation-status tool |\n| ... | ... | ... | ... |\n\nIdentify:\n- Which statuses overlap in meaning (e.g., \"active\" in SessionState vs \"running\" in delegation-status)\n- Which statuses are contradictory (e.g., can a session be \"completed\" AND \"active\"?)\n- Tools that return status values from DIFFERENT enums for the same field\n\n### Part B: Stacking/Resumable Logic Audit\n\nRead these files for stacking/resumable logic:\n1. `src/tools/delegation/delegation-status.ts` — find-stackable action logic\n2. `src/coordination/delegation/session-intelligence.ts` — stackable session detection\n3. `src/tools/session/session-context.ts` — cross-session aggregation\n\nDocument:\n- What conditions must be met for a session to be \"stackable\"?\n- What conditions for \"resumable\"?\n- Are there ANY cases where a session is NOT stackable? (user claims ALL are stackable)\n- Is the find-stackable logic too restrictive?\n\n### Part C: Progressive Disclosure Gaps\n\nRead these tools for query depth:\n1. session-tracker — does it support progressive levels (summary → detailed → full)?\n2. session-hierarchy — get-manifest vs get-children? Which gives better snapshot?\n3. session-delegation-query — does it support pagination and depth filtering?\n4. delegation-status — does the list action show enough context (title, agent, status, tools, messages)?\n5. hivemind-trajectory — does inspect support depth levels (summary, detailed, full)?\n6. hivemind-session-view — unified view: does it include delegation details + trajectory?\n\nDocument what each tool returns at each \"depth\" level. Identify gaps where a main agent cannot get quick context about child sessions.\n\n### Part D: Edge Case Analysis (Forked + Parallel Sessions)\n\n1. **Forked sessions**: Two main sessions sharing the same child. Read `session-hierarchy.ts` and `session-context.ts` — can they detect this pattern? What happens when two parents claim the same child?\n\n2. **Parallel main sessions**: Read `session-tracker.ts` — when there are multiple main sessions, does `list-sessions` return ALL sessions or only the caller's? Is there session identity isolation (non-leaking)?\n\n3. **Boundary enforcement**: Is there a mechanism to prevent main session A from seeing/controlling main session B's children? Check `session-tracker.ts` and `hivemind-session-view.ts`.\n\n## OUTPUT FORMAT\n\nWrite to `.hivemind/planning/tools-audit-58-9-2026-06-05/02-schema-overlap-audit.md`.\n\nInclude:\n- Unified status value table with conflicts marked\n- Stacking/resumable logic audit with false-negatives identified\n- Progressive disclosure gap analysis per tool\n- Edge case analysis with findings\n\n## CONSTRAINTS\n- Read-only — do NOT modify any files\n- Write ONLY to `.hivemind/planning/tools-audit-58-9-2026-06-05/`\n- Document file:line references",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "I am **subagent hm-codebase-mapper**, delegated for schema conflict and overlap audit of session/coordination/delegation tools. I will proceed systematically through Parts A-D.\n\nLet me start by reading all referenced files in parallel.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 3,
+      "actor": "unknown",
+      "content": "Tools: read, read, read, read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 4,
+      "actor": "unknown",
+      "content": "Now let me read the remaining files for Parts A-D.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 5,
+      "actor": "unknown",
+      "content": "Tools: read, read, glob, glob, glob, glob, glob",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 6,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 7,
+      "actor": "unknown",
+      "content": "Now let me check for the hivemind-session-view tool and the session-tracker session-state types.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 8,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 9,
+      "actor": "unknown",
+      "content": "Tools: read, read, read",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 10,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 11,
+      "actor": "unknown",
+      "content": " ",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 12,
+      "actor": "unknown",
+      "content": "Good, I now have all the data. Let me create the output directory and write the comprehensive audit document.",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 13,
+      "actor": "unknown",
+      "content": "Tools: write",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 14,
+      "actor": "unknown",
+      "content": "Tools: todowrite",
+      "tools": [],
+      "role": "assistant"
+    },
+    {
+      "turn": 15,
+      "actor": "unknown",
+      "content": "## MAPPING COMPLETE\n\n**Artifact written:** `.hivemind/planning/tools-audit-58-9-2026-06-05/02-schema-overlap-audit.md`\n\n### What was delivered\n\n**Part A — Schema Unification Audit:** Catalogued **16 distinct status type declarations** across 8 source files, with 20 unique status literal values. Identified 4 lossy mappings (`error→failed`, `timeout→failed`, `cancelled→aborted`, `cancelled→failed`), string-type drift in session-tracker status fields, and cross-tool status vocabulary mismatch.\n\n**Part B — Stacking/Resumable Logic Audit:** Found **1 HIGH-severity finding** (FN-B1): AGENTS.md claims \"ANY valid session ID\" is stackable, but `findStackableSessions` returns only terminal-status sessions (`completed/error/timeout/aborted/cancelled`). Active sessions (`dispatched/running`) are segregated into `findResumableSessions`. Also identified pre-dispatch invisibility and missing retry recommendations for stuck active sessions.\n\n**Part C — Progressive Disclosure Gaps:** `session-delegation-query` is the only tool with proper progressive disclosure (list→get, pagination, depth filtering). `session-tracker`, `delegation-status list`, and `hivemind-session-view` lack depth levels — returning full data for every call.\n\n**Part D — Edge Cases:** Found that forked sessions (2 parents, 1 child) are **undetectable**. Session identity isolation is **absent** in 7 of 10 audit tools — any main session can read any other main session's children. The only properly guarded tool is `delegation-status` via `canAccessDelegation`.\n\n### Key Metrics\n\n- **Files analyzed:** 14 (shared/types, task-status, persistence, delegation-status, delegation/manager, delegation/types, pool-types, session-intelligence, session-context, lifecycle/index, session-tracker/types, session-tracker tool, session-hierarchy, hivemind-session-view, session-delegation-query, session-manager)\n- **Findings documented:** 12 (F-A1 through D-F3)\n- **Severity:** HIGH = 2 (FN-B1, D-F2), MEDIUM = 5, LOW = 5",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "journey": [
+    {
+      "timestamp": "2026-06-05T10:13:03.887Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_4hi0z7cVGr2gDPBQihSm3896",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:14.353Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_FcMUGwdSrDAZSw87LpZ74291",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:14.360Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_DE1aeZ81jMAY6LLxJ43g3942",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/shared/task-status.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:14.370Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_H1lzQehfHIjMVBfgGuIi0061",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/persistence.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:14.375Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_05_gC7KatbuvS3qawW2QN333271",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:14.381Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_04_uVABwnbKIo6fcawhrYPL2901",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:14.398Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_NmXOujWUdS1VKgL59D8M8769",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/delegation/delegation-status.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:22.348Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_E1gLN66wyWd2dv6bdjzR3619",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/lifecycle"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:22.378Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_WEXiw2KOXNYCCT1vXdyc7017",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/session-intelligence.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:22.386Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_H5KAujwqc6bjTVF8VLVY3402",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-context.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:22.396Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_03_xskdbYF4xw3yjbbo1XJd1612",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/coordination/delegation/pool-types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:34.084Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_Vtne2ZmDLIHLAz3GPpEi3824",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/task-management/lifecycle/index.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:34.092Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_Rts4q5D2VDMc3G4w1KsF3453",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/types.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:34.101Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_04_Cf2dTkZIDWvVFkdSZNyc2586",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:34.116Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_03_Y2QxNyFe6o8Bejs91Lb34775",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:34.122Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_68jRcYDwZmPg4qa5EVWc0345",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:34.129Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_05_QhanxH7oVevSQzTWQsgD5691",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:34.168Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_06_d98eUrh2x26Z8bbz42C27712",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:40.920Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_5yUefYZOp29IWzeXrjik4639",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-hierarchy.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:40.926Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_fYseNSwsI7njYDycpkDy2353",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-delegation-query.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:40.932Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_11LRf2vofQYd1jul8ZgH1500",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/session/session-tracker.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:48.447Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_00_CdaSyOiharmHf7KZbijl2998",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:48.463Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_02_snGJqw3PptZh1ERafYDg4290",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:48.469Z",
+      "type": "tool_call",
+      "content": "Tool: glob",
+      "metadata": {
+        "tool": "glob",
+        "callID": "call_01_RQ8XXUgR6HJP7XrkSmP53427",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:56.460Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_00_FjLi3AQ9fdJVOGSI89zW0170",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:13:56.468Z",
+      "type": "tool_call",
+      "content": "Tool: grep",
+      "metadata": {
+        "tool": "grep",
+        "callID": "call_01_LB8YnyX1megx5m9fg0ki6831",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:14:03.589Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_LDxCZsZhYxPnjH8qf0JW0831",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/tools/hivemind/hivemind-session-view.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:14:03.594Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_02_20WblWSjaBoQG0uXSjZt1404",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/session-manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:14:03.601Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_01_b6QX1oUGRgylEL4zx0NL7230",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/session-tracker/persistence/atomic-write.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:14:10.757Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_SIzeP7TH2CBFq9J8Hy9Q3214",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/session-manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:14:21.079Z",
+      "type": "tool_call",
+      "content": "Tool: read",
+      "metadata": {
+        "tool": "read",
+        "callID": "call_00_ZaljJGTR1ZQBd5EBLfcD1711",
+        "input": {
+          "filePath": "/Users/apple/hivemind-plugin-private/src/features/tmux/session-manager.ts"
+        },
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:15:01.271Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_lVjn4AEsSbzbYha07t192211",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:15:01.299Z",
+      "type": "tool_call",
+      "content": "Tool: bash",
+      "metadata": {
+        "tool": "bash",
+        "callID": "call_01_XfkZtI88QjpN3iqaBLXV2554",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:16:23.766Z",
+      "type": "tool_call",
+      "content": "Tool: write",
+      "metadata": {
+        "tool": "write",
+        "callID": "call_00_3wIT4SXFFZHh794iE5Sf5441",
+        "input": {},
+        "output": {}
+      }
+    },
+    {
+      "timestamp": "2026-06-05T10:16:31.365Z",
+      "type": "tool_call",
+      "content": "Tool: todowrite",
+      "metadata": {
+        "tool": "todowrite",
+        "callID": "call_00_Mp4ePbTPl6TyXJJJdRzW0721",
+        "input": {},
+        "output": {}
+      }
+    }
+  ],
+  "delegationType": "sdk-direct",
+  "queueKey": "agent:hm-codebase-mapper",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "lastMessage": "## MAPPING COMPLETE\n\n**Artifact written:** `.hivemind/planning/tools-audit-58-9-2026-06-05/02-schema-overlap-audit.md`\n\n### What was delivered\n\n**Part A — Schema Unification Audit:** Catalogued **16 distinct status type declarations** across 8 source files, with 20 unique status literal values. Identified 4 lossy mappings (`error→failed`, `timeout→failed`, `cancelled→aborted`, `cancelled→failed`), string-type drift in session-tracker status fields, and cross-tool status vocabulary mismatch.\n\n**Part B — Stacking/Resumable Logic Audit:** Found **1 HIGH-severity finding** (FN-B1): AGENTS.md claims \"ANY valid session ID\" is stackable, but `findStackableSessions` returns only terminal-status sessions (`completed/error/timeout/aborted/cancelled`). Active sessions (`dispatched/running`) are segregated into `findResumableSessions`. Also identified pre-dispatch invisibility and missing retry recommendations for stuck active sessions.\n\n**Part C — Progressive Disclosure Gaps:** `session-delegation-query` is the only tool with proper progressive disclosure (list→get, pagination, depth filtering). `session-tracker`, `delegation-status list`, and `hivemind-session-view` lack depth levels — returning full data for every call.\n\n**Part D — Edge Cases:** Found that forked sessions (2 parents, 1 child) are **undetectable**. Session identity isolation is **absent** in 7 of 10 audit tools — any main session can read any other main session's children. The only properly guarded tool is `delegation-status` via `canAccessDelegation`.\n\n### Key Metrics\n\n- **Files analyzed:** 14 (shared/types, task-status, persistence, delegation-status, delegation/manager, delegation/types, pool-types, session-intelligence, session-context, lifecycle/index, session-tracker/types, session-tracker tool, session-hierarchy, hivemind-session-view, session-delegation-query, session-manager)\n- **Findings documented:** 12 (F-A1 through D-F3)\n- **Severity:** HIGH = 2 (FN-B1, D-F2), MEDIUM = 5, LOW = 5"
+}

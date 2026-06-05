@@ -10,7 +10,7 @@
     "subagentType": ""
   },
   "created": "2026-06-01T12:00:24.240Z",
-  "updated": "2026-06-05T01:38:52.689Z",
+  "updated": "2026-06-05T12:44:06.149Z",
   "status": "error",
   "mainAgent": {
     "name": "",
@@ -362,5 +362,6 @@
     }
   ],
   "recoveryGuarantee": "resumable",
-  "executionMode": "sdk"
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct"
 }

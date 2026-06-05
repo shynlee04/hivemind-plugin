@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "rootMainSessionID": "ses_168503d79ffeW6rpo7IAszRhRC",
+  "lastUpdated": "2026-06-05T12:18:23.065Z",
+  "children": {
+    "ses_16847c537ffeAWajJVnETmWtA9": {
+      "sessionID": "ses_16847c537ffeAWajJVnETmWtA9",
+      "parentSessionID": "ses_168503d79ffeW6rpo7IAszRhRC",
+      "rootMainSessionID": "ses_168503d79ffeW6rpo7IAszRhRC",
+      "delegationDepth": 1,
+      "delegatedBy": "hm-codebase-mapper",
+      "subagentType": "",
+      "createdAt": "2026-06-05T12:18:23.065Z",
+      "updatedAt": "2026-06-05T12:18:23.065Z",
+      "status": "completed",
+      "turnCount": 0,
+      "childFile": "ses_16847c537ffeAWajJVnETmWtA9.json",
+      "delegationType": "sdk-direct"
+    }
+  },
+  "totalChildren": 1,
+  "maxDepth": 1
+}

@@ -1,0 +1,42 @@
+{
+  "sessionID": "ses_1683e5885ffeAcazk48mlWDTF0",
+  "parentSessionID": "ses_168420a1dffeAbKxWtDHHiAUWg",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T12:28:29.664Z",
+  "updated": "2026-06-05T12:37:30.755Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "actor": "user",
+      "content": "Quick test: respond with just \"OK\" and exit.",
+      "tools": [],
+      "role": "user"
+    },
+    {
+      "turn": 2,
+      "actor": "unknown",
+      "content": "OK",
+      "tools": [],
+      "role": "assistant"
+    }
+  ],
+  "children": [],
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct",
+  "lastMessage": "[Harness] Delegation timed out",
+  "journey": [],
+  "terminalKind": "completed"
+}

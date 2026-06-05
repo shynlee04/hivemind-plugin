@@ -1,0 +1,27 @@
+{
+  "sessionID": "ses_16850d268ffe3zEV5KlMf9Zi5Q",
+  "parentSessionID": "ses_16a6f81d4ffeJTPAbYRU2z6Ul3",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "",
+    "model": "",
+    "tool": "task",
+    "description": "",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T12:08:19.283Z",
+  "updated": "2026-06-05T12:48:34.011Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "lastMessage": "[Harness] Delegation timed out",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct",
+  "journey": [],
+  "terminalKind": "timeout"
+}

@@ -1,0 +1,218 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_16a2a8059ffe5lt45PAU0ET5Wx",
+  "lastUpdated": "2026-06-05T12:22:06.825Z",
+  "hierarchy": {
+    "root": "ses_16a2a8059ffe5lt45PAU0ET5Wx",
+    "children": {
+      "ses_16a27ed3fffeC9jp2G75w9iISO": {
+        "file": "ses_16a27ed3fffeC9jp2G75w9iISO.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_16a235c58ffefCYOhLuW1UEN8o": {
+        "file": "ses_16a235c58ffefCYOhLuW1UEN8o.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "hm-debugger",
+        "children": {}
+      },
+      "ses_169f5693cffejFK3Rnv5DZWeZn": {
+        "file": "ses_169f5693cffejFK3Rnv5DZWeZn.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_169f2c19bffeoETZ9TFnE880wF": {
+        "file": "ses_169f2c19bffeoETZ9TFnE880wF.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_168ef7961ffe7akeHZkKEhRnyY": {
+        "file": "ses_168ef7961ffe7akeHZkKEhRnyY.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_168e77c6cffe1UbxxjaFzTa3B5": {
+        "file": "ses_168e77c6cffe1UbxxjaFzTa3B5.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_168e43e71ffezZBBh9kE0rtCcK": {
+        "file": "ses_168e43e71ffezZBBh9kE0rtCcK.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_168d93d7bffeiYBwQAnVCtZle3": {
+        "file": "ses_168d93d7bffeiYBwQAnVCtZle3.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_168ccd428ffeKTO26vtg68Ywi3": {
+        "file": "ses_168ccd428ffeKTO26vtg68Ywi3.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_168badcf3ffex8tF32qmHlPTD8": {
+        "file": "ses_168badcf3ffex8tF32qmHlPTD8.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_168ba8039ffestNNXc2jy2bIDn": {
+        "file": "ses_168ba8039ffestNNXc2jy2bIDn.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "unknown",
+        "children": {}
+      },
+      "ses_168b971eeffeRrTwBf2ikUcleJ": {
+        "file": "ses_168b971eeffeRrTwBf2ikUcleJ.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_168b8635affe3mj3AhOqxia5H6": {
+        "file": "ses_168b8635affe3mj3AhOqxia5H6.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "build",
+        "children": {}
+      },
+      "ses_168ad4f72ffehS1NoG9SPWPPzK": {
+        "file": "ses_168ad4f72ffehS1NoG9SPWPPzK.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_168a59f98ffehO88RWqleC5wl0": {
+        "file": "ses_168a59f98ffehO88RWqleC5wl0.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_168a45c93ffeE1vY30UBizQipQ": {
+        "file": "ses_168a45c93ffeE1vY30UBizQipQ.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_168a33ce6ffeYiqfzKVpj9XYKY": {
+        "file": "ses_168a33ce6ffeYiqfzKVpj9XYKY.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_168a33926ffe2DmcBXW64Prpw0": {
+        "file": "ses_168a33926ffe2DmcBXW64Prpw0.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_168a1665affe0Q9V7ZR8brDbcv": {
+        "file": "ses_168a1665affe0Q9V7ZR8brDbcv.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debug-session-manager",
+        "children": {}
+      },
+      "ses_168a09e59ffesNegXEMV6FVGGy": {
+        "file": "ses_168a09e59ffesNegXEMV6FVGGy.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-debugger",
+        "children": {}
+      },
+      "ses_1689a9021ffeuXX2EffgMQYWEL": {
+        "file": "ses_1689a9021ffeuXX2EffgMQYWEL.json",
+        "depth": 1,
+        "status": "active",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1689a8d87ffeJzVklrdNtqIVyg": {
+        "file": "ses_1689a8d87ffeJzVklrdNtqIVyg.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-phase-researcher",
+        "children": {}
+      },
+      "ses_1687570ccffeB1jtyghT84zQeF": {
+        "file": "ses_1687570ccffeB1jtyghT84zQeF.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_168667538ffegb8eg3F3edF5Qh": {
+        "file": "ses_168667538ffegb8eg3F3edF5Qh.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_168562748ffeMrDCWiAj16qVCp": {
+        "file": "ses_168562748ffeMrDCWiAj16qVCp.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_168503d79ffeW6rpo7IAszRhRC": {
+        "file": "ses_168503d79ffeW6rpo7IAszRhRC.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      },
+      "ses_16847c537ffeAWajJVnETmWtA9": {
+        "file": "ses_16847c537ffeAWajJVnETmWtA9.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "hm-codebase-mapper",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 108,
+  "toolSummary": {
+    "session-tracker": 5,
+    "skill": 4,
+    "delegation-status": 9,
+    "session-hierarchy": 5,
+    "delegate-task": 15,
+    "glob": 15,
+    "read": 92,
+    "grep": 61,
+    "bash": 118,
+    "task": 9,
+    "edit": 55,
+    "execute-slash-command": 5,
+    "tmux-copilot": 20,
+    "write": 1,
+    "session-delegation-query": 1,
+    "session-journal-export": 1
+  }
+}

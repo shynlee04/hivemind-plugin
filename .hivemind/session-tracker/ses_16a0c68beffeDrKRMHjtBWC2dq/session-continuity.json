@@ -1,0 +1,28 @@
+{
+  "version": "2.0",
+  "sessionID": "ses_16a0c68beffeDrKRMHjtBWC2dq",
+  "lastUpdated": "2026-06-05T04:10:57.002Z",
+  "hierarchy": {
+    "root": "ses_16a0c68beffeDrKRMHjtBWC2dq",
+    "children": {
+      "ses_16a07be8bffeQ0z3hkvwRgRbH9": {
+        "file": "ses_16a07be8bffeQ0z3hkvwRgRbH9.json",
+        "depth": 1,
+        "status": "completed",
+        "delegatedBy": "gsd-executor",
+        "children": {}
+      }
+    }
+  },
+  "turnCount": 9,
+  "toolSummary": {
+    "bash": 7,
+    "glob": 4,
+    "skill": 2,
+    "tmux-state-query": 1,
+    "tmux-copilot": 1,
+    "read": 3,
+    "delegate-task": 1,
+    "delegation-status": 4
+  }
+}

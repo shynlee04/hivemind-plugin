@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "rootMainSessionID": "ses_180cbe824ffevJS09MQ0AHnKPh",
-  "lastUpdated": "2026-06-05T01:38:52.796Z",
+  "lastUpdated": "2026-06-05T12:53:00.323Z",
   "children": {
     "ses_18064fed0ffe6bJgq6xiIUsb6t": {
       "sessionID": "ses_18064fed0ffe6bJgq6xiIUsb6t",
@@ -10,11 +10,12 @@
       "delegationDepth": 1,
       "delegatedBy": "",
       "subagentType": "",
-      "createdAt": "2026-06-04T15:56:06.761Z",
-      "updatedAt": "2026-06-04T15:56:06.761Z",
+      "createdAt": "2026-06-05T12:44:06.148Z",
+      "updatedAt": "2026-06-05T12:44:06.148Z",
       "status": "active",
       "turnCount": 0,
-      "childFile": "ses_18064fed0ffe6bJgq6xiIUsb6t.json"
+      "childFile": "ses_18064fed0ffe6bJgq6xiIUsb6t.json",
+      "delegationType": "sdk-direct"
     },
     "ses_1805fcf91ffebS6rrQGBF4Xw6J": {
       "sessionID": "ses_1805fcf91ffebS6rrQGBF4Xw6J",
@@ -49,11 +50,12 @@
       "delegationDepth": 1,
       "delegatedBy": "",
       "subagentType": "",
-      "createdAt": "2026-06-05T01:38:52.796Z",
-      "updatedAt": "2026-06-05T01:38:52.796Z",
+      "createdAt": "2026-06-05T12:53:00.323Z",
+      "updatedAt": "2026-06-05T12:53:00.323Z",
       "status": "active",
       "turnCount": 0,
-      "childFile": "ses_18056ca5bffehmJysJGtDNnxTP.json"
+      "childFile": "ses_18056ca5bffehmJysJGtDNnxTP.json",
+      "delegationType": "sdk-direct"
     },
     "ses_180434dfbffemZJsfzivJN2oAL": {
       "sessionID": "ses_180434dfbffemZJsfzivJN2oAL",

@@ -1,0 +1,27 @@
+{
+  "sessionID": "ses_168b971eeffeRrTwBf2ikUcleJ",
+  "parentSessionID": "ses_168badcf3ffex8tF32qmHlPTD8",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-codebase-mapper",
+    "model": "",
+    "tool": "task",
+    "description": "Investigate delegation tools surface. Read these files and write findings to .hivemind/planning/tools-audit-58-9-2026-06-05/01-tools-surface.md:\n\n1. src/tools/delegation/delegate-task.ts — actions, args, Zod schema, coordinator dispatch\n2. src/tools/delegation/delegation-status.ts — find-stackable, status values\n3. src/coordination/delegation/manager.ts — dispatch path, coordinator forwarding\n4. src/coordination/delegation/coordinator.ts — spawnTmuxPanelForChild, lifecycle\n\nFor each: list actions, required args, status values used, integration points. Format as markdown table.\n\nConstraints:\n- Read-only. Write to .hivemind/planning/tools-audit-58-9-2026-06-05/01-tools-surface.md only\n- Be concise but thorough",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T10:14:04.014Z",
+  "updated": "2026-06-05T10:15:04.093Z",
+  "status": "error",
+  "mainAgent": {
+    "name": "hm-codebase-mapper",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:hm-codebase-mapper",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct",
+  "lastMessage": "[Harness] Delegation timed out",
+  "journey": []
+}

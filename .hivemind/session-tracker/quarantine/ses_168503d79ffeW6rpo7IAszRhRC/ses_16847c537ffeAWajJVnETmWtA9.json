@@ -1,0 +1,27 @@
+{
+  "sessionID": "ses_16847c537ffeAWajJVnETmWtA9",
+  "parentSessionID": "ses_168503d79ffeW6rpo7IAszRhRC",
+  "delegationDepth": 1,
+  "delegatedBy": {
+    "agentName": "hm-codebase-mapper",
+    "model": "",
+    "tool": "task",
+    "description": "Follow-up mission: review the 05-real-case-test.md you just wrote and add a 'Schema Conflicts' section documenting the status value inconsistencies you found. Be specific about which files use which status vocabularies.",
+    "subagentType": ""
+  },
+  "created": "2026-06-05T12:18:13.639Z",
+  "updated": "2026-06-05T12:18:23.032Z",
+  "status": "completed",
+  "mainAgent": {
+    "name": "hm-codebase-mapper",
+    "model": ""
+  },
+  "turns": [],
+  "children": [],
+  "queueKey": "agent:hm-codebase-mapper",
+  "recoveryGuarantee": "resumable",
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct",
+  "lastMessage": "Child session ses_16847c537ffeAWajJVnETmWtA9 reached terminal status completed",
+  "journey": []
+}

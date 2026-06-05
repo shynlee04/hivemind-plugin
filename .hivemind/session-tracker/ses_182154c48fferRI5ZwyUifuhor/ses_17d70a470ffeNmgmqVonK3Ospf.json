@@ -10,7 +10,7 @@
     "subagentType": ""
   },
   "created": "2026-06-01T09:41:33.723Z",
-  "updated": "2026-06-05T01:38:52.689Z",
+  "updated": "2026-06-05T12:48:34.008Z",
   "status": "error",
   "mainAgent": {
     "name": "",
@@ -1146,5 +1146,6 @@
   ],
   "lastMessage": "(for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
   "recoveryGuarantee": "resumable",
-  "executionMode": "sdk"
+  "executionMode": "sdk",
+  "delegationType": "sdk-direct"
 }
