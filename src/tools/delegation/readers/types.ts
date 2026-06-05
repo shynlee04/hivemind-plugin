@@ -147,6 +147,13 @@ export function hierarchyChildToDelegation(
     explicitCancellation: false,
     lastMessageCount: 0,
     stablePollCount: 0,
+    // TODO-2 (2026-06-04, MVD §12.4 read-side enrichment): propagate
+    // delegationType from the validated child record to the resulting
+    // Delegation. The Zod schema uses z.string() (intentionally — R2
+    // mitigation allows any string for forward compat) so we cast to
+    // the 4-literal union via unknown. The set of valid values is
+    // defined in DelegationType (src/features/session-tracker/types.ts).
+    delegationType: child.delegationType as Delegation["delegationType"],
   }
 }
 
