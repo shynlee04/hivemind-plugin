@@ -23,16 +23,7 @@ import { renderToolResult } from "../shared/tool-helpers.js"
 // Permission gate (T-43-05 mitigation) — mirrors tmux-copilot.ts
 // ---------------------------------------------------------------------------
 
-const ORCHESTRATOR_AGENTS = [
-  { name: "hm-l0-orchestrator", tier: "orchestrator" },
-  { name: "hm-orchestrator", tier: "orchestrator" },
-  { name: "hf-l0-orchestrator", tier: "orchestrator" },
-  { name: "hf-coordinator", tier: "orchestrator" },
-] as const
-
-const ORCHESTRATOR_AGENT_NAMES = new Set<string>(
-  ORCHESTRATOR_AGENTS.map((a) => a.name),
-)
+// Agent-name permission gate removed in P59 R1 — all agents allowed
 
 // ---------------------------------------------------------------------------
 // Types for session summary
@@ -121,15 +112,9 @@ export const tmuxStateQueryTool: ReturnType<typeof tool> = tool({
   },
   async execute(
     rawArgs: unknown,
-    context: ToolContext,
+    _context: ToolContext,
   ): Promise<string> {
-    // 1. Permission gate
-    const callerAgent = context.agent
-    if (!callerAgent || !ORCHESTRATOR_AGENT_NAMES.has(callerAgent)) {
-      return renderToolResult({
-        error: { kind: "permission-denied", agent: callerAgent ?? "unknown" },
-      })
-    }
+    // 1. Permission gate — all agents allowed (P59 R1)
 
     // 2. Input validation
     const parsed = TmuxStateQueryActionSchema.safeParse(rawArgs)
