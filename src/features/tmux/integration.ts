@@ -27,6 +27,7 @@ import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { Socket } from "node:net";
 import { PaneGridPlanner } from "./grid-planner.js";
+import { createSessionPersistence } from "./persistence.js";
 import { SessionManager } from "./session-manager.js";
 import { TmuxMultiplexer } from "./tmux-multiplexer.js";
 import type { Logger } from "./tmux-multiplexer.js";
@@ -386,12 +387,22 @@ export async function createTmuxIntegrationIfSupported(
     // Step 6: Construct the in-tree multiplexer
     const multiplexer = new TmuxMultiplexer("main-vertical", 60, options.log);
 
+    // S5c fix: wire persistence into the SessionManager so the
+    // `void this.persistence?.persist(...)` call at session-manager.ts:266
+    // actually writes the .hivemind/state/tmux-sessions/<sid>.json record.
+    // D-04 silent-fallback is preserved (createSessionPersistence uses
+    // console.warn by default for filesystem errors).
+    const persistence = createSessionPersistence({ projectDirectory });
+
     // Step 7: Construct the in-tree session manager
     const sessionManager_ = new SessionManager(
       multiplexer,
       serverUrl ?? `http://localhost:${readOrMigratePort(projectDirectory) ?? 0}`,
       projectDirectory,
       options.log,
+      "main-vertical", // layout (matches SESSION_MANAGER_DEFAULTS.layout)
+      60, // mainPaneSize (matches SESSION_MANAGER_DEFAULTS.mainPaneSize)
+      persistence, // 7th arg — NEW: P54 persistence wire
     );
 
     // Step 8: Build the SessionManagerAdapter (the surface the
