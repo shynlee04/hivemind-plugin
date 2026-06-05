@@ -775,7 +775,15 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // startPolling tick emits pane-captured events. The adapter is the
   // SessionManagerAdapter (publishes onPaneCaptured to the observer chain);
   // the SessionManager calls observer.onPaneCaptured on every hash change.
+  //
+  // FIX: The adapter's onPaneCaptured is a no-op (integration.ts:429-434).
+  // We replace it with a forwarder to the tmuxObserver so pane-captured
+  // events actually reach registered listeners (e.g., pane-monitor hook).
+  // Without this, events are silently dropped.
   if (tmuxIntegration?.sessionManager_ && typeof tmuxIntegration.sessionManager_.setObserver === "function") {
+    tmuxIntegration.adapter.onPaneCaptured = (event) => {
+      void tmuxObserver({ event })
+    }
     tmuxIntegration.sessionManager_.setObserver(tmuxIntegration.adapter)
   }
 

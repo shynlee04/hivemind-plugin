@@ -259,10 +259,12 @@ export function createSessionPersistence(
   })
   const stateRoot = join(opts.projectDirectory, ".hivemind", "state", "tmux-sessions")
 
-  // Idempotent dir creation (RECURSIVE). Errors are caught and logged —
-  // subsequent `mkdir` calls in `persist`/`restoreAll` are themselves
-  // recursive and will retry on the next call.
-  void mkdir(stateRoot, { recursive: true }).catch((err) => {
+  // Idempotent dir creation (RECURSIVE). Stored as a promise so every
+  // method that touches stateRoot can await it — eliminating the race
+  // between the factory's background mkdir and the first `persist()` /
+  // `restoreAll()` call. Errors are caught and logged (D-04 mirror);
+  // subsequent defensive `mkdir` calls in `persist` will retry.
+  const dirReady = mkdir(stateRoot, { recursive: true }).catch((err) => {
     logWarn(`mkdir failed for stateRoot=${stateRoot}`, err)
   })
 
@@ -309,10 +311,9 @@ export function createSessionPersistence(
         )
         return
       }
-      // Defensive mkdir — the factory's background mkdir may not have
-      // completed yet, and the state root may have been deleted between
-      // calls. mkdir({recursive: true}) is idempotent.
-      await mkdir(stateRoot, { recursive: true })
+      // Await the factory's initial mkdir (idempotent — safe to await
+      // multiple times). If it failed, retry once defensively.
+      await dirReady
       const filePath = join(stateRoot, `${record.sessionId}.json`)
       await writeRecord(filePath, record)
     } catch (err) {
@@ -338,6 +339,7 @@ export function createSessionPersistence(
         )
         return
       }
+      await dirReady
       await unlink(join(stateRoot, `${sessionId}.json`))
     } catch (err) {
       if (isEEXIST(err)) {
@@ -361,6 +363,10 @@ export function createSessionPersistence(
    * resolves to `[]` without throwing (fresh project case).
    */
   async function restoreAll(): Promise<PersistedSession[]> {
+    // Ensure the state directory exists before scanning. If the factory
+    // mkdir failed, dirReady resolves (logged) and readdir will ENOENT
+    // — caught below as the fresh-project case.
+    await dirReady
     let files: string[]
     try {
       files = await readdir(stateRoot)

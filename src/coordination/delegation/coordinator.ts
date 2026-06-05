@@ -190,7 +190,6 @@ export class DelegationCoordinator {
 
   /** Runs pre-flight, records metadata, starts monitoring, and registers dual-signal completion. */
   async dispatch(params: DispatchParams): Promise<DelegationResult> {
-    console.log("[S5C-SMOKE-DEBUG] coordinator.dispatch:ENTRY", { agent: params.agent, parentSessionId: params.parentSessionId, hasTmuxIntegration: !!this.deps.tmuxIntegration, hasTmuxIntegrationAdapter: !!this.deps.tmuxIntegration?.adapter });
     const preflight = await this.deps.dispatcher.preflightCheck(params)
     const delegationId = this.createDelegationId()
     const record = this.createRecord(delegationId, params, preflight.queueKey)
@@ -683,10 +682,8 @@ export class DelegationCoordinator {
     workingDirectory: string
     agent: string
   }): void {
-    console.log("[S5C-SMOKE-DEBUG] coordinator.spawnTmuxPanelForChild:ENTRY", { childSessionId: input.childSessionId, parentSessionId: input.parentSessionId, agent: input.agent, hasAdapter: !!this.deps.tmuxIntegration?.adapter });
     const tmuxIntegration = this.deps.tmuxIntegration
     if (!tmuxIntegration?.adapter) {
-      console.log("[S5C-SMOKE-DEBUG] coordinator.spawnTmuxPanelForChild:UNWIRED → returning (silent no-op)");
       return
     }
 

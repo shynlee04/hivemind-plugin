@@ -122,6 +122,13 @@ interface TrackedSession {
 export class SessionManager implements ForkSessionManager {
   private readonly sessions = new Map<string, TrackedSession>();
   private readonly spawningSessions = new Set<string>();
+  // Tracks sessions whose most recent spawn attempt FAILED. Prevents the
+  // duplicate-pane regression: when the coordinator's `spawnTmuxPanelForChild`
+  // calls `onSessionCreated` first and the SDK event observer calls it again
+  // 500ms later, a failed first attempt would clear `spawningSessions` in
+  // the `finally` block, allowing the second call to spawn a new pane.
+  // Marking the session as "failed" makes the second call a no-op.
+  private readonly failedSessions = new Set<string>();
   // P58.8 (S1, REQ-58-07): in-memory cache of capture-pane results and the
   // last-content hash used to drive polling backoff.
   private readonly latestCapture: Map<string, CaptureRecord> = new Map();
@@ -218,12 +225,15 @@ export class SessionManager implements ForkSessionManager {
     const directory = event.properties.info.directory || this.directory;
     const title = event.properties.info.title;
 
-    console.log("[S5C-SMOKE-DEBUG] session-manager.onSessionCreated:ENTRY", { sessionId, agent, title, directory, hasMeta: !!meta });
     this.log?.debug("onSessionCreated: ENTRY", { sessionId, agent });
 
     if (this.sessions.has(sessionId)) {
-      console.log("[S5C-SMOKE-DEBUG] session-manager.onSessionCreated:DEDUP already tracked", { sessionId });
       this.log?.debug("onSessionCreated: already tracked, ignoring", { sessionId });
+      return;
+    }
+
+    if (this.failedSessions.has(sessionId)) {
+      this.log?.debug("onSessionCreated: previous spawn attempt FAILED, not retrying", { sessionId });
       return;
     }
 
@@ -245,6 +255,7 @@ export class SessionManager implements ForkSessionManager {
 
       if (!result.success || !result.paneId) {
         this.log?.debug("onSessionCreated: spawn FAILED", { sessionId });
+        this.failedSessions.add(sessionId);
         return;
       }
 
@@ -362,7 +373,6 @@ export class SessionManager implements ForkSessionManager {
    * backoff is honored on every iteration.
    */
   startPolling(intervalMs: number = 5000): void {
-    console.log("[S5C-SMOKE-DEBUG] session-manager.startPolling:ENTRY", { intervalMs, trackedSessions: this.sessions.size, currentPollIntervalMs: this.currentPollIntervalMs, alreadyRunning: this.pollingTimer !== null });
     if (this.pollingTimer !== null) return
     this.currentPollIntervalMs = Math.max(SessionManager.MIN_POLL_MS, Math.min(intervalMs, SessionManager.MAX_POLL_MS))
     const tick = async (): Promise<void> => {
@@ -485,6 +495,7 @@ export class SessionManager implements ForkSessionManager {
     void this.persistence?.persist(this.toPersistedSession(tracked));
 
     this.sessions.delete(sessionId);
+    this.failedSessions.delete(sessionId);
 
     const closed = await this.multiplexer.closePane(paneId);
     this.log?.debug("handleSessionClose: closePane result", { sessionId, closed });

@@ -214,25 +214,117 @@ export function loadOpencodeServerPort(projectDir: string): number | null {
  * @param projectDir - absolute path to the project root.
  * @returns the server URL (e.g. `http://localhost:4096`), or `null`.
  */
+/**
+ * Discover the opencode **serve** process port from the running system.
+ *
+ * Real-world use case: user opens tmux, types `opencode`. This starts
+ * a single process that is BOTH server (HTTP listener) and client (TUI).
+ * The server port is dynamic (OS-assigned or `--port N`). Child panes
+ * spawned via `opencode attach http://localhost:<port>` need the EXACT
+ * port.
+ *
+ * Strategy:
+ * 1. `lsof` → find all `opencode` processes listening on `127.0.0.1`
+ * 2. `ps -p <pid> -o args=` → check command line for `serve` keyword
+ *    (the serve process has `opencode serve --port N`; attach clients
+ *    have `opencode attach http://...`)
+ * 3. Return the serve process port; persist it for subsequent spawns
+ *
+ * Returns `null` if no serve process found.
+ */
+async function discoverOpencodeServerPort(projectDir?: string): Promise<number | null> {
+  try {
+    const { stdout } = await execFileAsync("lsof", ["-i", "-P", "-n"])
+    // Collect {pid, port} pairs for opencode LISTEN lines
+    const candidates: Array<{ pid: number; port: number }> = []
+    for (const line of stdout.split("\n")) {
+      if (!line.includes("opencode") || !line.includes("(LISTEN)")) continue
+      const pidMatch = line.match(/\s(\d+)\s/)
+      const portMatch = line.match(/127\.0\.0\.1:(\d+)/)
+      if (pidMatch?.[1] && portMatch?.[1]) {
+        const pid = Number.parseInt(pidMatch[1], 10)
+        const port = Number.parseInt(portMatch[1], 10)
+        if (Number.isFinite(pid) && Number.isFinite(port) && port > 0) {
+          candidates.push({ pid, port })
+        }
+      }
+    }
+    if (candidates.length === 0) return null
+
+    // Identify the serve process by checking command-line args
+    for (const { pid, port } of candidates) {
+      try {
+        const { stdout: args } = await execFileAsync("ps", ["-p", String(pid), "-o", "args="])
+        const cmdLine = args.trim()
+        // Serve process: "opencode serve --port N" or just "opencode" (default = serve)
+        // Attach client: "opencode attach http://..."
+        if (cmdLine.includes("attach")) continue  // skip attach clients
+        // This is likely the serve process — verify the port accepts connections
+        if (await probeLocalhostPort(port, 250)) {
+          // Persist for subsequent spawns (discover-then-persist pattern)
+          if (projectDir) persistPort(projectDir, port)
+          return port
+        }
+      } catch {
+        // ps failed — try the port anyway
+        if (await probeLocalhostPort(port, 250)) {
+          if (projectDir) persistPort(projectDir, port)
+          return port
+        }
+      }
+    }
+
+    // Fallback: no serve process identified by args — return first responsive port
+    for (const { port } of candidates) {
+      if (await probeLocalhostPort(port, 250)) {
+        if (projectDir) persistPort(projectDir, port)
+        return port
+      }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Resolve the opencode server URL using discover-then-persist pattern.
+ *
+ * Priority order (designed for the real-world tmux workflow):
+ * 1. **Persisted port** — previously discovered and saved to
+ *    `.hivemind/state/tmux-port.json`. Fast path (no process scan).
+ *    Validates by probing; if stale, falls through to re-discovery.
+ * 2. **Live discovery** — `lsof` + `ps` to find the actual opencode
+ *    serve process. Persists the result for subsequent calls.
+ * 3. **Config fallback** — `opencode.json` `server.port` (may be stale
+ *    if user started with a different port).
+ * 4. **Hash fallback** — deterministic port from project dir hash.
+ */
 export async function resolveOpencodeServerUrl(projectDir: string): Promise<string | null> {
-  // 1. Explicit `server.port` in opencode.json (best — deterministic)
-  const configuredPort = loadOpencodeServerPort(projectDir);
-  if (configuredPort !== null) {
-    return `http://localhost:${configuredPort}`;
+  // 1. Fast path: check persisted port (from prior discovery)
+  const persistedPort = readOrMigratePort(projectDir)
+  if (persistedPort !== null) {
+    // Validate the persisted port is still alive
+    if (await probeLocalhostPort(persistedPort, 250)) {
+      return `http://localhost:${persistedPort}`
+    }
+    // Persisted port is stale — fall through to re-discovery
   }
 
-  // 2. Active localhost scan — probe common opencode ports for a live server.
-  //    Cheap (single connect with 250ms timeout per port), and catches the
-  //    common case where the user just runs `opencode` and the server
-  //    binds to 4096 (the opencode default).
-  const livePort = await probeLocalhostForOpencodeServer();
+  // 2. Live discovery: find the opencode serve process
+  const livePort = await discoverOpencodeServerPort(projectDir)
   if (livePort !== null) {
-    return `http://localhost:${livePort}`;
+    return `http://localhost:${livePort}`
   }
 
-  // 3. Persisted port or deterministic hash fallback (cross-session stable
-  //    but may not match running server if user started opencode elsewhere)
-  return detectServerUrl(projectDir);
+  // 3. Config fallback (opencode.json server.port)
+  const configuredPort = loadOpencodeServerPort(projectDir)
+  if (configuredPort !== null) {
+    return `http://localhost:${configuredPort}`
+  }
+
+  // 4. Hash fallback (deterministic but may not match running server)
+  return detectServerUrl(projectDir)
 }
 
 // ---------------------------------------------------------------------------
@@ -245,7 +337,7 @@ export async function resolveOpencodeServerUrl(projectDir: string): Promise<stri
  * `opencode --port 0` behavior in opencode v1.1+ (tries 4096 first,
  * then OS-assigned). The rest are sensible dev-environment alternatives.
  */
-const PROBE_PORTS: readonly number[] = [4096, 3000, 8080, 8000, 5328]
+const PROBE_PORTS: readonly number[] = [4096, 15001, 3000, 8080, 8000, 5328]
 
 /**
  * Probe a single TCP port on localhost with a short timeout. Returns

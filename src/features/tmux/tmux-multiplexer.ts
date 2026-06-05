@@ -274,11 +274,8 @@ export class TmuxMultiplexer {
    * ORIGIN: opencode-tmux/src/tmux.ts:96-181
    */
   async spawnPane(options: SpawnPaneOptions): Promise<PaneResult> {
-    console.log("[S5C-SMOKE-DEBUG] tmux-multiplexer.spawnPane:ENTRY", { sessionId: options.sessionId, description: options.description, serverUrl: options.serverUrl, directory: options.directory, hivemindMeta: options.hivemindMeta });
     const tmux = await this.getBinary();
-    console.log("[S5C-SMOKE-DEBUG] tmux-multiplexer.spawnPane:binaryResolved", { binaryPath: tmux });
     if (!tmux) {
-      console.log("[S5C-SMOKE-DEBUG] tmux-multiplexer.spawnPane:NO_BINARY → returning success:false");
       this.log?.debug("spawnPane: tmux binary not found");
       return { success: false, error: "tmux binary not found" };
     }
