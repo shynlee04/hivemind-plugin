@@ -380,10 +380,22 @@ export class DelegationCoordinator {
       }
     }
 
-    if (elapsedSeconds >= 60) {
+    // P59 R3: thinking-time-aware timeout. A child that has been initiated
+    // (session created + pane spawned) but is still thinking should NOT be
+    // marked as stalled. The 60s hard limit was killing agents that were
+    // actively producing tokens but hadn't yet called a tool. Now we use
+    // 90s as the no-activity threshold (matches SDK default) and we check
+    // for ANY session activity (action count OR message count), not just
+    // tool calls — a child producing thinking tokens has messageCount > 0.
+    const hasAnyActivity =
+      (record.actionCount ?? 0) > 0 ||
+      (record.messageCount ?? 0) > 0 ||
+      (record.toolCallCount ?? 0) > 0
+    const STALL_THRESHOLD_SEC = 90
+    if (elapsedSeconds >= STALL_THRESHOLD_SEC && !hasAnyActivity) {
       record.executionState = "stalled"
       record.evidenceLevel = record.evidenceLevel ?? "accepted-only"
-      record.error = `[Harness] Delegation stalled without first action after ${elapsedSeconds}s`
+      record.error = `[Harness] Delegation stalled without any activity after ${elapsedSeconds}s (no tools, no messages)`
       this.handleTimeout(delegationId)
       return
     }
