@@ -193,6 +193,12 @@ export function createTmuxEventObserver(
     const sessionId = String(info.id);
     const meta = getDelegationMeta(sessionId);
 
+    // Only forward sessions that have Hivemind delegation metadata.
+    // Sessions without metadata (e.g. `opencode attach` client sessions)
+    // are system-level — they are already running inside a tmux pane
+    // and should NOT spawn another pane of their own.
+    if (!meta) return;
+
     const enriched: EnrichedSessionEvent = {
       type: "session.created",
       properties: {
@@ -203,13 +209,11 @@ export function createTmuxEventObserver(
           directory: String(info.directory ?? ""),
         },
       },
-      hivemindMeta: meta
-        ? {
-            agent: meta.agent,
-            delegationId: sessionId,
-            depth: meta.depth,
-          }
-        : undefined,
+      hivemindMeta: {
+        agent: meta.agent,
+        delegationId: sessionId,
+        depth: meta.depth,
+      },
     };
 
     await forkSessionManager.onSessionCreated(enriched);
