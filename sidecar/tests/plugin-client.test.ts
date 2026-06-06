@@ -331,5 +331,80 @@ describe("plugin-client", () => {
       const after = getPluginClient()
       expect(after.getBaseUrl()).toContain("4102")
     })
+
+  describe("API-first port discovery (Wave 3)", () => {
+    it("probePluginPort returns the canonical port from GET /api/plugin-port JSON", async () => {
+      mockFetch.mockImplementation((url: string | URL) => {
+        const u = String(url)
+        if (u.includes("/api/plugin-port")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ port: 4099 }), {
+              status: 200,
+              headers: { "content-type": "application/json" },
+            }),
+          )
+        }
+        // Port list probes: all 404
+        return Promise.resolve(new Response("not found", { status: 404 }))
+      })
+
+      const port = await probePluginPort()
+      expect(port).toBe(4099)
+    })
+
+    it("probePluginPort falls through to port-probe when /api/plugin-port returns 404", async () => {
+      mockFetch.mockImplementation((url: string | URL) => {
+        const u = String(url)
+        if (u.includes("/api/plugin-port")) {
+          return Promise.resolve(new Response("not found", { status: 404 }))
+        }
+        if (u.includes(":4097")) {
+          return Promise.resolve(new Response("ok", { status: 200 }))
+        }
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      const port = await probePluginPort()
+      expect(port).toBe(4097)
+    })
+
+    it("probePluginPort falls through to port-probe when /api/plugin-port returns invalid JSON (500)", async () => {
+      mockFetch.mockImplementation((url: string | URL) => {
+        const u = String(url)
+        if (u.includes("/api/plugin-port")) {
+          return Promise.resolve(new Response("not json", { status: 500 }))
+        }
+        if (u.includes(":4097")) {
+          return Promise.resolve(new Response("ok", { status: 200 }))
+        }
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      const port = await probePluginPort()
+      expect(port).toBe(4097)
+    })
+
+    it("probePluginPort prefers API port (4098) over lower-indexed port-probe result (4097)", async () => {
+      mockFetch.mockImplementation((url: string | URL) => {
+        const u = String(url)
+        if (u.includes("/api/plugin-port")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ port: 4098 }), {
+              status: 200,
+              headers: { "content-type": "application/json" },
+            }),
+          )
+        }
+        if (u.includes(":4097")) {
+          return Promise.resolve(new Response("ok", { status: 200 }))
+        }
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      const port = await probePluginPort()
+      expect(port).toBe(4098)
+    })
+  })
+
   })
 })
