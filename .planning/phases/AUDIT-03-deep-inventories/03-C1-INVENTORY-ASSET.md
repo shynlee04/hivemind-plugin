@@ -6,7 +6,7 @@
 
 The C1 cluster encompasses the governance, CLI substrate, configuration loading, schema definitions, bootstrap/primitive loading, and routing subsystems of the Hivemind harness. It is the foundational layer that all other clusters depend on for configuration, primitive discovery, and runtime governance.
 
-**Total Files Scanned:** 89
+**Total Files Scanned:** 103
 
 ---
 
