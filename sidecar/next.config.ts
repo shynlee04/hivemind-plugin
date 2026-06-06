@@ -13,17 +13,19 @@
  * warning (the sidecar sits inside a monorepo that has its own
  * `package-lock.json`).
  *
+ * Implementation note — this file uses CommonJS `require` and
+ * `module.exports` rather than ESM `import` / `export default`. The
+ * Next.js 16 config loader transpiles to CJS internally, and writing
+ * the file in CJS style avoids a "exports is not defined in ES module
+ * scope" interop failure at dev-server startup.
+ *
  * @see {@link ../src/sidecar/server/} for the plugin-side server routes.
  */
 
 import type { NextConfig } from "next"
-import path from "node:path"
-import { fileURLToPath } from "node:url"
+import * as path from "node:path"
 
-// Reconstruct __dirname in an ESM-safe way (Next.js 16 may load
-// this file as ESM at build time).
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const sidecarRoot = __dirname
 
 const config: NextConfig = {
   reactStrictMode: true,
@@ -38,7 +40,7 @@ const config: NextConfig = {
    * multiple lockfiles" warning at `next dev` startup.
    */
   turbopack: {
-    root: __dirname,
+    root: sidecarRoot,
   },
 
   /** CORS headers for localhost plugin communication. */
@@ -56,4 +58,7 @@ const config: NextConfig = {
   },
 }
 
-export default config
+// CommonJS export — works with Next.js 16's CJS transpilation pipeline
+// and avoids the "exports is not defined in ES module scope" interop
+// failure when the loader compiles this file.
+module.exports = config
