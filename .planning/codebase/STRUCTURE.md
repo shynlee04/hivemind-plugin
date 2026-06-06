@@ -1,504 +1,507 @@
-# Hivemind — Structure Map
+# Codebase Structure
 
-> Generated: 2026-06-02
-> Source: hm-codebase-mapper
+**Analysis Date:** 2026-06-06
 
----
-
-## 1. Project Overview
-
-**Package:** `hivemind-3.0` (npm: `hivemind`)  
-**Type:** ECMAScript Module (`"type": "module"`)  
-**Description:** Runtime composition engine for multi-agent orchestration, session continuity, and compounding intelligence in OpenCode  
-**Language:** TypeScript (strict mode, ES2022 target, NodeNext module resolution)  
-**License:** MIT  
-**Repository:** `github.com/shynlee04/hivemind-plugin`  
-**Node requirement:** >= 20.0.0  
-**Peer dependency:** `@opencode-ai/plugin` ^1.15.10  
-
----
-
-## 2. Top-Level Directory Layout
+## Directory Layout
 
 ```
 hivemind-plugin-private/
-├── src/                       # 262 TS source files — Hard Harness (npm package)
-├── tests/                     # 258 TS test files — mirrors src/ layout
-├── assets/                    # 1,519 files — SOURCE of truth for shipped primitives
-├── .opencode/                 # 1,225 files — DEPLOYED primitives (client-side)
-├── .hivemind/                 # 374 files — Internal deep module state
-├── .planning/                 # 1,920 files — Governance, architecture, phase plans
-├── .hivefiver-meta-builder/   # Meta-authoring environment for primitives
-├── dist/                      # Compiled output (gitignored)
-├── node_modules/              # Dependencies (gitignored)
-├── scripts/                   # 3 build/sync scripts
-├── bin/                       # CLI substrate
-├── docs/                      # Draft architecture proposals
-├── templates/                 # Reference templates
-├── sidecar/                   # Sidecar dashboard (Next.js)
+├── src/                            # Hard Harness — TypeScript runtime (npm package)
+│   ├── plugin.ts                   # Composition root (HarnessControlPlane: Plugin)
+│   ├── index.ts                    # Public API re-exports
+│   ├── shared/                     # Leaf utilities, SDK wrappers, runtime policy, types
+│   ├── task-management/            # Continuity, journal, lifecycle, trajectory
+│   ├── coordination/               # Delegation, completion, concurrency, spawner, command/sdk handlers
+│   ├── features/                   # Standalone runtime features (16+ submodules)
+│   ├── config/                     # Config subscriber, compiler, workflow
+│   ├── routing/                    # Behavioral profile, command engine, session entry
+│   ├── hooks/                      # Lifecycle, guards, observers, transforms, composition, pane-monitor
+│   ├── tools/                      # Write-side LLM-callable tools (26 tools)
+│   ├── schema-kernel/              # Zod schemas (19 schemas) + JSON schema generator
+│   ├── cli/                        # CLI substrate (runCli) + help/init/doctor/recover/version
+│   └── sidecar/                    # HTTP server factory, route catalog, SSE pool, JSON-render catalog
 │
-├── package.json               # Manifest, scripts, dependencies
-├── tsconfig.json              # TypeScript strict config
-├── vitest.config.ts           # Vitest test runner configuration
-├── vitest.setup.ts            # Test setup hooks
-├── opencode.json              # OpenCode runtime configuration
-├── AGENTS.md                  # Master agent instruction file (2,700+ lines)
-├── CHANGELOG.md               # Release changelog
-├── CONTRIBUTING.md            # Contribution guide
-├── README.md                  # Project readme
-└── LICENSE                    # MIT license
+├── tests/                          # Vitest test suite (mirrors src/ structure)
+│
+├── bin/                            # CLI entrypoints (hivemind.cjs shim, validate scripts)
+│
+├── scripts/                        # Build helpers (sync-assets.js, sync-oss.sh, generate-registry.cjs)
+│
+├── assets/                         # OpenCode primitives SOURCE OF TRUTH (agents, commands, skills, workflows)
+│
+├── .opencode/                      # DEPLOYED copy of .opencode/ primitives (sync via scripts/sync-assets.js)
+│   ├── agents/                     # 119 agents (33 gsd-* + 63 hm-* + 22 hf-*)
+│   ├── commands/                   # 249 commands
+│   ├── command/                    # Plural copy (legacy compat)
+│   ├── skills/                     # 82 skills (36 hm-* + 13 hf-* + 6 stack-* + 3 gate-* + 2 hivemind-* + others)
+│   ├── workflows/                  # 209 workflows
+│   ├── references/                 # 139 reference docs
+│   ├── templates/                  # Templates (including .opencode/gsd-core/templates/codebase/)
+│   ├── hooks/                      # OpenCode runtime hooks
+│   ├── plugins/                    # OpenCode plugin loaders
+│   ├── rules/                      # Universal rules (universal-rules.md)
+│   ├── get-shit-done/              # Legacy GSD location (preserved during migration)
+│   ├── gsd-core/                   # NEW canonical GSD location (VERSION 1.3.1)
+│   ├── gsd-file-manifest.json      # Pristine GSD manifest
+│   ├── gsd-migration-journal/      # Migration state + rollback snapshots
+│   ├── gsd-local-patches/          # Local GSD patches
+│   └── gsd-install-state.json      # GSD install tracking
+│
+├── .hivemind/                      # Internal deep-module state (canonical per Q6)
+│   ├── state/                      # configs.json, sidecar-port.json, tmux-port.json, trajectory-ledger.json
+│   ├── session-tracker/            # Per-session knowledge capture (markdown + JSON indexes)
+│   ├── journal/                    # Append-only event timeline (time-machine)
+│   ├── planning/                   # Persistent planning artifacts
+│   ├── research/                   # Research artifacts
+│   ├── governance/                 # Governance evaluation state
+│   ├── audit/                      # Audit records
+│   ├── manifests/                  # Session manifests
+│   └── registries/                 # Primitive registries
+│
+├── .hivemind-meta-builder/         # Authoring lab for primitives before reflection to .opencode/
+│
+├── .planning/                      # Governance: ROADMAP, STATE, REQUIREMENTS, phases, codebase maps
+│   ├── codebase/                   # THIS directory — STACK/ARCHITECTURE/STRUCTURE/etc. maps
+│   ├── research/                   # Research artifacts
+│   ├── architecture/               # Source-plane, runtime-identity, sector-agents architecture
+│   ├── phases/                     # Per-phase artifacts (SPEC, CONTEXT, RESEARCH, PATTERNS, PLAN, etc.)
+│   ├── ROADMAP.md / STATE.md / REQUIREMENTS.md
+│   └── AGENTS.md                   # Planning governance
+│
+├── docs/                           # Project documentation
+├── eval/                           # Eval test suite (vitest glob includes)
+├── sidecar/                        # Sidecar Next.js dashboard (read-only)
+│
+├── package.json                    # npm manifest (hivemind-3.0, dual export: ./plugin and ./cli)
+├── tsconfig.json                   # ES2022 / NodeNext / strict / verbatimModuleSyntax
+├── vitest.config.ts                # Coverage thresholds: 75/62/80/77 (statements/branches/functions/lines)
+├── opencode.json                   # OpenCode config (references AGENTS.md)
+├── AGENTS.md                       # Universal constitution (SOURCE vs DEPLOY, two-halves, line, Atomic Commits)
+└── README.md / CHANGELOG.md / CONTRIBUTING.md
 ```
 
----
+## Directory Purposes
 
-## 3. Source Tree (`src/`) — Detailed Breakdown
+**`src/`:**
+- Purpose: Hard Harness — the TypeScript runtime that ships as the `hivemind` npm package. All real code lives here.
+- Contains: 294 .ts files across 15 top-level subdirectories. Compiled to `dist/` via `tsc` (ES2022 → NodeNext).
+- Key files: `src/plugin.ts` (composition root, 1076 LOC), `src/index.ts` (public API barrel), `src/shared/types.ts` (leaf contract authority).
+- Subdirectories:
+  - `src/shared/` — leaf utilities and SDK wrappers
+  - `src/coordination/` — delegation, completion, concurrency
+  - `src/task-management/` — continuity, journal, lifecycle, trajectory
+  - `src/tools/` — write-side LLM tools
+  - `src/hooks/` — read-side SDK event observers
+  - `src/features/` — standalone runtime features (16 submodules)
+  - `src/routing/` — command engine, behavioral profile, session entry
+  - `src/config/` — config subscriber, workflow persistence
+  - `src/schema-kernel/` — Zod schemas
+  - `src/cli/` — CLI substrate
+  - `src/sidecar/` — HTTP sidecar server
 
-```
-src/
-├── index.ts                      # Public API re-exports (30 lines — thin barrel)
-├── plugin.ts                     # Composition root — HarnessControlPlane (756 lines)
-│
-├── shared/                       # Leaf utilities, types, SDK wrappers
-│   ├── types.ts                  # Core type definitions: TaskStatus, RuntimePolicy, etc. (422 lines)
-│   ├── state.ts                  # TaskStateManager — in-memory session/budget state (251 lines)
-│   ├── task-status.ts            # Task status mapping utilities
-│   ├── helpers.ts                # Generic helpers: asString, getNestedValue, etc.
-│   ├── session-api.ts            # OpenCode SDK wrapper: prompt, messages, abort
-│   ├── session-naming.ts         # Session naming conventions
-│   ├── tool-response.ts          # Standardized tool response envelope
-│   ├── tool-helpers.ts           # Tool helper patterns
-│   ├── runtime.ts                # Runtime environment utilities
-│   ├── runtime-policy.ts         # Runtime policy loader
-│   ├── workspace-runtime-policy.ts  # Workspace-level policy resolver
-│   ├── plugin-tool-output-summary.ts # Tool output summarization
-│   ├── app-api.ts                # App API abstractions
-│   │
-│   ├── errors/
-│   │   └── commands.ts           # Command error definitions
-│   │
-│   └── security/
-│       ├── redaction.ts          # Sensitive data redaction
-│       └── path-scope.ts         # Path traversal protection
-│
-├── schema-kernel/                # Zod schemas and config generation (21 files)
-│   ├── index.ts                  # Barrel re-exports
-│   ├── hivemind-configs.schema.ts   # Hivemind configuration schema
-│   ├── agent-frontmatter.schema.ts  # Agent frontmatter validation
-│   ├── agent-work-contract.schema.ts # Agent work contract schema
-│   ├── bootstrap.schema.ts       # Bootstrap configuration schema
-│   ├── command-frontmatter.schema.ts # Command frontmatter validation
-│   ├── command-engine.schema.ts  # Command engine schema
-│   ├── commands.schema.ts        # Command configuration schema
-│   ├── config-precedence.schema.ts   # Config precedence rules
-│   ├── doc-intelligence.schema.ts # Doc intelligence schema
-│   ├── generate-config-json-schema.ts # JSON schema generator
-│   ├── mcp-server.schema.ts      # MCP server configuration
-│   ├── prompt-enhance.schema.ts  # Prompt enhance schemas
-│   ├── runtime-pressure.schema.ts # Runtime pressure schema
-│   ├── sdk-supervisor.schema.ts  # SDK supervisor schema
-│   ├── session-delegation-query.schema.ts # Delegation query schema
-│   ├── session-tracker.schema.ts # Session tracker schema
-│   ├── session-view.schema.ts    # Session view schema
-│   ├── skill-metadata.schema.ts  # Skill metadata schema
-│   ├── tool.schema.ts            # Tool schema
-│   └── trajectory.schema.ts      # Trajectory ledger schema
-│
-├── hooks/                        # OpenCode hook factories — READ-side only
-│   ├── types.ts                  # HookDependencies shared bundle type
-│   │
-│   ├── lifecycle/
-│   │   ├── core-hooks.ts         # Core hooks factory: event, system.transform, shell.env (271 lines)
-│   │   └── session-hooks.ts      # Session hooks: auto-loop, compaction (423 lines)
-│   │
-│   ├── observers/
-│   │   ├── event-observers.ts    # Delegation + SessionEntry + SessionIsMain observers (135 lines)
-│   │   ├── delegation-consumer.ts    # Delegation event consumer
-│   │   ├── session-entry-consumer.ts # Session entry consumer
-│   │   ├── session-main-consumer.ts  # Main session consumer
-│   │   └── session-tracker-consumer.ts # Session tracker consumer
-│   │
-│   ├── guards/
-│   │   ├── tool-guard-hooks.ts   # Tool guard hooks (circuit breaker, budget)
-│   │   └── governance-block.ts   # Governance block builder
-│   │
-│   ├── transforms/
-│   │   ├── tool-before-guard.ts  # Tool execute.before guard
-│   │   ├── tool-after-composer.ts # Tool execute.after composer
-│   │   ├── tool-after-workflow.ts # Tool execute.after workflow
-│   │   ├── chat-message-capture.ts # Chat message capture
-│   │   └── contract-enforcement.ts # Contract enforcement
-│   │
-│   └── composition/
-│       └── cqrs-boundary.ts      # CQRS boundary classifier (36 lines)
-│
-├── tools/                        # Tool entrypoints — WRITE-side (26 custom tools)
-│   ├── delegation/
-│   │   ├── delegate-task.ts          # Subagent delegation dispatch
-│   │   └── delegation-status.ts      # Delegation status polling
-│   │
-│   ├── session/
-│   │   ├── execute-slash-command.ts  # Slash command execution
-│   │   ├── session-patch/            # Session content patching
-│   │   │   ├── index.ts
-│   │   │   ├── tools.ts
-│   │   │   └── types.ts
-│   │   ├── session-journal-export.ts # Session journal export
-│   │   ├── session-tracker.ts        # Session tracker tool
-│   │   ├── session-hierarchy.ts      # Session hierarchy tool
-│   │   ├── session-context.ts        # Session context tool
-│   │   ├── session-delegation-query.ts # Delegation query tool
-│   │   ├── resolve-command.ts        # Command resolution
-│   │   ├── dispatch-command.ts       # Command dispatch
-│   │   ├── validate-command.ts       # Command validation
-│   │   ├── workflow-parser.ts        # Workflow parsing
-│   │   ├── semantic-agent-selector.ts # Agent selection
-│   │   └── index.ts                  # Barrel
-│   │
-│   ├── hivemind/
-│   │   ├── hivemind-doc.ts           # Doc intelligence tool
-│   │   ├── hivemind-trajectory.ts    # Trajectory inspection tool
-│   │   ├── hivemind-pressure.ts      # Pressure classification tool
-│   │   ├── hivemind-sdk-supervisor.ts # SDK supervisor tool
-│   │   ├── hivemind-command-engine.ts # Command engine tool
-│   │   ├── hivemind-session-view.ts  # Unified session view tool
-│   │   ├── hivemind-agent-work.ts    # Agent work contract tools
-│   │   └── run-background-command.ts # Background command tool
-│   │
-│   ├── config/
-│   │   ├── configure-primitive.ts    # Primitive configuration tool
-│   │   ├── validate-restart.ts       # Restart validation tool
-│   │   ├── bootstrap-init.ts         # Bootstrap initialization tool
-│   │   └── bootstrap-recover.ts      # Bootstrap recovery tool
-│   │
-│   ├── prompt/
-│   │   ├── prompt-skim/              # Prompt skim tool
-│   │   └── prompt-analyze/           # Prompt analyze tool
-│   │
-│   ├── tmux-copilot.ts               # Tmux orchestration tool
-│   └── tmux-state-query.ts           # Tmux session metadata tool
-│
-├── coordination/                 # Delegation, concurrency, completion, spawners
-│   ├── delegation/               # Delegation subsystem (21 files — core module)
-│   │   ├── types.ts              # Delegation types, error codes, constants (246 lines)
-│   │   ├── coordinator.ts        # DelegationCoordinator — dispatch, chain, lifecycle (561 lines)
-│   │   ├── manager.ts            # Facade: DelegationManager (409 lines)
-│   │   ├── manager-runtime.ts    # Runtime delegation manager
-│   │   ├── dispatcher.ts         # DelegationDispatcher — slot-managed dispatch
-│   │   ├── lifecycle.ts          # DelegationLifecycle — state transitions
-│   │   ├── state-machine.ts      # DelegationStateMachine
-│   │   ├── monitor.ts            # DelegationMonitor — failure checkpoints
-│   │   ├── notification-router.ts # Route notifications to parent sessions
-│   │   ├── notification-formatter.ts # Format notification messages
-│   │   ├── periodic-notifier.ts  # Periodic progress notifications
-│   │   ├── agent-resolver.ts     # Agent name resolution
-│   │   ├── slot-manager.ts       # Slot-based concurrency control
-│   │   ├── sdk-child-session-starter.ts # SDK child session creation
-│   │   ├── completion-detector.ts # Completion signal detection
-│   │   ├── escalation-timer.ts   # Escalation timeout management
-│   │   ├── retry-handler.ts      # Retry logic for delegations
-│   │   ├── resume-resolver.ts    # Resume session resolution
-│   │   ├── session-intelligence.ts # Stacking recommendations
-│   │   └── survival-kit.ts       # Survival kit for delegation recovery
-│   │
-│   ├── completion/               # Completion detection
-│   │   ├── detector.ts           # Dual-signal completion detector
-│   │   └── notification-handler.ts # Notification handler
-│   │
-│   ├── concurrency/              # Concurrency control
-│   │   └── queue.ts              # Queue-based concurrency (keyed slots)
-│   │
-│   ├── spawner/                  # Session creation and loops
-│   │   ├── auto-loop.ts          # Auto-loop (delegation-packet retries)
-│   │   ├── ralph-loop.ts         # Ralph-loop (correction cycles)
-│   │   ├── session-creator.ts    # Session creation utility
-│   │   ├── spawn-request-builder.ts # Spawn request building
-│   │   ├── spawner-types.ts      # Spawner type definitions
-│   │   ├── parent-directory.ts   # Parent directory resolution
-│   │   └── agent-primitive-policy.ts # Agent primitive policy
-│   │
-│   ├── sdk-delegation/           # SDK-level delegation
-│   │   └── handler.ts            # SDK delegation handler
-│   │
-│   └── command-delegation/       # Command-level delegation
-│
-├── task-management/              # Continuity, journal, trajectory, lifecycle
-│   ├── continuity/               # Session continuity persistence
-│   │   ├── index.ts              # getSessionContinuity, listSessionContinuity, etc.
-│   │   ├── delegation-persistence.ts # Delegation record I/O
-│   │   └── continuity-reader.ts  # Continuity enrichment with tracker
-│   │
-│   ├── lifecycle/                # Harness lifecycle management
-│   │   └── index.ts              # HarnessLifecycleManager
-│   │
-│   ├── journal/                  # Session journal (append-only event timeline)
-│   │   ├── index.ts              # Journal creation/query
-│   │   ├── query.ts              # Journal query
-│   │   └── replay.ts             # Journal replay
-│   │   └── execution-lineage.ts  # Execution lineage tracking
-│   │
-│   └── trajectory/               # Trajectory ledger
-│       └── index.ts              # Trajectory creation/inspection
-│
-├── features/                     # Standalone runtime features (15 subdirectories)
-│   ├── session-tracker/          # Session knowledge capture (17 files — major feature)
-│   │   ├── index.ts              # SessionTracker class (636 lines)
-│   │   ├── types.ts              # Type definitions (411 lines)
-│   │   ├── initialization.ts     # Lazy initialization
-│   │   ├── bootstrap.ts          # Bootstrap logic
-│   │   ├── classification.ts     # Session classification
-│   │   ├── tool-delegation.ts    # Tool delegation tracking
-│   │   ├── tool-delegation-utils.ts # Utilities
-│   │   ├── child-recorder.ts     # Child session recording
-│   │   ├── project-continuity.ts # Project-level continuity
-│   │   ├── orphan-cleanup.ts     # Orphan session cleanup
-│   │   ├── session-router.ts     # Session routing
-│   │   ├── capture/              # Event/message/tool capture
-│   │   ├── hooks/                # Hook integration
-│   │   ├── persistence/          # File I/O with retry queue
-│   │   ├── recovery/             # Session recovery
-│   │   └── transform/            # Data transformations
-│   │
-│   ├── agent-work-contracts/     # Agent work contract management
-│   │   ├── index.ts              # Barrel
-│   │   ├── types.ts              # Type definitions
-│   │   ├── store.ts              # In-memory contract store
-│   │   ├── operations.ts         # CRUD operations
-│   │   ├── lifecycle.ts          # Contract lifecycle
-│   │   └── bounds.ts             # Contract boundary inference
-│   │
-│   ├── auto-loop/                # Auto-loop engine
-│   │   ├── index.ts
-│   │   └── types.ts
-│   │
-│   ├── ralph-loop/               # Ralph-loop (correction cycle)
-│   │   ├── index.ts
-│   │   └── types.ts
-│   │
-│   ├── background-command/       # PTY background command execution
-│   │   └── pty/
-│   │       ├── pty-runtime.ts    # PTY runtime factory
-│   │       ├── pty-manager.ts    # PTY session manager
-│   │       ├── pty-types.ts      # PTY type definitions
-│   │       ├── pty-buffer.ts     # PTY output buffering
-│   │       └── bun-pty.d.ts      # Bun PTY type declarations
-│   │
-│   ├── bootstrap/                # Bootstrap — primitive installation
-│   │   ├── control-plane/        # Control plane bootstrap
-│   │   └── primitive-registry/   # Primitive registry
-│   │
-│   ├── governance-engine/        # Governance session engine
-│   │   ├── index.ts              # createGovernanceSessionTool
-│   │   ├── config-reader.ts      # Governance config reader
-│   │   ├── evaluator.ts          # Governance rule evaluator
-│   │   └── create-governance-session.ts # Session creation
-│   │
-│   ├── governance/               # Governance rules/violations
-│   ├── prompt-packet/            # Prompt compaction/preservation
-│   │   ├── kernel-packet.ts      # Kernel packet definition
-│   │   └── compaction-preservation.ts # Compaction checkpoint
-│   │
-│   ├── runtime-pressure/         # Runtime pressure classification
-│   │   └── index.ts
-│   │
-│   ├── sdk-supervisor/           # SDK health monitoring
-│   │   └── index.ts
-│   │
-│   ├── doc-intelligence/         # Document skim/read/search
-│   │   └── index.ts
-│   │
-│   ├── tmux/                     # Tmux visual orchestration
-│   │   ├── types.ts              # Tmux types
-│   │   ├── session-manager.ts    # Tmux session manager
-│   │   ├── tmux-multiplexer.ts   # Tmux multiplexer
-│   │   └── observers.ts         # Event observers
-│   │
-│   ├── capability-gate/          # Capability gates
-│   └── tool-intelligence/        # Tool intelligence
-│
-├── config/                       # Configuration subsystem
-│   ├── subscriber.ts             # Lazy-load config with caching (114 lines)
-│   ├── compiler.ts               # Config compilation
-│   └── workflow/                 # Config workflow state machine
-│       └── index.ts              # Workflow orchestration
-│
-├── routing/                      # Session entry, behavioral profiles, command engine
-│   ├── session-entry/            # Session intake classification
-│   │   ├── index.ts              # Barrel
-│   │   ├── intake-gate.ts        # Intake gate — purpose, language, routing
-│   │   ├── purpose-classifier.ts # Purpose classification
-│   │   ├── language-resolution.ts # Language detection
-│   │   └── profile-resolver.ts   # Developer profile resolution
-│   │
-│   ├── behavioral-profile/       # Behavioral profile management
-│   │   ├── index.ts              # Barrel
-│   │   ├── types.ts              # Profile types
-│   │   ├── profiles.ts           # Profile definitions
-│   │   └── resolve-behavioral-profile.ts # Profile resolution
-│   │
-│   └── command-engine/           # Command routing engine
-│       ├── index.ts              # executeCommandEngineAction, listCommands
-│       └── types.ts              # Command engine types
-│
-├── sidecar/                      # Read-only sidecar state
-│   └── readonly-state.ts         # Read-only state view
-│
-└── cli/                          # CLI substrate
-    ├── index.ts                  # CLI entrypoint
-    ├── router.ts                 # CLI routing
-    ├── renderer.ts               # TUI output rendering
-    ├── discovery.ts              # Command discovery
-    ├── ui/
-    │   └── prompts.ts            # Interactive prompts (@clack/prompts)
-    └── commands/
-        ├── init.ts               # hivemind init
-        ├── doctor.ts             # hivemind doctor
-        ├── version.ts            # hivemind version
-        ├── recover.ts            # hivemind recover
-        └── help.ts               # hivemind help
-```
+**`src/shared/`:**
+- Purpose: Leaf-like utilities. Avoid adding deep runtime imports here without a source-backed decision.
+- Contains: `types.ts` (TaskStatus, PendingNotification, SessionStats, DelegationMeta, etc.), `helpers.ts` (`asString`, `getNestedValue`, `isObject`, `makeToolSignature`, deepMerge), `state.ts` (`TaskStateManager` singleton), `session-api.ts` (typed `client.session.*` wrappers), `runtime.ts`, `runtime-policy.ts`, `workspace-runtime-policy.ts`, `session-naming.ts`, `task-status.ts`, `tool-helpers.ts` (`renderToolResult`), `tool-response.ts` (standard envelope), `plugin-tool-output-summary.ts`, `app-api.ts`, `errors/commands.ts`, `security/path-scope.ts`, `security/redaction.ts`.
+- Key files: `src/shared/types.ts` is the canonical type contract.
 
----
+**`src/coordination/`:**
+- Purpose: Delegation semantics — concurrency, lifecycle, completion, notification, monitor, spawner.
+- Contains:
+  - `delegation/` — manager facade + manager-runtime + coordinator + dispatcher + lifecycle + monitor + state-machine + agent-resolver + slot-manager + notification-router + periodic-notifier + escalation-timer + retry-handler + resume-resolver + session-intelligence + sdk-child-session-starter + survival-kit + completion-detector + notification-formatter + types + pool-types (20 modules).
+  - `concurrency/queue.ts` — `DelegationConcurrencyQueue` (per-model/per-agent lanes).
+  - `completion/detector.ts` + `notification-handler.ts` — dual-signal WaiterModel.
+  - `command-delegation/handler.ts` — command-routed delegation.
+  - `sdk-delegation/handler.ts` — SDK-routed delegation.
+  - `spawner/` — `auto-loop.ts`, `ralph-loop.ts`, `session-creator.ts`, `spawn-request-builder.ts`, `parent-directory.ts`, `agent-primitive-policy.ts`, `spawner-types.ts`.
+- Key files: `src/coordination/delegation/manager.ts` (facade), `manager-runtime.ts` (impl), `coordinator.ts`, `state-machine.ts`, `concurrency/queue.ts`, `completion/detector.ts`.
 
-## 4. Test Tree (`tests/`)
+**`src/task-management/`:**
+- Purpose: Persistence, event timeline, lifecycle state machine, phase trajectory.
+- Contains:
+  - `continuity/` — `index.ts` (public), `store-cache.ts`, `continuity-reader.ts`, `delegation-persistence.ts`.
+  - `journal/` — `index.ts`, `query.ts`, `replay.ts`, `execution-lineage.ts` (append-only event timeline).
+  - `lifecycle/index.ts` — `HarnessLifecycleManager` class.
+  - `trajectory/` — `index.ts`, `ledger.ts`, `store-operations.ts`, `types.ts` (phase trajectory ledger).
+- Key files: `src/task-management/lifecycle/index.ts` (lifecycle manager surface), `continuity/index.ts` (public continuity API), `trajectory/index.ts`.
 
-```
-tests/
-├── lib/                              # Module-level unit tests (mirrors src/ structure)
-│   ├── continuity.test.ts            # Continuity store tests
-│   ├── delegation-manager.test.ts    # Delegation manager facade tests
-│   ├── state.test.ts                 # TaskStateManager tests
-│   ├── lifecycle-manager.test.ts     # HarnessLifecycleManager tests
-│   ├── completion-detector.test.ts   # Completion detection tests
-│   ├── concurrency.test.ts           # Concurrency queue tests
-│   ├── auto-loop.test.ts             # Auto-loop tests
-│   ├── ralph-loop.test.ts            # Ralph-loop tests
-│   ├── session-journal.test.ts       # Session journal tests
-│   ├── execution-lineage.test.ts     # Execution lineage tests
-│   ├── task-status.test.ts           # Task status mapping tests
-│   ├── runtime-validator.test.ts     # Runtime validation tests
-│   ├── ...
-│   │
-│   ├── session-tracker/              # Session tracker tests
-│   ├── coordination/delegation/      # Delegation module tests (11 files)
-│   ├── coordination/completion/      # Completion detector tests
-│   ├── coordination/concurrency/     # Concurrency queue tests
-│   ├── pty/                          # PTY tests
-│   ├── security/                     # Security tests
-│   ├── behavioral-profile/           # Profile tests
-│   ├── session-entry/                # Intake gate tests
-│   ├── delegation/                   # Reader tests
-│   ├── config-workflow/              # Config workflow tests
-│   ├── control-plane/                # Gatekeeper tests
-│   ├── features/                     # Feature tests
-│   ├── tmux/                         # Tmux orchestration tests
-│   ├── helpers/                      # Helper utilities
-│   └── runtime-pressure/             # Pressure module tests
-│
-├── tools/                            # Tool integration tests
-│   ├── delegation/
-│   ├── session/
-│   ├── config/
-│   └── hivemind/
-│
-├── hooks/                            # Hook tests
-├── plugin/                           # Plugin integration tests
-├── schema-kernel/                    # Schema validation tests
-├── shared/                           # Shared utility tests
-├── sidecar/                          # Sidecar tests
-├── features/                         # Feature tests
-├── integration/                      # Cross-module integration tests
-├── kernel/                           # Kernel-level tests
-├── cli/                              # CLI tests
-├── scripts/                          # Script tests
-├── task-management/                  # Task management tests
-│
-├── CP-ST-03-01-excision.test.ts      # Session-tracker excise tests
-└── plugin-diagnostic.md
-```
+**`src/tools/`:**
+- Purpose: Write-side LLM-callable tools. Each subdirectory groups a domain; the file naming matches the tool name.
+- Contains:
+  - `delegation/` — `delegate-task.ts`, `delegation-status.ts`, `readers/`, `types.ts`.
+  - `session/` — `execute-slash-command.ts`, `session-journal-export.ts`, `session-tracker.ts`, `session-hierarchy.ts`, `session-context.ts`, `session-delegation-query.ts`, `dispatch-command.ts`, `resolve-command.ts`, `validate-command.ts`, `semantic-agent-selector.ts`, `workflow-parser.ts`, `index.ts`, `session-patch/`, `session-resolver.ts`.
+  - `hivemind/` — `hivemind-doc.ts`, `hivemind-trajectory.ts`, `hivemind-pressure.ts`, `hivemind-sdk-supervisor.ts`, `hivemind-command-engine.ts`, `hivemind-session-view.ts`, `hivemind-agent-work.ts`, `hivemind-steer.ts`, `run-background-command.ts`.
+  - `config/` — `configure-primitive.ts`, `validate-restart.ts`, `bootstrap-init.ts`, `bootstrap-recover.ts`, `configure-primitive-paths.ts`.
+  - `prompt/prompt-skim/` and `prompt/prompt-analyze/` — each has `index.ts`, `tools.ts`, `types.ts`.
+  - Top-level standalone: `src/tools/tmux-copilot.ts`, `src/tools/tmux-state-query.ts`.
+- Key files: `src/tools/delegation/delegate-task.ts` (primary delegation tool), `src/tools/session/execute-slash-command.ts` (slash command execution).
 
----
+**`src/hooks/`:**
+- Purpose: Read-side OpenCode SDK event observers. Each subdirectory groups a hook family; factories return the hook map.
+- Contains:
+  - `lifecycle/core-hooks.ts` — `event`, `system.transform` / `experimental.chat.system.transform`, `shell.env` (BOOT-09 note: `experimental.chat.system.transform` is the actual SDK name; both returned for backward compat).
+  - `lifecycle/session-hooks.ts` — session read hooks.
+  - `guards/tool-guard-hooks.ts` — `tool.execute.before` (governance evaluate, circuit breaker, budget, contract enforcement) + `tool.execute.after`.
+  - `guards/governance-block.ts` — governance block injection for `system.transform`.
+  - `observers/event-observers.ts` — event observer factories (delegation, session entry, session-is-main).
+  - `observers/{delegation,session-entry,session-main,session-tracker}-consumer.ts` — observer pass-through wrappers.
+  - `transforms/tool-before-guard.ts` — combined `tool.execute.before` (guard + session-tracker detection + contract enforcement).
+  - `transforms/tool-after-composer.ts`, `tool-after-workflow.ts` — `tool.execute.after` pipeline.
+  - `transforms/chat-message-capture.ts` — `chat.message` capture.
+  - `transforms/contract-enforcement.ts` — third step in guard chain.
+  - `composition/cqrs-boundary.ts` — `classifyHookEffect` (CQRS read/write classifier).
+  - `pane-monitor.ts` — standalone pane-monitor hook for tmux.
+  - `types.ts` — shared hook dependency types.
+- Key files: `src/hooks/lifecycle/core-hooks.ts` (event → state router), `src/hooks/guards/tool-guard-hooks.ts` (governance + budget + circuit breaker), `src/hooks/composition/cqrs-boundary.ts` (CQRS classifier).
 
-## 5. File Naming Conventions
+**`src/features/`:**
+- Purpose: Standalone runtime features that don't fit the coordination/task-management spine. Each subdirectory is self-contained with `index.ts` and `types.ts`.
+- Contains (16 submodules):
+  - `bootstrap/` — `primitive-loader.ts`, `primitive-registry.ts`, `primitive-scanners.ts`, `framework-detector.ts`, `runtime-validator.ts`, `cross-primitive-validator.ts`, `structure.ts`, `control-plane/{index,gatekeeper,gate-decision}.ts`.
+  - `session-tracker/` — `index.ts` (`SessionTracker` class + barrel), `bootstrap.ts`, `initialization.ts`, `child-recorder.ts`, `classification.ts`, `tool-delegation.ts`, `tool-delegation-utils.ts`, `project-continuity.ts`, `orphan-cleanup.ts`, `session-router.ts`, `types.ts`, plus subdirectories `capture/`, `hooks/`, `persistence/`, `recovery/`, `streaming/`, `transform/`.
+  - `tmux/` — `integration.ts`, `multiplexer.ts`, `observers.ts`, `persistence.ts`, `session-manager.ts`, `types.ts`, `grid-planner.ts`.
+  - `runtime-pressure/` — `index.ts`, `control-plane.ts`, `authority-matrix.ts`, `model.ts`, `types.ts`.
+  - `agent-work-contracts/` — `index.ts`, `store.ts`, `bounds.ts`, `lifecycle.ts`, `operations.ts`, `types.ts`.
+  - `governance-engine/` — `index.ts`, `config-reader.ts`, `create-governance-session.ts`, `evaluator.ts`.
+  - `governance/persistence.ts`.
+  - `auto-loop/` + `ralph-loop/` — `index.ts` + `types.ts` each.
+  - `doc-intelligence/` — `index.ts`, `chunker.ts`, `parser.ts`, `router.ts`, `types.ts`.
+  - `prompt-packet/` — `kernel-packet.ts`, `compaction-preservation.ts`.
+  - `background-command/pty/` — `pty-manager.ts`, `pty-runtime.ts`, `pty-types.ts`, `pty-buffer.ts`, `bun-pty.d.ts`.
+  - `sdk-supervisor/` — `index.ts`, `types.ts`.
+  - `capability-gate/` — `index.ts`, `agent-capability-profiles.ts`, `types.ts`.
+  - `tool-intelligence/` — `index.ts`, `types.ts`.
+- Key files: `src/features/session-tracker/index.ts` (CQRS read-side owning module), `src/features/bootstrap/primitive-loader.ts` (loads agents/commands/skills from .opencode/), `src/features/tmux/integration.ts`, `src/features/agent-work-contracts/store.ts` (atomic contract persistence).
 
-| Pattern | Rule | Example |
-|---------|------|---------|
-| `kebab-case.ts` | All source files use kebab-case | `tool-before-guard.ts`, `session-api.ts` |
-| `PascalCase.ts` | Class definitions and types only | `SessionTracker`, `DelegationManager` |
-| `camelCase.ts` | Module-level exports, helpers | `helpers.ts`, `state.ts`, `session-api.ts` |
-| `*.schema.ts` | Zod schema definitions | `hivemind-configs.schema.ts` |
-| `*.test.ts` | Test files (vitest) | `continuity.test.ts` |
-| `.gitkeep` | Empty directory registration | All feature/agent directories |
-| Package entrypoint | `index.ts` in each module barrel | `features/session-tracker/index.ts` |
-| Factory pattern | `create*()` for factories | `createCoreHooks()`, `createToolBeforeGuard()` |
-| Tool naming | `create*Tool()` for tool factories | `createExecuteSlashCommandTool()` |
+**`src/routing/`:**
+- Purpose: Classify user intent and resolve routing decisions.
+- Contains:
+  - `behavioral-profile/` — `index.ts`, `profiles.ts`, `resolve-behavioral-profile.ts`, `types.ts`.
+  - `command-engine/` — `index.ts`, `types.ts` (discover, analyze, transform, render_context, list_commands, transform_messages, route_preview).
+  - `session-entry/` — `index.ts`, `intake-gate.ts`, `language-resolution.ts`, `profile-resolver.ts`, `purpose-classifier.ts`.
+- Key files: `src/routing/command-engine/index.ts` (primitive discovery), `src/routing/session-entry/intake-gate.ts` (purpose classifier + language detection + profile resolution + registry validation).
 
----
+**`src/config/`:**
+- Purpose: Load, cache, compile, validate Hivemind configs.
+- Contains: `subscriber.ts` (lazy-load + cache per project), `compiler.ts`, `defaults.ts`, `workflow/` (`index.ts`, `guards.ts`, `persistence.ts`, `state.ts`, `types.ts`).
+- Key files: `src/config/subscriber.ts` (`getConfig`, `getFreshConfig`, `invalidateConfigCache`).
 
-## 6. Module Organisation Rules
+**`src/schema-kernel/`:**
+- Purpose: Single source of truth for every Zod schema. Generates `.hivemind/configs.schema.json` at build.
+- Contains: 19 schemas (hivemind-configs, agent-frontmatter, agent-work-contract, bootstrap, command-engine, command-frontmatter, commands, config-precedence, doc-intelligence, mcp-server, prompt-enhance, runtime-pressure, sdk-supervisor, session-delegation-query, session-tracker, session-view, skill-metadata, tool, trajectory) + `generate-config-json-schema.ts` + `index.ts` barrel.
+- Key files: `src/schema-kernel/hivemind-configs.schema.ts` (HIVEMIND_CONFIGS_SCHEMA_VERSION = "2.0.0"), `src/schema-kernel/index.ts` (barrel).
 
-1. **`src/shared/`** — Leaf modules only. No imports from `src/coordination/`, `src/features/`, etc.
-2. **`src/hooks/`** — Read-side only. All hooks return early on errors (best-effort). Never write files directly (CQRS boundary enforced by `assertHookWriteBoundary()`).
-3. **`src/tools/`** — Write-side entrypoints. Each tool is a factory function returning `tool()` from `@opencode-ai/plugin/tool`.
-4. **`src/schema-kernel/`** — Pure Zod schemas. No runtime imports from harness modules.
-5. **`src/config/`** — Configuration loading with lazy-cache-per-project pattern.
-6. **`src/routing/`** — Session intake classification, behavioral profiles, command engine routing.
-7. **Max module size:** 500 LOC (exceptions: `plugin.ts` at 756, `features/session-tracker/index.ts` at 636, `coordination/delegation/coordinator.ts` at 561).
-8. **`tests/lib/`** mirrors `src/` structure but flattened — no deep nesting duplication.
+**`src/cli/`:**
+- Purpose: CLI substrate. Independent of the OpenCode plugin runtime.
+- Contains: `index.ts` (`runCli(argv)`), `router.ts`, `renderer.ts`, `discovery.ts`, `commands/{help,init,doctor,recover,version}.ts`, `ui/prompts.ts`.
+- Key files: `src/cli/index.ts` (entry), `src/cli/commands/doctor.ts` (harness health check), `src/cli/commands/init.ts` (bootstrap), `src/cli/commands/recover.ts` (state recovery).
 
----
+**`src/sidecar/`:**
+- Purpose: Lightweight HTTP server on `127.0.0.1:0` (random OS-assigned port) for the Next.js dashboard. Read-only state + tool proxy + SSE + WS delegation.
+- Contains: `server/factory.ts` (createSidecarServer), `server/handler.ts` (SidecarRouter), `server/registry.ts` (SidecarDependencyRegistry), `server/cache.ts`, `server/routes/{state,sessions,tools,events,catalog,types}.ts`, `server/sse/pool.ts`, `server/ws/{pool,delegation,types.d}.ts`, `server/tool-proxy/{router,handlers}/`, `catalog/{tool,json-render}-catalog.{json,ts}`, `readonly-state.ts`, `readonly-state-extensions.ts`, `types.ts`.
+- Key files: `src/sidecar/server/factory.ts`, `src/sidecar/server/registry.ts`.
 
-## 7. Folder Registration
+**`tests/`:**
+- Purpose: Vitest test suite. Mirrors `src/` module structure; uses vitest globals (no imports needed for `describe`/`it`/`expect`).
+- Contains: `lib/` (legacy grouping for moved runtime modules), `tools/`, `cli/`, `coordination/`, `features/`, `fixtures/`, `hooks/`, `integration/`, `kernel/`, `plugin/`, `plugins/`, `schema-kernel/`, `scripts/`, `shared/`, `sidecar/`, `smoke/`, `task-management/`, plus `CP-ST-03-01-excision.test.ts` at the root.
+- Setup: `vitest.setup.ts` at repo root; config in `vitest.config.ts`.
+- Coverage: 75/62/80/77 (statements/branches/functions/lines) per `vitest.config.ts`; coverage excludes `src/index.ts` and `src/**/index.ts` (barrel files).
 
-All directories that must be tracked by git contain a `.gitkeep` file. Key registered folder paths:
+**`bin/`:**
+- Purpose: Executable entrypoints.
+- Contains: `hivemind.cjs` (CommonJS shim → `dist/cli/index.js`), `validate-agent-config.sh`, `validate-load-order.sh`, `validate-runtime-paths.sh`.
 
-| Path | Purpose |
-|------|---------|
-| `src/coordination/delegation/.gitkeep` | Delegation submodule |
-| `src/task-management/continuity/.gitkeep` | Continuity persistence |
-| `src/features/session-tracker/.gitkeep` | Session tracker feature |
-| `src/shared/errors/.gitkeep` | Error definitions |
-| `src/shared/security/.gitkeep` | Security utilities |
-| `assets/.hivemind/skills/*/.gitkeep` | Source-of-truth skill packages |
-| `.hivemind/session-tracker/` | Dynamic runtime session data (no .gitkeep needed) |
-| `.hivemind/state/` | Runtime state files (no .gitkeep needed) |
-| `.planning/phases/*/` | Phase planning directories |
+**`scripts/`:**
+- Purpose: Build helpers.
+- Contains: `sync-assets.js` (mirrors `assets/` → `.opencode/`), `sync-oss.sh`, `generate-registry.cjs`, `transform-gsd-to-hm.js`, `verify-sr11.sh`.
 
----
+**`assets/`:**
+- Purpose: SOURCE OF TRUTH for OpenCode primitives. Edited here, synced to `.opencode/` via `node scripts/sync-assets.js`.
+- Contains: Subdirectories for `agent-instructions`, `agents`, `commands`, `references`, `rules`, `skills`, `templates`, `workflows` (all shipped with the npm package per `package.json` `files`).
 
-## 8. Dependency Rules (Non-Negotiable)
+**`.opencode/`:**
+- Purpose: Deployed copy of OpenCode primitives (skills, agents, commands, rules, permissions). NEVER develop directly here. NEVER store runtime state here. NEVER store build artifacts here.
+- Contains: All shipped primitives + GSD framework + universal rules + plugin loaders.
+- Key subdirectories: `agents/`, `commands/`, `command/` (legacy plural copy), `skills/`, `workflows/`, `references/`, `templates/`, `hooks/`, `plugins/`, `rules/`, `gsd-core/` (canonical GSD location, VERSION 1.3.1), `get-shit-done/` (legacy GSD location, preserved during migration), `gsd-migration-journal/` (rollback snapshots), `gsd-local-patches/`, `gsd-file-manifest.json`, `gsd-install-state.json`.
 
-- **`src/shared/types.ts`** is leaf-like shared contract authority — avoid deep runtime imports.
-- **No circular dependencies** between modules. Enforced by code review.
-- **`src/hooks/` must NOT import from `src/tools/`** — hooks are read-side, tools are write-side.
-- **`src/features/` may import from `src/shared/` and `src/coordination/`** — features are self-contained runtime capabilities.
-- **`src/config/` imports only from `src/schema-kernel/`** and `src/shared/`.
-- **`src/task-management/` may import from `src/shared/`** and `src/features/session-tracker/` for enrichment.
+**`.hivemind/`:**
+- Purpose: Internal deep-module state (canonical per Q6). Journals, lineage, runtime state, planning persistence. NEVER mix with `.opencode/`.
+- Contains:
+  - `state/` — `configs.json`, `configs.schema.json`, `sidecar-port.json`, `tmux-port.json`, `tmux-sessions/`, `trajectory-ledger.json`, `version.json`, `agent-work-contracts.json`, `governance-state.json`, `delegations.json` (legacy, migrated per P41-D).
+  - `session-tracker/` — per-session knowledge capture. Each session directory: `{sessionID}.md` (YAML frontmatter) + sibling JSON files for child records, hierarchy index, manifest, quarantine.
+  - `journal/` — append-only event timeline (time-machine). Per-session subdirectory: `*.jsonl` or JSON events.
+  - `planning/`, `research/`, `governance/`, `audit/`, `manifests/`, `registries/`, `runtime/`, `delegation/`, `lineage/`, `daily-notes/`, `onboarding/`, `poor-prompts/`, `uat/`, `hf-brain/`, `hm-brain/`, `task-managements/`, `delegation-managements/`, `artifacts/`, `audits/`, `scripts/`, `sidecar/`, `state/.hivemind/`.
+  - `STACKS-REFERENCES.md` — version-pinned stack references.
+  - `AGENTS.md` — runtime-context-aware governance for `.hivemind/`.
+
+**`.hivefiver-meta-builder/`:**
+- Purpose: Authoring lab for primitives (agents, skills, commands) before reflection to `.opencode/`. The `.hivefiver-meta-builder/agents-lab/active/refactoring/` and `.hivefiver-meta-builder/skills-lab/active/refactoring/` directories are the SOURCE OF TRUTH for all `hm-*`, `hf-*`, and `gate-*` primitives.
+- Contains: `agents-lab/`, `skills-lab/`, `commands-lab/` with `active/refactoring/` and `.archive-refactoring-skills/.archive/` subdirectories.
+
+**`.planning/`:**
+- Purpose: Governance — roadmap, state, requirements, phases, codebase maps. NEVER contains runtime code.
+- Contains: `codebase/` (this directory), `research/`, `architecture/`, `phases/`, `ROADMAP.md`, `STATE.md`, `REQUIREMENTS.md`, `AGENTS.md`.
+
+## Key File Locations
+
+**Entry Points:**
+- `src/plugin.ts` — Plugin composition root (`HarnessControlPlane: Plugin`, 1076 LOC, wires all surfaces)
+- `src/index.ts` — Public API barrel
+- `bin/hivemind.cjs` — CommonJS CLI shim → `dist/cli/index.js` → `runCli(argv)`
+- `.opencode/plugins/harness-control-plane.ts` — OpenCode plugin loader (thin wrapper re-exporting `dist/plugin.js`)
+
+**Configuration:**
+- `package.json` — npm manifest (name `hivemind-3.0`, version `0.1.0`, dual export `./plugin` and `./cli`, peer dependency `@opencode-ai/plugin ^1.16.2`, optional `bun-pty` and `@json-render/*` for PTY and dashboard)
+- `tsconfig.json` — ES2022 / NodeNext / `strict: true` / `verbatimModuleSyntax: true` / `noUnusedLocals` / `noUnusedParameters` / `noImplicitReturns`
+- `vitest.config.ts` — Vitest config (globals on, coverage `v8`, thresholds 75/62/80/77)
+- `vitest.setup.ts` — Test setup
+- `opencode.json` — OpenCode config (references `AGENTS.md` as instructions)
+- `.opencode/opencode.json` — OpenCode config inside .opencode
+- `.opencode/gsd-core/VERSION` — GSD version (`1.3.1`)
+- `.opencode/gsd-file-manifest.json` — Pristine GSD manifest (pristine = not modified)
+
+**Core Logic:**
+- `src/coordination/delegation/manager.ts` — `DelegationManager` facade
+- `src/coordination/delegation/manager-runtime.ts` — `RuntimeDelegationManager` implementation
+- `src/coordination/delegation/coordinator.ts` — `DelegationCoordinator` (orchestrates dispatcher, monitor, lifecycle, detector, periodicNotifier)
+- `src/coordination/delegation/dispatcher.ts` — `DelegationDispatcher.preflightCheck` (depth, concurrency, agent)
+- `src/coordination/delegation/state-machine.ts` — `DelegationStateMachine` (transitions, timers)
+- `src/coordination/delegation/lifecycle.ts` — `DelegationLifecycle` (getStatus, markTerminal)
+- `src/coordination/delegation/monitor.ts` — `DelegationMonitor` (progress, escalation, deadline)
+- `src/coordination/concurrency/queue.ts` — `DelegationConcurrencyQueue` (per-lane acquire/release)
+- `src/coordination/completion/detector.ts` — `CompletionDetector` (dual-signal WaiterModel)
+- `src/coordination/completion/notification-handler.ts` — terminal notification dispatch
+- `src/coordination/spawner/auto-loop.ts` + `ralph-loop.ts` — autonomous loops
+- `src/shared/state.ts` — `TaskStateManager` singleton
+- `src/shared/session-api.ts` — typed `client.session.*` wrappers
+- `src/shared/runtime-policy.ts` + `workspace-runtime-policy.ts` — runtime policy resolution
+- `src/shared/types.ts` — leaf type contracts (TaskStatus, PendingNotification, DelegationMeta, etc.)
+
+**Tools (26 total):**
+- Delegation domain: `src/tools/delegation/{delegate-task,delegation-status}.ts`, `src/tools/hivemind/run-background-command.ts`
+- Session domain: `src/tools/session/{execute-slash-command,session-patch,session-journal-export,session-tracker,session-hierarchy,session-context,session-delegation-query,create-governance-session}.ts`, `src/features/governance-engine/create-governance-session.ts`
+- Hivemind domain: `src/tools/hivemind/{hivemind-doc,hivemind-trajectory,hivemind-pressure,hivemind-sdk-supervisor,hivemind-command-engine,hivemind-session-view,hivemind-agent-work,hivemind-steer}.ts`
+- Config domain: `src/tools/config/{configure-primitive,validate-restart,bootstrap-init,bootstrap-recover}.ts`, `src/tools/prompt/{prompt-skim,prompt-analyze}/tools.ts`
+- Pre-constructed: `src/tools/tmux-copilot.ts`, `src/tools/tmux-state-query.ts`
+
+**Hooks (registered in `src/plugin.ts:907-1025`):**
+- `src/hooks/lifecycle/core-hooks.ts` — `event`, `system.transform` / `experimental.chat.system.transform`, `shell.env`
+- `src/hooks/lifecycle/session-hooks.ts` — session read hooks
+- `src/hooks/guards/tool-guard-hooks.ts` — governance + circuit breaker + budget
+- `src/hooks/composition/cqrs-boundary.ts` — CQRS classifier
+- `src/hooks/pane-monitor.ts` — tmux pane capture
+- `src/hooks/observers/event-observers.ts` — delegation/session-entry/session-is-main observers
+- `src/hooks/observers/{delegation,session-entry,session-main,session-tracker}-consumer.ts` — observer pass-through wrappers
+- `src/hooks/transforms/tool-before-guard.ts` — combined `tool.execute.before`
+- `src/hooks/transforms/tool-after-composer.ts` + `tool-after-workflow.ts` — `tool.execute.after` pipeline
+- `src/hooks/transforms/chat-message-capture.ts` — `chat.message` capture
+- `src/hooks/transforms/contract-enforcement.ts` — third step in guard chain
+
+**Persistence / State (CQRS write side):**
+- `src/features/session-tracker/index.ts` — `SessionTracker` class (CQRS read-side owning module)
+- `src/features/session-tracker/persistence/{session-writer,child-writer,session-index-writer,project-index-writer,hierarchy-index,hierarchy-manifest,atomic-write,retry-queue,orphan-quarantine,pending-dispatch-registry}.ts`
+- `src/features/agent-work-contracts/store.ts` — atomic contract persistence (`tmpFile.${pid}.${uuid}.tmp` then `renameSync`)
+- `src/task-management/continuity/{index,store-cache,continuity-reader,delegation-persistence}.ts`
+- `src/task-management/journal/{index,query,replay,execution-lineage}.ts`
+- `src/task-management/trajectory/{index,ledger,store-operations,types}.ts`
+- `src/config/workflow/{index,workflow-guards,workflow-persistence,workflow-state,workflow-types}.ts`
+
+**Testing:**
+- `tests/lib/` — legacy grouping for moved runtime modules
+- `tests/tools/` — tool-focused unit tests
+- `tests/cli/`, `tests/coordination/`, `tests/features/`, `tests/hooks/`, `tests/integration/`, `tests/kernel/`, `tests/plugin/`, `tests/schema-kernel/`, `tests/sidecar/`, `tests/smoke/`, `tests/task-management/`, `tests/shared/` — domain-specific test suites
+- `tests/fixtures/` — test fixtures
+- `tests/scripts/` — test infrastructure
+- `eval/` — eval test suite (also picked up by vitest glob)
+
+**Documentation:**
+- `README.md` — project README
+- `CHANGELOG.md` — release notes
+- `CONTRIBUTING.md` — contributor guide
+- `LICENSE` — MIT
+- `AGENTS.md` — universal constitution (SOURCE vs DEPLOY, two-halves, line, atomic commits, TDD discipline)
+- `SoT-POLICY.md` — source-of-truth policy
+- `TMUX-QUICKSTART.md` — tmux integration quickstart
+- `TUI-TEST-GUIDE.md` — TUI test guide
+- `docs/` — additional docs (architecture, draft, etc.)
+- `.opencode/rules/universal-rules.md` — universal rules (binding for multi-agent orchestration)
+- `.planning/AGENTS.md` — planning governance
+- `.hivemind/STACKS-REFERENCES.md` — version-pinned stack references
+- `.opencode/gsd-core/references/` + `.opencode/get-shit-done/references/` — GSD reference docs
+- `.hivemind/AGENTS.md` — runtime-context-aware governance for `.hivemind/`
+
+## Naming Conventions
+
+**Files:**
+- `kebab-case.ts` — module files (e.g., `delegate-task.ts`, `session-api.ts`, `tool-guard-hooks.ts`)
+- `PascalCase.ts` — uncommon, but types-only modules sometimes use this
+- `UPPERCASE.md` / `UPPERCASE.json` — important project files (README, CHANGELOG, AGENTS, LICENSE, ARCHITECTURE, STRUCTURE, STACK, INTEGRATIONS, TESTING, CONVENTIONS, CONCERNS)
+- `camelCase.ts` — variable-only or script files (e.g., `sync-assets.js`, `generate-registry.cjs`, `validate-agent-config.sh`)
+- `kebab-case.md` — agent/skill/command definitions, documentation files
+- `index.ts` — directory barrel re-export
+- `types.ts` — type-only module (paired with implementation in same directory)
+
+**Directories:**
+- `kebab-case/` — all directories (e.g., `task-management/`, `session-tracker/`, `background-command/`)
+- Plural for collections: `tools/`, `hooks/`, `features/`, `agents/`, `commands/`, `skills/`, `workflows/`, `references/`
+- Singular for abstractions: `shared/`, `coordination/`, `routing/`, `config/`, `schema-kernel/`, `sidecar/`, `cli/`
+
+**Agents / Skills / Commands (lineage prefix):**
+- `hm-*` — Hivemind product agents/skills (31 agents, 36 skills). The `hm-l2-*` prefix indicates L2 specialist; `hm-l3-*` is archived.
+- `hf-*` — Hivemind meta-builder agents/skills (22 agents, 13 skills). The `hf-l0-orchestrator`, `hf-coordinator`, `hf-agent-builder`, etc.
+- `gate-*` — internal quality gate triad (3 skills: `gate-evidence-truth`, `gate-lifecycle-integration`, `gate-spec-compliance`). THIS PROJECT ONLY, not shipped.
+- `stack-*` — reference skills (6: `stack-bun-pty`, `stack-json-render`, `stack-nextjs`, `stack-opencode`, `stack-vitest`, `stack-zod`).
+- `hivemind-*` — cross-lineage governance (e.g., `hivemind-power-on`).
+- `gsd-*` — GSD developer tooling (33 agents, 67 skills). NOT shipped; excluded from asset sync.
+- Unprefixed (orchestration/patterns) — 11 skills: `completion-detection`, `cross-cutting-change-mgmt`, `iterative-loop`, `marketing-market-research`, `multi-agent-coordination`, `opencode-config-workflow`, `quality-gate-orchestration`, `session-foundation`, `subagent-delegation-patterns`, `user-intent-patterns`, `wave-execution`.
+
+**Test Files:**
+- `*.test.ts` — vitest test files (e.g., `CP-ST-03-01-excision.test.ts`, `helpers.test.ts`)
+- Co-located in some directories, mirrored in `tests/{domain}/` for others
+- `*.spec.ts` — used occasionally (vitest glob accepts both)
+
+## Where to Add New Code
+
+**New Tool (LLM-callable):**
+- Primary code: `src/tools/{domain}/{tool-name}.ts` (returns the `tool()` factory result)
+- Type schema: inline Zod schema at top of the file
+- Registration: add `createXxxTool` factory call in `src/plugin.ts` to the appropriate `register{Domain}Tools` function
+- Tests: `tests/tools/{domain}/{tool-name}.test.ts` (or co-located if mirror convention)
+- Helpers: `src/shared/tool-helpers.ts` (`renderToolResult`), `src/shared/tool-response.ts` (`success`/`error`)
+
+**New Hook (SDK event observer):**
+- Primary code: `src/hooks/{family}/{hook-name}.ts` (returns a `HookDependencies` consumer)
+- Registration: add to `src/plugin.ts` in the appropriate `createXxxHooks` factory or as a top-level return-keyed entry
+- CQRS check: `classifyHookEffect("hook-name")` from `src/hooks/composition/cqrs-boundary.ts` to verify the hook is a read or an allowed write
+- Tests: `tests/hooks/{family}/{hook-name}.test.ts`
+
+**New Feature (standalone runtime feature):**
+- Primary code: `src/features/{feature-name}/{index,types}.ts` (and any supporting modules)
+- Index barrel: re-export from `src/index.ts` if it should be public API
+- Tests: `tests/features/{feature-name}/`
+- Wiring: instantiate in `src/plugin.ts` after `setupDelegationModules`, pass into hook factories via `deps` bag
+
+**New Coordination Module:**
+- Primary code: `src/coordination/{delegation,concurrency,completion,spawner}/{module-name}.ts`
+- Tests: `tests/coordination/{module-name}.test.ts`
+- Wiring: add to `setupDelegationModules` (`src/plugin.ts:372-463`) if it's a delegation v2 surface
+
+**New Schema:**
+- Primary code: `src/schema-kernel/{schema-name}.schema.ts` (Zod schema with `parse`/`safeParse` exports)
+- Barrel: re-export from `src/schema-kernel/index.ts`
+- Generated JSON: re-run `node dist/schema-kernel/generate-config-json-schema.js` after build
+- Tests: `tests/schema-kernel/{schema-name}.test.ts`
+
+**New Config Field:**
+- Primary code: `src/schema-kernel/hivemind-configs.schema.ts` (extend the Zod schema)
+- Defaults: `src/config/defaults.ts` (extend `DEFAULT_GOVERNANCE_CONFIGS`)
+- Subscriber: `src/config/subscriber.ts` (already lazy-loads from disk; usually no change)
+- Tests: `tests/schema-kernel/hivemind-configs.schema.test.ts`
+
+**New Command (slash command primitive):**
+- Source of truth: `assets/commands/{command-name}.md` (YAML frontmatter + markdown body)
+- Sync: `node scripts/sync-assets.js` mirrors to `.opencode/commands/`
+- Discovery: `src/features/bootstrap/primitive-loader.ts` + `src/routing/command-engine/index.ts` pick it up automatically
+- Tests: `tests/commands/{command-name}.test.ts`
+
+**New Agent (Hivemind specialist):**
+- Source of truth: `.hivefiver-meta-builder/agents-lab/active/refactoring/{agent-name}.md` (frontmatter + body)
+- Sync: reflect to `.opencode/agents/{hm-,hf-,gsd-}{agent-name}.md`
+- Discovery: `src/features/bootstrap/primitive-loader.ts` + `src/routing/session-entry/intake-gate.ts` (purpose classifier + registry validation)
+
+**New Skill:**
+- Source of truth: `.hivefiver-meta-builder/skills-lab/active/refactoring/{skill-name}/SKILL.md` (plus `references/` subfolder if needed)
+- Sync: reflect to `.opencode/skills/{prefix}-{skill-name}/SKILL.md`
+- Naming: must use the `hf-naming-syndicate` rules (prefix must match the skill's lineage)
+
+**New CLI Subcommand:**
+- Primary code: `src/cli/commands/{command-name}.ts` (export `{command-name}Cmd: CliCommand`)
+- Registration: add to `src/cli/index.ts` `createRouter` call
+- Tests: `tests/cli/commands/{command-name}.test.ts`
+
+**New Continuation Store Field:**
+- Primary code: `src/schema-kernel/agent-work-contract.schema.ts` (or related) → extend Zod schema
+- Store: `src/features/agent-work-contracts/store.ts` (atomic persistence pattern)
+- Tests: `tests/features/agent-work-contracts/{field}.test.ts`
+
+**New Delegation State Transition:**
+- Primary code: `src/coordination/delegation/state-machine.ts` (extend `VALID_DELEGATION_TRANSITIONS` and `canTransitionDelegationStatus`)
+- Type: `src/shared/types.ts` (`DelegationStatus` union)
+- Tests: `tests/coordination/delegation/state-machine.test.ts`
+
+**New SDK Wrapper:**
+- Primary code: `src/shared/session-api.ts` (typed `client.session.*` wrapper)
+- Helpers: `src/shared/helpers.ts` (`asString`, `getNestedValue`, `isObject`, `makeToolSignature`)
+- Tests: `tests/shared/session-api.test.ts`
+
+**Utilities / Helpers:**
+- Shared helpers: `src/shared/helpers.ts` (pure utility functions)
+- Type definitions: `src/shared/types.ts` (contract authority)
+- Re-exports: `src/index.ts` if public API
+
+## Special Directories
+
+**`dist/`:**
+- Purpose: Build artifacts.
+- Source: `tsc` compile output of `src/` (ES2022, NodeNext, declarations + source maps).
+- Committed: No (gitignored).
+
+**`node_modules/`:**
+- Purpose: Installed dependencies.
+- Source: `npm install` (per `package.json`).
+- Committed: No (gitignored).
+
+**`.hivemind/state/`:**
+- Purpose: Durable JSON state files (`configs.json`, `sidecar-port.json`, `tmux-port.json`, `trajectory-ledger.json`, `agent-work-contracts.json`, `governance-state.json`, `version.json`).
+- Source: Plugin writes via atomic rename (tmpFile + renameSync).
+- Committed: No (gitignored — runtime state).
+
+**`.hivemind/session-tracker/`:**
+- Purpose: Per-session knowledge capture (markdown + JSON indexes).
+- Source: `SessionTracker` writes via `SessionWriter` and child writers in `src/features/session-tracker/persistence/`.
+- Committed: No (gitignored).
+
+**`.hivemind/journal/`:**
+- Purpose: Append-only event timeline (time-machine).
+- Source: Journal module (`src/task-management/journal/`) and pane-monitor hook.
+- Committed: No (gitignored).
+
+**`.opencode/`:**
+- Purpose: Deployed OpenCode primitives.
+- Source: Mirrored from `assets/` via `node scripts/sync-assets.js` (also runs in `npm install` postinstall and `npm run build`).
+- Committed: Yes (full subtree). User-modified files are backed up with `.backup` suffix before overwrite.
+
+**`.hivefiver-meta-builder/`:**
+- Purpose: Authoring lab for primitives (source of truth for `hm-*`/`hf-*`/`gate-*`).
+- Source: Hand-authored or imported from upstream.
+- Committed: Yes (full subtree).
+
+**`sidecar/` (root-level):**
+- Purpose: Next.js sidecar dashboard (read-only, consumes sidecar HTTP).
+- Source: Hand-authored Next.js app.
+- Committed: Yes (full subtree).
+
+**`assets/`:**
+- Purpose: SOURCE OF TRUTH for shipped OpenCode primitives (mirrored to `.opencode/` at build/install time).
+- Source: Hand-authored.
+- Committed: Yes (full subtree).
+
+**`tests/fixtures/`:**
+- Purpose: Test fixtures (JSON, markdown, configs).
+- Source: Hand-authored test data.
+- Committed: Yes.
+
+**`eval/`:**
+- Purpose: Eval test suite (picked up by `vitest.config.ts` `include` glob).
+- Source: Hand-authored evals.
+- Committed: Yes.
+
+**`graphify-out/`, `disablekilo/`, `agents/`, `commands/`, `plans/`, `checkpoints/`, `state/`, `templates/`, `skills/`, `docs/`, `bin/`, `scripts/`, `checkpoints/`, `eval/`, `coverage-report.md`, `*.md` (large session files):**
+- Purpose: Various legacy, archive, or auxiliary directories at the repo root. Many are historical artifacts from previous sessions and not part of the active build/test cycle.
+
+**IDEs and tooling:**
+- `.trae/`, `.windsurf/`, `.codex/`, `.github/` (with `get-shit-done/`), `.qoder/`, `.qwen/`, `.roo/`, `.claude/`, `.cursor/`, `.codexdisbaled/`, `.bob/`, `.agent/`, `.debug/`, `.commandcode/`, `.coordination/`, `.checkpoints/`, `.vscode/`, `.scratch/`, `.tmp/`, `.research/`, `.opencode-originals/` — IDE-managed, third-party sync artifacts, or scratch directories. Most are gitignored.
 
 ---
 
-## 9. Key File Sizes (Largest Source Files)
-
-| File | LOC | Purpose |
-|------|-----|---------|
-| `plugin.ts` | 756 | Composition root |
-| `features/session-tracker/index.ts` | 636 | SessionTracker class |
-| `coordination/delegation/coordinator.ts` | 561 | Delegation coordinator |
-| `hooks/lifecycle/session-hooks.ts` | 423 | Session hook factory |
-| `shared/types.ts` | 422 | Core type definitions |
-| `hooks/lifecycle/core-hooks.ts` | 271 | Core hook factory |
-| `coordination/delegation/types.ts` | 246 | Delegation types |
-| `shared/state.ts` | 251 | TaskStateManager |
-
----
-
-## 10. Data Roots
-
-| Root | Purpose | Managed By |
-|------|---------|------------|
-| `src/` | Hard harness (npm package) | TypeScript compilation |
-| `.opencode/` | Deployed primitives (agents, commands, skills) | `scripts/sync-assets.js` |
-| `assets/` | Source of truth for primitives | Manual authoring |
-| `.hivemind/session-tracker/` | Runtime session knowledge | SessionTracker class |
-| `.hivemind/state/` | Legacy continuity/state files | Migration scripts |
-| `.planning/` | Governance, architecture, phase docs | Planning workflow |
-| `.hivefiver-meta-builder/` | Meta-authoring lab | hf-l2-* agent development |
+*Structure analysis: 2026-06-06*
+*Update when directory structure changes (additions to `src/`, new features, GSD migration state)*

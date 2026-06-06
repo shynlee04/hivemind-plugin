@@ -1,347 +1,132 @@
-# STACK — Technology Stack Reference
+# Technology Stack
 
-**Generated:** 2026-06-02
-**Source:** package.json, tsconfig.json, vitest.config.ts, sidecar/package.json, .github/workflows/
+**Analysis Date:** 2026-06-06
 
----
+## Languages
 
-## 1. Project Identity
+**Primary:**
+- TypeScript 5.x (ES2022 target, NodeNext modules) — All application code in `src/`, `tests/`, `eval/`, and the sidecar workspace at `sidecar/src/`. Strict mode is enabled (`strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`).
 
-| Field | Value |
-|-------|-------|
-| Package name | `hivemind-3.0` |
-| Version | 0.1.0 |
-| Description | Runtime composition engine for multi-agent orchestration, session continuity, and compounding intelligence in OpenCode |
-| License | MIT |
-| Module system | ESM (`"type": "module"`) |
-| Runtime target | Node.js >= 20.0.0, OpenCode >= 1.15.0 |
-| Registry | npmjs.org (public) |
-| Repository | `https://github.com/shynlee04/hivemind-plugin.git` |
+**Secondary:**
+- JavaScript (Node ESM) — Build orchestration and runtime helpers: `scripts/sync-assets.js`, `scripts/transform-gsd-to-hm.js`, `scripts/generate-registry.cjs`. The CJS `bin/hivemind.cjs` shim forwards argv into the compiled ESM CLI.
+- POSIX Shell (`sh`/`bash`) — Local lint-style validation scripts: `bin/validate-agent-config.sh`, `bin/validate-load-order.sh`, `bin/validate-runtime-paths.sh`, `scripts/sync-oss.sh`, `scripts/verify-sr11.sh`, plus test shells in `tests/scripts/`.
+- Markdown + YAML frontmatter — Configuration for OpenCode agents, skills, commands, and rules (e.g. `opencode.json`, `.opencode/agents/*.md`, `.hivemind/configs.json`).
+- JSON / JSONC — Schema definitions in `src/schema-kernel/*.schema.ts` (Zod), runtime state files under `.hivemind/state/`, and the sidecar catalog in `src/sidecar/catalog/json-render-catalog.json`.
 
----
+## Runtime
 
-## 2. Language & Compilation
+**Environment:**
+- Node.js >= 20.0.0 (LTS line 20.x; CI matrix tests 20 and 22 in `.github/workflows/ci.yml`). Enforced by the `engines.node` field in `package.json`.
+- Bun — Optional host runtime for `bun-pty` (`^0.4.8`) and PTY-backed commands. `isSupported()` in `src/features/background-command/pty/pty-manager.ts` gates on `typeof Bun !== "undefined"`. `bun-types` is a dev dependency for type completion.
+- TypeScript 5.x compiler (`^5.0.0`) — `tsconfig.json` emits ES2022 modules to `dist/` with declarations and source maps.
+- No browser runtime required — this is a server-side plugin package. The sidecar (Next.js 16) renders in a browser but is a separate workspace.
 
-### Primary Language
-- **TypeScript 5.x** (strict mode) — all source code
+**Package Manager:**
+- npm (lockfile `package-lock.json` present, 217 KB at audit time). The sidecar has its own `sidecar/package-lock.json` and `sidecar/node_modules/`.
+- Two workspaces coexist at the repo root: the npm package at the project root and the private `@opencode-harness/sidecar` workspace under `sidecar/`.
 
-### Compiler Configuration (`tsconfig.json`)
+## Frameworks
 
-| Setting | Value |
-|---------|-------|
-| Target | ES2022 |
-| Module | NodeNext |
-| Module resolution | NodeNext |
-| Library | ES2022 |
-| Output directory | `./dist` |
-| Source root | `./src` |
-| Strict mode | `true` |
-| `noUnusedLocals` | `true` |
-| `noUnusedParameters` | `true` |
-| `noImplicitReturns` | `true` |
-| `noFallthroughCasesInSwitch` | `true` |
-| `verbatimModuleSyntax` | `true` |
-| `skipLibCheck` | `true` |
-| Declarations | `true` + `declarationMap` |
-| Source maps | `true` |
+**Core:**
+- OpenCode Plugin SDK (`@opencode-ai/plugin` `^1.16.2`, peer+dev dependency) — Provides the `Plugin` type and `tool()` factory used by every tool in `src/tools/`. The composition root is `src/plugin.ts` (function `HarnessControlPlane`).
+- OpenCode Client SDK (`@opencode-ai/sdk` `^1.16.2`) — Typed `createOpencodeClient()` used by `src/shared/session-api.ts` to drive session lifecycle, message sending, and child-session creation. Re-exported type `OpenCodeClient = ReturnType<typeof createOpencodeClient>`.
+- AI SDK — Vercel AI SDK's OpenAI-compatible provider (`@ai-sdk/openai-compatible` `^2.0.47`) is declared as a dependency even though it is currently consumed indirectly through the OpenCode provider config in `opencode.json`.
+- Model Context Protocol — `@modelcontextprotocol/sdk` `^1.29.0` is declared for any consumer wiring MCP servers into the harness; the workspace MCP roster itself lives in `.mcp.json` / `mcp.json`.
+- Hivemind runtime composition engine — Plugin/hooks/tools all sit on this in-house framework (the `src/` tree itself). Hivemind is the product, not a third-party framework.
 
-### Sidecar tsconfig (`sidecar/tsconfig.json`)
+**Sidecar UI (separate workspace):**
+- Next.js 16.2 (`^16.2.2`, declared in `sidecar/package.json`) — App-Router frontend (see `sidecar/src/app/`). `sidecar/next.config.ts` uses `output: "standalone"` and binds to `127.0.0.1:3099` by default.
+- React 19 (`react` / `react-dom` `^19.0.0`).
+- Tailwind CSS 4 (`tailwindcss` `^4.0.0` with `@tailwindcss/postcss` `^4.0.0`).
+- Shadcn component set via `@json-render/shadcn` `^0.19.0`.
+- Generative UI rendering via `@json-render/core` `^0.19.0` and `@json-render/react` `^0.19.0` (state store at `sidecar/src/lib/state-store.ts`).
 
-| Setting | Value |
-|---------|-------|
-| Target | ES2022 |
-| Module | ESNext |
-| Module resolution | Bundler |
-| JSX | `preserve` (Next.js) |
-| Lib | `dom`, `dom.iterable`, `ES2022` |
-| Path alias | `@/*` → `./src/*` |
-| Plugin | Next.js |
-| Strict | `true` |
+**Testing:**
+- Vitest 4.1.7 — Unit, integration, smoke, and evals. `vitest.config.ts` uses `globals: true` and the `v8` coverage provider; coverage floors live in `vitest.config.ts` (75% statements, 62% branches, 80% functions, 77% lines). `vitest.setup.ts` isolates harness state to a per-process `mkdtempSync` dir.
+- Bats (`^1.13.0`) — Bash-script tests for the `bin/` shell helpers and similar.
+- @testing-library/react `^16.0.0` + jsdom `^25.0.0` (sidecar only) — Component-level tests in `sidecar/tests/`.
 
----
+**Build/Dev:**
+- TypeScript compiler (`tsc`) — `npm run build` chain: clean → `scripts/sync-assets.js` → `tsc` → `scripts/sync-assets.js` post-step → `dist/schema-kernel/generate-config-json-schema.js`.
+- ESLint 10.4.1 — Listed under `dependencies` (note: it appears in the runtime `dependencies` block, not `devDependencies`, in the current `package.json`).
+- Custom asset sync — `scripts/sync-assets.js` (ESM) and `scripts/transform-gsd-to-hm.js` (ESM) reflect authored assets from `assets/` and `.hivefiver-meta-builder/` into `.opencode/`.
 
-## 3. Runtime Environment
+## Key Dependencies
 
-### Supported Runtimes
-| Runtime | Minimum Version | Notes |
-|---------|----------------|-------|
-| Node.js | >= 20.0.0 | Primary runtime |
-| Bun | ^1.3.x | Optional — PTY support via `bun-pty` |
-| OpenCode | >= 1.15.0 | Plugin host |
+**Critical (runtime contract):**
+- `@opencode-ai/plugin` `^1.16.2` — **peer dependency**; the host OpenCode runtime must provide this version. The plugin entrypoint `src/plugin.ts` implements the `Plugin` type from this package.
+- `@opencode-ai/sdk` `^1.16.2` — Provides `createOpencodeClient()`; every session, prompt, and child-session wrapper in `src/shared/session-api.ts` is typed against this SDK.
+- `zod` `^4.4.3` — Schema-first validation. Used heavily in `src/schema-kernel/` (every `*.schema.ts` is a Zod schema) and across tool parameter validation.
+- `@clack/prompts` `^1.4.0` — Interactive CLI prompts in `src/cli/ui/prompts.ts` (e.g. `src/cli/commands/init.ts`, `doctor.ts`).
+- `@modelcontextprotocol/sdk` `^1.29.0` — MCP SDK surface area for harnesses that want to expose tools through MCP.
+- `yaml` `^2.9.0` — YAML parsing for configs and frontmatter.
+- `gray-matter` `^4.0.3` — Frontmatter parsing for Markdown-based primitive definitions.
+- `eslint` `^10.4.1` — Lint runtime (currently declared under `dependencies`).
 
-### Package Entrypoints (npm exports)
+**Optional / capability-gated:**
+- `bun-pty` `^0.4.8` — Lazy-loaded PTY backend (`src/features/background-command/pty/pty-manager.ts`). Falls back to headless `node:child_process` when Bun is absent.
+- `@json-render/core`, `/next`, `/react`, `/react-pdf`, `/ink` `^0.19.0` — Generative UI for sidecar (`sidecar/`) and TUI variants. Marked optional so consumers who only want the plugin layer do not pull them in.
+- `react` `^19.2.6` — Required by the sidecar workspace (declared as optional in the root `package.json`; direct dep in `sidecar/package.json`).
+- `ws` `^8.18.0` — WebSocket transport for sidecar WebSocket pool (`src/sidecar/server/ws/pool.ts`).
 
-| Export path | File |
-|-------------|------|
-| `hivemind` | `./dist/index.js` |
-| `hivemind/plugin` | `./dist/plugin.js` |
-| `hivemind/cli` | `./dist/cli/index.js` |
-| Binary | `./bin/hivemind.cjs` |
+**Infrastructure:**
+- Node.js built-ins only — `node:fs`, `node:path`, `node:os`, `node:crypto`, `node:child_process`, `node:net`, `node:http`, `node:url`, `node:util`. The harness deliberately avoids third-party I/O libraries; the SDK is the only outbound transport.
 
-### Published Distribution
+**Type packages:**
+- `@types/bun` `^1.3.8`, `@types/node` `^20.0.0`, `bun-types` `^1.3.14` (devDeps).
+- `@vitest/coverage-v8` `^4.1.7` (devDep).
 
-| Included | Excluded |
-|----------|----------|
-| `dist/` | `dist/**/*.map` |
-| `bin/` | — |
-| `assets/agent-instructions/` | — |
-| `assets/agents/` | — |
-| `assets/commands/` | — |
-| `assets/references/` | — |
-| `assets/rules/` | — |
-| `assets/skills/` | — |
-| `assets/templates/` | — |
-| `assets/workflows/` | — |
-| `scripts/` | — |
-| `.hivemind/configs.schema.json` | — |
+## Configuration
 
----
+**Environment:**
+- `.env` (gitignored) — Developer-local secret store. `vitest.setup.ts` does **not** load it; tests instead use a fresh `mkdtempSync` directory for `OPENCODE_HARNESS_STATE_DIR`. The OpenCode runtime reads MCP server keys from here.
+- `opencode.json` (root, committed) — Provider configuration (`opencode` and `CrofAI` providers via `@ai-sdk/openai-compatible`), plugin entry, server port (`4096`), and compaction policy.
+- `.opencode/opencode.json` (committed) — Project-level permission grants for `get-shit-done/` and `gsd-core/` directories.
+- `tsconfig.json` — TypeScript compiler options, ES2022 target, NodeNext modules, includes only `src/**/*`.
+- `vitest.config.ts` — Test runner config, coverage provider (`v8`), reporters (`text`, `lcov`, `json-summary`), and threshold floors.
+- `vitest.setup.ts` — Per-process temp state dir for harness.
+- `sidecar/next.config.ts` — Sidecar-specific Next.js options: standalone output, `127.0.0.1:3099`, CORS for plugin↔sidecar.
+- `sidecar/tsconfig.json` — Sidecar TypeScript config (mirrors root but with Next.js plugin types).
+- `sidecar/vitest.config.ts` — Sidecar Vitest config with jsdom env.
 
-## 4. Core Dependencies
+**Build:**
+- `package.json#scripts`:
+  - `clean` — `node --eval "import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });"`
+  - `build` — `npm run clean && node scripts/sync-assets.js && tsc && node dist/schema-kernel/generate-config-json-schema.js`
+  - `postinstall` — `node scripts/sync-assets.js --mode=install`
+  - `typecheck` — `tsc --noEmit`
+  - `test` — `vitest run`
+  - `test:watch` — `vitest`
+  - `test:coverage` — `vitest run --coverage`
+  - `prepack` — `npm run build`
 
-### Production Dependencies
+**Package exports** (defined in `package.json#exports`):
+- `hivemind` → `./dist/index.js` (default + re-exports for queues, lifecycle, journal, etc.)
+- `hivemind/plugin` → `./dist/plugin.js` (the `HarnessControlPlane` Plugin implementation)
+- `hivemind/cli` → `./dist/cli/index.js` (the `runCli(argv)` entrypoint consumed by `bin/hivemind.cjs`)
 
-| Package | Version | Purpose | Source |
-|---------|---------|---------|--------|
-| `@ai-sdk/openai-compatible` | ^2.0.47 | OpenAI-compatible AI SDK provider for model routing | npm |
-| `@clack/prompts` | ^1.4.0 | Terminal UI prompts (spinners, confirms, selects) | [bombshell-dev/clack](https://github.com/bombshell-dev/clack) |
-| `@modelcontextprotocol/sdk` | ^1.29.0 | MCP (Model Context Protocol) server SDK | [modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) |
-| `@opencode-ai/sdk` | ^1.15.10 | OpenCode SDK — session management, delegation, tool dispatch | [anomalyco/opencode](https://github.com/anomalyco/opencode) |
-| `gray-matter` | ^4.0.3 | Frontmatter parsing for agent/command/skill YAML frontmatter | [jonschlinkert/gray-matter](https://github.com/jonschlinkert/gray-matter) |
-| `yaml` | ^2.9.0 | YAML serialization/deserialization | [eemeli/yaml](https://github.com/eemeli/yaml) |
-| `zod` | ^4.4.3 | Runtime schema validation | [colinhacks/zod](https://github.com/colinhacks/zod) |
+**MCP server roster** (`.mcp.json` and `mcp.json` — both committed, both refer to identical sets):
+- HTTP-transport servers: `notion`, `stitch`, `gitmcp`, `web-search-prime`, `web-reader`, `zread`, `context7`, `deepwiki`, `tavily`.
+- stdio-transport servers: `fetcher`, `desktop-commander`, `exa`, `fetch`, `github`, `mcp-playwright`, `memory`, `netlify`, `repomix`, `sequential-thinking`, `brave-search`.
 
-### Peer Dependencies
+## Platform Requirements
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `@opencode-ai/plugin` | ^1.15.10 | OpenCode plugin API — `tool()`, hooks, plugin composition |
+**Development:**
+- macOS / Linux / Windows (with WSL) — `process.platform` branches exist in `src/features/tmux/integration.ts` (`process.platform === "win32"` uses `where`, others use `which`). All non-PTY code paths are platform-agnostic.
+- Node.js >= 20.0.0 (CI matrix: Node 20 and Node 22 per `.github/workflows/ci.yml`).
+- Bun optional — only required for `bun-pty`-backed features (`createPtyManagerIfSupported` in `src/features/background-command/pty/pty-runtime.ts` gracefully returns `null` when Bun is absent).
+- tmux optional — `src/features/tmux/integration.ts` checks `process.env.TMUX` and binary presence via `which`/`where`. Falls back silently when unavailable.
+- Bats (`npm i -g bats`) optional — only needed to run the shell-script test suite.
+- OpenCode runtime (`@opencode-ai/plugin` peer dep `>=1.16.2`) — required at runtime; plugin cannot be loaded without it.
+- No Docker / no external database / no message broker required for development.
 
-### Dev Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `@opencode-ai/plugin` | ^1.15.10 | Plugin SDK for build-time type checking and testing |
-| `@types/bun` | ^1.3.8 | Bun runtime type definitions |
-| `@types/node` | ^20.0.0 | Node.js type definitions |
-| `@vitest/coverage-v8` | ^4.1.7 | V8 coverage provider for vitest |
-| `bats` | ^1.13.0 | Bash automated testing system |
-| `bun-types` | ^1.3.14 | Bun type definitions |
-| `typescript` | ^5.0.0 | TypeScript compiler |
-| `vitest` | ^4.1.7 | Test runner and assertion library |
-
-### Optional Dependencies
-
-| Package | Version | Purpose | Activation |
-|---------|---------|---------|------------|
-| `@json-render/core` | ^0.18.0 | JSON Render — core rendering engine | Sidecar dashboard |
-| `@json-render/ink` | ^0.18.0 | JSON Render — Ink terminal renderer | Sidecar TUI |
-| `@json-render/next` | ^0.18.0 | JSON Render — Next.js integration | Sidecar web UI |
-| `@json-render/react` | ^0.18.0 | JSON Render — React component renderer | Sidecar web UI |
-| `@json-render/react-pdf` | ^0.18.0 | JSON Render — PDF renderer | Sidecar PDF output |
-| `bun-pty` | ^0.4.8 | PTY (pseudo-terminal) support for Bun runtime | Background command execution |
-| `react` | ^19.2.6 | React UI library | Sidecar web UI |
+**Production:**
+- Distributed as an npm package (`hivemind-3.0`, published to `https://registry.npmjs.org/`, see `publishConfig` in `package.json`). Release pipeline in `.github/workflows/publish.yml` is triggered on `v*` tags or `workflow_dispatch` and uses `NPM_TOKEN` from repo secrets.
+- `engines` field pins runtime expectations: `node >= 20.0.0`, `opencode >= 1.16.2`.
+- Sidecar (`sidecar/`) is private (`"private": true`) and is **not** part of the published package; it is a local dev/dashboard tool, but its `next.config.ts` is configured for `output: "standalone"` for self-hosted production.
+- The shipped `dist/` is ESM (`"type": "module"` in `package.json`); the CLI shim at `bin/hivemind.cjs` is CJS so npm `bin` resolution works across Node majors without depending on `type: module` semantics.
 
 ---
 
-## 5. Sidecar Stack (`sidecar/`)
-
-The sidecar is a **Next.js 15** application providing a read-only dashboard.
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `next` | ^15.0.0 | React web framework (App Router) |
-| `react` | ^19.0.0 | UI library |
-| `react-dom` | ^19.0.0 | React DOM renderer |
-| `@json-render/react` | ^0.1.0 | JSON Render React bindings |
-| `@types/node` | ^20.0.0 | Node.js type defs |
-| `@types/react` | ^19.0.0 | React type defs |
-| `@types/react-dom` | ^19.0.0 | React DOM type defs |
-| `typescript` | ^5.0.0 | TypeScript compiler |
-
----
-
-## 6. Build System
-
-### Build Pipeline
-
-```
-npm run build
-  ├── 1. clean          rm -rf dist/
-  ├── 2. sync-assets    node scripts/sync-assets.js
-  ├── 3. compile        tsc
-  └── 4. schema-gen     node dist/schema-kernel/generate-config-json-schema.js
-```
-
-### Scripts
-
-| Script | Command | Description |
-|--------|---------|-------------|
-| `build` | Full pipeline | Clean → sync assets → compile → generate JSON schema |
-| `clean` | `rm -rf dist/` | Remove build output |
-| `typecheck` | `tsc --noEmit` | Type-check without emitting |
-| `test` | `vitest run` | Run all tests |
-| `test:watch` | `vitest` | Watch mode |
-| `test:coverage` | `vitest run --coverage` | Coverage report |
-| `postinstall` | `node scripts/sync-assets.js --mode=install` | Post-install asset sync |
-| `prepack` | `npm run build` | Pre-publish build |
-
-### Post-Install Hook
-- `postinstall` runs `scripts/sync-assets.js --mode=install` to reflect source-of-truth primitives from `assets/` to `.opencode/`
-
----
-
-## 7. Testing Stack
-
-### Test Framework
-- **Vitest** ^4.1.7 — test runner with globals (`globals: true`)
-
-### Test Configuration
-
-| Setting | Value |
-|---------|-------|
-| Include patterns | `tests/**/*.test.ts`, `eval/**/*.test.ts` |
-| Setup file | `vitest.setup.ts` |
-| Globals | `true` (no imports for `describe`, `it`, `expect`) |
-
-### Coverage Configuration
-
-| Metric | Threshold |
-|--------|-----------|
-| Statements | >= 75% |
-| Branches | >= 62% |
-| Functions | >= 80% |
-| Lines | >= 77% |
-
-- Provider: `v8` (`@vitest/coverage-v8`)
-- Included: `src/**/*.ts`
-- Excluded: `src/index.ts`, `src/**/index.ts`
-- Reporters: `text`, `lcov`, `json-summary`
-
-### Test Layout
-- `tests/lib/` — unit tests mirroring `src/` modules
-- `tests/tools/` — tool-focused unit tests
-
----
-
-## 8. CI/CD Pipeline (GitHub Actions)
-
-### Workflows
-
-| Workflow | File | Triggers | Purpose |
-|----------|------|----------|---------|
-| **CI** | `.github/workflows/ci.yml` | Push/PR to `oss-dev`, `main` | Build, typecheck, test, coverage on Node 20 & 22 |
-| **Publish** | `.github/workflows/publish.yml` | Tag push (`v*`) or `workflow_dispatch` | npm publish with pre-flight dry-run and package validation |
-| **OpenCode** | `.github/workflows/opencode.yml` | Issue/PR comments with `/oc` or `/opencode` | Trigger OpenCode agent in CI |
-| **Sync OSS** | `.github/workflows/sync-oss.yml` | — | OSS mirror sync |
-| **Qwen Triage** | `.github/workflows/qwen-triage.yml` | — | AI triage for issues |
-| **Qwen Invoke** | `.github/workflows/qwen-invoke.yml` | — | AI invocation |
-| **Qwen Scheduled Triage** | `.github/workflows/qwen-scheduled-triage.yml` | — | Periodic AI triage |
-| **Qwen Dispatch** | `.github/workflows/qwen-dispatch.yml` | — | AI dispatch |
-
-### CI Steps (ci.yml)
-1. Checkout (`actions/checkout@v4`)
-2. Setup Node (matrix: 20, 22) (`actions/setup-node@v4`, cache: npm)
-3. `npm ci`
-4. `npm run typecheck`
-5. `npm run build`
-6. `npm test`
-7. `npm run test:coverage` (Node 22 only)
-
-### Publish Steps (publish.yml)
-1. Checkout + setup Node 22
-2. `npm ci` → `typecheck` → `test` → `build`
-3. Package validation (size check, no `.map` files, no `.hivemind/` leaks)
-4. `npm publish --dry-run` (manual) or `npm publish` (tag push)
-
----
-
-## 9. Source Code Metrics
-
-| Metric | Count |
-|--------|-------|
-| Source files (`src/**/*.ts`) | ~262 |
-| Test files (`tests/**/*.ts`) | ~258 |
-| Plugin entry point | `src/plugin.ts` (756 lines) |
-| Public API re-exports | `src/index.ts` (30 lines, 32+ exports) |
-| Source modules | 13 top-level directories under `src/` |
-
----
-
-## 10. Directory Architecture (src/)
-
-```
-src/
-├── cli/                  # CLI substrate (commands, discovery, renderer, router, UI)
-├── config/               # Config subscriber, compiler, workflow
-├── coordination/         # Delegation, completion, concurrency, command/SDK delegation, spawner
-├── features/             # 15 standalone runtime features
-├── hooks/                # 5 hook categories
-├── routing/              # Session entry, behavioral profile, command engine
-├── schema-kernel/        # 21 Zod schemas
-├── shared/               # Leaf utilities, types, SDK wrappers, runtime policy, security
-├── sidecar/              # Read-only state contract surface (Phase 42)
-├── task-management/      # Continuity, journal, lifecycle, trajectory
-├── tools/                # 6 tool domains
-├── index.ts              # Public API
-└── plugin.ts             # Composition root
-```
-
----
-
-## 11. Key Architectural Patterns
-
-| Pattern | Implementation |
-|---------|---------------|
-| **CQRS** | Write-side = tools; Read-side = hooks, observers |
-| **Plugin pattern** | Composition root (`plugin.ts`) wires deps → registers tools + hooks |
-| **Schema-first** | All config/state validated via Zod v4 schemas in `schema-kernel/` |
-| **Dual-layer state** | Durable JSON (continuity) + in-memory Maps (state) |
-| **WaiterModel** | Async delegation with completion detection and dual-signal verification |
-| **Factory pattern** | All hooks and tools created via factory functions |
-| **Dependency injection** | Manual DI via constructor parameters and factory arguments |
-| **Progressive disclosure** | Session view aggregated across 3 data roots (tracker, delegations, trajectory) |
-
----
-
-## 12. Development Tooling
-
-| Tool | Purpose |
-|------|---------|
-| TypeScript 5.x | Language compiler |
-| Vitest 4.x | Test runner |
-| `@vitest/coverage-v8` | Code coverage |
-| Bats | Bash-level testing |
-| ast-grep | AST pattern matching (references only) |
-| scripts/sync-assets.js | Asset reflection from `assets/` → `.opencode/` |
-| scripts/generate-config-json-schema.js | JSON Schema generation from Zod |
-
----
-
-## 13. Environment Variables
-
-| Variable | Purpose | Required |
-|----------|---------|----------|
-| `OPENCODE_HARNESS_STATE_DIR` | Override default state directory | No |
-| `OPENCODE_HARNESS_CONTINUITY_FILE` | Override continuity file path | No |
-| `ZAI_API_KEY` | ZAI API key (OpenCode CI workflow) | For CI |
-| `NPM_TOKEN` | npm publish token | For publish |
-
----
-
-## 14. Version Compatibility Matrix
-
-| Component | Min Version | Max Tested | Notes |
-|-----------|-------------|------------|-------|
-| Node.js | 20.0.0 | 22.x | Tested on 20 and 22 |
-| TypeScript | 5.0 | 5.x | strict mode required |
-| `@opencode-ai/plugin` | 1.15.10 | latest | Peer + dev dependency |
-| `@opencode-ai/sdk` | 1.15.10 | latest | Session/delegation API |
-| Zod | 4.3.6 | 4.4.3 | v4 with breaking changes from v3 |
-| Vitest | 4.1.5 | 4.1.7 | globals: true |
-| Next.js (sidecar) | 15.0.0 | latest | App Router |
-| Bun (optional) | 1.3.x | latest | PTY support only |
-
----
-
-**End of STACK.md** — 303 lines
+*Stack analysis: 2026-06-06*
+*Update after major dependency changes*

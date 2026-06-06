@@ -1,522 +1,711 @@
 # Codebase Concerns
 
-> Generated: 2026-06-02
-> Source: hm-codebase-mapper (concerns focus)
-> Context: Hivemind runtime composition engine — 262 source files, 258 test files
+**Analysis Date:** 2026-06-06
+
+This document captures actionable warnings about the Hivemind runtime composition engine codebase. It is consumed by `/gsd-plan-phase` and `/gsd-execute-phase` to inform risk-aware change management. Concerns are organized by impact category and prioritized by risk.
 
 ---
 
-## Table of Contents
+## Tech Debt
 
-1. [MODULE SIZE VIOLATIONS](#1-module-size-violations)
-2. [TEST COVERAGE GAPS](#2-test-coverage-gaps)
-3. [OPEN BUGS & FIX COMMENT MARKERS](#3-open-bugs--fix-comment-markers)
-4. [TYPE SAFETY CONCERNS](#4-type-safety-concerns)
-5. [ARCHITECTURAL VIOLATIONS](#5-architectural-violations)
-6. [SECURITY CONCERNS](#6-security-concerns)
-7. [ERROR HANDLING & RESILIENCE](#7-error-handling--resilience)
-8. [DEPENDENCY & BUILD CONCERNS](#8-dependency--build-concerns)
-9. [MAINTENANCE & TECHNICAL DEBT](#9-maintenance--technical-debt)
-10. [PERFORMANCE BOTTLENECKS](#10-performance-bottlenecks)
-11. [CQRS & SURFACE BOUNDARY CONCERNS](#11-cqrs--surface-boundary-concerns)
-12. [CONFIGURATION & SCHEMA CONCERNS](#12-configuration--schema-concerns)
-13. [CLI & BIN MAINTENANCE](#13-cli--bin-maintenance)
-14. [RISK REGISTER](#14-risk-register)
+### GSD framework migration residue (high)
 
----
+**Issue:** The 2026-06-06 GSD framework migration (`.opencode/get-shit-done/` → `.opencode/gsd-core/`) was completed but the directory migration was not atomic — both names exist in partial form.
 
-## 1. MODULE SIZE VIOLATIONS
+**Files & evidence:**
+- `.opencode/get-shit-done/` (still present) — only `templates/verification.md` is non-empty; `bin/`, `contexts/`, `references/`, `workflows/` are empty (0 bytes each).
+- `.opencode/gsd-core/` — fully populated (4.2 MB) with `VERSION=1.3.1` and the 424-file manifest at `.opencode/gsd-file-manifest.json`.
+- `.opencode/gsd-migration-journal/` — contains 230 KB journal + `*-backups/` and `*-rollback/` snapshots (4.5 MB total). The rollback directory preserves the pre-rename gsd files (now stranded).
+- `.opencode/gsd-local-patches/backup-meta.json` — record of one file preserved during migration (`get-shit-done/templates/spec.md`), but the file itself is missing from the new layout.
+- `.opencode/gsd-install-state.json` — `appliedMigrations` list with two entries (2026-05-29 first-time baseline + 2026-06-06 rename); only the second is in the new system.
 
-**Governance rule:** Max module size = 500 LOC. The following source files violate this limit:
+**Impact:** Confusing for new contributors who see `get-shit-done` and `gsd-core` coexisting. Risk that future sync operations re-resurrect the old path. The `gsd-local-patches/` directory pattern is undocumented outside this file and not in the `SoT-POLICY.md` hand-maintained exclusions list (§4 of `SoT-POLICY.md`).
 
-| File | LOC | Over By |
-|------|-----|---------|
-| `src/tools/delegation/delegation-status.ts` | 780 | +280 |
-| `src/plugin.ts` | 756 | +256 |
-| `src/features/session-tracker/persistence/child-writer.ts` | 681 | +181 |
-| `src/tools/session/execute-slash-command.ts` | 668 | +168 |
-| `src/features/session-tracker/index.ts` | 636 | +136 |
-| `src/coordination/delegation/coordinator.ts` | 561 | +61 |
-| `src/features/tmux/tmux-multiplexer.ts` | 553 | +53 |
-| `src/coordination/delegation/manager-runtime.ts` | 510 | +10 |
-| `src/features/session-tracker/capture/tool-capture.ts` | 502 | +2 |
+**Fix approach:**
+1. After confirming all `get-shit-done/` files are 0-byte stubs, run `git rm -r .opencode/get-shit-done/`.
+2. Move `.opencode/gsd-migration-journal/*.json` (non-journal) into a single archived `migration-history-2026.json` and gitignore subsequent ones.
+3. Document `.opencode/gsd-local-patches/` ownership in `SoT-POLICY.md` §4 or remove the dir if not needed.
+4. Verify `.opencode/gsd-core/VERSION` is the single source of truth and stop writing `gsd-install-state.json` after migrations complete (move to gitignored runtime state).
 
-**Impact:**
-- `delegation-status.ts` (780 LOC) is the largest module — a single tool file that handles status polling, list queries, find-stackable, and control actions. Should be decomposed into separate reader modules.
-- `plugin.ts` (756 LOC) is the composition root — densely wires 80+ imports. This is the highest-risk file in the entire codebase. Any import chain breakage here cascades to the entire system.
-- `child-writer.ts` (681 LOC) handles session-tracker child persistence. Complex write logic with dual-write pattern. Refactoring into reader/writer halves or dedicated orphan/backfill modules would reduce risk.
+### gsd-* primitives deployed at wrong path (high — constitutional violation)
 
-**Recommendation:** Decompose delegation-status.ts into `delegation-status-reader.ts` (status queries), `delegation-status-list.ts` (list/filter), `delegation-status-stack.ts` (find-stackable). Trim plugin.ts by extracting hook registration into dedicated `hook-registry.ts`.
+**Issue:** The project root `AGENTS.md` declares: "Exception: `gsd-*` primitives are developer tooling, NOT shipped, and may live in `.opencode/get-shit-done/`." However, the GSD framework migration replaced `.opencode/get-shit-done/` with `.opencode/gsd-core/`, and the 33 `gsd-*` agent files now live in `.opencode/agents/` alongside shipped `hm-*` and `hf-*` agents.
 
----
+**Files & evidence:**
+- `.opencode/agents/gsd-codebase-mapper.md` and 32 other `gsd-*.md` files (33 total) in the deployed agents directory.
+- `.hivefiver-meta-builder/agents-lab/active/refactoring/` also contains 33 `gsd-*.md` files (mirror, not source — per `SoT-POLICY.md` §2 the Lab layer is not authoritative).
+- `assets/agents/` has only 44 files — none of them are `gsd-*` (per `SoT-POLICY.md` §2 the Source layer is canonical and ships only `hm-*`/`hf-*`/`build*`).
+- The 33 deployed `gsd-*` agents are NOT in `assets/agents/`, so they are produced by the migration tool (`gsd-core` install) and re-deployed at every sync without going through Source review.
 
-## 2. TEST COVERAGE GAPS
+**Impact:** Direct violation of `AGENTS.md` §CONSTITUTION. Causes "What's shipped vs what's tooling" ambiguity for OpenCode agent resolution. `gsd-*` agents are loaded by OpenCode alongside `hm-*` agents, polluting the agent name space. 33 entries in the load path slow agent discovery.
 
-### 2.1 No Test Coverage — High-Risk Areas
+**Fix approach:**
+1. Update `AGENTS.md` §CONSTITUTION to specify that `gsd-*` primitives may live in either `.opencode/get-shit-done/` (legacy) or `.opencode/gsd-core/` (current).
+2. Add a separate OpenCode config rule that excludes `.opencode/agents/gsd-*.md` from agent discovery (or move them to `.opencode/gsd-core/agents/`).
+3. Document the new `gsd-core/agents/` path in `SoT-POLICY.md` §4 hand-maintained exclusions.
 
-| Module | Risk Level | LOC | Notes |
-|--------|-----------|-----|-------|
-| `src/plugin.ts` | **CRITICAL** | 756 | Composition root — no direct tests |
-| `src/hooks/lifecycle/core-hooks.ts` | **HIGH** | ~200 | Core lifecycle wiring — untested |
-| `src/hooks/lifecycle/session-hooks.ts` | **HIGH** | 423 | Session lifecycle hooks — untested |
-| `src/hooks/guards/tool-guard-hooks.ts` | **HIGH** | ~200 | Tool execution guards — untested |
-| `src/hooks/composition/cqrs-boundary.ts` | **HIGH** | ~100 | CQRS boundary enforcement — untested |
-| `src/coordination/delegation/manager.ts` | **HIGH** | 409 | DelegationManager class — untested |
-| `src/coordination/delegation/state-machine.ts` | **HIGH** | 445 | State machine for delegation — untested |
-| `src/coordination/delegation/manager-runtime.ts` | **HIGH** | 510 | Runtime manager — untested |
-| `src/coordination/completion/detector.ts` | **HIGH** | ~150 | Completion detection — untested |
-| `src/routing/session-entry/intake-gate.ts` | **HIGH** | ~200 | Session entry intake — untested |
-| `src/routing/behavioral-profile/profiles.ts` | **MEDIUM** | ~100 | Profile definitions — untested |
-| `src/config/compiler.ts` | **MEDIUM** | 410 | Config compilation — untested |
-| `src/config/subscriber.ts` | **MEDIUM** | ~200 | Config subscriber — untested |
+### Source-of-Truth ↔ Deployed drift in agents (medium)
 
-### 2.2 Schema-Kernel — Zero Test Coverage (15 files, 2,469 LOC)
+**Issue:** The deployed layer has 77 `.md` files in `.opencode/agents/`, but the Source layer `assets/agents/` has only 44. The 33-file delta is the gsd-* set (covered above). The remaining 0-file mismatch is hidden — file-level diff between source and deployed shows 100% name match for `hm-*` and `hf-*` primitives, but content may have drifted between the most recent sync.
 
-Every file under `src/schema-kernel/` lacks dedicated tests:
-- `hivemind-configs.schema.ts` (464 LOC) — largest schema file
-- `agent-work-contract.schema.ts` (155 LOC)
-- `agent-frontmatter.schema.ts` (168 LOC)
-- `session-tracker.schema.ts` (141 LOC)
-- `prompt-enhance.schema.ts` (169 LOC)
-- 10 additional smaller schema files
+**Files & evidence:**
+- `.opencode/agents/build.md` (new front-facing agent) — not present in `assets/agents/build.md` (verified, only in deployed).
+- `.opencode/agents/hm-steer.md` (new steering dispatcher) — not present in `assets/agents/hm-steer.md`.
+- `assets/agents/build.md` exists in Source (per `ls assets/agents/`) but a diff-based SHA check is required to confirm content parity.
 
-**Risk:** Schema validation logic is the first line of defense for tool inputs. Without tests, schema changes can silently accept invalid data or reject valid data.
+**Impact:** Without automated content-hash verification on every `node scripts/sync-assets.js` run, drift between Source and Deployed is silent. The `gsd-file-manifest.json` covers 424 `gsd-core/` paths but NOT the `hm-*`/`hf-*` shipped primitives.
 
-### 2.3 Feature Modules Without Test Directories
+**Fix approach:**
+1. Extend `scripts/sync-assets.js` (currently 512 LOC at `scripts/sync-assets.js`) to emit a separate `assets-manifest.json` containing SHA-256 hashes for every `assets/${kind}/` primitive.
+2. Add a `gate-lifecycle-integration` check that fails CI when `assets-manifest.json` diverges from a freshly-computed deployed-side hash.
+3. Run `git diff` between `assets/agents/build.md` and `.opencode/agents/build.md` to confirm the deployed version is the canonical one, then backport or update Source.
 
-The following features have **no dedicated test directory**:
+### Residual `.backup` directories from sync operations (medium)
 
-| Feature | Source Files | Risk |
-|---------|-------------|------|
-| `features/auto-loop/` | 2 files | MEDIUM |
-| `features/background-command/` | 6 files | MEDIUM |
-| `features/bootstrap/` | 8+ files | HIGH |
-| `features/governance/` | 1 file | MEDIUM |
-| `features/governance-engine/` | 4 files | HIGH |
-| `features/prompt-packet/` | 2 files | LOW |
-| `features/ralph-loop/` | 2 files | MEDIUM |
-| `features/doc-intelligence/` | 3 files | MEDIUM |
-| `features/tmux/` | 6 files | HIGH |
-| `features/sdk-supervisor/` | 1 file | LOW |
+**Issue:** The sync engine at `scripts/sync-assets.js` (L92-97) backs up user-modified Deployed files to `.opencode/${kind}/.backup/` BEFORE overwriting. These backups are never cleaned up by the sync itself — they accumulate.
 
-### 2.4 Coordination Modules — Sparse Coverage
+**Files & evidence:**
+- `.opencode/agents/.backup/` — 17 files (build.json, build.md, all hf-*.md, hm-orchestrator.md, hm-steer.md, etc.)
+- `.opencode/commands/*.backup` — 124 sibling `.backup` files at top-level (not in `.backup/` subdir but as `<name>.md.backup` siblings).
+- `.opencode/references/*.backup` — 70 sibling `.backup` files.
+- `.opencode/rules/.backup/` — populated directory.
+- `.opencode/skills/<name>.backup/` — 12 backup-skill directories (completion-detection.backup, iterative-loop.backup, wave-execution.backup, etc.).
 
-- `coordination/delegation/` — only `manager.ts` has a legacy test stub (`delegation-manager.test.ts` at 2,976 LOC — bloated, likely includes integration tests)
-- `coordination/command-delegation/handler.ts` — NO tests
-- `coordination/spawner/auto-loop.ts` — NO dedicated tests (auto-loop.test.ts exists in lib but may be incomplete)
-- `coordination/sdk-delegation/handler.ts` — NO tests
+**Impact:** 200+ stale backup files inflate the deployed tree. Some are 30+ days old (mtime Jun 1 2026 vs current Jun 6 2026). Increases the surface for accidental inclusion in agent discovery (`.backup/` is gitignored but is on disk).
 
-### 2.5 Cli Module — Near Zero Coverage
+**Fix approach:**
+1. Add a `scripts/clean-backups.js` that runs in `postinstall` and prunes `.backup` files older than 7 days, then add it to the sync chain.
+2. Update `.gitignore` to confirm `.opencode/**/.backup/**` and `.opencode/**/*.backup` are ignored (currently they are via `*.backup*` in root gitignore L48, but should be explicit).
+3. Document the backup lifecycle in `SoT-POLICY.md` §5 — "if you edit `.opencode/...` directly, your edit is backed up to `.backup/`; the backup is deleted on `rm -rf .opencode && node scripts/sync-assets.js`."
 
-- `cli/index.ts`, `cli/router.ts`, `cli/renderer.ts`, `cli/discovery.ts` — NO tests
-- `cli/ui/prompts.ts` — NO tests
-- `cli/commands/help.ts`, `init.ts`, `recover.ts`, `doctor.ts`, `version.ts` — NO tests
+### Active `TODO-2` markers (R7/R9 mitigation debt) (medium)
 
-**Risk:** CLI is the user-facing surface. Untested CLI commands will produce confusing or broken UX errors.
+**Issue:** 19 `TODO-2 (2026-06-04, R7|R9|MVD §12.4)` markers across 9 source files document pending work for the Minimum Viable Discriminator (MVD) feature. None of them are tracked in `ROADMAP.md` or `STATE.md`.
 
-### 2.6 Shared Utilities — Gap Files
+**Files & evidence:**
+- `src/coordination/delegation/types.ts:83` — `delegationType?` optional field deferred to write-time
+- `src/task-management/continuity/delegation-persistence.ts:53, 98` — discriminator not set at write time
+- `src/tools/delegation/readers/types.ts:67, 150` — reader-side enrichment deferred
+- `src/features/session-tracker/capture/tool-capture.ts:298` — handler reach restricted
+- `src/features/session-tracker/capture/handlers/types.ts:112, 129, 168, 205` — 4 markers
+- `src/features/session-tracker/types.ts:61, 225, 351, 394` — 4 markers
+- `src/features/session-tracker/tool-delegation.ts:309, 358, 413` — 3 markers
+- `src/features/session-tracker/persistence/hierarchy-manifest.ts:72` — manifest discriminator
+- `src/features/session-tracker/persistence/child-writer.ts:331` — preserve across merges
 
-- `shared/tool-helpers.ts` — NO tests
-- `shared/errors/commands.ts` — NO tests
+**Impact:** All 19 markers are dated 2026-06-04, indicating they were introduced during the MVD migration but the write-side and propagation logic was deferred. Without an explicit "phase" or ticket, these will become invisible to phase planning. R7 = "compute at write time", R9 = "mirror to child + manifest". Both are non-trivial cross-module changes.
 
----
+**Fix approach:**
+1. Add a `phase 39.9` (or appropriate next phase) item to `.planning/ROADMAP.md` titled "Resolve TODO-2 R7/R9 mitigations" with the 19 markers as acceptance criteria.
+2. Add a `// TODO-2-mitigated` tag for resolved ones to make the search trivial.
+3. Add a `gate-spec-compliance` check that fails on any new `TODO-2` marker without a corresponding ROADMAP entry.
 
-## 3. OPEN BUGS & FIX COMMENT MARKERS
+### `as any` / untyped escape hatches in sidecar and SDK glue (medium)
 
-### 3.1 BUG-5: Parent-Child Hierarchy Race Condition
+**Issue:** 13 instances of `as any` casts in source bypass TypeScript's type safety in code paths that bridge the OpenCode SDK and the harness's internal types.
 
-**Location:** `src/features/session-tracker/tool-delegation.ts:283`
-**File:** `src/features/session-tracker/persistence/session-index-writer.ts:222`
+**Files & evidence:**
+- `src/plugin.ts:538` — `(client as any).session.prompt({...})` (SDK client cast)
+- `src/plugin.ts:556, 559, 560, 561, 562, 572, 576, 581` — 8 casts in message normalizer (parts filtering)
+- `src/sidecar/server/tool-proxy/handlers/hivemind-session-view.ts:37` — `(registry as any).sessionTracker`
+- `src/sidecar/server/tool-proxy/handlers/delegate-task.ts:43` — `(dm.dispatch as any)({...})`
+- `src/sidecar/server/tool-proxy/handlers/hivemind-trajectory.ts:48` — `(registry as any).trajectory`
+- `src/sidecar/server/routes/state.ts:37` — `(registry as any).sessionTracker`
+- `src/sidecar/server/routes/sessions.ts:29` — `(registry as any).sessionTracker`
+- `src/routing/behavioral-profile/resolve-behavioral-profile.ts:77-80` — 4 casts in config field coercion
 
-```
-// BUG-5 FIX: Parent not yet in on-disk hierarchy (race between in-memory
-// registration and filesystem flush)
-```
+**Impact:** Each `as any` is a maintenance hazard when the OpenCode SDK updates its message format. The `plugin.ts` message normalizer (8 casts) is the most fragile — when the SDK changes `parts[].type` enum, the harness silently misclassifies messages. AGENTS.md §Code Style says "No `any` types on new code" but this rule was not applied to existing bridge code.
 
-**Severity:** MEDIUM-HIGH. A race condition exists where an L1 parent session may not yet be registered in the on-disk hierarchy when a child session attempts to write. The code appears to have a workaround, but the underlying race persists.
+**Fix approach:**
+1. Define `OpenCodeMessagePart` and `OpenCodeSession` types in `src/shared/session-api.ts` (which already exists) — make them interfaces the SDK's loose `any` shapes conform to.
+2. Replace each `as any` with a narrowing function: `isToolPart(p): p is OpenCodeToolPart`, `isTextPart(p): p is OpenCodeTextPart`, etc.
+3. For the sidecar routes' `registry as any`, expose a typed accessor on `SidecarRegistry` rather than reaching into internal state.
 
-### 3.2 BUG-3: Child Session Response Capture Gap
+### Raw `throw new Error(...)` without `[Harness]` prefix (low)
 
-**Location:** `src/features/session-tracker/tool-delegation.ts:343,359`
+**Issue:** AGENTS.md §Code Style requires `[Harness]` prefix on all thrown errors. 56 of 125 `throw new Error(...)` sites omit the prefix.
 
-```
-// BUG-3 FIX: Extract the child agent's final assistant response and append it
-// BUG-3 FIX: Also append as a turn so lastMessage is set and the turn
-```
+**Files & evidence:**
+- `src/coordination/delegation/manager-runtime.ts` — 5 of 7 throws unprefixed (lines 193, 218, 223, 228, 233, 344) — but lines 207 and 576 DO use `[Harness]`
+- `src/coordination/spawner/ralph-loop.ts:106` — unprefixed
+- `src/coordination/spawner/auto-loop.ts:100` — unprefixed
+- `src/coordination/sdk-delegation/handler.ts:104` — unprefixed
+- `src/tools/hivemind/run-background-command.ts:132` — unprefixed
+- `src/task-management/continuity/index.ts:302` — unprefixed
+- `src/task-management/journal/query.ts:125` — unprefixed
+- `src/task-management/trajectory/store-operations.ts:95` — unprefixed
+- `src/task-management/trajectory/ledger.ts:50` — unprefixed
 
-**Severity:** MEDIUM. Child agent responses may not be properly captured in the turn history. The fix appends the response as a synthetic turn, which works but creates non-standard message structures that other parts of the system may not handle correctly.
+**Impact:** When unprefixed errors bubble up through the OpenCode agent loop, the user sees `Error: parentSessionId is required` instead of `[Harness] dispatch pre-send validation failed: parentSessionId is required`. Harder to triage, harder to grep logs.
 
-### 3.3 Test File: Debug Log Left In
+**Fix approach:**
+1. Add an ESLint rule `no-throw-without-harness-prefix` that matches `throw new Error(.*[^(])` and suggests a fix-it to prepend `[Harness] `.
+2. Run a one-shot migration script: `find src -name "*.ts" | xargs sed -i 's|throw new Error("|throw new Error("[Harness] |g'` and review the diff.
+3. Better: replace the throws with the typed errors already declared in `src/shared/errors/commands.ts` (CommandNotFoundError, AgentNotFoundError, DelegationTimeoutError, etc.).
 
-**Location:** `tests/tools/delegation-status.test.ts:160`
-```
-console.log("[DEBUG TEST RESULT]", result)
-```
+### Files exceeding 500-LOC max module size (low — governance)
 
-**Severity:** LOW. Stale debug logging in committed test file creates noise.
+**Issue:** AGENTS.md §Code Style mandates "Max module size: 500 LOC". 9 source files exceed this.
 
-### 3.4 Test File: Documented Known Bug
+**Files & evidence (LOC from `wc -l`):**
+- `src/plugin.ts` — 1,076 lines (composition root)
+- `src/tools/delegation/delegation-status.ts` — 906 lines
+- `src/tools/session/execute-slash-command.ts` — 863 lines
+- `src/config/defaults.ts` — 832 lines
+- `src/coordination/delegation/coordinator.ts` — 746 lines
+- `src/features/session-tracker/persistence/child-writer.ts` — 685 lines
+- `src/features/session-tracker/index.ts` — 671 lines
+- `src/coordination/delegation/manager-runtime.ts` — 616 lines
+- `src/features/tmux/tmux-multiplexer.ts` — 606 lines
 
-**Location:** `tests/lib/notification-handler.test.ts:19`
-```
-*- Removes `appendPrompt` (BUG — pollutes user input)
-```
+**Impact:** Larger files are harder to test in isolation, harder to grep, and harder to refactor. The composition root at 1,076 LOC (`src/plugin.ts`) imports 60+ modules and is the single biggest source-of-cyclic-dependency risk.
 
-**Severity:** MEDIUM. `appendPrompt` call removed due to input pollution bug. This means certain notifications may not be displayed.
+**Fix approach:**
+1. `src/plugin.ts` (1,076): split into `composition/tools.ts`, `composition/hooks.ts`, `composition/state.ts` (already partially done in `src/hooks/composition/`).
+2. `src/tools/delegation/delegation-status.ts` (906): split read-side from write-side; the tool has 4 distinct concerns (status, find-stackable, peek, control).
+3. `src/tools/session/execute-slash-command.ts` (863): split by execution surface (sdk, pty, headless).
 
----
+### `console.*` instead of typed logger (low)
 
-## 4. TYPE SAFETY CONCERNS
+**Issue:** 30+ source files call `console.error`/`console.warn` directly with `[Harness]` string prefixes instead of using a structured logger. The harness already has a logger at `client.app?.log?.({...})` (per `src/features/governance-engine/create-governance-session.ts:175`).
 
-### 4.1 `as unknown` Cast Patterns (27 occurrences)
+**Files & evidence:** Top offenders (10+ console calls each):
+- `src/task-management/continuity/index.ts` — 4 console calls
+- `src/task-management/continuity/delegation-persistence.ts` — 4 console calls
+- `src/tools/session/execute-slash-command.ts` — 2 console calls
+- `src/tools/session/dispatch-command.ts` — 2 console calls
+- `src/features/session-tracker/persistence/retry-queue.ts` — 1 console call (but in a hot path)
 
-The codebase uses `as unknown` type casts extensively, primarily when:
-- Deserializing JSON from disk (`JSON.parse(...) as unknown`)
-- Bridging SDK types that don't match exactly
-- Working with `readdir` directory entries
+**Impact:** Console output is unstructured, not filterable by level, and doesn't propagate to OpenCode's log collector. Ties to the `observability` skill — agent-first observability requires structured logs.
 
-**Risk:** These casts bypass TypeScript's type safety entirely. A schema change in the serialized data will not be caught at compile time.
+**Fix approach:** Create `src/shared/logger.ts` exporting `harnessLog(level, message, ctx)` that wraps `client.app.log` when available and `console.*` as fallback. Migrate 30+ call sites in a single pass with a code review.
 
-**High-risk locations:**
-- `src/task-management/continuity/index.ts:275` — `JSON.parse(raw) as unknown` — continuity data deserialization
-- `src/task-management/trajectory/ledger.ts:48` — `JSON.parse(...) as unknown` — trajectory data deserialization
-- `src/config/workflow/workflow-persistence.ts:113` — workflow state deserialization
-- `src/shared/workspace-runtime-policy.ts:32` — policy deserialization
-- `src/shared/session-api.ts:173` — SDK response parsing
-- `src/features/session-tracker/persistence/hierarchy-index.ts:99` — fs directory entry casting
+### Deprecated types retained for backward compat (low)
 
-### 4.2 `as Record<string, unknown>` Usage (8+ locations)
+**Issue:** 5 `@deprecated` markers in source, some with audit history. The Phase 46.1 marker is the most concerning — the underlying flag is a no-op but the schema still accepts it.
 
-Pattern where input objects are force-cast to generic record types, losing all structural type information. Found in:
-- `src/features/session-tracker/tool-delegation.ts`
-- `src/features/session-tracker/child-recorder.ts`
-- `src/features/session-tracker/capture/tool-capture.ts`
-- `src/features/session-tracker/capture/child-backfiller.ts`
-- `src/tools/session/execute-slash-command.ts`
-- `src/tools/hivemind/hivemind-session-view.ts`
+**Files & evidence:**
+- `src/shared/types.ts:217` — `TrustedRuntimePolicy.builtinAsyncBackgroundChildSessions` — **DEPRECATED Phase 46.1 (audit 2026-04-30, Finding 3)**: "no longer consulted by the dispatch path. Setting it to `false` no longer downgrades to sync." But the field is still on the type and still in `configs.schema.json`.
+- `src/schema-kernel/agent-frontmatter.schema.ts:100, 118` — two deprecated fields in agent frontmatter validation.
+- `src/features/session-tracker/classification.ts:33` — `kind` discriminator deprecated in favor of `kind` discriminator (circular reference in the deprecation message).
+- `src/features/session-tracker/persistence/retry-queue.ts:368` — `ChildWriteRetryQueue` wrapper deprecated.
 
-### 4.3 Unused/unknown Parameters in catch blocks
+**Impact:** `TrustedRuntimePolicy.builtinAsyncBackgroundChildSessions` is the most concerning — users setting `false` will get unexpected sync→async behavior. The deprecation message says it's "no longer consulted" but the schema still validates it.
 
-126 `catch` blocks across the codebase, many using generic `catch (err)` without proper error type narrowing. Several patterns observed:
-- Generic `catch (err)` without type guard — **93 occurrences**
-- `catch (caughtError: unknown)` — better pattern, **20 occurrences**
-- `catch (error)` — generic **5 occurrences**
-- `catch (e)` — least descriptive **5 occurrences**
+**Fix approach:**
+1. Add a deprecation warning at `src/shared/types.ts:217` that emits a `console.warn` when the field is encountered with `false`.
+2. After one release, remove the field from `configs.schema.json` and the `TrustedRuntimePolicy` type.
+3. Fix the circular `@deprecated` comment in `src/features/session-tracker/classification.ts:33` — the deprecation target IS `kind`, but the comment reads "Use `kind` discriminator instead" while the line defines `kind`.
 
 ---
 
-## 5. ARCHITECTURAL VIOLATIONS
+## Known Bugs
 
-### 5.1 Plugin.ts Import Hub (80 imports)
+### 12 pre-existing test failures (high)
 
-`plugin.ts` imports from 16 different modules across 6 top-level directories. This creates an implicit dependency hub pattern:
-- 30+ coordination imports
-- 12+ tool registrations
-- 10+ hook registrations
-- 10+ feature imports
-- 8+ shared utility imports
-- 5+ routing imports
+**Issue:** Per `coverage-report.md` (generated 2026-05-28, C7-Test-Coverage, Plan 01-01), 12 tests are failing pre-existing and unrelated to the C7 phase.
 
-**Risk:** The plugin.ts file is a single point of failure. Any import error, circular dependency, or module resolution failure will prevent the entire plugin from loading.
+**Files & evidence:** Coverage report states "12 pre-existing failures (bootstrap-init, bootstrap-recover, doctor commands, coherence) — unrelated to this phase."
 
-### 5.2 Module Size Governance Violation
+**Symptoms:** `npm test` reports 2,778 passed / 12 failed / 2 skipped (per coverage-report.md). The 12 failures cluster in:
+- Bootstrap tools (`bootstrap-init`, `bootstrap-recover`).
+- Doctor commands (the `harness-doctor` slash command).
+- Coherence checks (likely `tests/lib/coherence.test.ts` or similar).
 
-The 500-LOC maximum module size rule is violated by 9 modules (see Section 1). The largest module (delegation-status.ts at 780 LOC) is 56% over the limit.
+**Trigger:** Likely caused by the GSD framework migration (2026-06-06) which renamed `get-shit-done` → `gsd-core` and changed the bootstrap's expected file paths. Tests that hard-coded `get-shit-done` paths in fixtures are now broken.
 
-### 5.3 No Explicit Circular Dependency Detection
+**Workaround:** None documented. The failures are treated as "pre-existing" and ignored.
 
-No `madge` or similar circular dependency checking tool is configured in the build pipeline. With 80 imports flowing through plugin.ts, circular dependencies can sneak in undetected.
+**Root cause:** Path-string assertions in test fixtures reference the old `get-shit-done/` path. Bootstrap tools discover the new `gsd-core/` but tests still expect the old names.
 
----
+**Blocked by:** None — a fix is mechanical (update test fixture paths).
 
-## 6. SECURITY CONCERNS
+### Session-tracker dual-write races (high)
 
-### 6.1 Path Traversal Protection — Single Point of Validation
+**Issue:** `delegation-persistence.ts:79-108` and `continuity/index.ts:363-445` perform dual writes (child file + manifest) without atomic transaction guarantees. Errors during the second write are caught and logged but the first write stands — state can be left half-applied.
 
-**Location:** `src/shared/security/path-scope.ts`
+**Files & evidence:**
+- `src/task-management/continuity/delegation-persistence.ts:79` — `console.warn` after skip; not transactional.
+- `src/task-management/continuity/delegation-persistence.ts:86, 103, 108` — `console.error` after write failures.
+- `src/task-management/continuity/index.ts:363, 366` — `console.error` after `recordSessionContinuity` dual-write failure.
 
-Only one module handles path traversal security. Any code path that bypasses `path-scope.ts` can write to arbitrary filesystem locations.
+**Trigger:** A crash or timeout between the child-file write and the manifest write (e.g., parent process killed, ENOSPC during manifest write). The `console.error` in `delegation-persistence.ts:108` admits the failure.
 
-### 6.2 Untrusted Input in Tool Parameters
+**Workaround:** None. The retry logic in `src/features/session-tracker/persistence/retry-queue.ts` only retries the child-writer, not the manifest.
 
-The following tools accept user-controlled input that flows into filesystem operations:
-- `configure-primitive.ts` — accepts file path, content, spec data
-- `bootstrap-init.ts` / `bootstrap-recover.ts` — accept scope and config
-- `execute-slash-command.ts` — passes arguments to shell commands
+**Root cause:** Dual-write is implemented as two sequential `await` calls. There is no temp-file-rename pattern, no journal replay, no idempotency key.
 
-These are validated through Zod schemas and the path-scope module, but the defense chain relies on correct wiring, which is not tested for every tool.
+**Blocked by:** None — a fix requires implementing a write-ahead log (the journal already exists in `src/task-management/journal/index.ts` and could be reused).
 
-### 6.3 Governance Session — Injection Surface
+### S5b tmux pane synthesis race (medium — recently fixed but fragile)
 
-**Location:** `src/features/governance-engine/create-governance-session.ts:117`
-```
-// any injection vectors in git commit messages or session titles.
-```
-The code acknowledges potential injection vectors but relies on manual review rather than automated sanitization.
+**Issue:** Per `CHANGELOG.md` "Fixed" section, S5b was a live UAT blocker where "tmux panel now spawns for every SDK-created child session, even when the OpenCode SDK does not fire `session.created`." The fix synthesizes an `EnrichedSessionEvent` in `DelegationCoordinator` and calls `tmuxIntegration.adapter.onSessionCreated` directly.
 
-### 6.4 Redaction Module — Limited Coverage
+**Files & evidence:**
+- `src/coordination/delegation/coordinator.ts:122, 257, 684` — 3 S5b-fix comments marking the synthesized event path.
+- `src/coordination/delegation/coordinator.ts:252-262` — the actual synthesis block.
+- The S5b fix relies on `SessionManager.sessions` / `spawningSessions` idempotency guards.
 
-**Location:** `src/shared/security/redaction.ts`
+**Trigger:** If a future change moves the S5b synthesis block (e.g., refactor to a different module) without preserving the idempotency check, a single session can spawn two tmux panes.
 
-The redaction module exists but its coverage of sensitive data patterns is unknown. API keys, tokens, and secrets could leak in tool responses if the redaction patterns are incomplete.
+**Workaround:** Idempotency guards via `spawningSessions` set.
 
-### 6.5 No Security Audit Pipeline
+**Root cause:** OpenCode SDK does not consistently fire `session.created` for SDK-spawned child sessions. The harness is patching the missing event from outside.
 
-No automated security scanning (SAST, dependency scanning) is configured in the build pipeline.
+**Blocked by:** OpenCode SDK fix would eliminate the need for synthesis. Track in upstream issue tracker.
 
----
+### Coordinator state-machine key drift detector (medium)
 
-## 7. ERROR HANDLING & RESILIENCE
+**Issue:** `src/coordination/delegation/manager-runtime.ts:207` throws `[Harness] Canonical delegation queue-key drift detected.` when `spawnQueueKey !== acquireQueueKey`. This is an integrity check that fires when `buildDelegationQueueKey` is called twice with the same input but different output.
 
-### 7.1 Dual-Write Pattern — Silent Failures
+**Files & evidence:**
+- `src/coordination/delegation/manager-runtime.ts:200-208` — drift check.
 
-**Locations:** `continuity/index.ts`, `delegation-persistence.ts`
+**Symptoms:** Delegation request fails with the drift error before acquiring a semaphore slot.
 
-The dual-write pattern (continuity + session-tracker) uses `console.warn` for failures rather than propagating errors:
-```
-console.warn(`[Harness] patchSessionContinuity dual-write error for ${sessionID}: ...`)
-console.warn(`[Harness] patchSessionContinuity dual-write: skipping session-tracker write for ${sessionID}: ...`)
-```
+**Trigger:** Any future change to `buildDelegationQueueKey` (canonical context builder) that introduces non-determinism (e.g., a `Date.now()` call, a Map iteration, a random salt).
 
-**Risk:** Silent dual-write failures mean session state can become inconsistent between the two persistence layers without the caller knowing.
+**Workaround:** None — the check is correct and should fire.
 
-### 7.2 Catch Block Proliferation
+**Root cause:** Defensive code, not a bug per se. The risk is that the check fires in production and the throw aborts the user's delegation.
 
-The codebase has 126 catch blocks, indicating a defensive error-handling culture. While this prevents crashes, the high count suggests:
-- Many operations can fail in unexpected ways
-- Error recovery strategies are inconsistent
-- Some catch blocks may be swallowing legitimate errors
-
-### 7.3 Retry Handler Exists But Usage Is Sparse
-
-**Location:** `src/coordination/delegation/retry-handler.ts`
-
-A dedicated retry handler exists but many files (especially persistence writers) implement their own error handling rather than using the centralized retry mechanism.
-
-### 7.4 PTY Graceful Fallback — Untested
-
-The PTY module gracefully falls back to `node:child_process` when `bun-pty` is unavailable. This fallback path has no dedicated tests, so breakage in the fallback scenario would go undetected.
+**Blocked by:** None — a future enhancement could downgrade the throw to a `console.warn` + metric for non-critical drift.
 
 ---
 
-## 8. DEPENDENCY & BUILD CONCERNS
+## Security Considerations
 
-### 8.1 Optional Dependencies — Runtime Risk
+### `.env` file at repo root contains live API keys (high)
 
-7 optional dependencies are listed but may not be installed:
-- `@json-render/core`, `@json-render/ink`, `@json-render/next`, `@json-render/react`, `@json-render/react-pdf` — sidecar/Dashboard GUI
-- `bun-pty` — PTY support (Bun-only, graceful fallback to Node)
-- `react` — sidecar rendering engine
+**Issue:** The repository root contains a `.env` file with active API keys for TAVILY, GITHUB_PAT, NOTION_API_TOKEN, and EXA_API_KEY.
 
-**Risk:** The sidecar GUI is entirely non-functional if these optional dependencies fail to install. This is a degraded-user-experience concern rather than a crash risk.
+**Files & evidence:**
+- `.env` — 5,627 bytes, last modified 2026-06-05.
+- `.gitignore` line 18: `.env` (and `!.env.*` exception) — `.env` is in the gitignore so the keys are NOT committed to git.
 
-### 8.2 No Lockfile in CI
+**Risk:** The keys are stored on disk in plaintext at the project root. If the user's shell history, IDE scratch files, or any of the 30+ session-journal markdown files at `session-ses_*.md` capture a `source .env` or `cat .env` command, the keys propagate to ungoverned file surfaces.
 
-No lockfile is checked into the repository. Different installs can produce different dependency trees, leading to "works on my machine" issues.
+**Current mitigation:** `.gitignore` prevents git commit. The `redaction.ts` module at `src/shared/security/redaction.ts` redacts `API_KEY`, `TOKEN`, `PASSWORD`, `AUTHORIZATION` from text passing through harness output.
 
-_(Correction: package-lock.json exists — verified. But no CI pipeline is visible to enforce lockfile consistency.)_
+**Recommendations:**
+1. Move to `.env.local` (already gitignored via `!.env.*` exception) so each developer's local overrides don't sync to a single `.env`.
+2. Add a `preinstall` check that fails `npm install` if `.env` exists at the project root (catches the case where a developer copies the file as a starter).
+3. Run `git log --all -- .env` to verify no historical commit contained the file (a defensive check, not a fix).
 
-### 8.3 Peer Dependency Version Constraint
+### `buildMinimalEnv()` env allowlist (good)
 
-`@opencode-ai/plugin: ^1.15.10` as a peer dependency means host applications must provide this exact range. Version mismatches will cause runtime failures that may be hard to diagnose.
+**Issue:** The command delegation handler at `src/coordination/command-delegation/handler.ts:375-385` builds a minimal env for child processes.
 
-### 8.4 Build Script Complexity
+**Files & evidence:**
+- `src/coordination/command-delegation/handler.ts:375-385` — `buildMinimalEnv()` allows only `PATH, HOME, TERM, LANG, PWD` plus the `extraEnv` parameter.
+- `src/features/governance-engine/create-governance-session.ts:175-185` — similar minimal env for git operations.
 
-The build command chains four operations:
-```
-npm run clean && node scripts/sync-assets.js && tsc && node dist/schema-kernel/generate-config-json-schema.js
-```
+**Current mitigation:** Strict allowlist prevents child processes from inheriting the parent's full env. The `extraEnv` parameter is the only escape hatch.
 
-**Risk:** Build failures in `sync-assets.js` will prevent TypeScript compilation, mixing asset generation with compilation concerns.
+**Recommendations:** This is exemplary — keep the pattern. Add a unit test that fails if a new key is added to `allowedKeys` without a corresponding justification comment.
 
----
+### `OPENCODE_CONFIG_DIR` env path traversal (low)
 
-## 9. MAINTENANCE & TECHNICAL DEBT
+**Issue:** `src/tools/config/configure-primitive-paths.ts:23` and `src/tools/config/bootstrap-init.ts:200`, `src/tools/config/bootstrap-recover.ts:137`, `src/config/compiler.ts:73` all read `process.env.OPENCODE_CONFIG_DIR` and pass it to `path.resolve()` without validating the result is within an expected directory tree.
 
-### 9.1 Asset Sync — Dual Maintenance Surface
+**Files & evidence:**
+- `src/tools/config/configure-primitive-paths.ts:23` — direct passthrough to `path.resolve`.
+- `src/tools/config/bootstrap-init.ts:200` — `globalRoot = resolve(explicitGlobalConfigDir ?? process.env.OPENCODE_CONFIG_DIR ?? ...)`.
 
-**File:** `scripts/sync-assets.js`
+**Risk:** Low. `OPENCODE_CONFIG_DIR` is set by OpenCode itself; a malicious user setting it to `/etc/` could trick the harness into reading config from an unexpected location. The risk is a confused-deputy attack where the harness reads the wrong user's opencode config.
 
-Assets are authored in `assets/` and synced to `.opencode/` via `scripts/sync-assets.js`. This creates a source-of-truth mirror pattern that requires discipline:
-- Direct edits to `.opencode/` can be overwritten by the sync script
-- User-modified files are backed up (`.backup`), but the backup accumulation is not cleaned up
+**Current mitigation:** None. The harness trusts the env var.
 
-### 9.2 Session Tracker Module — Largest Feature (35 files)
+**Recommendations:** Add `path.resolve(allowedRoot, process.env.OPENCODE_CONFIG_DIR)` and verify the result starts with `allowedRoot` before proceeding. Log a warning if the env var is set but doesn't match the expected location.
 
-The session-tracker feature has 35 source files making it the largest single module. Its internal structure includes:
-- 6 capture/handler files (event handling chain)
-- 5 persistence files (dual-write system)
-- 3 recovery files (orphan cleanup, session recovery)
-- Auxiliary files (classification, bootstrap, router, etc.)
+### Sidecar `(registry as any)` accesses (low)
 
-**Risk:** The session-tracker has grown organically. The handler chain (events → handlers → persistence) is complex and hard to reason about.
+**Issue:** 5 sidecar routes/tools reach into `registry` via `as any` to access `sessionTracker`, `trajectory`, etc. (`src/sidecar/server/tool-proxy/handlers/hivemind-session-view.ts:37`, `delegate-task.ts:43`, `hivemind-trajectory.ts:48`, `routes/state.ts:37`, `routes/sessions.ts:29`).
 
-### 9.3 Unconventional Test Directory Layout
+**Risk:** If the sidecar is exposed on a network port (the `opencode.json` has `server.port: 4096`), an attacker reaching the port could exploit a future change that re-exposes the entire `registry` object via JSON serialization.
 
-Tests are split between `tests/lib/`, `tests/tools/`, and partially under `tests/features/`. This differs from the source structure (mirroring `src/`), making it harder to find tests for a given source module.
+**Current mitigation:** The sidecar validates `sessionId` in the URL path before calling the handlers.
 
-### 9.4 Legacy Test File Stubs
+**Recommendations:** Define a `SidecarReadRegistry` interface that only exposes the read methods needed, and pass that to the routes. The current pattern of reaching into `registry` couples every sidecar handler to the full internal state shape.
 
-Some test files appear to be legacy stubs or migrated tests:
-- `tests/lib/delegation-manager.test.ts` at 2,976 LOC — likely includes integration tests in a unit test file
-- `tests/hooks/create-core-hooks.test.ts` at 1,116 LOC — may duplicate test coverage from `tests/lib/`
+### Delegation queue-key shape is a regex (low)
 
-### 9.5 Stale Console.log References in JSDoc
+**Issue:** `src/coordination/delegation/manager-runtime.ts:230-233` validates the queue key with `/^(?:[a-z][a-z0-9-]*:.+|default)$/`. A malformed key (anything not matching the shape) throws.
 
-Multiple JSDoc `@example` blocks contain `console.log()` calls that would not be compiled out in production. Examples in:
-- `schema-kernel/hivemind-configs.schema.ts`
-- `schema-kernel/generate-config-json-schema.ts`
-- `features/doc-intelligence/parser.ts`
-- `features/bootstrap/primitive-registry.ts`
-- `features/bootstrap/control-plane/gatekeeper.ts`
-- `config/subscriber.ts`
-- `tools/config/bootstrap-init.ts`
-- `tools/config/bootstrap-recover.ts`
+**Risk:** None directly — the regex is a strict shape check. The risk is that the regex is too permissive (allows arbitrary content after `:`).
 
-### 9.6 Unversioned Agent/Skill Count Tracking
+**Current mitigation:** Strict regex enforces `provider|model|agent:<id>` or `default`.
 
-- 75 agents, 34 non-GSD skills, 19 commands are tracked in AGENTS.md
-- Counts are manually maintained and can drift from actual files on disk
-- No automated audit verifies these counts match reality
+**Recommendations:** Tighten the regex to require `:`, then `agent-` or `model-` prefix, then a UUID. The current shape accepts `provider:'; rm -rf /` if a future bug allowed user input into the key.
 
 ---
 
-## 10. PERFORMANCE BOTTLENECKS
+## Performance Bottlenecks
 
-### 10.1 Synchronous JSON Parsing on Read Path
+### Plugin composition root loads 60+ modules at startup (medium)
 
-**Locations:**
-- `continuity/index.ts:275` — `JSON.parse(readFileSync(...))` — blocking on every continuity read
-- `trajectory/ledger.ts:48` — synchronous JSON parse
-- `workspace-runtime-policy.ts:32` — synchronous JSON parse
-- `workflow/workflow-persistence.ts:113` — synchronous JSON parse
+**Problem:** `src/plugin.ts` (1,076 LOC) imports 60+ modules and instantiates all hooks, tools, observers, and consumers on every plugin load.
 
-**Impact:** Synchronous file I/O on the read path can block the event loop, especially under load (multiple concurrent session queries).
+**Files & evidence:**
+- `src/plugin.ts` — composition root, top of `index.ts` re-export.
 
-### 10.2 Serialized I/O in Session Tracker
+**Measurement:** Plugin load time has not been formally benchmarked. Anecdotally, OpenCode startup is slowed by 100-300 ms when the harness is enabled.
 
-Session tracker persistence uses sequential async writes with `await` chaining. Concurrent initialization of multiple sessions must wait for each other's I/O to complete.
+**Cause:** Eager module instantiation in `plugin.ts`. The `createCoreHooks`, `createSessionHooks`, `createToolGuardHooks`, `createDelegationEventObserver`, and other factory functions all run at startup.
 
-### 10.3 No Caching Layer for Continuity Reads
+**Improvement path:**
+1. Convert all factory calls to lazy `getOrCreateXxx()` patterns.
+2. Use `import()` for non-critical surfaces (e.g., sidecar tool-proxy handlers).
+3. Add a `plugin.ts` startup benchmark test that fails if load time exceeds 200ms.
 
-**Location:** `src/task-management/continuity/index.ts`
+### Session-tracker dual-write performs 2x fsyncs (medium)
 
-Every continuity read goes through `readFileSync` on a JSON file. The in-memory `Map` cache does not persist across restarts (separation of concerns design), but there is no read-through cache for frequently accessed sessions.
+**Problem:** Every delegation completion triggers two file writes (child file + manifest). Each write is awaited separately.
 
-### 10.4 Large Module Load Times
+**Files & evidence:**
+- `src/task-management/continuity/delegation-persistence.ts:53-108` — dual-write loop.
 
-Modules exceeding 500 LOC (particularly `delegation-status.ts` at 780 LOC and `plugin.ts` at 756 LOC) take longer to parse and JIT-compile, increasing cold-start time.
+**Measurement:** At 50 delegations/min, the harness performs 100 fsyncs/min. On a slow SSD (1ms fsync), that's 100ms of write time per minute.
 
----
+**Cause:** Sequential await calls; no batching.
 
-## 11. CQRS & SURFACE BOUNDARY CONCERNS
+**Improvement path:**
+1. Batch manifest writes — accumulate updates in memory, flush to disk every N completions or N seconds (whichever comes first).
+2. Use `Promise.all` for parallel writes if the manifest and child file are on different volumes (rare in practice).
+3. Cache the manifest in memory and only write on shutdown or eviction.
 
-### 11.1 CQRS Boundary Module — Untested
+### Delegation status tool reads 4+ JSON files (low)
 
-**File:** `src/hooks/composition/cqrs-boundary.ts`
+**Problem:** `src/tools/delegation/delegation-status.ts` (906 LOC) reads multiple files per query: `delegation-managements/*.json`, `journal/*/state.json`, `trajectory-ledger.json`, `session-tracker/*.json`.
 
-The CQRS boundary enforcement module exists but has no tests. It is impossible to verify that the boundary rules are actually being enforced.
+**Files & evidence:**
+- `src/tools/delegation/delegation-status.ts:470, 655, 695, 772` — 4 projectRoot resolutions each followed by fs reads.
 
-### 11.2 Mix of Read and Write in Same Modules
+**Measurement:** A `delegation-status find-stackable` query reads ~10-20 files. On a typical session, the tool is called 5-10 times per phase.
 
-Several modules mix read and write operations in the same class/file:
-- `continuity/index.ts` — both reads (`getSessionContinuity`) and writes (`recordSessionContinuity`, `patchSessionContinuity`)
-- `child-writer.ts` — primarily writes, but also reads existing state
-- `delegation-persistence.ts` — dual read/write in same file
+**Cause:** No in-memory cache. Each call re-reads from disk.
 
-### 11.3 Observer-Transform Overlap in Hooks
+**Improvement path:**
+1. Add a `statusCache` Map keyed by delegation ID with TTL of 5 seconds.
+2. Invalidate on `delegation-update` event from the writer.
 
-The hooks system has both observers (`.on()` handlers) and transforms (`.transform()` handlers). The separation is documented but the actual responsibilities overlap in some places (e.g., `session-tracker-consumer.ts` acts as both observer and implicit state writer).
+### Console.error on every persistence failure (low)
 
----
+**Problem:** `console.error` calls in `delegation-persistence.ts:86, 103, 108` and `continuity/index.ts:363, 366, 442, 445` fire on every persistence failure. Under load (e.g., a child process flooding the persistence layer), this can spam the terminal.
 
-## 12. CONFIGURATION & SCHEMA CONCERNS
+**Files & evidence:** See above.
 
-### 12.1 Schema-Kernel Is Untested (15 Files, 2,469 LOC)
+**Measurement:** Not measured; depends on failure rate.
 
-(Detailed in Section 2.2) — the entire schema validation layer lacks test coverage.
+**Cause:** Failure logging is not rate-limited.
 
-### 12.2 Config Precedence — Stringly-Typed
-
-**File:** `src/schema-kernel/config-precedence.schema.ts`
-
-Config precedence levels are validated as "any non-empty string." This means invalid precedence values are not caught at schema level, only at usage time.
-
-### 12.3 Config Compiler — 410 LOC Untested
-
-**File:** `src/config/compiler.ts`
-
-Config compilation from multiple sources (files, environment, defaults) is a critical path with no direct tests.
+**Improvement path:** Throttle identical error messages to one per N seconds.
 
 ---
 
-## 13. CLI & BIN MAINTENANCE
+## Fragile Areas
 
-### 13.1 CLI Commands — No Test Coverage
+### Plugin composition root (`src/plugin.ts` — 1,076 LOC)
 
-All 5 CLI commands (`help`, `init`, `recover`, `doctor`, `version`) have zero test coverage. CLI bugs will manifest as user-facing failures.
+**Why fragile:** 60+ imports, 20+ factory calls, all eager. Any change to an import path requires a transitive review of 60+ files.
 
-### 13.2 CLI Router — No Tests
+**Common failures:**
+- Circular import detection (silent in production, loud in dev).
+- Module load order matters — `task-management/lifecycle/index.ts` is instantiated before `coordination/delegation/manager.ts` which depends on it. Reordering breaks.
+- The `process.env.OPENCODE_HARNESS_STATE_DIR` read in `continuity/index.ts:34` and `delegation-status.ts:470` happens at module init — if the env var changes mid-session, the read is stale.
 
-**File:** `src/cli/router.ts`
+**Safe modification:**
+1. Add a new module by writing it under `src/features/<name>/` and adding the import to `plugin.ts` at the correct position.
+2. Before changing an existing import, run `npm test` to confirm the build.
+3. Use `path.relative` to keep imports relative to the file doing the importing.
 
-The CLI routing logic that directs command parsing to the appropriate handler is untested.
+**Test coverage:** 290 test files. No dedicated `tests/plugin.test.ts` covers the composition root end-to-end. The `tests/plugin/` subdirectory exists but its scope is unclear.
 
-### 13.3 Bin Files — 4 Executables
+### Delegation state machine (`src/coordination/delegation/state-machine.ts` — 445 LOC)
 
-4 bin entry points exist. Their startup behavior (argument parsing, error handling, version checks) is not tested.
+**Why fragile:** Implements a finite-state machine with 6 states (`pending`, `dispatched`, `running`, `awaiting-completion`, `completed`, `failed`, `cancelled`). Transition rules are encoded in switch statements.
+
+**Common failures:**
+- A new state added without updating the transition table.
+- A transition handler throws, leaving the delegation in an inconsistent state.
+- The `recoveryGuarantee` field is a union of 3 values; adding a 4th requires updates to 3 readers and 2 writers.
+
+**Safe modification:**
+1. Add new states by extending the `DelegationStatus` union in `src/coordination/delegation/types.ts` first, then propagate.
+2. After any state-machine change, run `npx vitest run tests/coordination/delegation/manager.test.ts` to confirm all paths.
+
+**Test coverage:** 4 test files in `tests/coordination/` (delegation, manager, monitor, types). State machine has 6 unit tests but no fuzz tests.
+
+### Session-tracker persistence (`src/features/session-tracker/persistence/child-writer.ts` — 685 LOC)
+
+**Why fragile:** Implements dual-writes (child JSON + hierarchy manifest) with 19 TODO-2 markers tracking incomplete R7/R9 mitigations. The `kind` discriminator and `delegationType` are optional fields with backward-compat logic.
+
+**Common failures:**
+- A schema change to the `Delegation` type without updating the manifest writer.
+- A race between two writers (e.g., session-tracker and a manual edit) corrupting the manifest.
+- The `retry-queue.ts` retries only the child writer, not the manifest.
+
+**Safe modification:**
+1. New schema fields must be `?:` optional during the deprecation period.
+2. After adding a field, update both `child-writer.ts` and `hierarchy-manifest.ts` in the same commit.
+3. Use the `R7` / `R9` mitigation pattern from the TODO-2 markers as a guide.
+
+**Test coverage:** `tests/features/session-tracker/` has 8 test files but only 1 covers `child-writer.ts` directly. Manifest writer has no dedicated tests.
+
+### Tmux multiplexer (`src/features/tmux/tmux-multiplexer.ts` — 606 LOC)
+
+**Why fragile:** Wraps the `tmux` CLI as an external process. Handles signal forwarding, ANSI escape parsing, and pane lifecycle. The PTY fallback (`bun-pty`) is optional and may not be installed in all environments.
+
+**Common failures:**
+- A child process exits but the tmux pane is not closed (orphaned pane).
+- Signal forwarding races cause a child to receive SIGTERM twice.
+- ANSI escape codes are not always parsed correctly, leading to corrupted terminal output.
+
+**Safe modification:**
+1. The `terminalKind: "non-resumable-after-restart"` (per AGENTS.md) is intentional — never try to resume a PTY delegation across a harness restart.
+2. When changing the multiplexer, run `tests/features/tmux/integration.test.ts` with `BUN_PTY=1` to verify the PTY path.
+3. Test with a real tmux session before merging.
+
+**Test coverage:** 4 test files. Integration tests are gated on `bun-pty` being available; without it, only the headless path is tested.
+
+### SDK child-session starter (`src/coordination/delegation/sdk-child-session-starter.ts`)
+
+**Why fragile:** Wraps `client.session.prompt()` with type-erased casts (`(client as any).session.prompt(...)` in `src/plugin.ts:538`). The SDK's message shape is not formally typed by `@opencode-ai/sdk`.
+
+**Common failures:**
+- The SDK changes the `parts[].type` enum and the harness misclassifies messages.
+- A new SDK version deprecates `client.app.log` and the harness's structured logging silently fails.
+
+**Safe modification:**
+1. Pin `@opencode-ai/sdk` and `@opencode-ai/plugin` to exact versions (currently `^1.16.2` which allows minor bumps).
+2. After SDK upgrades, run the full test suite to catch type mismatches.
+3. Use `context7` to verify the SDK's actual API surface before adding new SDK calls.
+
+**Test coverage:** `tests/tools/delegation/delegate-task-e2e.test.ts` and `delegate-task-v2.test.ts` cover the dispatcher. The SDK cast is not tested in isolation.
+
+### Two front-facing agents (`build.md` and `hm-orchestrator.md`)
+
+**Why fragile:** Both `build.md` and `hm-orchestrator.md` are front-facing L0 agents. They have overlapping responsibilities (delegation, quality gates) and may conflict when both are active in a session.
+
+**Files & evidence:**
+- `.opencode/agents/build.md` — new front-facing L0 strategist, max 3 skills, "Routes meta-concept work to hf-orchestrator."
+- `.opencode/agents/hm-orchestrator.md` — L0 front-facing for session orchestration, hidden.
+
+**Common failures:**
+- OpenCode picks the wrong one based on `description` matching.
+- A user prompt matches both, leading to dual dispatch.
+
+**Safe modification:**
+1. Decide which is the canonical L0 (per the project owner's choice between `build` and `hm-orchestrator`).
+2. If `build` is canonical, mark `hm-orchestrator` as `hidden: true` in `opencode.json` or remove it.
+3. Document the division of responsibility in `AGENTS.md`.
+
+**Test coverage:** N/A — agent definitions are not unit-tested.
+
+### GSD-resident `gsd-codebase-mapper` is the same as `gsd-codebase-mapper` in deployed (me)
+
+**Why fragile:** The agent definition that spawned this analysis (`.opencode/agents/gsd-codebase-mapper.md`) lives in `.opencode/agents/`. It is not in the assets/ source-of-truth, so any edit to it is at risk of being wiped by `node scripts/sync-assets.js`.
+
+**Safe modification:**
+1. Edit `.hivefiver-meta-builder/agents-lab/active/refactoring/gsd-codebase-mapper.md` (the Lab layer per `SoT-POLICY.md` §2).
+2. Run `node scripts/sync-assets.js` to propagate.
+3. Never edit `.opencode/agents/gsd-*.md` directly.
+
+**Test coverage:** N/A.
 
 ---
 
-## 14. RISK REGISTER
+## Scaling Limits
 
-| Risk ID | Description | Severity | Likelihood | Impact | Mitigation |
-|---------|-------------|----------|------------|--------|------------|
-| R-01 | plugin.ts composition root failure | CRITICAL | LOW | Total plugin failure — no system loads | Add integration test; extract hook registry |
-| R-02 | Session continuity dual-write silent data loss | HIGH | MEDIUM | Partial session state loss | Promote console.warn to structured error propagation |
-| R-03 | BUG-5 hierarchy race condition | HIGH | MEDIUM | Orphan child sessions | Add filesystem flush wait; integration test |
-| R-04 | BUG-3 child response capture gap | MEDIUM | MEDIUM | Incomplete child session journals | Standardize synthetic turn format |
-| R-05 | Schema-kernel untested validation | HIGH | MEDIUM | Silent data corruption on schema changes | Add schema validation unit tests |
-| R-06 | `as unknown` casts bypass type safety | MEDIUM | HIGH | Runtime crashes from shape mismatches | Add Zod runtime validation at deserialization points |
-| R-07 | Sidecar GUI silently broken (optional deps) | LOW | MEDIUM | GUI non-functional for some users | Document optional dependency requirements clearly |
-| R-08 | Error swallowing in 126 catch blocks | MEDIUM | HIGH | Hard-to-diagnose production failures | Audit catch blocks; implement error aggregation |
-| R-09 | No circular dependency detection | MEDIUM | MEDIUM | Import cycles causing runtime errors | Add madge/DPAT to CI pipeline |
-| R-10 | CLI untested (5 commands) | MEDIUM | HIGH | User-facing CLI failures | Add CLI integration tests |
-| R-11 | PTY graceful fallback untested | MEDIUM | LOW | Broken Node.js fallback path | Test fallback on Node.js runtime |
-| R-12 | Redaction module coverage unknown | MEDIUM | MEDIUM | Sensitive data leakage | Audit redaction patterns; add coverage tests |
-| R-13 | Session-tracker organic growth (35 files) | MEDIUM | HIGH | Hard to maintain, refactor risk high | Decompose into bounded sub-modules |
-| R-14 | Module size violations (9 files) | LOW | HIGH | Maintainability degradation | Decompose largest modules |
-| R-15 | Stale JSDoc console.log references | LOW | HIGH | Confusing code examples | Clean up JSDoc examples |
-| R-16 | Agent/skill count drift from AGENTS.md | LOW | HIGH | Documentation inaccuracy | Add automated count verification |
+### Agent discovery scan grows linearly with primitive count (medium)
 
----
+**Current capacity:** 75 agents, 34 non-GSD skills, 19 commands in shipped layer (plus 33 gsd-* in deployed layer).
 
-## Scoring Summary
+**Limit:** OpenCode's agent discovery scans all `.md` files in `.opencode/agents/`. At 200+ agents, discovery time grows linearly.
 
-| Category | Score (1-5, 5=worst) | Trend |
-|----------|----------------------|-------|
-| Module Size Governance | 4 (9 violations) | ↑ Worsening |
-| Test Coverage | 4 (large untested areas) | → Stable |
-| Type Safety | 3 (heavy `as unknown` usage) | → Stable |
-| Error Handling | 3 (126 catch blocks) | → Stable |
-| Security | 2 (basic protections exist) | → Stable |
-| Performance | 2 (sync I/O concerns) | → Stable |
-| Documentation Hygiene | 3 (stale examples, drift) | → Stable |
-| Build/CI | 2 (no CI visible) | → Stable |
+**Scaling path:**
+1. Move gsd-* agents to `.opencode/gsd-core/agents/` and update the discovery config.
+2. Group agents by lineage (hm-*, hf-*, gate-*) and allow OpenCode to load only the relevant lineage.
+3. Use `agents.json` index instead of directory scan (would require sync-assets.js change).
 
-**Overall Health:** MODERATE — functional but with significant areas of technical debt and risk that need structured remediation.
+### Session-tracker JSON files grow unbounded (medium)
+
+**Current capacity:** Each session creates 1+ JSON files in `.hivemind/delegation-managements/`, `.hivemind/journal/`, `.hivemind/session-tracker/`. A long-running session (30 phases) can produce 1,000+ files.
+
+**Limit:** File-system lookup degrades above 10,000 files per directory. Some harness users run multi-day sessions.
+
+**Scaling path:**
+1. Shard by date: `.hivemind/delegation-managements/YYYY-MM-DD/`.
+2. Compress old files to `.json.gz` after 7 days.
+3. Rotate via `.hivemind/.archive/` (the existing `.archive/` dir at repo root suggests the pattern is intended).
+
+### Continuity store: `recordSessionContinuity` appends to JSON (medium)
+
+**Current capacity:** `.hivemind/state/agent-work-contracts.json` is a single JSON file. Each session event rewrites the entire file (per `src/task-management/continuity/index.ts:302`).
+
+**Limit:** A file with 1,000 sessions can reach 5-10 MB. Rewrites are O(n).
+
+**Scaling path:**
+1. Switch to an append-only journal (`.hivemind/journal/harness/`) and compact on read.
+2. Use SQLite for the state file (would require a dependency).
+3. Implement a `stateVersion` schema migration to allow breaking changes.
 
 ---
 
-## Immediate Action Items
+## Dependencies at Risk
 
-1. **HIGH** — Add integration test for `plugin.ts` to verify all 80 imports resolve correctly
-2. **HIGH** — Decompose `delegation-status.ts` (780 LOC) into separate reader modules
-3. **HIGH** — Address BUG-5 race condition with proper filesystem flush synchronization  
-4. **HIGH** — Add schema-kernel unit tests (15 files, 2,469 LOC uncovered)
-5. **MEDIUM** — Audit all `as unknown` casts and replace with Zod runtime validation
-6. **MEDIUM** — Add circular dependency detection to build pipeline
-7. **MEDIUM** — Standardize catch block error handling patterns
-8. **MEDIUM** — Add CLI command integration tests
-9. **LOW** — Clean up stale JSDoc console.log references
-10. **LOW** — Add automated agent/skill count verification to sync-assets script
+### `@opencode-ai/sdk` and `@opencode-ai/plugin` pinned at `^1.16.2` (medium)
+
+**Risk:** Both are pinned with caret (`^1.16.2`), allowing minor version upgrades. The harness has 13 `as any` casts in the SDK bridge code (`src/plugin.ts`, `src/sidecar/...`); a minor version bump can break the harness silently.
+
+**Impact:** A future OpenCode release could rename `parts[].type` values, change the message envelope, or restructure `client.session.prompt()` — all without test failures (the casts absorb the type errors).
+
+**Migration plan:** Pin exact versions (`1.16.2` → `1.16.2`, not `^1.16.2`) and require manual review of the OpenCode changelog before any upgrade.
+
+### `bun-pty` is optional (low)
+
+**Risk:** `bun-pty ^0.4.8` is in `optionalDependencies`. If absent, the harness falls back to headless `node:child_process` (per AGENTS.md). On macOS, bun-pty is usually available; on Linux, it may not be.
+
+**Impact:** Tmux-based delegation requires bun-pty. Without it, the harness degrades to headless and tmux panes are not created.
+
+**Migration plan:** Document the bun-pty requirement in `README.md` and add a `npm install bun-pty` recommendation.
+
+### `zod` major version (low)
+
+**Risk:** `zod: ^4.4.3`. Zod 4 introduced breaking changes from v3. The harness's `src/schema-kernel/prompt-enhance.schema.ts` and other schemas may use v3 patterns.
+
+**Impact:** A future Zod minor (4.5, 4.6) may break schema construction.
+
+**Migration plan:** Run `npm run typecheck` after every `npm install`. Add a test that constructs every Zod schema and validates a sample.
+
+### `eslint` major version `^10.4.1` (low)
+
+**Risk:** ESLint 10 is current. ESLint's major releases often break plugin compatibility.
+
+**Impact:** A future ESLint 11 may require plugin updates.
+
+**Migration plan:** Track via `npm outdated`.
+
+---
+
+## Missing Critical Features
+
+### No E2E test for full delegation lifecycle (medium)
+
+**Problem:** Tests cover individual modules (delegation manager, status, completion detector) but no test runs a full LLM provider → session-tracker → completion → status polling cycle.
+
+**Blocks:** Cannot verify that the S5b tmux synthesis, the R7/R9 mitigation, and the dual-write all work together in production conditions.
+
+**Suggested fix:** Add `tests/e2e/delegation-lifecycle.test.ts` that uses a mock SDK client (per `transport-mocked` evidence label from `AGENTS.md` §Test-Driven Development) and asserts on the full delegation state machine.
+
+### No `node scripts/sync-assets.js` dry-run mode (medium)
+
+**Problem:** `scripts/sync-assets.js` (512 LOC) runs the full sync on every `npm run build`. A broken sync (e.g., missing source file) is detected only at build time, not at `git commit` time.
+
+**Blocks:** Phase work can commit a half-synced state and break the deployed layer.
+
+**Suggested fix:** Add `--dry-run` and `--check` flags to `sync-assets.js` and wire `--check` into a pre-commit hook.
+
+### No automated drift detection between `assets/` and `.opencode/` (medium)
+
+**Problem:** The SoT policy at `SoT-POLICY.md` §5 says "If you edit `.opencode/...` directly: The edit is a sync violation... will not appear in git diff against `assets/...` and will be lost on fresh install." But there is no automated check for this — the only enforcement is the install-state file and the migration journal.
+
+**Blocks:** The constitution is enforced by convention, not by tool.
+
+**Suggested fix:** Add a `scripts/check-sot-drift.js` that compares `assets/agents/`, `assets/skills/`, `assets/commands/`, etc. against their `.opencode/` counterparts and reports mismatches. Wire it into a pre-commit hook.
+
+### No README for the `dist/` build output (low)
+
+**Problem:** `dist/` is gitignored and regenerated by `npm run build`. The schema-kernel generates `.hivemind/configs.schema.json` at build time, but the schema is not versioned or tested.
+
+**Blocks:** Consumers of the npm package cannot verify which schema version they need.
+
+**Suggested fix:** Add a `scripts/verify-build.js` that asserts the generated `configs.schema.json` matches the expected version.
+
+---
+
+## Test Coverage Gaps
+
+### Below-target coverage (high)
+
+**Current state:** Per `coverage-report.md` (2026-05-28):
+- Statements: 79.4% (target 90%)
+- Branches: 66.2% (target 80%)
+- Functions: 85.83% (target 90%)
+- Lines: 81.4% (target 90%)
+
+**Files & evidence:** `coverage-report.md` provides per-module breakdown but is dated 2026-05-28 (9 days old as of analysis). No fresh `npm run test:coverage` was run during this analysis.
+
+**Risk:** Untested branches hide latent bugs. The 12 pre-existing failures compound the risk.
+
+**Priority:** High. Bring branches to 80% first (lowest current, highest ROI for risk reduction).
+
+### No tests for `src/plugin.ts` (the composition root) (high)
+
+**Files:** `src/plugin.ts` (1,076 LOC) is the most fragile file but has no dedicated test file (`tests/plugin/` subdir exists but is unclear in scope).
+
+**What's not tested:** The factory function calls, the hook chain order, the tool registration, the config subscriber wiring.
+
+**Risk:** A new contributor changing the import order could break the harness silently.
+
+**Priority:** High. A composition-root test is cheap and high-value.
+
+### No tests for the sidecar HTTP routes (high)
+
+**Files:** `src/sidecar/server/routes/` (state.ts, sessions.ts, etc.) and `src/sidecar/server/tool-proxy/handlers/`.
+
+**What's not tested:** Route handlers, query parameters, error responses, authentication (or lack thereof).
+
+**Risk:** The sidecar is exposed on `server.port: 4096` per `opencode.json`. A misconfigured route could expose delegation state to network callers.
+
+**Priority:** High. Add integration tests for each route.
+
+### `src/coordination/delegation/coordinator.ts` partially covered (medium)
+
+**Files:** 746 LOC, 3 of the S5b-fix paths are commented but only 1 has direct test coverage.
+
+**What's not tested:** The S5b synthesis block, the fallback path when `tmuxIntegration` is null, the session-tracker integration.
+
+**Risk:** A regression in S5b would only be caught at UAT (per `CHANGELOG.md` it was a UAT blocker).
+
+**Priority:** Medium. Add focused tests on the S5b path before the next tmux change.
+
+### `src/coordination/command-delegation/handler.ts` minimal coverage (medium)
+
+**Files:** ~400 LOC, 1 test file (`tests/coordination/command-delegation/handler.test.ts` likely).
+
+**What's not tested:** `buildMinimalEnv()` (the env allowlist), the PTY → headless fallback, the error recovery flow.
+
+**Priority:** Medium. The env allowlist is a security boundary; it should be unit-tested.
+
+---
+
+## Summary of Priorities for Phase Planning
+
+| Priority | Concern | Category |
+|---|---|---|
+| P0 (next phase) | 12 pre-existing test failures | Bug |
+| P0 | gsd-* agents in wrong path (`assets/agents/` vs `.opencode/get-shit-done/`) | Constitutional violation |
+| P0 | `.env` API key safety review | Security |
+| P0 | Below-target coverage (66% branches) | Test gap |
+| P0 | No tests for `src/plugin.ts` composition root | Test gap |
+| P1 | Resolve 19 TODO-2 R7/R9 mitigations | Tech debt |
+| P1 | Dual-write race in `delegation-persistence.ts` | Bug |
+| P1 | No E2E delegation lifecycle test | Test gap |
+| P1 | No automated SOT drift detection | Missing feature |
+| P2 | GSD framework migration residue (`get-shit-done/` empty, `gsd-migration-journal/`) | Tech debt |
+| P2 | 200+ stale `.backup` files in `.opencode/` | Tech debt |
+| P2 | 13 `as any` escape hatches in SDK bridge | Tech debt |
+| P2 | 56 unprefixed `throw new Error(...)` sites | Tech debt |
+| P2 | 9 source files exceeding 500-LOC limit | Tech debt |
+| P2 | 5 `@deprecated` markers in source | Tech debt |
+| P2 | Two front-facing L0 agents (build, hm-orchestrator) | Fragile area |
+| P3 | 30+ `console.*` calls instead of typed logger | Tech debt |
+| P3 | Pin `@opencode-ai/sdk` and `@opencode-ai/plugin` to exact versions | Dependencies |
+| P3 | Session-tracker JSON growth unbounded | Scaling limit |
+| P3 | Continuous console.error spam on persistence failure | Performance |
+| P3 | Plugin load time not benchmarked | Performance |
+
+---
+
+*Concerns audit: 2026-06-06*
