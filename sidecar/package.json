@@ -4,7 +4,7 @@
   "private": true,
   "description": "Hivemind Sidecar — Next.js 16 standalone GUI dashboard for the Hivemind runtime composition engine.",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 127.0.0.1 -p 3099",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
