@@ -24,6 +24,30 @@ export interface SessionSummary {
   messageCount?: number
 }
 
+/**
+ * Recursive tree node representing a session and its children.
+ *
+ * Used by `SessionTree` (Wave 2 SC-04) to render the parent→child
+ * session hierarchy in the Session Explorer Panel.
+ *
+ * Per 04-SPEC.md UR-SC04-02: indent children 2rem per depth level
+ * via the `depth` field. `expanded` tracks UI state (separate from
+ * `children[]` which is the structural data from the plugin server).
+ *
+ * @see ../../.planning/phases/SC-04-session-explorer-panel/04-SPEC.md (UR-SC04-02)
+ * @see ../../.planning/phases/SC-04-session-explorer-panel/04-PATTERNS.md (class sketches)
+ */
+export interface SessionTreeNode {
+  /** The session this node represents. */
+  session: SessionSummary
+  /** Child sessions rendered as nested tree nodes (recursive). */
+  children: SessionTreeNode[]
+  /** Whether the tree node is currently expanded to show children. */
+  expanded: boolean
+  /** Depth in the tree (0 = root, 1 = child of root, etc.). */
+  depth: number
+}
+
 /** Summary of a single delegation record. */
 export interface DelegationSummary {
   id: string
