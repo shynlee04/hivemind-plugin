@@ -37,16 +37,21 @@ progress:
 
 6 phases for the Hivemind Sidecar — Next.js 16 + @json-render/react bidirectional browser control panel. See `.hivemind/planning/sidecar-vision/`.
 
-| Phase | Title | Status | Depends On |
-|-------|-------|--------|------------|
-| SC-01 | Foundation — Plugin HTTP Server + State Bridge | ✅ COMPLETE | P39 |
-| SC-02 | REST API + Tool Proxy | 📋 PENDING | SC-01 |
-| SC-03 | Next.js 16 Standalone App | 📋 PENDING | SC-01, SC-02 |
-| SC-04 | Session Explorer Panel | 📋 PENDING | SC-03 |
-| SC-05 | Delegation Dashboard Panel | 📋 PENDING | SC-03 |
-| SC-06 | MEMS Browser + Control Panel | 📋 PENDING | SC-04, SC-05 |
+| Phase | Title | Status | Actually Delivered | Not Delivered (Future Work) |
+|-------|-------|--------|---------------------|------------------------------|
+| SC-01 | Foundation — Plugin HTTP Server + State Bridge | ✅ COMPLETE (2026-06-02) | 59 tests pass, typecheck clean, plugin wiring | — |
+| SC-02 | REST API + Tool Proxy | ⚠️ PARTIAL | 4 GET + 7 POST routes, SSE pool, WS pool, 5 sub-plans executed, retroactive SUMMARY | 5 of 7 tool handlers are stubs (GAP-02..05); no integration tests |
+| SC-03 | Next.js 16 Standalone App | ⚠️ FRAMEWORK | Next.js 16 dev server, dashboard shell, 4 panel imports, 70 tests, HTTP 200 | 4 panels are hardcoded STUBS (fake data); no real SSE-to-UI wiring; `next build` not run |
+| SC-04 | Session Explorer Panel | 📋 NEEDS-GSD | Empty phase dir | Full GSD phase loop + implementation |
+| SC-05 | Delegation Dashboard Panel | 📋 NEEDS-GSD | Empty phase dir | Full GSD phase loop + implementation |
+| SC-06 | MEMS Browser + Control Panel | 📋 NEEDS-GSD | Empty phase dir | Full GSD phase loop + implementation |
+| SC-PTY-01 | Read-only Terminal Projection | 📋 NEEDS-GSD-BACKFILL | Only PLAN.md | SPEC/CONTEXT/RESEARCH/PATTERNS missing; blocked on CP-PTY-01 |
 
 **SC-01:** ✅ COMPLETE (2026-06-02). 3 plans, 3 waves, 5 atomic commits. 59 tests, clean typecheck. Server factory + dependency registry + SSE pool + extended state prefixes + plugin step 5.5 wiring. Blocks SC-02, SC-03.
+**SC-02:** ⚠️ PARTIAL (2026-06-06). 5 sub-plans exist (`plan-0.md` to `plan-4.md`) and were executed per git log. Retroactive `SC-02-SUMMARY.md` written (per `sidecar-completeness-2026-06-06` Wave 1). HOWEVER, per C7 audit §4.1, 5 of 7 tool handlers are STUBS returning fake data (`delegation-status`, `execute-slash-command`, `hivemind-session-view` [just fixed in Wave 1], `hivemind-trajectory`, `hivemind-command-engine`). GAP-02..05 tracked in `sidecar-completeness-2026-06-06` Wave 2+ (paused for user re-baseline).
+**SC-03:** ⚠️ FRAMEWORK (2026-06-06). Next.js 16 standalone config works (`npm run dev` returns HTTP 200), 4 panel imports work, 70 tests pass. 3 fix-tracks resolved: Next.js 16 dev-server issues (sidecar-flaws-fix), CRITICAL GAP-01 discarded result (sidecar-completeness Wave 1), panel ID mismatch + infinite loop (sidecar-panel-render-fix Wave 1). HOWEVER, 4 panel UI components are hardcoded STUBS with fake data (per C7 audit §3.2 + user screenshot 2026-06-06). Real panel implementations deferred to SC-04/05/06/07. See `SC-03-FRAMEWORK-STATUS.md` for honest assessment.
+**SC-04/05/06:** 📋 NEEDS-GSD. Empty phase directories. GSD phase loop (Spec → Context → Research → Patterns → Plan) required before any implementation. Tracked in `sidecar-honest-rebaseline-2026-06-06` Wave 2+.
+**SC-PTY-01:** 📋 NEEDS-GSD-BACKFILL. Only PLAN.md exists. Also blocked on CP-PTY-01 (per STATE.md CP-PTY runway).
 **Phase 24.4:** ❌ CANCELLED — architecture correction. Templates/references = static markdown, NOT runtime engines. CONTEXT+SUMMARY+CANCELLED PLAN already written.
 **Phase 24.5:** ✅ COMPLETE — 4 broken workflow step paths fixed (commit `158a9d66`). Typecheck clean.
 **Phase 24.6:** ✅ COMPLETE — 3 critical commands elevated from stubs to 100+ lines (commit `4959ff08`). Typecheck + tests clean.
@@ -303,6 +308,7 @@ See: .planning/PROJECT.md (updated 2026-05-07)
 | D-GAP-07-INSERT | GAP-07 (P23.9): Schema+Config Parallel Track Integration — inserted after P30/P31 to verify schemas match config consumers before structural cleanup. Blocks P33-P35. | NEW — 2026-05-25 |
 | D-GAP-08-INSERT | GAP-08 (P23.10): Pre-Structural-Cleanup Readiness Gate — final design freeze gate before Group 4. All Groups 1-3 must be PASS quality gates. Blocks P33. | NEW — 2026-05-25 |
 | D-CLUSTER-ORDERING | Critical cluster dependency ordering locked: D → A + C → P25 → P26 → B → E/F → G → H → I → J (parallel) → K → L. J (Schema/Config) can run parallel to Groups 1-2. MVP minimum: P23.3 → P24 → P24.1+P24.2 → P24.7+P24.8 → P30 → P36. | NEW — 2026-05-25 |
+| D-SIDECAR-STATUS-TRUTH-01 | Sidecar phase status re-baselined 2026-06-06: SC-01 ✅ TRUE, SC-02 ⚠️ PARTIAL (5 stub handlers per C7 audit §4.1), SC-03 ⚠️ FRAMEWORK (4 stub panels per C7 audit §3.2 + user screenshot), SC-04/05/06/SC-PTY-01 📋 NEEDS-GSD. Prior "PASS" verdicts in 3 waves (sidecar-flaws-fix, sidecar-completeness Wave 1, sidecar-panel-render-fix Wave 1) were misleading because L1 evidence used Playwright DOM check, not full-screen visual screenshot. User screenshot revealed panels are hardcoded stubs with fake data. Honest re-baseline: framework works, but real panel implementations require SC-04/05/06 GSD phase loop (multi-day work). Cross-references: `.hivemind/planning/sidecar-honest-rebaseline-2026-06-06/`, C7 audit `.planning/phases/AUDIT-03-deep-inventories/03-C7-INVENTORY-ASSET.md`, SC-03 honest assessment `.planning/phases/SC-03-nextjs-app/SC-03-FRAMEWORK-STATUS.md`. | NEW — 2026-06-06 |
 
 ---
 
@@ -639,3 +645,10 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 
 **Depends on:** Nothing (audit phases, independent of existing phase order)
 **Blocks:** All subsequent refactoring phases (clear inventory needed before phase-level work)
+
+## Session Continuity
+
+Last session: 2026-06-06T13:07Z (resumed)
+Stopped at: AUDIT-03 paused at C3/10 — C1+C2+C3 deep inventories done
+Resume file: .planning/phases/AUDIT-03-deep-inventories/.continue-here.md
+Status: C4 dispatching
