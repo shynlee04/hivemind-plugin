@@ -11,8 +11,7 @@
  * Port discovery precedence (highest first):
  *   1. `HIVEMIND_PLUGIN_PORT` env var      — single explicit port
  *   2. Probe `HIVEMIND_PLUGIN_PORT_LIST` in order
- *   3. Read `.hivemind/state/sidecar-port.json` (legacy compat)
- *   4. Fall back to `FALLBACK_PORT` (3199) if the singleton is constructed
+ *   3. Fall back to `FALLBACK_PORT` (3199) if the singleton is constructed
  *      before probing completes
  *
  * Backward compat: `NEXT_PUBLIC_PLUGIN_PORT` env var (Next.js convention)
@@ -26,8 +25,6 @@
  * @module sidecar/lib/plugin-client
  */
 
-import { readFile } from "node:fs/promises"
-import { join } from "node:path"
 import type {
   StateSnapshot,
   SessionSummary,
@@ -39,7 +36,7 @@ import type {
   ToolCatalogEntry,
   JsonRenderCatalog,
 } from "./types"
-import { FALLBACK_PORT, PORT_FILE_PATH } from "./constants"
+import { FALLBACK_PORT } from "./constants"
 
 /**
  * Default port pool for the Hivemind plugin server.
@@ -322,7 +319,6 @@ async function probeSinglePort(port: number): Promise<boolean> {
  * Precedence (highest first):
  *   1. `HIVEMIND_PLUGIN_PORT` env var (probe that single port)
  *   2. Probe `HIVEMIND_PLUGIN_PORT_LIST` in order, return first responder
- *   3. Read `.hivemind/state/sidecar-port.json` (legacy compat)
  *
  * The result is cached — subsequent calls return the same value
  * until `resetCachedPort()` is called. Concurrent calls share the
@@ -357,27 +353,6 @@ export async function probePluginPort(): Promise<number | null> {
           cachedDiscoveredPort = port
           return port
         }
-      }
-
-      // 3. Fall back to port file (legacy)
-      try {
-        const projectRoot = process.env.HIVEMIND_DIR || process.cwd()
-        const portFile = await readFile(
-          join(projectRoot, PORT_FILE_PATH),
-          "utf-8",
-        )
-        const parsed = JSON.parse(portFile) as { port?: unknown }
-        if (
-          typeof parsed.port === "number" &&
-          Number.isInteger(parsed.port) &&
-          parsed.port > 0 &&
-          parsed.port < 65536
-        ) {
-          cachedDiscoveredPort = parsed.port
-          return parsed.port
-        }
-      } catch {
-        // Port file missing or malformed — give up
       }
 
       return null

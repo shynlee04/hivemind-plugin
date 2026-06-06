@@ -1,7 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
 import {
   PluginClient,
   getPluginClient,
@@ -217,7 +214,7 @@ describe("plugin-client", () => {
   // Companion to src/sidecar/server/factory.ts (Wave 1, commit b5823581).
   // The plugin server binds the first free port in HIVEMIND_PLUGIN_PORT_LIST;
   // the sidecar client probes that same list on startup to find the active
-  // server. Falls back to .hivemind/state/sidecar-port.json for legacy compat.
+  // server.
 
   describe("port probing (HIVEMIND_PLUGIN_PORT_LIST)", () => {
     beforeEach(() => {
@@ -271,39 +268,6 @@ describe("plugin-client", () => {
 
       const port = await probePluginPort()
       expect(port).toBe(7777)
-    })
-
-    it("probePluginPort falls back to port file when all probes fail", async () => {
-      // All HTTP probes fail
-      mockFetch.mockRejectedValue(new Error("ECONNREFUSED"))
-      // Create a real temp dir with a real port file (12345)
-      const tmpDir = mkdtempSync(join(tmpdir(), "plugin-port-test-"))
-      const stateDir = join(tmpDir, ".hivemind", "state")
-      // mkdirSync recursive — emulate Node by writing a file (parent dirs created automatically)
-      try {
-        const { mkdirSync } = await import("node:fs")
-        mkdirSync(stateDir, { recursive: true })
-      } catch {
-        // ignore
-      }
-      writeFileSync(join(stateDir, "sidecar-port.json"), JSON.stringify({ port: 12345 }))
-
-      // Point HIVEMIND_DIR at our temp dir so the plugin-client finds the file
-      const originalHivemindDir = process.env.HIVEMIND_DIR
-      process.env.HIVEMIND_DIR = tmpDir
-
-      try {
-        const port = await probePluginPort()
-        expect(port).toBe(12345)
-      } finally {
-        // Cleanup
-        if (originalHivemindDir === undefined) {
-          delete process.env.HIVEMIND_DIR
-        } else {
-          process.env.HIVEMIND_DIR = originalHivemindDir
-        }
-        rmSync(tmpDir, { recursive: true, force: true })
-      }
     })
 
     it("probePluginPort caches the discovered port on subsequent calls", async () => {
