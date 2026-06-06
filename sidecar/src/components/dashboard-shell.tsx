@@ -11,7 +11,7 @@
 
 "use client"
 
-import React, { Suspense, useEffect, useState } from "react"
+import React, { Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { PANELS, DEFAULT_PANEL } from "@lib/constants"
 import type { PanelId } from "@lib/constants"
@@ -43,27 +43,42 @@ function DashboardShellInner({ pluginAvailable = true, onSseEvent }: DashboardSh
   // Panel components (lazy-loaded)
   const [panelComponents, setPanelComponents] = useState<
     Record<string, React.ComponentType | null>
-  >({
-    sessions: null,
-    delegation: null,
-    mems: null,
-    control: null,
-  })
+  >({})
+
+  // Bug #2 fix: track panel ids that have been attempted (success OR fail).
+  // Without this guard, a failing dynamic import set state to null, the
+  // effect re-ran because panelComponents changed, saw null was still
+  // falsy, and re-attempted the import — an infinite tight loop that
+  // crashed the browser tab.
+  const attemptedRef = useRef<Set<string>>(new Set())
 
   // Dynamically import panels
   useEffect(() => {
-    const importPanel = async (id: string) => {
-      try {
-        const mod = await import(`@panels/${id}`)
-        setPanelComponents((prev) => ({ ...prev, [id]: mod.default }))
-      } catch {
-        setPanelComponents((prev) => ({ ...prev, [id]: null }))
-      }
-    }
     for (const panel of PANELS) {
-      if (!panelComponents[panel.id]) {
-        importPanel(panel.id)
+      // Already loaded successfully — skip.
+      if (panelComponents[panel.id]) continue
+      // Already attempted (success path stores the component, fail path
+      // stores null) — skip to prevent the re-import loop.
+      if (attemptedRef.current.has(panel.id)) continue
+
+      const id = panel.id
+      // Mark BEFORE the async import. Even if the import throws
+      // synchronously or the component is still rendering when we
+      // get here, attemptedRef is the source of truth.
+      attemptedRef.current.add(id)
+
+      const importPanel = async () => {
+        try {
+          const mod = await import(`@panels/${id}`)
+          setPanelComponents((prev) => ({ ...prev, [id]: mod.default }))
+        } catch (err) {
+          // Bug #3 fix: log the actual error so the operator can see
+          // what went wrong instead of staring at "Loading..." forever.
+          console.error(`[sidecar] Failed to import panel "${id}":`, err)
+          setPanelComponents((prev) => ({ ...prev, [id]: null }))
+        }
       }
+      importPanel()
     }
   }, [panelComponents])
 
@@ -180,8 +195,43 @@ function DashboardShellInner({ pluginAvailable = true, onSseEvent }: DashboardSh
                 <ErrorBoundary>
                   {PanelComponent ? (
                     <PanelComponent />
+                  ) : attemptedRef.current.has(panel.id) ? (
+                    // Bug #3 fix: the import was attempted and failed.
+                    // Surface a visible error so the operator knows
+                    // something is wrong (was: silent "Loading..." forever).
+                    <div
+                      data-panel-error="true"
+                      data-panel-id={panel.id}
+                      style={{
+                        padding: "20px",
+                        textAlign: "center",
+                        color: "#dc2626",
+                        fontSize: "13px",
+                      }}
+                    >
+                      <strong>⚠️ Failed to load {panel.label}</strong>
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "#94a3b8",
+                          marginTop: "4px",
+                        }}
+                      >
+                        Check browser console for import error.
+                      </div>
+                    </div>
                   ) : (
-                    <div style={{ padding: "20px", textAlign: "center", color: "#94a3b8" }}>
+                    // Not yet attempted — genuine loading state.
+                    <div
+                      data-panel-loading="true"
+                      data-panel-id={panel.id}
+                      style={{
+                        padding: "20px",
+                        textAlign: "center",
+                        color: "#94a3b8",
+                        fontSize: "13px",
+                      }}
+                    >
                       Loading {panel.label}...
                     </div>
                   )}
