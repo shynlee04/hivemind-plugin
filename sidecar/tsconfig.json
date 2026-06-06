@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "ES2022"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2022"
+    ],
     "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
@@ -19,12 +23,30 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@lib/*": ["./src/lib/*"],
-      "@components/*": ["./src/components/*"],
-      "@panels/*": ["./src/panels/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@lib/*": [
+        "./src/lib/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@panels/*": [
+        "./src/panels/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts", "tests/**/*.ts", "tests/**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
