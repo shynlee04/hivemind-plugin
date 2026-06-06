@@ -17,6 +17,7 @@ import { PANELS, DEFAULT_PANEL } from "@lib/constants"
 import type { PanelId } from "@lib/constants"
 import { useSse } from "@lib/use-sse"
 import type { SidecarEvent } from "@lib/types"
+import { initPluginClient } from "@lib/plugin-client"
 import { ErrorBoundary } from "./error-boundary"
 
 export interface DashboardShellProps {
@@ -51,6 +52,15 @@ function DashboardShellInner({ pluginAvailable = true, onSseEvent }: DashboardSh
   // falsy, and re-attempted the import — an infinite tight loop that
   // crashed the browser tab.
   const attemptedRef = useRef<Set<string>>(new Set())
+
+  // Wave 2 (plugin-port-pool): probe the plugin server port list on mount
+  // so the singleton rebinds from FALLBACK_PORT to the active server.
+  // Errors are swallowed — if the plugin server is not running, the
+  // individual panels will surface "Plugin server not available" via
+  // their own HTTP error handling (see use-sessions / state-store).
+  useEffect(() => {
+    void initPluginClient()
+  }, [])
 
   // Dynamically import panels
   useEffect(() => {

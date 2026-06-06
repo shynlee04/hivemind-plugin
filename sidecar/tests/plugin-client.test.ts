@@ -1,5 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { PluginClient, getPluginClient } from "../src/lib/plugin-client"
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import {
+  PluginClient,
+  getPluginClient,
+  initPluginClient,
+  probePluginPort,
+  resetCachedPort,
+  HIVEMIND_PLUGIN_PORT_LIST,
+} from "../src/lib/plugin-client"
 
 // ── Mock fetch globally ──
 
@@ -199,6 +209,163 @@ describe("plugin-client", () => {
       const a = getPluginClient()
       const b = getPluginClient()
       expect(a).toBe(b)
+    })
+  })
+
+  // ── Port probing (Wave 2) ──
+  //
+  // Companion to src/sidecar/server/factory.ts (Wave 1, commit b5823581).
+  // The plugin server binds the first free port in HIVEMIND_PLUGIN_PORT_LIST;
+  // the sidecar client probes that same list on startup to find the active
+  // server. Falls back to .hivemind/state/sidecar-port.json for legacy compat.
+
+  describe("port probing (HIVEMIND_PLUGIN_PORT_LIST)", () => {
+    beforeEach(() => {
+      resetCachedPort()
+      delete process.env.HIVEMIND_PLUGIN_PORT
+      vi.restoreAllMocks()
+    })
+
+    afterEach(() => {
+      resetCachedPort()
+      delete process.env.HIVEMIND_PLUGIN_PORT
+    })
+
+    it("HIVEMIND_PLUGIN_PORT_LIST contains 10 consecutive ports starting at 4096", () => {
+      expect(HIVEMIND_PLUGIN_PORT_LIST).toEqual([
+        4096, 4097, 4098, 4099, 4100, 4101, 4102, 4103, 4104, 4105,
+      ])
+    })
+
+    it("probePluginPort returns the first port that responds with HTTP 200", async () => {
+      mockFetch.mockImplementation((url: string | URL) => {
+        const u = String(url)
+        if (u.includes(":4097")) {
+          return Promise.resolve(new Response("ok", { status: 200 }))
+        }
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      const port = await probePluginPort()
+      expect(port).toBe(4097)
+    })
+
+    it("probePluginPort returns null if no port in the list responds", async () => {
+      mockFetch.mockImplementation(() => {
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      const port = await probePluginPort()
+      expect(port).toBeNull()
+    })
+
+    it("probePluginPort honors HIVEMIND_PLUGIN_PORT env var (highest precedence)", async () => {
+      process.env.HIVEMIND_PLUGIN_PORT = "7777"
+      mockFetch.mockImplementation((url: string | URL) => {
+        const u = String(url)
+        if (u.includes(":7777")) {
+          return Promise.resolve(new Response("ok", { status: 200 }))
+        }
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      const port = await probePluginPort()
+      expect(port).toBe(7777)
+    })
+
+    it("probePluginPort falls back to port file when all probes fail", async () => {
+      // All HTTP probes fail
+      mockFetch.mockRejectedValue(new Error("ECONNREFUSED"))
+      // Create a real temp dir with a real port file (12345)
+      const tmpDir = mkdtempSync(join(tmpdir(), "plugin-port-test-"))
+      const stateDir = join(tmpDir, ".hivemind", "state")
+      // mkdirSync recursive — emulate Node by writing a file (parent dirs created automatically)
+      try {
+        const { mkdirSync } = await import("node:fs")
+        mkdirSync(stateDir, { recursive: true })
+      } catch {
+        // ignore
+      }
+      writeFileSync(join(stateDir, "sidecar-port.json"), JSON.stringify({ port: 12345 }))
+
+      // Point HIVEMIND_DIR at our temp dir so the plugin-client finds the file
+      const originalHivemindDir = process.env.HIVEMIND_DIR
+      process.env.HIVEMIND_DIR = tmpDir
+
+      try {
+        const port = await probePluginPort()
+        expect(port).toBe(12345)
+      } finally {
+        // Cleanup
+        if (originalHivemindDir === undefined) {
+          delete process.env.HIVEMIND_DIR
+        } else {
+          process.env.HIVEMIND_DIR = originalHivemindDir
+        }
+        rmSync(tmpDir, { recursive: true, force: true })
+      }
+    })
+
+    it("probePluginPort caches the discovered port on subsequent calls", async () => {
+      // 4096 always responds
+      mockFetch.mockImplementation((url: string | URL) => {
+        const u = String(url)
+        if (u.includes(":4096")) {
+          return Promise.resolve(new Response("ok", { status: 200 }))
+        }
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      const first = await probePluginPort()
+      expect(first).toBe(4096)
+
+      // After caching, change fetch behavior — second call should still return cached 4096
+      mockFetch.mockImplementation(() => {
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      const second = await probePluginPort()
+      expect(second).toBe(4096)
+    })
+
+    it("resetCachedPort clears the cached discovered port", async () => {
+      mockFetch.mockImplementation((url: string | URL) => {
+        const u = String(url)
+        if (u.includes(":4096")) {
+          return Promise.resolve(new Response("ok", { status: 200 }))
+        }
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      const first = await probePluginPort()
+      expect(first).toBe(4096)
+
+      resetCachedPort()
+
+      // After reset, probe should re-attempt and (since fetch still only responds
+      // to 4096) find 4096 again — proving the cache was cleared
+      const second = await probePluginPort()
+      expect(second).toBe(4096)
+    })
+
+    it("initPluginClient updates the singleton's port to the discovered port", async () => {
+      mockFetch.mockImplementation((url: string | URL) => {
+        const u = String(url)
+        if (u.includes(":4102")) {
+          return Promise.resolve(new Response("ok", { status: 200 }))
+        }
+        return Promise.resolve(new Response("not found", { status: 503 }))
+      })
+
+      // Before init: client uses FALLBACK_PORT (3199) since no probe has run
+      const before = getPluginClient()
+      expect(before.getBaseUrl()).toContain("3199")
+
+      // After init: client is rebound to the discovered port
+      await initPluginClient()
+
+      const after = getPluginClient()
+      expect(after.getBaseUrl()).toContain("4102")
     })
   })
 })
