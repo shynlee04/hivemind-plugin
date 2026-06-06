@@ -34,9 +34,16 @@ export const SSE_EVENTS_PATH = "/api/events"
 /** URL for the WebSocket delegation endpoint on the plugin server. */
 export const WS_DELEGATION_PATH = "/ws/delegation"
 
-/** Panel definitions — each has an id, label, icon, and description. */
+/** Panel definitions — each has an id, label, icon, and description.
+ *
+ * IMPORTANT: the `id` field MUST match the directory name under
+ * `src/panels/`. dashboard-shell.tsx uses
+ * `await import(`@panels/${id}`)` and `@panels/*` is aliased to
+ * `./src/panels/*` in tsconfig.json. A mismatch silently breaks all
+ * 4 panel imports (Bug #1 of the 2026-06-06 hanging-UI fix).
+ */
 export interface PanelDefinition {
-  id: "sessions" | "delegation" | "mems" | "control"
+  id: "session-explorer" | "delegation-dashboard" | "mems-browser" | "control-panel"
   label: string
   icon: string
   description: string
@@ -45,25 +52,25 @@ export interface PanelDefinition {
 /** The 4 panel definitions that form the dashboard grid. */
 export const PANELS: readonly PanelDefinition[] = [
   {
-    id: "sessions",
+    id: "session-explorer",
     label: "Session Explorer",
     icon: "🔍",
     description: "Browse active sessions, view children, context, and delegation trees",
   },
   {
-    id: "delegation",
+    id: "delegation-dashboard",
     label: "Delegation Dashboard",
     icon: "🔀",
     description: "Monitor delegation status, timings, and agent activity",
   },
   {
-    id: "mems",
+    id: "mems-browser",
     label: "MEMS Browser",
     icon: "🧠",
     description: "Explore memory documents, trajectory timeline, and pressure metrics",
   },
   {
-    id: "control",
+    id: "control-panel",
     label: "Control Panel",
     icon: "⚙️",
     description: "Execute commands, invoke tools, and configure the runtime",
@@ -71,7 +78,7 @@ export const PANELS: readonly PanelDefinition[] = [
 ]
 
 /** Default panel shown when no ?panel= param is provided. */
-export const DEFAULT_PANEL: PanelDefinition["id"] = "sessions"
+export const DEFAULT_PANEL: PanelDefinition["id"] = "session-explorer"
 
 /** Valid panel IDs for runtime validation. */
 export type PanelId = PanelDefinition["id"]
