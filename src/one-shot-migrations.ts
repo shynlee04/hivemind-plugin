@@ -30,7 +30,7 @@ import { getManualOverrideState } from "./features/session-tracker/index.js"
  * @param projectDirectory - Absolute path to the project root.
  * @param client - OpenCode SDK client for TUI logging (may be partial).
  */
-export function runEventTrackerMigration(projectDirectory: string, client: OpenCodeClient): void {
+export function migrateLegacyEventTracker(projectDirectory: string, client: OpenCodeClient): void {
   const sentinelPath = join(projectDirectory, ".hivemind", "state", "event-tracker-migration-done")
   const legacyDir = join(projectDirectory, ".hivemind", "event-tracker")
   try {
@@ -74,7 +74,7 @@ export function runEventTrackerMigration(projectDirectory: string, client: OpenC
  * @param projectDirectory - Absolute path to the project root.
  * @param client - OpenCode SDK client for TUI logging (may be partial).
  */
-export function runLegacyFileMigration(projectDirectory: string, client: OpenCodeClient): void {
+export function migrateLegacyDelegationsJson(projectDirectory: string, client: OpenCodeClient): void {
   const sentinelPath = join(projectDirectory, ".hivemind", "state", "delegations-migration-done")
   const delegationsPath = join(projectDirectory, ".hivemind", "state", "delegations.json")
   const continuityPath = join(projectDirectory, ".hivemind", "state", "session-continuity.json")

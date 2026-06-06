@@ -10,7 +10,6 @@ import { join } from "node:path"
 
 import { createHarnessLifecycleManager } from "./task-management/lifecycle/index.js"
 
-import { sendPromptAsync as sdkSendPromptAsync, getSessionMessages } from "./shared/session-api.js"
 import { taskState } from "./shared/state.js"
 import { createCoreHooks } from "./hooks/lifecycle/core-hooks.js"
 import { createSessionHooks } from "./hooks/lifecycle/session-hooks.js"
@@ -29,7 +28,6 @@ import { createSessionTrackerConsumer } from "./hooks/observers/session-tracker-
 import { summarizePluginToolOutput } from "./shared/plugin-tool-output-summary.js"
 import { createPtyManagerIfSupported } from "./features/background-command/pty/pty-runtime.js"
 import { createTmuxIntegrationIfSupported } from "./features/tmux/integration.js"
-import { setSendPrompt, setGetSessionMessages } from "./features/tmux/types.js"
 import { createTmuxEventObserver } from "./features/tmux/observers.js"
 import { createPaneMonitorHook } from "./hooks/pane-monitor.js"
 import { tmuxStateQueryTool } from "./tools/tmux-state-query.js"
@@ -59,12 +57,15 @@ import {
   registerHivemindTools,
   registerConfigTools,
   buildTuiTmuxLogger,
+  wireTmuxPromptAndMessages,
+  emitTmuxStatusBanner,
+  createJournalObserver,
 } from "./plugin-registration.js"
 
 // One-shot migration & replay functions (split from plugin.ts for LOC budget)
 import {
-  runEventTrackerMigration,
-  runLegacyFileMigration,
+  migrateLegacyEventTracker,
+  migrateLegacyDelegationsJson,
   replayPendingDelegationNotifications,
 } from "./one-shot-migrations.js"
 
@@ -84,6 +85,9 @@ export {
   persistPendingDelegationNotifications,
   buildTuiTmuxLogger,
   setupDelegationModules,
+  wireTmuxPromptAndMessages,
+  emitTmuxStatusBanner,
+  createJournalObserver,
 } from "./plugin-registration.js"
 
 export type {
@@ -96,8 +100,8 @@ export type {
 } from "./plugin-registration.js"
 
 export {
-  runEventTrackerMigration,
-  runLegacyFileMigration,
+  migrateLegacyEventTracker,
+  migrateLegacyDelegationsJson,
   replayPendingDelegationNotifications,
 } from "./one-shot-migrations.js"
 
@@ -146,139 +150,11 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
     log: buildTuiTmuxLogger(client),
   })
 
-  // P59 R2+R5: wire the module-level sendPrompt function so the tmux-copilot
-  // take-over action can inject structured prompts into running child sessions.
-  // Two modes:
-  //   - steer (noReply:true, immediate context injection, NO queue): uses
-  //     sync client.session.prompt so the context enters the child's
-  //     message stream RIGHT NOW — critical for emergency redirects
-  //     (e.g. agent about to call wrong tool, dispatch wrong sub-agent).
-  //     Does NOT wait for response.
-  //   - respond (noReply:false, fire-and-forget): uses promptAsync so the
-  //     child can process the new instruction as a user message. First
-  //     reactivates a stopped stream, then sends the prompt.
-  if (client?.session) {
-    setSendPrompt(async (sessionId, text, mode) => {
-      if (mode?.noReply === false) {
-        // Respond mode: first reactivate if stopped, then send prompt async
-        try {
-          await sdkSendPromptAsync(client, sessionId, {
-            parts: [{ type: "text", text: "" }],
-            noReply: true,
-          })
-        } catch {
-          // Reactivation may fail for already-running sessions
-        }
-        await sdkSendPromptAsync(client, sessionId, {
-          parts: [{ type: "text", text }],
-          noReply: false,
-        })
-      } else {
-        // Steer mode: immediate context injection. Use SYNC prompt so the
-        // context reaches the child's message stream NOW (not queued). This
-        // is an emergency mechanism to redirect an agent that's mid-work
-        // before it makes a wrong routing decision.
-        await (client as any).session.prompt({
-          path: { id: sessionId },
-          body: {
-            parts: [{ type: "text", text }],
-            noReply: true,
-          },
-        })
-      }
-    })
+  // P59 R2+R5: wire module-level sendPrompt and getSessionMessages for tmux-copilot.
+  wireTmuxPromptAndMessages(client)
 
-    // P59 R4: wire session messages fetcher so peek can return structured
-    // activity summaries (tool calls, assistente messages, file changes,
-    // bash executions, thought output) instead of just raw pane content.
-    // The fetcher normalizes the raw SDK messages into a uniform shape
-    // and captures ALL activity types from the parts[] array.
-    setGetSessionMessages(async (sessionId, limit) => {
-      try {
-        const raw = await getSessionMessages(client, sessionId, { limit: limit ?? 100 })
-        return raw.map((m: any) => {
-          const role = String(m?.role ?? m?.info?.role ?? "system")
-          const parts = Array.isArray(m?.parts) ? m.parts : Array.isArray(m?.info?.parts) ? m.info.parts : []
-          const toolParts = parts.filter((p: any) => p?.type === "tool" || p?.type === "tool_use")
-          const textParts = parts.filter((p: any) => p?.type === "text" && p?.text && !p?.text.startsWith("<!--"))
-          const thoughtParts = parts.filter((p: any) => p?.type === "text" && p?.text?.startsWith("<!--"))
-          const toolResultParts = parts.filter((p: any) => p?.type === "tool_result" || p?.type === "tool-result")
-          // For tool parts, extract tool name + args
-          const firstTool = toolParts[0]
-          const toolName = firstTool?.tool ?? firstTool?.name ?? m?.tool ?? m?.info?.tool
-          const toolArgs = firstTool?.args ?? firstTool?.input ?? m?.args ?? m?.info?.args
-          const toolResult = toolResultParts[0]?.output ?? toolResultParts[0]?.result ?? toolResultParts[0]?.content
-          const toolCallId = firstTool?.id ?? firstTool?.call_id
-          // Content: prefer text parts, fallback to legacy content fields
-          let content = ""
-          if (textParts.length > 0) {
-            content = textParts.map((p: any) => p.text).join("\n")
-          } else if (typeof m?.content === "string") {
-            content = m.content
-          } else if (Array.isArray(m?.content)) {
-            content = m.content.map((p: any) => (typeof p === "string" ? p : p?.text ?? JSON.stringify(p))).join("\n")
-          } else if (m?.info?.content) {
-            content = String(m.info.content)
-          }
-          return {
-            role: role as any,
-            content,
-            toolName,
-            toolArgs,
-            toolResult,
-            toolCallId,
-            isThought: thoughtParts.length > 0 && toolParts.length === 0 && textParts.length === 0,
-            hasText: textParts.length > 0,
-            timestamp: m?.time?.created ? Number(m.time.created) : undefined,
-          }
-        })
-      } catch {
-        return []
-      }
-    })
-  }
-
-  // Emit a single TUI-visible status line for the tmux subsystem. This
-  // is the one line the user will look for in the OpenCode TUI log
-  // ("/harness: tmux ENABLED" or "/harness: tmux DISABLED — <reason>").
-  if (tmuxIntegration) {
-    void client?.app?.log?.({
-      body: {
-        service: "hivemind",
-        level: "info",
-        message:
-          `[Harness] Tmux visual orchestration: ENABLED ` +
-          `(${tmuxIntegration.version ?? "unknown version"}, ` +
-          `server=${tmuxIntegration.serverUrl ?? "auto-detect"}, ` +
-          `binary=${tmuxIntegration.binaryPath ?? "n/a"}) — ` +
-          `sub-agents will spawn in tmux panes`,
-        extra: {
-          tmuxVersion: tmuxIntegration.version,
-          opencodeBinary: tmuxIntegration.opencodeBinaryPath,
-          serverUrl: tmuxIntegration.serverUrl,
-          projectDirectory,
-        },
-      },
-    })
-  } else {
-    // The factory already logged the precise reason via buildTuiTmuxLogger
-    // (info-level on success, debug-level on skip — the latter is silent
-    // in the TUI). Emit a single user-facing banner so they at least
-    // know the visual layer is off, and what to do.
-    void client?.app?.log?.({
-      body: {
-        service: "hivemind",
-        level: "info",
-        message:
-          `[Harness] Tmux visual orchestration: DISABLED — ` +
-          `sub-agents will run inline (no tmux panes). ` +
-          `To enable: run opencode inside a tmux session with ` +
-          `'opencode --port 4096' and add "server": { "port": 4096 } ` +
-          `to opencode.json.`,
-        extra: { projectDirectory, hasTmux: Boolean(process.env.TMUX) },
-      },
-    })
-  }
+  // Emit a single TUI-visible status line for the tmux subsystem.
+  emitTmuxStatusBanner(client, tmuxIntegration, projectDirectory)
 
   // ── Step 5.5: Sidecar HTTP server ──────────────────────────────
   // Per D-SC01-03: server start failure must NOT block plugin init.
@@ -397,10 +273,10 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   })
 
   // One-shot migration: remove legacy .hivemind/event-tracker/ (CP-ST-03 D-03)
-  void runEventTrackerMigration(projectDirectory, client)
+  void migrateLegacyEventTracker(projectDirectory, client)
 
   // One-shot migration: remove legacy .hivemind/state/delegations.json and session-continuity.json (P41-D D-02, D-03)
-  void runLegacyFileMigration(projectDirectory, client)
+  void migrateLegacyDelegationsJson(projectDirectory, client)
 
   const sessionEntryObserverFactory = createSessionEntryEventObserver(projectDirectory)
   const sessionIsMainObserverFactory = createSessionIsMainObserver()
@@ -491,7 +367,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
           const lmc = sessionTracker.getLastMessageCapture()
           lmc?.handleEvent(event as Record<string, unknown>)
         }
-      }, tmuxObserver],
+      }, tmuxObserver, createJournalObserver(projectDirectory)],
     }),
     ...sessionReadHooks,
     // tool.execute.before: combined guard + session-tracker detection.

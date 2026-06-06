@@ -15,6 +15,7 @@
  */
 
 import { tool } from "@opencode-ai/plugin/tool"
+import { join } from "node:path"
 
 import { CompletionDetector } from "./coordination/completion/detector.js"
 import { AgentResolver } from "./coordination/delegation/agent-resolver.js"
@@ -30,7 +31,8 @@ import { SlotManager } from "./coordination/delegation/slot-manager.js"
 import { DelegationStateMachine } from "./coordination/delegation/state-machine.js"
 
 import type { Delegation, DelegationNotificationType } from "./coordination/delegation/types.js"
-import { getSessionMessageCount, abortSession, sendPromptAsync as sdkSendPromptAsync, type OpenCodeClient } from "./shared/session-api.js"
+import { getSessionMessageCount, abortSession, getSessionMessages, sendPromptAsync as sdkSendPromptAsync, type OpenCodeClient } from "./shared/session-api.js"
+import { setSendPrompt, setGetSessionMessages } from "./features/tmux/types.js"
 import { asString, getNestedValue } from "./shared/helpers.js"
 import type { PendingNotification } from "./shared/types.js"
 import { getSessionContinuity, patchSessionContinuity, recordSessionContinuity } from "./task-management/continuity/index.js"
@@ -66,6 +68,7 @@ import { SessionTracker } from "./features/session-tracker/index.js"
 
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
 import type { RuntimePolicy } from "./shared/types.js"
+import { appendJournalEntry, createJournalEntry, type SessionJournalActor, type SessionJournalStateRole } from "./task-management/journal/index.js"
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -239,6 +242,209 @@ export function extractAssistantExcerpt(input: unknown, output: unknown): string
     ?? asString(getNestedValue(input, ["message", "content"]))
     ?? asString(getNestedValue(input, ["content"]))
   return text ? text.slice(0, 500) : undefined
+}
+
+// ---------------------------------------------------------------------------
+// Tmux integration wiring helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Wire the module-level sendPrompt and getSessionMessages functions for
+ * tmux-copilot take-over and peek actions.
+ *
+ * Two modes for sendPrompt:
+ *   - steer (noReply:true): sync prompt for immediate context injection
+ *   - respond (noReply:false): async prompt with reactivation
+ *
+ * @param client - OpenCode SDK client (must have session.prompt).
+ */
+export function wireTmuxPromptAndMessages(client: OpenCodeClient): void {
+  if (!client?.session) return
+
+  setSendPrompt(async (sessionId, text, mode) => {
+    if (mode?.noReply === false) {
+      try {
+        await sdkSendPromptAsync(client, sessionId, {
+          parts: [{ type: "text", text: "" }],
+          noReply: true,
+        })
+      } catch {
+        // Reactivation may fail for already-running sessions
+      }
+      await sdkSendPromptAsync(client, sessionId, {
+        parts: [{ type: "text", text }],
+        noReply: false,
+      })
+    } else {
+      await (client as any).session.prompt({
+        path: { id: sessionId },
+        body: {
+          parts: [{ type: "text", text }],
+          noReply: true,
+        },
+      })
+    }
+  })
+
+  setGetSessionMessages(async (sessionId, limit) => {
+    try {
+      const raw = await getSessionMessages(client, sessionId, { limit: limit ?? 100 })
+      return raw.map((m: any) => {
+        const role = String(m?.role ?? m?.info?.role ?? "system")
+        const parts = Array.isArray(m?.parts) ? m.parts : Array.isArray(m?.info?.parts) ? m.info.parts : []
+        const toolParts = parts.filter((p: any) => p?.type === "tool" || p?.type === "tool_use")
+        const textParts = parts.filter((p: any) => p?.type === "text" && p?.text && !p?.text.startsWith("<!--"))
+        const thoughtParts = parts.filter((p: any) => p?.type === "text" && p?.text?.startsWith("<!--"))
+        const toolResultParts = parts.filter((p: any) => p?.type === "tool_result" || p?.type === "tool-result")
+        const firstTool = toolParts[0]
+        const toolName = firstTool?.tool ?? firstTool?.name ?? m?.tool ?? m?.info?.tool
+        const toolArgs = firstTool?.args ?? firstTool?.input ?? m?.args ?? m?.info?.args
+        const toolResult = toolResultParts[0]?.output ?? toolResultParts[0]?.result ?? toolResultParts[0]?.content
+        const toolCallId = firstTool?.id ?? firstTool?.call_id
+        let content = ""
+        if (textParts.length > 0) {
+          content = textParts.map((p: any) => p.text).join("\n")
+        } else if (typeof m?.content === "string") {
+          content = m.content
+        } else if (Array.isArray(m?.content)) {
+          content = m.content.map((p: any) => (typeof p === "string" ? p : p?.text ?? JSON.stringify(p))).join("\n")
+        } else if (m?.info?.content) {
+          content = String(m.info.content)
+        }
+        return {
+          role: role as any,
+          content,
+          toolName,
+          toolArgs,
+          toolResult,
+          toolCallId,
+          isThought: thoughtParts.length > 0 && toolParts.length === 0 && textParts.length === 0,
+          hasText: textParts.length > 0,
+          timestamp: m?.time?.created ? Number(m.time.created) : undefined,
+        }
+      })
+    } catch {
+      return []
+    }
+  })
+}
+
+/**
+ * Emit a TUI-visible status banner for the tmux subsystem.
+ *
+ * @param client - OpenCode SDK client for TUI logging.
+ * @param tmuxIntegration - The tmux integration result (null if unavailable).
+ * @param projectDirectory - Absolute path to the project root.
+ */
+export function emitTmuxStatusBanner(
+  client: OpenCodeClient,
+  tmuxIntegration: Awaited<ReturnType<typeof createTmuxIntegrationIfSupported>> | null,
+  projectDirectory: string,
+): void {
+  if (tmuxIntegration) {
+    void client?.app?.log?.({
+      body: {
+        service: "hivemind",
+        level: "info",
+        message:
+          `[Harness] Tmux visual orchestration: ENABLED ` +
+          `(${tmuxIntegration.version ?? "unknown version"}, ` +
+          `server=${tmuxIntegration.serverUrl ?? "auto-detect"}, ` +
+          `binary=${tmuxIntegration.binaryPath ?? "n/a"}) — ` +
+          `sub-agents will spawn in tmux panes`,
+        extra: {
+          tmuxVersion: tmuxIntegration.version,
+          opencodeBinary: tmuxIntegration.opencodeBinaryPath,
+          serverUrl: tmuxIntegration.serverUrl,
+          projectDirectory,
+        },
+      },
+    })
+  } else {
+    void client?.app?.log?.({
+      body: {
+        service: "hivemind",
+        level: "info",
+        message:
+          `[Harness] Tmux visual orchestration: DISABLED — ` +
+          `sub-agents will run inline (no tmux panes). ` +
+          `To enable: run opencode inside a tmux session with ` +
+          `'opencode --port 4096' and add "server": { "port": 4096 } ` +
+          `to opencode.json.`,
+        extra: { projectDirectory, hasTmux: Boolean(process.env.TMUX) },
+      },
+    })
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Journal observer — writes journal entries for key lifecycle events
+// ---------------------------------------------------------------------------
+
+/**
+ * Create an event observer that writes journal entries for session lifecycle
+ * events: session.created, tool.execute, and delegation events.
+ *
+ * Journal entries are written to `.hivemind/journal/<sessionId>/journal.jsonl`
+ * with idempotency guards to prevent duplicate entries.
+ *
+ * @param projectDirectory - Absolute path to the project root.
+ * @returns Observer function compatible with eventObservers array.
+ */
+export function createJournalObserver(projectDirectory: string): (input: { event?: unknown }) => Promise<void> {
+  return async ({ event }: { event?: unknown }): Promise<void> => {
+    if (!event || typeof event !== "object") return
+    const e = event as Record<string, unknown>
+    const eventType = typeof e.type === "string" ? e.type : undefined
+    if (!eventType) return
+
+    // Determine session ID and actor from event type
+    const sessionId = typeof e.sessionID === "string" ? e.sessionID
+      : typeof e.sessionId === "string" ? e.sessionId
+      : undefined
+    if (!sessionId) return
+
+    // Map event types to journal actors and state roles
+    let actor: SessionJournalActor = "system"
+    let stateRole: SessionJournalStateRole = "canonical runtime state"
+    let summary = `${eventType} event`
+
+    if (eventType === "session.created") {
+      actor = "system"
+      summary = `Session ${sessionId} created`
+    } else if (eventType.startsWith("tool.")) {
+      actor = "tool"
+      const toolName = typeof e.tool === "string" ? e.tool : "unknown"
+      summary = `Tool ${toolName} executed in session ${sessionId}`
+    } else if (eventType.startsWith("delegation.")) {
+      actor = "agent"
+      summary = `Delegation event ${eventType} for session ${sessionId}`
+    } else {
+      // Skip non-lifecycle events
+      return
+    }
+
+    try {
+      const journalRoot = join(projectDirectory, ".hivemind", "journal", sessionId)
+      const filePath = join(journalRoot, "journal.jsonl")
+      const entry = createJournalEntry({
+        sessionId,
+        actor,
+        eventType,
+        timestamp: Date.now(),
+        source: "plugin-lifecycle",
+        summary,
+        stateRole,
+      })
+      appendJournalEntry({
+        entry,
+        filePath,
+        idempotencyKey: entry.id,
+      })
+    } catch {
+      // Best-effort: journal write failures never block plugin runtime
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
