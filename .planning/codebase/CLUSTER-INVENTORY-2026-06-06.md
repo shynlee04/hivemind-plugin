@@ -1,11 +1,11 @@
-# 7-Cluster Code Surface Inventory
+# 8-Cluster Code Surface Inventory
 
 **Date:** 2026-06-06
 **Status:** IN PROGRESS — deep scan, interactive checkpoints
 
 ---
 
-## Cluster Definitions
+## Cluster Definitions (8 clusters)
 
 | Cluster | Focus | Primary Code Surfaces |
 |---------|-------|----------------------|
@@ -16,6 +16,12 @@
 | **C5: Tool Surfaces** | LLM-callable tools (26 total), prompt tools, doc intelligence, tool intelligence | `src/tools/` (all 44 .ts), `src/features/doc-intelligence/`, `src/features/tool-intelligence/`, `src/features/prompt-packet/` |
 | **C6: Assets — Shipped Primitives** | hm-*/hf-* agents, skills, commands, workflows, templates, references, agent-instructions | `assets/`, `.opencode/agents/hm-*`, `.opencode/agents/hf-*`, `.opencode/skills/hm-*`, `.opencode/skills/hf-*`, `.opencode/commands/`, `.hivefiver-meta-builder/` |
 | **C7: Sidecar** | Next.js dashboard, HTTP server, SSE/WS pools, read-only state, JSON-render catalog | `src/sidecar/`, `sidecar/` (root Next.js app) |
+| **C8: Foundation** | Shared utilities, types, helpers, runtime policy, composition root | `src/shared/` (16 files), `src/plugin.ts`, `src/index.ts` |
+
+### Cross-Cutting Rules
+- **Tests belong to their cluster**: `tests/features/` → C2, `tests/tools/` → C5, `tests/hooks/` → C4, `tests/coordination/` → C3, `tests/sidecar/` → C7, `tests/shared/` → C8, etc.
+- **Cross-cutting code**: Primary cluster + notes (documented below)
+- **Cross-cutting discussion**: PENDING — to be resolved in next checkpoint
 
 ---
 
