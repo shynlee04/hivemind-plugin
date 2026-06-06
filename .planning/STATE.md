@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-06-05T18:15:00.000Z"
+last_updated: "2026-06-06T18:30:00.000Z"
 progress:
-   total_phases: 64
-   completed_phases: 34
+   total_phases: 68
+   completed_phases: 36
    total_plans: 147
    completed_plans: 107
-   percent: 53
+   percent: 52
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -623,3 +623,19 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 - **Full test suite:** 3003/3009 pass, 2 skipped (4 pre-existing failures in `session-journal-export.test.ts` and `delegation-status.test.ts`)
 - **child-writer.test.ts:** 28/28 all pass
 - **Fix pattern:** Follows existing `backfillChildMetadata()` / `backfillChildTurns()` ENOENT guard pattern
+
+---
+
+## Codebase Audit & Phase Organization
+
+**Added:** 2026-06-06 — 4 new phases to create complete code surface inventory, map to 8 clusters, and audit all 121 legacy phases.
+
+| Phase | Title | Status | Cluster | Deliverables |
+|-------|-------|--------|---------|--------------|
+| **P-AUDIT-01** | Codebase Mapping — 7 base docs | ✅ COMPLETE | Cross | STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS (2,506 lines) |
+| **P-AUDIT-02** | 8-Cluster Inventory + Cross-Cutting Resolution | ✅ COMPLETE | Cross | CLUSTER-INVENTORY.md, C1 deep inventory, PHASE-AUDIT-MASTER-PLAN.md |
+| **P-AUDIT-03** | Deep Inventories — C2→C8 | 🟡 IN PROGRESS | C2-C8 | Per-cluster deep inventories (file list, sub-groupings, gaps, conflicts, cross-cutting deps) |
+| **P-AUDIT-04** | 121 Phase Audit & Archive | ⬜ PENDING | Cross | Per-phase audit: assumptions → gaps → update STATE/ROADMAP → refactoring plan → archive |
+
+**Depends on:** Nothing (audit phases, independent of existing phase order)
+**Blocks:** All subsequent refactoring phases (clear inventory needed before phase-level work)

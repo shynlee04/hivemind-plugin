@@ -2177,3 +2177,20 @@ This matrix is a 1:1 projection of
 [`.planning/USER-PAIN-BACKLOG.md`](USER-PAIN-BACKLOG.md) for at-a-glance
 phase health. Update the BACKLOG atomically with this matrix on
 every phase close.
+
+---
+
+## Codebase Audit Phases (2026-06-06)
+
+4 phases to create complete code surface inventory, map to 8 clusters, and audit all 121 legacy phases in `.planning/phases/`.
+
+| Phase | Title | Status | Cluster | Deliverables |
+|-------|-------|--------|---------|--------------|
+| **P-AUDIT-01** | Codebase Mapping — 7 base docs | ✅ COMPLETE | Cross | STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS |
+| **P-AUDIT-02** | 8-Cluster Inventory + Cross-Cutting | ✅ COMPLETE | Cross | CLUSTER-INVENTORY.md, C1 deep inventory, PHASE-AUDIT-MASTER-PLAN.md |
+| **P-AUDIT-03** | Deep Inventories C2→C8 | 🟡 ACTIVE | C2-C8 | Per-cluster: file list, sub-groupings, gaps, conflicts, cross-cutting deps |
+| **P-AUDIT-04** | 121 Phase Audit & Archive | 📋 PENDING | Cross | Per-phase: assumptions → gaps → update roadmap → refactoring plan → archive |
+
+**8 clusters defined:** C1 (Governance/CLI/Config), C2 (Internal Modules), C3 (Delegation/Coordination), C4 (Hooks), C5 (Tool Surfaces), C6 (Assets/Primitives), C7 (Sidecar), C8 (Foundation). See `.planning/codebase/CLUSTER-INVENTORY-2026-06-06.md`.
+**Depends on:** Nothing. Independent of existing GSD cluster phases.
+**Blocks:** All subsequent refactoring that requires clear code surface inventory.
