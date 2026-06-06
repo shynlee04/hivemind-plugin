@@ -154,14 +154,22 @@ Hivemind Sidecar — Next.js 16 + @json-render/react bidirectional control plane
 
 **Architecture:** Two-server model — plugin-embedded HTTP/WS server (Node http + ws) exposes .hivemind/ state reads + tool proxy via REST, SSE for event push, WS for delegation streaming. Next.js 16 standalone app consumes the plugin API. ~85 integration surfaces identified across delegation (27 tools), tmux (7), session-tracker (25+), trajectory (5), pressure (6), config (8).
 
-| Phase | Title | Status | Depends On | Blocks |
-|-------|-------|--------|------------|--------|
-| SC-01 | Foundation — Plugin HTTP Server + State Bridge | 📋 SPEC | P39 (Integration Hardening) | SC-02..SC-06 |
-| SC-02 | REST API + Tool Proxy | 🔵 READY (5 plans: W0 TDD red + W1 infra + W2 REST + W3 realtime + W4 integration) | SC-01 | SC-03..SC-06 |
-| SC-03 | Next.js 16 Standalone App | 📋 PENDING | SC-01, SC-02 | SC-04..SC-06 |
-| SC-04 | Session Explorer Panel | 📋 PENDING | SC-03 | SC-06 |
-| SC-05 | Delegation Dashboard Panel | 📋 PENDING | SC-03 | SC-06 |
-| SC-06 | MEMS Browser + Control Panel | 📋 PENDING | SC-04, SC-05 | — |
+**Honest Status (2026-06-06 re-baseline):** Prior "PASS" verdicts in 3 fix-tracks (sidecar-flaws-fix, sidecar-completeness Wave 1, sidecar-panel-render-fix Wave 1) were misleading. L1 evidence used Playwright DOM check, not full-screen visual screenshot. User screenshot revealed 4 panels are hardcoded STUBS with fake data. See `.planning/phases/SC-03-nextjs-app/SC-03-FRAMEWORK-STATUS.md` for the full honest assessment.
+
+| Phase | Title | Status | Actually Delivered | Not Delivered (Future Work) |
+|-------|-------|--------|---------------------|------------------------------|
+| SC-01 | Foundation — Plugin HTTP Server + State Bridge | ✅ COMPLETE (2026-06-02) | 59 tests, SSE pool, registry, factory, plugin wiring | — |
+| SC-02 | REST API + Tool Proxy | ⚠️ PARTIAL (2026-06-06) | 4 GET + 7 POST routes exist; SSE pool + WS pool; 5 sub-plans executed; retroactive SUMMARY written | 5 of 7 tool handlers are stubs (GAP-02..05); no integration tests for routes/tool-proxy (GAP-11) |
+| SC-03 | Next.js 16 Standalone App | ⚠️ FRAMEWORK (2026-06-06) | Next.js 16 standalone config, dashboard shell, 4 panel imports work, 70 tests pass, `npm run dev` HTTP 200 | 4 panel UI components are hardcoded STUBS (fake data); no real SSE-to-UI wiring; `next build` not run (GAP-08) |
+| SC-04 | Session Explorer Panel | 📋 NEEDS-GSD | Empty phase dir | Full GSD phase loop (SPEC/CONTEXT/RESEARCH/PATTERNS/PLAN) + implementation |
+| SC-05 | Delegation Dashboard Panel | 📋 NEEDS-GSD | Empty phase dir | Full GSD phase loop + implementation |
+| SC-06 | MEMS Browser + Control Panel | 📋 NEEDS-GSD | Empty phase dir | Full GSD phase loop + implementation |
+| SC-PTY-01 | Read-only Terminal Projection | 📋 NEEDS-GSD-BACKFILL | Only PLAN.md | SPEC/CONTEXT/RESEARCH/PATTERNS missing; also blocked on CP-PTY-01 |
+
+**Cross-references:**
+- `.planning/phases/AUDIT-03-deep-inventories/03-C7-INVENTORY-ASSET.md` — 12 gaps/flaws identified in C7 cluster
+- `.planning/phases/SC-03-nextjs-app/SC-03-FRAMEWORK-STATUS.md` — honest SC-03 assessment
+- `.hivemind/planning/sidecar-honest-rebaseline-2026-06-06/` — current re-baseline session
 
 ---
 
