@@ -137,10 +137,25 @@ describe("SC-02 handler — 17-endpoint smoke matrix", () => {
     "session-patch",
     "hivemind-command-engine",
   ])("POST /api/tools/%s → 200 with ToolResponse envelope", async (tool) => {
-    const res = await post(server, `/api/tools/${tool}`, { args: { sessionId: "sess-1" } })
-    expect(res.status).toBe(200)
-    const body = JSON.parse(res.body) as { ok: boolean; data: unknown }
-    expect(body.ok).toBe(true)
+    // GAP-01 fix: sessionTracker.get must return a real session for the
+    // hivemind-session-view handler to capture and return `data.session`.
+    // The mock returns `undefined` by default — configure it to return a
+    // real session record before the POST.
+    const mock = createMockRegistry()
+    ;(mock.sessionTracker.get as ReturnType<typeof import("vitest").vi.fn>).mockReturnValue({
+      id: "sess-1",
+      name: "Smoke Test Session",
+    })
+    const reg = mock.registry as unknown as SidecarDependencyRegistry
+    const localServer = await createServer({ registry: reg })
+    try {
+      const res = await post(localServer, `/api/tools/${tool}`, { args: { sessionId: "sess-1" } })
+      expect(res.status).toBe(200)
+      const body = JSON.parse(res.body) as { ok: boolean; data: unknown }
+      expect(body.ok).toBe(true)
+    } finally {
+      await localServer.close()
+    }
   })
 
   // --- Realtime endpoints ---

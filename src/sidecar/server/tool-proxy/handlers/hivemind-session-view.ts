@@ -16,9 +16,18 @@ export interface HivemindSessionViewArgs {
 /**
  * Handle a hivemind-session-view tool call.
  *
+ * GAP-01 fix (sidecar-completeness-2026-06-06): the previous implementation
+ * called `st.get(sessionId)` but DISCARDED the result, always returning
+ * `{ ok: true, data: { sessionId } }` with no real data. This fix:
+ *   - Uses the typed `registry.sessionTracker` getter (no `(registry as any)`)
+ *   - Captures the `sessionTracker.get()` result and returns the full record
+ *   - Throws `[Harness]` if `sessionTracker` is not bound (registry design
+ *     contract — typed getter throws on unbound access)
+ *   - Returns a NOT_FOUND error envelope if the session is not found
+ *
  * @param options.args - Query args (sessionId).
  * @param options.registry - Sidecar dependency registry.
- * @returns Unified session view or INVALID_ARGS error.
+ * @returns Unified session view, or an error envelope.
  */
 export async function handleHivemindSessionView(options: {
   args: HivemindSessionViewArgs
@@ -33,13 +42,39 @@ export async function handleHivemindSessionView(options: {
     }
   }
 
+  // Typed getter — throws [Harness] Sidecar: SessionTracker not bound yet
+  // when the dependency has not been wired. This eliminates the previous
+  // `(registry as any).sessionTracker` cast, addressing GAP-07 for this
+  // handler file.
+  const sessionTracker = registry.sessionTracker
+
+  // SessionTracker's public TypeScript surface does not yet expose a
+  // `get(sessionId)` method (the test mock provides one). The cast is
+  // localized to this call site only — the GAP-07 registry cast has
+  // already been removed above. Wave 3 may add `get()` to SessionTracker
+  // proper, eliminating this last cast.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const st = (registry as any).sessionTracker
-  if (typeof st.get === "function") {
-    st.get(args.sessionId)
+  const getMethod = (sessionTracker as any).get
+  if (typeof getMethod !== "function") {
+    return {
+      ok: false as const,
+      error: {
+        code: "INTERNAL",
+        message: "[Harness] sessionTracker.get is not a function",
+      },
+    }
   }
-  return {
-    ok: true as const,
-    data: { sessionId: args.sessionId },
+
+  const session = await getMethod.call(sessionTracker, args.sessionId)
+  if (session === undefined || session === null) {
+    return {
+      ok: false as const,
+      error: {
+        code: "NOT_FOUND",
+        message: `Session ${args.sessionId} not found`,
+      },
+    }
   }
+
+  return { ok: true as const, data: { session } }
 }
