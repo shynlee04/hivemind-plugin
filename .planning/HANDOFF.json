@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-06-06T13:07:03.590Z",
+  "phase": "AUDIT-03",
+  "phase_name": "deep-inventories-c2-c8",
+  "phase_dir": ".planning/phases/AUDIT-03-deep-inventories/",
+  "plan": 1,
+  "task": 3,
+  "total_tasks": 10,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "C1 deep inventory (Governance + CLI + Config)", "status": "done", "commit": "6aa9ea9e"},
+    {"id": 2, "name": "C2 deep inventory (Internal Modules — session-tracker, lifecycle, contracts)", "status": "done", "commit": "72b5c35d"},
+    {"id": 3, "name": "C3 deep inventory (Delegation + Coordination — coordination, tmux, pressure)", "status": "done", "commit": "fc1d3bb7"}
+  ],
+  "remaining_tasks": [
+    {"id": 4, "name": "C4 deep inventory (Hooks — observers, transforms, CQRS)", "status": "not_started"},
+    {"id": 5, "name": "C5 deep inventory (Tool Surfaces — independent tools, doc intelligence)", "status": "not_started"},
+    {"id": 6, "name": "C6 deep inventory (Assets — shipped primitives, agents, skills, commands)", "status": "not_started"},
+    {"id": 7, "name": "C7 deep inventory (Sidecar — src/sidecar + root Next.js app)", "status": "not_started"},
+    {"id": 8, "name": "C8 deep inventory (Foundation — src/shared, plugin.ts, index.ts)", "status": "not_started"},
+    {"id": 9, "name": "Cross-cutting dependency graph (aggregate all cluster deps)", "status": "not_started"},
+    {"id": 10, "name": "AUDIT-04: 121 legacy phase audit & archive", "status": "not_started"}
+  ],
+  "blockers": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {"decision": "8 clusters defined (C1-C8) based on code surface analysis", "rationale": "Governance, Internal Modules, Delegation, Hooks, Tools, Assets, Sidecar, Foundation", "phase": "AUDIT-02"},
+    {"decision": "Coordination tools mapped to C3, not C5", "rationale": "Purpose > Mechanism: execute-slash-command, delegate-task are coordination, not tool surfaces", "phase": "AUDIT-02"},
+    {"decision": "Governance guards mapped to C1, not C4", "rationale": "Guards enforce governance; hook mechanism is implementation detail", "phase": "AUDIT-02"},
+    {"decision": "Session-tracker internals (hooks/, capture/) stay in C2", "rationale": "Module cohesion: internal implementation of session-tracker, not reusable outside", "phase": "AUDIT-02"},
+    {"decision": "Tests belong to their respective cluster", "rationale": "tests/features/ → C2, tests/tools/ → C3/C5, tests/hooks/ → C4, etc.", "phase": "AUDIT-02"}
+  ],
+  "uncommitted_files": [],
+  "next_action": "Continue AUDIT-03: dispatch C4 deep inventory specialist agent",
+  "context_notes": "C1-C3 inventories complete. Key findings: 12 gaps in C1 (governance/config), 11 gaps in C2 (session-tracker defects, TODO-2 markers, dual-write), 11 gaps in C3 (dual detectors, coordinator bloat, no unified barrel). AUDIT-01 (codebase mapping) and AUDIT-02 (cluster inventory) complete. Phase directories created under .planning/phases/AUDIT-0{1-4}-*/. Stale folders authorized (A-E) but not yet executed."
+}
