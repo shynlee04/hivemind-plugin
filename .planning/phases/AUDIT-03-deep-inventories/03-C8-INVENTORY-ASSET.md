@@ -26,7 +26,7 @@ C8 serves two distinct roles that should be understood separately:
 | Public API | `src/index.ts` | 30 | npm package entry point |
 
 **Total C8 source files:** 18
-**Total C8 test files:** 7 (4 direct + 3 indirect)
+**Total C8 test files:** 16 direct test files (across `tests/lib/`, `tests/lib/security/`, `tests/shared/`, `tests/plugins/`)
 **Total C8 LOC:** 3,475
 
 ---
@@ -238,13 +238,13 @@ src/
 - `getStatusSignal()` iterates 14 paths in order — if a signal appears at multiple paths, the first wins, which may be wrong
 - The `"idle"` / `"completed"` branch (L73-81) has an unintuitive condition: preserves `failed`/`error` but maps `pending` to `running`
 
-### 3.11 `src/shared/security/path-scope.ts` (105 LOC) — ⚠️ UNTESTED
+### 3.11 `src/shared/security/path-scope.ts` (105 LOC) — MINIMAL COVERAGE
 
 **Purpose:** `resolveScopedPath()`, `assertPathWithinRoot()`. Path traversal protection with lexical containment check + symlink-resolved realpath check.
 
 **Consumers (6 src imports):** C1 (configure-primitive), C2 (continuity, trajectory, work-contracts, session-patch), C5 (doc-intelligence).
 
-**Test coverage:** **ZERO tests.** No test file references any symbol from this module. The 6 importers have no way to validate path security behavior.
+**Test coverage:** Has dedicated test file (`tests/lib/security/path-scope.test.ts`, 51 LOC, 5 test cases). Tests cover: normal paths, `..` traversal, absolute cross-root, symlink containment. Coverage is present but minimal — could be more comprehensive (missing: TOCTOU race tests, unicode path escapes, deep nesting).
 
 **Flaws:**
 - **Critical security concern:** Zero test coverage for the path-traversal enforcement layer
@@ -253,13 +253,13 @@ src/
 - Sync I/O (`existsSync`, `realpathSync`) — blocks event loop
 - `realpathSync` on the root every invocation may be slow on FUSE/Virtual filesystems
 
-### 3.12 `src/shared/security/redaction.ts` (118 LOC) — ⚠️ UNTESTED
+### 3.12 `src/shared/security/redaction.ts` (118 LOC) — MINIMAL COVERAGE
 
 **Purpose:** `redactTextSecrets()`, `redactBoundaryFields()`. Field-based and text-based credential redaction with deterministic placeholders.
 
 **Consumers (2 src imports):** C2 (journal/index.ts), C3 (delegation-status.ts).
 
-**Test coverage:** **ZERO tests.** No test file references any symbol from this module.
+**Test coverage:** Has dedicated test file (`tests/lib/security/redaction.test.ts`, 72 LOC, 4 test cases). Tests cover: API key redaction, bearer token redaction, JSON field redaction, immutability, JSON-body preservation. Coverage is present but minimal — missing: mixed-case key patterns, URL-encoded secrets, nested field redaction, large payload performance.
 
 **Flaws:**
 - **No tests for credential redaction** — the most security-sensitive module
@@ -465,8 +465,8 @@ export * from "./features/bootstrap/control-plane/index.js" // C1
 | `shared/session-naming.ts` | ✅ Yes | `tests/shared/session-naming.test.ts` | ✅ Good |
 | `shared/runtime-policy.ts` | ✅ Yes | `tests/lib/runtime-policy.test.ts` | ✅ Good |
 | `shared/runtime.ts` | ✅ Yes | `tests/lib/runtime.test.ts` | ✅ Good |
-| `shared/path-scope.ts` | ❌ No | None | **❌ ZERO** — security critical |
-| `shared/redaction.ts` | ❌ No | None | **❌ ZERO** — security critical |
+| `shared/path-scope.ts` | ✅ Yes | `tests/lib/security/path-scope.test.ts` | ⚠️ Minimal (5 cases) |
+| `shared/redaction.ts` | ✅ Yes | `tests/lib/security/redaction.test.ts` | ⚠️ Minimal (4 cases) |
 | `shared/app-api.ts` | ✅ Yes | `tests/lib/app-api.test.ts` | ✅ Good |
 | `shared/errors/commands.ts` | ✅ Yes | `tests/shared/commands-errors.test.ts` | ✅ Good |
 | `shared/workspace-runtime-policy.ts` | ✅ Yes | `tests/lib/workspace-runtime-policy.test.ts` | ✅ Good |
@@ -479,13 +479,13 @@ export * from "./features/bootstrap/control-plane/index.js" // C1
 | Metric | Count |
 |--------|-------|
 | Total source files | 18 |
-| With dedicated tests | 9 (50%) |
-| Without any tests | 7 (39%) |
-| Security-critical untested | 2 (path-scope, redaction) |
-| Indirectly tested | 2 (types, tool-response) |
+| With dedicated tests | 13 (72%) |
+| With minimal/minor coverage only | 2 (path-scope, redaction — both sɛcurity-critical) |
+| Without any tests | 3 (17%) |
+| Indirectly tested only | 2 (types, tool-response) |
 | Untested source LOC | ~326 LOC |
 
-**Coverage gap:** 7 of 18 C8 files have zero dedicated tests. The two security-critical modules (`path-scope.ts`, `redaction.ts`) are completely untested. `plugin.ts` at 1,076 LOC has only 2 test files covering registration logic — the composition logic is untested.
+**Coverage gap:** 3 of 18 C8 files have zero dedicated tests (`types.ts`, `tool-response.ts`, `tool-helpers.ts`). The two security-critical modules (`path-scope.ts`, `redaction.ts`) were previously reported as untested but actually have dedicated tests at `tests/lib/security/` — coverage is present but minimal (5 and 4 test cases respectively). Cross-audit confirmed this inaccuracy (see Conflict CF-01). `plugin.ts` at 1,076 LOC has only 2 test files covering registration logic — the composition logic is untested.
 
 ---
 
@@ -529,15 +529,19 @@ export * from "./features/bootstrap/control-plane/index.js" // C1
 
 **Fix approach:** Extract `register*Tools()` functions to `src/plugin-registration.ts`. Extract migration functions to `src/one-shot-migrations.ts`. Keep only the `HarnessControlPlane` factory + `setupDelegationModules` in `plugin.ts` (~600 LOC remaining).
 
-### 8.2 `path-scope.ts` and `redaction.ts` Have Zero Tests (HIGH)
+### 8.2 `path-scope.ts` and `redaction.ts` Have Minimal Test Coverage (HIGH)
 
 **Files:** `src/shared/security/path-scope.ts` (105 LOC), `src/shared/security/redaction.ts` (118 LOC)
 
-**Issue:** The two security-critical modules have zero dedicated tests. `path-scope.ts` implements path traversal protection — the critical enforcement layer for all file writes through the harness. `redaction.ts` implements credential redaction — failures here could leak API keys in tool outputs or journals.
+**Test files:** `tests/lib/security/path-scope.test.ts` (51 LOC, 5 test cases), `tests/lib/security/redaction.test.ts` (72 LOC, 4 test cases)
+
+**Issue:** The two security-critical modules have dedicated tests but coverage is minimal. `path-scope.ts` implements path traversal protection — the critical enforcement layer for all file writes through the harness. `redaction.ts` implements credential redaction — failures could leak API keys in tool outputs or journals. Coverage is thin: path-scope has 5 cases (normal, `..` traversal, absolute cross-root, symlink containment), redaction has 4 cases (API key, bearer token, JSON field, immutability). Missing: TOCTOU race tests, unicode escapes, mixed-case key patterns, URL-encoded secrets, nested fields, large payloads.
 
 **Impact:** A bug in `assertPathWithinRoot` could allow path escapes for ANY tool that uses it (6 consumers across 3 clusters). A bug in `redactBoundaryFields` could expose secrets in journals or delegation status outputs.
 
-**Fix approach:** Add `tests/lib/security/path-scope.test.ts` covering: normal paths, `..` escapes, symlink escapes, non-existent paths, root boundary, `includes` false positives. Add `tests/lib/security/redaction.test.ts` covering: API keys, tokens, passwords, field name patterns, `DEFAULT_PRESERVE_FIELDS`, JSON-body redaction.
+**Fix approach:** Expand `tests/lib/security/path-scope.test.ts` with: TOCTOU race tests, unicode path escapes, deep nesting (10+ levels), symlink chains, filesystem boundary crossing on case-insensitive systems. Expand `tests/lib/security/redaction.test.ts` with: mixed-case key patterns (`myApiKey`, `MyAPIToken`), URL-encoded secrets, nested JSON field redaction, large payload performance, `DEFAULT_PRESERVE_FIELDS` edge cases.
+
+> **Note:** The cross-audit (CF-01) identified that C8 originally claimed "zero tests" for these modules. The statement has been corrected here — tests DO exist but coverage is minimal.
 
 ### 8.3 12 Dead Types in `shared/types.ts` (MEDIUM)
 
@@ -698,7 +702,7 @@ The public API should expose only the plugin surface (`HarnessControlPlane`) and
 
 1. **`plugin.ts` is the largest file in the codebase at 1,076 LOC — 115% over the 500 LOC module cap.** It contains 85 import statements pulling from 62 distinct modules across all clusters. The 4 registration functions and 2 one-shot migration functions could be extracted to reduce it to ~600 LOC. Despite its size, the internal structure is well-organized with clear section boundaries. The 2 `as any` casts are limited and documented.
 
-2. **Two security-critical modules have zero tests.** `security/path-scope.ts` (105 LOC, 6 consumers) enforces path traversal protection — a bug could allow arbitrary file system access. `security/redaction.ts` (118 LOC, 2 consumers) implements credential redaction — a failure could leak API keys. Neither has a single dedicated test. These are the most dangerous untested modules in the entire codebase.
+2. **Two security-critical modules have minimal test coverage.** `security/path-scope.ts` (105 LOC, 6 consumers, 5 test cases) and `security/redaction.ts` (118 LOC, 2 consumers, 4 test cases) both have dedicated test files at `tests/lib/security/`. However, coverage is minimal — missing TOCTOU race tests, unicode escapes for path-scope, and mixed-case patterns, URL-encoded secrets for redaction. These remain the most dangerous under-tested modules in the codebase despite having some coverage. (⚠️ Cross-audit CF-01 corrected the previous "zero tests" claim.)
 
 3. **`session-api.ts` is the most imported module (47 consumers) but has a cross-cluster coupling violation.** It imports from C1's `routing/behavioral-profile/`, creating a dependency from the foundation layer to the governance layer. The `getSessionBehavioralProfile()` function adds zero value — it's a thin wrapper around `resolveBehavioralProfile()` that should be removed.
 
@@ -706,4 +710,4 @@ The public API should expose only the plugin surface (`HarnessControlPlane`) and
 
 5. **`index.ts` exposes internal modules and write-side functions as public API.** `export * from "./coordination/concurrency/queue.js"` exposes C3 implementation details. `export * from "./task-management/continuity/index.js"` exposes write-side persistence mutation functions. The public API surface needs an audit to replace wildcard re-exports with explicit symbol lists.
 
-6. **4 of 18 C8 files have zero test coverage: `types.ts`, `tool-response.ts`, `tool-helpers.ts`, and the two security modules** (34% of the 3,475 LOC). While `types.ts` and `tool-response.ts` are tested indirectly, the security modules are completely untested in any form.
+6. **3 of 18 C8 files have zero test coverage: `types.ts`, `tool-response.ts`, `tool-helpers.ts`** (17% of files, ~102 LOC). While `types.ts` and `tool-response.ts` are tested indirectly through integration tests, none have dedicated tests. The two security modules (`path-scope.ts`, `redaction.ts`) were previously reported as untested but DO have dedicated tests at `tests/lib/security/` — coverage is minimal (5 and 4 cases) but present. The cross-audit (CF-01) confirmed this inventory inaccuracy.
