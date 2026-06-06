@@ -1,0 +1,30 @@
+# Exclude heavy session tracker and session journals
+.hivemind/session-tracker/
+.hivemind/.hivemind/
+.hivemind/logs/
+.hivemind/poor-prompts/
+.hivemind/uat/
+session-ses_*.md
+improve-tools-*.md
+tools_hooks_*.md
+trialrun-*.md
+qwen-code-export-*.md
+INVESTIGATOR-B-*.md
+OVERVIEW-Unmodified.md
+
+# Exclude next.js build artifacts in sidecar
+sidecar/.next/
+sidecar/out/
+sidecar/node_modules/
+
+# Exclude HTML/JSON visualization graphs and outputs
+graphify-out/
+*.html
+*.json.map
+*.js.map
+
+# Exclude playwright cache and other tools
+.playwright-mcp/
+
+# Exclude planning archives
+.planning/archive/
