@@ -60,11 +60,11 @@ META-BUILDER (.hivefiver-meta-builder/) — Authoring lab used for mass changes.
 
 | Location | hm-* | hm-l2-* | hf-* | gate-* | stack-* | hivemind-* | unprefixed | **Total** |
 |----------|------|---------|------|--------|---------|------------|------------|-----------|
-| **SOURCE** (`assets/skills/`) | 19 | 21 | 13 | 3 | 6 | 1 | 8 | **71** |
-| **DEPLOY** (`.opencode/skills/`) | 19 | 21 | 13 | 3 | 6 | 1 | 8 | **71** |
+| **SOURCE** (`assets/skills/`) | 19 | 21 | 13 | 3 | 6 | 1 | 11 | **74** |
+| **DEPLOY** (`.opencode/skills/`) | 19 | 21 | 13 | 3 | 6 | 1 | 11 | **74** |
 | **+ 12 .backup dirs** | — | — | — | — | — | — | — | **+12** |
 
-**Critical finding: 21 hm-l2-* skills still in assets/ despite being designated "archived" in AGENTS.md.** The AGENTS.md file (under "Current Phase Context") states: "all 35 former hm-l2/l3-* skills have been archived to `.hivefiver-meta-builder/skills-lab/.archive-refactoring-skills/.archive/`". However, 21 `hm-l2-*` skills remain in `assets/skills/` AND in `.opencode/skills/`. Only 14 of the original 35 were actually moved. This is a **35% completion sync** — the archive is incomplete.
+**Critical finding: 21 hm-l2-* skills still in assets/ despite being designated "archived" in AGENTS.md.** The AGENTS.md file (under "Current Phase Context") states: "all 35 former hm-l2/l3-* skills have been archived to `.hivefiver-meta-builder/skills-lab/.archive-refactoring-skills/.archive/`". However, all 21 `hm-l2-*` skills remain in `assets/skills/` AND in `.opencode/skills/`. None were actually moved to the archive. This is a **0% completion sync** — the archive has not been executed.
 
 ### 2.3 Command Topology
 
@@ -96,7 +96,7 @@ Command categories in deploy:
 | References | 70 (`references/`) | 70 |
 | Agent Instructions | 32 (`agent-instructions/`) | N/A (dev reference only) |
 
-**Grand Total SOURCE files:** 44 agents + 71 skills + 125 commands + 103 workflows + 40 templates + 70 references + 32 agent-instructions + 1 rule = **~486 shipped source files**
+**Grand Total SOURCE files:** 44 agents + 74 skills + 125 commands + 103 workflows + 40 templates + 70 references + 32 agent-instructions + 1 rule = **~489 shipped source files**
 
 ---
 
@@ -285,7 +285,7 @@ All 71 source skills categorized:
 | **gate-* (quality triad)** | 3 | `gate-lifecycle-integration`, `gate-spec-compliance`, `gate-evidence-truth` | ✅ Well structured with references |
 | **stack-* (reference)** | 6 | `stack-bun-pty`, `stack-vitest`, `stack-zod`, `stack-nextjs`, `stack-json-render` | ✅ Reference quality |
 | **hivemind-* (governance)** | 1 | `hivemind-power-on` | ✅ Core loading skill |
-| **unprefixed** | 8 | `iterative-loop`, `multi-agent-coordination`, `session-foundation`, `quality-gate-orchestration`, `wave-execution`, `completion-detection`, `cross-cutting-change-mgmt`, `user-intent-patterns` | ⚠️ Mixed — some are `.backup` only |
+| **unprefixed** | 11 | `iterative-loop`, `multi-agent-coordination`, `session-foundation`, `quality-gate-orchestration`, `wave-execution`, `completion-detection`, `cross-cutting-change-mgmt`, `user-intent-patterns`, `marketing-market-research`, `opencode-config-workflow`, `subagent-delegation-patterns` | ⚠️ Mixed — some are `.backup` only |
 
 ### 7.2 Outdated Patterns Detected
 
@@ -306,7 +306,7 @@ The following skills have **significant domain overlap**:
 | `hm-l2-phase-loop` vs `iterative-loop` | Iteration control | hm-l2 is phase-specific; unprefixed is general. Different naming but similar mechanism. |
 | `hm-l2-cross-cutting-change` vs `cross-cutting-change-mgmt` | Cross-cutting changes | Near-identical domain. hm-l2 is Hivemind-specific; unprefixed is framework-agnostic. |
 
-The 8 **unprefixed skills** (in `assets/skills/`) are framework-agnostic skills that directly overlap with hm-l2-* skills. Some have `.backup` only — they exist in `.opencode/skills/` as `.backup` directories but their `SKILL.md` is the active version.
+The 11 **unprefixed skills** (in `assets/skills/`) are framework-agnostic skills that directly overlap with hm-l2-* skills. Some have `.backup` only — they exist in `.opencode/skills/` as `.backup` directories but their `SKILL.md` is the active version.
 
 ### 7.4 Hallucination Detection
 
@@ -398,7 +398,7 @@ The duplication is complete — every GSD lifecycle command has an hm-* counterp
 
 **Files:** 21 `assets/skills/hm-l2-*` directories
 
-**Issue:** AGENTS.md states "35 former hm-l2/l3-* skills have been archived." Only 14 of 35 were actually archived. 21 `hm-l2-*` skills remain in `assets/skills/` and are actively synced to `.opencode/skills/`. These skills reference the old L2 hierarchy in their names, descriptions, and trigger patterns.
+**Issue:** AGENTS.md states "35 former hm-l2/l3-* skills have been archived." None were actually archived. All 21 `hm-l2-*` skills remain in `assets/skills/` and are actively synced to `.opencode/skills/`. These skills reference the old L2 hierarchy in their names, descriptions, and trigger patterns.
 
 **Impact:** Each of the 21 skills has a misleading name. The L2 hierarchy no longer exists, so "hm-l2-debug" suggests a level that doesn't exist. Skills like `hm-l2-lineage-router` and `hm-l2-skill-router` are core routing infrastructure — their "L2" label is actively misleading.
 
@@ -468,7 +468,7 @@ The duplication is complete — every GSD lifecycle command has an hm-* counterp
 
 **Conflict:** Skills exist in three overlapping namespaces:
 1. `assets/skills/hm-l2-*` (supposedly archived, 21 remain)
-2. `assets/skills/[a-z]*/` (8 unprefixed skills covering same domains)
+2. `assets/skills/[a-z]*/` (11 unprefixed skills covering same domains)
 3. `assets/skills/hm-*` (19 current skills)
 
 Skills `hm-l2-coordinating-loop` and `multi-agent-coordination` cover the same domain with different naming. Agents loading skills must choose between them.
@@ -500,7 +500,7 @@ Skills `hm-l2-coordinating-loop` and `multi-agent-coordination` cover the same d
 
 1. **The GSD→HM migration is incomplete.** 21 `hm-l2-*` skills remain despite AGENTS.md declaring them archived. The architecture document `assets/agent-instructions/hm-l2-build.md` retains the full L0→L1→L2→L3 hierarchy with Mermaid diagrams. Multiple hm-* agents have "no GSD SDK commands" checklists — evidence of a recent migration that was never fully completed.
 
-2. **Source→deploy sync is exact** for shipped primitives — but the archive cleanse is only 36% complete. Only 14 of 35 old hm-l2/l3-* skills were moved to the archive. The remaining 21 are actively shipped in every deploy, confusing the naming convention and creating namespace conflicts with the 8 unprefixed skills.
+2. **Source→deploy sync is exact** for shipped primitives — but the archive cleanse is at 0% complete. None of the 21 hm-l2-* skills were moved to the archive. All 21 remain and are actively shipped in every deploy, confusing the naming convention and creating namespace conflicts with the 11 unprefixed skills.
 
 3. **The hm-* agent ecosystem is a complete parallel rebuild of GSD**, not a thin wrapper. All 106 hm-* commands mirror GSD commands with different internal mechanisms (Hivemind's task/delegate-task vs GSD Core SDK). The 32 hm-* agents map 1:1 to GSD agent roles. Yet the architectural documentation (`hm-l2-build.md`) still describes the GSD hierarchy.
 
@@ -508,8 +508,8 @@ Skills `hm-l2-coordinating-loop` and `multi-agent-coordination` cover the same d
 
 5. **The `hm-l2-planning-persistence` skill is the most outdated single artifact** — it has `gsd-executor` in its scorecard, `GSD pattern analysis` in its research documents, references `hm-l2-planner`/`hm-l2-persistor`/`hm-l2-executor` as consumers, and names `gsd-code-review` as a peer utility. None of these names exist in the current system.
 
-6. **Eight unprefixed skills create an unresolved namespace conflict** with their `hm-l2-*` counterparts. An agent loading a coordination skill could pick `hm-l2-coordinating-loop` or `multi-agent-coordination` — with no guidance on which to prefer.
+6. **Eleven unprefixed skills create an unresolved namespace conflict** with their `hm-l2-*` counterparts. An agent loading a coordination skill could pick `hm-l2-coordinating-loop` or `multi-agent-coordination` — with no guidance on which to prefer.
 
 ---
 
-*C6 Inventory: 2026-06-06 — ~486 shipped source files analyzed (71 skills, 44 agents, 125 commands, 103 workflows, 40 templates, 70 references, 32 agent-instructions, 1 rule)*
+*C6 Inventory: 2026-06-06 — ~489 shipped source files analyzed (74 skills, 44 agents, 125 commands, 103 workflows, 40 templates, 70 references, 32 agent-instructions, 1 rule)*
