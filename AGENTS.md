@@ -1,651 +1,78 @@
 # AGENTS.md
 
+Slim root instruction file. Domain-specific rules live in subdirectory `AGENTS.md` files. Loaded by `opencode.json` `instructions` and every agent's `instruction:` frontmatter — keep lean.
+
+## Project
+
+Hivemind is a runtime composition engine for OpenCode. npm package (`hivemind`) that wires Tools, Hooks, and a Plugin into OpenCode with zero business logic in the plugin layer.
+
+## Two Halves — never confuse them
+
+- **Hard Harness** (`src/`, npm package): Tools, Hooks, Plugin, Shared, Task-Management, Coordination, Features, Config, Routing, Schema-Kernel.
+- **Soft Meta-Concepts** (`.opencode/`, user-configurable): Skills, Agents, Commands, Rules, Permissions.
+- **Internal State** (`.hivemind/`, deep module): Session journals, delegation records, runtime state, planning persistence.
+- **Governance** (`.planning/`, planning only): Requirements, roadmaps, architecture, phase authorization.
+
 ## CONSTITUTION: Source vs Deploy
 
-- `assets/` = SOURCE of truth for ALL shipped primitives (agents, commands, skills, workflows, references, templates)
-- `.opencode/` = DEPLOYED copy (client-side manifestation). NEVER develop directly here.
-- Development workflow: edit in `assets/` → run `node scripts/sync-assets.js` → verify in `.opencode/`
-- If `.opencode/` is deleted, running `node scripts/sync-assets.js` (or `npm run build`) regenerates everything.
-- Exception: `gsd-*` primitives are developer tooling, NOT shipped, and may live in `.opencode/get-shit-done/`
+- `assets/` is the **source of truth** for all shipped primitives. NEVER develop in `.opencode/` directly.
+- Edit in `assets/` → `node scripts/sync-assets.js` → verify in `.opencode/`. `npm run build` also regenerates it.
+- Exception: `gsd-*` primitives are developer tooling, NOT shipped, may live in `.opencode/get-shit-done/`.
 
-## Project Overview
+## THE ABSOLUTE ORDER — Front-Facing L0 Never Does Specialists' Work
 
-## THE ABSOLUTE ORDER - AFTER EACH AND EVERY FRONT-FACING USER'S PROMPTING (NO MATTER WHAT) FRONT-FACING AGENT NEVER DO SPECIALISTS' WORK
+- L0/L1 orchestrators (`hm-l0-orchestrator`, `hm-orchestrator`) MUST classify, route, coordinate, gatekeep. **Banned from inline work**: no reading files, writing code, running tests, auditing.
+- Delegate ALL detail work to `hm-*` / `hf-*` specialists via the `task` tool.
+- Generic agents (`general`, `Explore`, `Plan`) are **prohibited**. All dispatch goes to domain-specific specialists.
 
-Constitution: must utilize routing tools for both commands and specialist agent and never do inline work - be consistent if to following with hm-* or gsd-* - as orchestrator trajectory, agent-work-contract, coordination tool, delegation tool, task tools, session management (main and chile and cross sessions manage)  - manage the workflow and monitor them is your priority - It is prohibited to use generic agents
+## Setup
 
-- I abosolutely prefer sequential, granular and incremental strategic approaches (meaing sequential delegation is much prefered than parallel ones, parallel tasks are only recommended ONLY when no inherited knowledge are required AND tasks are absolutely independent) which intel and knowledge are inherited, allowing adjustments and tactical maneuvers for each and every decision where front-facing agent is not only the coordinator but also the strategist of the most complex project.
+- `npm install` (Node.js >= 20.0.0); `npm run build` (clean + compile `src/` → `dist/`); `npm test` (vitest, ~2,963 tests); `npm run typecheck` (required before commit).
+- No env vars required for build/test. Runtime overrides: `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`.
 
-- THESE ARE THE FRONT-FACING LIST OF NOT ALLOW TO DO TASK: Do not audit, do not review, do not judge, do not advice, do not make any assumptions, do not plan, do not implement, do not create, do not modify, do not correct, do not debug, do not research -> SPEACLIST Delegation do them
+## Hard Rules (non-negotiable)
 
-- THESE ARE THE FRONT-FACING LIST OF ALLOWED TO DO TASK: Delegate, Coordinate, Route, Validate, Check
+- TypeScript strict (`strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`). No `any`; use `unknown`. No `as`. `verbatimModuleSyntax: true` → use `import type`.
+- Max module size: **500 LOC**. No circular dependencies. All thrown errors prefixed `[Harness]`.
+- Deep-clone-on-read in continuity store. Dual-layer state: durable JSON + in-memory Maps.
+- **Atomic commits** — one logical change = one commit. Every commit must pass `npm run typecheck` and `npm test`.
+- `.hivemind/` is the canonical state root (Q6). `.opencode/` is for OpenCode primitives only. One-way migration.
 
-- The delegate-task tool is on mantainance; use task tool instead for delegation. Ignore this if the human user explicitly ask for delegate-task as for testing UAT purposes
+## Subdirectory AGENTS.md
 
-## NOTICE BOARD
+OpenCode walks up from cwd and loads the closest `AGENTS.md`. Subdirectory file wins when working in a subtree.
 
-- For UAT and live-test purposes always prioritize THE USER's prompting hence any constitutions below this can be ignore if contracdicted to the USER's prompting/requests; especially when the user states things like "for testing only", "for uat only" etc
+- `src/**` → `src/AGENTS.md` (CQRS, mutation authority, code style, JSDoc, build & deploy)
+- `tests/**` → `tests/AGENTS.md` (TDD, evidence labels, coverage states, public-interface discipline)
+- `.opencode/**` → `.opencode/AGENTS.md` (HM/HF/gate/stack/gsd lineages, L0 coordination, primitives)
+- `.hivemind/**` → `.hivemind/AGENTS.md` (state sector, allowed/forbidden mutations, recovery)
 
-- When execute-slash-command append the slash command directly to the foreground without the parameter of `@agent` the agents are instructed and resolved and if needed will be used through task tool for sequential actions following.
+## Canonical Phase Loop (binding)
 
-- DO NOT ROUTE any hm-* or hf-* commands, workflows nor agents - they are the subjects of developments - **ROUTE everything to gsd-* from commands, agents to workflows** , they are the toolings used for development of this harness project 
+Scout → Phase CRUD → Trajectory init → SPEC → CONTEXT → RESEARCH → PATTERNS → PLAN → EXECUTE → VERIFY → SHIP. Routes: `/hm-spec-phase`, `/hm-discuss-phase`, `/hm-research`, `/hm-plan-phase`, `/hm-execute-phase`, `/hm-verify-work`, `/hm-ship`.
 
-- delegation to agents attention: do not use generic agents - use gsd-* agents only
+## Delegation Rules
 
-- Atomic commits are mandatory. You must follow the atomic commit rule: **One logical change = One commit**. Do not bundle multiple unrelated changes into a single commit. If a change is large, break it down into smaller, atomic commits with meaningful messages. Every commit must pass validation (typecheck, tests, gatekeeping) and be atomic, preventing any partial build or test failure states. Commit even the documents changes
+- **Discover first**: `delegation-status({ action: "find-stackable" })` before new delegation. Stack onto existing sessions via `task_id` / `stackOnSessionId`.
+- **Never create duplicate sessions** — stack retry onto the FAILED session to preserve context.
+- **Dual-signal completion**: doer + verifier must both pass. **Sequential preferred over parallel** for inherited knowledge.
 
-## NON-NEGOTIABLE RULES
+## Test-First Cycle & Quality Gates
 
-- PRACTICE EXTREMELY STRICT TEST-DRIVEN DEVELOPMENTS, SPEC-DRIVEN, REQRUIREMENTS AND SPEC COMPLIANCES GATE KEEPING WITH STRICT INTEGRATION LOOPS AND VALIDATION. **NO EXCEPTION** 
+RED (failing test) → GREEN (minimal impl) → Coverage (`npm run test:coverage`) → REFACTOR (only if needed). Evidence labels: `runtime-truthful` > `transport-mocked` > `mock-heavy` > `manual-only`. After 3 focused attempts with the same hypothesis, return a blocked handoff. Full discipline in `tests/AGENTS.md`.
 
-- WHEN REQUEST IS CONFUSING AND LARGE -> never try to audit everything at once master planning - loop on phases with traversal and progressive batch of research - investigate - planning - implementing - verification then moving to the next batch -> reapt the integrated cycles with regression validation and integration loops of gatekeeping - never try to handle everything at once
+Every specialist wave passes the Quality Gate Triad: `gate-lifecycle-integration` (9-surface mutation, CQRS, event wiring) → `gate-spec-compliance` (spec-to-code, EARS, anti-patterns) → `gate-evidence-truth` (L1 runtime proof; rejects mock-only).
 
-- DO DELEGATION IN BATCH SEQUENTIALLY, DO NOT ALLOW MORE THAN 2 PARALLEL TASK DELEGATION. DO NOT USE ANY CUSTOM TOOLS YET. DO NOT USE INTERACTIVE BASH OR PTY COMMANDS!
+## Architecture Pointers
 
-- Handoff and artifacts between sessions, from research, audit, planning, review, verification, must all commit, written-to-local-disk and referenced as master jump links
+- `.planning/codebase/ARCHITECTURE.md` (9-surface map), `.planning/codebase/STRUCTURE.md` (file tree)
+- `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` (source plane), `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` (lineage taxonomy)
+- `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md` (locked Q1-Q6)
 
-- all tech, stack, SDK implementation, audit, gatekeeping  must follow deep investigation - stack research ;skills are for references not for interfaces validation; "interfaces, patterns, methods, api, signatures of specs etc" must validate against the correct versions at package.json - **MUST VALIDATE AGAINST ONLINE RESOURCES AS FOR MCP SERVER TOOLS ACTUAL FETCH** - valid and evidences with Context7, Deepwiki, Gitmcp, Github repo, Exa **AND Repomix for accurate specific patterns** etc, official - loading references from skills of stacks are outdated, as so reading code in the codebase can be polluted as many implementations are not functioning and broken. DO NOT MAKE ASSUMPTIONS OF THE STACK REPO LINKs - **EXTREMELY IMPORNTANT:** Uses of Context7, Deepwiki, Gitmcp, Github, Exa, Repomix are enforced when researching, planning, and implementing - these MUST Comply with all the **Github and Npm links that up-to-date with versiosn and NOT A PRODUCT OF MAKING UP LINKS** >  glob, list this to check these links `.hivemind/STACKS-REFERENCES.md`
+## Terminology (one-line glossary)
 
-- anything under .opencode/ consists of shipped-with primitives (direct copies deployed by bootstrap from `assets/`) and user project toolings — no symlinks are used; user-modified files are backed up (`.backup`) before updates
+Use **Harness** not Framework; **Agent (specialist)** not Claude/AI; **Skill** not Prompt; **Delegation packet** not Task assignment; **Runtime composition** not Static definition. Harness composes behavior at runtime.
 
-- all orchestrator agents belonging to L0 classifications MUST FOCUS ON THE DELEGATIONS - NEVER Implement the tasks yourself - when delegating DO NOT SHOW THE SPECIALIST WHAT AND HOW TO IMPLEMENT - Show HOW TO PROCESS, WHAT TO EXPECT AS RESULTS, SETTING CONSTRAINTS AND BOUNDARIES, INDICATION OF CLEAR SUCCESS METRICS
+## Cycle State
 
-- design patterns and must be obeyed strictly according to the architecture of the project.
-
-- atomic git commit for context preservation.
-
-- context git commit for both code implementation, docs, planning, researching, gatekeeping, verification artifacts - do not ask if commit needed
-
-- AGENTS.md must be routinely updated - after each cycle, each batch of implementation.
-
-- AGENTS.md are nested under dirs and subdirs, beware when maintaining them.
-
-- files creation and structure must be registered and keep track - we love our codetree systematically structured and we **DO Registered** folders and subfolders with `.gitkeep` 
-
-- folders must be created in a way that is easy to navigate and understand, following the best practice of this harness. Folders must be registered with gitkeep files to ensure they are tracked by git. 
-
-- code file must JSDOC (Run JSDOC skill) documented with clear descriptions, parameters, return values, and examples. All functions and classes must be documented.
-
-- The front facing agents must process high-level workflows, validate dependencies of tasks across sessions through faces
-
-- The front facing agents must delegate to suagents of specialist; front facing agents are not allowed to execute any tasks
-
-- The front facing agents are ones converse with USERS and must know the high-level tasks flow, following strict validations, gatekeeping, and coordination of the partificating frameworks
-
-- When delegating to agents these are the list of agents that must learn and delegate to the correct ones. When delegate to subagents make sure setting up strict guardrails, boundaries, success metrics, making sure they are awared that they are subagents and fulfill the tasked within boundaries and without any deviation ans seriously go through gatekeeping.
-
-<!-- NOTE: explore agent is MISSING from the filesystem -->
-
-- **DELEGATION STACKING — MANDATORY PROTOCOL (STACK-ON OVER NEW):** ALL agents MUST prefer stacking onto existing sessions over creating new ones. This is the DEFAULT behavior, not an edge case. The SDK supports stacking via `task_id` / `stackOnSessionId` for ANY valid session ID — completed, failed, aborted, cancelled, or even active sessions. This works both within the current delegation tree AND across independent sessions.
-
-  **BEFORE dispatching a new delegation, agents MUST:**
-  1. Call `delegation-status({ action: "find-stackable" })` to discover available sessions
-  2. If stackable sessions exist for the target agent, USE THEM via `stackOnSessionId`
-  3. Only create a new session if NO stackable sessions are found
-
-  **When a delegation fails, agents MUST:**
-  - Stack retry onto the FAILED session to preserve context — NEVER create a new session
-  - The delegation-status tool provides `retryCommand` and `retryGuidance` for failed delegations
-
-  **Tool patterns:**
-  - **`task` tool:** `task({ subagent_type: "agent-name", task_id: "<existing-session-id>", prompt: "..." })` — attaches as child
-  - **`delegate-task` tool:** `delegate-task({ agent: "agent-name", prompt: "...", stackOnSessionId: "<existing-session-id>" })` — first-class parameter
-  - **`delegate-task` legacy:** `delegate-task({ agent: "agent-name", prompt: "...", context: '{"parentSessionId": "<session-id>"}' })` — backward compatible but prefer `stackOnSessionId`
-  - **`execute-slash-command`:** `execute-slash-command({ command: "cmd", stackOnSessionId: "<existing-session-id>" })` — stacks command execution
-
-  **Anti-patterns (VIOLATIONS):**
-  - ❌ Creating a new delegation after a previous one failed for the same agent/task — MUST stack on
-  - ❌ Dispatching without checking `find-stackable` first — MUST check
-  - ❌ Injecting session ID into the prompt text — that creates a NEW session, does NOT stack
-  - ❌ Ignoring `retryCommand` in delegation-status output — MUST use it for retries
-
-- The front facing agents must keep track, monitor, make sure not a single validation, verification, review steps are skips, planning , audit and verification must following format of the participated framework with honest verification and prevention of regressions. 
-
-- **all agents** at every turn (after PER USER's prompt, **even mid-session**, after each turn), entries, shift of workflows there should be matching SKILLS that you must load, load and reload of suitable skills for the task, select ones with framework consistencies. Do not miss loading SKILLS. SKILLS are extremely important
-
-
-- - **all agents** : do not confuse between the project as the harness which you are building so that users can run it with OpenCode under their projects VS. your environment of works -> meaning there are assumptions that ARE NOT ALLOWED to interprete as this sole environment but must be as wider scopes, in terms of how different projects' states, tasks types, langues, frameworks and use cases.
-
-
-## SKILLS TO WORKFLOW ROUTER
-**Important guidelines**
-
-- To load best set of skills agents must know if you are front-facing or being delegated as subagents; knowing your hierarchy of tasks (looking at the meta data marked as `#USER` to confirm it is from the human user, meaning you are front-facing agent, otherwise subagents) 
-
-- consider loading new skill(s) (not always but once **intents** of human users and/or **workflows**, **tasks** shifted this order is a **must**)
-
-- **subagents** (know your agent **domain** by looking at description; analyze **task** to fetch `specilist` skills) fetch skills belong  `how-to-implement` and/or `specialist` classifications.
-
-- **orchestrator/coordinator agents** : loading `how-to-delegate`, `how-to-process/loop/iterative`, `guardrails, gatekeeping, context,`  skills classifications. For complex tasks this group may need to load `outer-cycle-how-to-implement` skills  
-
-- **respecting framework `oneness`** : it is if you are using `gsd` skill sets - pick them first - then pick another only when `gsd` skill sets lack the `domain-specific` or `task-specialist` that you find the superior ones. 
-
-### **going from greater cycles to the inner cycles** for skills to coordinate and orchestrate
-
-- **brainstorming, user-intent discussion** always make sure to understand, think twice load set helping to get clear user-intent through QA and discussion to prevent regressions or conflicts
-
-- **research, investigate, synthesis** do not skip research load `hm-deep-research` - `hm-detectice` (if need to learn about the sector of codebase) and
-
-- **write new code:** load `clean-code` skill
-
-- **debugging:** load `gsd` debug skills and `systematic-debug` skill
-
-- **planning and implementing** must load set of spec-driven and authentic tdd skills
-
-- **iterative loop** coordinating skills and gatekeeping at correct set loop til completione
-
-- **quality gatekeeping** must go through cycles of code-review, validation, verification, then integration gatekeeping. making sure to trace of regression
-
-## IMPORTANT UPDATE TO ALL AGENTS
-
-- when lost -> access real-time eventracker at `/.hivemind/session-tracker/*` - list/glob first - then look for the correct session id -use hm-detective skill to investigate the sessions
-
-- **important tracking path for delegation:**
-.hivemind/state/session-continuity.json
-.hivemind/state/delegations.json 
-
-- If the agents recieve GSD command, all they must is to act following it. THE COMMAND SUPERSEDE ALL ASSUMPTIONS AND LOADING SKILLS OTHER, BECAUSE THE COMMAND OF GSD IS THE SKILL
-
-- ALL AGENTS MUST ANNOUNCE THIS EVERY TURN DEPENDING ON MAIN-HUMAN-FACING ORCHESTRATOR OR SUBAGENT BEING DELEGATED
-
-- IF you are a front-facing -> you will mostly delegate **Everytime Delegation** in the prompt YOU MUST LET the subagent know that IT IS THE SUBAGENT BY ANNOUNCING: *You are the subagent Name:XXX role...., you must do as this prompt instructed and knowing that you are being delegated
-
-- As subagent you must anounce your roles so the skills must also match. Say: I am **subagent, I CAN ONLY delegate further if the cycles and my tasks allow, and I must fulfill my work. If need verification, I will return the verification needed in the report handoff
-
-
-<EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
-
-IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
-
-This is not negotiable. This is not optional. You cannot rationalize your way out of this.
-</EXTREMELY-IMPORTANT>
-
-## SPECIFIC L0 & SPECIALIST COORDINATION PROTOCOLS & GOVERNANCE
-
-### 1. The Absolute Order & L0 Orchestrator Execution Banishment
-* **Strategic Role ONLY**: Front-facing L0 orchestrators (`hm-l0-orchestrator`, `hf-l0-orchestrator`) converse with the human user, classify intents, form landscapes, map paths, and verify completion. They MUST NOT execute detail work.
-* **Inline Banishment**: L0 agents are strictly banned from reading files for comprehension, analyzing code blocks, writing code files, running tests, or performing any specialist role inline. They are blocked from writing to `src/` or `tests/` by harness lifecycle hooks.
-* **Handoff Requirement**: Every top-level user prompt must be routed immediately via path classification to specialist agents. L0 write authority is restricted to `.hivemind/planning/**`.
-
-### 2. Highly Specific Specialist Build/Authoring Agent Rules
-* **AQUAL Validation Triad Compliance**: Every created or modified primitive (agent, skill, command) must be validated against the 8-point AQUAL quality checklist (`AQUAL-01` through `AQUAL-08`) before writing to disk.
-* **Self-Correction & Escalation**: If validation fails, specialist builders (e.g. `hf-agent-builder`, `hf-command-builder`) must execute a self-correction loop. After 3 failed cycles, they must escalate to the orchestrator.
-* **Lineage Flexibility**: Specialist authoring agents (`hf-*`) have flexible lineage bindings. They are authorized to load `hm-*` research tools (e.g., `hm-detective`) for codebase scanning, but must justify the cross-lineage access explicitly in their output reports.
-* **Write Boundaries**: All file writes from specialist builders must be strictly constrained to `.opencode/agents/`, `.opencode/command/`, `.opencode/commands/`, or `.opencode/skills/`.
-
-### 3. Lineage Boundaries: HM/HF Lineages vs. GSD Developer Tooling
-* **HM/HF lineages (Subject of Development)**: The composition engine runtime under development (`hm-*` product developers and `hf-*` meta-builder authoring engines). Their source configurations reside under `.opencode/agents/hm-*`, `.opencode/agents/hf-*`, `.opencode/command/`, `.opencode/commands/`, `.opencode/workflows/`, and `.opencode/skills/`.
-* **GSD lineage (Internal Developer Tooling)**: Pristine development utilities used to build, test, and audit the harness project itself. All GSD assets (get-shit-done/, `.opencode/agents/gsd-*`, `.opencode/command/gsd-*`, `.opencode/commands/gsd-*`) are tracked in [gsd-file-manifest.json](file:///Users/apple/hivemind-plugin-private/.opencode/gsd-file-manifest.json) and are strictly excluded from the final composition engine harness release.
-
-### 4. Command vs. Commands & Agent vs. Agents Directory Ambiguity
-* **Plurality Compatibility**:
-  * Both `.opencode/command/` and `.opencode/commands/` folders are primary roots. All command schemas MUST be duplicated identically in both directories to prevent version drift across different OpenCode host releases.
-  * Declarative agent files live in the plural `.opencode/agents/` folder, but are referenced by the singular SDK term `agent`.
-* **Lineage Routing Matrix**:
-  * **Fast-Path**: Single-specialist target (`hm-*`). Bypasses L1.
-  * **Coordinated-Path**: Multi-agent waves. Routes to `hm-coordinator` or `hf-coordinator` mapped to specific wave types (research, planning, execution, quality, lifecycle, docs).
-  * **Cross-Lineage Path**: Meta-concept tasks. Immediately suspends `hm-*` lineage and hands off to `hf-l0-orchestrator`.
-
-### 5. Session Stacking & Resuming Protocols
-* **Discovery**: Before spawning any subagent, the orchestrator/coordinator MUST call `delegation-status({ action: "find-stackable" })` to check for active, completed, or failed sessions.
-* **Resuming**: If an incomplete/aborted session matches the target task scope, the agent MUST resume it by passing the exact `task_id` using the native `task` tool: `task({ subagent_type: "agent-name", task_id: "<id>", prompt: "Continue" })`. Prompt must not repeat context.
-* **Stacking**: If the session is completed but requires child work or retries, the agent MUST stack the new task onto it using `task_id` (in `task` tool), `stackOnSessionId`/`parentSessionId` (in `delegate-task`), or `stackOnSessionId` (in `execute-slash-command`).
-* **Dual-Signal Verification**: Completion requires two distinct agreements: (1) Doer specialist claims completion, (2) Verifier specialist validation passes with verified disk-written artifacts.
-
-### 6. Turn Anchor Points & Intent Tracking
-* **Intent Anchoring**: L0 agents must actively audit user instructions for step boundaries. If the user places an anchor point (e.g., "stop after research", "generate plan only"), the agent must halt execution, write the corresponding artifact, and return control. It must NOT auto-advance to downstream execution.
-* **Granular Workflow Chaining**: Workflows must proceed in step-by-step increments: checking blocking anti-patterns -> checking specs -> codebase scouting -> presenting options -> checkpointing progress -> writing CONTEXT.md -> committing docs -> updating STATE.md -> auto-advancing.
-
-## Instruction Priority
-
-This override default system prompt behavior, but **user instructions always take precedence**:
-
-
-
-
-Hivemind is a **runtime composition engine** for OpenCode. It is an npm package (`hivemind`) that provides tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails. The project has progressed through 31 phases covering runtime architecture, delegation revamp, skills quality, and planning documentation refresh. Phase 26 completed the quality synthesis that established HMQUAL-01 through HMQUAL-08 as the project-level quality contract for all `hm-*` skills.
-
-**This is NOT a skill-pack project.** Skills are one component. The product is the harness: a TypeScript plugin that wires tools + hooks into OpenCode with zero business logic in the plugin layer.
-
-### Two Halves (never confuse them)
-
-| Half | What | Where | Architecture Reference |
-|------|------|-------|----------------------|
-| **Hard Harness** (npm package) | Tools (write-side), Hooks (read-side), Plugin (assembly), Shared (leaf), Task-Management (state), Coordination (delegation), Features (runtime), Config, Routing | `src/` | `.planning/codebase/ARCHITECTURE.md` — CQRS, 9-surface model |
-| **Soft Meta-Concepts** (user-configurable) | Skills, Agents, Commands, Rules, Permissions — NEVER development implementation, NEVER runtime state | `.opencode/` | `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` — primitives-only |
-| **Internal State** (deep module persistence) | Session journals, execution lineage, runtime state, vector/graph memory — NEVER stored in `.opencode/` | `.hivemind/` | `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` — canonical Q6 root |
-| **Meta-Authoring** (source-of-truth) | Lab environment for authoring primitives before reflection to `.opencode/` | `.hivefiver-meta-builder/` | `.planning/codebase/ARCHITECTURE.md` — Source-of-Truth layer |
-| **Governance** (planning/authorization) | Requirements, roadmaps, architecture maps, phase authorization — never runtime code | `.planning/` | `.planning/AGENTS.md` — Planning/Governance sector |
-
-### Runtime features this project delivers
-
-Background agents, auto-loop/ralph-loop, WaiterModel delegation with dual-signal completion, task queuing with queue-key validation, category system, session recovery, PTY integration (Bun-only via the `bun-pty` **optional dependency** — runtime gracefully falls back to headless `node:child_process` on Node and any other host where `bun-pty` is absent or fails to load; recovery of a PTY delegation across a harness restart deliberately surfaces `terminalKind: "non-resumable-after-restart"` because OS PTY processes do not survive parent restart — see Phase 16.2.1). See `docs/draft/architecture-proposal-hivemind-v3.md` for feature-to-code mapping.
-
----
-
-## Setup Commands
-
-```bash
-npm install                    # Install dependencies
-npm run build                  # Clean + compile TypeScript to dist/
-npm run typecheck              # Type-check without emitting
-npm run test                   # Run all tests (vitest)
-npm run test:watch             # Watch mode
-npm run test:coverage          # Coverage report (src/**/*.ts)
-```
-
-- Requires Node.js >= 20.0.0
-- Peer dependency: `@opencode-ai/plugin` >= 1.1.0
-- No environment variables required for build/test
-- Runtime state overrides: `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`
-
----
-
-## Project Structure
-
-```
-src/
-├── plugin.ts                  # Composition root
-├── index.ts                   # Public API re-exports
-├── shared/                    # Leaf utilities, types, SDK wrappers, runtime policy, security
-├── task-management/           # Continuity, journal, event tracker, trajectory, lifecycle
-├── coordination/              # Delegation, completion, concurrency, SDK/command delegation, spawner
-├── features/                  # Standalone runtime features: bootstrap, PTY/background command, doc intelligence, prompt packets, pressure, SDK supervisor, work contracts
-├── config/                    # Config subscriber/compiler/workflow
-├── routing/                   # Session entry, behavioral profile, command engine
-├── hooks/                     # Lifecycle, guards, observers, transforms, composition
-├── tools/                     # Delegation, session, config, hivemind, prompt tool entrypoints
-└── schema-kernel/             # Zod schemas and generated config schema support
-
-tests/lib/                     # Legacy test grouping for moved runtime modules
-tests/tools/                   # Tool-focused unit tests
-.opencode/                 # Soft meta-concepts (skills, agents, commands) — NO state storage
-.hivemind/               # Internal deep module state (journals, lineage, runtime state) — canonical per Q6
-```
-
-### Dependency rules (non-negotiable)
-
-- `src/shared/types.ts` is leaf-like shared contract authority; avoid adding deep runtime imports without a source-backed decision
-- `src/shared/helpers.ts`, `src/coordination/concurrency/queue.ts`, `src/coordination/completion/detector.ts` — leaf or near-leaf
-- `src/task-management/lifecycle/index.ts` is the lifecycle manager surface
-- No circular dependencies
-- Max module size: 500 LOC
-- `src/task-management/continuity/delegation-persistence.ts` — delegation record I/O
-
-### Where to find things
-
-| Task | File |
-|------|------|
-| Change session persistence format | `src/task-management/continuity/index.ts` |
-| Add a lifecycle phase | `src/shared/types.ts` + `src/task-management/lifecycle/index.ts` |
-| Change SDK call patterns | `src/shared/session-api.ts` |
-| Change concurrency model | `src/coordination/concurrency/queue.ts` |
-| Change delegation behavior | `src/coordination/delegation/manager.ts` — DelegationManager class (WaiterModel dispatch, dual-signal completion) |
-| Change delegate-task tool | `src/tools/delegation/delegate-task.ts` — dispatch tool wrapper |
-| Check delegation status | `src/tools/delegation/delegation-status.ts` — status polling tool |
-| Change completion detection | `src/coordination/completion/detector.ts` |
-| Change task status transitions | `src/shared/task-status.ts` |
-| Change agent config (temperature, tools) | `src/plugin.ts` — `AGENT_DEFAULTS`, `AGENT_TOOLS` |
-| Change circuit breaker / tool budget | `src/plugin.ts` — `CIRCUIT_BREAKER_THRESHOLD`, `MAX_TOOL_CALLS_PER_SESSION` |
-| Persist delegation records | `src/task-management/continuity/delegation-persistence.ts` — `persistDelegations()`, `readPersistedDelegations()` |
-| Change tool response envelope | `src/shared/tool-response.ts` — standard response wrapper |
-| Change prompt-enhance schemas | `src/schema-kernel/prompt-enhance.schema.ts` — Zod schemas for skim/analyze/patch |
-| Change session stacking intelligence | `src/coordination/delegation/session-intelligence.ts` — proactive stacking recommendations |
-
----
-
-## Testing Instructions
-
-- Run all tests: `npm test`
-- Run single test file: `npx vitest run tests/lib/helpers.test.ts`
-- Run tests matching pattern: `npx vitest run -t "<test name>"`
-- Watch mode: `npm run test:watch`
-- Coverage: `npm run test:coverage` — covers `src/**/*.ts`, excludes `src/index.ts`
-- Test files live in `tests/lib/` and `tests/tools/` — mirror `src/` modules and `src/tools/`
-- Tests use vitest globals (no imports needed for `describe`, `it`, `expect`)
-- **Type-check before committing:** `npm run typecheck`
-
----
-
-## Code Style
-
-- TypeScript strict mode (`strict: true`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`)
-- ES2022 target, NodeNext module resolution
-- `verbatimModuleSyntax: true` — use `import type` for type-only imports
-- Deep-clone-on-read in continuity store
-- `[Harness]` prefix on all thrown errors
-- Dual-layer state: durable JSON file (`continuity.ts`) + in-memory Maps (`state.ts`)
-- No `any` types on new code
-- Max module size: 500 LOC
-
----
-
-## Build and Deployment
-
-- Build: `npm run build` — compiles `src/` → `dist/` with declarations + source maps
-- Package entrypoints:
-  - `hivemind` → `./dist/index.js`
-  - `hivemind/plugin` → `./dist/plugin.js`
-- Prepack runs build automatically: `npm pack` / `npm publish`
-- Runtime state path: `.hivemind/state/` (canonical per Q6; legacy `.opencode/state/opencode-harness/` supported via compatibility bridge during migration)
-
----
-
-## OpenCode Integration
-
-- Plugin loaded via `.opencode/plugins/harness-control-plane.ts` (thin wrapper re-exporting `dist/`)
-- Config: `opencode.json` at repo root — references `AGENTS.md` as instructions
-- 75 agents AUTHORED in `.hivefiver-meta-builder/agents-lab/active/refactoring/` and reflected to `.opencode/agents/` (as direct copies, no symlinks): 33 GSD specialist agents (internal project build tools — NOT shipped) + 31 hm-* agents (harness module specialists: architect, code-fixer, code-reviewer, codebase-mapper, debug-session-manager, debugger, doc-verifier, doc-writer, ecologist, executor, integration-checker, intel-updater, intent-loop, l0-orchestrator, nyquist-auditor, orchestrator, pattern-mapper, phase-researcher, plan-checker, planner, project-researcher, roadmapper, security-auditor, shipper, specifier, synthesizer, ui-auditor, ui-checker, ui-researcher, user-profiler, verifier) + 11 hf-* agents (hf-l0-orchestrator, hf-coordinator, hf-agent-builder, hf-auditor, hf-command-builder, hf-meta-builder, hf-prompter, hf-refactorer, hf-skill-builder, hf-synthesizer, hf-tool-builder). Note: explore agent is MISSING from the filesystem.
-- 34 non-GSD skills AUTHORED in `.hivefiver-meta-builder/skills-lab/active/refactoring/` and reflected to `.opencode/skills/` (as direct copies, no symlinks): 13 hf-* (meta-builder: agent-composition, agents-and-subagents-dev, agents-md-sync, command-dev, command-parser, context-absorb, custom-tools-dev, delegation-gates, meta-builder-core, naming-syndicate, skill-router, skill-synthesis, use-authoring-skills) + 3 gate-* (internal quality gate triad: evidence-truth, lifecycle-integration, spec-compliance — THIS PROJECT ONLY, not shipped) + 6 stack-* (reference: bun-pty, json-render, nextjs, opencode, vitest, zod) + 1 hivemind-* (governance: hivemind-power-on — cross-lineage session governance, loaded FIRST by all hm-* and hf-* L0 agents) + 11 unprefixed (orchestration/patterns: completion-detection, cross-cutting-change-mgmt, iterative-loop, marketing-market-research, multi-agent-coordination, opencode-config-workflow, quality-gate-orchestration, session-foundation, subagent-delegation-patterns, user-intent-patterns, wave-execution). Note: all 35 former hm-l2/l3-* skills have been archived to `.hivefiver-meta-builder/skills-lab/.archive-refactoring-skills/.archive/` — their functionality was replaced by unprefixed and hf-* skills.
-- Note: 67 gsd-* skills and 33 gsd-* agents are AUTHORED in `.hivefiver-meta-builder/` and reflected to `.opencode/` as developer tooling (GSD framework used to build this project). They are NOT shipped primitives and are excluded from asset sync. Any synthesis from gsd-* must be transformed to hm-*/hf-* conventions.
-- 19 commands AUTHORED in `.hivefiver-meta-builder/commands-lab/active/refactoring/` and reflected to `.opencode/commands/`: 7 core (start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, harness-audit, ultrawork) + 7 extended (hf-absorb, hf-audit, hf-configure, hf-create, hf-prompt-enhance, hf-prompt-enhance-to-plan, hf-stack) + 1 sync (sync-agents-md) + 4 test (test-echo, test-list, test-spike-execute, test-status)
-
-### `.opencode/` = Soft Meta-Concepts ONLY — NEVER Development Assets
-
-`.opencode/` is **ONLY** for OpenCode configurable primitives (agents, commands, skills, rules, permissions) that compose runtime behavior from outside the npm package. **No internal runtime state** is stored here. **No development implementation** lives here. **No build artifacts** belong here.
-
-This is a critical distinction:
-- **`.opencode/` IS:** Agent definitions, skill packages, command files, permission rules, plugin loader wrappers → these CONFIGURE runtime behavior
-- **`.opencode/` IS NOT:** Source code, compiled output, business logic, state persistence, development tools, npm package assets → these belong in `src/`, `dist/`, or `.hivemind/`
-
-All Hivemind deep module state (journals, lineage, runtime state, graph/vector memory) writes to `.hivemind/` at project root per Q6. This prevents corruption by other plugins or user dependencies.
-
-### Canonical Skill Location
-
-`.hivefiver-meta-builder/skills-lab/` is the **ONLY** canonical source-of-truth for project skills. All skill authoring happens there and is reflected to `.opencode/skills/` as direct file copies (no symlinks) via `scripts/sync-assets.js` build step and runtime bootstrap. User-modified files in `.opencode/` are backed up (`.backup` suffix) before overwrite during updates.
-
-IDE-managed directories (`.trae/skills/`, `.windsurf/skills/`, `.codex/skills/`, `.github/skills/`) are **third-party sync artifacts**, not project deliverables. They are gitignored and must never be committed. `.claude/skills/` does not exist in this repository.
-
----
-
-## Architecture Foundation (Authoritative Docs)
-
-### Must-Have References (current as of 2026-05-10)
-
-| Document | Purpose | Authority |
-|----------|---------|-----------|
-| `.planning/codebase/ARCHITECTURE.md` | CQRS model, 9-surface authority, component graph, dependency rules | Source-backed architecture map |
-| `.planning/codebase/STRUCTURE.md` | File tree, placement conventions, naming, folder registration | Source-backed structure map |
-| `.planning/architecture/hivemind-source-plane-architecture-2026-05-07.md` | Surface ownership model, Phase 0 mutation gates, target source planes | Governance baseline |
-| `.planning/architecture/hivemind-runtime-identity-taxonomy-2026-05-07.md` | Naming contract, lineage contract (hm/hf/gate/stack/gsd), L0-L3 hierarchy | Governance baseline |
-| `.planning/architecture/hivemind-sector-agents-target-2026-05-07.md` | Target sector AGENTS.md shape, deferred implementation | Target architecture |
-| `.planning/research/omo-adaptation-architecture-2026-05-07.md` | OMO adapt/reject table, Hivemind surface preservation rules | Research foundation |
-| `.hivemind/planning/agents-system-overhaul-2026-05-10/` | Agent/skill/command overhaul: 15 REQs, 12 phases, shipped count = 49 | Overhaul planning |
-
----
-
-## Locked Validation Decisions (Q1-Q6)
-
-Six architectural decisions locked 2026-04-25 as the foundation for Phases 27-30 and all future work. Source: `docs/proposals/VALIDATION-DECISIONS-2026-04-25.md`
-
-| Decision | Description |
-|----------|-------------|
-| **Q1** | Hybrid + Spec-Driven Automated Runtime Detection — deep codemap, file watcher, MCP tools, dependency graph; Layer 2 taxonomy |
-| **Q2** | Artifact-Focused Sidecar — Next.js 15 + `@json-render/react`, reads `.hivemind/` and `.planning/`, READ-ONLY for canonical state |
-| **Q3** | Session Journal as Complement + Time-Machine — append-only event timeline, independent of continuity.ts |
-| **Q4** | MVP = 5 of 8 memory categories; Post-MVP = 3 with explicit gates |
-| **Q5** | Full RICH gate required — 0 of 25 skills pass today is honest status; no threshold lowering |
-| **Q6** | `.hivemind/` is internal state root; `.opencode/` is ONLY for OpenCode primitives — one-way migration |
-
----
-
-## Architecture Rules (from architecture-proposal-hivemind-v3.md)
-
-### Script rule
-A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpers only (exit 0, no governance). No hardcoded paths, no state mutation outside CQRS tools.
-
-### Anti-patterns to avoid
-- Static `.md` files acting as agent definitions (they are templates/references only)
-- Bash scripts outside `bin/` CLI substrate
-- Governance scripts that block progression (facts only)
-- Feature bloat: keep modules under 500 LOC, total codebase target ~4,000-5,000 LOC
-- Skill proliferation: target ~20 SKILL.md files, not hundreds
-
-### Target architecture (from proposal)
-5 tools (~500 LOC total), hooks (~800 LOC), lifecycle (~400 LOC), delegation (~400 LOC), continuity (~400 LOC), CLI substrate (~500 LOC), control-plane (~400 LOC), shared (~800 LOC).
-
----
-
-## Git Commit Discipline
-
-- Commit message format: `phase: what changed — why it matters`
-- Commit after each meaningful change (subagent returns, phase completes, gate passes)
-- Never accumulate changes across multiple phases without committing
-- Agents may only manage commits for their own work — they do not constrain or override commits from other development activity
-
----
-
-## Terminology
-
-| Use | Not |
-|-----|-----|
-| Harness | Framework, system |
-| Agent (specialist: researcher/builder/critic) | Claude, AI, model |
-| Skill | Prompt, instruction |
-| Runtime composition | Static definition |
-| Delegation packet | Task assignment |
-
-<!-- GSD:profile-start -->
-## Developer Profile
-
-> Generated by GSD from session_analysis. Run `/gsd-profile-user --refresh` to update.
-
-| Dimension | Rating | Confidence |
-|-----------|--------|------------|
-| Communication | mixed | LOW |
-| Decisions | fast-intuitive | LOW |
-| Explanations | concise | LOW |
-| Debugging | fix-first | UNSCORED |
-| UX Philosophy | backend-focused | LOW |
-| Vendor Choices | pragmatic-fast | UNSCORED |
-| Frustrations | scope-creep | UNSCORED |
-| Learning | self-directed | LOW |
-
-**Directives:**
-- **Communication:** Adapt communication style to context — accept terse directives for execution, provide structured responses when the developer establishes context. When uncertain, match the developer's current message length and formality.
-- **Decisions:** Present recommendations directly and proceed quickly when accepted — this developer makes execution decisions fast. If a decision has significant architectural impact, briefly note the stakes before proceeding but do not over-deliberate.
-- **Explanations:** Provide brief explanations of approach alongside code. Focus on architectural decisions and their impact. Skip conceptual background unless the developer explicitly asks. When in doubt, ask if more detail is needed.
-- **Debugging:** No strong preference detected. Ask the developer when this dimension is relevant.
-- **UX Philosophy:** Focus on backend architecture, code quality, and system design. No UI/UX polish needed for current work. If the project shifts to frontend, ask the developer about their UX preferences.
-- **Vendor Choices:** No strong preference detected. Ask the developer when this dimension is relevant.
-- **Frustrations:** Stay within stated scope and deliver honest assessments. Do not overstate capabilities or add unrequested features. When presenting work, be factual about what was delivered versus what was promised.
-- **Learning:** Provide code and architectural details for independent assessment. Ask targeted questions rather than offering walkthroughs. When the developer explores a new domain, offer concise references and let them direct the learning pace.
-<!-- GSD:profile-end -->
-
-<!-- Last synced: 2026-05-26 — Primitives revamp: symlinks→direct copies, hm-l2/l3 skills archived (35→0), agents 89→75 (hm-* 45→31), non-GSD skills 59→34, GSD skills 65→67, .opencode/ no longer uses symlinks -->
-
-## Current Phase Context
-
-**Reordered restructuring (Phases 21-37):** Owner's 3-group framework applied — Group 1 (Orchestration Design Fix) → Group 2 (Routing/Coordination) → Group 3 (Schema/Config) → Group 4 (Structural Cleanup). Based on 16 research artifacts (6,621 LOC), 6 deep-analysis cluster reports, phase-reordering analysis (4 critical violations found), session-tracker flaws analysis (16 flaws, 2 CRITICAL).
-**Phase 18-20:** ✅ COMPLETE (2026-05-21) — root cleanup, non-destructive remediation, dependency cleanup.
-**Active phase:** Phase 39.8 — Enable execute-slash-command in child/sub sessions and prevent recursive subtasks. L3 unit/typecheck/build evidence exists, and all 2,963 tests pass successfully.
-**Sequence:** Session-Tracker (P21) → Status/Error (P22) → Dispatch/Delegate (P23) → Trajectory/Contract (P24) → Pressure/Notification (P25) → Routing/Intent (P26) → Hooks (P27) → Auto-Loop/PTY (P28) → Schema (P29) → Config (P30) → Primitives (P31) → Plugin Decomp (P32) → Async I/O+Errors (P33) → Module Splits (P34) → Integration (P35) → sync-oss.yml (P36) → Package Primitives (P37) → Integration Completion & Hardening (P39).
-**Group order:** Group 1 (P21-P25, HIGHEST) → Group 2 (P26-P28) → Group 3 (P29-P31) → Group 4 (P32-P35, LAST) → P36-P37 independent → P39 core ship hardening.
-**Key decisions:** Async I/O + typed errors pushed to P33 (Group 4, LAST); plugin decomposition pushed to P32; session-tracker fixed FIRST with production evidence; child session execution upgrades implemented.
-**Research artifacts:**
-- `.planning/research/phase-reordering-final-recommendation-2026-05-21.md` (543 LOC)
-- `.planning/research/hard-restructuring-synthesis-2026-05-21.md` (454 LOC)
-- `.planning/research/session-tracker-flaws-analysis-2026-05-21.md` (136 LOC)
-
-## Test-Driven Development
-
-**Status:** Active governance section. Authored 2026-06-05 from the distillation in
-`.hivemind/planning/test-driven-governance-2026-06-05/01-research-findings.md` and the
-generic guide at `.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md`.
-The source skill lives at `.opencode/skills/hm-l2-test-driven-execution/`.
-
-This section binds this project to a non-negotiable test-first discipline. It is the
-project-voice complement to the project-agnostic generic guide. When the two diverge,
-this section is authoritative for the Hivemind codebase; the generic guide is the
-authoritative reference for reusable methodology.
-
-### Why this section exists
-
-Hivemind is a runtime composition engine where the cost of a regression is
-disproportionately high: a broken tool or hook propagates to every session, every
-delegation, and every gate. Test-first execution is the only discipline that
-produces evidence with the freshness and granularity required to catch a regression
-before it ships. Coverage as a percentage is not enough; what matters is that the
-test existed before the code, and that the test was driven to green one cycle at a
-time.
-
-### The Test-First Cycle (binding)
-
-Every change to executable behavior in this repository follows this sequence:
-
-1. **RED.** Write a failing test that asserts on a public seam of the change. Run
-   the focused test command and capture the output. If the test does not fail for
-   the right reason, stop — the slice is either already implemented or the test
-   is wrong.
-2. **GREEN.** Write the minimal implementation that turns the test green. Run the
-   focused test command. If green, proceed. If not, attempt a minimal fix.
-3. **Coverage.** Run the project's coverage command and capture the percentage and
-   the four-state status (`PASS` / `PARTIAL` / `MISSING` / `BLOCKED`). Never
-   estimate.
-4. **REFACTOR (only if needed).** Clean only after green. Behavior-preserving
-   cleanup is allowed here, not before. If a refactor regresses a green test,
-   revert the refactor or split it into its own cycle.
-
-A focused test command filters to the test file or test name. For this
-repository, the canonical commands are:
-
-| Surface | Focused command |
-|---|---|
-| Source unit/integration | `npx vitest run tests/path/to/file.spec.ts -t "behavior name"` |
-| Full project suite | `npm test` |
-| Coverage on a single surface | `npx vitest run --coverage tests/path/to/file.spec.ts` |
-| Project-wide coverage | `npm run test:coverage` |
-
-Always run `npm run typecheck` after green to confirm types align with the
-implementation.
-
-### One Test at a Time (binding)
-
-Each behavior is exercised by exactly one new failing test before the next is
-written. A pile of failing tests written before any implementation hides which
-behavior independently drove which design, and produces test-after evidence by
-default. The only exception is the rare case where a requirement is genuinely
-inseparable. In that case, the bundle must be documented in the cycle notes.
-
-### Public-Interface Discipline (binding)
-
-Tests assert against externally observable surfaces of this project:
-
-- Tool entry points: the `tool()` factory's execute function, the JSON envelope
-  the tool returns to the agent, and the error envelope (`code`, `message`,
-  optional `data`).
-- Hooks: the mutation passed to the next middleware in the chain, the early
-  return value, and the side effect on shared state.
-- Plugins: the public `Plugin` interface assembled by `src/plugin.ts`, including
-  the registration of tools, hooks, and config.
-- State stores: the value read via the public `get`/`read` method, not the
-  internal `Map` or file path.
-- The session lifecycle: the phase transitions observed via the public
-  lifecycle manager API, not the internal `state.ts` module.
-
-Mocking internals is acceptable only when the helper is itself the slice's
-public contract (for example, mocking the clock for time-sensitive tests of the
-continuity store). When a test needs to mock several internals to pass, the
-public seam is in the wrong place. Pause and re-design the seam.
-
-### Evidence Labels (binding)
-
-Every test result carries an evidence label. The labels, highest to lowest:
-
-- **`runtime-truthful`** — the test exercises real behavior through a public
-  seam. Required for any acceptance claim on tool, hook, or plugin changes.
-- **`transport-mocked`** — the test exercises real behavior through a public
-  seam but replaces a transport (the SDK call layer, the file system boundary)
-  with an in-process adapter. Acceptable for SDK wrapper changes when the SDK
-  itself is not in scope.
-- **`mock-heavy`** — the test substitutes enough internals that any
-  implementation would pass. Insufficient on its own for acceptance. Must be
-  paired with `runtime-truthful` or `transport-mocked` evidence.
-- **`manual-only`** — verified by a human, not by an executable test.
-  Insufficient for automated gates.
-
-`mock-heavy` and `manual-only` cannot close `runtime-truthful` acceptance
-criteria. They may be combined with stronger evidence, never used alone.
-
-### Coverage as Evidence (binding)
-
-Coverage claims require fresh command output from the current work session.
-The four valid states:
-
-- **`PASS`** — `npm run test:coverage` ran and produced a percentage. Report
-  the command, the percentage, and the date.
-- **`PARTIAL`** — behavioral tests ran but coverage command did not finish or
-  only covered a subset. Report what ran and what was missing.
-- **`MISSING`** — tooling absent. Report the gap. Do not estimate.
-- **`BLOCKED`** — setup or dependency failure prevented coverage. Report the
-  command attempted and the failure.
-
-A high coverage percentage on a slice with invalid RED is still a blocked
-slice. Coverage is necessary, not sufficient.
-
-### Test-Size Labels (binding)
-
-Every test is labeled by size:
-
-- **`small`** — a single unit tested through a public seam. The focused
-  command runs in milliseconds.
-- **`medium`** — multiple modules or a real persistence or process boundary
-  (for example, a test that writes to the actual continuity JSON file in a
-  temporary directory). Setup and teardown must be noted.
-- **`large`** — end-to-end or browser-driven. The runtime command, the
-  environment bring-up, and a user-visible behavior note are all required.
-
-### Bug Fix Path: Prove-It (binding)
-
-For defect work, the reproduction is the RED phase:
-
-1. Reproduce. Write a test that exhibits the user-visible defect.
-2. Prove failure matches. The test must fail for the same reason the user
-   observed, not an unrelated error.
-3. Minimal fix. The smallest change that turns the test green.
-4. Prove fixed. Run the test, confirm green, and run the surrounding test
-   surface to confirm no regression.
-5. Preserve. The reproduction test stays in the suite as a permanent
-   regression guard.
-
-### Anti-Patterns and Retry Budget (binding)
-
-Five anti-patterns each have a detection signal and a correction path:
-
-| Anti-pattern | Detection in this project | Correction |
-|---|---|---|
-| Test-After Claim | Implementation existed before tests | Label as test-after or restart with a true RED |
-| Fake Green | Test would pass if implementation were removed | Rewrite assertion against observable behavior |
-| Mock Theater | Internals mocked so runtime behavior is untested | Add `runtime-truthful` or `transport-mocked` evidence |
-| Coverage Lie | Coverage cited without fresh `npm run test:coverage` output | Run coverage now, or mark coverage `MISSING` |
-| Infinite Fix Loop | Same failing test after repeated attempts | Stop after 3 focused attempts and return blocked handoff |
-
-After three focused attempts in RED or GREEN with the same hypothesis, the
-implementer must stop and return a blocked handoff. More attempts without new
-evidence is "loop theater," not test-first execution.
-
-### Relationship to Other Governance
-
-- The generic guide at `.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md`
-  is the project-agnostic reference. This section is its Hivemind-voice
-  application. When in doubt, read both: the generic guide for the principle,
-  this section for the command and the surface.
-- The discipline here is enforced by the quality gate triad in
-  `.opencode/rules/universal-rules.md`. The terminal gate
-  (`gate-evidence-truth`) refuses to pass without fresh evidence of the
-  required label.
-- The non-negotiable rules in the project root `AGENTS.md` (atomic commits,
-  spec-driven execution, integration loops) all assume the test-first cycle
-  is running. If a slice cannot be reduced to a failing test, escalate
-  before continuing.
-
-### Entry Point for New Contributors
-
-1. Read the generic guide (`.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md`).
-2. Read this section.
-3. Read the quality gate triad (`.opencode/rules/universal-rules.md`).
-4. Read the source skill (`.opencode/skills/hm-l2-test-driven-execution/`) for
-   the deep references and templates.
-5. Before opening a pull request, run `npm run typecheck` and `npm test` from
-   a clean state. The PR is not ready if either fails.
+For the current active phase and active restructure ordering, read `.planning/STATE.md#active-phase`. Intentionally NOT inlined to prevent drift.
