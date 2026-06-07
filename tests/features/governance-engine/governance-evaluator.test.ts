@@ -1,17 +1,17 @@
 import { afterAll, beforeAll, describe, it, expect, beforeEach, vi } from "vitest"
-import { evaluateGovernance } from "../../src/features/governance-engine/evaluator.js"
-import type { GovernanceRule } from "../../src/shared/types.js"
-import { readGovernanceState, writeGovernanceState } from "../../src/features/governance/persistence.js"
+import { evaluateGovernance } from "../../../src/features/governance-engine/evaluator.js"
+import type { GovernanceRule } from "../../../src/shared/types.js"
+import { readGovernanceState, writeGovernanceState } from "../../../src/features/governance/persistence.js"
 import { mkdtempSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 
 // Mock getDelegationMeta for depth-based tests
-vi.mock("../../src/shared/state.js", () => ({
+vi.mock("../../../src/shared/state.js", () => ({
   getDelegationMeta: vi.fn(),
 }))
 
-import { getDelegationMeta } from "../../src/shared/state.js"
+import { getDelegationMeta } from "../../../src/shared/state.js"
 const mockGetDelegationMeta = vi.mocked(getDelegationMeta)
 
 describe("evaluateGovernance", () => {
