@@ -1114,5 +1114,157 @@ describe("createCoreHooks", () => {
       expect(profileBlock).toBeDefined()
       expect(profileBlock).toContain("# hm-orchestrator")
     })
+
+    // -----------------------------------------------------------------------
+    // Per-Turn Reinjection Guard (Phase A)
+    //
+    // The agent body is ~11.5k tokens. The harness MUST inject it ONCE per
+    // session, not on every turn. Repeated calls to system.transform for the
+    // same sessionID must skip the agent body reinjection after the first
+    // successful injection. Different sessions must still receive their own
+    // independent injection.
+    // -----------------------------------------------------------------------
+
+    it("injects specialist agent profile exactly ONCE per session — second call for same sessionID skips reinjection", async () => {
+      const fs = await import("node:fs")
+      const path = await import("node:path")
+
+      const projectRoot = process.cwd()
+      const agentDir = path.join(projectRoot, ".opencode", "agents")
+      const mockAgentPath = path.join(agentDir, "mock-once-specialist.md")
+
+      fs.mkdirSync(agentDir, { recursive: true })
+      const mockContent = [
+        "---",
+        "name: mock-once-specialist",
+        "description: Mock Once-Per-Session Specialist",
+        "---",
+        "Body for once-per-session test.",
+      ].join("\n")
+      fs.writeFileSync(mockAgentPath, mockContent, "utf-8")
+
+      try {
+        const sessionID = "ses_once_per_session_test"
+        const deps: Partial<HookDependencies> = {
+          lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+          getIntake: () => undefined,
+          getBehavioralProfile: () => undefined,
+          projectDirectory: projectRoot,
+          stateManager: taskState,
+        }
+
+        taskState.setDelegationMeta(sessionID, {
+          agent: "mock-once-specialist",
+          rootID: sessionID,
+          depth: 1,
+          queueKey: "q_once_per_session",
+        })
+
+        const hooks = createCoreHooks(deps as HookDependencies)
+
+        // First call — profile SHOULD be injected
+        const out1: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID }, out1)
+        const sys1 = out1.system as string[]
+        const profile1 = sys1.find((s) =>
+          s.includes("--- Agent Profile: mock-once-specialist ---"),
+        )
+        expect(profile1, "first call must include agent profile").toBeDefined()
+        expect(profile1).toContain("Body for once-per-session test.")
+
+        // Second call with SAME sessionID — profile MUST NOT be reinjected
+        const out2: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID }, out2)
+        const sys2 = out2.system as string[]
+        const profile2 = sys2.find((s) =>
+          s.includes("--- Agent Profile: mock-once-specialist ---"),
+        )
+        expect(profile2, "second call for same sessionID must NOT re-emit agent profile").toBeUndefined()
+      } finally {
+        if (fs.existsSync(mockAgentPath)) {
+          fs.rmSync(mockAgentPath, { force: true })
+        }
+      }
+    })
+
+    it("injects specialist agent profile independently for each session — different sessionIDs get their own injection", async () => {
+      const fs = await import("node:fs")
+      const path = await import("node:path")
+
+      const projectRoot = process.cwd()
+      const agentDir = path.join(projectRoot, ".opencode", "agents")
+      const mockAgentPath = path.join(agentDir, "mock-isolated-specialist.md")
+
+      fs.mkdirSync(agentDir, { recursive: true })
+      const mockContent = [
+        "---",
+        "name: mock-isolated-specialist",
+        "description: Mock Isolated Specialist",
+        "---",
+        "Body for session-isolation test.",
+      ].join("\n")
+      fs.writeFileSync(mockAgentPath, mockContent, "utf-8")
+
+      try {
+        const sessionA = "ses_isolated_session_a"
+        const sessionB = "ses_isolated_session_b"
+        const deps: Partial<HookDependencies> = {
+          lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+          getIntake: () => undefined,
+          getBehavioralProfile: () => undefined,
+          projectDirectory: projectRoot,
+          stateManager: taskState,
+        }
+
+        taskState.setDelegationMeta(sessionA, {
+          agent: "mock-isolated-specialist",
+          rootID: sessionA,
+          depth: 1,
+          queueKey: "q_isolated_a",
+        })
+        taskState.setDelegationMeta(sessionB, {
+          agent: "mock-isolated-specialist",
+          rootID: sessionB,
+          depth: 1,
+          queueKey: "q_isolated_b",
+        })
+
+        const hooks = createCoreHooks(deps as HookDependencies)
+
+        // Call for sessionA
+        const outA: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID: sessionA }, outA)
+        const sysA = outA.system as string[]
+        const profileA = sysA.find((s) =>
+          s.includes("--- Agent Profile: mock-isolated-specialist ---"),
+        )
+        expect(profileA, "sessionA first call must inject profile").toBeDefined()
+
+        // Call for sessionB — different session, MUST still inject
+        const outB: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID: sessionB }, outB)
+        const sysB = outB.system as string[]
+        const profileB = sysB.find((s) =>
+          s.includes("--- Agent Profile: mock-isolated-specialist ---"),
+        )
+        expect(profileB, "sessionB first call must inject profile independently").toBeDefined()
+
+        // Third call: sessionA again — MUST be skipped (already injected once)
+        const outA2: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID: sessionA }, outA2)
+        const sysA2 = outA2.system as string[]
+        const profileA2 = sysA2.find((s) =>
+          s.includes("--- Agent Profile: mock-isolated-specialist ---"),
+        )
+        expect(
+          profileA2,
+          "sessionA second call must NOT re-emit agent profile",
+        ).toBeUndefined()
+      } finally {
+        if (fs.existsSync(mockAgentPath)) {
+          fs.rmSync(mockAgentPath, { force: true })
+        }
+      }
+    })
   })
 })

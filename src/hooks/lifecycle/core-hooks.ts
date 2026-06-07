@@ -31,6 +31,21 @@ type SystemInput = { sessionID?: string }
 type SystemOutput = { system?: unknown }
 type ShellEnvOutput = { env?: unknown }
 
+/**
+ * Tracks which sessions have already received the specialist agent profile
+ * injection in their `system.transform` pipeline.
+ *
+ * The agent body is ~11.5k tokens. Without this guard, every turn of a
+ * multi-turn session would re-emit the full body into `output.system`,
+ * producing 591,600 tokens of redundant payload in a 50-turn session.
+ *
+ * Module-level Set: small blast radius (one file, one symbol), and the
+ * process lifetime bounds its size. The trade-off is that a single
+ * opencode process accumulates entries monotonically; for a long-running
+ * daemon this is bounded by active session count.
+ */
+const agentProfileInjectedSessions = new Set<string>()
+
 export interface CoreHooks {
   event: (input: EventInput) => Promise<void>
   "system.transform": (input: SystemInput, output: SystemOutput) => Promise<void>
@@ -160,34 +175,41 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
     }
 
     // Dynamic, non-prunable specialist agent profile injection
-    const agentName = resolveAgentNameForSession(sessionID, deps)
-    if (agentName) {
-      const projectRoot = deps.projectDirectory ?? process.cwd()
-      const pathsToTry = [
-        join(projectRoot, ".opencode", "agents", `${agentName}.md`),
-        join(projectRoot, ".opencode", "agent", `${agentName}.md`),
-      ]
-      let agentFile: string | undefined = undefined
-      for (const p of pathsToTry) {
-        if (existsSync(p)) {
-          agentFile = p
-          break
-        }
-      }
-
-      if (agentFile) {
-        try {
-          const loadResult = await loadPrimitive(agentFile, "agent")
-          if (loadResult.success && "body" in loadResult.data) {
-            const agentBody = loadResult.data.body
-            if (agentBody && agentBody.trim().length > 0) {
-              ;(output.system as string[]).push(
-                `--- Agent Profile: ${agentName} ---\n${agentBody}`,
-              )
-            }
+    // Guard: inject the agent body ONCE per session. Repeated calls to
+    // system.transform for the same sessionID skip this block after the
+    // first successful injection to avoid emitting the full body on every
+    // turn of a multi-turn session (~11.5k tokens/turn of bloat).
+    if (!agentProfileInjectedSessions.has(sessionID)) {
+      const agentName = resolveAgentNameForSession(sessionID, deps)
+      if (agentName) {
+        const projectRoot = deps.projectDirectory ?? process.cwd()
+        const pathsToTry = [
+          join(projectRoot, ".opencode", "agents", `${agentName}.md`),
+          join(projectRoot, ".opencode", "agent", `${agentName}.md`),
+        ]
+        let agentFile: string | undefined = undefined
+        for (const p of pathsToTry) {
+          if (existsSync(p)) {
+            agentFile = p
+            break
           }
-        } catch {
-          // Best-effort
+        }
+
+        if (agentFile) {
+          try {
+            const loadResult = await loadPrimitive(agentFile, "agent")
+            if (loadResult.success && "body" in loadResult.data) {
+              const agentBody = loadResult.data.body
+              if (agentBody && agentBody.trim().length > 0) {
+                agentProfileInjectedSessions.add(sessionID)
+                ;(output.system as string[]).push(
+                  `--- Agent Profile: ${agentName} ---\n${agentBody}`,
+                )
+              }
+            }
+          } catch {
+            // Best-effort
+          }
         }
       }
     }
