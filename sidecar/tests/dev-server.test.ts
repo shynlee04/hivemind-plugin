@@ -69,7 +69,7 @@ describe("sidecar dev-server flaws (Next.js 16)", () => {
       expect(src).toMatch(/<PageWrapper\b/)
     })
 
-    it("page-wrapper.tsx exists as the new Client Component boundary", () => {
+    it("page-wrapper.tsx exists as the Client Component boundary (flaw 1 v2: no next/dynamic bailout)", () => {
       const wrapperPath = p("src/app/page-wrapper.tsx")
       expect(existsSync(wrapperPath)).toBe(true)
       const src = read("src/app/page-wrapper.tsx")
@@ -77,11 +77,20 @@ describe("sidecar dev-server flaws (Next.js 16)", () => {
       const stripped = src.replace(/^(\s*\/\*[\s\S]*?\*\/\s*)+/, "")
       const firstLine = stripped.split("\n", 1)[0]?.trim() ?? ""
       expect(firstLine).toBe('"use client"')
-      // Must contain the ssr: false directive that was forbidden in page.tsx
-      expect(src).toMatch(/ssr:\s*false/)
-      // Must import dynamic from next/dynamic
-      expect(src).toMatch(/import\s+dynamic\s+from\s+["']next\/dynamic["']/)
-      // Must wrap the dynamic import in a named export
+      // Flaw 1 v2 — `next/dynamic({ ssr: false })` triggers
+      // `BAILOUT_TO_CLIENT_SIDE_RENDERING` errors in Next.js 16 when
+      // used inside a Client Component, even with the directive moved
+      // out of the Server Component. The original fix (move dynamic
+      // import from page.tsx to page-wrapper.tsx) prevented the
+      // 500-in-3.7s crash but did not prevent the SSR bailout error
+      // that the browser then shows as a fatal UI failure.
+      // Since `dashboard-shell.tsx` is already a Client Component,
+      // the dynamic import is redundant — use a direct import instead.
+      expect(src).not.toMatch(/ssr:\s*false/)
+      expect(src).not.toMatch(/import\s+dynamic\s+from\s+["']next\/dynamic["']/)
+      // Must import the DashboardShell directly
+      expect(src).toMatch(/from\s+["']@components\/dashboard-shell["']/)
+      // Must wrap the import in a named export
       expect(src).toMatch(/export\s+function\s+PageWrapper\b/)
     })
   })

@@ -1,60 +1,30 @@
 /**
- * Sidecar root page client wrapper — owns the `ssr: false` dynamic import.
+ * Sidecar root page client wrapper — owns the Client Component boundary.
  *
- * In Next.js 16, `next/dynamic({ ssr: false })` is forbidden in Server
- * Components. We therefore place the dynamic import inside this Client
- * Component (`"use client"`), and the Server Component
- * `src/app/page.tsx` simply renders `<PageWrapper />`.
+ * History: this file previously used the `next/dynamic` deferred-ssr
+ * import pattern to gate the DashboardShell until after hydration. In
+ * Next.js 16 that pattern triggers `BAILOUT_TO_CLIENT_SIDE_RENDERING`
+ * errors when SSR encounters a dynamic import inside a Client
+ * Component wrapper, even when the wrapper itself is `"use client"`.
+ * The browser surfaces the bailout as a fatal UI failure, blocking
+ * all subsequent logic in `dashboard-shell.tsx` (including
+ * `initPluginClient()` and the `?panel=` router hydration).
  *
- * The DashboardShell itself is still client-only (json-render's Renderer
- * and the SSE hook depend on browser APIs that are unavailable during
- * server-side rendering), so the `ssr: false` directive is preserved.
+ * The dynamic import is redundant: `dashboard-shell.tsx` is already a
+ * Client Component (`"use client"` at the top), so it never runs on
+ * the server in the first place. A direct import preserves the
+ * Client Component boundary without triggering the bailout.
+ *
+ * Regression guard: `sidecar/tests/dev-server.test.ts`
+ * "page-wrapper.tsx exists as the Client Component boundary
+ *  (flaw 1 v2: no next/dynamic bailout)".
  *
  * @module sidecar/app/page-wrapper
  */
 
 "use client"
 
-import dynamic from "next/dynamic"
-
-/**
- * Dashboard shell loaded as a client-only dynamic import. The 4-cell
- * loading skeleton is shown until the chunk is ready.
- */
-const DashboardShell = dynamic(
-  () =>
-    import("@components/dashboard-shell").then((mod) => ({
-      default: mod.DashboardShell,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gridTemplateRows: "1fr 1fr",
-          height: "100vh",
-          gap: "1px",
-          background: "#e2e8f0",
-          padding: "16px",
-        }}
-      >
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            data-skeleton="true"
-            style={{
-              background: "#ffffff",
-              borderRadius: "8px",
-              animation: "pulse 2s ease-in-out infinite",
-            }}
-          />
-        ))}
-      </div>
-    ),
-  },
-)
+import { DashboardShell } from "@components/dashboard-shell"
 
 /**
  * Client Component boundary for the root page. Server Component
