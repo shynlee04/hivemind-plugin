@@ -67,6 +67,7 @@ export function sendJson(
 ): void {
   const h: Record<string, string> = {
     "Content-Type": "application/json",
+    "access-control-allow-origin": "*",
     ...headers,
   }
   res.writeHead(status, h)
@@ -161,6 +162,21 @@ export class SidecarRouter {
     const qmIdx = url.indexOf("?")
     const path = qmIdx === -1 ? url : url.slice(0, qmIdx)
     const qs = qmIdx === -1 ? "" : url.slice(qmIdx + 1)
+
+    // CORS preflight: respond 204 for OPTIONS on any path (browser needs
+    // Access-Control-Allow-Origin on the preflight before it sends the
+    // actual GET/POST). Permissive by design — this is a local dev tool.
+    if (method === "OPTIONS") {
+      const corsPreflightHeaders: Record<string, string> = {
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, OPTIONS",
+        "access-control-allow-headers": "Content-Type, Authorization",
+        "access-control-max-age": "86400",
+      }
+      res.writeHead(204, corsPreflightHeaders)
+      res.end()
+      return
+    }
 
     // Collect all routes that match the path (for method check)
     const pathRoutes = this.#routes.filter((r) => path.match(r.pattern))

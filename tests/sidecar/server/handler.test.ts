@@ -65,6 +65,21 @@ function post(server: ServerHandle, path: string, body: unknown, headers: Record
   })
 }
 
+function optionsRequest(server: ServerHandle, path: string): Promise<{ status: number; body: string; headers: http.IncomingHttpHeaders }> {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      { host: "127.0.0.1", port: server.port, path, method: "OPTIONS" },
+      (res) => {
+        const chunks: Buffer[] = []
+        res.on("data", (c) => chunks.push(c))
+        res.on("end", () => resolve({ status: res.statusCode ?? 0, body: Buffer.concat(chunks).toString("utf8"), headers: res.headers }))
+      },
+    )
+    req.on("error", reject)
+    req.end()
+  })
+}
+
 describe("SC-02 handler — 17-endpoint smoke matrix", () => {
   let server: ServerHandle
   let registry: SidecarDependencyRegistry
@@ -223,5 +238,20 @@ describe("SC-02 handler — 17-endpoint smoke matrix", () => {
   it("POST /api/state/snapshot → 405 (state is GET-only)", async () => {
     const res = await post(server, "/api/state/snapshot", {})
     expect(res.status).toBe(405)
+  })
+
+  // --- CORS headers ---
+  it("GET response includes access-control-allow-origin: *", async () => {
+    const res = await get(server, "/api/state/sessions")
+    expect(res.status).toBe(200)
+    expect(res.headers["access-control-allow-origin"]).toBe("*")
+  })
+
+  it("OPTIONS preflight returns 204 with CORS headers", async () => {
+    const res = await optionsRequest(server, "/api/state/sessions")
+    expect(res.status).toBe(204)
+    expect(res.headers["access-control-allow-origin"]).toBe("*")
+    expect(res.headers["access-control-allow-methods"]).toMatch(/GET|POST|OPTIONS/)
+    expect(res.headers["access-control-allow-headers"]).toMatch(/Content-Type/)
   })
 })
