@@ -19,9 +19,20 @@ import { readFile } from "node:fs/promises"
 
 // Mock node:fs/promises BEFORE the route import so the route's readFile
 // is the mocked vi.fn() at module load time.
-vi.mock("node:fs/promises", () => ({
-  readFile: vi.fn(),
-}))
+//
+// Vitest 4 (ESM-strict) requires both `default` and named exports on mocks
+// of built-in node modules. We provide `readFile` as a named export (for
+// `import { readFile } from "node:fs/promises"`) AND as a `default`
+// property (to satisfy vitest's default-export check). The default object
+// is never used by our route, but its presence prevents the module-load
+// error.
+vi.mock("node:fs/promises", () => {
+  const readFile = vi.fn()
+  return {
+    default: { readFile },
+    readFile,
+  }
+})
 
 // Route file does not exist yet (RED state). Import will fail at module
 // load time, surfacing 3 failing tests in the report.
