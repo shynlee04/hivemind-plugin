@@ -80,6 +80,31 @@ const PRIMITIVE_MAP = {
 
 
 
+// ── Root-level files (outside .opencode/) ──────────────────────────────────────
+
+/**
+ * Sync a root-level file from assets/ to project root.
+ * Backs up existing file before overwriting.
+ */
+function syncRootFile(sourcePath, destPath) {
+  if (!existsSync(sourcePath)) {
+    console.log(`${logPrefix} Skipping root file sync: source ${sourcePath} does not exist`);
+    return;
+  }
+  if (existsSync(destPath)) {
+    const srcContent = readFileSync(sourcePath, "utf-8");
+    const dstContent = readFileSync(destPath, "utf-8");
+    if (srcContent === dstContent) {
+      console.log(`${logPrefix} Root file ${destPath} is up-to-date`);
+      return;
+    }
+    backupFile(destPath);
+    console.log(`${logPrefix} Root file ${destPath} backed up and overwritten`);
+  }
+  cpSync(sourcePath, destPath, { recursive: true });
+  console.log(`${logPrefix} Root file ${destPath} synced`);
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
@@ -209,6 +234,11 @@ try {
   }
 
 
+
+  // ── Root-level opencode.json sync ──────────────────────────────────────
+  const shippedSource = join(assetsRoot, ".opencode", "opencode.json");
+  const destConfig = join(stage.consumerRoot, "opencode.json");
+  syncRootFile(shippedSource, destConfig);
 
   // Write version stamp after successful install-mode sync
   if (installMode) {

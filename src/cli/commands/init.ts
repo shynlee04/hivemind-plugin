@@ -1,6 +1,6 @@
 import type * as ClackPrompts from "@clack/prompts"
 import { dirname, join, resolve } from "node:path"
-import { existsSync, mkdirSync, readdirSync, renameSync } from "node:fs"
+import { existsSync, mkdirSync, readdirSync, renameSync, copyFileSync } from "node:fs"
 
 import { bootstrapInit } from "../../tools/config/bootstrap-init.js"
 import type { BootstrapConfigInput, BootstrapInitResult, BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"
@@ -122,6 +122,16 @@ async function handleInit(ctx: CliCommandContext, deps: InitCommandDeps): Promis
       const openCodeRoot = resolveOpenCodeRoot(projectRoot)
       const assetsRoot = resolvePackageAssetsRoot()
       deps.backupPrimitives(openCodeRoot, assetsRoot)
+    }
+
+    // Backup user's opencode.json before writing shipped template.
+    // The shipped version contains only structural fields ($schema, lsp, plugin, etc.);
+    // user-provider configs (API keys, models) are client-side.
+    const userConfigPath = join(projectRoot, "opencode.json")
+    const backupConfigPath = join(projectRoot, "opencode.json.backup")
+    if (!nonInteractive && existsSync(userConfigPath) && !existsSync(backupConfigPath)) {
+      copyFileSync(userConfigPath, backupConfigPath)
+      // Don't delete user's config — backup coexists
     }
   }
 
