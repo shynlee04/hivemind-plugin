@@ -1,6 +1,6 @@
 import type * as ClackPrompts from "@clack/prompts"
-import { dirname, resolve } from "node:path"
-import { existsSync } from "node:fs"
+import { dirname, join, resolve } from "node:path"
+import { existsSync, mkdirSync, readdirSync, renameSync } from "node:fs"
 
 import { bootstrapInit } from "../../tools/config/bootstrap-init.js"
 import type { BootstrapConfigInput, BootstrapInitResult, BootstrapScope } from "../../schema-kernel/bootstrap.schema.js"
@@ -11,6 +11,8 @@ import type {
   DelegationSystems,
 } from "../../schema-kernel/hivemind-configs.schema.js"
 import type { CliCommand, CliCommandContext, CliRouterResult } from "../router.js"
+import { resolvePackageAssetsRoot } from "../../features/bootstrap/structure.js"
+import { resolveOpenCodeRoot } from "../../features/bootstrap/structure.js"
 
 type PromptModule = typeof ClackPrompts
 
@@ -111,6 +113,14 @@ async function handleInit(ctx: CliCommandContext, deps: InitCommandDeps): Promis
     }
     scope = promptResult.scope
     config = promptResult.config
+
+    // Backup existing primitives before install (interactive project scope only).
+    // This prevents overwriting user-customized shipped primitives.
+    if (scope === "project") {
+      const targetRoot = resolveOpenCodeRoot(projectRoot)
+      const assetsRoot = resolvePackageAssetsRoot()
+      backupExistingPrimitives(targetRoot, assetsRoot)
+    }
   }
 
   try {
@@ -279,6 +289,88 @@ async function promptForInitConfig(
       user_expert_level: result.expertLevel as UserExpertLevel,
       delegation_systems: normalizedDelegationSystems,
     },
+  }
+}
+
+/**
+ * Primitive types that the package ships in `assets/` and may need
+ * backing up during an interactive reinstall.
+ */
+const BACKUP_PRIMITIVE_TYPES = [
+  "agents",
+  "commands",
+  "skills",
+  "references",
+  "templates",
+  "agent-instructions",
+  "workflows",
+] as const
+
+/**
+ * Back up existing user primitives before a fresh install.
+ *
+ * For each primitive type, checks which files in the target directory
+ * have the same name as shipped files in `assets/{type}/`. Those matching
+ * files are moved to a `.backup/` subdirectory with a timestamp suffix.
+ * User-only files (not in assets) are left untouched.
+ *
+ * @param targetRoot - The OpenCode root directory (e.g. `{projectRoot}/.opencode`).
+ * @param assetsRoot - The package's `assets/` directory path.
+ */
+export function backupExistingPrimitives(targetRoot: string, assetsRoot: string): void {
+  const timestamp = Date.now().toString(36)
+
+  for (const type of BACKUP_PRIMITIVE_TYPES) {
+    const sourceDir = join(assetsRoot, type)
+    const targetDir = join(targetRoot, type)
+
+    if (!existsSync(sourceDir) || !existsSync(targetDir)) {
+      continue
+    }
+
+    let sourceFiles: string[]
+    try {
+      sourceFiles = readdirSync(sourceDir)
+    } catch {
+      continue
+    }
+
+    let targetFiles: string[]
+    try {
+      targetFiles = readdirSync(targetDir)
+    } catch {
+      continue
+    }
+
+    const sourceNames = new Set(sourceFiles)
+    const backupDir = join(targetDir, ".backup")
+    let backupCreated = false
+
+    for (const fileName of targetFiles) {
+      // Skip .backup directory and hidden files
+      if (fileName === ".backup" || fileName.startsWith(".")) {
+        continue
+      }
+
+      // Only back up files that we ship (same name in assets)
+      if (!sourceNames.has(fileName)) {
+        continue
+      }
+
+      const targetPath = join(targetDir, fileName)
+      if (!existsSync(targetPath)) {
+        continue
+      }
+
+      if (!backupCreated) {
+        mkdirSync(backupDir, { recursive: true })
+        backupCreated = true
+      }
+
+      const backupPath = join(backupDir, `${fileName}.${timestamp}`)
+      renameSync(targetPath, backupPath)
+      console.log(`[Harness] Backed up: ${type}/${fileName} → .backup/${fileName}.${timestamp}`)
+    }
   }
 }
 
