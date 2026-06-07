@@ -167,7 +167,7 @@ This reference documents the complete routing map used by `hm-l2-skill-router` t
 | "entry gate" | "Check the entry gate before starting the phase" |
 | "loop guard" | "Add loop guards to prevent infinite iteration" |
 
-**Bundle:** hm-l2-phase-loop → hm-loop-completion
+**Bundle:** hm-loop-phase → hm-loop-completion
 
 **Dependency chain:** phase-loop (manage iterations) → completion-looping (verify each iteration)
 
@@ -200,7 +200,7 @@ When a task spans 2 domains:
 | Implementation + Debug | Debug (2) | hm-l2-phase-execution (1) | 3 |
 | Quality + Review | Review (2) | hm-l2-test-driven-execution (1) | 3 |
 | Debug + Review | Debug (2) | hm-l2-production-readiness (1) | 3 |
-| Guardrail + Implementation | Implementation (2) | hm-l2-phase-loop (1) | 3 |
+| Guardrail + Implementation | Implementation (2) | hm-loop-phase (1) | 3 |
 
 **Rule:** Primary domain gets its full bundle. Secondary domain contributes 1 skill. Total ≤ 3.
 

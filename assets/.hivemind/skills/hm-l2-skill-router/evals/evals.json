@@ -33,7 +33,7 @@
       "scenario_type": "positive",
       "assertions": [
         "Classifies as Guardrail domain (signals: 'phase loop', 'entry gates', 'exit criteria')",
-        "Routes to hm-l2-phase-loop + hm-loop-completion",
+        "Routes to hm-loop-phase + hm-loop-completion",
         "Provides loading order: phase-loop first, then completion-looping"
       ]
     },

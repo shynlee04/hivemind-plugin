@@ -11,7 +11,7 @@ skills:
   - hm-l3-subagent-delegation-patterns
   - hm-loop-completion
   - hm-l2-phase-execution
-  - hm-l2-phase-loop
+  - hm-loop-phase
   - gate-lifecycle-integration
   - gate-spec-compliance
 instruction:

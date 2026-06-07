@@ -51,7 +51,7 @@ This is a **dispatch router** — it bridges the gap between task classification
 | Analysis | hm-l2-requirements-analysis + hm-l2-product-validation | 2 |
 | Brainstorm | hm-l2-brainstorm + hm-l2-user-intent-interactive-loop | 2 |
 | Ecosystem | hm-l2-feature-ecosystem | 1 |
-| Guardrail | hm-l2-phase-loop + hm-loop-completion | 2 |
+| Guardrail | hm-loop-phase + hm-loop-completion | 2 |
 | Research Chain | hm-l3-research-chain + hm-l3-synthesis | 2 |
 
 ## On Load
@@ -190,10 +190,10 @@ This is a **dispatch router** — it bridges the gap between task classification
 
 | Priority | Skill | Role |
 |----------|-------|------|
-| 1 | `hm-l2-phase-loop` | Iterative phase execution with entry/exit criteria |
+| 1 | `hm-loop-phase` | Iterative phase execution with entry/exit criteria |
 | 2 | `hm-loop-completion` | Guardrail against premature completion claims |
 
-**Loading order:** hm-l2-phase-loop (manage iterations) → hm-loop-completion (verify completion)
+**Loading order:** hm-loop-phase (manage iterations) → hm-loop-completion (verify completion)
 
 ### Domain 12: Research Chain
 

@@ -8,7 +8,7 @@ lineage: hm
 domain: Execution
 skills:
   - hm-l2-phase-execution
-  - hm-l2-phase-loop
+  - hm-loop-phase
 instruction:
   - AGENTS.md
 permission:

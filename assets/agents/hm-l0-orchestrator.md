@@ -123,7 +123,7 @@ skills:
   - hm-coord-loop
   - hm-l2-user-intent-interactive-loop
   - hm-loop-completion
-  - hm-l2-phase-loop
+  - hm-loop-phase
   - gate-lifecycle-integration
   - gate-spec-compliance
   - gate-evidence-truth
@@ -233,7 +233,7 @@ Every domain maps to its specialist agents. L0 must know the pool to route any r
 | **Implementation** | hm-l2-executor, hm-l2-technician, hm-l2-writer, hm-l2-build, hm-l2-integrator, hm-l2-connector, hm-l2-refactor, hm-l2-optimizer, hm-l2-cross-cutting-change | implementation wave |
 | **Quality** | hm-l2-reviewer, hm-l2-validator, hm-l2-critic, hm-l2-auditor, hm-l2-assessor, hm-l2-spec-verifier, gate-lifecycle-integration, gate-spec-compliance, gate-evidence-truth | quality wave |
 | **Documentation** | hm-l2-writer, hm-l2-synthesizer, hm-l2-meta-synthesis | docs wave |
-| **Phase Lifecycle** | hm-l2-persistor, hm-l2-finisher, hm-l2-guardian, hm-l2-operator, hm-l2-phase-guardian, hm-l2-phase-loop, hm-l2-phase-execution | lifecycle wave |
+| **Phase Lifecycle** | hm-l2-persistor, hm-l2-finisher, hm-l2-guardian, hm-l2-operator, hm-l2-phase-guardian, hm-loop-phase, hm-l2-phase-execution | lifecycle wave |
 | **Audit** | hm-l2-auditor, hm-l2-reviewer, hm-l2-validator, hm-l2-critic | audit wave |
 | **UI** | hm-l2-architect (UI focus) | ui wave |
 | **Intelligence** | hm-l2-scout, hm-l2-strategist, hm-l2-curator, hm-l3-detective, hm-l3-tech-stack-ingest | intel wave |

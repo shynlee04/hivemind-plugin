@@ -55,7 +55,7 @@ This is the canonical reference for which skills each agent domain loads. These 
 |-----------|----------------|---------------|
 | Orchestrator (L0) | hm-l2-gate-orchestrator, hm-coord-loop | 1. gate-orchestrator, 2. coordinating-loop |
 | Coordinator (L1) | hm-coord-loop, hm-l2-subagent-delegation-patterns, hm-l2-gate-orchestrator | 1. coordinating-loop, 2. delegation-patterns, 3. gate-orchestrator |
-| Guardian | hm-l2-phase-loop, hm-loop-completion | 1. phase-loop, 2. completion-looping |
+| Guardian | hm-loop-phase, hm-loop-completion | 1. phase-loop, 2. completion-looping |
 | Finisher | hm-loop-completion, hm-l2-test-driven-execution | 1. completion-looping, 2. test-driven-execution |
 | Persistor | hm-l2-planning-persistence, hm-loop-completion | 1. planning-persistence, 2. completion-looping |
 

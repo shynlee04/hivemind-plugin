@@ -9,7 +9,7 @@ lineage: hm
 domain: Phase Lifecycle
 skills:
   - hm-coord-loop
-  - hm-l2-phase-loop
+  - hm-loop-phase
   - hm-l2-user-intent-interactive-loop
   - hm-loop-completion
   - gate-lifecycle-integration

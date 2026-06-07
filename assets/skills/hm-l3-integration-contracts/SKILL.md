@@ -111,7 +111,7 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 |-----------|----------------|
 | Orchestrator (L0) | hm-l2-gate-orchestrator, hm-coord-loop |
 | Coordinator (L1) | hm-coord-loop, hm-l2-subagent-delegation-patterns, hm-l2-gate-orchestrator |
-| Guardian | hm-l2-phase-loop, hm-loop-completion |
+| Guardian | hm-loop-phase, hm-loop-completion |
 | Finisher | hm-loop-completion, hm-l2-test-driven-execution |
 | Persistor | hm-l2-planning-persistence, hm-loop-completion |
 
@@ -181,7 +181,7 @@ Each skill declares which agent types consume it. This enables orphan detection 
 | hm-l2-phase-execution | hm-l2-executor, hm-l2-integrator, hm-l2-operator | hm STRICT |
 | hm-l2-cross-cutting-change | hm-l2-executor, hm-l2-builder, hm-l2-connector, hm-l2-architect | hm STRICT |
 | hm-l2-test-driven-execution | hm-l2-executor, hm-l2-builder, hm-l2-validator, hm-l2-reviewer, hm-l2-critic, hm-l2-finisher | hm STRICT |
-| hm-l2-phase-loop | hm-l2-guardian | hm STRICT |
+| hm-loop-phase | hm-l2-guardian | hm STRICT |
 | hm-loop-completion | hm-l2-debugger, hm-l2-finisher, hm-l2-guardian, hm-l2-investigator, hm-l2-operator, hm-l2-persistor | hm STRICT |
 | hm-coord-loop | hm-l0-orchestrator, hm-l1-coordinator, hm-l2-connector | hm STRICT |
 | hm-l2-production-readiness | hm-l2-integrator, hm-l2-reviewer, hm-l2-assessor, hm-l2-curator | hm STRICT |
