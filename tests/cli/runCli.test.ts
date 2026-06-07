@@ -15,13 +15,18 @@ function mkIO(): { io: CliIO; stdout: string[]; stderr: string[] } {
 
 describe("cli/index — PH40-01 entrypoint integration", () => {
   describe("buildHarnessCli", () => {
-    it("registers a built-in help command (with --help / -h aliases)", () => {
+    it("registers 5 commands: help/init/doctor/recover/version (all except init are deprecation shims)", () => {
       const router = buildHarnessCli()
       const names = router.commands().map((c) => c.name)
-      expect(names).toContain("help")
       expect(names).toEqual(["help", "init", "doctor", "recover", "version"])
+      // help has --help / -h aliases for backward compatibility
       const help = router.commands().find((c) => c.name === "help")
-      expect(help?.aliases).toEqual(expect.arrayContaining(["--help", "-h"]))
+      expect(help?.aliases).toEqual(["--help", "-h"])
+      // All non-init commands have deprecation summaries
+      for (const name of ["help", "doctor", "recover", "version"]) {
+        const cmd = router.commands().find((c) => c.name === name)
+        expect(cmd?.summary).toContain("deprecated")
+      }
     })
 
     it("appends extra commands after the built-ins, registration order preserved", () => {
@@ -46,18 +51,13 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
   })
 
   describe("runCli", () => {
-    it("runs `help` and writes the listing to stdout with exit 0", async () => {
+    it("runs `help` and writes a deprecation message to stderr with exit 0", async () => {
       const { io, stdout, stderr } = mkIO()
       const exit = await runCli(["help"], io)
       expect(exit).toBe(0)
-      const out = stdout.join("")
-      expect(out).toContain("help")
-      expect(out).toContain("init")
-      expect(out).toContain("doctor")
-      expect(out).toContain("recover")
-      expect(out).toContain("version")
-      expect(out).toContain("Available commands:")
-      expect(stderr.join("")).toBe("")
+      expect(stdout.join("")).toBe("")
+      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("/hm-help")
     })
 
     it("writes a [Harness] error to stderr and exits 64 for unknown commands", async () => {
@@ -77,20 +77,38 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
       expect(stderr.join("")).toContain("[Harness]")
     })
 
-    it("dispatches to the --help alias the same as the help command", async () => {
-      const { io, stdout } = mkIO()
+    it("dispatches --help to the help deprecation shim", async () => {
+      const { io, stdout, stderr } = mkIO()
       const exit = await runCli(["--help"], io)
       expect(exit).toBe(0)
-      expect(stdout.join("")).toContain("Available commands:")
+      expect(stdout.join("")).toBe("")
+      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("/hm-help")
     })
 
-    it("routes doctor --help through the default built-in registry", async () => {
-      // Full npm test is executed as BOOT-02 phase verification; keep this focused on default registration reachability.
+    it("routes doctor through its deprecation shim", async () => {
       const { io, stdout, stderr } = mkIO()
-      const exit = await runCli(["doctor", "--help"], io)
+      const exit = await runCli(["doctor"], io)
       expect(exit).toBe(0)
-      expect(stdout.join("")).toContain("Usage: hivemind doctor")
-      expect(stderr.join("")).toBe("")
+      expect(stdout.join("")).toBe("")
+      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("/hm-doctor")
+    })
+
+    it("routes recover through its deprecation shim", async () => {
+      const { io, stderr } = mkIO()
+      const exit = await runCli(["recover"], io)
+      expect(exit).toBe(0)
+      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("/hm-recover")
+    })
+
+    it("routes version through its deprecation shim", async () => {
+      const { io, stderr } = mkIO()
+      const exit = await runCli(["version"], io)
+      expect(exit).toBe(0)
+      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("/hm-about")
     })
   })
 })
