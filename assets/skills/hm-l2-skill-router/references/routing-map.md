@@ -79,9 +79,9 @@ This reference documents the complete routing map used by `hm-l2-skill-router` t
 | "investigate issue" | "Investigate the memory leak in the event handler" |
 | "root cause" | "Find the root cause of the intermittent timeout" |
 
-**Bundle:** hm-l2-debug → hm-l2-completion-looping
+**Bundle:** hm-l2-debug → hm-loop-completion
 
-**Dependency chain:** hm-l2-debug (investigate + fix) → hm-l2-completion-looping (verify fix actually works)
+**Dependency chain:** hm-l2-debug (investigate + fix) → hm-loop-completion (verify fix actually works)
 
 ### Review
 
@@ -167,7 +167,7 @@ This reference documents the complete routing map used by `hm-l2-skill-router` t
 | "entry gate" | "Check the entry gate before starting the phase" |
 | "loop guard" | "Add loop guards to prevent infinite iteration" |
 
-**Bundle:** hm-l2-phase-loop → hm-l2-completion-looping
+**Bundle:** hm-l2-phase-loop → hm-loop-completion
 
 **Dependency chain:** phase-loop (manage iterations) → completion-looping (verify each iteration)
 

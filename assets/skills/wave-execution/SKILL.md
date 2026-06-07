@@ -271,4 +271,4 @@ On recovery (interrupted mid-wave or between waves):
 | `hm-l2-phase-execution` | Wave execution refines phase execution's wave model with conflict detection and max-iteration guards | Wave execution is the ENGINE for how to build and run waves. Phase execution is the ORCHESTRATOR that applies waves to phases. |
 | `hm-coord-loop` | Coordinates multi-agent dispatch — owns the delegation mechanics | Wave execution uses dispatch mechanics but does not teach coordination patterns. |
 | `hm-l2-phase-loop` | Owns iterative loop semantics and entry/exit criteria | Wave execution's iteration guard is a safety mechanism, not a loop control pattern. |
-| `hm-l2-completion-looping` | Owns completion detection and guardrail loops | Wave execution enforces wave-level completion but does not own loop-back semantics. |
+| `hm-loop-completion` | Owns completion detection and guardrail loops | Wave execution enforces wave-level completion but does not own loop-back semantics. |

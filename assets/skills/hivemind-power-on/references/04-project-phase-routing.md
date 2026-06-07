@@ -19,14 +19,14 @@ Map task domains to specialist L2 agents. coordinators use these tables to dispa
 | **Implementation / Execution** | hm-l2-executor | hm-l2-phase-execution + hm-l2-cross-cutting-change |
 | **Testing / TDD** | hm-l2-spec-verifier | hm-l2-test-driven-execution |
 | **Code Review** | hm-l2-reviewer | gate-lifecycle-integration → gate-spec-compliance → gate-evidence-truth |
-| **Debugging** | hm-l2-debugger | hm-l2-debug + hm-l2-completion-looping |
+| **Debugging** | hm-l2-debugger | hm-l2-debug + hm-loop-completion |
 | **Refactoring** | hm-l2-optimizer | hm-l2-refactor + hm-l2-cross-cutting-change |
 | **Production Readiness** | hm-l2-curator | hm-l2-production-readiness + gate-evidence-truth |
 | **Deep Research** | hm-l2-researcher | hm-l3-detective → hm-l3-deep-research → hm-l3-synthesis |
 | **Tech Stack Validation** | hm-l2-technician | hm-l3-tech-context-compliance + hm-l3-tech-stack-ingest |
 | **Documentation** | hm-l2-writer | hm-l2-spec-driven-authoring |
 | **Risk Assessment** | hm-l2-risk-assessor | hm-l2-product-validation |
-| **Completion / Finishing** | hm-l2-finisher | hm-l2-completion-looping |
+| **Completion / Finishing** | hm-l2-finisher | hm-loop-completion |
 | **Context Mapping** | hm-l2-context-mapper | hm-l3-detective |
 | **Integration / E2E** | hm-l2-integrator | hm-l2-production-readiness + gate-evidence-truth |
 

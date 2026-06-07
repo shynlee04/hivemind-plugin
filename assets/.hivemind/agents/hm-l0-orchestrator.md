@@ -11,7 +11,7 @@ skills:
   - hm-coord-loop
   - hm-l2-phase-loop
   - hm-l2-user-intent-interactive-loop
-  - hm-l2-completion-looping
+  - hm-loop-completion
   - gate-lifecycle-integration
   - gate-spec-compliance
   - gate-evidence-truth

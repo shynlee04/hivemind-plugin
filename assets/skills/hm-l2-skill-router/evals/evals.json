@@ -9,7 +9,7 @@
       "scenario_type": "positive",
       "assertions": [
         "Classifies as Debug domain (primary signal: 'failing')",
-        "Routes to hm-l2-debug + hm-l2-completion-looping",
+        "Routes to hm-l2-debug + hm-loop-completion",
         "Notes research overlap: hm-l3-detective available if investigation needed",
         "Stays within 3-skill limit"
       ]
@@ -33,7 +33,7 @@
       "scenario_type": "positive",
       "assertions": [
         "Classifies as Guardrail domain (signals: 'phase loop', 'entry gates', 'exit criteria')",
-        "Routes to hm-l2-phase-loop + hm-l2-completion-looping",
+        "Routes to hm-l2-phase-loop + hm-loop-completion",
         "Provides loading order: phase-loop first, then completion-looping"
       ]
     },

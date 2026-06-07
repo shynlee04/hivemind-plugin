@@ -7,7 +7,7 @@ depth: L2
 lineage: hm
 domain: Execution
 skills:
-  - hm-l2-completion-looping
+  - hm-loop-completion
   - hm-l2-test-driven-execution
 instruction:
   - AGENTS.md

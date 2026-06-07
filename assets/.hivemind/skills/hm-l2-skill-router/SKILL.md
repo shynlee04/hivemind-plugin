@@ -45,13 +45,13 @@ This is a **dispatch router** — it bridges the gap between task classification
 | Planning | hm-l2-spec-driven-authoring + hm-l2-planning-persistence | 2 |
 | Implementation | hm-l2-phase-execution + hm-l2-cross-cutting-change | 2 |
 | Quality | hm-l2-test-driven-execution + hm-l2-gate-orchestrator | 2 |
-| Debug | hm-l2-debug + hm-l2-completion-looping | 2 |
+| Debug | hm-l2-debug + hm-loop-completion | 2 |
 | Review | hm-l2-production-readiness + gate-evidence-truth | 2 |
 | Architecture | hm-l2-refactor + hm-l2-roadmap-maintainability | 2 |
 | Analysis | hm-l2-requirements-analysis + hm-l2-product-validation | 2 |
 | Brainstorm | hm-l2-brainstorm + hm-l2-user-intent-interactive-loop | 2 |
 | Ecosystem | hm-l2-feature-ecosystem | 1 |
-| Guardrail | hm-l2-phase-loop + hm-l2-completion-looping | 2 |
+| Guardrail | hm-l2-phase-loop + hm-loop-completion | 2 |
 | Research Chain | hm-l3-research-chain + hm-l3-synthesis | 2 |
 
 ## On Load
@@ -126,9 +126,9 @@ This is a **dispatch router** — it bridges the gap between task classification
 | Priority | Skill | Role |
 |----------|-------|------|
 | 1 | `hm-l2-debug` | Systematic debugging with persistent state |
-| 2 | `hm-l2-completion-looping` | Guardrail against premature completion claims |
+| 2 | `hm-loop-completion` | Guardrail against premature completion claims |
 
-**Loading order:** hm-l2-debug (investigate) → hm-l2-completion-looping (verify fix)
+**Loading order:** hm-l2-debug (investigate) → hm-loop-completion (verify fix)
 
 ### Domain 6: Review
 
@@ -191,9 +191,9 @@ This is a **dispatch router** — it bridges the gap between task classification
 | Priority | Skill | Role |
 |----------|-------|------|
 | 1 | `hm-l2-phase-loop` | Iterative phase execution with entry/exit criteria |
-| 2 | `hm-l2-completion-looping` | Guardrail against premature completion claims |
+| 2 | `hm-loop-completion` | Guardrail against premature completion claims |
 
-**Loading order:** hm-l2-phase-loop (manage iterations) → hm-l2-completion-looping (verify completion)
+**Loading order:** hm-l2-phase-loop (manage iterations) → hm-loop-completion (verify completion)
 
 ### Domain 12: Research Chain
 

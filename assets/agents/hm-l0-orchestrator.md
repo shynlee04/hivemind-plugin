@@ -122,7 +122,7 @@ skills:
   - hm-l2-skill-router
   - hm-coord-loop
   - hm-l2-user-intent-interactive-loop
-  - hm-l2-completion-looping
+  - hm-loop-completion
   - hm-l2-phase-loop
   - gate-lifecycle-integration
   - gate-spec-compliance
@@ -709,7 +709,7 @@ This agent delegates ALL work. It never implements, reads code for comprehension
 **Load on demand — replace lower-priority loaded skill (keep total ≤3):**
 - hm-coord-loop — when coordinating multi-wave delegation (REPLACE lineage-router)
 - hm-l2-user-intent-interactive-loop — when user intent is ambiguous (REPLACE lineage-router)
-- hm-l2-completion-looping — when guarding against premature completion claims
+- hm-loop-completion — when guarding against premature completion claims
 - gate-lifecycle-integration — quality gate triad step 1
 - gate-spec-compliance — quality gate triad step 2
 - gate-evidence-truth — quality gate triad step 3

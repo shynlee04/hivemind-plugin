@@ -71,7 +71,7 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 |-----------|----------------|
 | Researcher | hm-l3-detective, hm-l3-deep-research, hm-l3-tech-stack-ingest, hm-l3-research-chain |
 | Scout | hm-l3-detective, hm-l3-tech-stack-ingest |
-| Investigator | hm-l3-detective, hm-l2-debug, hm-l2-completion-looping |
+| Investigator | hm-l3-detective, hm-l2-debug, hm-loop-completion |
 | Synthesizer | hm-l3-synthesis, hm-l3-deep-research |
 | Technician | hm-l3-tech-stack-ingest, hm-tech-context-compliance |
 
@@ -89,7 +89,7 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 | Executor | hm-l2-phase-execution, hm-l2-cross-cutting-change, hm-l2-test-driven-execution |
 | Builder (hm) | hm-l2-test-driven-execution, hm-l2-cross-cutting-change |
 | Integrator | hm-l2-phase-execution, hm-l2-production-readiness |
-| Operator | hm-l2-phase-execution, hm-l2-completion-looping |
+| Operator | hm-l2-phase-execution, hm-loop-completion |
 
 ### Quality Domain
 | Agent Type | Required Skills |
@@ -103,17 +103,17 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 ### Debug Domain
 | Agent Type | Required Skills |
 |-----------|----------------|
-| Debugger | hm-l2-debug, hm-l2-completion-looping |
-| Investigator | hm-l3-detective, hm-l2-debug, hm-l2-completion-looping |
+| Debugger | hm-l2-debug, hm-loop-completion |
+| Investigator | hm-l3-detective, hm-l2-debug, hm-loop-completion |
 
 ### Orchestration Domain
 | Agent Type | Required Skills |
 |-----------|----------------|
 | Orchestrator (L0) | hm-l2-gate-orchestrator, hm-coord-loop |
 | Coordinator (L1) | hm-coord-loop, hm-l2-subagent-delegation-patterns, hm-l2-gate-orchestrator |
-| Guardian | hm-l2-phase-loop, hm-l2-completion-looping |
-| Finisher | hm-l2-completion-looping, hm-l2-test-driven-execution |
-| Persistor | hm-l2-planning-persistence, hm-l2-completion-looping |
+| Guardian | hm-l2-phase-loop, hm-loop-completion |
+| Finisher | hm-loop-completion, hm-l2-test-driven-execution |
+| Persistor | hm-l2-planning-persistence, hm-loop-completion |
 
 ### Meta-Builder Domain (hf-* lineage)
 | Agent Type | Required Skills |
@@ -182,7 +182,7 @@ Each skill declares which agent types consume it. This enables orphan detection 
 | hm-l2-cross-cutting-change | hm-l2-executor, hm-l2-builder, hm-l2-connector, hm-l2-architect | hm STRICT |
 | hm-l2-test-driven-execution | hm-l2-executor, hm-l2-builder, hm-l2-validator, hm-l2-reviewer, hm-l2-critic, hm-l2-finisher | hm STRICT |
 | hm-l2-phase-loop | hm-l2-guardian | hm STRICT |
-| hm-l2-completion-looping | hm-l2-debugger, hm-l2-finisher, hm-l2-guardian, hm-l2-investigator, hm-l2-operator, hm-l2-persistor | hm STRICT |
+| hm-loop-completion | hm-l2-debugger, hm-l2-finisher, hm-l2-guardian, hm-l2-investigator, hm-l2-operator, hm-l2-persistor | hm STRICT |
 | hm-coord-loop | hm-l0-orchestrator, hm-l1-coordinator, hm-l2-connector | hm STRICT |
 | hm-l2-production-readiness | hm-l2-integrator, hm-l2-reviewer, hm-l2-assessor, hm-l2-curator | hm STRICT |
 

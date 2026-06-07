@@ -8,7 +8,7 @@ lineage: hm
 domain: Phase Lifecycle
 skills:
   - hm-l2-planning-persistence
-  - hm-l2-completion-looping
+  - hm-loop-completion
 instruction:
   - AGENTS.md
 permission:

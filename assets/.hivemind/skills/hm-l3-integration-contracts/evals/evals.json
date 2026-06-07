@@ -43,7 +43,7 @@
       "must_include": ["FLEXIBLE", "synthesis", "artifact compression"]
     },
     {
-      "prompt": "Which agent domains load hm-l2-completion-looping?",
+      "prompt": "Which agent domains load hm-loop-completion?",
       "expected_load": true,
       "must_include": ["debug", "orchestration"]
     },

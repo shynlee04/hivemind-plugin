@@ -123,7 +123,7 @@ skills:
   - hm-l2-lineage-router
   - hm-coord-loop
   - hm-l2-user-intent-interactive-loop
-  - hm-l2-completion-looping
+  - hm-loop-completion
   - gate-lifecycle-integration
   - gate-spec-compliance
   - gate-evidence-truth
@@ -550,7 +550,7 @@ This agent delegates ALL work. It never implements, reads code for comprehension
 **Load on demand (by workflow phase):**
 - hm-coord-loop — multi-step delegation waves
 - hm-l2-user-intent-interactive-loop — ambiguous user intent
-- hm-l2-completion-looping — premature completion guard
+- hm-loop-completion — premature completion guard
 - hm-l3-detective — codebase investigation (FLEXIBLE, must justify)
 - hm-l3-deep-research — library analysis (FLEXIBLE, must justify)
 - gate-lifecycle-integration — quality gate triad step 1

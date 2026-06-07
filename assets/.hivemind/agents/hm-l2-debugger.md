@@ -8,7 +8,7 @@ lineage: hm
 domain: Debug
 skills:
   - hm-l2-debug
-  - hm-l2-completion-looping
+  - hm-loop-completion
 instruction:
   - AGENTS.md
 permission:

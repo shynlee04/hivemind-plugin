@@ -44,7 +44,7 @@ Which agents consume each skill, across all 5 lineages. This is the canonical re
 | hm-l2-cross-cutting-change | hm-l2-executor, hm-l2-builder, hm-l2-connector, hm-l2-architect | hm-* | STRICT |
 | hm-l2-test-driven-execution | hm-l2-executor, hm-l2-builder, hm-l2-validator, hm-l2-reviewer, hm-l2-critic, hm-l2-finisher | hm-* | STRICT |
 | hm-l2-phase-loop | hm-l2-guardian | hm-* | STRICT |
-| hm-l2-completion-looping | hm-l2-debugger, hm-l2-finisher, hm-l2-guardian, hm-l2-investigator, hm-l2-operator, hm-l2-persistor | hm-* | STRICT |
+| hm-loop-completion | hm-l2-debugger, hm-l2-finisher, hm-l2-guardian, hm-l2-investigator, hm-l2-operator, hm-l2-persistor | hm-* | STRICT |
 | hm-coord-loop | hm-l0-orchestrator, hm-coordinator, hm-l2-connector | hm-* | STRICT |
 | hm-l2-production-readiness | hm-l2-integrator, hm-l2-reviewer, hm-l2-assessor, hm-l2-curator | hm-* | STRICT |
 

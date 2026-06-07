@@ -9,7 +9,7 @@ domain: Phase Lifecycle
 skills:
   - hm-coord-loop
   - hm-l3-subagent-delegation-patterns
-  - hm-l2-completion-looping
+  - hm-loop-completion
   - hm-l2-phase-execution
   - hm-l2-phase-loop
   - gate-lifecycle-integration

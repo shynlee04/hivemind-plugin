@@ -10,7 +10,7 @@ description: >
   "iteration guard", "checkpoint recovery in loop", "rerun with fixes",
   "fix → verify → repeat", "loop until criteria met", "iteration budget".
   NOT for wave-based parallel execution (wave-execution), guardrail against
-  premature completion claims (completion-detection), or multi-agent
+  premature completion claims (hm-loop-completion), or multi-agent
   coordination patterns (hm-coord-loop).
 metadata:
   layer: "2"
@@ -51,7 +51,7 @@ The danger is not looping itself — it is looping without discipline. A loop wi
 **Do NOT load this skill for:**
 - Simple sequential steps (just run them in order — no loop needed)
 - Parallel wave execution (use wave-execution)
-- Guardrailing against premature "done" claims (use completion-detection)
+- Guardrailing against premature "done" claims (use hm-loop-completion)
 - Coordinating multiple agents in a workflow (use hm-coord-loop)
 - Unbounded exploration or open-ended research (no exit criteria = no loop)
 
@@ -66,7 +66,7 @@ Before applying iterative looping, classify the work:
 | Code review: submit → review → revise → re-submit | **Yes** — refinement loop | Submit → Review → Revise → ... → Exit on APPROVE |
 | Quality gate: run → fix → re-run → ... | **Yes** — iteration until PASS | Test → Fix → Test → ... → Exit on all PASS |
 | Implementation plan: write once, done | **No** — linear, no iteration | N/A |
-| Open-ended research: no fixed stopping condition | **No** — no exit criteria = infinite loop | Use completion-detection or time-budget instead |
+| Open-ended research: no fixed stopping condition | **No** — no exit criteria = infinite loop | Use hm-loop-completion or time-budget instead |
 | Multi-wave parallel execution | **No** — wave-execution handles this | Use wave-execution |
 
 ### Quick Decision Flowchart
@@ -74,7 +74,7 @@ Before applying iterative looping, classify the work:
 ```
 Is there a clear stopping condition?
   ├─ NO → This is not an iterative loop problem.
-  │        Use time-budgeting or completion-detection instead.
+  │        Use time-budgeting or hm-loop-completion instead.
   └─ YES →
          Is this a one-shot task (do once, verify, done)?
          ├─ YES → No loop needed. Execute sequentially.
@@ -264,7 +264,7 @@ Copy this template before entering any iterative loop:
 
 ## Cross-References
 
-- **completion-detection** — Guard against false completion claims inside loop iterations. Verify each iteration's output before deciding to continue or exit.
+- **hm-loop-completion** — Guard against false completion claims inside loop iterations. Verify each iteration's output before deciding to continue or exit.
 - **wave-execution** — For parallel task groups with dependency ordering. Iterative loops are sequential; wave execution is parallel-wave-gated.
 - **hm-coord-loop** — For coordinating agents across tasks. Iterative loops focus on a single repeatable process within a task.
 - **phase-execution** — For running phase plans with checkpoint recovery. Iterative loops are a tool you may use inside a phase.

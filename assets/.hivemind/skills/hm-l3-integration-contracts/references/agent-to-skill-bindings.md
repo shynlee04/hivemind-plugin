@@ -10,7 +10,7 @@ This is the canonical reference for which skills each agent domain loads. These 
 |-----------|----------------|---------------|
 | Researcher | hm-l3-detective, hm-l3-deep-research, hm-l3-tech-stack-ingest, hm-l3-research-chain | 1. detective, 2. tech-stack-ingest, 3. deep-research, 4. research-chain |
 | Scout | hm-l3-detective, hm-l3-tech-stack-ingest | 1. detective, 2. tech-stack-ingest |
-| Investigator | hm-l3-detective, hm-l2-debug, hm-l2-completion-looping | 1. detective, 2. debug, 3. completion-looping |
+| Investigator | hm-l3-detective, hm-l2-debug, hm-loop-completion | 1. detective, 2. debug, 3. completion-looping |
 | Synthesizer | hm-l3-synthesis, hm-l3-deep-research | 1. synthesis, 2. deep-research |
 | Technician | hm-l3-tech-stack-ingest, hm-tech-context-compliance | 1. tech-stack-ingest, 2. tech-context-compliance |
 
@@ -30,7 +30,7 @@ This is the canonical reference for which skills each agent domain loads. These 
 | Executor | hm-l2-phase-execution, hm-l2-cross-cutting-change, hm-l2-test-driven-execution | 1. phase-execution, 2. test-driven-execution, 3. cross-cutting-change |
 | Builder (hm) | hm-l2-test-driven-execution, hm-l2-cross-cutting-change | 1. test-driven-execution, 2. cross-cutting-change |
 | Integrator | hm-l2-phase-execution, hm-l2-production-readiness | 1. phase-execution, 2. production-readiness |
-| Operator | hm-l2-phase-execution, hm-l2-completion-looping | 1. phase-execution, 2. completion-looping |
+| Operator | hm-l2-phase-execution, hm-loop-completion | 1. phase-execution, 2. completion-looping |
 
 ## Quality Domain
 
@@ -46,8 +46,8 @@ This is the canonical reference for which skills each agent domain loads. These 
 
 | Agent Type | Required Skills | Load Priority |
 |-----------|----------------|---------------|
-| Debugger | hm-l2-debug, hm-l2-completion-looping | 1. debug, 2. completion-looping |
-| Investigator | hm-l3-detective, hm-l2-debug, hm-l2-completion-looping | 1. detective, 2. debug, 3. completion-looping |
+| Debugger | hm-l2-debug, hm-loop-completion | 1. debug, 2. completion-looping |
+| Investigator | hm-l3-detective, hm-l2-debug, hm-loop-completion | 1. detective, 2. debug, 3. completion-looping |
 
 ## Orchestration Domain
 
@@ -55,9 +55,9 @@ This is the canonical reference for which skills each agent domain loads. These 
 |-----------|----------------|---------------|
 | Orchestrator (L0) | hm-l2-gate-orchestrator, hm-coord-loop | 1. gate-orchestrator, 2. coordinating-loop |
 | Coordinator (L1) | hm-coord-loop, hm-l2-subagent-delegation-patterns, hm-l2-gate-orchestrator | 1. coordinating-loop, 2. delegation-patterns, 3. gate-orchestrator |
-| Guardian | hm-l2-phase-loop, hm-l2-completion-looping | 1. phase-loop, 2. completion-looping |
-| Finisher | hm-l2-completion-looping, hm-l2-test-driven-execution | 1. completion-looping, 2. test-driven-execution |
-| Persistor | hm-l2-planning-persistence, hm-l2-completion-looping | 1. planning-persistence, 2. completion-looping |
+| Guardian | hm-l2-phase-loop, hm-loop-completion | 1. phase-loop, 2. completion-looping |
+| Finisher | hm-loop-completion, hm-l2-test-driven-execution | 1. completion-looping, 2. test-driven-execution |
+| Persistor | hm-l2-planning-persistence, hm-loop-completion | 1. planning-persistence, 2. completion-looping |
 
 ## Meta-Builder Domain (hf-* lineage)
 
