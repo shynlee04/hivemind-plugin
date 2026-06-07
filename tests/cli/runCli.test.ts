@@ -1,4 +1,4 @@
-import { buildHarnessCli, runCli, type CliIO } from "../../src/cli/index.js"
+import { buildHivemindCli, runCli, type CliIO } from "../../src/cli/index.js"
 
 function mkIO(): { io: CliIO; stdout: string[]; stderr: string[] } {
   const stdout: string[] = []
@@ -14,9 +14,9 @@ function mkIO(): { io: CliIO; stdout: string[]; stderr: string[] } {
 }
 
 describe("cli/index — PH40-01 entrypoint integration", () => {
-  describe("buildHarnessCli", () => {
+  describe("buildHivemindCli", () => {
     it("registers 5 commands: help/init/doctor/recover/version (all except init are deprecation shims)", () => {
-      const router = buildHarnessCli()
+      const router = buildHivemindCli()
       const names = router.commands().map((c) => c.name)
       expect(names).toEqual(["help", "init", "doctor", "recover", "version"])
       // help has --help / -h aliases for backward compatibility
@@ -30,7 +30,7 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
     })
 
     it("appends extra commands after the built-ins, registration order preserved", () => {
-      const router = buildHarnessCli([
+      const router = buildHivemindCli([
         { name: "ping", summary: "ping", handler: async () => ({ exitCode: 0 }) },
       ])
       const names = router.commands().map((c) => c.name)
@@ -39,7 +39,7 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
 
     it("rejects an extra command whose name collides with a built-in", () => {
       expect(() =>
-        buildHarnessCli([
+        buildHivemindCli([
           {
             name: "help",
             summary: "duplicate",

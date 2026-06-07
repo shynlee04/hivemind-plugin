@@ -76,7 +76,7 @@ function createDeprecationShim(
  * Exposed as a separate factory so tests can introspect the registry
  * without going through `runCli`.
  */
-export function buildHarnessCli(
+export function buildHivemindCli(
   extraCommands: readonly CliCommand[] = [],
 ): CliRouter {
   const help = createDeprecationShim("help", "/hm-help", ["--help", "-h"])
@@ -102,7 +102,7 @@ export async function runCli(
   argv: readonly string[],
   io: CliIO = defaultIO,
 ): Promise<number> {
-  const router = buildHarnessCli()
+  const router = buildHivemindCli()
   const result: CliRouterResult = await router.run(argv)
 
   if (result.output !== undefined && result.output.length > 0) {
