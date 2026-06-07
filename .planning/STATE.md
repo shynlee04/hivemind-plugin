@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planned
-last_updated: "2026-06-07T23:30:00.000Z"
+status: C4 dispatching
+last_updated: "2026-06-07T22:20:00.000Z"
 progress:
-   total_phases: 68
-   completed_phases: 36
-   total_plans: 147
-   completed_plans: 107
-   percent: 52
+  total_phases: 65
+  completed_phases: 18
+  total_plans: 155
+  completed_plans: 107
+  percent: 28
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -119,7 +119,13 @@ progress:
 **Phase 36:** 📋 PENDING — Integration Verification (Group 4, was P35).
 **Phase 37:** 📋 deferred — Fix sync-oss.yml workflow (was P36).
 **Phase 38:** 📋 deferred — Package .opencode/ primitives for distribution (was P37).
-**C1 (Concerns):** ✅ COMPLETE — Critical Type Safety & Error Handling (P0). Fixed: duplicate PermissionAction union, ClientLike=any erasure, 6 silent .catch(() => {}) with structured logging. 5 files, 90 insertions.
+**C1 (Concerns):** ✅ COMPLETE — Governance, CLI & Config Cluster. P45 (CLI redesign): interactive init wizard + 4 deprecation shims (6 commits). P60 ("Harness"→"Hivemind" rename): 535 replacements across 164 files (9 commits). Earlier: duplicate PermissionAction union, ClientLike=any erasure, 6 silent .catch(() => {}) with structured logging. Total: 15 commits.
+**C1.1 (Remaining Gaps):** ✅ COMPLETE — 5 hygiene gaps resolved (2026-06-07): GateDecisionType `ask`→`DENY` rename, PressureDecision schema boundary re-export, logCacheStats DEBUG guard, console.error→warn in evaluator, test file relocation. 5 atomic commits. Typecheck clean, 0 regressions.
+
+**Deferred from C1:**
+
+- `workflow-persistence.ts` cross-cluster dep (C1→C3, import `getContinuityStoragePath`) → **DEFERRED to C4 (Hooks)** — consumer `tool-after-workflow.ts` owns the workflow persistence call. Tracked at HP-11 (C1/C4 governance hook boundary).
+
 **C2 (Concerns):** ✅ COMPLETE — Type Safety & Security Hardening (P1). Fixed: 12 `as any` casts with typed interfaces, ESLint suppressions removed, session ID validation, sidecar async read, env scope hardening. 6 files, 145 insertions.
 **C3 (Concerns):** ✅ COMPLETE — Module Decomposition & Promise Patterns (P1). Extracted ChildBackfiller (149 LOC) from event-capture.ts (1098→1007 LOC). ChildWriter queue verified safe for parallel children (per-child key). 2 files, 161 insertions.
 **C4 (Concerns):** ✅ COMPLETE — Performance Optimization (P2, Depends: C3). 3 plans: pruneStaleTimers test scaffold (TDD RED), timer leak fix + JSON.parse cache, execFile async + async FS bootstrap-init. 6 atomic commits. 2620/2622 tests pass, typecheck clean.
@@ -127,6 +133,7 @@ progress:
 **C6 (Concerns):** 🟡 PLANNED NOT EXECUTED — Architectural Refactoring (P2, Depends: C5). 5 plans designed (handler extraction, DelegationStatusReader, plugin.ts domain-grouping) but 0 SUMMARY files exist — plans were never executed. EventCapture remains at 1050+ LOC. **ABSORBED BY PHASE 39 PLANS 02-03.**
 **C7 (Concerns):** 🟡 PARTIAL — Test Coverage (P2, Depends: C6). Plan 01 executed (190+ hook tests, 10+ integration tests, coverage thresholds). Remaining REQs deferred to Phase 39 Plan 04.
 **C8 (Concerns):** ✅ COMPLETE — Foundation Cluster (P2, Depends: C7). All 7 C8 scope requirements executed:
+
 - REQ-33: plugin.ts split (1,076→482 LOC, commit `59720958`) ✅
 - REQ-SR01: session-api.ts leaf-only (414 LOC, commit `4f6bbbf5`) ✅
 - REQ-35: Option C dead-type inline (8 commits `37ce4658..c70fc444`, types.ts 422→348 LOC, −17.5%) ✅ — 2 BLOCKED types (CapturedResult, DelegationPacket) deferred to C9
@@ -135,6 +142,7 @@ progress:
 - REQ-SR02: journal bridge at src/shared/journal-bridge.ts (85 LOC, commit `db2324da`) ✅
 - REQ-SR00/SR-04: archive no-op marks (commit `6161ac76`) ✅
 - Test fix: commands-errors assertions (commit `7b0bdaee`) ✅
+
 Archive: `.planning/phases/AUDIT-04-legacy-phase-audit/C8-foundation/C8-ARCHIVE-2026-06-07.md`.
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
@@ -699,7 +707,7 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 
 ## Session Continuity
 
-Last session: 2026-06-06T13:07Z (resumed)
+Last session: 2026-06-07T15:21:13.018Z
 Stopped at: AUDIT-03 paused at C3/10 — C1+C2+C3 deep inventories done
-Resume file: .planning/phases/AUDIT-03-deep-inventories/.continue-here.md
+Resume file: None
 Status: C4 dispatching
