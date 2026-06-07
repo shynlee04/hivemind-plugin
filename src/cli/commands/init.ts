@@ -16,7 +16,7 @@ type PromptModule = typeof ClackPrompts
 
 type InitCommandDeps = {
   bootstrapInitFn: typeof bootstrapInit
-  loadPrompts: () => Promise<PromptModule>
+  loadPrompts: () => Promise<PromptModule | null>
   resolveProjectRoot: (explicitRoot?: string) => string | null
   isInteractiveTerminal: () => boolean
 }
@@ -24,15 +24,24 @@ type InitCommandDeps = {
 /**
  * Lazy-load `@clack/prompts` for the interactive init wizard.
  *
- * @returns The loaded prompts module.
+ * Falls back gracefully if the module is unavailable (e.g., during CI or
+ * partial install), logging a warning and enabling non-interactive mode.
+ *
+ * @returns The loaded prompts module, or null if unavailable.
  *
  * @example
  * ```ts
  * const prompts = await loadClackPrompts()
+ * if (prompts === null) { /* fallback *\/ }
  * ```
  */
-export async function loadClackPrompts(): Promise<PromptModule> {
-  return import("@clack/prompts")
+export async function loadClackPrompts(): Promise<PromptModule | null> {
+  try {
+    return await import("@clack/prompts")
+  } catch {
+    console.warn("[Harness] @clack/prompts unavailable; falling back to non-interactive mode.")
+    return null
+  }
 }
 
 /**
@@ -124,119 +133,150 @@ async function handleInit(ctx: CliCommandContext, deps: InitCommandDeps): Promis
   }
 }
 
+/**
+ * LANGUAGE_OPTIONS array for language select prompts.
+ * Maps language codes to human-readable labels with native names.
+ */
+const LANGUAGE_OPTIONS = [
+  { value: "en" as const, label: "English", hint: "Default" },
+  { value: "vi" as const, label: "Tiếng Việt", hint: "Vietnamese" },
+  { value: "zh" as const, label: "中文", hint: "Chinese" },
+  { value: "fr" as const, label: "Français", hint: "French" },
+  { value: "ja" as const, label: "日本語", hint: "Japanese" },
+  { value: "ko" as const, label: "한국어", hint: "Korean" },
+  { value: "de" as const, label: "Deutsch", hint: "German" },
+  { value: "es" as const, label: "Español", hint: "Spanish" },
+  { value: "th" as const, label: "ไทย", hint: "Thai" },
+  { value: "id" as const, label: "Bahasa Indonesia", hint: "Indonesian" },
+]
+
+/**
+ * EXPERTISE_OPTIONS array for the expertise level select prompt.
+ */
+const EXPERTISE_OPTIONS = [
+  { value: "clumsy-vibecoder" as const, label: "clumsy-vibecoder", hint: "new to coding, needs handholding" },
+  { value: "beginner-friendly" as const, label: "beginner-friendly", hint: "some experience" },
+  { value: "intermediate-high-level" as const, label: "intermediate-high-level", hint: "comfortable with tech (default)" },
+  { value: "architecture-driven" as const, label: "architecture-driven", hint: "wants architecture-level decisions" },
+  { value: "absolute-expert" as const, label: "absolute-expert", hint: "expert, minimal explanation" },
+]
+
+/**
+ * Delegation mode option labels with descriptive hints.
+ */
+const DELEGATION_OPTIONS = [
+  { value: "native_task" as const, label: "native_task", hint: "basic subagent dispatch (default)" },
+  { value: "delegate_task" as const, label: "delegate_task", hint: "advanced delegation with context stacking (default)" },
+  { value: "background_delegation" as const, label: "background_delegation", hint: "fire-and-forget background tasks" },
+]
+
+/**
+ * SCOPE_OPTIONS array for the scope select prompt.
+ */
+const SCOPE_OPTIONS = [
+  { value: "project" as const, label: "project", hint: "install in current project (default)" },
+  { value: "global" as const, label: "global", hint: "use OpenCode global config directory" },
+]
+
 async function promptForInitConfig(
-  loadPrompts: () => Promise<PromptModule>,
+  loadPrompts: () => Promise<PromptModule | null>,
 ): Promise<{ scope: BootstrapScope; config: BootstrapConfigInput } | null> {
   const prompts = await loadPrompts()
+  if (prompts === null) {
+    // Dynamic import failed — treat as cancellation (non-interactive fallback
+    // is handled upstream in handleInit).
+    return null
+  }
+
   prompts.intro("hivemind init")
 
-  const conversationLanguage = await prompts.select({
-    message: "Conversation language",
-    initialValue: "en",
-    options: [
-      { value: "en", label: "English" },
-      { value: "vi", label: "Vietnamese" },
-      { value: "zh", label: "Chinese" },
-      { value: "ja", label: "Japanese" },
-    ],
-  })
-  if (prompts.isCancel(conversationLanguage)) {
-    prompts.cancel("Initialization cancelled.")
+  const result = await prompts.group(
+    {
+      conversationLanguage: () => prompts.select({
+        message: "Conversation language — language the AI uses to talk to you",
+        initialValue: "en",
+        options: LANGUAGE_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: `${opt.label} (${opt.value})`,
+          hint: opt.hint,
+        })),
+      }),
+      artifactLanguage: () => prompts.select({
+        message: "Documents and artifacts language — language for written artifacts",
+        initialValue: "en",
+        options: LANGUAGE_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: `${opt.label} (${opt.value})`,
+          hint: opt.hint,
+        })),
+      }),
+      mode: () => prompts.select({
+        message: "Working mode — operational style",
+        initialValue: "expert-advisor",
+        options: [
+          { value: "expert-advisor", label: "expert-advisor", hint: "guided, structured default" },
+          { value: "hivemind-powered", label: "hivemind-powered", hint: "full multi-agent orchestration" },
+          { value: "free-style", label: "free-style", hint: "minimal guardrails, maximum freedom" },
+        ],
+      }),
+      expertLevel: () => prompts.select({
+        message: "User expertise level — experience with development",
+        initialValue: "intermediate-high-level",
+        options: EXPERTISE_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: opt.label,
+          hint: opt.hint,
+        })),
+      }),
+      delegationSystems: () => prompts.multiselect({
+        message: "Delegation systems — subagent dispatch methods",
+        required: false,
+        initialValues: ["native_task", "delegate_task"],
+        options: DELEGATION_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: opt.label,
+          hint: opt.hint,
+        })),
+      }),
+      scope: () => prompts.select({
+        message: "Primitive install scope — where primitives are installed",
+        initialValue: "project",
+        options: SCOPE_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: opt.label,
+          hint: opt.hint,
+        })),
+      }),
+    },
+    {
+      onCancel: () => {
+        prompts.cancel("Initialization cancelled.")
+        return
+      },
+    },
+  )
+
+  if (prompts.isCancel(result)) {
     return null
   }
 
-  const artifactLanguage = await prompts.select({
-    message: "Documents and artifacts language",
-    initialValue: "en",
-    options: [
-      { value: "en", label: "English" },
-      { value: "vi", label: "Vietnamese" },
-      { value: "zh", label: "Chinese" },
-      { value: "ja", label: "Japanese" },
-    ],
-  })
-  if (prompts.isCancel(artifactLanguage)) {
-    prompts.cancel("Initialization cancelled.")
-    return null
-  }
+  prompts.outro(`Using ${result.scope} primitive scope.`)
 
-  const mode = await prompts.select({
-    message: "Working mode",
-    initialValue: "expert-advisor",
-    options: [
-      { value: "expert-advisor", label: "expert-advisor", hint: "guided, structured default" },
-      { value: "hivemind-powered", label: "hivemind-powered", hint: "stricter orchestration" },
-      { value: "free-style", label: "free-style", hint: "lighter guardrails" },
-    ],
-  })
-  if (prompts.isCancel(mode)) {
-    prompts.cancel("Initialization cancelled.")
-    return null
-  }
-
-  const expertLevel = await prompts.select({
-    message: "User expertise level",
-    initialValue: "intermediate-high-level",
-    options: [
-      { value: "clumsy-vibecoder", label: "clumsy-vibecoder" },
-      { value: "beginner-friendly", label: "beginner-friendly" },
-      { value: "intermediate-high-level", label: "intermediate-high-level" },
-      { value: "architecture-driven", label: "architecture-driven" },
-      { value: "absolute-expert", label: "absolute-expert" },
-    ],
-  })
-  if (prompts.isCancel(expertLevel)) {
-    prompts.cancel("Initialization cancelled.")
-    return null
-  }
-
-  const delegationSystems = await prompts.multiselect({
-    message: "Delegation systems",
-    required: false,
-    initialValues: ["native_task", "delegate_task"],
-    options: [
-      { value: "native_task", label: "native_task" },
-      { value: "delegate_task", label: "delegate_task" },
-      { value: "background_delegation", label: "background_delegation" },
-    ],
-  })
-  if (prompts.isCancel(delegationSystems)) {
-    prompts.cancel("Initialization cancelled.")
-    return null
-  }
-
-  const scope = await prompts.select({
-    message: "Primitive install scope",
-    initialValue: "project",
-    options: [
-      { value: "project", label: "project", hint: "default" },
-      { value: "global", label: "global", hint: "use OpenCode global config" },
-    ],
-  })
-  if (prompts.isCancel(scope)) {
-    prompts.cancel("Initialization cancelled.")
-    return null
-  }
-
-  prompts.outro(`Using ${scope} primitive scope.`)
-  const selected = new Set(delegationSystems as string[])
-  const normalizedScope = scope as BootstrapScope
-  const normalizedConversationLanguage = conversationLanguage as SupportedLanguage
-  const normalizedArtifactLanguage = artifactLanguage as SupportedLanguage
-  const normalizedMode = mode as HivemindMode
-  const normalizedExpertLevel = expertLevel as UserExpertLevel
+  const selected = new Set(result.delegationSystems as string[])
+  const normalizedScope = result.scope as BootstrapScope
   const normalizedDelegationSystems: DelegationSystems = {
     native_task: selected.has("native_task"),
     delegate_task: selected.has("delegate_task"),
     background_delegation: selected.has("background_delegation"),
   }
+
   return {
     scope: normalizedScope,
     config: {
-      conversation_language: normalizedConversationLanguage,
-      documents_and_artifacts_language: normalizedArtifactLanguage,
-      mode: normalizedMode,
-      user_expert_level: normalizedExpertLevel,
+      conversation_language: result.conversationLanguage as SupportedLanguage,
+      documents_and_artifacts_language: result.artifactLanguage as SupportedLanguage,
+      mode: result.mode as HivemindMode,
+      user_expert_level: result.expertLevel as UserExpertLevel,
       delegation_systems: normalizedDelegationSystems,
     },
   }
