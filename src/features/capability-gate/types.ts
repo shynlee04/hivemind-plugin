@@ -10,7 +10,7 @@ export enum ToolCategory {
 export type ToolCapabilityRecord = {
   readonly category: ToolCategory;
   readonly description: string;
-  readonly source: "built-in" | "harness";
+  readonly source: "built-in" | "hivemind";
 };
 
 export type CapabilitySnapshot = {
