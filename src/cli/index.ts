@@ -22,11 +22,7 @@
  * ```
  */
 
-import { createHelpCommand } from "./commands/help.js"
 import { initCmd } from "./commands/init.js"
-import { doctorCmd } from "./commands/doctor.js"
-import { recoverCmd } from "./commands/recover.js"
-import { versionCmd } from "./commands/version.js"
 import { discoverCommands } from "./discovery.js"
 import { renderError } from "./renderer.js"
 import {
@@ -47,6 +43,34 @@ const defaultIO: CliIO = {
 }
 
 /**
+ * Create a deprecation shim for a CLI command that has been replaced
+ * by an OpenCode TUI slash command.
+ *
+ * The shim prints a deprecation message redirecting the user to the
+ * replacement command and exits with code 0.
+ *
+ * @param name - The CLI command name (e.g. "doctor").
+ * @param redirectCommand - The replacement slash command path (e.g. "/hm-doctor").
+ * @param aliases - Optional aliases the shim should also respond to.
+ * @returns A CliCommand implementation that always exits with code 0.
+ */
+function createDeprecationShim(
+  name: string,
+  redirectCommand: string,
+  aliases?: readonly string[],
+): CliCommand {
+  return {
+    name,
+    summary: `(deprecated) Use ${redirectCommand} instead.`,
+    aliases,
+    handler: async () => ({
+      exitCode: 0,
+      error: `[Harness] '${name}' CLI command is deprecated. Use '${redirectCommand}' in OpenCode TUI instead.`,
+    }),
+  }
+}
+
+/**
  * Build the canonical CLI router with the harness's built-in commands.
  *
  * Exposed as a separate factory so tests can introspect the registry
@@ -55,13 +79,13 @@ const defaultIO: CliIO = {
 export function buildHarnessCli(
   extraCommands: readonly CliCommand[] = [],
 ): CliRouter {
-  // `commands` is rebound after the help command is built so its closure
-  // can see itself in the listing.
-  let commands: readonly CliCommand[] = []
-  const help = createHelpCommand(() => commands)
+  const help = createDeprecationShim("help", "/hm-help", ["--help", "-h"])
+  const doctor = createDeprecationShim("doctor", "/hm-doctor")
+  const recover = createDeprecationShim("recover", "/hm-recover")
+  const version = createDeprecationShim("version", "--version or /hm-about")
 
-  commands = discoverCommands([
-    { name: "core", commands: [help, initCmd, doctorCmd, recoverCmd, versionCmd] },
+  const commands = discoverCommands([
+    { name: "core", commands: [help, initCmd, doctor, recover, version] },
     { name: "extras", commands: extraCommands },
   ])
 
