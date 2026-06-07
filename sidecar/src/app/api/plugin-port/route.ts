@@ -27,14 +27,20 @@
 
 import { NextResponse } from "next/server";
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { join, dirname } from "node:path";
 
 export const dynamic = "force-dynamic";
 
-// Path to the canonical port file relative to the sidecar process working
-// directory. The plugin server writes this file via `writeFile` at
-// `src/sidecar/server/factory.ts`. The `.hivemind/` root is a Q6-locked
-// project-level state directory (see `.planning/architecture/`).
+// Env var that explicitly pins the Hivemind project root. Honored by
+// `resolveHivemindRoot()` as a fast path before the walk-up search.
+// Useful for tests (deterministic root) and containerized deploys.
+const HIVEMIND_DIR_ENV = "HIVEMIND_DIR";
+
+// Path to the canonical port file relative to the Hivemind project root.
+// The plugin server writes this file via `writeFile` at
+// `src/sidecar/server/factory.ts:136-140`. The `.hivemind/` root is a
+// Q6-locked project-level state directory (see `.planning/architecture/`).
 const PORT_FILE_RELATIVE = ".hivemind/state/sidecar-port.json";
 
 /**
@@ -83,12 +89,56 @@ function isNodeError(err: unknown): err is NodeJS.ErrnoException {
 }
 
 /**
+ * Resolves the Hivemind project root directory at runtime.
+ *
+ * Lookup order:
+ *   1. `HIVEMIND_DIR` env var (explicit override — primarily for tests
+ *      and containerized deploys)
+ *   2. Walk up from `process.cwd()` looking for a directory containing
+ *      `.hivemind/`. This handles the dev-server case where the sidecar
+ *      runs from `sidecar/` but the project root is the parent dir.
+ *
+ * The Q6 architectural decision locks `.hivemind/` at the project root
+ * for ALL consumers (plugin server, sidecar, tests). Walking up from
+ * cwd is the canonical way to find it without hardcoding absolute paths.
+ *
+ * @returns Absolute path to the directory containing `.hivemind/`,
+ *          or `null` if neither env var nor walk-up finds it.
+ */
+function resolveHivemindRoot(): string | null {
+  const envDir = process.env[HIVEMIND_DIR_ENV];
+  if (envDir !== undefined && envDir.length > 0) return envDir;
+  let current = process.cwd();
+  while (true) {
+    if (existsSync(join(current, ".hivemind"))) return current;
+    const parent = dirname(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+}
+
+/**
  * GET handler — reads the plugin server's port file and returns the port
  * as JSON. See the module-level JSDoc for response shape and failure-mode
  * semantics.
  */
 export async function GET(): Promise<NextResponse> {
-  const portFilePath = resolve(process.cwd(), PORT_FILE_RELATIVE);
+  // Step 0: resolve the Hivemind project root. If neither env var nor
+  // walk-up finds `.hivemind/`, return 500 (the route cannot serve a
+  // meaningful port without it).
+  const hivemindRoot = resolveHivemindRoot();
+  if (hivemindRoot === null) {
+    return NextResponse.json(
+      {
+        error: "hivemind_root_not_found",
+        message:
+          `Could not locate .hivemind/ by walking up from ${process.cwd()}. ` +
+          `Set ${HIVEMIND_DIR_ENV} env var to the project root.`,
+      },
+      { status: 500 },
+    );
+  }
+  const portFilePath = join(hivemindRoot, PORT_FILE_RELATIVE);
 
   // Step 1: read the port file. ENOENT → 404 (file missing means the plugin
   // server has not yet bound a port and written the file). Any other I/O
