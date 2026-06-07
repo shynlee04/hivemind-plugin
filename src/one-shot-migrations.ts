@@ -44,7 +44,7 @@ export function migrateLegacyEventTracker(projectDirectory: string, client: Open
         body: {
           service: "migration",
           level: "info",
-          message: "[Harness] CP-ST-03: removed legacy .hivemind/event-tracker/",
+          message: "[Hivemind] CP-ST-03: removed legacy .hivemind/event-tracker/",
         },
       })
     }
@@ -53,7 +53,7 @@ export function migrateLegacyEventTracker(projectDirectory: string, client: Open
       body: {
         service: "migration",
         level: "warn",
-        message: "[Harness] CP-ST-03: legacy event-tracker migration failed",
+        message: "[Hivemind] CP-ST-03: legacy event-tracker migration failed",
         extra: { error: err instanceof Error ? err.message : String(err) },
       },
     })
@@ -97,7 +97,7 @@ export function migrateLegacyDelegationsJson(projectDirectory: string, client: O
         body: {
           service: "migration",
           level: "info",
-          message: "[Harness] P41-D: removed legacy .hivemind/state/delegations.json and session-continuity.json",
+          message: "[Hivemind] P41-D: removed legacy .hivemind/state/delegations.json and session-continuity.json",
         },
       })
     }
@@ -106,7 +106,7 @@ export function migrateLegacyDelegationsJson(projectDirectory: string, client: O
       body: {
         service: "migration",
         level: "warn",
-        message: "[Harness] P41-D: legacy file migration failed",
+        message: "[Hivemind] P41-D: legacy file migration failed",
         extra: { error: err instanceof Error ? err.message : String(err) },
       },
     })

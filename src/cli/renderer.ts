@@ -6,7 +6,7 @@
  * to write to stdout, stderr, or buffer the result.
  *
  * Four primitives:
- *   - {@link renderError} — apply the `[Harness]` prefix policy
+ *   - {@link renderError} — apply the `[Hivemind]` prefix policy
  *   - {@link renderJson}  — deterministic indented JSON
  *   - {@link renderTable} — fixed-width column table for human-readable
  *                           output, with empty-data marker
@@ -19,12 +19,12 @@
 
 import type { CliCommand } from "./router.js"
 
-const HARNESS_PREFIX = "[Harness]"
+const HARNESS_PREFIX = "[Hivemind]"
 
 /**
- * Apply the `[Harness]` prefix policy to an error message.
+ * Apply the `[Hivemind]` prefix policy to an error message.
  *
- * If the message already starts with `[Harness]` (case-sensitive,
+ * If the message already starts with `[Hivemind]` (case-sensitive,
  * matching how thrown errors are constructed throughout the codebase) it
  * is returned untouched — otherwise the prefix is prepended with a single
  * space separator.
@@ -48,7 +48,7 @@ export function renderJson(value: unknown): string {
 
 /**
  * Render a fixed-width text table. Every row must have exactly the same
- * arity as the header; otherwise a `[Harness]`-prefixed error is thrown
+ * arity as the header; otherwise a `[Hivemind]`-prefixed error is thrown
  * (catches programming bugs early).
  *
  * Columns are right-padded to the max width of any value in that column,
@@ -69,7 +69,7 @@ export function renderTable(
   for (const row of rows) {
     if (row.length !== header.length) {
       throw new Error(
-        `[Harness] CLI table row has ${row.length} columns; expected ${header.length}`,
+        `[Hivemind] CLI table row has ${row.length} columns; expected ${header.length}`,
       )
     }
   }

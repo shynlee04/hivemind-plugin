@@ -85,7 +85,7 @@ export class SessionBootstrap {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: lazy bootstrap failed for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: lazy bootstrap failed for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

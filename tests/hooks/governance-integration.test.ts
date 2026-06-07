@@ -121,7 +121,7 @@ describe("governance integration — tool-guard-hooks", () => {
       const result = mockEvaluateGovernance("delegate-task", "ses_test", govRules)
       if (result.blocked) {
         blocked = true
-        blockMessage = `[Harness] Tool execution blocked by governance: ${result.blocks.join("; ")}`
+        blockMessage = `[Hivemind] Tool execution blocked by governance: ${result.blocks.join("; ")}`
       }
     }
 

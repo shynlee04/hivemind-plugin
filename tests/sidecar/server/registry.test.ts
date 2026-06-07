@@ -33,19 +33,19 @@ describe("SidecarDependencyRegistry", () => {
   })
 
   describe("unbound getters", () => {
-    it("throws [Harness] error when accessing delegationManager before binding", () => {
+    it("throws [Hivemind] error when accessing delegationManager before binding", () => {
       expect(() => registry.delegationManager).toThrow(/\[Harness\]/)
     })
 
-    it("throws [Harness] error when accessing sessionTracker before binding", () => {
+    it("throws [Hivemind] error when accessing sessionTracker before binding", () => {
       expect(() => registry.sessionTracker).toThrow(/\[Harness\]/)
     })
 
-    it("throws [Harness] error when accessing client before binding", () => {
+    it("throws [Hivemind] error when accessing client before binding", () => {
       expect(() => registry.client).toThrow(/\[Harness\]/)
     })
 
-    it("throws [Harness] error when accessing trajectory before binding", () => {
+    it("throws [Hivemind] error when accessing trajectory before binding", () => {
       expect(() => registry.trajectory).toThrow(/\[Harness\]/)
     })
   })

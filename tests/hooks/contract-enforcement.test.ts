@@ -44,7 +44,7 @@ describe("contract enforcement hook", () => {
         { tool: "write", sessionID: "ses_1", callID: "call_1" },
         { args: { filePath: "/outside/file.ts" } },
       ),
-    ).rejects.toThrow("[Harness] contract violation: agent test-agent not allowed to modify /outside/file.ts")
+    ).rejects.toThrow("[Hivemind] contract violation: agent test-agent not allowed to modify /outside/file.ts")
   })
 
   it("allows write to file within allowedSurfaces (prefix match)", async () => {

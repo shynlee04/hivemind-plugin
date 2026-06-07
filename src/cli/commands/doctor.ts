@@ -71,12 +71,12 @@ async function handleDoctor(ctx: CliCommandContext, deps: DoctorCommandDeps): Pr
   const explicitRoot = getStringFlag(ctx.flags, "root")
   const projectRoot = deps.resolveProjectRoot(explicitRoot)
   if (projectRoot === null) {
-    return { exitCode: 64, error: "[Harness] Unable to resolve a project root from --root, package.json, or .hivemind." }
+    return { exitCode: 64, error: "[Hivemind] Unable to resolve a project root from --root, package.json, or .hivemind." }
   }
 
   const selectedCheck = getStringFlag(ctx.flags, "check")
   if (selectedCheck !== undefined && !DOCTOR_CHECKS.includes(selectedCheck as DoctorCheckName)) {
-    return { exitCode: 64, error: `[Harness] Invalid doctor check: ${selectedCheck}` }
+    return { exitCode: 64, error: `[Hivemind] Invalid doctor check: ${selectedCheck}` }
   }
 
   const scopeResult = parseScopeFlag(ctx.flags.scope)
@@ -323,7 +323,7 @@ function parseScopeFlag(rawScope: string | boolean | undefined):
   if (rawScope === "project" || rawScope === "global") {
     return { success: true, scope: rawScope }
   }
-  return { success: false, error: `[Harness] Invalid scope: ${String(rawScope)}` }
+  return { success: false, error: `[Hivemind] Invalid scope: ${String(rawScope)}` }
 }
 
 function getStringFlag(flags: Record<string, string | boolean>, key: string): string | undefined {

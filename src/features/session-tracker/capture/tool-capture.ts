@@ -117,7 +117,7 @@ export class ToolCapture {
           body: {
             service: "session-tracker",
             level: "warn",
-            message: `[Harness] Session tracker: invalid args shape for tool "${input.tool}" — skipping`,
+            message: `[Hivemind] Session tracker: invalid args shape for tool "${input.tool}" — skipping`,
           },
         })
         return
@@ -142,7 +142,7 @@ export class ToolCapture {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: tool.execute.after handler failed",
+          message: "[Hivemind] Session tracker: tool.execute.after handler failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

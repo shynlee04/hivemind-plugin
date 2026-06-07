@@ -62,7 +62,7 @@ export class WsConnectionPool {
   addClient(): string {
     if (this.#connections.size >= this.#maxClients) {
       throw new Error(
-        `[Harness] max WS connections reached (${this.#maxClients})`,
+        `[Hivemind] max WS connections reached (${this.#maxClients})`,
       )
     }
     const id = `ws-${Math.random().toString(36).slice(2, 9)}`

@@ -57,7 +57,7 @@ export class SessionCompactedHandler {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: compaction capture failed for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: compaction capture failed for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

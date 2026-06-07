@@ -231,7 +231,7 @@ export class ChildWriter {
           return
         }
         console.warn(
-          `[Harness] ChildWriter queue: write failed for "${queueKey}" (enqueued to retry queue):`,
+          `[Hivemind] ChildWriter queue: write failed for "${queueKey}" (enqueued to retry queue):`,
           err instanceof Error ? err.message : String(err),
         )
       }),

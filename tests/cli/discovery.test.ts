@@ -19,7 +19,7 @@ describe("cli/discovery — PH40-02 command discovery system", () => {
           summary: "x",
           handler: async () => ({ exitCode: 0 }),
         }),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
 
     it("rejects a command with an empty summary", () => {
@@ -29,7 +29,7 @@ describe("cli/discovery — PH40-02 command discovery system", () => {
           summary: "",
           handler: async () => ({ exitCode: 0 }),
         }),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
 
     it("rejects whitespace-only command names", () => {
@@ -39,7 +39,7 @@ describe("cli/discovery — PH40-02 command discovery system", () => {
           summary: "x",
           handler: async () => ({ exitCode: 0 }),
         }),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
 
     it("rejects command names with whitespace inside", () => {
@@ -49,7 +49,7 @@ describe("cli/discovery — PH40-02 command discovery system", () => {
           summary: "x",
           handler: async () => ({ exitCode: 0 }),
         }),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
   })
 
@@ -79,7 +79,7 @@ describe("cli/discovery — PH40-02 command discovery system", () => {
       expect(commands.map((cmd) => cmd.name)).toEqual(["alpha", "beta", "gamma"])
     })
 
-    it("deduplicates by command name and throws [Harness] when a duplicate is supplied", () => {
+    it("deduplicates by command name and throws [Hivemind] when a duplicate is supplied", () => {
       const a: CliCommand = {
         name: "ping",
         summary: "A",
@@ -96,7 +96,7 @@ describe("cli/discovery — PH40-02 command discovery system", () => {
           { name: "core", commands: [a] },
           { name: "extras", commands: [aDuplicate] },
         ]),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
 
     it("validates every command in every source (rejects malformed entries)", () => {
@@ -113,7 +113,7 @@ describe("cli/discovery — PH40-02 command discovery system", () => {
             ],
           },
         ]),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
 
     it("returns an empty array when no sources are provided", () => {

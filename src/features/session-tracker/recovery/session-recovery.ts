@@ -103,7 +103,7 @@ export class SessionRecovery {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session recovery: failed to initialize session map",
+          message: "[Hivemind] Session recovery: failed to initialize session map",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -160,7 +160,7 @@ export class SessionRecovery {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: `[Harness] Session recovery: SDK messages unavailable for "${sessionID}"`,
+              message: `[Hivemind] Session recovery: SDK messages unavailable for "${sessionID}"`,
             },
           })
         }
@@ -170,7 +170,7 @@ export class SessionRecovery {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session recovery: reconsumption failed for "${sessionID}"`,
+          message: `[Hivemind] Session recovery: reconsumption failed for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -209,7 +209,7 @@ export class SessionRecovery {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: `[Harness] Session recovery: SDK messages unavailable for "${sessionID}"`,
+              message: `[Hivemind] Session recovery: SDK messages unavailable for "${sessionID}"`,
             },
           })
         }
@@ -219,7 +219,7 @@ export class SessionRecovery {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session recovery: rebuild failed for "${sessionID}"`,
+          message: `[Hivemind] Session recovery: rebuild failed for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -294,7 +294,7 @@ export class SessionRecovery {
           body: {
             service: "session-tracker",
             level: "warn",
-            message: `[Harness] Session recovery: invalid sessionID rejected: "${sessionID}"`,
+            message: `[Hivemind] Session recovery: invalid sessionID rejected: "${sessionID}"`,
           },
         })
         return null

@@ -14,7 +14,7 @@ describe("hook CQRS boundary", () => {
 
   it("rejects durable writes from hook contexts", () => {
     expect(() => assertHookWriteBoundary({ hook: "event", operation: "durable-write" })).toThrow(
-      "[Harness] Hook event cannot perform durable-write operations.",
+      "[Hivemind] Hook event cannot perform durable-write operations.",
     )
   })
 })

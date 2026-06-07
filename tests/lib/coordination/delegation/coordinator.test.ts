@@ -228,10 +228,10 @@ describe("DelegationCoordinator", () => {
 
   it("does not create records or start monitoring when preflight rejects the request", async () => {
     const deps = createDeps()
-    deps.dispatcher.preflightCheck.mockRejectedValueOnce(new Error("[Harness] category denied"))
+    deps.dispatcher.preflightCheck.mockRejectedValueOnce(new Error("[Hivemind] category denied"))
     const coordinator = new DelegationCoordinator(deps)
 
-    await expect(coordinator.dispatch(baseDispatchParams)).rejects.toThrow("[Harness] category denied")
+    await expect(coordinator.dispatch(baseDispatchParams)).rejects.toThrow("[Hivemind] category denied")
 
     expect(deps.lifecycle.transition).not.toHaveBeenCalled()
     expect(deps.notificationRouter.register).not.toHaveBeenCalled()

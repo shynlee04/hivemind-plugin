@@ -12,7 +12,7 @@
  *  - 6 public getters: getDelegationManager | getSessionTracker |
  *    getOpenCodeClient | getTrajectory | getPressure | getConfigSubscriber
  *  - isReady(): boolean — true when the 3 core deps are wired
- *  - All setters/getters are guarded with [Harness] prefix on errors
+ *  - All setters/getters are guarded with [Hivemind] prefix on errors
  *  - Fields are private (#) so duck-typing is required for the mock
  *
  * Returns a bundle of vi.fn()-backed setters/getters plus stand-in

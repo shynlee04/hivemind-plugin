@@ -107,7 +107,7 @@ describe("phase-level trajectory operations", () => {
         phaseNumber: "25.5",
         rootSessionId: "root-1",
       }),
-    ).toThrow("[Harness]")
+    ).toThrow("[Hivemind]")
   })
 
   it("transitionTrajectory from 'planning' to 'executing' succeeds", () => {
@@ -118,7 +118,7 @@ describe("phase-level trajectory operations", () => {
 
   it("transitionTrajectory from 'planning' to 'verifying' throws (invalid)", () => {
     createPhaseTrajectory({ projectRoot: root, phaseNumber: "25.5", rootSessionId: "root-1" })
-    expect(() => transitionTrajectory(root, "traj-phase-25.5", "verifying")).toThrow("[Harness]")
+    expect(() => transitionTrajectory(root, "traj-phase-25.5", "verifying")).toThrow("[Hivemind]")
   })
 
   it("transitionTrajectory from 'completed' to 'closed' succeeds", () => {
@@ -136,7 +136,7 @@ describe("phase-level trajectory operations", () => {
     transitionTrajectory(root, "traj-phase-25.5", "verifying")
     transitionTrajectory(root, "traj-phase-25.5", "completed")
     transitionTrajectory(root, "traj-phase-25.5", "closed")
-    expect(() => transitionTrajectory(root, "traj-phase-25.5", "planning")).toThrow("[Harness]")
+    expect(() => transitionTrajectory(root, "traj-phase-25.5", "planning")).toThrow("[Hivemind]")
   })
 
   it("transitionTrajectory is idempotent — transitioning to current state is no-op", () => {
@@ -335,7 +335,7 @@ describe("trajectory store operations", () => {
   })
 
   it("closeTrajectory throws for non-existent trajectory", () => {
-    expect(() => closeTrajectory({ projectRoot: root, trajectoryId: "nonexistent" })).toThrow("[Harness]")
+    expect(() => closeTrajectory({ projectRoot: root, trajectoryId: "nonexistent" })).toThrow("[Hivemind]")
   })
 
   it("traverseTrajectory filters by rootSessionId", () => {
@@ -412,7 +412,7 @@ describe("trajectory store operations", () => {
     expect(() => attachTrajectoryEvidence({
       projectRoot: root,
       trajectoryId: "traj-new",
-    })).toThrow("[Harness] rootSessionId is required")
+    })).toThrow("[Hivemind] rootSessionId is required")
   })
 
   it("attachTrajectoryEvidence updates existing trajectory lineage fields", () => {
@@ -436,7 +436,7 @@ describe("trajectory store operations", () => {
         trajectoryId: "traj-closed",
         eventType: "recovery",
         summary: "should fail",
-      })).toThrow("[Harness] trajectory is closed: traj-closed")
+      })).toThrow("[Hivemind] trajectory is closed: traj-closed")
     })
 
     it("attachTrajectoryEvidence throws on closed trajectory", () => {
@@ -445,7 +445,7 @@ describe("trajectory store operations", () => {
         projectRoot: root,
         trajectoryId: "traj-closed",
         evidenceRef: "new-ref",
-      })).toThrow("[Harness] trajectory is closed: traj-closed")
+      })).toThrow("[Hivemind] trajectory is closed: traj-closed")
     })
 
     it("checkpointTrajectory throws on closed trajectory", () => {
@@ -454,7 +454,7 @@ describe("trajectory store operations", () => {
         projectRoot: root,
         trajectoryId: "traj-closed",
         summary: "should fail",
-      })).toThrow("[Harness] trajectory is closed: traj-closed")
+      })).toThrow("[Hivemind] trajectory is closed: traj-closed")
     })
 
     it("closeTrajectory throws on already-closed trajectory", () => {
@@ -463,7 +463,7 @@ describe("trajectory store operations", () => {
         projectRoot: root,
         trajectoryId: "traj-closed",
         summary: "closing again",
-      })).toThrow("[Harness] trajectory is already closed: traj-closed")
+      })).toThrow("[Hivemind] trajectory is already closed: traj-closed")
     })
 
     it("read operations succeed on closed trajectory", () => {

@@ -8,25 +8,25 @@ import {
 
 describe("cli/renderer — PH40-03 context renderer for terminal output", () => {
   describe("renderError", () => {
-    it("prefixes [Harness] when the message does not already include it", () => {
-      expect(renderError("Something exploded")).toContain("[Harness]")
+    it("prefixes [Hivemind] when the message does not already include it", () => {
+      expect(renderError("Something exploded")).toContain("[Hivemind]")
       expect(renderError("Something exploded")).toContain("Something exploded")
     })
 
-    it("does not double-prefix [Harness] when the message already starts with it", () => {
-      const out = renderError("[Harness] Already prefixed")
+    it("does not double-prefix [Hivemind] when the message already starts with it", () => {
+      const out = renderError("[Hivemind] Already prefixed")
       // Should appear exactly once.
       const matches = out.match(/\[Harness\]/g) ?? []
       expect(matches).toHaveLength(1)
     })
 
-    it("prepends [Harness] when the prefix appears mid-string but not at the start", () => {
+    it("prepends [Hivemind] when the prefix appears mid-string but not at the start", () => {
       // Regression: previously used .includes(HARNESS_PREFIX), which let a
-      // handler return `{ error: "Something about [Harness] internals" }`
+      // handler return `{ error: "Something about [Hivemind] internals" }`
       // and silently bypass the prefix-at-start contract documented in JSDoc.
-      const out = renderError("Something about [Harness] internals")
-      expect(out.startsWith("[Harness] ")).toBe(true)
-      expect(out).toContain("Something about [Harness] internals")
+      const out = renderError("Something about [Hivemind] internals")
+      expect(out.startsWith("[Hivemind] ")).toBe(true)
+      expect(out).toContain("Something about [Hivemind] internals")
     })
   })
 
@@ -70,10 +70,10 @@ describe("cli/renderer — PH40-03 context renderer for terminal output", () => 
       expect(out).toContain("(no rows)")
     })
 
-    it("rejects rows whose width does not match the header with [Harness] error", () => {
+    it("rejects rows whose width does not match the header with [Hivemind] error", () => {
       expect(() =>
         renderTable(["id", "status"], [["del-001"]]),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
   })
 

@@ -94,7 +94,7 @@ export function canAdvanceTurn(state: ConfigWorkflowState, targetTurn: number): 
  * @param state - Current workflow state (not mutated).
  * @param targetTurn - Turn index to advance to (0-7).
  * @returns A new {@link ConfigWorkflowState} with updated `currentTurn`.
- * @throws {Error} `[Harness]` error if the transition is invalid.
+ * @throws {Error} `[Hivemind]` error if the transition is invalid.
  */
 export function advanceTurn(
   state: ConfigWorkflowState,
@@ -102,7 +102,7 @@ export function advanceTurn(
 ): ConfigWorkflowState {
   if (!canAdvanceTurn(state, targetTurn)) {
     throw new Error(
-      `[Harness] Invalid turn transition: cannot advance from turn ${state.currentTurn} to turn ${targetTurn}. ` +
+      `[Hivemind] Invalid turn transition: cannot advance from turn ${state.currentTurn} to turn ${targetTurn}. ` +
         `Expected turn ${state.currentTurn + 1} or any turn <= ${state.currentTurn}.`,
     )
   }
@@ -147,7 +147,7 @@ export function completeCurrentTurn(
  */
 export function getTurnName(turnIndex: number): WorkflowTurn {
   if (turnIndex < 0 || turnIndex >= TOTAL_TURNS) {
-    throw new Error(`[Harness] Turn index ${turnIndex} is out of range (0-${TOTAL_TURNS - 1})`)
+    throw new Error(`[Hivemind] Turn index ${turnIndex} is out of range (0-${TOTAL_TURNS - 1})`)
   }
   return TURN_NAMES[turnIndex]
 }

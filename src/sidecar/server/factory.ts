@@ -58,7 +58,7 @@ export interface SidecarServerHandle {
  *      default 10-port pool from {@link parsePortList})
  *
  * @returns A TCP port number guaranteed free at probe time.
- * @throws `[Harness]` error when the explicit port is invalid or when
+ * @throws `[Hivemind]` error when the explicit port is invalid or when
  *   every port in the pool is taken.
  */
 async function resolveBindPort(): Promise<number> {
@@ -67,7 +67,7 @@ async function resolveBindPort(): Promise<number> {
     const parsed = Number.parseInt(envPort, 10)
     if (!Number.isInteger(parsed) || parsed <= 0 || parsed >= 65536) {
       throw new Error(
-        `[Harness] HIVEMIND_PLUGIN_PORT must be a valid TCP port (1-65535), got "${envPort}"`,
+        `[Hivemind] HIVEMIND_PLUGIN_PORT must be a valid TCP port (1-65535), got "${envPort}"`,
       )
     }
     return parsed
@@ -86,7 +86,7 @@ async function resolveBindPort(): Promise<number> {
  * @param options - Server options including the dependency registry,
  *   SSE pool, and project directory.
  * @returns A handle with the assigned port and a close function.
- * @throws `[Harness]` error when no port in the pool is free.
+ * @throws `[Hivemind]` error when no port in the pool is free.
  */
 export async function createSidecarServer(
   options: SidecarServerOptions,
@@ -122,7 +122,7 @@ export async function createSidecarServer(
     server.listen(port, "127.0.0.1", () => {
       const address = server.address()
       if (!address || typeof address === "string") {
-        reject(new Error("[Harness] Sidecar: failed to get server address"))
+        reject(new Error("[Hivemind] Sidecar: failed to get server address"))
         return
       }
       const boundPort = address.port

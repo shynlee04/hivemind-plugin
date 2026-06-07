@@ -21,6 +21,7 @@ type InitCommandDeps = {
   loadPrompts: () => Promise<PromptModule | null>
   resolveProjectRoot: (explicitRoot?: string) => string | null
   isInteractiveTerminal: () => boolean
+  backupPrimitives: (targetRoot: string, assetsRoot: string) => void
 }
 
 /**
@@ -41,7 +42,7 @@ export async function loadClackPrompts(): Promise<PromptModule | null> {
   try {
     return await import("@clack/prompts")
   } catch {
-    console.warn("[Harness] @clack/prompts unavailable; falling back to non-interactive mode.")
+    console.warn("[Hivemind] @clack/prompts unavailable; falling back to non-interactive mode.")
     return null
   }
 }
@@ -67,6 +68,7 @@ export function createInitCommand(deps: Partial<InitCommandDeps> = {}): CliComma
     loadPrompts: deps.loadPrompts ?? loadClackPrompts,
     resolveProjectRoot: deps.resolveProjectRoot ?? resolveProjectRoot,
     isInteractiveTerminal: deps.isInteractiveTerminal ?? (() => Boolean(process.stdout.isTTY && !process.env.CI)),
+    backupPrimitives: deps.backupPrimitives ?? backupExistingPrimitives,
   }
 
   return {
@@ -94,7 +96,7 @@ async function handleInit(ctx: CliCommandContext, deps: InitCommandDeps): Promis
   const explicitRoot = getStringFlag(ctx.flags, "root")
   const projectRoot = deps.resolveProjectRoot(explicitRoot)
   if (projectRoot === null) {
-    return { exitCode: 64, error: "[Harness] Unable to resolve a project root from --root, package.json, or .hivemind." }
+    return { exitCode: 64, error: "[Hivemind] Unable to resolve a project root from --root, package.json, or .hivemind." }
   }
 
   const scopeResult = parseScopeFlag(ctx.flags.scope)
@@ -117,9 +119,9 @@ async function handleInit(ctx: CliCommandContext, deps: InitCommandDeps): Promis
     // Backup existing primitives before install (interactive project scope only).
     // This prevents overwriting user-customized shipped primitives.
     if (scope === "project") {
-      const targetRoot = resolveOpenCodeRoot(projectRoot)
+      const openCodeRoot = resolveOpenCodeRoot(projectRoot)
       const assetsRoot = resolvePackageAssetsRoot()
-      backupExistingPrimitives(targetRoot, assetsRoot)
+      deps.backupPrimitives(openCodeRoot, assetsRoot)
     }
   }
 
@@ -369,7 +371,7 @@ export function backupExistingPrimitives(targetRoot: string, assetsRoot: string)
 
       const backupPath = join(backupDir, `${fileName}.${timestamp}`)
       renameSync(targetPath, backupPath)
-      console.log(`[Harness] Backed up: ${type}/${fileName} → .backup/${fileName}.${timestamp}`)
+      console.log(`[Hivemind] Backed up: ${type}/${fileName} → .backup/${fileName}.${timestamp}`)
     }
   }
 }
@@ -442,5 +444,5 @@ function parseScopeFlag(rawScope: string | boolean | undefined):
   if (rawScope === "project" || rawScope === "global") {
     return { success: true, scope: rawScope }
   }
-  return { success: false, error: `[Harness] Invalid scope: ${String(rawScope)}` }
+  return { success: false, error: `[Hivemind] Invalid scope: ${String(rawScope)}` }
 }

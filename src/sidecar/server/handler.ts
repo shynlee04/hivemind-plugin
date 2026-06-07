@@ -344,7 +344,7 @@ export async function createServer(options: {
     server.listen(0, "127.0.0.1", () => {
       const addr = server.address()
       if (!addr || typeof addr === "string") {
-        reject(new Error("[Harness] Sidecar: failed to get server address"))
+        reject(new Error("[Hivemind] Sidecar: failed to get server address"))
         return
       }
       resolve({

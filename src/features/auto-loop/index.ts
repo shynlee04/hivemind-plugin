@@ -37,6 +37,6 @@ export class AutoLoopEngine {
   }
 
   private validate(opts: AutoLoopOpts): void {
-    if (opts.maxIterations <= 0) throw new Error("[Harness] auto-loop maxIterations must be greater than 0.")
+    if (opts.maxIterations <= 0) throw new Error("[Hivemind] auto-loop maxIterations must be greater than 0.")
   }
 }

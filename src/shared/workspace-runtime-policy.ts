@@ -31,7 +31,7 @@ export function resolveWorkspaceRuntimePolicy(projectRoot: string): Partial<Runt
 
   const parsed = JSON.parse(readFileSync(policyPath, "utf-8")) as unknown
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error(`[Harness] Runtime policy file ${policyPath} must contain a JSON object.`)
+    throw new Error(`[Hivemind] Runtime policy file ${policyPath} must contain a JSON object.`)
   }
 
   return parsed as Partial<RuntimePolicy>

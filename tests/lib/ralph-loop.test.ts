@@ -141,7 +141,7 @@ describe("ralph-loop — PH39-03 max 3 correction cycles + escalation", () => {
     expect(result.errors.some((e) => /fixer crashed/.test(e))).toBe(true)
   })
 
-  it("rejects non-positive maxCorrectionCycles with a [Harness] error", async () => {
+  it("rejects non-positive maxCorrectionCycles with a [Hivemind] error", async () => {
     await expect(
       runRalphLoop({
         initialResult: "x",
@@ -152,7 +152,7 @@ describe("ralph-loop — PH39-03 max 3 correction cycles + escalation", () => {
     ).rejects.toThrow(/^\[Harness\] ralph-loop maxCorrectionCycles/)
   })
 
-  it("escalationMessage carries the [Harness] prefix and reason summary", () => {
+  it("escalationMessage carries the [Hivemind] prefix and reason summary", () => {
     const message = escalationMessage({
       status: "exhausted",
       cycles: 3,

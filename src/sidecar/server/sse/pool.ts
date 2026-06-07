@@ -47,12 +47,12 @@ export class SseConnectionPool {
    *
    * @param controller - The stream controller for the SSE response.
    * @returns A unique connection ID.
-   * @throws `[Harness]` error when the maximum connection count is reached.
+   * @throws `[Hivemind]` error when the maximum connection count is reached.
    */
   addClient(controller: ReadableStreamDefaultController): string {
     if (this.#connections.size >= this.#opts.maxClients) {
       throw new Error(
-        `[Harness] Sidecar: max SSE connections reached (${this.#opts.maxClients})`,
+        `[Hivemind] Sidecar: max SSE connections reached (${this.#opts.maxClients})`,
       )
     }
     const id = `sse-${Math.random().toString(36).slice(2, 9)}`

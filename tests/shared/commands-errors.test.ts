@@ -12,49 +12,49 @@ describe("Command typed error classes", () => {
     const error = new CommandNotFoundError("Custom msg")
     expect(error).toBeInstanceOf(Error)
     expect(error.name).toBe("CommandNotFoundError")
-    expect(error.message).toBe("[Harness] Custom msg")
+    expect(error.message).toBe("[Hivemind] Custom msg")
 
     const defaultError = new CommandNotFoundError()
-    expect(defaultError.message).toBe("[Harness] Command not found")
+    expect(defaultError.message).toBe("[Hivemind] Command not found")
   })
 
   it("AgentNotFoundError should extend Error with correct name and message", () => {
     const error = new AgentNotFoundError("Custom msg")
     expect(error).toBeInstanceOf(Error)
     expect(error.name).toBe("AgentNotFoundError")
-    expect(error.message).toBe("[Harness] Custom msg")
+    expect(error.message).toBe("[Hivemind] Custom msg")
 
     const defaultError = new AgentNotFoundError()
-    expect(defaultError.message).toBe("[Harness] Agent not found")
+    expect(defaultError.message).toBe("[Hivemind] Agent not found")
   })
 
   it("DelegationTimeoutError should extend Error with correct name and message", () => {
     const error = new DelegationTimeoutError("Custom msg")
     expect(error).toBeInstanceOf(Error)
     expect(error.name).toBe("DelegationTimeoutError")
-    expect(error.message).toBe("[Harness] Custom msg")
+    expect(error.message).toBe("[Hivemind] Custom msg")
 
     const defaultError = new DelegationTimeoutError()
-    expect(defaultError.message).toBe("[Harness] Delegation timeout")
+    expect(defaultError.message).toBe("[Hivemind] Delegation timeout")
   })
 
   it("InvalidCommandError should extend Error with correct name and message", () => {
     const error = new InvalidCommandError("Custom msg")
     expect(error).toBeInstanceOf(Error)
     expect(error.name).toBe("InvalidCommandError")
-    expect(error.message).toBe("[Harness] Custom msg")
+    expect(error.message).toBe("[Hivemind] Custom msg")
 
     const defaultError = new InvalidCommandError()
-    expect(defaultError.message).toBe("[Harness] Invalid command")
+    expect(defaultError.message).toBe("[Hivemind] Invalid command")
   })
 
   it("DelegationContextError should extend Error with correct name and message", () => {
     const error = new DelegationContextError("Custom msg")
     expect(error).toBeInstanceOf(Error)
     expect(error.name).toBe("DelegationContextError")
-    expect(error.message).toBe("[Harness] Custom msg")
+    expect(error.message).toBe("[Hivemind] Custom msg")
 
     const defaultError = new DelegationContextError()
-    expect(defaultError.message).toBe("[Harness] Delegation context error")
+    expect(defaultError.message).toBe("[Hivemind] Delegation context error")
   })
 })

@@ -13,7 +13,7 @@ describe("AgentResolver", () => {
     })
 
     await expect(resolver.resolve("gsd-executor")).resolves.toMatchObject({ name: "gsd-executor" })
-    await expect(resolver.resolve("missing-agent")).rejects.toThrow('[Harness] Unknown delegation agent "missing-agent"')
+    await expect(resolver.resolve("missing-agent")).rejects.toThrow('[Hivemind] Unknown delegation agent "missing-agent"')
   })
 
   it("resolves a permission profile from agent primitive metadata", async () => {

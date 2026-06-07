@@ -82,7 +82,7 @@ describe("TaskStateManager", () => {
       expect(count).toBe(1)
     })
 
-    it("reserveDescendant throws when exceeding max with [Harness] prefix", () => {
+    it("reserveDescendant throws when exceeding max with [Hivemind] prefix", () => {
       for (let i = 0; i < 3; i++) {
         mgr.reserveDescendant("root-limit", 3)
       }

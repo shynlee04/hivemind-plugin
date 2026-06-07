@@ -19,7 +19,7 @@ describe("integration — delegation manager", () => {
   })
 
   it("throws when no client and no v2 modules are injected", () => {
-    expect(() => new DelegationManager()).toThrow("[Harness]")
+    expect(() => new DelegationManager()).toThrow("[Hivemind]")
   })
 
   it("dispatches through coordinator when available", async () => {

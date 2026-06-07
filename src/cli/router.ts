@@ -20,7 +20,7 @@
  *   - `64` — usage error (`EX_USAGE`)  — unknown command, missing command
  *   - `70` — software error (`EX_SOFTWARE`) — handler threw
  *
- * Errors raised inside this module always carry the `[Harness]` prefix
+ * Errors raised inside this module always carry the `[Hivemind]` prefix
  * required by `AGENTS.md`.
  */
 
@@ -127,7 +127,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
 }
 
 /**
- * Build a router from a list of `CliCommand` entries. Throws `[Harness]`
+ * Build a router from a list of `CliCommand` entries. Throws `[Hivemind]`
  * errors at construction time for duplicate command names or aliases that
  * collide with a different command's name.
  */
@@ -138,7 +138,7 @@ export function createRouter(options: CliRouterOptions): CliRouter {
   for (const command of commands) {
     if (byName.has(command.name)) {
       throw new Error(
-        `[Harness] Duplicate CLI command registration: "${command.name}"`,
+        `[Hivemind] Duplicate CLI command registration: "${command.name}"`,
       )
     }
     byName.set(command.name, command)
@@ -148,7 +148,7 @@ export function createRouter(options: CliRouterOptions): CliRouter {
     for (const alias of command.aliases ?? []) {
       if (byName.has(alias) && byName.get(alias) !== command) {
         throw new Error(
-          `[Harness] CLI alias "${alias}" of command "${command.name}" collides with another command`,
+          `[Hivemind] CLI alias "${alias}" of command "${command.name}" collides with another command`,
         )
       }
       byName.set(alias, command)
@@ -162,7 +162,7 @@ export function createRouter(options: CliRouterOptions): CliRouter {
       if (command === "") {
         return {
           exitCode: 64,
-          error: "[Harness] No CLI command provided. Run `help` to list commands.",
+          error: "[Hivemind] No CLI command provided. Run `help` to list commands.",
         }
       }
 
@@ -170,7 +170,7 @@ export function createRouter(options: CliRouterOptions): CliRouter {
       if (target === undefined) {
         return {
           exitCode: 64,
-          error: `[Harness] Unknown CLI command: "${command}". Run \`help\` to list commands.`,
+          error: `[Hivemind] Unknown CLI command: "${command}". Run \`help\` to list commands.`,
         }
       }
 
@@ -181,7 +181,7 @@ export function createRouter(options: CliRouterOptions): CliRouter {
         const message = error instanceof Error ? error.message : String(error)
         return {
           exitCode: 70,
-          error: `[Harness] CLI command "${target.name}" failed: ${message}`,
+          error: `[Hivemind] CLI command "${target.name}" failed: ${message}`,
         }
       }
     },

@@ -49,7 +49,7 @@ export class DelegationDispatcher {
 
   private checkDepth(currentDepth: number): void {
     if (currentDepth >= MAX_DELEGATION_DEPTH) {
-      throw new Error(`[Harness] Max delegation depth (${MAX_DELEGATION_DEPTH}) reached at current depth ${currentDepth}.`)
+      throw new Error(`[Hivemind] Max delegation depth (${MAX_DELEGATION_DEPTH}) reached at current depth ${currentDepth}.`)
     }
   }
 

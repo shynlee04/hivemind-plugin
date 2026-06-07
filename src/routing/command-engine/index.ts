@@ -171,7 +171,7 @@ export async function executeCommandEngineAction(
         messages: input.messages,
       })
     case "route_preview":
-      if (!input.commandName) throw new Error("[Harness] commandName is required for route_preview")
+      if (!input.commandName) throw new Error("[Hivemind] commandName is required for route_preview")
       return routeCommandPreview({ projectRoot, ...input, commandName: input.commandName })
   }
 }
@@ -206,10 +206,10 @@ export async function listCommands(options: { projectRoot: string }): Promise<Co
  * @throws {Error} When commandName is absent or missing.
  */
 async function requireCommand(projectRoot: string, commandName?: string): Promise<CommandBundle> {
-  if (!commandName) throw new Error("[Harness] commandName is required for analyze_contract")
+  if (!commandName) throw new Error("[Hivemind] commandName is required for analyze_contract")
   const discovery = await discoverCommandBundles({ projectRoot })
   const command = discovery.commands.find((candidate) => candidate.name === commandName)
-  if (!command) throw new Error(`[Harness] Command not found: ${commandName}`)
+  if (!command) throw new Error(`[Hivemind] Command not found: ${commandName}`)
   return command
 }
 

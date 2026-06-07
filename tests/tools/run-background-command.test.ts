@@ -180,7 +180,7 @@ describe("run-background-command tool", () => {
       surface: "command-process",
       recoveryGuarantee: "non-resumable-after-restart",
       workingDirectory: "/tmp/shared",
-      fallbackReason: "[Harness] PTY runtime unavailable in current environment",
+      fallbackReason: "[Hivemind] PTY runtime unavailable in current environment",
       queueKey: "category:command",
       explicitCancellation: false,
     })
@@ -209,7 +209,7 @@ describe("run-background-command tool", () => {
     const result = parseResult(raw)
 
     expect(result.kind).toBe("error")
-    expect(result.message).toContain("[Harness] PTY not available")
+    expect(result.message).toContain("[Hivemind] PTY not available")
     expect(delegationManager.dispatchCommand).not.toHaveBeenCalled()
   })
 
@@ -256,7 +256,7 @@ describe("run-background-command tool", () => {
     const result = parseResult(raw)
 
     expect(result.kind).toBe("error")
-    expect(result.message).toContain("[Harness] Access denied for PTY session")
+    expect(result.message).toContain("[Hivemind] Access denied for PTY session")
     expect(ptyManager.read).not.toHaveBeenCalled()
   })
 
@@ -290,7 +290,7 @@ describe("run-background-command tool", () => {
     const result = parseResult(raw)
 
     expect(result.kind).toBe("error")
-    expect(result.message).toContain("[Harness] Missing caller session ID for run-background-command output")
+    expect(result.message).toContain("[Hivemind] Missing caller session ID for run-background-command output")
     expect(ptyManager.read).not.toHaveBeenCalled()
   })
 
@@ -405,7 +405,7 @@ describe("run-background-command tool", () => {
       await vi.advanceTimersByTimeAsync(250)
 
       const finalDelegation = delegationManager.getStatus(delegationId)
-      expect(finalDelegation?.error).toBe("[Harness] Command cancelled by user")
+      expect(finalDelegation?.error).toBe("[Hivemind] Command cancelled by user")
       expect(finalDelegation?.error).not.toContain("PTY session disappeared before completion")
       expect(finalDelegation?.terminalKind).toBe("cancelled")
       expect(finalDelegation?.explicitCancellation).toBe(true)

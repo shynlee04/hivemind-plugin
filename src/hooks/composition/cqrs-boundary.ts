@@ -27,10 +27,10 @@ export function classifyHookEffect(hook: string): HookEffectClassification {
  * Rejects hidden durable writes from hook execution contexts.
  *
  * @param input - Hook and attempted operation.
- * @throws A `[Harness]` error when a hook attempts a durable write.
+ * @throws A `[Hivemind]` error when a hook attempts a durable write.
  */
 export function assertHookWriteBoundary(input: { hook: string; operation: HookOperation }): void {
   if (input.operation === "durable-write") {
-    throw new Error(`[Harness] Hook ${input.hook} cannot perform durable-write operations.`)
+    throw new Error(`[Hivemind] Hook ${input.hook} cannot perform durable-write operations.`)
   }
 }

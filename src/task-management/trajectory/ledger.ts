@@ -47,13 +47,13 @@ export function readTrajectoryLedger(projectRoot: string): TrajectoryLedger {
   try {
     const parsed = JSON.parse(readFileSync(ledgerPath, "utf-8")) as unknown
     if (!isTrajectoryLedger(parsed)) {
-      throw new Error("[Harness] invalid schema")
+      throw new Error("[Hivemind] invalid schema")
     }
     return normalizeTrajectoryLedger(parsed)
   } catch (caughtError) {
     const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
     quarantineCorruptLedger(ledgerPath)
-    throw new Error(`[Harness] Failed to parse trajectory ledger: ${message}`)
+    throw new Error(`[Hivemind] Failed to parse trajectory ledger: ${message}`)
   }
 }
 

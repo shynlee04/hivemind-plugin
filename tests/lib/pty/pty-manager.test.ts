@@ -138,7 +138,7 @@ describe("PtyManager", () => {
 
     expect(currentPty?.kill).toHaveBeenCalledTimes(1)
     expect(manager.getSession(session.id)).toBeUndefined()
-    expect(() => manager.read(session.id, 0)).toThrow(`[Harness] Unknown PTY session: ${session.id}`)
+    expect(() => manager.read(session.id, 0)).toThrow(`[Hivemind] Unknown PTY session: ${session.id}`)
   })
 
   it("persists exit state on the session record before explicit cleanup", async () => {
@@ -228,6 +228,6 @@ describe("PtyManager", () => {
 
     await manager.terminate(session.id)
 
-    expect(() => manager.read(session.id, 0)).toThrow(`[Harness] Unknown PTY session: ${session.id}`)
+    expect(() => manager.read(session.id, 0)).toThrow(`[Hivemind] Unknown PTY session: ${session.id}`)
   })
 })

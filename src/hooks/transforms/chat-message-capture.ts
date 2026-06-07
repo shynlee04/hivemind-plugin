@@ -33,7 +33,7 @@ export function createChatMessageCapture(
         output as Parameters<typeof deps.sessionTracker.handleChatMessage>[1],
       )
     } catch (err) {
-      deps.logWarn?.("[Harness] Session tracker chat.message failed", err)
+      deps.logWarn?.("[Hivemind] Session tracker chat.message failed", err)
     }
   }
 }

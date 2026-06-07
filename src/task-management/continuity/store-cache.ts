@@ -24,7 +24,7 @@ export function getStoreCache(filePath?: string): ContinuityStoreFile | undefine
 export function setStoreCache(filePathOrCache: string | ContinuityStoreFile, cache?: ContinuityStoreFile): void {
   if (typeof filePathOrCache === "string") {
     if (!cache) {
-      throw new Error("[Harness] Cache object is required when filePath is specified")
+      throw new Error("[Hivemind] Cache object is required when filePath is specified")
     }
     storeCache.set(filePathOrCache, cache)
   } else {

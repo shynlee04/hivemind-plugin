@@ -21,7 +21,7 @@ export interface HivemindSessionViewArgs {
  * `{ ok: true, data: { sessionId } }` with no real data. This fix:
  *   - Uses the typed `registry.sessionTracker` getter (no `(registry as any)`)
  *   - Captures the `sessionTracker.get()` result and returns the full record
- *   - Throws `[Harness]` if `sessionTracker` is not bound (registry design
+ *   - Throws `[Hivemind]` if `sessionTracker` is not bound (registry design
  *     contract — typed getter throws on unbound access)
  *   - Returns a NOT_FOUND error envelope if the session is not found
  *
@@ -42,7 +42,7 @@ export async function handleHivemindSessionView(options: {
     }
   }
 
-  // Typed getter — throws [Harness] Sidecar: SessionTracker not bound yet
+  // Typed getter — throws [Hivemind] Sidecar: SessionTracker not bound yet
   // when the dependency has not been wired. This eliminates the previous
   // `(registry as any).sessionTracker` cast, addressing GAP-07 for this
   // handler file.
@@ -60,7 +60,7 @@ export async function handleHivemindSessionView(options: {
       ok: false as const,
       error: {
         code: "INTERNAL",
-        message: "[Harness] sessionTracker.get is not a function",
+        message: "[Hivemind] sessionTracker.get is not a function",
       },
     }
   }

@@ -93,7 +93,7 @@ export function classifyGateDecision(record: GateDecisionRecord): {
       if (isStateFilePath(filePath)) {
         return {
           decision: GateDecisionType.ask,
-          reason: `[Harness] Direct writes to state files are forbidden (Q6: manualStateWritesForbidden). Path: ${filePath}`,
+          reason: `[Hivemind] Direct writes to state files are forbidden (Q6: manualStateWritesForbidden). Path: ${filePath}`,
           blocking: true,
         }
       }

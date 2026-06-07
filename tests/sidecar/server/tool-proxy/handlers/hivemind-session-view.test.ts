@@ -7,7 +7,7 @@
  * called `st.get(sessionId)` but DISCARDED the result, always returning
  * `{ ok: true, data: { sessionId } }` with no real data. These tests assert
  * the FIXED contract: full session record returned in `data.session`,
- * NOT_FOUND envelope when missing, `[Harness]` thrown when sessionTracker
+ * NOT_FOUND envelope when missing, `[Hivemind]` thrown when sessionTracker
  * is not bound.
  */
 // @ts-ignore — module doesn't exist yet (W0 TDD red phase)
@@ -87,8 +87,8 @@ describe("hivemind-session-view handler (GAP-01 fixed contract)", () => {
   })
 
   describe("with unbound sessionTracker", () => {
-    it("throws [Harness] error when sessionTracker is not bound in registry", async () => {
-      // Real registry without setSessionTracker — typed getter throws [Harness]
+    it("throws [Hivemind] error when sessionTracker is not bound in registry", async () => {
+      // Real registry without setSessionTracker — typed getter throws [Hivemind]
       const unboundRegistry = new SidecarDependencyRegistry()
       await expect(
         handleHivemindSessionView({

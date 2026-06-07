@@ -191,7 +191,7 @@ export class DelegationManager {
     const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
     if (nestingDepth > MAX_DELEGATION_DEPTH) {
       throw new Error(
-        `[Harness] Maximum delegation nesting depth (${MAX_DELEGATION_DEPTH}) exceeded. ` +
+        `[Hivemind] Maximum delegation nesting depth (${MAX_DELEGATION_DEPTH}) exceeded. ` +
         `Current depth: ${nestingDepth}. Use result retrieval pattern instead of further delegation.`,
       )
     }
@@ -204,7 +204,7 @@ export class DelegationManager {
     const acquireQueueKey = buildDelegationQueueKey(canonicalContext)
     const spawnQueueKey = buildDelegationQueueKey(canonicalContext)
     if (spawnQueueKey !== acquireQueueKey) {
-      throw new Error("[Harness] Canonical delegation queue-key drift detected.")
+      throw new Error("[Hivemind] Canonical delegation queue-key drift detected.")
     }
     // REQ-58-09 S3 (P58.8): light structural pre-send validation. We assert
     // required-field presence and queue-key shape BEFORE acquiring a
@@ -216,22 +216,22 @@ export class DelegationManager {
     // with a structurally invalid payload.
     if (typeof params.parentSessionId !== "string" || params.parentSessionId.length === 0) {
       throw new Error(
-        "[Harness] dispatch pre-send validation failed: parentSessionId is required and must be a non-empty string.",
+        "[Hivemind] dispatch pre-send validation failed: parentSessionId is required and must be a non-empty string.",
       )
     }
     if (typeof params.agent !== "string" || params.agent.length === 0) {
       throw new Error(
-        "[Harness] dispatch pre-send validation failed: agent is required and must be a non-empty string.",
+        "[Hivemind] dispatch pre-send validation failed: agent is required and must be a non-empty string.",
       )
     }
     if (typeof params.prompt !== "string" || params.prompt.length === 0) {
       throw new Error(
-        "[Harness] dispatch pre-send validation failed: prompt is required and must be a non-empty string.",
+        "[Hivemind] dispatch pre-send validation failed: prompt is required and must be a non-empty string.",
       )
     }
     if (!/^(?:[a-z][a-z0-9-]*:.+|default)$/.test(acquireQueueKey)) {
       throw new Error(
-        `[Harness] dispatch pre-send validation failed: queueKey "${acquireQueueKey}" does not match canonical shape (provider|model|agent):<id> or "default".`,
+        `[Hivemind] dispatch pre-send validation failed: queueKey "${acquireQueueKey}" does not match canonical shape (provider|model|agent):<id> or "default".`,
       )
     }
     const concurrency = resolveAcquireArgs(this.runtimePolicy, acquireQueueKey)
@@ -305,13 +305,13 @@ export class DelegationManager {
             this.state.transitionToTerminal(
               delegation.id,
               "error",
-              `[Harness] Fire-and-forget prompt send failed: ${message}`,
+              `[Hivemind] Fire-and-forget prompt send failed: ${message}`,
             )
             void this.client.app?.log?.({
               body: {
                 service: "delegation",
                 level: "error",
-                message: `[Harness] delegation ${delegation.id} sendPromptAsync rejected: ${message}`,
+                message: `[Hivemind] delegation ${delegation.id} sendPromptAsync rejected: ${message}`,
               },
             })
           })
@@ -328,7 +328,7 @@ export class DelegationManager {
         this.state.transitionToTerminal(
           delegation.id,
           "error",
-          `[Harness] Failed to build/send prompt to child session: ${caughtMessage}`,
+          `[Hivemind] Failed to build/send prompt to child session: ${caughtMessage}`,
         )
         return buildDelegationResult(this.state.get(delegation.id) ?? delegation)
       }
@@ -342,7 +342,7 @@ export class DelegationManager {
     const nestingDepth = this.resolveNestingDepth(params.parentSessionId)
     if (nestingDepth > MAX_DELEGATION_DEPTH) {
       throw new Error(
-        `[Harness] Maximum delegation nesting depth (${MAX_DELEGATION_DEPTH}) exceeded. ` +
+        `[Hivemind] Maximum delegation nesting depth (${MAX_DELEGATION_DEPTH}) exceeded. ` +
         `Current depth: ${nestingDepth}. Use result retrieval pattern instead of further delegation.`,
       )
     }
@@ -415,7 +415,7 @@ export class DelegationManager {
       this.state.transitionToTerminal(
         delegation.id,
         "error",
-        "[Harness] Headless command delegation cannot be recovered after restart",
+        "[Hivemind] Headless command delegation cannot be recovered after restart",
         {
           terminalKind: "non-resumable-after-restart",
           explicitCancellation: false,
@@ -530,7 +530,7 @@ export class DelegationManager {
         body: {
           service: "delegation",
           level: "warn",
-          message: `[Harness] child event subscription failed for ${childSessionId}; falling back to counter-based progress.`,
+          message: `[Hivemind] child event subscription failed for ${childSessionId}; falling back to counter-based progress.`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -555,7 +555,7 @@ export class DelegationManager {
           body: {
             service: "delegation",
             level: "warn",
-            message: `[Harness] Agent list validation skipped — server returned agents with missing fields. Proceeding with unvalidated agent "${agent}".`,
+            message: `[Hivemind] Agent list validation skipped — server returned agents with missing fields. Proceeding with unvalidated agent "${agent}".`,
           },
         })
         return enrichAgentFromPrimitives({ name: agent }, projectRoot)
@@ -573,7 +573,7 @@ export class DelegationManager {
     })).filter((e) => e.name.length > 0)
     const names = validAgents.map((e) => e.name)
     if (!names.includes(agent)) {
-      throw new Error(`[Harness] Invalid agent: "${agent}". Available: [${names.join(", ")}]`)
+      throw new Error(`[Hivemind] Invalid agent: "${agent}". Available: [${names.join(", ")}]`)
     }
     return enrichAgentFromPrimitives(validAgents.find((e) => e.name === agent) ?? { name: agent }, projectRoot)
   }

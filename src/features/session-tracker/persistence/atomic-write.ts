@@ -43,7 +43,7 @@ export async function atomicWriteJson(
   const targetDev = await stat(dirname(filePath)).then(s => s.dev).catch(() => null)
   if (tmpDev !== null && targetDev !== null && tmpDev !== targetDev) {
     process.emitWarning(
-      `[Harness] Cross-volume rename detected: tmp dev=${tmpDev} !== target dev=${targetDev} — rename NOT atomic for "${filePath}"`,
+      `[Hivemind] Cross-volume rename detected: tmp dev=${tmpDev} !== target dev=${targetDev} — rename NOT atomic for "${filePath}"`,
     )
   }
   await rename(tmpPath, filePath)
@@ -118,7 +118,7 @@ export function sanitizeSessionID(sessionID: string): string {
   const sanitized = sessionID.replace(/[^a-zA-Z0-9_-]/g, "")
   if (sanitized.length < 3) {
     throw new Error(
-      `[Harness] Invalid session ID after sanitization: "${sessionID}" (result: "${sanitized}")`,
+      `[Hivemind] Invalid session ID after sanitization: "${sessionID}" (result: "${sanitized}")`,
     )
   }
   return sanitized
@@ -146,12 +146,12 @@ export function safeSessionPath(
   // Detect path traversal in raw inputs BEFORE sanitization
   if (sessionID.includes("/") || sessionID.includes("\\") || sessionID.includes("..")) {
     throw new Error(
-      `[Harness] Path traversal detected in sessionID: "${sessionID}"`,
+      `[Hivemind] Path traversal detected in sessionID: "${sessionID}"`,
     )
   }
   if (filename.includes("/") || filename.includes("\\") || filename.includes("..")) {
     throw new Error(
-      `[Harness] Path traversal detected in filename: "${filename}"`,
+      `[Hivemind] Path traversal detected in filename: "${filename}"`,
     )
   }
 
@@ -162,7 +162,7 @@ export function safeSessionPath(
   const prefix = trackerRoot.endsWith(sep) ? trackerRoot : trackerRoot + sep
   if (!resolved.startsWith(prefix) && resolved !== trackerRoot) {
     throw new Error(
-      `[Harness] Path traversal detected — resolved path "${resolved}" is outside tracker root "${trackerRoot}"`,
+      `[Hivemind] Path traversal detected — resolved path "${resolved}" is outside tracker root "${trackerRoot}"`,
     )
   }
 

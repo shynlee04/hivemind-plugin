@@ -83,7 +83,7 @@ export function createToolBeforeGuard(
         }
       }
     } catch (err) {
-      deps.logWarn?.("[Harness] Session tracker: tool.execute.before hook failed", err)
+      deps.logWarn?.("[Hivemind] Session tracker: tool.execute.before hook failed", err)
     }
 
     // Contract enforcement: third step in guard chain (when deps provided — Plan 06 wires from plugin.ts)
@@ -93,10 +93,10 @@ export function createToolBeforeGuard(
         await contractHook(input, output)
       } catch (err) {
         // Re-throw contract violations (they ARE the enforcement mechanism per D-23)
-        if (err instanceof Error && err.message.startsWith("[Harness] contract violation")) {
+        if (err instanceof Error && err.message.startsWith("[Hivemind] contract violation")) {
           throw err
         }
-        deps.logWarn?.("[Harness] Contract enforcement: tool.execute.before hook failed", err)
+        deps.logWarn?.("[Hivemind] Contract enforcement: tool.execute.before hook failed", err)
       }
     }
   }

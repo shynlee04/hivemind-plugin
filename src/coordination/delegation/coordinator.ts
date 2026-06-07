@@ -228,7 +228,7 @@ export class DelegationCoordinator {
           body: {
             service: "delegation",
             level: "warn",
-            message: `[Harness] Failed to resolve parent model for ${params.parentSessionId}: ${err instanceof Error ? err.message : String(err)}`,
+            message: `[Hivemind] Failed to resolve parent model for ${params.parentSessionId}: ${err instanceof Error ? err.message : String(err)}`,
           },
         })
       }
@@ -363,7 +363,7 @@ export class DelegationCoordinator {
           const parsed = sdkMessageSchema.safeParse(lastAssistantMessage)
           const errorMsg = parsed.success ? extractSdkMessageError(parsed.data) : undefined
           if (errorMsg) {
-            record.error = `[Harness] Child session assistant error: ${errorMsg}`
+            record.error = `[Hivemind] Child session assistant error: ${errorMsg}`
             record.executionState = "stalled"
             this.failDispatch(delegationId, new Error(record.error))
             return
@@ -372,7 +372,7 @@ export class DelegationCoordinator {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         if (msg.includes("404") || msg.includes("not found")) {
-          record.error = `[Harness] Child session ${record.childSessionId} was deleted or not found`
+          record.error = `[Hivemind] Child session ${record.childSessionId} was deleted or not found`
           record.executionState = "stalled"
           this.failDispatch(delegationId, new Error(record.error))
           return
@@ -403,7 +403,7 @@ export class DelegationCoordinator {
     if (elapsedSeconds >= STALL_THRESHOLD_SEC && !hasAnyActivity) {
       record.executionState = "stalled"
       record.evidenceLevel = record.evidenceLevel ?? "accepted-only"
-      record.error = `[Harness] Delegation stalled without any activity after ${elapsedSeconds}s (no tools, no messages, no SDK messages)`
+      record.error = `[Hivemind] Delegation stalled without any activity after ${elapsedSeconds}s (no tools, no messages, no SDK messages)`
       this.handleTimeout(delegationId)
       return
     }
@@ -467,12 +467,12 @@ export class DelegationCoordinator {
     this.deps.periodicNotifier?.deregister(delegationId) // P59 C3: deregister BEFORE routeTerminal
     this.deps.lifecycle.transition(delegationId, "error")
     this.deps.monitor.onCompletion(delegationId)
-    this.routeTerminal(delegationId, "failure", `[Harness] Native Task dispatch failed: ${message}`)
-    this.cleanup(delegationId, "error", { delegationId, error: `[Harness] Native Task dispatch failed: ${message}`, status: "error" })
+    this.routeTerminal(delegationId, "failure", `[Hivemind] Native Task dispatch failed: ${message}`)
+    this.cleanup(delegationId, "error", { delegationId, error: `[Hivemind] Native Task dispatch failed: ${message}`, status: "error" })
   }
 
   /** Aborts an active delegation and releases all coordinator-owned resources. */
-  abortDelegation(delegationId: string, reason = "[Harness] Delegation aborted"): DelegationResult {
+  abortDelegation(delegationId: string, reason = "[Hivemind] Delegation aborted"): DelegationResult {
     const result: DelegationResult = { delegationId, error: reason, status: "aborted", terminalKind: "cancelled", explicitCancellation: true }
     this.deps.periodicNotifier?.deregister(delegationId)
     this.deps.lifecycle.transition(delegationId, "aborted")
@@ -483,7 +483,7 @@ export class DelegationCoordinator {
   }
 
   /** Cancels tracking for an active delegation without asserting child termination. */
-  cancelDelegation(delegationId: string, reason = "[Harness] Delegation cancelled"): DelegationResult {
+  cancelDelegation(delegationId: string, reason = "[Hivemind] Delegation cancelled"): DelegationResult {
     const result: DelegationResult = { delegationId, error: reason, status: "cancelled", terminalKind: "cancelled", explicitCancellation: true }
     this.deps.lifecycle.transition(delegationId, "cancelled")
     this.deps.monitor.onCompletion(delegationId)
@@ -505,7 +505,7 @@ export class DelegationCoordinator {
 
   /** Routes child session deleted hook observations into the v2 completion path. */
   handleSessionDeleted(childSessionId: string): void {
-    this.handleChildSessionTerminal(childSessionId, "error", "[Harness] Delegated child session was deleted")
+    this.handleChildSessionTerminal(childSessionId, "error", "[Hivemind] Delegated child session was deleted")
   }
 
   /** Dispatches a bounded sequential chain, passing prior results into later prompts when requested.
@@ -568,7 +568,7 @@ export class DelegationCoordinator {
         body: {
           service: "delegation",
           level: "warn",
-          message: `[Harness] child event bus unsubscribe failed for ${childSessionId}`,
+          message: `[Hivemind] child event bus unsubscribe failed for ${childSessionId}`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -677,7 +677,7 @@ export class DelegationCoordinator {
 
   private errorResult(delegationId: string, caughtError: unknown): DelegationResult {
     const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-    return { delegationId, error: `[Harness] Native Task dispatch failed: ${message}`, status: "error" }
+    return { delegationId, error: `[Hivemind] Native Task dispatch failed: ${message}`, status: "error" }
   }
 
   /**
@@ -738,7 +738,7 @@ export class DelegationCoordinator {
         body: {
           service: "delegation",
           level: "warn",
-          message: `[Harness] tmux adapter.onSessionCreated failed for ${input.childSessionId}: ${err instanceof Error ? err.message : String(err)}`,
+          message: `[Hivemind] tmux adapter.onSessionCreated failed for ${input.childSessionId}: ${err instanceof Error ? err.message : String(err)}`,
         },
       })
     })

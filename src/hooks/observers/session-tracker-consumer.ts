@@ -35,7 +35,7 @@ export function createSessionTrackerConsumer(
         await deps.sessionTracker.handleSessionEvent({ eventType, sessionID, event: ev })
       }
     } catch (err) {
-      deps.logWarn?.("[Harness] Session tracker event observer failed", err)
+      deps.logWarn?.("[Hivemind] Session tracker event observer failed", err)
     }
   }
 }

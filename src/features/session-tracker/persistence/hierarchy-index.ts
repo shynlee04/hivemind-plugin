@@ -308,7 +308,7 @@ export class HierarchyIndex {
     // This warning makes the cap observable for P23 dispatch redesign.
     if (depth > 2) {
       process.emitWarning(
-        `[Harness] Session tracker: delegation depth ${depth} exceeds max 2 — truncating to ${capped}. Session: "${sessionID}"`,
+        `[Hivemind] Session tracker: delegation depth ${depth} exceeds max 2 — truncating to ${capped}. Session: "${sessionID}"`,
       )
     }
     return capped

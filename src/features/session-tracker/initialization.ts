@@ -206,7 +206,7 @@ export function constructDependencies(
           body: {
             service: "session-tracker",
             level: "warn",
-            message: `[Harness] Session tracker: frontmatter update failed for "${sessionID}"`,
+            message: `[Hivemind] Session tracker: frontmatter update failed for "${sessionID}"`,
             extra: { error: err instanceof Error ? err.message : String(err) },
           },
         })

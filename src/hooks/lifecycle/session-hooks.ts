@@ -223,7 +223,7 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
               state.exhausted = true
               stateManager.addWarning(
                 sessionID,
-                `[Harness] Reached max auto-loop iterations (${autoLoopConfig.maxIterations}) for session ${sessionID}`,
+                `[Hivemind] Reached max auto-loop iterations (${autoLoopConfig.maxIterations}) for session ${sessionID}`,
               )
             }
           } else if (result.status === "failed") {
@@ -263,28 +263,28 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
                 } else if (ralphResult.status === "exhausted") {
                   const escalation = deps.escalationMessage
                     ? deps.escalationMessage(ralphResult)
-                    : `[Harness] ralph-loop exhausted ${ralphResult.cycles} correction cycles for session ${sessionID}`
+                    : `[Hivemind] ralph-loop exhausted ${ralphResult.cycles} correction cycles for session ${sessionID}`
                   stateManager.addWarning(sessionID, escalation)
                 } else if (ralphResult.status === "error") {
                   stateManager.addWarning(
                     sessionID,
-                    `[Harness] ralph-loop error for session ${sessionID}: ${ralphResult.errors.join("; ")}`,
+                    `[Hivemind] ralph-loop error for session ${sessionID}: ${ralphResult.errors.join("; ")}`,
                   )
                 }
               } catch (ralphError) {
                 const msg = ralphError instanceof Error ? ralphError.message : String(ralphError)
-                stateManager.addWarning(sessionID, `[Harness] ralph-loop threw: ${msg}`)
+                stateManager.addWarning(sessionID, `[Hivemind] ralph-loop threw: ${msg}`)
               }
             } else {
               stateManager.addWarning(
                 sessionID,
-                `[Harness] Auto-loop failed for session ${sessionID}: ${result.error ?? "unknown error"}`,
+                `[Hivemind] Auto-loop failed for session ${sessionID}: ${result.error ?? "unknown error"}`,
               )
             }
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error)
-          stateManager.addWarning(sessionID, `[Harness] Auto-loop dispatcher failed: ${message}`)
+          stateManager.addWarning(sessionID, `[Hivemind] Auto-loop dispatcher failed: ${message}`)
         } finally {
           state.retryPending = false
           if (terminalAutoLoopSessions.has(sessionID) || stateCleaned) {

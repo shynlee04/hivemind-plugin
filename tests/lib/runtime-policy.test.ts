@@ -4,7 +4,7 @@
  * Covers:
  *  - Default policy values match current production behavior
  *  - Session-specific overrides win over workspace defaults
- *  - Out-of-range limits are clamped/rejected with [Harness] errors
+ *  - Out-of-range limits are clamped/rejected with [Hivemind] errors
  *
  * RESEARCH D-16: This module supplements OpenCode built-ins — it does NOT
  * replace hook/session surfaces that OpenCode already provides.
@@ -208,11 +208,11 @@ describe("getRuntimePolicyForSession", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test 3: Out-of-range limits are clamped/rejected with [Harness] errors
+// Test 3: Out-of-range limits are clamped/rejected with [Hivemind] errors
 // ---------------------------------------------------------------------------
 
 describe("loadRuntimePolicy — validation", () => {
-  it("rejects zero globalLimit with [Harness] error", () => {
+  it("rejects zero globalLimit with [Hivemind] error", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 0 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
@@ -221,7 +221,7 @@ describe("loadRuntimePolicy — validation", () => {
     expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
   })
 
-  it("rejects negative globalLimit with [Harness] error", () => {
+  it("rejects negative globalLimit with [Hivemind] error", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: -1 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
@@ -230,7 +230,7 @@ describe("loadRuntimePolicy — validation", () => {
     expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
   })
 
-  it("rejects zero maxToolCallsPerSession with [Harness] error", () => {
+  it("rejects zero maxToolCallsPerSession with [Hivemind] error", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 0, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
@@ -239,7 +239,7 @@ describe("loadRuntimePolicy — validation", () => {
     expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
   })
 
-  it("rejects zero repeatedSignatureThreshold with [Harness] error", () => {
+  it("rejects zero repeatedSignatureThreshold with [Hivemind] error", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 0, warningCap: 25, resetOnCompact: true },
@@ -248,7 +248,7 @@ describe("loadRuntimePolicy — validation", () => {
     expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
   })
 
-  it("rejects zero warningCap with [Harness] error", () => {
+  it("rejects zero warningCap with [Hivemind] error", () => {
     const workspace: RuntimePolicy = {
       concurrency: { globalLimit: 3 },
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 0, resetOnCompact: true },

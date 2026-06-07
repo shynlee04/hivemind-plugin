@@ -128,7 +128,7 @@ export function evaluateGovernance(
       state.violations.push(...matchedViolations)
       writeGovernanceState(state)
     } catch (err) {
-      console.error(`[Harness] Failed to record governance violations: ${err}`)
+      console.error(`[Hivemind] Failed to record governance violations: ${err}`)
     }
   }
 

@@ -69,7 +69,7 @@ type StatusDeps = {
 }
 
 const UNSUPPORTED_REPLACEMENT_MESSAGE =
-  "[Harness] restart/redirect is runtime-blocked: @opencode-ai/plugin ToolContext v1.15.4 does not expose a task field or verified custom-tool API for creating a replacement child session. Abort/cancel existing records remain supported; replacement dispatch requires a future verified SDK/CP-PTY path."
+  "[Hivemind] restart/redirect is runtime-blocked: @opencode-ai/plugin ToolContext v1.15.4 does not expose a task field or verified custom-tool API for creating a replacement child session. Abort/cancel existing records remain supported; replacement dispatch requires a future verified SDK/CP-PTY path."
 
 /**
  * Converts a delegation record into the public status-tool response shape.
@@ -492,12 +492,12 @@ export function createDelegationStatusTool(
       manifestCache.clear()
 
       const parsed = DelegationStatusInputSchema.safeParse(rawArgs)
-      if (!parsed.success) return renderToolResult(error(`[Harness] Invalid delegation-status input: ${z.prettifyError(parsed.error)}`))
+      if (!parsed.success) return renderToolResult(error(`[Hivemind] Invalid delegation-status input: ${z.prettifyError(parsed.error)}`))
       const args = parsed.data
 
       try {
         if (!context.sessionID) {
-          return renderToolResult(error("[Harness] Missing caller session ID for delegation-status"))
+          return renderToolResult(error("[Hivemind] Missing caller session ID for delegation-status"))
         }
         if (args.action === "find-stackable") return await handleFindStackable(args, context.sessionID, delegationManager, readPersisted, deps)
         if (args.action === "list") return renderList(args, context.sessionID, delegationManager, readPersisted, deps)
@@ -513,7 +513,7 @@ export function createDelegationStatusTool(
         // as optional so older managers (without G2) skip this branch gracefully.
         if (args.action === "pool") {
           if (typeof delegationManager.getPoolSnapshot !== "function") {
-            return renderToolResult(error("[Harness] delegation-status pool action requires getPoolSnapshot() support on the manager"))
+            return renderToolResult(error("[Hivemind] delegation-status pool action requires getPoolSnapshot() support on the manager"))
           }
           const snapshot = delegationManager.getPoolSnapshot()
           return renderToolResult(success(`Delegation pool snapshot: ${(snapshot as { delegations?: unknown[] }).delegations?.length ?? 0} entries`, snapshot as Record<string, unknown>))
@@ -562,7 +562,7 @@ export function createDelegationStatusTool(
           }
 
           if (!delegation) {
-            return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
+            return renderToolResult(error(`[Hivemind] Delegation "${args.delegationId}" not found`))
           }
 
           const isManagerActive = delegationManager.getStatus(delegation.id) !== undefined ||
@@ -577,7 +577,7 @@ export function createDelegationStatusTool(
 
           if (!(await canAccessDelegation(projectRoot, context.sessionID, delegation, delegationManager))) {
             return renderToolResult(error(
-              `[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`,
+              `[Hivemind] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`,
             ))
           }
 
@@ -691,7 +691,7 @@ async function renderList(args: DelegationStatusInput, sessionID: string, manage
 }
 
 async function handleControl(args: DelegationStatusInput, callerSessionId: string, manager: ManagerLike, readPersisted: () => Delegation[], deps: StatusDeps): Promise<string> {
-  if (!args.delegationId || !args.control) return renderToolResult(error("[Harness] control action requires delegationId and control"))
+  if (!args.delegationId || !args.control) return renderToolResult(error("[Hivemind] control action requires delegationId and control"))
   const projectRoot = deps.projectRoot ?? (process.env.OPENCODE_HARNESS_STATE_DIR ? dirname(dirname(process.env.OPENCODE_HARNESS_STATE_DIR)) : process.cwd())
 
   let delegation = (manager.getStatus(args.delegationId)
@@ -705,8 +705,8 @@ async function handleControl(args: DelegationStatusInput, callerSessionId: strin
     }
   }
 
-  if (!delegation) return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
-  if (!(await canAccessDelegation(projectRoot, callerSessionId, delegation, manager))) return renderToolResult(error(`[Harness] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`))
+  if (!delegation) return renderToolResult(error(`[Hivemind] Delegation "${args.delegationId}" not found`))
+  if (!(await canAccessDelegation(projectRoot, callerSessionId, delegation, manager))) return renderToolResult(error(`[Hivemind] Access denied for delegation "${args.delegationId}": caller session is not in the recorded owner lineage`))
 
   const isTerminal = delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout"
   if (isTerminal) {
@@ -726,7 +726,7 @@ async function handleControl(args: DelegationStatusInput, callerSessionId: strin
         return renderToolResult(success(`Delegation ${delegation.id} aborted (was terminal: ${delegation.status})`, { delegationId: delegation.id, status: "aborted", wasTerminal: delegation.status }))
       }
     }
-    return renderToolResult(error("[Harness] cannot control terminal delegation"))
+    return renderToolResult(error("[Hivemind] cannot control terminal delegation"))
   }
 
   if (manager.controlDelegation) {
@@ -755,7 +755,7 @@ async function handleControl(args: DelegationStatusInput, callerSessionId: strin
     }
     return renderToolResult(success(`Delegation ${delegation.id} cancelled`, { delegationId: delegation.id, status: "cancelled" }))
   }
-  return renderToolResult(error("[Harness] restart/redirect requires coordinator-backed manager control API"))
+  return renderToolResult(error("[Hivemind] restart/redirect requires coordinator-backed manager control API"))
 }
 
 /**
@@ -835,10 +835,10 @@ export { UNSUPPORTED_REPLACEMENT_MESSAGE }
 function handlePeek(args: DelegationStatusInput, deps: StatusDeps): string {
   const paneId = args.paneId
   if (!paneId && !args.delegationId) {
-    return renderToolResult(error("[Harness] peek action requires either paneId or delegationId"))
+    return renderToolResult(error("[Hivemind] peek action requires either paneId or delegationId"))
   }
   if (typeof deps.getPaneContent !== "function") {
-    return renderToolResult(error("[Harness] peek action requires getPaneContent() wiring on the deps"))
+    return renderToolResult(error("[Hivemind] peek action requires getPaneContent() wiring on the deps"))
   }
   // When delegationId is supplied but paneId is not, we resolve paneId from
   // the delegation record. The peek action is a small surface; we do not
@@ -846,11 +846,11 @@ function handlePeek(args: DelegationStatusInput, deps: StatusDeps): string {
   // is absent, callers should pass it explicitly. We still validate that
   // paneId is present.
   if (!paneId) {
-    return renderToolResult(error("[Harness] peek action: delegationId→paneId resolution not yet wired; pass paneId explicitly"))
+    return renderToolResult(error("[Hivemind] peek action: delegationId→paneId resolution not yet wired; pass paneId explicitly"))
   }
   const capture = deps.getPaneContent(paneId)
   if (!capture) {
-    return renderToolResult(error(`[Harness] No capture recorded for pane "${paneId}"; polling may not have run yet`))
+    return renderToolResult(error(`[Hivemind] No capture recorded for pane "${paneId}"; polling may not have run yet`))
   }
   const content = args.maxBytes && capture.content.length > args.maxBytes
     ? capture.content.slice(-args.maxBytes)
@@ -880,13 +880,13 @@ function handleProgress(
   deps: StatusDeps,
 ): string {
   if (!args.delegationId) {
-    return renderToolResult(error("[Harness] progress action requires delegationId"))
+    return renderToolResult(error("[Hivemind] progress action requires delegationId"))
   }
   const delegation = (manager.getStatus(args.delegationId)
     ?? manager.getAllDelegations().find((d) => d.childSessionId === args.delegationId)
     ?? readPersisted().find((d) => d.id === args.delegationId || d.childSessionId === args.delegationId))
   if (!delegation) {
-    return renderToolResult(error(`[Harness] Delegation "${args.delegationId}" not found`))
+    return renderToolResult(error(`[Hivemind] Delegation "${args.delegationId}" not found`))
   }
   const lastEvent = typeof deps.getLastChildEvent === "function"
     ? deps.getLastChildEvent(delegation.childSessionId)

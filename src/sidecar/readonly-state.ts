@@ -11,7 +11,7 @@ import { isAbsolute, relative, resolve } from "node:path"
  * that needs to access `.hivemind/state/`
  * or `.planning/` goes through the read helpers below; any accidental
  * write attempt is intercepted by `refuseCanonicalWrite()` and
- * surfaces immediately as a `[Harness]` error.
+ * surfaces immediately as a `[Hivemind]` error.
  *
  * Path containment is checked logically — `path.relative()` followed
  * by `..` rejection — so the guard does not depend on the canonical
@@ -74,7 +74,7 @@ export function isCanonicalStatePath(absolutePath: string, opts: ReadOnlyStateOp
  * @param absolutePath - Path to the file inside a canonical surface.
  * @param opts - Read-only state options including the project root.
  * @returns The file contents as a UTF-8 string.
- * @throws `[Harness]` SIDECAR-03 error when `absolutePath` is outside
+ * @throws `[Hivemind]` SIDECAR-03 error when `absolutePath` is outside
  *   the canonical state surface.
  *
  * @example
@@ -88,7 +88,7 @@ export function isCanonicalStatePath(absolutePath: string, opts: ReadOnlyStateOp
 export function readCanonicalState(absolutePath: string, opts: ReadOnlyStateOptions): string {
   if (!isCanonicalStatePath(absolutePath, opts)) {
     throw new Error(
-      `[Harness] sidecar SIDECAR-03: read denied for non-canonical path: ${absolutePath}`,
+      `[Hivemind] sidecar SIDECAR-03: read denied for non-canonical path: ${absolutePath}`,
     )
   }
   return readFileSync(absolutePath, "utf8")
@@ -101,12 +101,12 @@ export function readCanonicalState(absolutePath: string, opts: ReadOnlyStateOpti
  * @param absolutePath - Absolute path to read.
  * @param opts - Read-only state options including the project root.
  * @returns File contents as a string.
- * @throws Always throws a `[Harness]` SIDECAR-03 error if the path is not canonical.
+ * @throws Always throws a `[Hivemind]` SIDECAR-03 error if the path is not canonical.
  */
 export async function readCanonicalStateAsync(absolutePath: string, opts: ReadOnlyStateOptions): Promise<string> {
   if (!isCanonicalStatePath(absolutePath, opts)) {
     throw new Error(
-      `[Harness] sidecar SIDECAR-03: read denied for non-canonical path: ${absolutePath}`,
+      `[Hivemind] sidecar SIDECAR-03: read denied for non-canonical path: ${absolutePath}`,
     )
   }
   return readFile(absolutePath, "utf8")
@@ -116,13 +116,13 @@ export async function readCanonicalStateAsync(absolutePath: string, opts: ReadOn
  * SIDECAR-03 enforcement guard. The sidecar must never write to
  * canonical state; any code path that would attempt a write should
  * call this function first so the failure surfaces immediately as a
- * `[Harness]` error rather than silently corrupting state.
+ * `[Hivemind]` error rather than silently corrupting state.
  *
  * @param absolutePath - Path the caller intended to write.
  * @param opts - Read-only state options including the project root.
  * @returns This function never returns — its declared return type is
  *   `never` so TypeScript narrows the call site to "unreachable".
- * @throws Always throws a `[Harness]` SIDECAR-03 error.
+ * @throws Always throws a `[Hivemind]` SIDECAR-03 error.
  *
  * @example
  * ```ts
@@ -134,6 +134,6 @@ export async function readCanonicalStateAsync(absolutePath: string, opts: ReadOn
 export function refuseCanonicalWrite(absolutePath: string, opts: ReadOnlyStateOptions): never {
   void opts
   throw new Error(
-    `[Harness] sidecar SIDECAR-03: write to canonical state forbidden — sidecar is read-only (target: ${absolutePath})`,
+    `[Hivemind] sidecar SIDECAR-03: write to canonical state forbidden — sidecar is read-only (target: ${absolutePath})`,
   )
 }

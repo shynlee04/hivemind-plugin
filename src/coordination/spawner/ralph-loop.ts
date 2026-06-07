@@ -16,7 +16,7 @@
  *
  * The exhausted case **does not throw** — callers decide how to
  * escalate. {@link escalationMessage} is provided as a convenience
- * that produces a `[Harness]`-prefixed string suitable for surfacing
+ * that produces a `[Hivemind]`-prefixed string suitable for surfacing
  * to humans.
  */
 
@@ -82,7 +82,7 @@ export type RalphLoopResult<T> = {
  * @template T - Type of the result being validated.
  * @param options - Loop configuration with injected validator/fixer.
  * @returns Final {@link RalphLoopResult}.
- * @throws `[Harness]`-prefixed Error when `maxCorrectionCycles` is
+ * @throws `[Hivemind]`-prefixed Error when `maxCorrectionCycles` is
  *   non-positive. Validator/fixer throws are returned as
  *   `status: "error"`, not re-thrown.
  *
@@ -104,7 +104,7 @@ export type RalphLoopResult<T> = {
 export async function runRalphLoop<T>(options: RalphLoopOptions<T>): Promise<RalphLoopResult<T>> {
   if (!Number.isInteger(options.maxCorrectionCycles) || options.maxCorrectionCycles <= 0) {
     throw new Error(
-      `[Harness] ralph-loop maxCorrectionCycles must be a positive integer, got ${options.maxCorrectionCycles}`,
+      `[Hivemind] ralph-loop maxCorrectionCycles must be a positive integer, got ${options.maxCorrectionCycles}`,
     )
   }
 
@@ -119,7 +119,7 @@ export async function runRalphLoop<T>(options: RalphLoopOptions<T>): Promise<Ral
       status: "error",
       cycles: 0,
       finalResult: currentResult,
-      errors: [`[Harness] validator threw: ${formatThrown(error)}`],
+      errors: [`[Hivemind] validator threw: ${formatThrown(error)}`],
     }
   }
 
@@ -137,7 +137,7 @@ export async function runRalphLoop<T>(options: RalphLoopOptions<T>): Promise<Ral
     try {
       currentResult = await options.fixer(fixPrompt, cycle)
     } catch (error) {
-      errors.push(`[Harness] fixer threw on cycle ${cycle}: ${formatThrown(error)}`)
+      errors.push(`[Hivemind] fixer threw on cycle ${cycle}: ${formatThrown(error)}`)
       return { status: "error", cycles: cycle, finalResult: currentResult, errors }
     }
 
@@ -145,7 +145,7 @@ export async function runRalphLoop<T>(options: RalphLoopOptions<T>): Promise<Ral
     try {
       cycleValidation = await options.validator(currentResult, cycle)
     } catch (error) {
-      errors.push(`[Harness] validator threw on cycle ${cycle}: ${formatThrown(error)}`)
+      errors.push(`[Hivemind] validator threw on cycle ${cycle}: ${formatThrown(error)}`)
       return { status: "error", cycles: cycle, finalResult: currentResult, errors }
     }
 
@@ -161,17 +161,17 @@ export async function runRalphLoop<T>(options: RalphLoopOptions<T>): Promise<Ral
 }
 
 /**
- * Build a `[Harness]`-prefixed escalation message from an exhausted
+ * Build a `[Hivemind]`-prefixed escalation message from an exhausted
  * ralph-loop result. Use this when surfacing exhaustion to humans
  * (logs, alerts, error throws).
  *
  * @template T - Type of the result being validated.
  * @param result - Result returned by {@link runRalphLoop}.
- * @returns Single-line `[Harness]` message including reason summary.
+ * @returns Single-line `[Hivemind]` message including reason summary.
  */
 export function escalationMessage<T>(result: RalphLoopResult<T>): string {
   const reasonSummary = result.errors.length > 0 ? result.errors.join("; ") : "no validator reasons recorded"
-  return `[Harness] ralph-loop exhausted ${result.cycles} correction cycles; reasons: ${reasonSummary}`
+  return `[Hivemind] ralph-loop exhausted ${result.cycles} correction cycles; reasons: ${reasonSummary}`
 }
 
 /**

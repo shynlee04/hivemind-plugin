@@ -37,7 +37,7 @@ type SessionJournalCreateInput = Omit<SessionJournalEntry, "id"> & { id?: string
 
 function assertStateRole(value: string): asserts value is SessionJournalStateRole {
   if (!SESSION_JOURNAL_STATE_ROLES.includes(value as SessionJournalStateRole)) {
-    throw new Error(`[Harness] Invalid session journal state role: ${value}`)
+    throw new Error(`[Hivemind] Invalid session journal state role: ${value}`)
   }
 }
 

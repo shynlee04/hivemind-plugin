@@ -45,11 +45,11 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike, config?: { 
     },
     async execute(rawArgs: unknown, context: ToolContext): Promise<string> {
       const parsed = DelegateTaskV2Schema.safeParse(rawArgs)
-      if (!parsed.success) return renderToolResult(error(`[Harness] Invalid delegate-task input: ${z.prettifyError(parsed.error)}`))
+      if (!parsed.success) return renderToolResult(error(`[Hivemind] Invalid delegate-task input: ${z.prettifyError(parsed.error)}`))
       const args = parsed.data
 
       if (config && config.delegation_systems?.delegate_task === false) {
-        return renderToolResult(error("[Harness] delegate-task is disabled by config `delegation_systems.delegate_task: false`. Enable it in .hivemind/configs.json to use this tool."))
+        return renderToolResult(error("[Hivemind] delegate-task is disabled by config `delegation_systems.delegate_task: false`. Enable it in .hivemind/configs.json to use this tool."))
       }
 
       let parentSessionId = context.sessionID
@@ -87,11 +87,11 @@ export function createDelegateTaskTool(coordinator: CoordinatorLike, config?: { 
         })
         const resultRecord = asRecord(result)
         if (resultRecord.status === "error" || resultRecord.status === "timeout") {
-          const resultMessage = typeof resultRecord.error === "string" ? resultRecord.error : `[Harness] delegate-task returned ${String(resultRecord.status)}`
+          const resultMessage = typeof resultRecord.error === "string" ? resultRecord.error : `[Hivemind] delegate-task returned ${String(resultRecord.status)}`
           return renderToolResult(error(resultMessage, resultRecord))
         }
         return renderToolResult(success(
-          `[Harness] Delegated task to ${args.agent}${args.stackOnSessionId ? ` (stacked on ${args.stackOnSessionId})` : ""}`,
+          `[Hivemind] Delegated task to ${args.agent}${args.stackOnSessionId ? ` (stacked on ${args.stackOnSessionId})` : ""}`,
           { ...resultRecord, agent: args.agent, stackedOn: args.stackOnSessionId ?? undefined },
         ))
       } catch (caughtError) {

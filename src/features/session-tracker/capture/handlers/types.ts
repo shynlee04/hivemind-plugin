@@ -217,7 +217,7 @@ export async function writeImmediateChildFile(
       body: {
         service: "session-tracker",
         level: "warn",
-        message: `[Harness] Session tracker: immediate child .json write failed for "${sessionID}" — enqueued to retry queue`,
+        message: `[Hivemind] Session tracker: immediate child .json write failed for "${sessionID}" — enqueued to retry queue`,
         extra: { error: err instanceof Error ? err.message : String(err) },
       },
     })

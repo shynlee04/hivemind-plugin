@@ -122,7 +122,7 @@ export const HivemindControlPlane: Plugin = async ({ client, directory }) => {
     body: {
       service: "hivemind",
       level: "info",
-      message: "[Harness] Hivemind plugin loaded — registering 26 custom tools",
+      message: "[Hivemind] Hivemind plugin loaded — registering 26 custom tools",
     },
   })
 
@@ -191,7 +191,7 @@ export const HivemindControlPlane: Plugin = async ({ client, directory }) => {
       body: {
         service: "sidecar",
         level: "warn",
-        message: "[Harness] Sidecar: server start failed — continuing without sidecar",
+        message: "[Hivemind] Sidecar: server start failed — continuing without sidecar",
         extra: { error: err instanceof Error ? err.message : String(err) },
       },
     })
@@ -284,7 +284,7 @@ export const HivemindControlPlane: Plugin = async ({ client, directory }) => {
       body: {
         service: "session-tracker",
         level: "warn",
-        message: "[Harness] Session tracker: initialization failed",
+        message: "[Hivemind] Session tracker: initialization failed",
         extra: { error: err instanceof Error ? err.message : String(err) },
       },
     })

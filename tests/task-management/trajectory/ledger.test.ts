@@ -82,7 +82,7 @@ describe("trajectory ledger", () => {
     mkdirSync(resolve(ledgerPath, ".."), { recursive: true })
     writeFileSync(ledgerPath, "not valid json {{{", "utf-8")
 
-    expect(() => readTrajectoryLedger(root)).toThrow("[Harness] Failed to parse trajectory ledger")
+    expect(() => readTrajectoryLedger(root)).toThrow("[Hivemind] Failed to parse trajectory ledger")
   })
 
   it("readTrajectoryLedger quarantines corrupt file before throwing", () => {

@@ -69,13 +69,13 @@ export function completeContract(projectRoot: string, contractId: string, proof?
   // Fetch first for evidence gate check (before transition)
   const contract = getAgentWorkContract(projectRoot, contractId)
   if (!contract) {
-    throw new Error(`[Harness] agent work contract not found: ${contractId}`)
+    throw new Error(`[Hivemind] agent work contract not found: ${contractId}`)
   }
 
   // Evidence gating: require proof when requiredProof is non-empty (REQ-CONT-02)
   if (contract.evidence.requiredProof.length > 0 && !proof) {
     throw new Error(
-      `[Harness] contract ${contractId} requires proof before completion. ` +
+      `[Hivemind] contract ${contractId} requires proof before completion. ` +
       `Required: ${contract.evidence.requiredProof.join(", ")}`
     )
   }
@@ -118,13 +118,13 @@ export function cancelContract(projectRoot: string, contractId: string, reason: 
 function transitionContract(projectRoot: string, contractId: string, targetStatus: AgentWorkStatus) {
   const contract = getAgentWorkContract(projectRoot, contractId)
   if (!contract) {
-    throw new Error(`[Harness] agent work contract not found: ${contractId}`)
+    throw new Error(`[Hivemind] agent work contract not found: ${contractId}`)
   }
 
   const allowed = ALLOWED_TRANSITIONS[contract.status]
   if (!allowed.includes(targetStatus)) {
     throw new Error(
-      `[Harness] invalid contract transition: ${contract.status}→${targetStatus} (contract ${contractId})`
+      `[Hivemind] invalid contract transition: ${contract.status}→${targetStatus} (contract ${contractId})`
     )
   }
 

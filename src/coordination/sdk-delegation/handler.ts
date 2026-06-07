@@ -15,7 +15,7 @@ import {
   type Delegation,
 } from "../../shared/types.js"
 
-const RECOVERY_UNVERIFIED_ERROR = "[Harness] Delegation unverified after restart; recovery will retry through safety ceiling."
+const RECOVERY_UNVERIFIED_ERROR = "[Hivemind] Delegation unverified after restart; recovery will retry through safety ceiling."
 
 // ---------------------------------------------------------------------------
 // Types
@@ -101,7 +101,7 @@ export class SdkDelegationHandler {
       ])
       const status = statusMap[delegation.childSessionId]
       if (!status?.type) {
-        throw new Error("[Harness] missing")
+        throw new Error("[Hivemind] missing")
       }
 
       this.clearStaleRecoveryError(delegation)
@@ -176,8 +176,8 @@ export class SdkDelegationHandler {
       if (cached) {
         if (cached.signal !== "idle") {
           const reason = cached.error
-            ? `[Harness] Session ${cached.signal} during delegation: ${cached.error}`
-            : `[Harness] Session ${cached.signal} during delegation`
+            ? `[Hivemind] Session ${cached.signal} during delegation: ${cached.error}`
+            : `[Hivemind] Session ${cached.signal} during delegation`
           this.callbacks.onTerminal(delegationId, "error", reason)
           return
         }
@@ -229,7 +229,7 @@ export class SdkDelegationHandler {
     const lastChangeAt = delegation.lastMessageCountChangeAt ?? delegation.createdAt
     const timeSinceLastChange = now - lastChangeAt
     if (timeSinceLastChange > DEFAULT_STALE_TIMEOUT_MS) {
-      this.callbacks.onTerminal(delegationId, "timeout", `[Harness] Stale session: no message activity for ${DEFAULT_STALE_TIMEOUT_MS}ms`)
+      this.callbacks.onTerminal(delegationId, "timeout", `[Hivemind] Stale session: no message activity for ${DEFAULT_STALE_TIMEOUT_MS}ms`)
       return
     }
 
@@ -292,7 +292,7 @@ export class SdkDelegationHandler {
       // emitting text output.
       if (!delegation.result.trim()) {
         if (hasAssistantWorkEvidence(messages)) {
-          delegation.result = "[Harness] Delegation completed with tool-use evidence but no text output."
+          delegation.result = "[Hivemind] Delegation completed with tool-use evidence but no text output."
           this.callbacks.onTerminal(delegationId, "completed")
           return
         }
@@ -312,7 +312,7 @@ export class SdkDelegationHandler {
         this.callbacks.onTerminal(
           delegationId,
           "error",
-          "[Harness] Delegation reached stability without assistant completion evidence; manual review required.",
+          "[Hivemind] Delegation reached stability without assistant completion evidence; manual review required.",
         )
         return
       }

@@ -125,7 +125,7 @@ describe("delegation-status tool", () => {
     const result = parseResult(raw)
 
     expect(result.kind).toBe("error")
-    expect(result.message).toContain("[Harness] Missing caller session ID for delegation-status")
+    expect(result.message).toContain("[Hivemind] Missing caller session ID for delegation-status")
     expect(manager.getStatus).not.toHaveBeenCalled()
   })
 
@@ -233,7 +233,7 @@ describe("delegation-status tool", () => {
       status: "error",
       terminalKind: "interrupted-by-signal",
       terminationSignal: "SIGTERM",
-      error: "[Harness] Command interrupted by signal SIGTERM",
+      error: "[Hivemind] Command interrupted by signal SIGTERM",
       completedAt: Date.now(),
     })
     const manager = createManagerStub([delegation])
@@ -254,7 +254,7 @@ describe("delegation-status tool", () => {
     const delegation = makeDelegation({
       id: "del-timeout",
       status: "timeout",
-      error: "[Harness] Delegation safety ceiling reached",
+      error: "[Hivemind] Delegation safety ceiling reached",
       completedAt: Date.now(),
     })
     const manager = createManagerStub([delegation])

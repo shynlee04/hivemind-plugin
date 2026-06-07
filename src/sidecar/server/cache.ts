@@ -73,7 +73,7 @@ export class SidecarStateCache {
    * @param data     - Value to cache.
    * @param category - Category used to select the default TTL.
    * @returns The computed ETag (strong, quoted per HTTP spec).
-   * @throws `[Harness]` on serialisation failure.
+   * @throws `[Hivemind]` on serialisation failure.
    */
   set<T>(key: string, data: T, category: CacheCategory = "session"): string {
     const etag = this.#computeEtag(data)
@@ -109,7 +109,7 @@ export class SidecarStateCache {
    *
    * @param data - Serializable value.
    * @returns Hex-encoded SHA-256 digest, quoted as a strong ETag.
-   * @throws `[Harness]` if the value cannot be serialised.
+   * @throws `[Hivemind]` if the value cannot be serialised.
    */
   #computeEtag(data: unknown): string {
     const json = JSON.stringify(data)

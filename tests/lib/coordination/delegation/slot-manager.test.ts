@@ -8,7 +8,7 @@ describe("SlotManager", () => {
       manager.acquire("session-1", `queue-${index}`)
     )))
 
-    await expect(manager.acquire("session-1", "queue-11")).rejects.toThrow("[Harness] Delegation slot limit reached for session session-1")
+    await expect(manager.acquire("session-1", "queue-11")).rejects.toThrow("[Hivemind] Delegation slot limit reached for session session-1")
     for (const handle of handles) manager.release(handle)
   })
 
@@ -28,7 +28,7 @@ describe("SlotManager", () => {
     const first = await manager.acquire("session-1", "agent:builder")
     const second = await manager.acquire("session-1", "agent:builder")
 
-    await expect(manager.acquire("session-1", "agent:builder")).rejects.toThrow("[Harness] Per-key delegation slot limit reached for session session-1 and queue agent:builder")
+    await expect(manager.acquire("session-1", "agent:builder")).rejects.toThrow("[Hivemind] Per-key delegation slot limit reached for session session-1 and queue agent:builder")
 
     manager.release(first)
     manager.release(second)
@@ -43,7 +43,7 @@ describe("SlotManager", () => {
     })
     const first = await manager.acquire("session-1", "agent:slow")
 
-    await expect(manager.acquire("session-1", "agent:slow")).rejects.toThrow("[Harness] Delegation slot acquire timed out for session session-1 and queue agent:slow")
+    await expect(manager.acquire("session-1", "agent:slow")).rejects.toThrow("[Hivemind] Delegation slot acquire timed out for session session-1 and queue agent:slow")
 
     manager.release(first)
   })

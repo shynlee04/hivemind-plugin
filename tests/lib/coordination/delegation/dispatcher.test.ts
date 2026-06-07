@@ -81,7 +81,7 @@ describe("DelegationDispatcher", () => {
       parentSessionId: "parent-1",
       queueKey: "agent:gsd-executor",
       surface: "agent-delegation",
-    })).rejects.toThrow("[Harness] Max delegation depth (3) reached at current depth 3.")
+    })).rejects.toThrow("[Hivemind] Max delegation depth (3) reached at current depth 3.")
 
     expect(slotHandle.release).toHaveBeenCalledOnce()
   })

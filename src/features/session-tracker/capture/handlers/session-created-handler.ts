@@ -26,7 +26,7 @@ export class SessionCreatedHandler {
           body: {
             service: "session-tracker",
             level: "info",
-            message: `[Harness] Session tracker: Gate 0 classification — pending dispatch detected for "${sessionID}"`,
+            message: `[Hivemind] Session tracker: Gate 0 classification — pending dispatch detected for "${sessionID}"`,
           },
         })
         await writeImmediateChildFile(
@@ -81,7 +81,7 @@ export class SessionCreatedHandler {
         body: {
           service: "session-tracker",
           level: "info",
-          message: `[Harness] Session tracker: creating root main session directory for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: creating root main session directory for "${sessionID}"`,
         },
       })
 
@@ -106,7 +106,7 @@ export class SessionCreatedHandler {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: failed to handle session.created for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: failed to handle session.created for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

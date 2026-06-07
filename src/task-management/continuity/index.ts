@@ -300,7 +300,7 @@ function loadStoreFromDisk(projectRoot?: string): ContinuityStoreFile {
       const quarantinePath = quarantineCorruptFile(filePath)
       const message = error instanceof Error ? error.message : String(error)
       throw new Error(
-        `[Harness] Failed to read continuity store at ${filePath}; corrupt file quarantined at ${quarantinePath}: ${message}`,
+        `[Hivemind] Failed to read continuity store at ${filePath}; corrupt file quarantined at ${quarantinePath}: ${message}`,
       )
     }
   }
@@ -360,10 +360,10 @@ export function recordSessionContinuity(record: SessionContinuityRecord): Sessio
         pendingNotifications: record.metadata.pendingNotifications?.length ? record.metadata.pendingNotifications : undefined,
         compactionCheckpoint: record.metadata.compactionCheckpoint,
       }).catch((err) => {
-        console.error(`[Harness] recordSessionContinuity dual-write error: ${err instanceof Error ? err.message : String(err)}`)
+        console.error(`[Hivemind] recordSessionContinuity dual-write error: ${err instanceof Error ? err.message : String(err)}`)
       })
     } catch (err) {
-      console.error(`[Harness] recordSessionContinuity dual-write error: ${err instanceof Error ? err.message : String(err)}`)
+      console.error(`[Hivemind] recordSessionContinuity dual-write error: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
@@ -439,10 +439,10 @@ export function patchSessionContinuity(
             pendingNotifications: patch.pendingNotifications?.length ? patch.pendingNotifications : undefined,
             compactionCheckpoint: patch.compactionCheckpoint,
           }).catch((err) => {
-            console.warn(`[Harness] patchSessionContinuity dual-write error for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`)
+            console.warn(`[Hivemind] patchSessionContinuity dual-write error for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`)
           })
         } catch (err) {
-          console.warn(`[Harness] patchSessionContinuity dual-write: skipping session-tracker write for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`)
+          console.warn(`[Hivemind] patchSessionContinuity dual-write: skipping session-tracker write for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`)
         }
       })()
     }

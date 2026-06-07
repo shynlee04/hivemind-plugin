@@ -1,7 +1,7 @@
 /**
  * Base class for all Hivemind runtime errors.
  *
- * Every `HivemindError` automatically prepends `[Harness]` to the error message,
+ * Every `HivemindError` automatically prepends `[Hivemind]` to the error message,
  * which the TUI suppression layer (REQ-34C) uses to route the error to
  * `client.app.log()` instead of `client.tui.showToast()`.
  *
@@ -31,7 +31,7 @@ export class HivemindError extends Error {
   readonly module: string
 
   constructor(cluster: string, module: string, message: string, code?: string) {
-    const prefixed = `[Harness] ${message}`
+    const prefixed = `[Hivemind] ${message}`
     super(prefixed)
     this.name = "HivemindError"
     this.cluster = cluster

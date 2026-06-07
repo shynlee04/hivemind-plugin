@@ -35,8 +35,8 @@ function createFacadeDeps(overrides: Partial<ConstructorParameters<typeof Delega
     lifecycle: {
       getStatus: vi.fn(() => baseDelegation),
       list: vi.fn(() => [baseDelegation, { ...baseDelegation, id: "dt-2", parentSessionId: "parent-2" }]),
-      markAborted: vi.fn(() => ({ delegationId: "dt-1", status: "error" as const, error: "[Harness] Delegation aborted" })),
-      markCancelled: vi.fn(() => ({ delegationId: "dt-1", status: "error" as const, error: "[Harness] Delegation cancelled" })),
+      markAborted: vi.fn(() => ({ delegationId: "dt-1", status: "error" as const, error: "[Hivemind] Delegation aborted" })),
+      markCancelled: vi.fn(() => ({ delegationId: "dt-1", status: "error" as const, error: "[Hivemind] Delegation cancelled" })),
       getChildSessionId: vi.fn(() => "child-1"),
       register: vi.fn(),
     },
@@ -82,7 +82,7 @@ describe("DelegationManager decomposition facade", () => {
 
     expect(manager.abortDelegation("dt-1")).toEqual({
       delegationId: "dt-1",
-      error: "[Harness] Delegation aborted",
+      error: "[Hivemind] Delegation aborted",
       status: "error",
     })
     expect(deps.lifecycle.markAborted).toHaveBeenCalledWith("dt-1")
@@ -249,7 +249,7 @@ describe("controlDelegation resume/chain/adjust-prompt/change-agent", () => {
 
     await expect(
       manager.controlDelegation({ action: "restart", delegationId: "dt-123", restartPrompt: "try again" })
-    ).rejects.toThrow("[Harness] cannot control terminal delegation")
+    ).rejects.toThrow("[Hivemind] cannot control terminal delegation")
   })
 
   it("adjust-prompt on completed delegation throws error", async () => {
@@ -269,7 +269,7 @@ describe("controlDelegation resume/chain/adjust-prompt/change-agent", () => {
 
     await expect(
       manager.controlDelegation({ action: "adjust-prompt", delegationId: "dt-123", restartPrompt: "more info" })
-    ).rejects.toThrow("[Harness]")
+    ).rejects.toThrow("[Hivemind]")
   })
 
   it("change-agent without agent throws error", async () => {
@@ -289,7 +289,7 @@ describe("controlDelegation resume/chain/adjust-prompt/change-agent", () => {
 
     await expect(
       manager.controlDelegation({ action: "change-agent", delegationId: "dt-789", restartPrompt: "do it" } as DelegationControlRequest)
-    ).rejects.toThrow("[Harness] change-agent requires an agent name")
+    ).rejects.toThrow("[Hivemind] change-agent requires an agent name")
   })
 
   it("resume without sendPromptAsync falls back to abort+dispatch path", async () => {

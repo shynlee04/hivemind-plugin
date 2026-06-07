@@ -46,7 +46,7 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
             handler: async () => ({ exitCode: 0 }),
           },
         ]),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
   })
 
@@ -56,25 +56,25 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
       const exit = await runCli(["help"], io)
       expect(exit).toBe(0)
       expect(stdout.join("")).toBe("")
-      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("[Hivemind]")
       expect(stderr.join("")).toContain("/hm-help")
     })
 
-    it("writes a [Harness] error to stderr and exits 64 for unknown commands", async () => {
+    it("writes a [Hivemind] error to stderr and exits 64 for unknown commands", async () => {
       const { io, stdout, stderr } = mkIO()
       const exit = await runCli(["does-not-exist"], io)
       expect(exit).toBe(64)
       expect(stdout.join("")).toBe("")
-      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("[Hivemind]")
       expect(stderr.join("")).toContain("does-not-exist")
     })
 
-    it("writes a [Harness] usage error to stderr and exits 64 when no command is given", async () => {
+    it("writes a [Hivemind] usage error to stderr and exits 64 when no command is given", async () => {
       const { io, stdout, stderr } = mkIO()
       const exit = await runCli([], io)
       expect(exit).toBe(64)
       expect(stdout.join("")).toBe("")
-      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("[Hivemind]")
     })
 
     it("dispatches --help to the help deprecation shim", async () => {
@@ -82,7 +82,7 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
       const exit = await runCli(["--help"], io)
       expect(exit).toBe(0)
       expect(stdout.join("")).toBe("")
-      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("[Hivemind]")
       expect(stderr.join("")).toContain("/hm-help")
     })
 
@@ -91,7 +91,7 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
       const exit = await runCli(["doctor"], io)
       expect(exit).toBe(0)
       expect(stdout.join("")).toBe("")
-      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("[Hivemind]")
       expect(stderr.join("")).toContain("/hm-doctor")
     })
 
@@ -99,7 +99,7 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
       const { io, stderr } = mkIO()
       const exit = await runCli(["recover"], io)
       expect(exit).toBe(0)
-      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("[Hivemind]")
       expect(stderr.join("")).toContain("/hm-recover")
     })
 
@@ -107,7 +107,7 @@ describe("cli/index — PH40-01 entrypoint integration", () => {
       const { io, stderr } = mkIO()
       const exit = await runCli(["version"], io)
       expect(exit).toBe(0)
-      expect(stderr.join("")).toContain("[Harness]")
+      expect(stderr.join("")).toContain("[Hivemind]")
       expect(stderr.join("")).toContain("/hm-about")
     })
   })

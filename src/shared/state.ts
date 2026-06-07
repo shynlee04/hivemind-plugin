@@ -75,7 +75,7 @@ export class TaskStateManager {
     const total = budget.descendants.size + budget.reserved
     if (total >= maxDescendantsPerRoot) {
       throw new Error(
-        `[Harness] Root session ${rootID} exceeded descendant budget (${maxDescendantsPerRoot})`
+        `[Hivemind] Root session ${rootID} exceeded descendant budget (${maxDescendantsPerRoot})`
       )
     }
     budget.reserved += 1

@@ -43,7 +43,7 @@ export class SessionErrorHandler {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: `[Harness] Session tracker: backfill failed for "${sessionID}"`,
+              message: `[Hivemind] Session tracker: backfill failed for "${sessionID}"`,
               extra: { error: err instanceof Error ? err.message : String(err) },
             },
           })
@@ -53,7 +53,7 @@ export class SessionErrorHandler {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: `[Harness] Session tracker: backfill failed for "${sessionID}" (error handler)`,
+              message: `[Hivemind] Session tracker: backfill failed for "${sessionID}" (error handler)`,
               extra: { error: err instanceof Error ? err.message : String(err) },
             },
           })
@@ -73,7 +73,7 @@ export class SessionErrorHandler {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: failed to handle session.error for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: failed to handle session.error for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

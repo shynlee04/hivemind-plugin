@@ -61,7 +61,7 @@ export function executeDocIntelligenceAction(
     }
     case "search": {
       if (!input.query?.trim()) {
-        throw new Error("[Harness] doc intelligence search requires a non-empty query")
+        throw new Error("[Hivemind] doc intelligence search requires a non-empty query")
       }
       const startPath = resolveDocPath(projectRoot, input.path)
       return {

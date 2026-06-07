@@ -104,13 +104,13 @@ export async function dispatchCommand(context: {
             })
           } catch (restoreError) {
             const msg = restoreError instanceof Error ? restoreError.message : String(restoreError)
-            console.error(`[Harness] Agent restore failed: ${msg}`)
+            console.error(`[Hivemind] Agent restore failed: ${msg}`)
           }
         }
       }
     } catch (caughtError: unknown) {
       const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-      console.error(`[Harness] Slash command dispatch failed: ${message}`)
+      console.error(`[Hivemind] Slash command dispatch failed: ${message}`)
     }
   }, 50)
 

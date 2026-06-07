@@ -194,7 +194,7 @@ export class SessionTracker {
           body: {
             service: "session-tracker",
             level: "warn",
-            message: `[Harness] Session tracker: handleSessionEvent skipped — ` +
+            message: `[Hivemind] Session tracker: handleSessionEvent skipped — ` +
               `eventCapture not initialized (sessionID: ${event.sessionID}, eventType: ${event.eventType})`,
           },
         })
@@ -222,7 +222,7 @@ export class SessionTracker {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: "[Harness] Session tracker: fork child-copy failed, proceeding without children",
+              message: "[Hivemind] Session tracker: fork child-copy failed, proceeding without children",
               extra: { error: err instanceof Error ? err.message : String(err) },
             },
           })
@@ -233,7 +233,7 @@ export class SessionTracker {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: event handler failed",
+          message: "[Hivemind] Session tracker: event handler failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -314,7 +314,7 @@ export class SessionTracker {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: chat.message handler failed",
+          message: "[Hivemind] Session tracker: chat.message handler failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -382,7 +382,7 @@ export class SessionTracker {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: tool.execute.after handler failed",
+          message: "[Hivemind] Session tracker: tool.execute.after handler failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -448,7 +448,7 @@ export class SessionTracker {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: ensureAncestorRoute exceeded MAX_DEPTH=${MAX_DEPTH} at "${sessionID}" — truncating to prevent stack overflow`,
+          message: `[Hivemind] Session tracker: ensureAncestorRoute exceeded MAX_DEPTH=${MAX_DEPTH} at "${sessionID}" — truncating to prevent stack overflow`,
         },
       })
       return
@@ -498,7 +498,7 @@ export class SessionTracker {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: handleToolExecuteBefore failed",
+          message: "[Hivemind] Session tracker: handleToolExecuteBefore failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -593,7 +593,7 @@ export class SessionTracker {
           body: {
             service: "session-tracker",
             level: "info",
-            message: `[Harness] Session tracker: cleaned ${staleRemoved} stale entries from project-continuity.json`,
+            message: `[Hivemind] Session tracker: cleaned ${staleRemoved} stale entries from project-continuity.json`,
           },
         })
       }
@@ -611,7 +611,7 @@ export class SessionTracker {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: initialization failed",
+          message: "[Hivemind] Session tracker: initialization failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -634,7 +634,7 @@ export class SessionTracker {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: cleanup failed",
+          message: "[Hivemind] Session tracker: cleanup failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

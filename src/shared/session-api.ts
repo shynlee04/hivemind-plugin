@@ -33,7 +33,7 @@ function assertValidSessionID(sessionID: string, label = "session ID"): string {
   }
   if (!trimmed.startsWith("ses")) {
     throw new Error(
-      `[Harness] Invalid ${label} '${sessionID}'. Expected an OpenCode session ID starting with 'ses'.`,
+      `[Hivemind] Invalid ${label} '${sessionID}'. Expected an OpenCode session ID starting with 'ses'.`,
     )
   }
 
@@ -236,7 +236,7 @@ async function waitForAssistantResponse(
   }
 
   throw new Error(
-    `[Harness] session.prompt returned an empty response and no assistant output was captured within ${SYNC_PROMPT_FALLBACK_TIMEOUT_MS}ms.`,
+    `[Hivemind] session.prompt returned an empty response and no assistant output was captured within ${SYNC_PROMPT_FALLBACK_TIMEOUT_MS}ms.`,
   )
 }
 
@@ -324,14 +324,14 @@ export async function appendTuiPrompt(client: OpenCodeClient, text: string): Pro
  * @returns The unwrapped SDK response when the toast succeeds.
  */
 /**
- * Check if a message carries the `[Harness]` prefix that flags it as
+ * Check if a message carries the `[Hivemind]` prefix that flags it as
  * an internal runtime error that should be suppressed from TUI toasts.
  *
  * When `true`, the caller should route the message to `console.warn`
  * instead of `client.tui.showToast()`.
  */
 export function isHivemindError(message: string): boolean {
-  return message.startsWith("[Harness]")
+  return message.startsWith("[Hivemind]")
 }
 
 export async function showTuiToast(
@@ -339,7 +339,7 @@ export async function showTuiToast(
   message: string,
   variant?: "info" | "success" | "error" | "warning",
 ): Promise<unknown> {
-  // REQ-34C: [Harness]-prefixed errors route to console.warn instead of TUI toast.
+  // REQ-34C: [Hivemind]-prefixed errors route to console.warn instead of TUI toast.
   // This prevents internal runtime errors from cluttering the user's TUI.
   if (isHivemindError(message)) {
     console.warn(`[showToast suppressed] ${message}`)
@@ -417,7 +417,7 @@ export async function walkParentChain(client: OpenCodeClient, sessionID: string)
   let currentID: string | undefined = assertValidSessionID(sessionID)
   while (currentID) {
     if (visited.has(currentID)) {
-      throw new Error(`[Harness] Detected cyclic session parent chain at ${currentID}`)
+      throw new Error(`[Hivemind] Detected cyclic session parent chain at ${currentID}`)
     }
 
     visited.add(currentID)

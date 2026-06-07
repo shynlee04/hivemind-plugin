@@ -105,7 +105,7 @@ export class DelegationManager {
         stateMachine: options.stateMachine,
       })
     } else if (!options.coordinator || !options.lifecycle) {
-      throw new Error("[Harness] DelegationManager requires a client when v2 modules are not injected.")
+      throw new Error("[Hivemind] DelegationManager requires a client when v2 modules are not injected.")
     }
   }
 
@@ -284,7 +284,7 @@ export class DelegationManager {
     let result: DelegationResult
     if (this.options.coordinator?.abortDelegation) result = this.options.coordinator.abortDelegation(delegationId)
     else if (this.options.lifecycle) result = this.options.lifecycle.markAborted(delegationId)
-    else result = this.terminalFallback(delegationId, "[Harness] Delegation aborted")
+    else result = this.terminalFallback(delegationId, "[Hivemind] Delegation aborted")
     // P58 (G3, REQ-58-03, D-58-06): persist state=paused (NOT failed) when
     // a tmux session is attached. The pane is still alive, so the future
     // resume must observe the same paneId.
@@ -307,7 +307,7 @@ export class DelegationManager {
   cancelDelegation(delegationId: string): DelegationResult {
     if (this.options.coordinator?.cancelDelegation) return this.options.coordinator.cancelDelegation(delegationId)
     if (this.options.lifecycle) return this.options.lifecycle.markCancelled(delegationId)
-    return this.terminalFallback(delegationId, "[Harness] Delegation cancelled")
+    return this.terminalFallback(delegationId, "[Hivemind] Delegation cancelled")
   }
 
   /**
@@ -325,17 +325,17 @@ export class DelegationManager {
    */
   async controlDelegation(request: DelegationControlRequest): Promise<DelegationResult> {
     const delegation = this.getStatus(request.delegationId)
-    if (!delegation) throw new Error(`[Harness] Delegation "${request.delegationId}" not found`)
+    if (!delegation) throw new Error(`[Hivemind] Delegation "${request.delegationId}" not found`)
 
     // Resume and chain are ALLOWED on completed delegations — they reuse the session
     const isTerminal = delegation.status === "completed" || delegation.status === "error" || delegation.status === "timeout"
     if (isTerminal && request.action !== "resume" && request.action !== "chain") {
-      throw new Error("[Harness] cannot control terminal delegation")
+      throw new Error("[Hivemind] cannot control terminal delegation")
     }
 
     // adjust-prompt only works on running delegations
     if (request.action === "adjust-prompt" && delegation.status !== "running") {
-      throw new Error("[Harness] adjust-prompt requires running delegation")
+      throw new Error("[Hivemind] adjust-prompt requires running delegation")
     }
 
     // Abort/cancel: direct terminal marking
@@ -346,25 +346,25 @@ export class DelegationManager {
     if (request.action === "adjust-prompt") {
       const childSessionId = delegation.childSessionId
       if (!childSessionId || !this.options.sendPromptAsync) {
-        throw new Error("[Harness] Cannot adjust-prompt: no active session or sendPromptAsync unavailable")
+        throw new Error("[Hivemind] Cannot adjust-prompt: no active session or sendPromptAsync unavailable")
       }
       const prompt = request.restartPrompt ?? delegation.prompt
-      if (!prompt) throw new Error("[Harness] adjust-prompt requires a restartPrompt")
+      if (!prompt) throw new Error("[Hivemind] adjust-prompt requires a restartPrompt")
       await this.options.sendPromptAsync(childSessionId, prompt)
       return { delegationId: request.delegationId, childSessionId, status: "running" as const }
     }
 
     // change-agent: abort current session, restart with new agent via sendPromptAsync
     if (request.action === "change-agent") {
-      if (!request.agent) throw new Error("[Harness] change-agent requires an agent name")
+      if (!request.agent) throw new Error("[Hivemind] change-agent requires an agent name")
       const childSessionId = delegation.childSessionId
       if (!childSessionId || !this.options.sendPromptAsync) {
-        throw new Error("[Harness] Cannot change-agent: no active session or sendPromptAsync unavailable")
+        throw new Error("[Hivemind] Cannot change-agent: no active session or sendPromptAsync unavailable")
       }
       const prompt = request.restartPrompt ?? delegation.prompt
-      if (!prompt) throw new Error("[Harness] change-agent requires a prompt")
+      if (!prompt) throw new Error("[Hivemind] change-agent requires a prompt")
       // Abort current session
-      this.options.coordinator?.abortDelegation?.(request.delegationId, `[Harness] Delegation change-agent`)
+      this.options.coordinator?.abortDelegation?.(request.delegationId, `[Hivemind] Delegation change-agent`)
       // Send prompt with new agent context to existing session
       await this.options.sendPromptAsync(childSessionId, prompt)
       return { delegationId: request.delegationId, childSessionId, status: "running" as const }
@@ -374,7 +374,7 @@ export class DelegationManager {
     if ((request.action === "resume" || request.action === "chain") && delegation.childSessionId && this.options.sendPromptAsync) {
       const childSessionId = delegation.childSessionId
       const prompt = request.restartPrompt ?? delegation.prompt
-      if (!prompt) throw new Error("[Harness] resume/chain requires a prompt")
+      if (!prompt) throw new Error("[Hivemind] resume/chain requires a prompt")
 
       // P58 (G3, REQ-58-03, D-58-07): respawnIfKnown BEFORE sendPromptAsync.
       // The paneId may have changed during the paused interval; update the
@@ -442,9 +442,9 @@ export class DelegationManager {
     // Legacy: abort+dispatch path for restart and backward compat
     const agent = request.action === "restart" ? delegation.agent : delegation.agent
     const prompt = request.restartPrompt ?? delegation.prompt
-    if (!prompt) throw new Error("[Harness] restart/resume requires a persisted original prompt or restartPrompt")
+    if (!prompt) throw new Error("[Hivemind] restart/resume requires a persisted original prompt or restartPrompt")
 
-    const original = this.options.coordinator?.abortDelegation?.(request.delegationId, `[Harness] Delegation ${request.action}d`) ?? this.abortDelegation(request.delegationId)
+    const original = this.options.coordinator?.abortDelegation?.(request.delegationId, `[Hivemind] Delegation ${request.action}d`) ?? this.abortDelegation(request.delegationId)
     const replacement = this.options.coordinator
       ? await this.options.coordinator.dispatch({ agent, currentDepth: delegation.nestingDepth ?? 0, parentSessionId: request.action === "chain" ? request.chainParentSessionId ?? delegation.parentSessionId : delegation.parentSessionId, prompt, queueKey: delegation.queueKey })
       : await this.dispatch({ agent, parentSessionId: delegation.parentSessionId, prompt })
@@ -581,7 +581,7 @@ export class DelegationManager {
   }
 
   private requireRuntime(): RuntimeDelegationManager {
-    if (!this.runtime) throw new Error("[Harness] DelegationManager runtime adapter is not configured.")
+    if (!this.runtime) throw new Error("[Hivemind] DelegationManager runtime adapter is not configured.")
     return this.runtime
   }
 }

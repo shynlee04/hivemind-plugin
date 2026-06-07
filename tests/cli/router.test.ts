@@ -74,7 +74,7 @@ describe("cli/router — PH40-02 command discovery + routing", () => {
       expect(ctx.flags).toEqual({ id: "del-1" })
     })
 
-    it("returns a [Harness] error for an unknown command (exit 64 = EX_USAGE)", async () => {
+    it("returns a [Hivemind] error for an unknown command (exit 64 = EX_USAGE)", async () => {
       const router = createRouter({
         commands: [makeCmd({ name: "ping" })],
       })
@@ -82,7 +82,7 @@ describe("cli/router — PH40-02 command discovery + routing", () => {
       const result = await router.run(["does-not-exist"])
 
       expect(result.exitCode).toBe(64)
-      expect(result.error).toContain("[Harness]")
+      expect(result.error).toContain("[Hivemind]")
       expect(result.error).toContain("does-not-exist")
     })
 
@@ -94,15 +94,15 @@ describe("cli/router — PH40-02 command discovery + routing", () => {
       const result = await router.run([])
 
       expect(result.exitCode).toBe(64)
-      expect(result.error).toContain("[Harness]")
+      expect(result.error).toContain("[Hivemind]")
     })
 
-    it("rejects duplicate command names with [Harness] error at construction", () => {
+    it("rejects duplicate command names with [Hivemind] error at construction", () => {
       expect(() =>
         createRouter({
           commands: [makeCmd({ name: "ping" }), makeCmd({ name: "ping" })],
         }),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
 
     it("rejects an alias that collides with another command name", () => {
@@ -113,7 +113,7 @@ describe("cli/router — PH40-02 command discovery + routing", () => {
             makeCmd({ name: "pong", aliases: ["ping"] }),
           ],
         }),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
 
     it("propagates the handler-returned exit code", async () => {
@@ -132,7 +132,7 @@ describe("cli/router — PH40-02 command discovery + routing", () => {
       expect(result.error).toBe("boom")
     })
 
-    it("captures handler exceptions and returns exit 70 (EX_SOFTWARE) with [Harness] prefix", async () => {
+    it("captures handler exceptions and returns exit 70 (EX_SOFTWARE) with [Hivemind] prefix", async () => {
       const router = createRouter({
         commands: [
           makeCmd({
@@ -147,7 +147,7 @@ describe("cli/router — PH40-02 command discovery + routing", () => {
       const result = await router.run(["throw"])
 
       expect(result.exitCode).toBe(70)
-      expect(result.error).toContain("[Harness]")
+      expect(result.error).toContain("[Hivemind]")
       expect(result.error).toContain("kaboom")
     })
 

@@ -277,9 +277,9 @@ describe("delegate-task tool", () => {
     expect(manager.getStatus(String(data.delegationId))?.queueKey).toBe("provider:anthropic:model:claude-3-5-sonnet")
   })
 
-  it("returns error response when DelegationManager.dispatch() throws with [Harness] prefix", async () => {
+  it("returns error response when DelegationManager.dispatch() throws with [Hivemind] prefix", async () => {
     const manager = createManagerStub()
-    manager.dispatch = vi.fn().mockRejectedValue(new Error('[Harness] Invalid agent: "nonexistent"'))
+    manager.dispatch = vi.fn().mockRejectedValue(new Error('[Hivemind] Invalid agent: "nonexistent"'))
 
     const tool = createDelegateTaskTool(manager as never)
     const raw = await tool.execute({ agent: "nonexistent", prompt: "work" } as never, mockCtx)
@@ -287,7 +287,7 @@ describe("delegate-task tool", () => {
 
     expect(result.kind).toBe("error")
     expect(result.message).toContain("Invalid agent")
-    expect(result.message).toContain("[Harness]")
+    expect(result.message).toContain("[Hivemind]")
   })
 
   it("succeeds when parentSessionId is available from context.sessionID", async () => {

@@ -40,7 +40,7 @@ export class SessionIdleHandler {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: `[Harness] Session tracker: backfill failed for child "${sessionID}" (idle handler)`,
+              message: `[Hivemind] Session tracker: backfill failed for child "${sessionID}" (idle handler)`,
               extra: { error: err instanceof Error ? err.message : String(err) },
             },
           })
@@ -75,7 +75,7 @@ export class SessionIdleHandler {
                       body: {
                         service: "session-tracker",
                         level: "warn",
-                        message: `[Harness] Session tracker: appendAssistantTurn failed for "${sessionID}" (SDK fallback)`,
+                        message: `[Hivemind] Session tracker: appendAssistantTurn failed for "${sessionID}" (SDK fallback)`,
                         extra: { error: err instanceof Error ? err.message : String(err) },
                       },
                     })
@@ -98,7 +98,7 @@ export class SessionIdleHandler {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: `[Harness] Session tracker: appendAssistantTurn failed for "${sessionID}"`,
+              message: `[Hivemind] Session tracker: appendAssistantTurn failed for "${sessionID}"`,
               extra: { error: err instanceof Error ? err.message : String(err) },
             },
           })
@@ -118,7 +118,7 @@ export class SessionIdleHandler {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: failed to handle session.idle for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: failed to handle session.idle for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -149,7 +149,7 @@ export class SessionIdleHandler {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Trajectory completion event failed for ${sessionID}`,
+          message: `[Hivemind] Trajectory completion event failed for ${sessionID}`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

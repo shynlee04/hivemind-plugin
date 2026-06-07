@@ -79,7 +79,7 @@ export function extractTaskID(value: unknown): string | undefined {
  */
 export function extractTaskResult(value: unknown, taskID: string): string | undefined {
   if (typeof value !== "string") return undefined
-  if (value.startsWith("[Harness]")) return undefined
+  if (value.startsWith("[Hivemind]")) return undefined
   const tagged = value.match(/<task_result>\s*([\s\S]*?)\s*<\/task_result>/)
   if (tagged?.[1]?.trim()) return tagged[1].trim()
 

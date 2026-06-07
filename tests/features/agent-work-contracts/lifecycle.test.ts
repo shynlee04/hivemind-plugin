@@ -139,29 +139,29 @@ describe("agent work contract lifecycle", () => {
     startContract(root, created.id)
     completeContract(root, created.id)
 
-    expect(() => startContract(root, created.id)).toThrow("[Harness]")
+    expect(() => startContract(root, created.id)).toThrow("[Hivemind]")
   })
 
   it("startContract throws for cancelled contract (invalid transition)", () => {
     const created = createAgentWorkContract(createInput(root))
     cancelContract(root, created.id, "user requested")
 
-    expect(() => startContract(root, created.id)).toThrow("[Harness]")
+    expect(() => startContract(root, created.id)).toThrow("[Hivemind]")
   })
 
   it("completeContract throws for created contract (invalid transition)", () => {
     const created = createAgentWorkContract(createInput(root))
 
-    expect(() => completeContract(root, created.id)).toThrow("[Harness]")
+    expect(() => completeContract(root, created.id)).toThrow("[Hivemind]")
   })
 
   it("blockContract throws for created contract (invalid transition)", () => {
     const created = createAgentWorkContract(createInput(root))
 
-    expect(() => blockContract(root, created.id, "test")).toThrow("[Harness]")
+    expect(() => blockContract(root, created.id, "test")).toThrow("[Hivemind]")
   })
 
-  it("all invalid transitions throw [Harness]-prefixed error", () => {
+  it("all invalid transitions throw [Hivemind]-prefixed error", () => {
     const created = createAgentWorkContract(createInput(root))
     completeContract(root, startContract(root, created.id).id)
 
@@ -218,7 +218,7 @@ describe("contract evidence gating", () => {
   it("completeContract with non-empty requiredProof and NO proof → throws", () => {
     const created = createAgentWorkContract(createInputWithProof(root))
     startContract(root, created.id)
-    expect(() => completeContract(root, created.id)).toThrow("[Harness] contract")
+    expect(() => completeContract(root, created.id)).toThrow("[Hivemind] contract")
     expect(() => completeContract(root, created.id)).toThrow("requires proof before completion")
   })
 
@@ -267,6 +267,6 @@ describe("contract evidence gating", () => {
     const created = createAgentWorkContract(createInput(root))
     startContract(root, created.id)
     completeContract(root, created.id)
-    expect(() => startContract(root, created.id)).toThrow("[Harness]")
+    expect(() => startContract(root, created.id)).toThrow("[Hivemind]")
   })
 })

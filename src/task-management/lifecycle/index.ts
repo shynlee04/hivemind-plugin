@@ -220,7 +220,7 @@ export class HivemindLifecycleManager {
 
   async launchDelegatedSession(args: LaunchDelegatedSessionArgs): Promise<string> {
     if (!this.delegationManager) {
-      throw new Error("[Harness] DelegationManager is required for launchDelegatedSession facade")
+      throw new Error("[Hivemind] DelegationManager is required for launchDelegatedSession facade")
     }
 
     const result = await this.delegationManager.dispatch({

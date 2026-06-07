@@ -118,7 +118,7 @@ export class SessionIndexWriter {
       .catch((err) => {
         // Best-effort: keep queue alive but log the error for observability (GA-1)
         console.error(
-          `[Harness] SessionIndexWriter: write queue error for session ${sessionID}`,
+          `[Hivemind] SessionIndexWriter: write queue error for session ${sessionID}`,
           err instanceof Error ? err.message : String(err),
         )
       })
@@ -223,7 +223,7 @@ export class SessionIndexWriter {
           // hierarchyIndex and session-index writes). Fallback to top-level insertion
           // with a warning instead of throwing — prevents the child from being lost.
           console.warn(
-            `[Harness] SessionIndexWriter: parent "${parentSessionID}" not found in hierarchy for nested child "${childSessionID}", inserting as top-level`,
+            `[Hivemind] SessionIndexWriter: parent "${parentSessionID}" not found in hierarchy for nested child "${childSessionID}", inserting as top-level`,
           )
           index.hierarchy.children[childSessionID] = entry
         }

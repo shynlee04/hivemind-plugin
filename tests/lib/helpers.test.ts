@@ -105,26 +105,26 @@ describe("unwrapData", () => {
 
   it("throws on error property with string message", () => {
     expect(() => unwrapData({ error: "Something went wrong" })).toThrow(
-      "[Harness] Something went wrong"
+      "[Hivemind] Something went wrong"
     )
   })
 
   it("throws on error property with object message at top level", () => {
     expect(() =>
       unwrapData({ error: { message: "Detailed error" } })
-    ).toThrow("[Harness] Detailed error")
+    ).toThrow("[Hivemind] Detailed error")
   })
 
   it("extracts message from named error shape (data.message)", () => {
     expect(() =>
       unwrapData({ error: { name: "UnknownError", data: { message: "Session not found" } } })
-    ).toThrow("[Harness] Session not found")
+    ).toThrow("[Hivemind] Session not found")
   })
 
   it("extracts message from MessageAbortedError shape", () => {
     expect(() =>
       unwrapData({ error: { name: "MessageAbortedError", data: { message: "Request aborted" } } })
-    ).toThrow("[Harness] Request aborted")
+    ).toThrow("[Hivemind] Request aborted")
   })
 
   it("extracts messages from BadRequestError errors array", () => {
@@ -137,7 +137,7 @@ describe("unwrapData", () => {
           ],
         },
       })
-    ).toThrow("[Harness] Field required; Invalid format")
+    ).toThrow("[Hivemind] Field required; Invalid format")
   })
 
   it("extracts messages from SDK payloads that use the singular error array key", () => {
@@ -150,12 +150,12 @@ describe("unwrapData", () => {
           ],
         },
       })
-    ).toThrow("[Harness] Invalid session id; Expected value to start with 'ses'")
+    ).toThrow("[Hivemind] Invalid session id; Expected value to start with 'ses'")
   })
 
   it("falls back to error name + JSON for unrecognizable error shape", () => {
     expect(() => unwrapData({ error: { code: 500 } })).toThrow(
-      "[Harness] Unknown SDK error: "
+      "[Hivemind] Unknown SDK error: "
     )
   })
 
@@ -173,7 +173,7 @@ describe("unwrapData", () => {
   it("error takes precedence over data when both present", () => {
     expect(() =>
       unwrapData({ data: "ok", error: "fail" })
-    ).toThrow("[Harness] fail")
+    ).toThrow("[Hivemind] fail")
   })
 })
 

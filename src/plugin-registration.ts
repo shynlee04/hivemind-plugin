@@ -347,7 +347,7 @@ export function emitTmuxStatusBanner(
         service: "hivemind",
         level: "info",
         message:
-          `[Harness] Tmux visual orchestration: ENABLED ` +
+          `[Hivemind] Tmux visual orchestration: ENABLED ` +
           `(${tmuxIntegration.version ?? "unknown version"}, ` +
           `server=${tmuxIntegration.serverUrl ?? "auto-detect"}, ` +
           `binary=${tmuxIntegration.binaryPath ?? "n/a"}) — ` +
@@ -366,7 +366,7 @@ export function emitTmuxStatusBanner(
         service: "hivemind",
         level: "info",
         message:
-          `[Harness] Tmux visual orchestration: DISABLED — ` +
+          `[Hivemind] Tmux visual orchestration: DISABLED — ` +
           `sub-agents will run inline (no tmux panes). ` +
           `To enable: run opencode inside a tmux session with ` +
           `'opencode --port 4096' and add "server": { "port": 4096 } ` +

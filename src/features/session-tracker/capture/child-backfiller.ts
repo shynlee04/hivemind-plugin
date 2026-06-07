@@ -91,7 +91,7 @@ export class ChildBackfiller {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: failed to backfill child turns for "${childSessionID}"`,
+          message: `[Hivemind] Session tracker: failed to backfill child turns for "${childSessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

@@ -204,7 +204,7 @@ export function createPaneMonitorHook(opts: PaneMonitorOptions): PaneMonitorHand
   const journalRoot = opts.journalRoot ?? ".hivemind/journal"
   const sessionDir = join(journalRoot, sessionId)
   const logWarn = opts.logWarn ?? ((msg: string): void => {
-    console.warn(`[Harness] pane-monitor: ${msg}`)
+    console.warn(`[Hivemind] pane-monitor: ${msg}`)
   })
 
   // Disposed flag — closure-captured so dispose() can short-circuit the handler.

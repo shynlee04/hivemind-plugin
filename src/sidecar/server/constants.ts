@@ -58,7 +58,7 @@ export function parsePortList(): readonly number[] {
  * @param ports - Port candidates in priority order.
  * @param hostname - Bind hostname (default `127.0.0.1`).
  * @returns The first port that was free at probe time.
- * @throws `[Harness]` error when every port is taken.
+ * @throws `[Hivemind]` error when every port is taken.
  */
 export async function findAvailablePort(
   ports: readonly number[],
@@ -78,7 +78,7 @@ export async function findAvailablePort(
     if (isAvailable) return port
   }
   throw new Error(
-    `[Harness] All ${ports.length} plugin server ports are in use: ${ports.join(", ")}. ` +
+    `[Hivemind] All ${ports.length} plugin server ports are in use: ${ports.join(", ")}. ` +
       `Either close other OpenCode instances or set HIVEMIND_PLUGIN_PORT to a free port.`,
   )
 }

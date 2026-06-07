@@ -47,19 +47,19 @@ export const DEFAULT_RUNTIME_POLICY: RuntimePolicy = {
 function validateConcurrencyPolicy(policy: ConcurrencyPolicy): void {
   if (policy.globalLimit <= 0) {
     throw new Error(
-      `[Harness] Invalid concurrency policy: globalLimit must be positive, got ${policy.globalLimit}.`,
+      `[Hivemind] Invalid concurrency policy: globalLimit must be positive, got ${policy.globalLimit}.`,
     )
   }
   if (policy.perKey) {
     for (const [key, perKey] of Object.entries(policy.perKey)) {
       if (perKey.limit <= 0) {
         throw new Error(
-          `[Harness] Invalid concurrency policy: per-key limit for "${key}" must be positive, got ${perKey.limit}.`,
+          `[Hivemind] Invalid concurrency policy: per-key limit for "${key}" must be positive, got ${perKey.limit}.`,
         )
       }
       if (perKey.acquireTimeoutMs !== undefined && perKey.acquireTimeoutMs < 0) {
         throw new Error(
-          `[Harness] Invalid concurrency policy: per-key acquireTimeoutMs for "${key}" must be non-negative, got ${perKey.acquireTimeoutMs}.`,
+          `[Hivemind] Invalid concurrency policy: per-key acquireTimeoutMs for "${key}" must be non-negative, got ${perKey.acquireTimeoutMs}.`,
         )
       }
     }
@@ -69,17 +69,17 @@ function validateConcurrencyPolicy(policy: ConcurrencyPolicy): void {
 function validateBudgetPolicy(policy: BudgetPolicy): void {
   if (policy.maxToolCallsPerSession <= 0) {
     throw new Error(
-      `[Harness] Invalid budget policy: maxToolCallsPerSession must be positive, got ${policy.maxToolCallsPerSession}.`,
+      `[Hivemind] Invalid budget policy: maxToolCallsPerSession must be positive, got ${policy.maxToolCallsPerSession}.`,
     )
   }
   if (policy.repeatedSignatureThreshold <= 0) {
     throw new Error(
-      `[Harness] Invalid budget policy: repeatedSignatureThreshold must be positive, got ${policy.repeatedSignatureThreshold}.`,
+      `[Hivemind] Invalid budget policy: repeatedSignatureThreshold must be positive, got ${policy.repeatedSignatureThreshold}.`,
     )
   }
   if (policy.warningCap <= 0) {
     throw new Error(
-      `[Harness] Invalid budget policy: warningCap must be positive, got ${policy.warningCap}.`,
+      `[Hivemind] Invalid budget policy: warningCap must be positive, got ${policy.warningCap}.`,
     )
   }
 }
@@ -98,7 +98,7 @@ function validateTrustedRuntimePolicy(_policy: TrustedRuntimePolicy): void {
  * @param workspacePolicy - Optional workspace-level policy. When omitted or
  *   empty, returns DEFAULT_RUNTIME_POLICY.
  * @returns A fully-resolved RuntimePolicy with all fields populated.
- * @throws [Harness]-prefixed Error when limits are out of valid range.
+ * @throws [Hivemind]-prefixed Error when limits are out of valid range.
  */
 export function loadRuntimePolicy(
   workspacePolicy?: Partial<RuntimePolicy>,
@@ -143,7 +143,7 @@ export function loadRuntimePolicy(
  *
  * Per-session overrides take precedence over workspace-level defaults.
  * Both the workspace policy and the session override are validated before
- * being applied — out-of-range values throw [Harness] errors.
+ * being applied — out-of-range values throw [Hivemind] errors.
  *
  * RESEARCH D-16: Session overrides come from trusted continuity/delegation
  * metadata only (not arbitrary tool args). This prevents silent limit
@@ -152,7 +152,7 @@ export function loadRuntimePolicy(
  * @param workspacePolicy - Workspace-level policy (already validated or default).
  * @param sessionOverride - Optional per-session overrides from delegation metadata.
  * @returns Fully-resolved policy for this session.
- * @throws [Harness]-prefixed Error when session override values are invalid.
+ * @throws [Hivemind]-prefixed Error when session override values are invalid.
  */
 export function getRuntimePolicyForSession(
   workspacePolicy: RuntimePolicy,

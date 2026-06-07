@@ -35,7 +35,7 @@ describe("Phase 39 conformance — auto-loop + ralph-loop composition", () => {
         return {
           outcome: "failed",
           result: ralph.finalResult,
-          error: `[Harness] auto-loop attempt ${attempt} ralph exhausted: ${ralph.errors.join("; ")}`,
+          error: `[Hivemind] auto-loop attempt ${attempt} ralph exhausted: ${ralph.errors.join("; ")}`,
         }
       },
     )
@@ -73,7 +73,7 @@ describe("Phase 39 conformance — auto-loop + ralph-loop composition", () => {
         return {
           outcome: "failed",
           result: ralph.finalResult,
-          error: `[Harness] auto-loop attempt ${attempt} ralph exhausted after ${ralph.cycles} cycles`,
+          error: `[Hivemind] auto-loop attempt ${attempt} ralph exhausted after ${ralph.cycles} cycles`,
         }
       },
     )

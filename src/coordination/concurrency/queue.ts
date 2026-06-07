@@ -84,7 +84,7 @@ export class DelegationConcurrencyQueue {
           this.cleanupLane(key, lane)
           reject(
             new Error(
-              `[Harness] Concurrency acquire timed out for key "${key}" after ${timeoutMs}ms.`,
+              `[Hivemind] Concurrency acquire timed out for key "${key}" after ${timeoutMs}ms.`,
             ),
           )
         }, timeoutMs)
@@ -258,7 +258,7 @@ export interface SpawnReservation {
 /**
  * Attempt to reserve one descendant slot in the root session budget.
  *
- * Throws a `[Harness]`-prefixed error if the budget is exhausted.
+ * Throws a `[Hivemind]`-prefixed error if the budget is exhausted.
  *
  * @param parentSessionID - The session ID of the calling (parent) agent.
  * @param rootID          - The root session whose budget is being charged.

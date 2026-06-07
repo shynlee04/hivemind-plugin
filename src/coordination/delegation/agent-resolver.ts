@@ -18,7 +18,7 @@ export class AgentResolver {
     const agents = await getAppAgents(this.options.client as OpenCodeClient)
     const matched = agents.map(toValidatedAgent).find((agent) => agent.name === agentName)
     if (!matched) {
-      throw new Error(`[Harness] Unknown delegation agent "${agentName}"`)
+      throw new Error(`[Hivemind] Unknown delegation agent "${agentName}"`)
     }
     return enrichAgentFromPrimitives(matched, this.options.projectRoot)
   }

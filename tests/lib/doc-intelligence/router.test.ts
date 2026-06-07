@@ -33,7 +33,7 @@ describe("doc intelligence router", () => {
 
   it("rejects paths that escape the project root", () => {
     expect(() => executeDocIntelligenceAction(root, { action: "read", path: "../outside.md" }))
-      .toThrow("[Harness] doc intelligence path escapes allowed root")
+      .toThrow("[Hivemind] doc intelligence path escapes allowed root")
   })
 
   it("searches markdown content without persistent indexes", () => {

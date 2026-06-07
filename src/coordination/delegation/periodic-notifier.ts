@@ -158,7 +158,7 @@ export class PeriodicNotifier {
           .map((s) => s.agent)
         const suffix = count > 3 ? ` +${count - 3} more` : ""
         showTuiToast(toastClient, `${count} delegations active · ${topAgents.join(" ")}${suffix}`).catch((err) => {
-          toastClient.app?.log?.({ body: { service: "PeriodicNotifier", level: "warn", message: `[Harness] Toast failed: ${err instanceof Error ? err.message : String(err)}` } })
+          toastClient.app?.log?.({ body: { service: "PeriodicNotifier", level: "warn", message: `[Hivemind] Toast failed: ${err instanceof Error ? err.message : String(err)}` } })
         })
       }
     }

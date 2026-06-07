@@ -136,7 +136,7 @@ describe("workflow-state", () => {
       expect(state.currentTurn).toBe(originalTurn)
     })
 
-    it("should throw [Harness] error on invalid transition", async () => {
+    it("should throw [Hivemind] error on invalid transition", async () => {
       const { advanceTurn, createWorkflowState } = await import("../../../src/config/workflow/workflow-state.js")
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",

@@ -464,7 +464,7 @@ function handleResume(args: z.infer<typeof ConfigurePrimitiveInputSchema>): stri
  */
 function validatePrimitiveName(name: string): void {
   if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$/.test(name) || name.includes("..")) {
-    throw new Error("[Harness] Invalid primitive name: use only letters, numbers, dots, underscores, and hyphens.")
+    throw new Error("[Hivemind] Invalid primitive name: use only letters, numbers, dots, underscores, and hyphens.")
   }
 }
 

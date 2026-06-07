@@ -7,7 +7,7 @@
  *   - Parses argv (stripped of `node` and the script name).
  *   - Dispatches to the matching command via {@link createRouter}.
  *   - Writes the handler's `output` to stdout (when present).
- *   - Writes any `error` to stderr (always `[Harness]`-prefixed).
+ *   - Writes any `error` to stderr (always `[Hivemind]`-prefixed).
  *   - Resolves the handler's exit code (default 0).
  *
  * The substrate is dependency-free except for the harness's own modules;
@@ -65,7 +65,7 @@ function createDeprecationShim(
     aliases,
     handler: async () => ({
       exitCode: 0,
-      error: `[Harness] '${name}' CLI command is deprecated. Use '${redirectCommand}' in OpenCode TUI instead.`,
+      error: `[Hivemind] '${name}' CLI command is deprecated. Use '${redirectCommand}' in OpenCode TUI instead.`,
     }),
   }
 }

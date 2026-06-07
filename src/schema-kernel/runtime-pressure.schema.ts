@@ -48,8 +48,8 @@ export type RuntimePressureToolInput = z.infer<typeof RuntimePressureToolInputSc
 export function parseRuntimePressureToolInput(rawInput: unknown): RuntimePressureToolInput {
   const parsed = RuntimePressureToolInputSchema.parse(rawInput)
   if (parsed.action === "attach_event") {
-    if (!parsed.trajectoryId) throw new Error("[Harness] trajectoryId is required for attach_event")
-    if (!parsed.summary) throw new Error("[Harness] summary is required for attach_event")
+    if (!parsed.trajectoryId) throw new Error("[Hivemind] trajectoryId is required for attach_event")
+    if (!parsed.summary) throw new Error("[Hivemind] summary is required for attach_event")
   }
   return parsed
 }

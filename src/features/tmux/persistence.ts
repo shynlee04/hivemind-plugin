@@ -56,7 +56,7 @@ export interface SessionPersistenceOptions {
   projectDirectory: string
   /**
    * Optional warn logger. Defaults to `console.warn` with the
-   * `[Harness] persistence:` prefix. P53 D-04 mirror.
+   * `[Hivemind] persistence:` prefix. P53 D-04 mirror.
    */
   logWarn?: (msg: string, err?: unknown) => void
 }
@@ -221,7 +221,7 @@ function isEEXIST(err: unknown): boolean {
  * to `<projectDirectory>/.hivemind/state/tmux-sessions/<sessionId>.json`.
  *
  * The factory mirrors the P53 `createPaneMonitorHook(opts)` shape:
- * closure-captured `logWarn` with the `[Harness] persistence:` prefix,
+ * closure-captured `logWarn` with the `[Hivemind] persistence:` prefix,
  * `mkdir({recursive: true})` on first call, and a returned handle with
  * the persistence API surface.
  *
@@ -255,7 +255,7 @@ export function createSessionPersistence(
   opts: SessionPersistenceOptions,
 ): SessionPersistence {
   const logWarn = opts.logWarn ?? ((msg: string, err?: unknown): void => {
-    console.warn(`[Harness] persistence: ${msg}`, err)
+    console.warn(`[Hivemind] persistence: ${msg}`, err)
   })
   const stateRoot = join(opts.projectDirectory, ".hivemind", "state", "tmux-sessions")
 

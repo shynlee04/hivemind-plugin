@@ -631,7 +631,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               })
             } catch (caughtError: unknown) {
               const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-              console.error(`[Harness] session.command dispatch failed in child session: ${message}`)
+              console.error(`[Hivemind] session.command dispatch failed in child session: ${message}`)
             }
           }, 50)
 
@@ -677,7 +677,7 @@ export const createExecuteSlashCommandTool = (client: PluginInput["client"], ses
               })
             } catch (caughtError: unknown) {
               const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
-              console.error(`[Harness] session.command dispatch failed: ${message}`)
+              console.error(`[Hivemind] session.command dispatch failed: ${message}`)
             }
           }, 50)
 

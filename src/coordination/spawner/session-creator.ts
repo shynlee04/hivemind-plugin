@@ -32,7 +32,7 @@ export async function spawnDelegatedSession(
 
   const childSessionId = getSessionID(childSession)
   if (!childSessionId) {
-    throw new Error("[Harness] Child session creation did not return a session ID.")
+    throw new Error("[Hivemind] Child session creation did not return a session ID.")
   }
 
   return {

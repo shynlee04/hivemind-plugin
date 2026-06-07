@@ -41,7 +41,7 @@ export function createContractEnforcementHook(
     // Resolve agent name from sessionID (D-26: no agent = no restriction)
     const agentName = deps.resolveAgentName(sessionID)
     if (!agentName) {
-      deps.logWarn?.(`[Harness] Contract enforcement: could not resolve agent name for session ${sessionID}`)
+      deps.logWarn?.(`[Hivemind] Contract enforcement: could not resolve agent name for session ${sessionID}`)
       return
     }
 
@@ -54,7 +54,7 @@ export function createContractEnforcementHook(
     for (const filePath of filePaths) {
       if (!isPathAllowed(filePath, allowed)) {
         throw new Error(
-          `[Harness] contract violation: agent ${agentName} not allowed to modify ${filePath}. Allowed: ${allowed.join(", ")}`,
+          `[Hivemind] contract violation: agent ${agentName} not allowed to modify ${filePath}. Allowed: ${allowed.join(", ")}`,
         )
       }
     }

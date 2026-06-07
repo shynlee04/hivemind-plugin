@@ -127,7 +127,7 @@ export class PtyManager {
   private requireSession(sessionId: string): PtySessionState {
     const session = this.sessions.get(sessionId)
     if (!session) {
-      throw new Error(`[Harness] Unknown PTY session: ${sessionId}`)
+      throw new Error(`[Hivemind] Unknown PTY session: ${sessionId}`)
     }
 
     return session

@@ -32,7 +32,7 @@ export class RalphLoopEngine {
   }
 
   private validate(opts: RalphLoopOpts): void {
-    if (opts.agents.length === 0) throw new Error("[Harness] ralph-loop agents list must not be empty.")
-    if (opts.maxCycles <= 0) throw new Error("[Harness] ralph-loop maxCycles must be greater than 0.")
+    if (opts.agents.length === 0) throw new Error("[Hivemind] ralph-loop agents list must not be empty.")
+    if (opts.maxCycles <= 0) throw new Error("[Hivemind] ralph-loop maxCycles must be greater than 0.")
   }
 }

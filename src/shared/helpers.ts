@@ -76,7 +76,7 @@ export function unwrapData<T = unknown>(response: unknown): T {
   if (isObject(response) && "error" in response && response.error) {
     const error = response.error
     const message = extractSdkErrorMessage(error)
-    throw new Error(`[Harness] ${message}`)
+    throw new Error(`[Hivemind] ${message}`)
   }
   if (isObject(response) && "data" in response && response.data !== undefined) {
     return response.data as T

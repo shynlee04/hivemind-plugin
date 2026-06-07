@@ -43,7 +43,7 @@ export function assertPathWithinRoot(root: string, candidate: string, boundaryNa
   try {
     return resolveScopedPath(root, candidate)
   } catch {
-    throw new Error(`[Harness] ${boundaryName} path escapes allowed root: ${candidate}`)
+    throw new Error(`[Hivemind] ${boundaryName} path escapes allowed root: ${candidate}`)
   }
 }
 
@@ -58,7 +58,7 @@ export function assertPathWithinRoot(root: string, candidate: string, boundaryNa
 function assertRelativePathInsideRoot(root: string, candidate: string, originalCandidate: string): void {
   const rel = relative(root, candidate)
   if (rel === ".." || rel.startsWith(`..${sep}`) || rel.split(/[\\/]/).includes("..")) {
-    throw new Error(`[Harness] path escapes allowed root: ${originalCandidate}`)
+    throw new Error(`[Hivemind] path escapes allowed root: ${originalCandidate}`)
   }
 }
 
@@ -82,7 +82,7 @@ function assertRealPathInsideRoot(root: string, candidate: string, originalCandi
 
   const rel = relative(realRoot, realCandidate)
   if (rel === ".." || rel.startsWith(`..${sep}`) || rel.split(/[\\/]/).includes("..")) {
-    throw new Error(`[Harness] path escapes allowed root: ${originalCandidate}`)
+    throw new Error(`[Hivemind] path escapes allowed root: ${originalCandidate}`)
   }
 }
 

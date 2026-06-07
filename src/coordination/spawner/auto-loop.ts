@@ -14,7 +14,7 @@
  *  - `failed`: the task failed at the task level; surface the error.
  *
  * Both dispatcher and verifier rejections are treated as
- * infrastructure-level failures and re-thrown as `[Harness]`-prefixed
+ * infrastructure-level failures and re-thrown as `[Hivemind]`-prefixed
  * Errors so callers can distinguish them from task-level failures
  * (which the verifier reports via the `failed` outcome).
  */
@@ -49,7 +49,7 @@ export type AutoLoopOptions<T> = {
    * Async verifier that classifies a dispatcher result. Receives the
    * result and the 1-indexed attempt number. Should return a `failed`
    * outcome for task-level failures rather than throwing; if it does
-   * throw, the loop wraps the rejection in a `[Harness]`-prefixed
+   * throw, the loop wraps the rejection in a `[Hivemind]`-prefixed
    * Error matching the dispatcher's behaviour (treated as
    * infrastructure failure, not task-level failure).
    */
@@ -80,7 +80,7 @@ export type AutoLoopResult<T> = {
  * @template T - Type of the dispatcher result.
  * @param options - Loop configuration with injected dispatcher/verifier.
  * @returns Final {@link AutoLoopResult}.
- * @throws `[Harness]`-prefixed Error when `maxIterations` is non-positive
+ * @throws `[Hivemind]`-prefixed Error when `maxIterations` is non-positive
  *   or when the dispatcher or verifier itself rejects.
  *
  * @example
@@ -98,7 +98,7 @@ export type AutoLoopResult<T> = {
 export async function runAutoLoop<T>(options: AutoLoopOptions<T>): Promise<AutoLoopResult<T>> {
   if (!Number.isInteger(options.maxIterations) || options.maxIterations <= 0) {
     throw new Error(
-      `[Harness] auto-loop maxIterations must be a positive integer, got ${options.maxIterations}`,
+      `[Hivemind] auto-loop maxIterations must be a positive integer, got ${options.maxIterations}`,
     )
   }
 
@@ -114,7 +114,7 @@ export async function runAutoLoop<T>(options: AutoLoopOptions<T>): Promise<AutoL
       result = await options.dispatcher(prompt, attempt)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      throw new Error(`[Harness] auto-loop dispatcher failed on attempt ${attempt}: ${message}`)
+      throw new Error(`[Hivemind] auto-loop dispatcher failed on attempt ${attempt}: ${message}`)
     }
     lastResult = result
 
@@ -123,7 +123,7 @@ export async function runAutoLoop<T>(options: AutoLoopOptions<T>): Promise<AutoL
       verification = await options.verifier(result, attempt)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      throw new Error(`[Harness] auto-loop verifier failed on attempt ${attempt}: ${message}`)
+      throw new Error(`[Hivemind] auto-loop verifier failed on attempt ${attempt}: ${message}`)
     }
 
     if (verification.outcome === "completed") {

@@ -51,10 +51,10 @@ export class SlotManager {
   async acquire(sessionId: string, queueKey: string, opts?: AcquireOpts): Promise<SlotHandle> {
     const sessionSlots = this.activeBySession.get(sessionId) ?? new Map<string, SlotHandle>()
     if (sessionSlots.size >= this.maxSlotsPerSession) {
-      throw new Error(`[Harness] Delegation slot limit reached for session ${sessionId}: ${sessionSlots.size}/${this.maxSlotsPerSession} active.`)
+      throw new Error(`[Hivemind] Delegation slot limit reached for session ${sessionId}: ${sessionSlots.size}/${this.maxSlotsPerSession} active.`)
     }
     if (this.countQueueKey(sessionSlots, queueKey) >= this.perKeyLimit) {
-      throw new Error(`[Harness] Per-key delegation slot limit reached for session ${sessionId} and queue ${queueKey}: ${this.perKeyLimit}/${this.perKeyLimit} active.`)
+      throw new Error(`[Hivemind] Per-key delegation slot limit reached for session ${sessionId} and queue ${queueKey}: ${this.perKeyLimit}/${this.perKeyLimit} active.`)
     }
 
     let released = false
@@ -69,7 +69,7 @@ export class SlotManager {
       sessionSlots.delete(this.handleKey(handle))
       if (sessionSlots.size === 0) this.activeBySession.delete(sessionId)
       const message = error instanceof Error ? error.message : String(error)
-      throw new Error(`[Harness] Delegation slot acquire timed out for session ${sessionId} and queue ${queueKey}: ${message}`)
+      throw new Error(`[Hivemind] Delegation slot acquire timed out for session ${sessionId} and queue ${queueKey}: ${message}`)
     }
 
     handle.release = () => {

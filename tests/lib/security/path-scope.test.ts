@@ -30,13 +30,13 @@ describe("path scope", () => {
 
   it("rejects traversal outside the allowed root", () => {
     expect(() => assertPathWithinRoot(root, "../outside.md", "session patch"))
-      .toThrow('[Harness] session patch path escapes allowed root: ../outside.md')
+      .toThrow('[Hivemind] session patch path escapes allowed root: ../outside.md')
   })
 
   it("rejects absolute cross-root paths", () => {
     const target = join(outside, "session.md")
     expect(() => assertPathWithinRoot(root, target, "session patch"))
-      .toThrow("[Harness] session patch path escapes allowed root:")
+      .toThrow("[Hivemind] session patch path escapes allowed root:")
   })
 
   it("rejects symlink-resolved cross-root paths when detectable", () => {
@@ -46,6 +46,6 @@ describe("path scope", () => {
     symlinkSync(outsideFile, linkPath)
 
     expect(() => assertPathWithinRoot(root, linkPath, "session patch"))
-      .toThrow("[Harness] session patch path escapes allowed root:")
+      .toThrow("[Hivemind] session patch path escapes allowed root:")
   })
 })

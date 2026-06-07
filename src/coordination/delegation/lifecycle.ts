@@ -65,19 +65,19 @@ export class DelegationLifecycle {
 
   /** Mark a delegation timed out. */
   markTimeout(delegationId: string): DelegationResult {
-    this.transitionTerminal(delegationId, "timeout", "[Harness] Delegation timed out")
+    this.transitionTerminal(delegationId, "timeout", "[Hivemind] Delegation timed out")
     return this.resultFor(delegationId)
   }
 
   /** Mark a delegation aborted by the caller. */
   markAborted(delegationId: string): DelegationResult {
-    this.transitionTerminal(delegationId, "aborted", "[Harness] Delegation aborted")
+    this.transitionTerminal(delegationId, "aborted", "[Hivemind] Delegation aborted")
     return this.resultFor(delegationId)
   }
 
   /** Mark a delegation cancelled by the caller. */
   markCancelled(delegationId: string): DelegationResult {
-    this.transitionTerminal(delegationId, "cancelled", "[Harness] Delegation cancelled")
+    this.transitionTerminal(delegationId, "cancelled", "[Hivemind] Delegation cancelled")
     return this.resultFor(delegationId)
   }
 
@@ -88,7 +88,7 @@ export class DelegationLifecycle {
 
   private resultFor(delegationId: string): DelegationResult {
     const delegation = this.stateMachine.get(delegationId)
-    if (!delegation) throw new Error(`[Harness] Unknown delegation "${delegationId}"`)
+    if (!delegation) throw new Error(`[Hivemind] Unknown delegation "${delegationId}"`)
     return buildDelegationResult(delegation)
   }
 }

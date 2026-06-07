@@ -100,7 +100,7 @@ export function createGovernanceSessionTool(
       const parsed = GovernanceSessionInput.safeParse(rawArgs)
       if (!parsed.success) {
         return renderToolResult(
-          error(`[Harness] Invalid governance session input: ${z.prettifyError(parsed.error)}`),
+          error(`[Hivemind] Invalid governance session input: ${z.prettifyError(parsed.error)}`),
         )
       }
 
@@ -160,7 +160,7 @@ export function createGovernanceSessionTool(
           if (!isValid) {
             // Soft enforcement (Decision 6): warn but don't block
             void client.app?.log?.({
-              body: { service: "governance", level: "warn", message: `[Harness] Session title "${sessionTitle}" does not match naming standards` }
+              body: { service: "governance", level: "warn", message: `[Hivemind] Session title "${sessionTitle}" does not match naming standards` }
             })
           }
         }
@@ -192,7 +192,7 @@ export function createGovernanceSessionTool(
         // Best-effort: git failure must never propagate to the caller.
         // Log at debug level for troubleshooting without blocking the workflow.
         void client.app?.log?.({
-          body: { service: "governance", level: "debug", message: `[Harness] Git commit failed: ${err instanceof Error ? err.message : String(err)}` }
+          body: { service: "governance", level: "debug", message: `[Hivemind] Git commit failed: ${err instanceof Error ? err.message : String(err)}` }
         })
       }
 
@@ -207,14 +207,14 @@ export function createGovernanceSessionTool(
       } catch (caughtError: unknown) {
         const msg = caughtError instanceof Error ? caughtError.message : String(caughtError)
         return renderToolResult(
-          error(`[Harness] Failed to create governance session: ${msg}`),
+          error(`[Hivemind] Failed to create governance session: ${msg}`),
         )
       }
 
       const sessionID = getSessionID(session)
       if (!sessionID) {
         return renderToolResult(
-          error("[Harness] Session creation succeeded but no session ID was returned"),
+          error("[Hivemind] Session creation succeeded but no session ID was returned"),
         )
       }
 
@@ -248,7 +248,7 @@ export function createGovernanceSessionTool(
         } catch (caughtError: unknown) {
           const msg = caughtError instanceof Error ? caughtError.message : String(caughtError)
           return renderToolResult(
-            error(`[Harness] Governance session created but agent dispatch failed: ${msg}`, {
+            error(`[Hivemind] Governance session created but agent dispatch failed: ${msg}`, {
               sessionID,
               title: sessionTitle,
             }),
@@ -263,7 +263,7 @@ export function createGovernanceSessionTool(
         } catch (caughtError: unknown) {
           const msg = caughtError instanceof Error ? caughtError.message : String(caughtError)
           return renderToolResult(
-            error(`[Harness] Governance session created but prompt injection failed: ${msg}`, {
+            error(`[Hivemind] Governance session created but prompt injection failed: ${msg}`, {
               sessionID,
               title: sessionTitle,
             }),
@@ -284,7 +284,7 @@ export function createGovernanceSessionTool(
 
       // --- Step 9: Return result ---
       return renderToolResult(
-        success(`[Harness] Governance session created: ${sessionTitle}`, {
+        success(`[Hivemind] Governance session created: ${sessionTitle}`, {
           sessionID,
           title: sessionTitle,
         }),

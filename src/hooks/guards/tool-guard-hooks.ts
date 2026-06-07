@@ -93,7 +93,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
       if (stats.total > maxToolCalls) {
         stateManager.addWarning(sessionID, `Exceeded ${maxToolCalls} tool calls`)
         throw new Error(
-          `[Harness] Session ${sessionID} exceeded the tool call budget (${maxToolCalls}).`,
+          `[Hivemind] Session ${sessionID} exceeded the tool call budget (${maxToolCalls}).`,
         )
       }
 
@@ -111,7 +111,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
           `Circuit breaker tripped on repeated ${toolName} calls (${stats.loop.count}x)`,
         )
         throw new Error(
-          `[Harness] Circuit breaker tripped for session ${sessionID} on repeated ${toolName} calls.`,
+          `[Hivemind] Circuit breaker tripped for session ${sessionID} on repeated ${toolName} calls.`,
         )
       }
 
@@ -145,7 +145,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
           `Tool intelligence ${tiDecision.kind}: ${tiDecision.reason}`,
         )
         throw new Error(
-          `[Harness] Tool intelligence ${tiDecision.kind}: ${tiDecision.reason}\n${guidanceText}`,
+          `[Hivemind] Tool intelligence ${tiDecision.kind}: ${tiDecision.reason}\n${guidanceText}`,
         )
       }
 
@@ -165,7 +165,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
 
         if (govResult.blocked) {
           stateManager.addWarning(sessionID, `Tool call blocked by governance: ${govResult.blocks.join("; ")}`)
-          throw new Error(`[Harness] Tool execution blocked by governance: ${govResult.blocks.join("; ")}`)
+          throw new Error(`[Hivemind] Tool execution blocked by governance: ${govResult.blocks.join("; ")}`)
         }
 
         for (const warn of govResult.warnings) {

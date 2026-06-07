@@ -66,7 +66,7 @@ type ToolContext = {
  */
 function requireCallerSessionId(context: ToolContext, action: RunBackgroundCommandInput["action"]): string {
   if (!context.sessionID) {
-    throw new Error(`[Harness] Missing caller session ID for run-background-command ${action}`)
+    throw new Error(`[Hivemind] Missing caller session ID for run-background-command ${action}`)
   }
   return context.sessionID
 }
@@ -87,7 +87,7 @@ function requireVisiblePtyDelegation(
 ): Delegation {
   const delegation = delegationManager.getDelegationForPtySession(sessionId)
   if (!delegation || !delegationManager.canSessionAccessDelegation(callerSessionId, delegation)) {
-    throw new Error(`[Harness] Access denied for PTY session "${sessionId}": no caller-visible delegation owns this session`)
+    throw new Error(`[Hivemind] Access denied for PTY session "${sessionId}": no caller-visible delegation owns this session`)
   }
   return delegation
 }
@@ -106,12 +106,12 @@ function parseRunBackgroundCommandInput(rawArgs: unknown): RunBackgroundCommandI
     ? String((rawArgs as { action?: unknown }).action)
     : ""
   if (rawAction === "start" || rawAction === "read") {
-    throw new Error(`[Harness] Unsupported run-background-command action "${rawAction}". ${ACTION_GUIDANCE}`)
+    throw new Error(`[Hivemind] Unsupported run-background-command action "${rawAction}". ${ACTION_GUIDANCE}`)
   }
 
   const parsed = RunBackgroundCommandInputSchema.safeParse(rawArgs)
   if (!parsed.success) {
-    throw new Error(`[Harness] Invalid run-background-command input. ${ACTION_GUIDANCE}`)
+    throw new Error(`[Hivemind] Invalid run-background-command input. ${ACTION_GUIDANCE}`)
   }
   return parsed.data
 }
@@ -130,7 +130,7 @@ function assertExecutableCommandShape(command: string, commandArgs: string[] | u
   const trimmed = command.trim()
   if (SHELL_META_RE.test(trimmed) || SHELL_COMMAND_RE.test(trimmed)) {
     throw new Error(
-      `[Harness] run-background-command expects an executable plus args. Use command: "bash", args: ["-lc", "<shell command>"] for shell syntax.`,
+      `[Hivemind] run-background-command expects an executable plus args. Use command: "bash", args: ["-lc", "<shell command>"] for shell syntax.`,
     )
   }
 }
@@ -159,7 +159,7 @@ export function createRunBackgroundCommandTool(args: {
         const config = getCachedConfig()
         if (!config.delegation_systems.background_delegation) {
           return renderToolResult(error(
-            `[Harness] Background delegation is disabled. Set delegation_systems.background_delegation to true in .hivemind/configs.json to enable run-background-command.`,
+            `[Hivemind] Background delegation is disabled. Set delegation_systems.background_delegation to true in .hivemind/configs.json to enable run-background-command.`,
           ))
         }
 
@@ -184,7 +184,7 @@ export function createRunBackgroundCommandTool(args: {
         }
 
         if (!args.ptyManager) {
-          return renderToolResult(error(`[Harness] PTY not available in current environment for run-background-command ${parsed.action}`))
+          return renderToolResult(error(`[Hivemind] PTY not available in current environment for run-background-command ${parsed.action}`))
         }
 
         if (parsed.action === "output") {

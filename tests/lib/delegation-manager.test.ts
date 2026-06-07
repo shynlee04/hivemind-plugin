@@ -310,14 +310,14 @@ describe("DelegationManager", () => {
       expect(result.delegationId).toBeTypeOf("string")
     })
 
-    it("validates agent name against SDK agent list with [Harness] error prefix", async () => {
+    it("validates agent name against SDK agent list with [Hivemind] error prefix", async () => {
       const manager = new DelegationManager(createMockClient() as never)
 
       await expect(manager.dispatch({
         parentSessionId: "ses-parent-1",
         agent: "not-real",
         prompt: "do work",
-      })).rejects.toThrow('[Harness] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
+      })).rejects.toThrow('[Hivemind] Invalid agent: "not-real". Available: [researcher, builder, critic, explore, general]')
     })
 
     it("ignores removed delegation category metadata during SDK dispatch", async () => {
@@ -1331,7 +1331,7 @@ describe("DelegationManager", () => {
       expect(client.session.abort).toHaveBeenCalledWith({ path: { id: "child-safety" } })
     })
 
-    it("safety ceiling error message contains [Harness] prefix and ceiling time", async () => {
+    it("safety ceiling error message contains [Hivemind] prefix and ceiling time", async () => {
       vi.useFakeTimers()
       const client = createMockClient()
       client.session.create.mockResolvedValue({ data: { id: "child-ceiling-msg" } })
@@ -1345,7 +1345,7 @@ describe("DelegationManager", () => {
       await vi.advanceTimersByTimeAsync(DEFAULT_RUNTIME_SAFETY_CEILING_MS)
 
       const delegation = manager.getStatus(result.delegationId)
-      expect(delegation?.error).toContain("[Harness]")
+      expect(delegation?.error).toContain("[Hivemind]")
       expect(delegation?.error).toContain(String(DEFAULT_RUNTIME_SAFETY_CEILING_MS))
     })
   })

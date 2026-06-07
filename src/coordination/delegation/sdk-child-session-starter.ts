@@ -35,7 +35,7 @@ export function createSdkChildSessionStarter(client: OpenCodeClient): {
         title,
       })
       const childSessionId = getSessionID(childSession)
-      if (!childSessionId) throw new Error("[Harness] Child session creation did not return a session ID.")
+      if (!childSessionId) throw new Error("[Hivemind] Child session creation did not return a session ID.")
 
       // Fire early callback so coordinator maps parent-child session mapping
       // before sendPromptAsync yields or triggers downstream hooks.

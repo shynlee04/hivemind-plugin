@@ -389,7 +389,7 @@ export class ProjectIndexWriter {
           service: "session-tracker",
           level: "warn",
           message:
-            "[Harness] Session tracker: project index write queue appears STALE " +
+            "[Hivemind] Session tracker: project index write queue appears STALE " +
             "— last successful write was more than 5 minutes ago. Resetting queue.",
         },
       })
@@ -437,7 +437,7 @@ export class ProjectIndexWriter {
           body: {
             service: "session-tracker",
             level: "warn",
-            message: "[Harness] Session tracker: project index write failed",
+            message: "[Hivemind] Session tracker: project index write failed",
             extra: { error: err instanceof Error ? err.message : String(err) },
           },
         })

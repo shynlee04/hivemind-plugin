@@ -199,7 +199,7 @@ export async function reactivateSessionStream(
       body: {
         service: "notification",
         level: "warn",
-        message: `[Harness] Stream reactivation failed for ${sessionID}: ${error instanceof Error ? error.message : String(error)}`,
+        message: `[Hivemind] Stream reactivation failed for ${sessionID}: ${error instanceof Error ? error.message : String(error)}`,
       },
     })
   }
@@ -274,7 +274,7 @@ export async function notifyParentSession(
       body: {
         service: "notification",
         level: "error",
-        message: `[Harness] Toast failed: ${error instanceof Error ? error.message : String(error)}`,
+        message: `[Hivemind] Toast failed: ${error instanceof Error ? error.message : String(error)}`,
       },
     })
   }
@@ -292,7 +292,7 @@ export async function notifyParentSession(
       body: {
         service: "notification",
         level: "error",
-        message: `[Harness] Context injection failed: ${error instanceof Error ? error.message : String(error)}`,
+        message: `[Hivemind] Context injection failed: ${error instanceof Error ? error.message : String(error)}`,
       },
     })
   }
@@ -373,7 +373,7 @@ export async function notifyDelegationTerminal(
       body: {
         service: "delegation",
         level: "info",
-        message: `[Harness] Skipping duplicate notification for delegation ${delegation.id}: already delivered at ${new Date(alreadyDelivered.deliveredAt).toISOString()}`,
+        message: `[Hivemind] Skipping duplicate notification for delegation ${delegation.id}: already delivered at ${new Date(alreadyDelivered.deliveredAt).toISOString()}`,
       },
     })
     // Still show the toast (user-visible transient notifications are fine)
@@ -394,7 +394,7 @@ export async function notifyDelegationTerminal(
       body: {
         service: "delegation",
         level: "error",
-        message: `[Harness] Toast failed for delegation ${delegation.id}: ${error instanceof Error ? error.message : String(error)}`,
+        message: `[Hivemind] Toast failed for delegation ${delegation.id}: ${error instanceof Error ? error.message : String(error)}`,
       },
     })
   }
@@ -410,7 +410,7 @@ export async function notifyDelegationTerminal(
       body: {
         service: "delegation",
         level: "error",
-        message: `[Harness] Failed to notify parent session ${delegation.parentSessionId} of delegation ${delegation.id} terminal state: ${error instanceof Error ? error.message : String(error)}`,
+        message: `[Hivemind] Failed to notify parent session ${delegation.parentSessionId} of delegation ${delegation.id} terminal state: ${error instanceof Error ? error.message : String(error)}`,
       },
     })
   }

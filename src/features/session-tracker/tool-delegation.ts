@@ -178,7 +178,7 @@ export class ToolDelegation {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: handleToolExecuteBefore failed",
+          message: "[Hivemind] Session tracker: handleToolExecuteBefore failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -248,7 +248,7 @@ export class ToolDelegation {
       body: {
         service: "session-tracker",
         level: "warn",
-        message: `[Harness] Session tracker: polling exhausted for parent "${parentID}" — relying on PostToolUse registration`,
+        message: `[Hivemind] Session tracker: polling exhausted for parent "${parentID}" — relying on PostToolUse registration`,
       },
     })
   }
@@ -541,7 +541,7 @@ export class ToolDelegation {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Trajectory creation failed for delegation ${childSessionID}`,
+          message: `[Hivemind] Trajectory creation failed for delegation ${childSessionID}`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -586,7 +586,7 @@ export class ToolDelegation {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Contract creation failed for delegation ${childSessionID}`,
+          message: `[Hivemind] Contract creation failed for delegation ${childSessionID}`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

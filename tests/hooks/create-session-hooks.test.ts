@@ -239,7 +239,7 @@ describe("createSessionHooks", () => {
 
       expect(addWarning).toHaveBeenCalledWith(
         "ses_exhaust",
-        expect.stringContaining("[Harness]")
+        expect.stringContaining("[Hivemind]")
       )
     })
 
@@ -364,7 +364,7 @@ describe("createSessionHooks", () => {
         errors: ["fix 1 failed", "fix 2 failed"],
         finalResult: {},
       })
-      const escalationMessage = vi.fn().mockReturnValue("[Harness] ralph-loop exhausted 3 correction cycles")
+      const escalationMessage = vi.fn().mockReturnValue("[Hivemind] ralph-loop exhausted 3 correction cycles")
       mockedGetSessionContinuity.mockReturnValue({
         sessionID: "ses_ralph_ex",
         promptParams: {},
@@ -387,7 +387,7 @@ describe("createSessionHooks", () => {
 
       expect(addWarning).toHaveBeenCalledWith(
         "ses_ralph_ex",
-        expect.stringContaining("[Harness]")
+        expect.stringContaining("[Hivemind]")
       )
     })
 

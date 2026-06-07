@@ -65,7 +65,7 @@ describe("session-api typed wrappers", () => {
       const { createSession } = await import("../../src/shared/session-api.js")
 
       await expect(createSession(client, { title: "test", parentID: "   " })).rejects.toThrow(
-        "[Harness] Invalid parent session ID '   '. Expected an OpenCode session ID starting with 'ses'.",
+        "[Hivemind] Invalid parent session ID '   '. Expected an OpenCode session ID starting with 'ses'.",
       )
 
       expect(client.session.create).not.toHaveBeenCalled()
@@ -163,7 +163,7 @@ describe("session-api typed wrappers", () => {
       const { getSession } = await import("../../src/shared/session-api.js")
 
       await expect(getSession(client, "not-a-session")).rejects.toThrow(
-        "[Harness] Invalid session ID 'not-a-session'. Expected an OpenCode session ID starting with 'ses'.",
+        "[Hivemind] Invalid session ID 'not-a-session'. Expected an OpenCode session ID starting with 'ses'.",
       )
 
       expect(client.session.get).not.toHaveBeenCalled()
@@ -187,7 +187,7 @@ describe("session-api typed wrappers", () => {
       const { abortSession } = await import("../../src/shared/session-api.js")
 
       await expect(abortSession(client, "bad-session")).rejects.toThrow(
-        "[Harness] Invalid session ID 'bad-session'. Expected an OpenCode session ID starting with 'ses'.",
+        "[Hivemind] Invalid session ID 'bad-session'. Expected an OpenCode session ID starting with 'ses'.",
       )
 
       expect(client.session.abort).not.toHaveBeenCalled()
@@ -235,7 +235,7 @@ describe("session-api typed wrappers", () => {
       const { getSessionMessages } = await import("../../src/shared/session-api.js")
 
       await expect(getSessionMessages(client, "   ")).rejects.toThrow(
-        "[Harness] Invalid session ID '   '. Expected an OpenCode session ID starting with 'ses'.",
+        "[Hivemind] Invalid session ID '   '. Expected an OpenCode session ID starting with 'ses'.",
       )
 
       expect(client.session.messages).not.toHaveBeenCalled()
@@ -290,7 +290,7 @@ describe("session-api typed wrappers", () => {
       const { sendPrompt } = await import("../../src/shared/session-api.js")
 
       await expect(sendPrompt(client, "bad-session", { parts: [] })).rejects.toThrow(
-        "[Harness] Invalid session ID 'bad-session'. Expected an OpenCode session ID starting with 'ses'.",
+        "[Hivemind] Invalid session ID 'bad-session'. Expected an OpenCode session ID starting with 'ses'.",
       )
 
       expect(client.session.messages).not.toHaveBeenCalled()
@@ -406,7 +406,7 @@ describe("session-api typed wrappers", () => {
       const { sendPromptAsync } = await import("../../src/shared/session-api.js")
 
       await expect(sendPromptAsync(client, "\n\t ", { parts: [] })).rejects.toThrow(
-        "[Harness] Invalid session ID '\n\t '. Expected an OpenCode session ID starting with 'ses'.",
+        "[Hivemind] Invalid session ID '\n\t '. Expected an OpenCode session ID starting with 'ses'.",
       )
 
       expect(client.session.promptAsync).not.toHaveBeenCalled()
@@ -623,7 +623,7 @@ describe("session-api helpers", () => {
       const { walkParentChain } = await import("../../src/shared/session-api.js")
 
       await expect(walkParentChain(client, "root-123")).rejects.toThrow(
-        "[Harness] Invalid session ID 'root-123'. Expected an OpenCode session ID starting with 'ses'.",
+        "[Hivemind] Invalid session ID 'root-123'. Expected an OpenCode session ID starting with 'ses'.",
       )
 
       expect(client.session.get).not.toHaveBeenCalled()

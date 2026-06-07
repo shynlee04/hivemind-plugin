@@ -60,7 +60,7 @@ export function createAgentWorkContract(input: CreateAgentWorkContractInput): Ag
  */
 export function exportAgentWorkContract(input: ExportAgentWorkContractInput): AgentWorkExportResult {
   const contract = getAgentWorkContract(input.projectRoot, input.contractId)
-  if (!contract) throw new Error(`[Harness] agent work contract not found: ${input.contractId}`)
+  if (!contract) throw new Error(`[Hivemind] agent work contract not found: ${input.contractId}`)
 
   if (input.format === "markdown") {
     return { contractId: contract.id, format: "markdown", payload: renderMarkdownContract(contract) }

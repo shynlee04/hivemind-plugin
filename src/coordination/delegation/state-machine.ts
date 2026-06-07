@@ -291,12 +291,12 @@ export class DelegationStateMachine {
     this.persistAll()
     this.cleanupTracking(delegationId, delegation.childSessionId)
 
-    // R-OBS-01: Log state transitions with [Harness] prefix
+    // R-OBS-01: Log state transitions with [Hivemind] prefix
     void this.client.app?.log?.({
       body: {
         service: "delegation",
         level: "info",
-        message: `[Harness] Delegation ${delegationId} transitioned: ${previousStatus} → ${newState}${error ? ` (error: ${error})` : ""}`,
+        message: `[Hivemind] Delegation ${delegationId} transitioned: ${previousStatus} → ${newState}${error ? ` (error: ${error})` : ""}`,
       },
     })
 
@@ -439,7 +439,7 @@ export class DelegationStateMachine {
   private async handleSafetyCeiling(delegationId: string): Promise<void> {
     const delegation = this.delegations.get(delegationId)
     if (!delegation || (delegation.status !== "running" && delegation.status !== "dispatched")) return
-    this.transitionToTerminal(delegationId, "timeout", `[Harness] Delegation safety ceiling reached after ${DEFAULT_SAFETY_CEILING_MS}ms`)
+    this.transitionToTerminal(delegationId, "timeout", `[Hivemind] Delegation safety ceiling reached after ${DEFAULT_SAFETY_CEILING_MS}ms`)
     try { await abortSession(this.client, delegation.childSessionId) } catch { /* no-op */ }
   }
 }

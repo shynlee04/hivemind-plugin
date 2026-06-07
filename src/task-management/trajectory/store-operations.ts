@@ -39,7 +39,7 @@ export function createPhaseTrajectory(input: {
   const ledger = readTrajectoryLedger(input.projectRoot)
   const existing = ledger.trajectories[trajectoryId]
   if (existing) {
-    throw new Error(`[Harness] phase trajectory already exists: ${trajectoryId}`)
+    throw new Error(`[Hivemind] phase trajectory already exists: ${trajectoryId}`)
   }
   const now = Date.now()
   const trajectory: TrajectoryRecord = {
@@ -82,7 +82,7 @@ export function transitionTrajectory(
   const ledger = readTrajectoryLedger(projectRoot)
   const trajectory = ledger.trajectories[trajectoryId]
   if (!trajectory) {
-    throw new Error(`[Harness] trajectory not found: ${trajectoryId}`)
+    throw new Error(`[Hivemind] trajectory not found: ${trajectoryId}`)
   }
 
   // Idempotent: same-state transition is a no-op
@@ -93,7 +93,7 @@ export function transitionTrajectory(
   const allowed = TRAJECTORY_TRANSITIONS[trajectory.status]
   if (!allowed.includes(targetStatus)) {
     throw new Error(
-      `[Harness] invalid trajectory transition: ${trajectory.status}→${targetStatus} (${trajectoryId})`,
+      `[Hivemind] invalid trajectory transition: ${trajectory.status}→${targetStatus} (${trajectoryId})`,
     )
   }
 
@@ -128,7 +128,7 @@ export function addTrajectoryEvent(
   const ledger = readTrajectoryLedger(projectRoot)
   const trajectory = ledger.trajectories[trajectoryId]
   if (!trajectory) {
-    throw new Error(`[Harness] trajectory not found: ${trajectoryId}`)
+    throw new Error(`[Hivemind] trajectory not found: ${trajectoryId}`)
   }
 
   const now = Date.now()
@@ -177,7 +177,7 @@ export function attachTrajectoryEvidence(input: TrajectoryMutationInput): { ledg
   const ledger = readTrajectoryLedger(input.projectRoot)
   const existing = ledger.trajectories[input.trajectoryId]
   if (existing?.status === "closed") {
-    throw new Error(`[Harness] trajectory is closed: ${input.trajectoryId}`)
+    throw new Error(`[Hivemind] trajectory is closed: ${input.trajectoryId}`)
   }
   const now = Date.now()
   const trajectory = upsertTrajectory(ledger, input, now)
@@ -199,7 +199,7 @@ export function checkpointTrajectory(input: TrajectoryMutationInput & { checkpoi
   const ledger = readTrajectoryLedger(input.projectRoot)
   const existing = ledger.trajectories[input.trajectoryId]
   if (existing?.status === "closed") {
-    throw new Error(`[Harness] trajectory is closed: ${input.trajectoryId}`)
+    throw new Error(`[Hivemind] trajectory is closed: ${input.trajectoryId}`)
   }
   const now = Date.now()
   const trajectory = upsertTrajectory(ledger, input, now)
@@ -227,7 +227,7 @@ export function eventTrajectory(input: TrajectoryMutationInput & { eventId?: str
   const ledger = readTrajectoryLedger(input.projectRoot)
   const existing = ledger.trajectories[input.trajectoryId]
   if (existing?.status === "closed") {
-    throw new Error(`[Harness] trajectory is closed: ${input.trajectoryId}`)
+    throw new Error(`[Hivemind] trajectory is closed: ${input.trajectoryId}`)
   }
   const now = Date.now()
   const trajectory = upsertTrajectory(ledger, input, now)
@@ -257,10 +257,10 @@ export function closeTrajectory(input: { projectRoot: string; trajectoryId: stri
   const ledger = readTrajectoryLedger(input.projectRoot)
   const trajectory = ledger.trajectories[input.trajectoryId]
   if (!trajectory) {
-    throw new Error(`[Harness] Trajectory "${input.trajectoryId}" not found`)
+    throw new Error(`[Hivemind] Trajectory "${input.trajectoryId}" not found`)
   }
   if (trajectory.status === "closed") {
-    throw new Error(`[Harness] trajectory is already closed: ${input.trajectoryId}`)
+    throw new Error(`[Hivemind] trajectory is already closed: ${input.trajectoryId}`)
   }
   const now = Date.now()
   trajectory.status = "closed"
@@ -324,7 +324,7 @@ function upsertTrajectory(ledger: TrajectoryLedger, input: TrajectoryMutationInp
   }
 
   if (!input.rootSessionId) {
-    throw new Error(`[Harness] rootSessionId is required to create trajectory "${input.trajectoryId}"`)
+    throw new Error(`[Hivemind] rootSessionId is required to create trajectory "${input.trajectoryId}"`)
   }
 
   const trajectory: TrajectoryRecord = {

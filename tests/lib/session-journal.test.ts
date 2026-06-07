@@ -50,7 +50,7 @@ describe("session journal contract", () => {
       summary: "Invalid marker should fail.",
       // @ts-expect-error verifies runtime validation rejects untrusted input too.
       stateRole: "canonical-ish",
-    })).toThrow("[Harness]")
+    })).toThrow("[Hivemind]")
   })
 
   it("renders bounded Markdown summary labels", () => {

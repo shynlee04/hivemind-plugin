@@ -131,7 +131,7 @@ export class MessageCapture {
           body: {
             service: "session-tracker",
             level: "warn",
-            message: "[Harness] Session tracker: chat.message output.parts is not an array — skipping",
+            message: "[Hivemind] Session tracker: chat.message output.parts is not an array — skipping",
           },
         })
         return
@@ -144,7 +144,7 @@ export class MessageCapture {
           body: {
             service: "session-tracker",
             level: "warn",
-            message: `[Harness] Session tracker: unexpected message role "${output.message.role}" — skipping`,
+            message: `[Hivemind] Session tracker: unexpected message role "${output.message.role}" — skipping`,
           },
         })
         return
@@ -162,7 +162,7 @@ export class MessageCapture {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: chat.message handler failed",
+          message: "[Hivemind] Session tracker: chat.message handler failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -343,7 +343,7 @@ export class MessageCapture {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: SDK user-message backfill failed for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: SDK user-message backfill failed for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -388,7 +388,7 @@ export class MessageCapture {
         body: {
           service: "session-tracker",
           level: "debug",
-          message: "[Harness] extractTextContent: found parts but no text content",
+          message: "[Hivemind] extractTextContent: found parts but no text content",
         },
       })
     }

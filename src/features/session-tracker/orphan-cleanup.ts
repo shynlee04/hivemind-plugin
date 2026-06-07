@@ -166,7 +166,7 @@ export class OrphanCleanup {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: `[Harness] Session tracker: quarantining "${sessionID}" which has a continuity tree entry — may be a legitimate child`,
+              message: `[Hivemind] Session tracker: quarantining "${sessionID}" which has a continuity tree entry — may be a legitimate child`,
             },
           })
         }
@@ -180,7 +180,7 @@ export class OrphanCleanup {
             body: {
               service: "session-tracker",
               level: "info",
-              message: `[Harness] Session tracker: quarantined orphan directory "${sessionID}" (${reason})`,
+              message: `[Hivemind] Session tracker: quarantined orphan directory "${sessionID}" (${reason})`,
             },
           })
         } catch (err) {

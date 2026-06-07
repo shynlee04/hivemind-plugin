@@ -426,7 +426,7 @@ export class TmuxMultiplexer {
   ): Promise<void> {
     const tmux = await this.getBinary();
     if (!tmux) {
-      throw new Error("[Harness] tmux binary not found");
+      throw new Error("[Hivemind] tmux binary not found");
     }
 
     const args = [
@@ -442,7 +442,7 @@ export class TmuxMultiplexer {
     } catch (err: unknown) {
       const e = err as { stderr?: unknown } | null;
       const stderr = e?.stderr ? String(e.stderr).trim() : String(err);
-      throw new Error(`[Harness] tmux sendKeys failed: ${stderr}`);
+      throw new Error(`[Hivemind] tmux sendKeys failed: ${stderr}`);
     }
   }
 

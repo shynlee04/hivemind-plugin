@@ -71,16 +71,16 @@ export type TrajectoryDepth = z.infer<typeof TrajectoryDepthSchema>
 export function parseTrajectoryToolInput(rawInput: unknown): TrajectoryToolInput {
   const parsed = TrajectoryToolInputSchema.parse(rawInput)
   if (["attach", "checkpoint", "event", "close"].includes(parsed.action) && !parsed.trajectoryId) {
-    throw new Error("[Harness] trajectoryId is required")
+    throw new Error("[Hivemind] trajectoryId is required")
   }
   if (parsed.action === "create" && !parsed.phaseNumber) {
-    throw new Error("[Harness] phaseNumber is required for create")
+    throw new Error("[Hivemind] phaseNumber is required for create")
   }
   if (parsed.action === "checkpoint" && !parsed.summary) {
-    throw new Error("[Harness] summary is required for checkpoint")
+    throw new Error("[Hivemind] summary is required for checkpoint")
   }
   if (parsed.action === "event" && (!parsed.eventType || !parsed.summary)) {
-    throw new Error("[Harness] eventType and summary are required for event")
+    throw new Error("[Hivemind] eventType and summary are required for event")
   }
   return parsed
 }

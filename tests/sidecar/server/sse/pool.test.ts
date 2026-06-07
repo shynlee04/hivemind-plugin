@@ -48,7 +48,7 @@ describe("SseConnectionPool", () => {
       expect(() => pool.addClient(createMockController())).toThrow(/\[Harness\]/)
     })
 
-    it("rejects the 51st connection with [Harness] error", () => {
+    it("rejects the 51st connection with [Hivemind] error", () => {
       for (let i = 0; i < 50; i++) {
         pool.addClient(createMockController())
       }

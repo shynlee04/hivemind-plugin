@@ -41,7 +41,7 @@ export class SessionNextTextEndedHandler {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: failed to capture lastMessage from session.next.text.ended for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: failed to capture lastMessage from session.next.text.ended for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

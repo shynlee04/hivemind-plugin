@@ -94,7 +94,7 @@ export class EventCapture {
           body: {
             service: "session-tracker",
             level: "warn",
-            message: `[Harness] Session tracker: sessionID contains unsafe characters: "${event.sessionID}"`,
+            message: `[Hivemind] Session tracker: sessionID contains unsafe characters: "${event.sessionID}"`,
           },
         })
         return
@@ -108,7 +108,7 @@ export class EventCapture {
           body: {
             service: "session-tracker",
             level: "warn",
-            message: `[Harness] Session tracker: unknown event type "${event.eventType}"`,
+            message: `[Hivemind] Session tracker: unknown event type "${event.eventType}"`,
           },
         })
       }
@@ -117,7 +117,7 @@ export class EventCapture {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: "[Harness] Session tracker: event handler failed",
+          message: "[Hivemind] Session tracker: event handler failed",
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })
@@ -155,7 +155,7 @@ export class EventCapture {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: journey recording failed for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: journey recording failed for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

@@ -100,7 +100,7 @@ export function readGovernanceConfig(
   const result = GovernanceConfigSchema.safeParse(governance)
   if (!result.success) {
     throw new Error(
-      `[Harness] Governance config validation failed: ${result.error.message}`,
+      `[Hivemind] Governance config validation failed: ${result.error.message}`,
     )
   }
 

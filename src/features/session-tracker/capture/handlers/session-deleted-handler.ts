@@ -55,7 +55,7 @@ export class SessionDeletedHandler {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: `[Harness] Session tracker: backfill failed for "${sessionID}"`,
+              message: `[Hivemind] Session tracker: backfill failed for "${sessionID}"`,
               extra: { error: err instanceof Error ? err.message : String(err) },
             },
           })
@@ -65,7 +65,7 @@ export class SessionDeletedHandler {
             body: {
               service: "session-tracker",
               level: "warn",
-              message: `[Harness] Session tracker: backfill failed for "${sessionID}" (deleted handler)`,
+              message: `[Hivemind] Session tracker: backfill failed for "${sessionID}" (deleted handler)`,
               extra: { error: err instanceof Error ? err.message : String(err) },
             },
           })
@@ -85,7 +85,7 @@ export class SessionDeletedHandler {
         body: {
           service: "session-tracker",
           level: "warn",
-          message: `[Harness] Session tracker: failed to handle session.deleted for "${sessionID}"`,
+          message: `[Hivemind] Session tracker: failed to handle session.deleted for "${sessionID}"`,
           extra: { error: err instanceof Error ? err.message : String(err) },
         },
       })

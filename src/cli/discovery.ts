@@ -26,26 +26,26 @@ export type CommandSource = {
 }
 
 /**
- * Validate a single CLI command. Throws a `[Harness]`-prefixed error if
+ * Validate a single CLI command. Throws a `[Hivemind]`-prefixed error if
  * the command shape is unusable.
  */
 export function validateCommand(command: CliCommand): void {
   if (typeof command.name !== "string" || command.name.trim().length === 0) {
-    throw new Error("[Harness] CLI command requires a non-empty name")
+    throw new Error("[Hivemind] CLI command requires a non-empty name")
   }
   if (/\s/.test(command.name)) {
     throw new Error(
-      `[Harness] CLI command name "${command.name}" must not contain whitespace`,
+      `[Hivemind] CLI command name "${command.name}" must not contain whitespace`,
     )
   }
   if (typeof command.summary !== "string" || command.summary.trim().length === 0) {
     throw new Error(
-      `[Harness] CLI command "${command.name}" requires a non-empty summary`,
+      `[Hivemind] CLI command "${command.name}" requires a non-empty summary`,
     )
   }
   if (typeof command.handler !== "function") {
     throw new Error(
-      `[Harness] CLI command "${command.name}" requires a handler function`,
+      `[Hivemind] CLI command "${command.name}" requires a handler function`,
     )
   }
 }
@@ -53,7 +53,7 @@ export function validateCommand(command: CliCommand): void {
 /**
  * Flatten an ordered list of `CommandSource`s into a single registration
  * order. Validates every entry and rejects duplicate command names with a
- * `[Harness]`-prefixed error that names both colliding sources.
+ * `[Hivemind]`-prefixed error that names both colliding sources.
  */
 export function discoverCommands(sources: readonly CommandSource[]): CliCommand[] {
   const seen = new Map<string, string>()
@@ -65,7 +65,7 @@ export function discoverCommands(sources: readonly CommandSource[]): CliCommand[
       const previousSource = seen.get(command.name)
       if (previousSource !== undefined) {
         throw new Error(
-          `[Harness] CLI command "${command.name}" registered twice — first by source "${previousSource}", again by "${source.name}"`,
+          `[Hivemind] CLI command "${command.name}" registered twice — first by source "${previousSource}", again by "${source.name}"`,
         )
       }
       seen.set(command.name, source.name)

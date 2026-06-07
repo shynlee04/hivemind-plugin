@@ -3,7 +3,7 @@
  *
  * When a child session write fails, the operation is recorded here and
  * retried with exponential backoff (1s, 2s, 4s, 8s, 16s). After 5 failed
- * attempts the child session is marked "degraded" and a `[Harness]` error
+ * attempts the child session is marked "degraded" and a `[Hivemind]` error
  * is logged. Retry records are persisted to disk under
  * `.hivemind/session-tracker/retry-degraded.json` for recovery after restart.
  *
@@ -324,7 +324,7 @@ export class ChildWriteRetryQueue {
     } catch (err) {
       // Persist failure is non-fatal — log but don't throw
       console.error(
-        `[Harness] Session tracker: failed to persist degraded retry record for "${record.sessionID}":`,
+        `[Hivemind] Session tracker: failed to persist degraded retry record for "${record.sessionID}":`,
         err instanceof Error ? err.message : String(err),
       )
     }

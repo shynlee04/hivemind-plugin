@@ -439,7 +439,7 @@ describe("DelegationStateMachine", () => {
       expect((sm as any).client.app.log).toHaveBeenCalledWith(
         expect.objectContaining({
           body: expect.objectContaining({
-            message: expect.stringContaining("[Harness] Delegation del_1 transitioned: running → completed"),
+            message: expect.stringContaining("[Hivemind] Delegation del_1 transitioned: running → completed"),
           }),
         }),
       )

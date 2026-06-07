@@ -4,7 +4,7 @@
  * The sidecar server starts at plugin init step 5.5, before many
  * plugin modules exist.  This registry lets the server accept
  * dependencies after construction via typed setter methods, with
- * `[Harness]` error guards on unbound access.
+ * `[Hivemind]` error guards on unbound access.
  *
  * Core dependencies (DelegationManager + SessionTracker + OpenCodeClient)
  * determine {@link isReady}; trajectory, pressure, and config subscriber
@@ -71,28 +71,28 @@ export class SidecarDependencyRegistry {
 
   get delegationManager(): DelegationManager {
     if (!this.#delegationManager) {
-      throw new Error("[Harness] Sidecar: DelegationManager not bound yet")
+      throw new Error("[Hivemind] Sidecar: DelegationManager not bound yet")
     }
     return this.#delegationManager
   }
 
   get sessionTracker(): SessionTracker {
     if (!this.#sessionTracker) {
-      throw new Error("[Harness] Sidecar: SessionTracker not bound yet")
+      throw new Error("[Hivemind] Sidecar: SessionTracker not bound yet")
     }
     return this.#sessionTracker
   }
 
   get client(): OpenCodeClient {
     if (!this.#client) {
-      throw new Error("[Harness] Sidecar: Client not bound yet")
+      throw new Error("[Hivemind] Sidecar: Client not bound yet")
     }
     return this.#client
   }
 
   get trajectory(): TrajectoryLedger {
     if (!this.#trajectory) {
-      throw new Error("[Harness] Sidecar: Trajectory not bound yet")
+      throw new Error("[Hivemind] Sidecar: Trajectory not bound yet")
     }
     return this.#trajectory
   }
@@ -100,7 +100,7 @@ export class SidecarDependencyRegistry {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get pressure(): Record<string, any> {
     if (!this.#pressure) {
-      throw new Error("[Harness] Sidecar: Pressure not bound yet")
+      throw new Error("[Hivemind] Sidecar: Pressure not bound yet")
     }
     return this.#pressure
   }
@@ -108,7 +108,7 @@ export class SidecarDependencyRegistry {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get configSubscriber(): Partial<Record<string, any>> | (() => Partial<Record<string, any>>) {
     if (!this.#configSubscriber) {
-      throw new Error("[Harness] Sidecar: ConfigSubscriber not bound yet")
+      throw new Error("[Hivemind] Sidecar: ConfigSubscriber not bound yet")
     }
     return this.#configSubscriber
   }

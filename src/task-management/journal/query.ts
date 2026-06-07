@@ -108,7 +108,7 @@ export function queryByEventType(
  *
  * `fromMs` and `toMs` are both optional. Omit either to leave that side of
  * the window open-ended. Inverted ranges (`fromMs > toMs`) throw a
- * `[Harness]` error rather than silently returning an empty array — this
+ * `[Hivemind]` error rather than silently returning an empty array — this
  * surfaces caller bugs early.
  *
  * @param entries Source entries.
@@ -123,7 +123,7 @@ export function queryByTimeRange(
   const { fromMs, toMs } = window
   if (typeof fromMs === "number" && typeof toMs === "number" && fromMs > toMs) {
     throw new Error(
-      `[Harness] Inverted journal time range — fromMs ${fromMs} must not exceed toMs ${toMs}`,
+      `[Hivemind] Inverted journal time range — fromMs ${fromMs} must not exceed toMs ${toMs}`,
     )
   }
 

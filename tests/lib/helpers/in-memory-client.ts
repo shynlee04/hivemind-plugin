@@ -22,7 +22,7 @@ export function createInMemoryClient(): InMemoryClient {
       get: vi.fn(async ({ path }: { path: { id: string } }) => {
         if (getSessionError) throw getSessionError
         const session = sessions.get(path.id)
-        if (!session) throw new Error(`[Harness] Session ${path.id} not found`)
+        if (!session) throw new Error(`[Hivemind] Session ${path.id} not found`)
         return { data: session }
       }),
       create: vi.fn(async ({ body }: { body: Record<string, unknown> }) => {

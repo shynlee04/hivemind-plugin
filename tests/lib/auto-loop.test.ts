@@ -101,7 +101,7 @@ describe("auto-loop — PH39-01 self-referential dev loop", () => {
     expect(result.iterations).toBe(1)
   })
 
-  it("propagates dispatcher rejection as a [Harness]-prefixed throw", async () => {
+  it("propagates dispatcher rejection as a [Hivemind]-prefixed throw", async () => {
     const dispatcher = vi.fn(async () => {
       throw new Error("session spawn failed")
     })
@@ -118,7 +118,7 @@ describe("auto-loop — PH39-01 self-referential dev loop", () => {
     expect(verifier).not.toHaveBeenCalled()
   })
 
-  it("propagates verifier rejection as a [Harness]-prefixed throw (matches dispatcher pattern)", async () => {
+  it("propagates verifier rejection as a [Hivemind]-prefixed throw (matches dispatcher pattern)", async () => {
     const dispatcher = vi.fn().mockResolvedValue({ text: "result" })
     const verifier = vi.fn(async () => {
       throw new Error("verifier crashed")
@@ -135,7 +135,7 @@ describe("auto-loop — PH39-01 self-referential dev loop", () => {
     expect(dispatcher).toHaveBeenCalledTimes(1)
   })
 
-  it("rejects non-positive maxIterations with a [Harness] error", async () => {
+  it("rejects non-positive maxIterations with a [Hivemind] error", async () => {
     await expect(
       runAutoLoop({
         initialPrompt: "x",

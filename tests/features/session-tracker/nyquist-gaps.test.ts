@@ -5,7 +5,7 @@
  *   1. AC-RC3-02: SessionRouter routes SDK-identified root to "main", unknownSub never to "main"
  *   2. AC-RC3-03: UnknownSub sessions should have their .json placed in a known root main directory
  *   3. AC-RC4-01: L0 main .md file preserves lastMessage without truncation
- *   4. AC-RC5-03: Child write failures log [Harness] prefix with child session ID
+ *   4. AC-RC5-03: Child write failures log [Hivemind] prefix with child session ID
  *   5. AC-RC1-03: Random/mixed-order registration beyond simple reverse still resolves consistently
  *
  * @module tests/features/session-tracker/nyquist-gaps
@@ -373,10 +373,10 @@ describe("AC-RC4-01: L0 main .md lastMessage without truncation", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Gap 4: AC-RC5-03 — Error messages include [Harness] prefix and child session ID
+// Gap 4: AC-RC5-03 — Error messages include [Hivemind] prefix and child session ID
 // ---------------------------------------------------------------------------
 
-describe("AC-RC5-03: [Harness] error prefix and child session ID in write failures", () => {
+describe("AC-RC5-03: [Hivemind] error prefix and child session ID in write failures", () => {
   let testRoot: string
 
   beforeEach(async () => {

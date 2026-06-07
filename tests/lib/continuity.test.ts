@@ -167,7 +167,7 @@ describe("continuity persistence", () => {
     writeFileSync(filePath, "NOT JSON {{{ GARBAGE }}}", "utf-8")
     expect(existsSync(filePath)).toBe(true)
 
-    // Accessing the store should throw a descriptive [Harness] error
+    // Accessing the store should throw a descriptive [Hivemind] error
     expect(() => continuity.listSessionContinuity()).toThrow(/^\[Harness\]/)
 
     // The corrupt file should have been moved aside (quarantined)

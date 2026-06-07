@@ -76,14 +76,14 @@ export function persistDelegations(delegations: Delegation[]): void {
 
     for (const d of delegations) {
       if (!d.childSessionId || !d.parentSessionId) {
-        console.warn(`[Harness] persistDelegations dual-write: skipping delegation ${d.id} — missing session IDs`)
+        console.warn(`[Hivemind] persistDelegations dual-write: skipping delegation ${d.id} — missing session IDs`)
         continue
       }
 
       const childRecord = buildChildRecordFromDelegation(d)
       childWriter.createChildFile(d.parentSessionId, d.childSessionId, childRecord).catch((err) => {
         // Fire-and-forget: log, never throw — old sync path already wrote to delegations.json
-        console.error(`[Harness] persistDelegations dual-write (child file): ${err instanceof Error ? err.message : String(err)}`)
+        console.error(`[Hivemind] persistDelegations dual-write (child file): ${err instanceof Error ? err.message : String(err)}`)
       })
 
       manifestWriter.addChild({
@@ -100,12 +100,12 @@ export function persistDelegations(delegations: Delegation[]): void {
         // both writers must be updated together to prevent drift.
         delegationType: d.delegationType ?? "sdk-direct",
       }).catch((err) => {
-        console.error(`[Harness] persistDelegations dual-write (manifest): ${err instanceof Error ? err.message : String(err)}`)
+        console.error(`[Hivemind] persistDelegations dual-write (manifest): ${err instanceof Error ? err.message : String(err)}`)
       })
     }
   } catch (err) {
     // Fire-and-forget: log but never throw — old sync path already wrote to delegations.json
-    console.error(`[Harness] persistDelegations dual-write error: ${err instanceof Error ? err.message : String(err)}`)
+    console.error(`[Hivemind] persistDelegations dual-write error: ${err instanceof Error ? err.message : String(err)}`)
   }
 }
 

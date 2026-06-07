@@ -378,14 +378,14 @@ describe("SpawnReservation", () => {
     expect(mgr.getRootBudget("root-rnoop2")?.reserved ?? 0).toBe(budgetAfterRollback)
   })
 
-  it("exceeding MAX_DESCENDANTS_PER_ROOT throws a [Harness] error", () => {
+  it("exceeding MAX_DESCENDANTS_PER_ROOT throws a [Hivemind] error", () => {
     // Fill up to the limit
     const reservations: ReturnType<typeof reserveSubagentSpawn>[] = []
     for (let i = 0; i < MAX_DESCENDANTS_PER_ROOT; i++) {
       reservations.push(reserveSubagentSpawn(`parent-${i}`, "root-limit", mgr))
     }
 
-    // The next one must throw with [Harness] prefix
+    // The next one must throw with [Hivemind] prefix
     expect(() =>
       reserveSubagentSpawn("parent-over", "root-limit", mgr)
     ).toThrow(/^\[Harness\]/)

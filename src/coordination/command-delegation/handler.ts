@@ -117,7 +117,7 @@ export class CommandDelegationHandler {
 
     return this.dispatchHeadlessCommand(
       params, queueKey, workingDirectory, delegationId, nestingDepth,
-      "[Harness] PTY runtime unavailable in current environment",
+      "[Hivemind] PTY runtime unavailable in current environment",
     )
   }
 
@@ -140,7 +140,7 @@ export class CommandDelegationHandler {
       this.callbacks.onTerminal(
         delegation.id,
         "error",
-        "[Harness] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts",
+        "[Hivemind] PTY delegation is non-resumable-after-restart: PTY OS processes do not survive harness restarts",
         { terminalKind: "non-resumable-after-restart" },
       )
       return
@@ -239,8 +239,8 @@ export class CommandDelegationHandler {
         const cancellationRecorded = delegation?.explicitCancellation === true || delegation?.terminalKind === "cancelled"
         this.finalizeCommandDelegation(delegationId, {
           error: cancellationRecorded
-            ? "[Harness] Command cancelled by user"
-            : "[Harness] PTY session disappeared before completion",
+            ? "[Hivemind] Command cancelled by user"
+            : "[Hivemind] PTY session disappeared before completion",
         })
         return
       }
@@ -277,7 +277,7 @@ export class CommandDelegationHandler {
     }
 
     delegation.result = outcome.output
-    delegation.resultTruncated = outcome.output?.startsWith("[Harness] Headless output truncated") ?? false
+    delegation.resultTruncated = outcome.output?.startsWith("[Hivemind] Headless output truncated") ?? false
     const explicitCancellation = delegation.explicitCancellation ?? false
 
     if (outcome.error) {
@@ -307,8 +307,8 @@ export class CommandDelegationHandler {
         delegationId,
         "error",
         outcome.signal
-          ? `[Harness] Command cancelled by user (${outcome.signal})`
-          : "[Harness] Command cancelled by user",
+          ? `[Hivemind] Command cancelled by user (${outcome.signal})`
+          : "[Hivemind] Command cancelled by user",
         {
           terminalKind: "cancelled",
           terminationSignal: outcome.signal,
@@ -319,7 +319,7 @@ export class CommandDelegationHandler {
       this.callbacks.onTerminal(
         delegationId,
         "error",
-        `[Harness] Command interrupted by signal ${outcome.signal}`,
+        `[Hivemind] Command interrupted by signal ${outcome.signal}`,
         {
           terminalKind: "interrupted-by-signal",
           terminationSignal: outcome.signal,
@@ -335,7 +335,7 @@ export class CommandDelegationHandler {
       this.callbacks.onTerminal(
         delegationId,
         "error",
-        `[Harness] Command exited with code ${outcome.exitCode}`,
+        `[Hivemind] Command exited with code ${outcome.exitCode}`,
         {
           terminalKind: "error",
           explicitCancellation: false,
@@ -412,5 +412,5 @@ function renderHeadlessOutput(state: HeadlessCommandState): string {
   if (!state.truncated) {
     return state.output
   }
-  return `[Harness] Headless output truncated to last ${MAX_HEADLESS_OUTPUT_CHARS} characters.\n${state.output}`
+  return `[Hivemind] Headless output truncated to last ${MAX_HEADLESS_OUTPUT_CHARS} characters.\n${state.output}`
 }

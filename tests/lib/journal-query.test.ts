@@ -158,10 +158,10 @@ describe("journal-query — JOURNAL-02", () => {
       expect(out.map((e) => e.eventType)).toEqual(["evt-2"])
     })
 
-    it("rejects inverted ranges with a [Harness] error", () => {
+    it("rejects inverted ranges with a [Hivemind] error", () => {
       expect(() =>
         queryByTimeRange([], { fromMs: 5000, toMs: 1000 }),
-      ).toThrow("[Harness]")
+      ).toThrow("[Hivemind]")
     })
   })
 

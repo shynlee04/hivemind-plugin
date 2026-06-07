@@ -131,7 +131,7 @@ describe("findAvailablePort", () => {
     expect(port).toBe(47322)
   })
 
-  it("rejects with a [Harness] error when every port is taken", async () => {
+  it("rejects with a [Hivemind] error when every port is taken", async () => {
     await occupy(47330)
     await occupy(47331)
     await expect(findAvailablePort([47330, 47331])).rejects.toThrow(
@@ -139,7 +139,7 @@ describe("findAvailablePort", () => {
     )
   })
 
-  it("rejects with a [Harness] error when the list is empty", async () => {
+  it("rejects with a [Hivemind] error when the list is empty", async () => {
     await expect(findAvailablePort([])).rejects.toThrow(/\[Harness\] All 0/)
   })
 })
@@ -229,7 +229,7 @@ describe("createSidecarServer port allocation", () => {
     }
   })
 
-  it("rejects with a [Harness] error when every port in HIVEMIND_PLUGIN_PORT_LIST is taken", async () => {
+  it("rejects with a [Hivemind] error when every port in HIVEMIND_PLUGIN_PORT_LIST is taken", async () => {
     process.env.HIVEMIND_PLUGIN_PORT_LIST = "47520,47521"
 
     // Occupy both
