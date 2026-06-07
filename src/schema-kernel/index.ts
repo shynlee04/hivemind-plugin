@@ -122,6 +122,7 @@ export {
 } from "./runtime-pressure.schema.js"
 
 export type { RuntimePressureToolInput } from "./runtime-pressure.schema.js"
+export type { PressureDecision } from "../features/runtime-pressure/types.js"
 
 export {
   SdkSupervisorActionSchema,

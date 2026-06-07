@@ -1,4 +1,4 @@
-import type { PressureDecision } from "../../features/runtime-pressure/types.js"
+import type { PressureDecision } from "../../schema-kernel/index.js"
 
 /** Command bundle discovered from existing OpenCode command primitives. */
 export type CommandBundle = {
