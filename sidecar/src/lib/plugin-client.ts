@@ -10,8 +10,10 @@
  *
  * Port discovery precedence (highest first):
  *   1. `HIVEMIND_PLUGIN_PORT` env var      — single explicit port
- *   2. Probe `HIVEMIND_PLUGIN_PORT_LIST` in order
- *   3. Fall back to `FALLBACK_PORT` (3199) if the singleton is constructed
+ *   2. `GET /api/plugin-port` (same-origin Next.js route) — server-side
+ *      discovery via the sidecar's own API; only available in the browser
+ *   3. Probe `HIVEMIND_PLUGIN_PORT_LIST` in order
+ *   4. Fall back to `FALLBACK_PORT` (3199) if the singleton is constructed
  *      before probing completes
  *
  * Backward compat: `NEXT_PUBLIC_PLUGIN_PORT` env var (Next.js convention)
@@ -56,6 +58,13 @@ export const HIVEMIND_PLUGIN_PORT_LIST: readonly number[] = [
 
 /** Timeout per port probe (in ms). Total probe time bounded at ~10s. */
 const PORT_PROBE_TIMEOUT_MS = 1000
+
+/**
+ * Timeout for the same-origin `/api/plugin-port` discovery call (in ms).
+ * The browser-only fetch must abort fast so the port-list probe fallback
+ * (step 3) is not blocked behind a slow / hung API route.
+ */
+const API_PORT_PROBE_TIMEOUT_MS = 1000
 
 /** Hostname used for HTTP probes. */
 const PROBE_HOSTNAME = "127.0.0.1"
@@ -314,11 +323,51 @@ async function probeSinglePort(port: number): Promise<boolean> {
 }
 
 /**
+ * Probe the same-origin `/api/plugin-port` route for the active plugin
+ * server port. This is step 2 of port discovery and is browser-only —
+ * the route is served by the sidecar's own Next.js server, so it works
+ * regardless of the plugin server's actual port.
+ *
+ * Returns the discovered port number, or `null` if:
+ *   - running in a non-browser environment (no `window`)
+ *   - the API route returns non-OK status
+ *   - the response body is not an object with a `port` field
+ *     of type integer in the range 1..65535
+ *   - the request times out after `API_PORT_PROBE_TIMEOUT_MS` (1s)
+ */
+async function probeApiPort(): Promise<number | null> {
+  if (typeof window === "undefined") return null
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), API_PORT_PROBE_TIMEOUT_MS)
+  try {
+    const response = await fetch("/api/plugin-port", { signal: controller.signal })
+    if (!response.ok) return null
+    const body: unknown = await response.json()
+    if (typeof body !== "object" || body === null || Array.isArray(body)) return null
+    const port: unknown = Reflect.get(body, "port")
+    if (
+      typeof port === "number" &&
+      Number.isInteger(port) &&
+      port > 0 &&
+      port < 65536
+    ) {
+      return port
+    }
+    return null
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
  * Discover the active plugin server port.
  *
  * Precedence (highest first):
  *   1. `HIVEMIND_PLUGIN_PORT` env var (probe that single port)
- *   2. Probe `HIVEMIND_PLUGIN_PORT_LIST` in order, return first responder
+ *   2. `GET /api/plugin-port` (same-origin Next.js route, browser only)
+ *   3. Probe `HIVEMIND_PLUGIN_PORT_LIST` in order, return first responder
  *
  * The result is cached — subsequent calls return the same value
  * until `resetCachedPort()` is called. Concurrent calls share the
@@ -347,7 +396,14 @@ export async function probePluginPort(): Promise<number | null> {
         }
       }
 
-      // 2. Probe the port list in order
+      // 2. Same-origin API route (browser only, no fallthrough)
+      const apiPort = await probeApiPort()
+      if (apiPort !== null) {
+        cachedDiscoveredPort = apiPort
+        return apiPort
+      }
+
+      // 3. Probe the port list in order
       for (const port of HIVEMIND_PLUGIN_PORT_LIST) {
         if (await probeSinglePort(port)) {
           cachedDiscoveredPort = port
