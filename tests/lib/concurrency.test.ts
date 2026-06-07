@@ -93,7 +93,7 @@ describe("DelegationConcurrencyQueue", () => {
       // Second acquire with short timeout should reject
       await expect(
         queue.acquire("timeout-key", 1, 50),
-      ).rejects.toThrow(/\[Harness\].*timed out/)
+      ).rejects.toThrow(/\[Hivemind\].*timed out/)
 
       // Clean up
       r1()
@@ -388,7 +388,7 @@ describe("SpawnReservation", () => {
     // The next one must throw with [Hivemind] prefix
     expect(() =>
       reserveSubagentSpawn("parent-over", "root-limit", mgr)
-    ).toThrow(/^\[Harness\]/)
+    ).toThrow(/^\[Hivemind\]/)
 
     // Clean up
     for (const r of reservations) r.release()
@@ -441,6 +441,6 @@ describe("SpawnReservation", () => {
 
     expect(() =>
       reserveSubagentSpawn("p3", "root-custom", mgr, 2)
-    ).toThrow(/^\[Harness\]/)
+    ).toThrow(/^\[Hivemind\]/)
   })
 })

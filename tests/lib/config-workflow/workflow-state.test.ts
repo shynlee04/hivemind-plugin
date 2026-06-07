@@ -141,7 +141,7 @@ describe("workflow-state", () => {
       const state = createWorkflowState({
         type: "agent-config", targetPrimitives: [], scope: "project", mode: "create",
       })
-      expect(() => advanceTurn(state, 3)).toThrow(/\[Harness\]/)
+      expect(() => advanceTurn(state, 3)).toThrow(/\[Hivemind\]/)
       expect(() => advanceTurn(state, 3)).toThrow(/cannot advance from turn 0 to turn 3/)
     })
   })
@@ -235,8 +235,8 @@ describe("workflow-state", () => {
 
     it("should throw for out-of-range indices", async () => {
       const { getTurnName } = await import("../../../src/config/workflow/workflow-state.js")
-      expect(() => getTurnName(-1)).toThrow(/\[Harness\]/)
-      expect(() => getTurnName(8)).toThrow(/\[Harness\]/)
+      expect(() => getTurnName(-1)).toThrow(/\[Hivemind\]/)
+      expect(() => getTurnName(8)).toThrow(/\[Hivemind\]/)
     })
   })
 })

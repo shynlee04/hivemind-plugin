@@ -50,7 +50,7 @@ describe("continuity persistence", () => {
     const filePath = continuity.getContinuityStoragePath()
     writeFileSync(filePath, "NOT JSON {{{", "utf-8")
 
-    expect(() => continuity.listSessionContinuity()).toThrow(/^\[Harness\]/)
+    expect(() => continuity.listSessionContinuity()).toThrow(/^\[Hivemind\]/)
     expect(existsSync(filePath)).toBe(false)
     expect(readdirSync(stateDir).some((name) => name.startsWith("session-continuity.json.corrupt-"))).toBe(true)
   })
@@ -168,7 +168,7 @@ describe("continuity persistence", () => {
     expect(existsSync(filePath)).toBe(true)
 
     // Accessing the store should throw a descriptive [Hivemind] error
-    expect(() => continuity.listSessionContinuity()).toThrow(/^\[Harness\]/)
+    expect(() => continuity.listSessionContinuity()).toThrow(/^\[Hivemind\]/)
 
     // The corrupt file should have been moved aside (quarantined)
     expect(existsSync(filePath)).toBe(false)

@@ -135,12 +135,12 @@ describe("findAvailablePort", () => {
     await occupy(47330)
     await occupy(47331)
     await expect(findAvailablePort([47330, 47331])).rejects.toThrow(
-      /\[Harness\] All 2 plugin server ports are in use: 47330, 47331/,
+      /\[Hivemind\] All 2 plugin server ports are in use: 47330, 47331/,
     )
   })
 
   it("rejects with a [Hivemind] error when the list is empty", async () => {
-    await expect(findAvailablePort([])).rejects.toThrow(/\[Harness\] All 0/)
+    await expect(findAvailablePort([])).rejects.toThrow(/\[Hivemind\] All 0/)
   })
 })
 
@@ -251,7 +251,7 @@ describe("createSidecarServer port allocation", () => {
     try {
       await expect(
         createSidecarServer({ registry, ssePool, projectDirectory }),
-      ).rejects.toThrow(/\[Harness\] All 2 plugin server ports are in use: 47520, 47521/)
+      ).rejects.toThrow(/\[Hivemind\] All 2 plugin server ports are in use: 47520, 47521/)
     } finally {
       a.close()
       b.close()

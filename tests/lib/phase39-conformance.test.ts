@@ -86,7 +86,7 @@ describe("Phase 39 conformance — auto-loop + ralph-loop composition", () => {
     })
 
     expect(result.status).toBe("failed")
-    expect(result.error).toMatch(/^\[Harness\] auto-loop attempt 1 ralph exhausted after 3 cycles/)
+    expect(result.error).toMatch(/^\[Hivemind\] auto-loop attempt 1 ralph exhausted after 3 cycles/)
     expect(result.iterations).toBe(1)
   })
 })

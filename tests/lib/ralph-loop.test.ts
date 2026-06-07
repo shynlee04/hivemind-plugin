@@ -149,7 +149,7 @@ describe("ralph-loop — PH39-03 max 3 correction cycles + escalation", () => {
         validator: vi.fn(),
         fixer: vi.fn(),
       }),
-    ).rejects.toThrow(/^\[Harness\] ralph-loop maxCorrectionCycles/)
+    ).rejects.toThrow(/^\[Hivemind\] ralph-loop maxCorrectionCycles/)
   })
 
   it("escalationMessage carries the [Hivemind] prefix and reason summary", () => {
@@ -160,7 +160,7 @@ describe("ralph-loop — PH39-03 max 3 correction cycles + escalation", () => {
       errors: ["import missing", "still missing", "now broken", "really broken"],
     })
 
-    expect(message).toMatch(/^\[Harness\]/)
+    expect(message).toMatch(/^\[Hivemind\]/)
     expect(message).toMatch(/3 correction cycles/)
     expect(message).toMatch(/import missing/)
   })

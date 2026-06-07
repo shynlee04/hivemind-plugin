@@ -169,7 +169,7 @@ describe("agent work contract lifecycle", () => {
       startContract(root, created.id)
       expect.fail("should have thrown")
     } catch (error) {
-      expect((error as Error).message).toMatch(/^\[Harness\]/)
+      expect((error as Error).message).toMatch(/^\[Hivemind\]/)
     }
   })
 

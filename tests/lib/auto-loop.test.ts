@@ -114,7 +114,7 @@ describe("auto-loop — PH39-01 self-referential dev loop", () => {
         dispatcher,
         verifier,
       }),
-    ).rejects.toThrow(/^\[Harness\] auto-loop dispatcher failed/)
+    ).rejects.toThrow(/^\[Hivemind\] auto-loop dispatcher failed/)
     expect(verifier).not.toHaveBeenCalled()
   })
 
@@ -131,7 +131,7 @@ describe("auto-loop — PH39-01 self-referential dev loop", () => {
         dispatcher,
         verifier,
       }),
-    ).rejects.toThrow(/^\[Harness\] auto-loop verifier failed on attempt 1: verifier crashed/)
+    ).rejects.toThrow(/^\[Hivemind\] auto-loop verifier failed on attempt 1: verifier crashed/)
     expect(dispatcher).toHaveBeenCalledTimes(1)
   })
 
@@ -143,7 +143,7 @@ describe("auto-loop — PH39-01 self-referential dev loop", () => {
         dispatcher: vi.fn(),
         verifier: vi.fn(),
       }),
-    ).rejects.toThrow(/^\[Harness\] auto-loop maxIterations/)
+    ).rejects.toThrow(/^\[Hivemind\] auto-loop maxIterations/)
   })
 
   it("passes the attempt index to both dispatcher and verifier", async () => {

@@ -95,7 +95,7 @@ describe("hivemind-session-view handler (GAP-01 fixed contract)", () => {
           registry: unboundRegistry,
           args: { sessionId: "sess-1" },
         }),
-      ).rejects.toThrow(/\[Harness\]/)
+      ).rejects.toThrow(/\[Hivemind\]/)
     })
   })
 })

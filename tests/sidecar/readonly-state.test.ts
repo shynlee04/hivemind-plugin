@@ -78,14 +78,14 @@ describe("sidecar readonly-state — SIDECAR-03 enforcement", () => {
       const target = join(projectRoot, "src", "plugin.ts")
       writeFileSync(target, "// not state", "utf8")
       expect(() => readCanonicalState(target, { projectRoot })).toThrow(
-        /^\[Harness\] sidecar SIDECAR-03: read denied/,
+        /^\[Hivemind\] sidecar SIDECAR-03: read denied/,
       )
     })
 
     it("throws [Hivemind] error for traversal-escape paths", () => {
       const target = join(projectRoot, "..", "outside.txt")
       expect(() => readCanonicalState(target, { projectRoot })).toThrow(
-        /^\[Harness\] sidecar SIDECAR-03: read denied/,
+        /^\[Hivemind\] sidecar SIDECAR-03: read denied/,
       )
     })
   })
@@ -94,14 +94,14 @@ describe("sidecar readonly-state — SIDECAR-03 enforcement", () => {
     it("always throws [Hivemind] SIDECAR-03 — even for canonical state paths", () => {
       const target = join(projectRoot, ".hivemind", "state", "delegations.json")
       expect(() => refuseCanonicalWrite(target, { projectRoot })).toThrow(
-        /^\[Harness\] sidecar SIDECAR-03: write to canonical state forbidden/,
+        /^\[Hivemind\] sidecar SIDECAR-03: write to canonical state forbidden/,
       )
     })
 
     it("throws regardless of whether the path is canonical or not", () => {
       const target = join(projectRoot, "src", "plugin.ts")
       expect(() => refuseCanonicalWrite(target, { projectRoot })).toThrow(
-        /^\[Harness\] sidecar SIDECAR-03/,
+        /^\[Hivemind\] sidecar SIDECAR-03/,
       )
     })
 

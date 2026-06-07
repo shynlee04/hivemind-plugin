@@ -218,7 +218,7 @@ describe("loadRuntimePolicy — validation", () => {
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
       trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
-    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
+    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Hivemind\]/)
   })
 
   it("rejects negative globalLimit with [Hivemind] error", () => {
@@ -227,7 +227,7 @@ describe("loadRuntimePolicy — validation", () => {
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
       trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
-    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
+    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Hivemind\]/)
   })
 
   it("rejects zero maxToolCallsPerSession with [Hivemind] error", () => {
@@ -236,7 +236,7 @@ describe("loadRuntimePolicy — validation", () => {
       budget: { maxToolCallsPerSession: 0, repeatedSignatureThreshold: 16, warningCap: 25, resetOnCompact: true },
       trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
-    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
+    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Hivemind\]/)
   })
 
   it("rejects zero repeatedSignatureThreshold with [Hivemind] error", () => {
@@ -245,7 +245,7 @@ describe("loadRuntimePolicy — validation", () => {
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 0, warningCap: 25, resetOnCompact: true },
       trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
-    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
+    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Hivemind\]/)
   })
 
   it("rejects zero warningCap with [Hivemind] error", () => {
@@ -254,7 +254,7 @@ describe("loadRuntimePolicy — validation", () => {
       budget: { maxToolCallsPerSession: 400, repeatedSignatureThreshold: 16, warningCap: 0, resetOnCompact: true },
       trustedRuntime: { builtinAsyncBackgroundChildSessions: false },
     }
-    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Harness\]/)
+    expect(() => loadRuntimePolicy(workspace)).toThrow(/\[Hivemind\]/)
   })
 })
 
@@ -268,7 +268,7 @@ describe("getRuntimePolicyForSession — validation", () => {
     const sessionOverride: SessionPolicyOverride = {
       budget: { maxToolCallsPerSession: 0 },
     }
-    expect(() => getRuntimePolicyForSession(workspace, sessionOverride)).toThrow(/\[Harness\]/)
+    expect(() => getRuntimePolicyForSession(workspace, sessionOverride)).toThrow(/\[Hivemind\]/)
   })
 
   it("rejects session override with negative concurrency.globalLimit", () => {
@@ -280,6 +280,6 @@ describe("getRuntimePolicyForSession — validation", () => {
     const sessionOverride: SessionPolicyOverride = {
       concurrency: { globalLimit: -5 },
     }
-    expect(() => getRuntimePolicyForSession(workspace, sessionOverride)).toThrow(/\[Harness\]/)
+    expect(() => getRuntimePolicyForSession(workspace, sessionOverride)).toThrow(/\[Hivemind\]/)
   })
 })

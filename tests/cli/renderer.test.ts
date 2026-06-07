@@ -16,7 +16,7 @@ describe("cli/renderer — PH40-03 context renderer for terminal output", () => 
     it("does not double-prefix [Hivemind] when the message already starts with it", () => {
       const out = renderError("[Hivemind] Already prefixed")
       // Should appear exactly once.
-      const matches = out.match(/\[Harness\]/g) ?? []
+      const matches = out.match(/\[Hivemind\]/g) ?? []
       expect(matches).toHaveLength(1)
     })
 

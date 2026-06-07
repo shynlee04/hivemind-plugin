@@ -614,7 +614,7 @@ describe("session-api helpers", () => {
       })
 
       const { walkParentChain } = await import("../../src/shared/session-api.js")
-      await expect(walkParentChain(client, "ses_a")).rejects.toThrow(/\[Harness\].*cyclic/)
+      await expect(walkParentChain(client, "ses_a")).rejects.toThrow(/\[Hivemind\].*cyclic/)
     })
 
     it("rejects invalid starting session IDs before calling the SDK", async () => {

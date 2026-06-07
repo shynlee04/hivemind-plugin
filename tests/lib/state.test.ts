@@ -86,7 +86,7 @@ describe("TaskStateManager", () => {
       for (let i = 0; i < 3; i++) {
         mgr.reserveDescendant("root-limit", 3)
       }
-      expect(() => mgr.reserveDescendant("root-limit", 3)).toThrow(/^\[Harness\]/)
+      expect(() => mgr.reserveDescendant("root-limit", 3)).toThrow(/^\[Hivemind\]/)
     })
 
     it("rollbackReservation decrements descendant count", () => {
