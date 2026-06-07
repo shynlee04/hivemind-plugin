@@ -42,6 +42,11 @@ import { getConfig, getFreshConfig } from "./config/subscriber.js"
 import { createSidecarServer } from "./sidecar/server/factory.js"
 import { SidecarDependencyRegistry } from "./sidecar/server/registry.js"
 import { SseConnectionPool } from "./sidecar/server/sse/pool.js"
+import { createStateRoutes } from "./sidecar/server/routes/state.js"
+import { createToolsRoutes } from "./sidecar/server/routes/tools.js"
+import { createCatalogRoutes } from "./sidecar/server/routes/catalog.js"
+import { createEventsRoute } from "./sidecar/server/routes/events.js"
+import type { Route } from "./sidecar/server/handler.js"
 import { resolveBehavioralProfile } from "./routing/behavioral-profile/resolve-behavioral-profile.js"
 import type { HivemindConfigs } from "./schema-kernel/hivemind-configs.schema.js"
 
@@ -160,12 +165,25 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // Per D-SC01-03: server start failure must NOT block plugin init.
   const sidecarRegistry = new SidecarDependencyRegistry()
   const ssePool = new SseConnectionPool({})
+  // Wire orphan SC-02 route factories (state, tools, catalog, events) into
+  // the SidecarRouter. Handlers read dependencies from `sidecarRegistry` at
+  // request time, so they may be registered before the registry is fully
+  // populated (see `sidecarRegistry.setX(...)` calls below).
+  // NOTE: `createSessionsRoutes` is intentionally skipped because it
+  // duplicates every path in `createStateRoutes`.
+  const sidecarRoutes: Route[] = [
+    ...createStateRoutes(sidecarRegistry),
+    ...createToolsRoutes(sidecarRegistry),
+    ...createCatalogRoutes(sidecarRegistry),
+    ...createEventsRoute({ registry: sidecarRegistry, ssePool }),
+  ]
   let sidecarPort = 0
   try {
     const sidecar = await createSidecarServer({
       registry: sidecarRegistry,
       ssePool,
       projectDirectory,
+      routes: sidecarRoutes,
     })
     sidecarPort = sidecar.port
   } catch (err) {
