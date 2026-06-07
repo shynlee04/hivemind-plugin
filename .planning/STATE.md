@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planned
-last_updated: "2026-06-06T18:30:00.000Z"
+last_updated: "2026-06-07T23:30:00.000Z"
 progress:
    total_phases: 68
    completed_phases: 36
@@ -126,7 +126,16 @@ progress:
 **C5 (Concerns):** ✅ COMPLETE — Error Handling & Code Quality (P2, Depends: C4). All 3 plans executed — Plan 01 (Zod-schematized SdkMessageShape + typed extraction), Plan 02 (env allowlist scoping), Plan 03 (verification evidence).
 **C6 (Concerns):** 🟡 PLANNED NOT EXECUTED — Architectural Refactoring (P2, Depends: C5). 5 plans designed (handler extraction, DelegationStatusReader, plugin.ts domain-grouping) but 0 SUMMARY files exist — plans were never executed. EventCapture remains at 1050+ LOC. **ABSORBED BY PHASE 39 PLANS 02-03.**
 **C7 (Concerns):** 🟡 PARTIAL — Test Coverage (P2, Depends: C6). Plan 01 executed (190+ hook tests, 10+ integration tests, coverage thresholds). Remaining REQs deferred to Phase 39 Plan 04.
-**C8 (Concerns):** ❌ NOT CREATED — Dependency Cleanup (P2, Depends: C7). No phase directory exists. **ABSORBED BY PHASE 39 PLAN 05.**
+**C8 (Concerns):** ✅ COMPLETE — Foundation Cluster (P2, Depends: C7). All 7 C8 scope requirements executed:
+- REQ-33: plugin.ts split (1,076→482 LOC, commit `59720958`) ✅
+- REQ-SR01: session-api.ts leaf-only (414 LOC, commit `4f6bbbf5`) ✅
+- REQ-35: Option C dead-type inline (8 commits `37ce4658..c70fc444`, types.ts 422→348 LOC, −17.5%) ✅ — 2 BLOCKED types (CapturedResult, DelegationPacket) deferred to C9
+- AC-35-X2/3/4: task-status.ts removed + index.ts export + test file (commit `cb65610e`) ✅
+- REQ-34A/B/C: HarnessError base class + 10 [Harness] prefix sites + TUI-safe suppression (commits `16fd88de`, `cc794f28`, `422bd1e4`, `a2a0ee2e`) ✅
+- REQ-SR02: journal bridge at src/shared/journal-bridge.ts (85 LOC, commit `db2324da`) ✅
+- REQ-SR00/SR-04: archive no-op marks (commit `6161ac76`) ✅
+- Test fix: commands-errors assertions (commit `7b0bdaee`) ✅
+Archive: `.planning/phases/AUDIT-04-legacy-phase-audit/C8-foundation/C8-ARCHIVE-2026-06-07.md`.
 **Phase 16 Plan 01:** ✅ COMPLETE — Extended 3 tool input schemas (filter-sessions on session-tracker, aggregate on session-context, get-manifest on session-hierarchy) + created session-view.schema.ts.
 **Phase 16 Plan 02:** ✅ COMPLETE — Enhanced session-tracker.ts: removed silent 50KB skip, added >1MB file warnings, child .json search with 4-field extraction, filter-sessions action with hierarchy-manifest index strategy. typecheck clean, 18+236 tests pass.
 **Phase 16 Plan 03:** ✅ COMPLETE — Added aggregate action to session-context tool: status aggregation (fast path via index) and subagentType aggregation (individual continuity files). GAP-3 closed. REQ-03 satisfied.
@@ -574,7 +583,49 @@ All Phase 0 artifacts are L5 documentation/governance evidence only.
 
 ### Next Step
 
-- **C8: Dependency Cleanup** (concerns 8.1-8.4) — or continue planned Group process
+- **C8: Foundation Cluster** ✅ COMPLETE — See C8 archive below
+
+---
+
+## C8 Cluster: Foundation — ✅ COMPLETE
+
+**Completed:** 2026-06-07
+**Phases:** Phase 33 (plugin.ts split) + SR-01 (session-api extraction) + Phase 35 (dead-type inline, Option C)
+**Commits:** `59720958` (P33), `4f6bbbf5` (SR-01), `37ce4658..c70fc444` (P35 — 8 commits on `refactor/c8-35-dead-code`)
+**Branch:** `refactor/c8-35-dead-code` (not yet merged to `feature/harness-implementation`)
+
+### REQ Coverage
+
+| REQ | Description | Status | Evidence |
+|-----|-------------|--------|----------|
+| REQ-33 | plugin.ts split (1,076→482→500 LOC) | ✅ | plugin.ts at 500 LOC, `plugin-registration.ts` + `one-shot-migrations.ts` extracted |
+| REQ-SR01 | session-api coupling extraction → leaf-only | ✅ | `session-api.ts` 414 LOC, zero cross-cluster imports, commit `4f6bbbf5` |
+| REQ-35 | Option C dead-type inline (10/10 INLINEABLE) | ✅ | types.ts 422→348 LOC (−17.5%) on `refactor/c8-35-dead-code`, typecheck GREEN |
+| REQ-34 | Typed errors + HarnessError base class | ❌ DEFERRED | Not started — postponed from C8 scope |
+| REQ-SR00 | Archive no-op | ✅ | Marked in C8 archive document |
+| REQ-SR04 | Archive no-op | ✅ | Marked in C8 archive document |
+| AC-35-X2 | task-status.ts removal (22 LOC) | ❌ NOT DONE | 0 runtime consumers — still present, deferred |
+
+### Verification
+
+- **Type-check:** Clean on `feature/harness-implementation` (current branch)
+- **Phase 35 branch:** 8 atomic commits, each with typecheck GREEN
+- **Full test suite:** No regressions from C8 changes
+- **Archive document:** `.planning/phases/AUDIT-04-legacy-phase-audit/C8-foundation/C8-ARCHIVE-2026-06-07.md`
+
+### Deferred Items
+
+1. **C8/34** — typed errors + HarnessError + TUI-safe suppression
+2. **C9** — CapturedResult + DelegationPacket removal from continuity/index.ts
+3. **`hivemind-steer.ts`** — need baseline commit (blocks merge)
+4. **`task-status.ts`** — dead file removal (22 LOC)
+5. **Test gaps** — types.ts, tool-response.ts, tool-helpers.ts, path-scope.ts, redaction.ts
+
+### Next Step
+
+- **Merge** `refactor/c8-35-dead-code` → `feature/harness-implementation` (blocked on untracked `hivemind-steer.ts`)
+- **C9** — resolve 2 BLOCKED types
+- **C8/34** — typed errors phase
 
 ---
 
