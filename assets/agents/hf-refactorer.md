@@ -63,7 +63,7 @@ L2 Specialist. Terminal executor — no delegation capability. Receives structur
 </depth>
 
 <lineage>
-hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for quality standards (hf-use-authoring-skills) and drift awareness (hf-agents-md-sync). May access hm-* skills for systematic refactoring methodology (hm-refactor to guide surgical vs structural decisions), codebase investigation (hm-detective to study patterns before refactoring), compression (hm-synthesis for simplifying skill references), and spec validation (hm-spec-driven-authoring to verify refactored output against standards). Also loads stack-* reference skills for platform patterns. Cross-lineage access is always justified in output.
+hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for quality standards (hf-use-authoring-skills) and drift awareness (hf-agents-md-sync). May access hm-* skills for systematic refactoring methodology (hm-refactor to guide surgical vs structural decisions), codebase investigation (hm-detective to study patterns before refactoring), compression (hm-synthesis for simplifying skill references), and spec validation (hm-hm-spec-authoring to verify refactored output against standards). Also loads stack-* reference skills for platform patterns. Cross-lineage access is always justified in output.
 </lineage>
 
 <task>
@@ -209,7 +209,7 @@ PRESERVE BEHAVIOR. EVERY REFACTOR MUST PASS AQUAL VALIDATION. NEVER CHANGE WHAT 
 - Prefer surgical refactoring for targeted fixes; structural only when necessary
 - Load hm-detective to investigate patterns before structural refactoring
 - Load hm-synthesis for compression patterns when reducing content bloat
-- Load hm-spec-driven-authoring when refactoring against a specification
+- Load hm-hm-spec-authoring when refactoring against a specification
 - Include `<anti_patterns>` removal documentation in output
 - Provide before/after line count comparisons
 </behavioral_contract>
@@ -327,7 +327,7 @@ This agent is a terminal specialist. It never delegates.
 - hm-refactor — for systematic refactoring methodology (cross-lineage, justified)
 - hm-detective — for codebase pattern investigation before structural refactoring (cross-lineage, justified)
 - hm-synthesis — for compression patterns when reducing content bloat (cross-lineage, justified)
-- hm-spec-driven-authoring — for spec-based validation of refactored output (cross-lineage, justified)
+- hm-hm-spec-authoring — for spec-based validation of refactored output (cross-lineage, justified)
 - stack-opencode — for OpenCode SDK pattern reference
 - stack-zod — for schema validation
 
@@ -336,7 +336,7 @@ When loading hm-* skills, document the reason:
 - hm-refactor: "Loading to apply systematic refactoring methodology for surgical vs structural decision framework"
 - hm-detective: "Loading to investigate existing patterns before structural refactoring"
 - hm-synthesis: "Loading to apply compression patterns for reducing content bloat in refactored primitive"
-- hm-spec-driven-authoring: "Loading to validate refactored output against LINEAGE-CLASSIFICATION-SCHEMA.md specifications"
+- hm-hm-spec-authoring: "Loading to validate refactored output against LINEAGE-CLASSIFICATION-SCHEMA.md specifications"
 </skill_loading>
 
 <session_continuity>

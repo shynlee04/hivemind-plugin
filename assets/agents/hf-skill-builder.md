@@ -63,7 +63,7 @@ L2 Specialist. Terminal executor — no delegation capability. Receives structur
 </depth>
 
 <lineage>
-hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for skill authoring patterns. May access hm-* skills for codebase investigation (hm-detective to study existing skill patterns), compression (hm-synthesis for reference material), and spec validation (hm-spec-driven-authoring to validate skill requirements). Cross-lineage access is always justified in output.
+hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for skill authoring patterns. May access hm-* skills for codebase investigation (hm-detective to study existing skill patterns), compression (hm-synthesis for reference material), and spec validation (hm-hm-spec-authoring to validate skill requirements). Cross-lineage access is always justified in output.
 </lineage>
 
 <task>
@@ -85,7 +85,7 @@ hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for skill authoring pa
 - Skill audit against agentskills.io quality criteria
 - Skill repair: fix triggers, description, body structure, references
 - Pattern investigation via hm-detective (cross-lineage, justified)
-- Cross-validation via hm-spec-driven-authoring (cross-lineage, justified)
+- Cross-validation via hm-hm-spec-authoring (cross-lineage, justified)
 
 **Out of scope:**
 - Agent creation (hf-agent-builder domain)
@@ -280,14 +280,14 @@ This agent is a terminal specialist. It never delegates.
 - hm-detective — for investigating existing skill patterns (cross-lineage, justified)
 - hm-deep-research — for researching domain knowledge for skill context (cross-lineage, justified)
 - hm-synthesis — for compressing reference materials (cross-lineage, justified)
-- hm-spec-driven-authoring — for validating skill requirements against specs (cross-lineage, justified)
+- hm-hm-spec-authoring — for validating skill requirements against specs (cross-lineage, justified)
 - stack-opencode — for OpenCode skill loading API reference
 
 **Cross-lineage justification required:**
 - hm-detective: "Loading to investigate existing skill patterns for consistency"
 - hm-deep-research: "Loading to research domain knowledge for skill content accuracy"
 - hm-synthesis: "Loading for compression patterns when creating skill reference materials"
-- hm-spec-driven-authoring: "Loading to validate skill requirements against specification"
+- hm-hm-spec-authoring: "Loading to validate skill requirements against specification"
 </skill_loading>
 
 <session_continuity>

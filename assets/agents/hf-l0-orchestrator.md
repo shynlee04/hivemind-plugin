@@ -107,7 +107,7 @@ intent_classification:
     - Meta-Concept
   routing_skills:
     - hf-meta-builder-core
-    - hm-l2-lineage-router
+    - hm-coord-router
   session_context_fields:
     - current_session_id
     - active_delegations
@@ -120,7 +120,7 @@ intent_classification:
     - artifact_verification_pending
 skills:
   - hf-meta-builder-core
-  - hm-l2-lineage-router
+  - hm-coord-router
   - hm-coord-loop
   - hm-l2-user-intent-interactive-loop
   - hm-loop-completion
@@ -232,7 +232,7 @@ Debug (bug tracing, root cause analysis)
 
 **XML body standard:** 10 required tags, 6 optional tags (D-AD-04 locked)
 
-**Routing skills:** hf-meta-builder-core for meta-concept routing + hm-l2-lineage-router
+**Routing skills:** hf-meta-builder-core for meta-concept routing + hm-coord-router
 
 **Runtime tools:** session-tracker, hivemind-trajectory, hivemind-pressure, hivemind-command-engine
 **CP-CMD-01 command architecture:** 3 tiers — slash commands (execute-slash-command, deterministic TUI commands), shell commands (run-background-command, PTY/headless processes), agent delegation (delegate-task, WaiterModel). CQRS pattern: hivemind-command-engine (read-side discovery) → execute-slash-command (write-side execution).
@@ -399,7 +399,7 @@ If a delegation returns without file-based artifacts, the gate FAILS automatical
 
 **SHOULD:**
 - Load hf-meta-builder-core before any meta-concept creation workflow for routing
-- Load hm-l2-lineage-router for cross-lineage intent classification
+- Load hm-coord-router for cross-lineage intent classification
 - Load hm-coord-loop for managing multi-step delegations
 - Load hm-l2-user-intent-interactive-loop when user intent is ambiguous
 - Use prompt-skim for long delegation prompts to prevent context overflow
@@ -434,7 +434,7 @@ If a delegation returns without file-based artifacts, the gate FAILS automatical
   </step>
 
   <step name="classify_intent" priority="normal">
-  Analyze user request to classify into one of 26 domains. Use `hf-meta-builder-core` for meta-concept routing and `hm-l2-lineage-router` for cross-lineage classification. If intent is ambiguous, load `hm-user-intent-interactive-loop`. If product-dev task, route to hm-orchestrator.
+  Analyze user request to classify into one of 26 domains. Use `hf-meta-builder-core` for meta-concept routing and `hm-coord-router` for cross-lineage classification. If intent is ambiguous, load `hm-user-intent-interactive-loop`. If product-dev task, route to hm-orchestrator.
   </step>
 
   <step name="assess_session_runtime" priority="normal">
@@ -545,7 +545,7 @@ This agent delegates ALL work. It never implements, reads code for comprehension
 <skill_loading>
 **Mandatory (load at session start):**
 - hf-meta-builder-core — meta-concept routing and step-by-step authoring
-- hm-l2-lineage-router — cross-lineage intent classification
+- hm-coord-router — cross-lineage intent classification
 
 **Load on demand (by workflow phase):**
 - hm-coord-loop — multi-step delegation waves
@@ -560,7 +560,7 @@ This agent delegates ALL work. It never implements, reads code for comprehension
 **Cross-lineage access justification (mandatory):**
 - hm-l3-detective: "Loading to investigate existing patterns before new agent definition"
 - hm-l3-deep-research: "Loading to research library API signatures before skill creation"
-- hm-l2-lineage-router: "Loading for cross-lineage intent classification"
+- hm-coord-router: "Loading for cross-lineage intent classification"
 </skill_loading>
 
 <session_continuity>
