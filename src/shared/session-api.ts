@@ -330,7 +330,7 @@ export async function appendTuiPrompt(client: OpenCodeClient, text: string): Pro
  * When `true`, the caller should route the message to `console.warn`
  * instead of `client.tui.showToast()`.
  */
-export function isHarnessError(message: string): boolean {
+export function isHivemindError(message: string): boolean {
   return message.startsWith("[Harness]")
 }
 
@@ -341,7 +341,7 @@ export async function showTuiToast(
 ): Promise<unknown> {
   // REQ-34C: [Harness]-prefixed errors route to console.warn instead of TUI toast.
   // This prevents internal runtime errors from cluttering the user's TUI.
-  if (isHarnessError(message)) {
+  if (isHivemindError(message)) {
     console.warn(`[showToast suppressed] ${message}`)
     return undefined
   }
