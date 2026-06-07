@@ -29,8 +29,6 @@ export type ClassificationResult =
 /**
  * Legacy shape for backward compatibility during migration.
  * Consumers that haven't been updated yet can use this helper.
- *
- * @deprecated Use `kind` discriminator instead.
  */
 export interface LegacyClassificationResult {
   /** Parent session ID if classified as child, undefined if main session. */
