@@ -4,17 +4,21 @@ import { dirname, resolve } from "node:path"
 import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { ChildWriter } from "../../features/session-tracker/persistence/child-writer.js"
 import { getStoreCache, setStoreCache } from "./store-cache.js"
+import {
+  cloneCapturedResult,
+  cloneCompactionCheckpoint,
+  cloneContinuityRecord,
+  cloneDelegationMeta,
+  cloneDelegationPacket,
+  cloneLifecycleState,
+  clonePendingNotifications,
+} from "./continuity-clone.js"
+import { normalizeContinuityRecord } from "./continuity-normalize.js"
 import type {
-  CapturedResult,
-  CompactionCheckpointData,
   ContinuityStoreFile,
-  DelegationMeta,
-  DelegationPacket,
   GovernancePersistenceState,
-  PendingNotification,
   SessionContinuityMetadata,
   SessionContinuityRecord,
-  SessionLifecycleState,
 } from "../../shared/types.js"
 
 const CONTINUITY_VERSION = 1 as const
@@ -85,120 +89,6 @@ function emptyStore(): ContinuityStoreFile {
 
 function isParsedStore(value: unknown): value is Partial<ContinuityStoreFile> & { sessions?: unknown } {
   return typeof value === "object" && value !== null
-}
-
-// ---------------------------------------------------------------------------
-// Inline deep-clone helpers (replaces deleted continuity-clone.ts)
-// ---------------------------------------------------------------------------
-
-function cloneDelegationMeta(meta: DelegationMeta | null): DelegationMeta | null {
-  if (!meta) return null
-  return { ...meta }
-}
-
-function cloneCompactionCheckpoint(cp: CompactionCheckpointData | undefined): CompactionCheckpointData | undefined {
-  if (!cp) return undefined
-  return {
-    ...cp,
-    tools: [...cp.tools],
-    warnings: [...cp.warnings],
-    delegationMeta: cp.delegationMeta ? { ...cp.delegationMeta } : null,
-    sessionStats: { ...cp.sessionStats, byTool: { ...cp.sessionStats.byTool } },
-  }
-}
-
-function cloneDelegationPacket(packet: DelegationPacket | undefined): DelegationPacket | undefined {
-  if (!packet) return undefined
-  return {
-    ...packet,
-    artifacts: [...packet.artifacts],
-    commits: [...packet.commits],
-    parentChain: [...packet.parentChain],
-  }
-}
-
-function cloneLifecycleState(state: SessionLifecycleState | undefined): SessionLifecycleState | undefined {
-  if (!state) return undefined
-  return { ...state }
-}
-
-function clonePendingNotifications(notifications: PendingNotification[] | undefined): PendingNotification[] {
-  if (!Array.isArray(notifications)) return []
-  return notifications.map((notification) => ({
-    ...notification,
-    metadata: notification.metadata ? { ...notification.metadata } : undefined,
-    artifacts: notification.artifacts ? [...notification.artifacts] : undefined,
-    commits: notification.commits ? [...notification.commits] : undefined,
-  }))
-}
-
-function cloneCapturedResult(result: CapturedResult | undefined): CapturedResult | undefined {
-  if (!result) return undefined
-  return {
-    ...result,
-    artifactPaths: [...result.artifactPaths],
-    gitCommits: [...result.gitCommits],
-    toolCallSummary: [...result.toolCallSummary],
-  }
-}
-
-function cloneContinuityRecord(record: SessionContinuityRecord): SessionContinuityRecord {
-  return {
-    ...record,
-    metadata: {
-      ...record.metadata,
-      delegation: cloneDelegationMeta(record.metadata.delegation),
-      constraints: [...record.metadata.constraints],
-      pendingNotifications: clonePendingNotifications(record.metadata.pendingNotifications),
-      resultCapture: cloneCapturedResult(record.metadata.resultCapture),
-      compactionCheckpoint: cloneCompactionCheckpoint(record.metadata.compactionCheckpoint),
-      delegationPacket: cloneDelegationPacket(record.metadata.delegationPacket),
-      lifecycle: cloneLifecycleState(record.metadata.lifecycle),
-    },
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Inline normalizer (replaces deleted continuity-normalizers.ts)
-// ---------------------------------------------------------------------------
-
-function normalizeContinuityRecord(sessionID: string, value: unknown): SessionContinuityRecord | null {
-  if (typeof value !== "object" || value === null) {
-    return null
-  }
-
-  const rec = value as Record<string, unknown>
-  const meta = typeof rec.metadata === "object" && rec.metadata !== null
-    ? rec.metadata as Record<string, unknown>
-    : {}
-  const promptParams = typeof rec.promptParams === "object" && rec.promptParams !== null
-    ? rec.promptParams as SessionContinuityRecord["promptParams"]
-    : {}
-
-  return {
-    sessionID,
-    promptParams,
-    toolProfile: typeof rec.toolProfile === "object" && rec.toolProfile !== null
-      ? rec.toolProfile as SessionContinuityRecord["toolProfile"]
-      : undefined,
-    metadata: {
-      status: (meta.status as SessionContinuityMetadata["status"]) ?? "pending",
-      description: typeof meta.description === "string" ? meta.description : "",
-      delegation: (meta.delegation as DelegationMeta | null) ?? null,
-      category: typeof meta.category === "string" ? meta.category : undefined,
-      constraints: Array.isArray(meta.constraints) ? [...(meta.constraints as string[])] : [],
-      lifecycle: (meta.lifecycle as SessionLifecycleState | undefined) ?? undefined,
-      pendingNotifications: Array.isArray(meta.pendingNotifications)
-        ? [...(meta.pendingNotifications as PendingNotification[])]
-        : [],
-      resultCapture: (meta.resultCapture as CapturedResult | undefined) ?? undefined,
-      compactionCheckpoint: (meta.compactionCheckpoint as CompactionCheckpointData | undefined) ?? undefined,
-      delegationPacket: (meta.delegationPacket as DelegationPacket | undefined) ?? undefined,
-      route: typeof meta.route === "string" ? meta.route : undefined,
-      lastToolActivityAt: typeof meta.lastToolActivityAt === "number" ? meta.lastToolActivityAt : undefined,
-      updatedAt: typeof meta.updatedAt === "number" && Number.isFinite(meta.updatedAt) ? meta.updatedAt : Date.now(),
-    },
-  }
 }
 
 // ---------------------------------------------------------------------------
