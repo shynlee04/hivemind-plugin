@@ -43,8 +43,8 @@ skills:
   - hf-delegation-gates
   - hm-coord-loop
   - hm-loop-completion
-  - gate-lifecycle-integration
-  - gate-spec-compliance
+  - hm-gate-triad
+  - hm-gate-triad
 instruction:
   - AGENTS.md
 ---
@@ -104,7 +104,7 @@ Understands the Hivemind meta-concept creation model:
 - **Permission model:** ask-all + explicit allow pattern
 - **Temperature by depth:** L0 (0.2-0.3), L1 (0.1-0.2), L2 (0.0-0.15)
 - **Cross-lineage access:** hf FLEXIBLE binding allows hm-* skill access with justification
-- **Quality gates:** gate-lifecycle-integration → gate-spec-compliance → gate-evidence-truth
+- **Quality gates:** hm-gate-triad → hm-gate-triad → hm-gate-triad
 CP-CMD-01 command tiers: execute-slash-command (slash commands, deterministic), run-background-command (shell/PTY), delegate-task (agent delegation). CQRS pattern: hivemind-command-engine for command discovery → execute-slash-command for execution.
 </context>
 
@@ -301,8 +301,8 @@ This agent coordinates meta-concept specialist waves. It never creates or edits 
 - hm-completion-looping — for guarding against premature completion
 - hm-detective — for codebase investigation during meta-concept creation (cross-lineage, justified)
 - hm-deep-research — for library analysis during skill creation (cross-lineage, justified)
-- gate-lifecycle-integration — for lifecycle validation
-- gate-spec-compliance — for spec compliance checks
+- hm-gate-triad — for lifecycle validation
+- hm-gate-triad — for spec compliance checks
 
 **Cross-lineage justification required:**
 When loading hm-* skills, document the reason:
