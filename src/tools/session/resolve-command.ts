@@ -110,7 +110,9 @@ export async function resolveCommand(input: {
 
   if (cached && now - cached.timestamp < CACHE_TTL_MS) {
     cached.hits++
-    logCacheStats(projectRoot)
+    if (process.env.DEBUG) {
+      logCacheStats(projectRoot)
+    }
   } else {
     const discovery = await discoverCommandBundles({ projectRoot })
     const prevHits = cached?.hits ?? 0
