@@ -15,7 +15,7 @@ import { enrichContinuityWithTracker } from "../../task-management/continuity/co
 import { asString, getNestedValue, isObject, makeToolSignature } from "../../shared/helpers.js"
 import { DEFAULT_RUNTIME_POLICY, getRuntimePolicyForSession } from "../../shared/runtime-policy.js"
 import type { RuntimePolicy } from "../../shared/types.js"
-import type { HarnessLifecycleManager } from "../../task-management/lifecycle/index.js"
+import type { HivemindLifecycleManager } from "../../task-management/lifecycle/index.js"
 import type { HivemindConfigs } from "../../schema-kernel/hivemind-configs.schema.js"
 import type { TaskStateManager } from "../../shared/state.js"
 import { getDelegationMeta } from "../../shared/state.js"
@@ -29,7 +29,7 @@ import { getToolIntelligenceEngine, renderGuidance } from "../../features/tool-i
 
 export interface ToolGuardDependencies {
   stateManager: TaskStateManager
-  lifecycleManager?: HarnessLifecycleManager
+  lifecycleManager?: HivemindLifecycleManager
   runtimePolicy?: RuntimePolicy
   hivemindConfig?: HivemindConfigs
   /** Project root directory for session-tracker file resolution. */

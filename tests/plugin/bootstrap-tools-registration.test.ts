@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 
 vi.mock("../../src/task-management/lifecycle/index.js", () => ({
-  createHarnessLifecycleManager: () => ({
+  createHivemindLifecycleManager: () => ({
     hydrateFromContinuity: vi.fn(),
     getCompletionDetector: vi.fn(() => ({})),
   }),

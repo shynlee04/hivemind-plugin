@@ -8,7 +8,7 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { join } from "node:path"
 
-import { createHarnessLifecycleManager } from "./task-management/lifecycle/index.js"
+import { createHivemindLifecycleManager } from "./task-management/lifecycle/index.js"
 
 import { taskState } from "./shared/state.js"
 import { createCoreHooks } from "./hooks/lifecycle/core-hooks.js"
@@ -253,7 +253,7 @@ export const HivemindControlPlane: Plugin = async ({ client, directory }) => {
   // Session tracker: typed owning module for session knowledge capture.
   // Wired via deps injection (D-01) — matches DelegationManager instantiation pattern.
 
-  const lifecycleManager = createHarnessLifecycleManager({
+  const lifecycleManager = createHivemindLifecycleManager({
     client,
     pollTimeoutMs: WATCH_TIMEOUT_MS,
     runtimePolicy,

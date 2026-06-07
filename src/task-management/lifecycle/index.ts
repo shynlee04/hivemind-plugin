@@ -17,7 +17,7 @@ import type {
   SessionLifecycleState,
 } from "../../shared/types.js"
 
-type HarnessLifecycleManagerOptions = {
+type HivemindLifecycleManagerOptions = {
   client: OpenCodeClient
   pollTimeoutMs: number
   runtimePolicy?: RuntimePolicy
@@ -68,13 +68,13 @@ export function isTerminalPhase(phase: SessionLifecyclePhase): boolean {
   return phase === "completed" || phase === "failed"
 }
 
-export class HarnessLifecycleManager {
+export class HivemindLifecycleManager {
   private readonly concurrencyLimit: number
   private readonly completionDetector = new CompletionDetector()
   private readonly client: OpenCodeClient
   private readonly delegationManager?: DelegationManager
 
-  constructor(options: HarnessLifecycleManagerOptions) {
+  constructor(options: HivemindLifecycleManagerOptions) {
     this.client = options.client
     this.delegationManager = options.delegationManager
     this.concurrencyLimit = parseInt(process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT ?? "3", 10)
@@ -235,8 +235,8 @@ export class HarnessLifecycleManager {
   }
 }
 
-export function createHarnessLifecycleManager(
-  options: HarnessLifecycleManagerOptions,
-): HarnessLifecycleManager {
-  return new HarnessLifecycleManager(options)
+export function createHivemindLifecycleManager(
+  options: HivemindLifecycleManagerOptions,
+): HivemindLifecycleManager {
+  return new HivemindLifecycleManager(options)
 }

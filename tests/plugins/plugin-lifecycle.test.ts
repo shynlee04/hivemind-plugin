@@ -18,7 +18,7 @@ import { createCoreHooks } from "../../src/hooks/lifecycle/core-hooks.js"
 import { createSessionHooks } from "../../src/hooks/lifecycle/session-hooks.js"
 import { TaskStateManager } from "../../src/shared/state.js"
 import { DelegationManager } from "../../src/coordination/delegation/manager.js"
-import { createHarnessLifecycleManager } from "../../src/task-management/lifecycle/index.js"
+import { createHivemindLifecycleManager } from "../../src/task-management/lifecycle/index.js"
 import { PtyManager } from "../../src/features/background-command/pty/pty-manager.js"
 import { HivemindControlPlane } from "../../src/plugin.js"
 
@@ -172,8 +172,8 @@ describe("plugin lifecycle wiring", () => {
     expect(plugin.tool["run-background-command"]).toBeDefined()
   })
 
-  it("treats HarnessLifecycleManager.launchDelegatedSession as a usable facade instead of a stub throw-path", async () => {
-    const lifecycle = createHarnessLifecycleManager({
+  it("treats HivemindLifecycleManager.launchDelegatedSession as a usable facade instead of a stub throw-path", async () => {
+    const lifecycle = createHivemindLifecycleManager({
       client: createPluginClient() as never,
       pollTimeoutMs: 180_000,
       delegationManager: new DelegationManager(createPluginClient() as never),
@@ -223,7 +223,7 @@ describe("plugin lifecycle wiring", () => {
 
     const hooks = createCoreHooks({
       client: client as never,
-      lifecycleManager: createHarnessLifecycleManager({ client: client as never, pollTimeoutMs: 180_000 }),
+      lifecycleManager: createHivemindLifecycleManager({ client: client as never, pollTimeoutMs: 180_000 }),
       stateManager: new TaskStateManager(),
     })
 
@@ -272,7 +272,7 @@ describe("plugin lifecycle wiring", () => {
 
     const hooks = createCoreHooks({
       client: client as never,
-      lifecycleManager: createHarnessLifecycleManager({ client: client as never, pollTimeoutMs: 180_000 }),
+      lifecycleManager: createHivemindLifecycleManager({ client: client as never, pollTimeoutMs: 180_000 }),
       stateManager: new TaskStateManager(),
     })
 

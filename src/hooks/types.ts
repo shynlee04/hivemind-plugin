@@ -1,4 +1,4 @@
-import type { HarnessLifecycleManager } from "../task-management/lifecycle/index.js"
+import type { HivemindLifecycleManager } from "../task-management/lifecycle/index.js"
 import type { OpenCodeClient } from "../shared/session-api.js"
 import type { TaskStateManager } from "../shared/state.js"
 import type { AutoLoopOptions, AutoLoopResult } from "../coordination/spawner/auto-loop.js"
@@ -23,7 +23,7 @@ export interface ParentAutoLoopConfig {
  * Carries only what hooks need — tools receive their own narrower contexts.
  */
 export interface HookDependencies {
-  lifecycleManager: HarnessLifecycleManager
+  lifecycleManager: HivemindLifecycleManager
   client: OpenCodeClient
   stateManager: TaskStateManager
   eventObservers?: Array<(input: { event?: unknown }) => Promise<void> | void>

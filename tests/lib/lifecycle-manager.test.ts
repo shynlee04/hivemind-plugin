@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { getSessionContinuity, recordSessionContinuity } from "../../src/task-management/continuity/index.js"
-import { createHarnessLifecycleManager, isTerminalPhase, isValidTransition } from "../../src/task-management/lifecycle/index.js"
+import { createHivemindLifecycleManager, isTerminalPhase, isValidTransition } from "../../src/task-management/lifecycle/index.js"
 import type { SessionLifecyclePhase } from "../../src/shared/types.js"
 
 function createMockClient() {
@@ -124,7 +124,7 @@ describe("isTerminalPhase", () => {
   })
 })
 
-describe("HarnessLifecycleManager", () => {
+describe("HivemindLifecycleManager", () => {
   let stateDir: string
   let previousStateDir: string | undefined
 
@@ -145,7 +145,7 @@ describe("HarnessLifecycleManager", () => {
 
   describe("noteObservedActivity", () => {
     it("updates lastToolActivityAt and lifecycle observation on continuity store", () => {
-      const manager = createHarnessLifecycleManager({
+      const manager = createHivemindLifecycleManager({
         client: createMockClient() as never,
         pollTimeoutMs: 180_000,
       })
@@ -172,7 +172,7 @@ describe("HarnessLifecycleManager", () => {
     })
 
     it("updates activity timestamp for multiple sequential calls", () => {
-      const manager = createHarnessLifecycleManager({
+      const manager = createHivemindLifecycleManager({
         client: createMockClient() as never,
         pollTimeoutMs: 180_000,
       })
@@ -205,7 +205,7 @@ describe("HarnessLifecycleManager", () => {
 
   describe("getLifecycleSnapshot", () => {
     it("returns lifecycle state from continuity store", () => {
-      const manager = createHarnessLifecycleManager({
+      const manager = createHivemindLifecycleManager({
         client: createMockClient() as never,
         pollTimeoutMs: 180_000,
       })
@@ -228,7 +228,7 @@ describe("HarnessLifecycleManager", () => {
     })
 
     it("returns undefined for unknown session", () => {
-      const manager = createHarnessLifecycleManager({
+      const manager = createHivemindLifecycleManager({
         client: createMockClient() as never,
         pollTimeoutMs: 180_000,
       })
@@ -239,7 +239,7 @@ describe("HarnessLifecycleManager", () => {
 
   describe("handleEvent completion routing", () => {
     it("feeds session.idle to CompletionDetector by event type and session ID", async () => {
-      const manager = createHarnessLifecycleManager({
+      const manager = createHivemindLifecycleManager({
         client: createMockClient() as never,
         pollTimeoutMs: 180_000,
       })
@@ -259,7 +259,7 @@ describe("HarnessLifecycleManager", () => {
 
     it("does not resolve a watcher for non-terminal lifecycle events", async () => {
       vi.useFakeTimers()
-      const manager = createHarnessLifecycleManager({
+      const manager = createHivemindLifecycleManager({
         client: createMockClient() as never,
         pollTimeoutMs: 180_000,
       })
