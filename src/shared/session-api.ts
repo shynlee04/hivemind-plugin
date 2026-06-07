@@ -323,11 +323,29 @@ export async function appendTuiPrompt(client: OpenCodeClient, text: string): Pro
  * @param variant - Optional visual style: "info" | "success" | "error" | "warning".
  * @returns The unwrapped SDK response when the toast succeeds.
  */
+/**
+ * Check if a message carries the `[Harness]` prefix that flags it as
+ * an internal runtime error that should be suppressed from TUI toasts.
+ *
+ * When `true`, the caller should route the message to `console.warn`
+ * instead of `client.tui.showToast()`.
+ */
+export function isHarnessError(message: string): boolean {
+  return message.startsWith("[Harness]")
+}
+
 export async function showTuiToast(
   client: OpenCodeClient,
   message: string,
   variant?: "info" | "success" | "error" | "warning",
 ): Promise<unknown> {
+  // REQ-34C: [Harness]-prefixed errors route to console.warn instead of TUI toast.
+  // This prevents internal runtime errors from cluttering the user's TUI.
+  if (isHarnessError(message)) {
+    console.warn(`[showToast suppressed] ${message}`)
+    return undefined
+  }
+
   return unwrapData(await client.tui.showToast({
     body: { message, ...(variant ? { variant } : {}) },
   } as Parameters<typeof client.tui.showToast>[0]))
