@@ -16,7 +16,7 @@ metadata:
   task-group: "how-to-implement"
   routes-to: ["hm-*", "gate-*"]
   input-from: ["hm-l0-orchestrator", "hm-coordinator"]
-  consumed-by: ["hm-l2-coordinating-loop", "hm-l2-phase-execution", "hm-l2-subagent-delegation-patterns"]
+  consumed-by: ["hm-coord-loop", "hm-l2-phase-execution", "hm-l2-subagent-delegation-patterns"]
 allowed-tools:
   - Read
   - Glob
@@ -269,7 +269,7 @@ Agent loads skills and executes
 | Related Skill | Boundary |
 |---------------|----------|
 | `hm-l2-lineage-router` | Upstream router — classifies task intent into 6 broad categories before hm-l2-skill-router maps to exact bundles |
-| `hm-l2-coordinating-loop` | Consumer — uses this router to determine skill bundles for coordinated multi-agent tasks |
+| `hm-coord-loop` | Consumer — uses this router to determine skill bundles for coordinated multi-agent tasks |
 | `hm-l2-phase-execution` | Consumer — uses this router to attach skill bundles to phase execution dispatch |
 | `hm-l2-subagent-delegation-patterns` | Consumer — uses this router to determine which skills subagents need |
 | `hf-skill-router` | Sibling router — handles hf-* meta-builder dispatch (complementary lineage) |

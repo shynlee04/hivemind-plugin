@@ -1,30 +1,39 @@
 ---
-name: multi-agent-coordination
-description: Coordinate multiple AI agents through structured dispatch patterns. Use when dispatching subagents, running parallel agent tasks, organizing wave-based execution, designing multi-agent workflows, batching related agent delegations, avoiding over-delegation, setting checkpoint gates in agent loops, enforcing max-iteration limits, recovering orphan subagents, or choosing between parallel vs pipeline vs wave dispatch. NOT for single-agent delegation mechanics or quality-gate evaluation — those are separate skill domains.
+name: hm-coord-loop
+description: Coordinate multi-agent dispatch with validation gates, handoff protocols, and bounded iteration. Use when 3+ tasks need parallel/wave/pipeline dispatch, when setting checkpoint gates in agent loops, when enforcing max-iteration limits, or when recovering orphan subagents. Tech-agnostic and framework-agnostic. NOT for single-agent execution, simple file edits, or quality-gate evaluation.
+metadata:
+  consumed-by:
+    - "hm-orchestrator"
+    - "hm-coordinator"
+    - "hf-coordinator"
+  lineage-scope: "hm-*"
+  access: "STRICT"
+  role: "coordinator"
+  realm: "arch,clean-code"
+  min-tasks: 2
+allowed-tools: skill
 ---
-
-# Multi-Agent Coordination
 
 ## Overview
 
-This skill teaches **when and how to coordinate multiple agents** — not the mechanics of any single delegation tool, but the structural patterns that determine whether a multi-agent workflow succeeds or collapses under its own complexity.
+Coordinate multi-agent dispatch with validation gates, handoff protocols, and bounded iteration. Produces validated multi-agent workflows with error recovery, progress tracking, and explicit escape hatches. This skill is **tech-agnostic** — it works with any agent runtime, any tool stack, and any project domain. The skill's value is the structural pattern (decision matrix + dispatch protocols + verification), not the platform binding.
 
-The core insight: **coordination failure is the silent killer of multi-agent workflows.** Agents complete their individual tasks, but the whole fails because no one owned the handoffs, the ordering, the completeness check, or the escalation path.
+## GSD Compatibility
 
-## When to Use This Skill
+This skill is the canonical Hivemind replacement. If you're still on GSD:
 
-Load this skill when:
-- You have 3+ independent or semi-dependent tasks to dispatch
-- The user asks you to "run these in parallel," "batch process," or "dispatch to agents"
-- You need to decide between running tasks inline vs delegating vs batching
-- You are designing a multi-step workflow carried out by different specialist agents
-- You find yourself dispatching agents without a clear completion or error-handling plan
-- A previous multi-agent workflow failed due to orphans, missed handoffs, or infinite loops
+| GSD skill | Hivemind equivalent | Behavior diff |
+|-----------|--------------------|--------------|
+| `gsd-execute-phase` | `hm-coord-loop` | GSD uses sequential plan execution with hardcoded checkboxes; Hivemind uses decision-matrix dispatch (parallel / wave / pipeline) with validation gates between waves. Hivemind exposes `delegate-task` and `hivemind-trajectory` custom tools for explicit agent lifecycle control. |
 
-Do NOT load this skill for:
-- A single-task delegation (use your delegation tool directly)
-- Quality gate evaluation (belongs to quality-gate skills)
-- Tool/command mechanics (belongs to platform-specific reference skills)
+You can use either; the Hivemind path is canonical, the GSD path is supported via the equivalence map.
+
+## When This Skill Loads — Do This First
+
+1. **Count the tasks.** If only one task, do NOT load this skill. Execute directly.
+2. **Classify the work.** Use the [Decision Matrix](#decision-matrix-task-complexity--coordination-pattern) below to pick a pattern BEFORE dispatching any agents.
+3. **Bound the iterations.** Declare a max-iteration budget before the first dispatch (default: 5; never exceed 5 without explicit re-authorization).
+4. **Define a completion criterion.** Write the literal condition: "Loop exits when: `_____`." If you cannot fill the blank, the loop is unbounded — refuse to dispatch.
 
 ## Decision Matrix: Task Complexity → Coordination Pattern
 
@@ -63,10 +72,10 @@ Use when tasks share **no files, no state, and no ordering constraints.**
 
 ### Protocol
 
-1. **Inventory tasks.** Write each as a discrete work item: "TASK-1: audit src/auth/*.ts", "TASK-2: fix tests/auth/*.test.ts"
+1. **Inventory tasks.** Write each as a discrete work item: "TASK-1: audit module A", "TASK-2: fix tests in module B"
 2. **Cap at 5 parallel agents.** Beyond 5, coordination overhead dominates. If you have 8 tasks, batch them into waves of 4+4.
 3. **Dispatch all in one turn.** Launch all agents concurrently — do NOT dispatch one, wait, then dispatch the next.
-4. **Track all delegation IDs.** Store returned IDs in a list. Poll `delegation-status` for completion.
+4. **Track all delegation IDs.** Store returned IDs in a list. Poll for completion.
 5. **Merge results.** After all complete, synthesize findings into a single report. If any agent failed, decide: retry individual, escalate, or skip with a gap note.
 6. **Verify completeness.** Check that every task item has a corresponding result.
 
@@ -109,6 +118,30 @@ Use when tasks form a **strict linear chain** — each step consumes the previou
 2. **Dispatch sequentially with verification.** Agent 1 completes → verify output → dispatch agent 2 with explicit input reference → verify → dispatch agent 3…
 3. **Limit to 5 stages.** Pipelines longer than 5 stages become fragile. Split into sub-pipelines with checkpoints.
 4. **Handle mid-pipeline failure.** If stage N fails, do NOT restart from stage 1. Resume from the last successful stage with corrected input.
+
+## Handoff Protocol — Minimum Viable Envelope
+
+Every delegated agent receives a **Task Envelope** with exactly 5 required sections:
+
+| Section | Required Content |
+|---------|-----------------|
+| **Task** | One-sentence description of what to do |
+| **Scope** | Include/exclude file lists — concrete paths |
+| **Context** | Only what is needed — error messages, relevant snippets (max 50 lines), patterns to follow |
+| **Expected Output** | Concrete deliverables with format and acceptance criteria |
+| **Verification** | Exact command or check the agent must run and report |
+
+Add a handoff metadata block:
+
+```yaml
+source_agent: "<coordinator>"
+target_agent: "<child>"
+handoff_reason: "<domain/file boundary>"
+allowed_destinations: []
+history_policy: "<what context is included/filtered>"
+expected_return: "DONE|DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED + artifacts + evidence"
+resume_pointer: "<where to continue after interruption>"
+```
 
 ## Checkpoint Protocol: Human-Gate Checkpoints in Agent Loops
 
@@ -159,6 +192,30 @@ A "loop" = any repeated dispatch pattern: retry-on-failure, wave re-execution, g
 | An agent times out without producing output | Don't retry blindly — escalate with timeout context |
 | Dependency graph has a cycle | Structural issue — escalate |
 
+## Ralph-Loop Integration — Validate → Fix → Re-dispatch
+
+After each agent returns, run a validation cycle:
+
+```
+Agent returns
+    │
+    ▼
+Validator checks:
+  1. Output file exists at expected path
+  2. Output matches expected format from envelope
+  3. Verification command from envelope was run and passed
+  4. No files modified outside scope boundaries
+  5. Agent returned a summary (even on failure)
+    │
+    ├── All pass → Accept agent output, continue
+    │
+    └── Any fail → Read validation report
+         │
+         ├── Cycle < 3 → Fix issues, re-dispatch agent, loop
+         │
+         └── Cycle = 3 → Escalate to user with summary
+```
+
 ## Anti-Patterns
 
 | Anti-Pattern | Why It Fails | Fix |
@@ -171,6 +228,8 @@ A "loop" = any repeated dispatch pattern: retry-on-failure, wave re-execution, g
 | **Checkpoint theater** — presenting progress updates disguised as checkpoints | User trains to auto-approve. Real decisions get buried. | Only checkpoint when a decision is actually needed. |
 | **Dependency graph denial** — assuming tasks are independent when they share a dependency | Subagent A changes function X. Subagent B also changes function X. Merge hell. | Map dependencies BEFORE dispatch. If uncertain, pipeline. |
 | **Context exhaustion** — dispatching 5 agents, each with 200-line prompts | Total context consumed exceeds budget. Later agents get degraded reasoning. | Compress prompts. Use reference files instead of inline content. |
+| **The Coordinator Executor** — Parent does agent's work | Parent modified files assigned to agent. | Stop. Delegate. Only integrate. |
+| **The Infinite Retry** — Retry without changing approach | Retry count > 1 per task | Escalate to user. |
 
 ## Verification Protocol
 
@@ -186,12 +245,31 @@ After every multi-agent workflow, run this verification before claiming completi
 - [ ] Final output is coherent — the pieces fit together, not 5 disjoint fragments
 ```
 
-## Reference Material
+## Self-Correction
 
-- **[references/terminology-map.md](references/terminology-map.md)** — Load when you need to understand how coordination concepts differ across GSD (wave-based phase execution), OMO (agent pool architecture), and Hivemind (WaiterModel + session tree). Explains why the same word means different things in different frameworks.
-- **[references/philosophy.md](references/philosophy.md)** — Load when designing a new coordination pattern or when an existing pattern fails. Explains why WaiterModel beats blocking, why checkpoint gates prevent drift, and why max-iteration enforcement is non-negotiable.
+### When the Task Keeps Failing
 
-**Loading guidance:**
-- Start with SKILL.md (this file). The decision matrix and patterns are sufficient for 80% of coordination tasks.
-- Load `terminology-map.md` only when comparing frameworks or cross-referencing patterns from GSD/OMO.
-- Load `philosophy.md` only when debating architectural choices or troubleshooting a coordination failure.
+If an agent repeatedly returns failing results, first check whether the files referenced in its envelope actually exist on disk — plans sometimes reference paths that were never created. Next, verify the agent name in your dispatch matches a real agent file; typos in agent names cause silent dispatch failures on some platforms. If both check out, simplify the task decomposition: reduce the number of parallel agents, merge overlapping tasks, and re-dispatch with narrower scopes. If the same task fails 3 times with the same error, stop retrying and escalate to the user with the exact error output and your diagnosis.
+
+### When Unsure About the Next Step
+
+Default to sequential dispatch instead of parallel — sequential is safer and easier to debug. Log the decision point by writing to a progress file with what you know, what you're uncertain about, and which option you're proceeding with. If you cannot determine whether tasks share mutable state, treat them as shared and serialize. The safest default is always: one agent at a time, verify each result before dispatching the next.
+
+### When the User Contradicts Skill Guidance
+
+If the user requests a different dispatch strategy than what this skill recommends (e.g., wants parallel when the flowchart says sequential), use the user's choice but explicitly note in the progress file that this deviates from the recommended coordination pattern and may affect file conflict safety. If the user wants a different agent than recommended, dispatch their preferred agent but include a note about the potential mismatch in the task envelope. The user's explicit instruction always overrides skill guidance — document the deviation and proceed.
+
+## Platform Adaptation
+
+This skill is **framework-agnostic** — its core patterns (decision matrix, 3 dispatch modes, handoff envelope, max-iteration enforcement, anti-patterns) work with any agent runtime. Platform-specific bindings (which delegation tool, which command syntax, which session file format) belong in platform-specific reference skills, not here.
+
+For Hivemind-specific bindings (custom tools `delegate-task`, `hivemind-trajectory`, `hivemind-sdk-supervisor`, and the `.hivemind/state/` state root), load the platform reference skill when needed.
+
+## Cross-References
+
+| Related Skill | Boundary |
+|---------------|----------|
+| Quality-gate evaluation skills | Quality-gate skills own the "did this pass" check. This skill owns "how do I dispatch the check." |
+| Single-task delegation mechanics | Platform-specific tools own single delegation. This skill owns multi-agent orchestration on top. |
+| Intent clarification skills | Intent skills run BEFORE coordination. This skill runs after intent is clear. |
+| Task-level persistent memory skills | Persistence skills own durable state. This skill reads/writes that state as part of coordination. |

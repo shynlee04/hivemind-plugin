@@ -9,7 +9,7 @@ domain: Meta-Building
 skills:
   - hf-meta-builder
   - hf-skill-synthesis
-  - hm-l2-coordinating-loop
+  - hm-coord-loop
   - hm-l2-planning-persistence
 instruction:
   - AGENTS.md

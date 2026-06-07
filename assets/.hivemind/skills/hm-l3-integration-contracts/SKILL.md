@@ -109,8 +109,8 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 ### Orchestration Domain
 | Agent Type | Required Skills |
 |-----------|----------------|
-| Orchestrator (L0) | hm-l2-gate-orchestrator, hm-l2-coordinating-loop |
-| Coordinator (L1) | hm-l2-coordinating-loop, hm-l2-subagent-delegation-patterns, hm-l2-gate-orchestrator |
+| Orchestrator (L0) | hm-l2-gate-orchestrator, hm-coord-loop |
+| Coordinator (L1) | hm-coord-loop, hm-l2-subagent-delegation-patterns, hm-l2-gate-orchestrator |
 | Guardian | hm-l2-phase-loop, hm-l2-completion-looping |
 | Finisher | hm-l2-completion-looping, hm-l2-test-driven-execution |
 | Persistor | hm-l2-planning-persistence, hm-l2-completion-looping |
@@ -145,7 +145,7 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 | Agent Type | Required Skills |
 |-----------|----------------|
 | Router | hm-l2-skill-router, hm-l2-lineage-router |
-| Connector | hm-l2-cross-cutting-change, hm-l2-coordinating-loop |
+| Connector | hm-l2-cross-cutting-change, hm-coord-loop |
 
 ## Skill-to-Agent Bindings
 
@@ -183,7 +183,7 @@ Each skill declares which agent types consume it. This enables orphan detection 
 | hm-l2-test-driven-execution | hm-l2-executor, hm-l2-builder, hm-l2-validator, hm-l2-reviewer, hm-l2-critic, hm-l2-finisher | hm STRICT |
 | hm-l2-phase-loop | hm-l2-guardian | hm STRICT |
 | hm-l2-completion-looping | hm-l2-debugger, hm-l2-finisher, hm-l2-guardian, hm-l2-investigator, hm-l2-operator, hm-l2-persistor | hm STRICT |
-| hm-l2-coordinating-loop | hm-l0-orchestrator, hm-coordinator, hm-l2-connector | hm STRICT |
+| hm-coord-loop | hm-l0-orchestrator, hm-coordinator, hm-l2-connector | hm STRICT |
 | hm-l2-production-readiness | hm-l2-integrator, hm-l2-reviewer, hm-l2-assessor, hm-l2-curator | hm STRICT |
 
 ### Quality Skills

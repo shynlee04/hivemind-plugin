@@ -222,4 +222,4 @@ If any of these is UNCHECKED: Do NOT mark as complete.
 - **subagent-delegation-patterns** — Delegation mechanics. Use completion-detection to verify subagent output before accepting results from async delegations.
 - **wave-execution** — Parallel execution. Apply completion-detection to verify each wave's output before advancing to the next wave.
 - **quality-gate-orchestration** — Quality gate triad. Completion-detection feeds evidence into the evidence gate (terminal gate in the triad).
-- **multi-agent-coordination** — Multi-agent workflows. Dual-signal protocol is a coordination pattern between doer and verifier agents.
+- **hm-coord-loop** — Multi-agent workflows. Dual-signal protocol is a coordination pattern between doer and verifier agents.

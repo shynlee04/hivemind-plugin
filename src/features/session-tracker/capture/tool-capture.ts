@@ -24,6 +24,12 @@ import type { ChildSessionRecord } from "../types.js"
 import { isValidSessionID } from "../types.js"
 import { parseSessionTitle } from "../../../shared/session-naming.js"
 import type { OpenCodeClient } from "../../../shared/session-api.js"
+import {
+  extractFirstHeader as extractFirstHeaderFn,
+  extractTaskId as extractTaskIdFn,
+  extractTaskResult as extractTaskResultFn,
+  asString as asStringFn,
+} from "./tool-capture-helpers.js"
 
 // ---------------------------------------------------------------------------
 // Hook input/output shapes
@@ -417,89 +423,18 @@ export class ToolCapture {
   }
 
   // -----------------------------------------------------------------------
-  // Helpers
+  // Helpers — delegated to tool-capture-helpers.ts (GA-4 ≤500 LOC)
   // -----------------------------------------------------------------------
 
-  /**
-   * Extracts the first markdown header line (`# ...`) from tool output.
-   *
-   * @param output - The raw tool output.
-   * @returns The first header line, or `undefined` if none found.
-   */
   private extractFirstHeader(output: unknown): string | undefined {
-    const str = this.asString(output)
-    if (!str) return undefined
-
-    const match = str.match(/^# .+$/m)
-    return match ? match[0] : undefined
+    return extractFirstHeaderFn(output, asStringFn)
   }
 
-  /**
-   * Extracts a task_id from the output string.
-   *
-   * Recognizes two formats:
-   * - `task_id: ses_abc123` (the canonical format from Plan 01 task tool output)
-   * - A standalone session ID starting with `ses_` that appears in the output
-   *
-   * @param output - The raw tool output.
-   * @returns The extracted task/session ID, or `null` if none found.
-   */
   private extractTaskId(output: unknown): string | null {
-    const str = this.asString(output)
-    if (!str) return null
-
-    // Try "task_id: ses_..." format first
-    const match = str.match(/task_id:\s*(ses_[a-zA-Z0-9_]+)/)
-    if (match) return match[1]
-
-    // Try standalone ses_ ID in the output
-    const sesMatch = str.match(/(ses_[a-zA-Z0-9_]{6,})/)
-    if (sesMatch) return sesMatch[1]
-
-    return null
+    return extractTaskIdFn(output, asStringFn)
   }
 
-  /**
-   * Extracts the completed child-session result from a task tool output.
-   *
-   * OpenCode only emits hook events for the parent session, so child-session
-   * content is captured from the parent's completed `task` tool result.
-   * Outputs that only contain the task identifier are dispatch-only signals
-   * and intentionally return `undefined`.
-   *
-   * @param output - Raw task tool output.
-   * @param taskID - Child task/session identifier to remove from the payload.
-   * @returns Child result content, or `undefined` when no result is present.
-   */
   private extractTaskResult(output: unknown, taskID: string): string | undefined {
-    const str = this.asString(output)
-    if (!str) return undefined
-
-    const tagged = str.match(/<task_result>\s*([\s\S]*?)\s*<\/task_result>/)
-    if (tagged?.[1]?.trim()) {
-      return tagged[1].trim()
-    }
-
-    const withoutTaskID = str
-      .replace(new RegExp(`task_id:\\s*${taskID}`, "g"), "")
-      .trim()
-
-    return withoutTaskID.length > 0 ? withoutTaskID : undefined
-  }
-
-  /**
-   * Safely converts unknown output to a string.
-   *
-   * @param value - The value to convert.
-   * @returns The string representation, or `undefined` if not representable.
-   */
-  private asString(value: unknown): string | undefined {
-    if (typeof value === "string") return value
-    if (value === null || value === undefined) return undefined
-    try {
-      return JSON.stringify(value)
-    } catch {
-      return `[unserializable: ${typeof value}]`
-    }
+    return extractTaskResultFn(output, taskID, asStringFn)
   }
 }

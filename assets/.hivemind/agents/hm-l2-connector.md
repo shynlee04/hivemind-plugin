@@ -8,7 +8,7 @@ lineage: hm
 domain: Integration
 skills:
   - hm-l2-cross-cutting-change
-  - hm-l2-coordinating-loop
+  - hm-coord-loop
 instruction:
   - AGENTS.md
 permission:

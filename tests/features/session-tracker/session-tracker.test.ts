@@ -6,6 +6,33 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { SessionTracker } from "../../../src/features/session-tracker/index.js"
+import { ensureAncestorRoute } from "../../../src/features/session-tracker/session-event-handler.js"
+import type { TrackerHandlerContext } from "../../../src/features/session-tracker/session-event-handler.js"
+
+// Helper to build a minimal TrackerHandlerContext for ensureAncestorRoute tests
+function buildTestCtx(mockLog: ReturnType<typeof vi.fn>): TrackerHandlerContext {
+  return {
+    client: { app: { log: mockLog }, session: { get: vi.fn() } } as any,
+    projectRoot: "/fake/project",
+    classifier: {} as any,
+    hierarchyIndex: {
+      isChild: vi.fn().mockReturnValue(false),
+      registerChild: vi.fn(),
+    } as any,
+    toolDelegation: {} as any,
+    messageCapture: {} as any,
+    bootstrappedSessions: new Set(),
+    eventCapture: undefined,
+    toolCapture: undefined,
+    pendingRegistry: undefined,
+    childWriter: undefined,
+    projectIndexWriter: undefined,
+    sessionIndexWriter: undefined,
+    bootstrap: {} as any,
+    sessionRouter: {} as any,
+    childRecorder: {} as any,
+  }
+}
 
 // Mock the session-api module
 vi.mock("../../../src/shared/session-api.js", () => ({
@@ -233,21 +260,15 @@ describe("SessionTracker — routing and bootstrap", () => {
 describe("MAX_DEPTH guard (F-13 / REQ-21-07)", () => {
   it("should return gracefully without stack overflow when depth exceeds MAX_DEPTH=20", async () => {
     const mockLog = vi.fn()
-    const tracker = new SessionTracker({
-      client: { app: { log: mockLog }, session: { get: vi.fn() } } as any,
-      projectRoot: "/fake/project",
-    });
-    (tracker as any).hierarchyIndex = {
-      isChild: vi.fn().mockReturnValue(false),
-      registerChild: vi.fn(),
-    };
-    (tracker as any).bootstrap = {
+    const ctx = buildTestCtx(mockLog)
+    ctx.bootstrap = {
+      copyForkedChildren: vi.fn().mockResolvedValue(undefined),
       getSessionSafely: vi.fn().mockResolvedValue({ parentID: "ses_parent" }),
     }
 
     // Call with depth=25 which exceeds MAX_DEPTH=20 — should return immediately
     await expect(
-      (tracker as any).ensureAncestorRoute("ses_deep", new Set(), 25),
+      ensureAncestorRoute(ctx, "ses_deep", new Set(), 25),
     ).resolves.toBeUndefined()
 
     // Verify warning was logged via client.app.log
@@ -263,19 +284,13 @@ describe("MAX_DEPTH guard (F-13 / REQ-21-07)", () => {
 
   it("should chain up to MAX_DEPTH levels without stack overflow", async () => {
     const mockLog = vi.fn()
-    const tracker = new SessionTracker({
-      client: { app: { log: mockLog }, session: { get: vi.fn() } } as any,
-      projectRoot: "/fake/project",
-    });
-    (tracker as any).hierarchyIndex = {
-      isChild: vi.fn().mockReturnValue(false),
-      registerChild: vi.fn(),
-    }
+    const ctx = buildTestCtx(mockLog)
 
     // Create chain of 25+ ancestors by returning a parent ID for each depth level
     let depthCounter = 0
     const maxDepth = 25;
-    (tracker as any).bootstrap = {
+    ctx.bootstrap = {
+      copyForkedChildren: vi.fn().mockResolvedValue(undefined),
       getSessionSafely: vi.fn().mockImplementation(async () => {
         depthCounter++
         if (depthCounter >= maxDepth) return { parentID: null }
@@ -285,7 +300,7 @@ describe("MAX_DEPTH guard (F-13 / REQ-21-07)", () => {
 
     // Start at depth=0 — should recurse through 25+ ancestors and stop gracefully
     await expect(
-      (tracker as any).ensureAncestorRoute("ses_root", new Set(), 0),
+      ensureAncestorRoute(ctx, "ses_root", new Set(), 0),
     ).resolves.toBeUndefined()
 
     // Verifies the recursion completed without stack overflow

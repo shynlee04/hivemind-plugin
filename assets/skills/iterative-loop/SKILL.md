@@ -11,7 +11,7 @@ description: >
   "fix → verify → repeat", "loop until criteria met", "iteration budget".
   NOT for wave-based parallel execution (wave-execution), guardrail against
   premature completion claims (completion-detection), or multi-agent
-  coordination patterns (multi-agent-coordination).
+  coordination patterns (hm-coord-loop).
 metadata:
   layer: "2"
   role: "execution-engine"
@@ -52,7 +52,7 @@ The danger is not looping itself — it is looping without discipline. A loop wi
 - Simple sequential steps (just run them in order — no loop needed)
 - Parallel wave execution (use wave-execution)
 - Guardrailing against premature "done" claims (use completion-detection)
-- Coordinating multiple agents in a workflow (use multi-agent-coordination)
+- Coordinating multiple agents in a workflow (use hm-coord-loop)
 - Unbounded exploration or open-ended research (no exit criteria = no loop)
 
 ## Decision Matrix: What Needs Looping vs What Does Not
@@ -266,5 +266,5 @@ Copy this template before entering any iterative loop:
 
 - **completion-detection** — Guard against false completion claims inside loop iterations. Verify each iteration's output before deciding to continue or exit.
 - **wave-execution** — For parallel task groups with dependency ordering. Iterative loops are sequential; wave execution is parallel-wave-gated.
-- **multi-agent-coordination** — For coordinating agents across tasks. Iterative loops focus on a single repeatable process within a task.
+- **hm-coord-loop** — For coordinating agents across tasks. Iterative loops focus on a single repeatable process within a task.
 - **phase-execution** — For running phase plans with checkpoint recovery. Iterative loops are a tool you may use inside a phase.

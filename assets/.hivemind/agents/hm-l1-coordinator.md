@@ -7,7 +7,7 @@ depth: L1
 lineage: hm
 domain: Phase Lifecycle
 skills:
-  - hm-l2-coordinating-loop
+  - hm-coord-loop
   - hm-l3-subagent-delegation-patterns
   - hm-l2-completion-looping
   - hm-l2-phase-execution

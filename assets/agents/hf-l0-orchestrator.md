@@ -121,7 +121,7 @@ intent_classification:
 skills:
   - hf-meta-builder-core
   - hm-l2-lineage-router
-  - hm-l2-coordinating-loop
+  - hm-coord-loop
   - hm-l2-user-intent-interactive-loop
   - hm-l2-completion-looping
   - gate-lifecycle-integration
@@ -400,7 +400,7 @@ If a delegation returns without file-based artifacts, the gate FAILS automatical
 **SHOULD:**
 - Load hf-meta-builder-core before any meta-concept creation workflow for routing
 - Load hm-l2-lineage-router for cross-lineage intent classification
-- Load hm-l2-coordinating-loop for managing multi-step delegations
+- Load hm-coord-loop for managing multi-step delegations
 - Load hm-l2-user-intent-interactive-loop when user intent is ambiguous
 - Use prompt-skim for long delegation prompts to prevent context overflow
 - Use hivemind-trajectory and hivemind-pressure for runtime-aware path decisions
@@ -548,7 +548,7 @@ This agent delegates ALL work. It never implements, reads code for comprehension
 - hm-l2-lineage-router — cross-lineage intent classification
 
 **Load on demand (by workflow phase):**
-- hm-l2-coordinating-loop — multi-step delegation waves
+- hm-coord-loop — multi-step delegation waves
 - hm-l2-user-intent-interactive-loop — ambiguous user intent
 - hm-l2-completion-looping — premature completion guard
 - hm-l3-detective — codebase investigation (FLEXIBLE, must justify)

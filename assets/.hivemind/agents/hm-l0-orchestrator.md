@@ -8,7 +8,7 @@ depth: L0
 lineage: hm
 domain: Phase Lifecycle
 skills:
-  - hm-l2-coordinating-loop
+  - hm-coord-loop
   - hm-l2-phase-loop
   - hm-l2-user-intent-interactive-loop
   - hm-l2-completion-looping

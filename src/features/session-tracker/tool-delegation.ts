@@ -15,7 +15,7 @@ import type { ProjectIndexWriter } from "./persistence/project-index-writer.js"
 import type { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import type { PendingDispatchRegistry } from "./persistence/pending-dispatch-registry.js"
 import type { HierarchyManifestWriter } from "./persistence/hierarchy-manifest.js"
-import type { ChildSessionRecord, SessionTrackerEvent, DelegationLifecycleStatus, DelegationType } from "./types.js"
+import type { ChildSessionRecord, DelegationLifecycleStatus, DelegationType } from "./types.js"
 import { isValidSessionID } from "./types.js"
 import { asRecord, deriveAgentNameFromSession, extractTaskID, extractTaskResult, pruneToolInput, pruneToolOutput } from "./tool-delegation-utils.js"
 
@@ -23,62 +23,12 @@ import { asRecord, deriveAgentNameFromSession, extractTaskID, extractTaskResult,
 export { pruneToolInput, pruneToolOutput, extractTaskID, extractTaskResult, deriveSubagentType, deriveAgentNameFromSession, asRecord } from "./tool-delegation-utils.js"
 
 // ---------------------------------------------------------------------------
-// Phase 58 (G6, REQ-58-06): In-memory event log for the 3 delegation lifecycle
-// events. P25.1 trajectory precedent. Exposed via getDelegationEventLog for
-// BATS slot 66 monotonicity assertions. Single source of truth across all
-// ToolDelegation instances — module-level array, not a class field.
+// Delegation event log — extracted to delegation-event-log.ts (GA-4 ≤500 LOC)
 // ---------------------------------------------------------------------------
 
-const delegationEventLog: SessionTrackerEvent[] = []
-
-/** P58 G6: Test seam — returns the in-memory event log for BATS assertions. */
-export function getDelegationEventLog(): readonly SessionTrackerEvent[] {
-  return delegationEventLog
-}
-
-/** P58 G6: Test seam — clears the in-memory event log (test isolation). */
-export function clearDelegationEventLog(): void {
-  delegationEventLog.length = 0
-}
-
-/** P58 G6: Internal helper to append a delegation event to the in-memory log. */
-function appendDelegationEvent(event: SessionTrackerEvent): void {
-  delegationEventLog.push(event)
-}
-
-/**
- * P58 PLAN-07 (Gap 4 fix): Module-level re-export of the
- * `recordDelegationTerminal` class method so BATS tests and any other
- * module-level consumer can emit a delegation-terminal event WITHOUT
- * instantiating `ToolDelegation` (which requires a full plugin context
- * with sessionApi, hierarchyIndex, manifestWriter, etc.).
- *
- * The function appends to the same module-level `delegationEventLog`
- * (line 32) that the class method appends to, so consumers reading via
- * `getDelegationEventLog()` observe both module-level and class-level
- * emissions uniformly.
- *
- * @param delegationId - The delegation id reaching terminal state.
- * @param status - The final status. Must be a DelegationLifecycleStatus.
- * @param tmuxSessionId - Optional tmux session id; null when no tmux
- *   pane was attached to the delegation.
- */
-export function recordDelegationTerminal(
-  delegationId: string,
-  status: DelegationLifecycleStatus,
-  tmuxSessionId: string | null = null,
-): void {
-  appendDelegationEvent({
-    type: "delegation-terminal",
-    delegationId,
-    agent: "unknown",  // terminal events may fire after the record is pruned; agent is optional
-    status,
-    depth: 0,  // depth is not available at terminal time without record lookup
-    parentId: null,
-    tmuxSessionId,
-    emittedAt: Date.now(),
-  })
-}
+export { getDelegationEventLog, clearDelegationEventLog, recordDelegationTerminal } from "./delegation-event-log.js"
+import { appendDelegationEvent } from "./delegation-event-log.js"
+import { createDelegationTrajectoryAndContract } from "./delegation-trajectory.js"
 
 /** Dependencies injected by SessionTracker for tool delegation operations. */
 export interface ToolDelegationDeps {
@@ -485,9 +435,9 @@ export class ToolDelegation {
     appendDelegationEvent({
       type: "delegation-terminal",
       delegationId,
-      agent: "unknown",  // terminal events may fire after the record is pruned; agent is optional
+      agent: "unknown",
       status,
-      depth: 0,  // depth is not available at terminal time without record lookup
+      depth: 0,
       parentId: null,
       tmuxSessionId,
       emittedAt: Date.now(),
@@ -496,14 +446,7 @@ export class ToolDelegation {
 
   /**
    * Creates trajectory record and agent-work-contract for a delegation.
-   * Best-effort: failures are logged but do not break delegation.
-   *
-   * @param childSessionID - The child session ID.
-   * @param parentSessionID - The parent session ID.
-   * @param subagentType - The subagent type.
-   * @param description - The task description.
-   * @param rootMain - The root main session ID.
-   * @param tool - The tool name used for dispatch.
+   * Delegates to delegation-trajectory.ts (GA-4 ≤500 LOC).
    */
   private async createDelegationTrajectoryAndContract(
     childSessionID: string,
@@ -513,84 +456,10 @@ export class ToolDelegation {
     rootMain: string,
     tool: string,
   ): Promise<void> {
-    const trajectoryId = `traj-${childSessionID}`
-    const contractId = `awc-${childSessionID}`
-
-    // --- Trajectory (REQ-25.1-01) ---
-    try {
-      const { attachTrajectoryEvidence, eventTrajectory } = await import(
-        "../../task-management/trajectory/index.js"
-      )
-      attachTrajectoryEvidence({
-        projectRoot: this.projectRoot,
-        trajectoryId,
-        rootSessionId: rootMain,
-        sessionId: childSessionID,
-        parentTrajectoryId: `traj-${parentSessionID}`,
-        evidenceRef: `session-tracker:delegation:${tool}:${childSessionID}`,
-      })
-      eventTrajectory({
-        projectRoot: this.projectRoot,
-        trajectoryId,
-        eventType: "delegation_dispatch",
-        summary: `${tool} delegation to ${subagentType}: ${description.slice(0, 200)}`,
-        evidenceRef: `session-tracker:child-json:${childSessionID}`,
-      })
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Hivemind] Trajectory creation failed for delegation ${childSessionID}`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
-
-    // --- Contract (REQ-25.1-02) ---
-    try {
-      const { createAgentWorkContract } = await import(
-        "../../features/agent-work-contracts/index.js"
-      )
-      createAgentWorkContract({
-        projectRoot: this.projectRoot,
-        id: contractId,
-        owner: {
-          agent: subagentType,
-          sessionId: childSessionID,
-          parentSessionId: parentSessionID,
-        },
-        scope: {
-          taskBoundary: description.slice(0, 500) || "Delegated task",
-          allowedSurfaces: [],
-          dependencies: [],
-          nonGoals: [],
-        },
-        evidence: {
-          requiredProof: [],
-          minimumEvidenceLevel: "L4_IMPLEMENTATION_TRACE",
-          verificationCommands: [],
-          blockedStateRules: [],
-        },
-        compaction: {
-          briefing: description.slice(0, 200) || "",
-          summary: "",
-          anchors: [],
-          reinjectionPayload: "",
-          sourceRefs: [],
-        },
-        trajectoryId,
-      })
-    } catch (err) {
-      void this.client.app?.log?.({
-        body: {
-          service: "session-tracker",
-          level: "warn",
-          message: `[Hivemind] Contract creation failed for delegation ${childSessionID}`,
-          extra: { error: err instanceof Error ? err.message : String(err) },
-        },
-      })
-    }
+    await createDelegationTrajectoryAndContract(
+      this.client, this.projectRoot,
+      childSessionID, parentSessionID, subagentType, description, rootMain, tool,
+    )
   }
 }
 

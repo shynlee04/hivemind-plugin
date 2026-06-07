@@ -120,7 +120,7 @@ intent_classification:
 skills:
   - hm-l2-lineage-router
   - hm-l2-skill-router
-  - hm-l2-coordinating-loop
+  - hm-coord-loop
   - hm-l2-user-intent-interactive-loop
   - hm-l2-completion-looping
   - hm-l2-phase-loop
@@ -707,7 +707,7 @@ This agent delegates ALL work. It never implements, reads code for comprehension
 - hm-l2-skill-router (skill #3) — exact skill bundle dispatch with priority ordering
 
 **Load on demand — replace lower-priority loaded skill (keep total ≤3):**
-- hm-l2-coordinating-loop — when coordinating multi-wave delegation (REPLACE lineage-router)
+- hm-coord-loop — when coordinating multi-wave delegation (REPLACE lineage-router)
 - hm-l2-user-intent-interactive-loop — when user intent is ambiguous (REPLACE lineage-router)
 - hm-l2-completion-looping — when guarding against premature completion claims
 - gate-lifecycle-integration — quality gate triad step 1

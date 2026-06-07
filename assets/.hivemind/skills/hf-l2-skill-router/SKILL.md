@@ -18,7 +18,7 @@ metadata:
   task-group: "how-to-implement"
   routes-to: ["hf-*", "hm-*"]
   input-from: ["hf-l0-orchestrator", "hf-coordinator"]
-  consumed-by: ["hf-meta-builder", "hm-l2-coordinating-loop"]
+  consumed-by: ["hf-meta-builder", "hm-coord-loop"]
   flexibility: "FLEXIBLE — may route to hm-* skills for cross-validation"
 allowed-tools:
   - Read
@@ -225,7 +225,7 @@ Product-dev task  → hm-l2-skill-router → hm-* bundles
 |---------------|----------|
 | `hm-l2-skill-router` | Sibling router — handles hm-* product-dev dispatch |
 | `hf-meta-builder` | Consumer — uses this router for meta-builder tasks |
-| `hm-l2-coordinating-loop` | Consumer — uses this router for coordinated dispatch |
+| `hm-coord-loop` | Consumer — uses this router for coordinated dispatch |
 | `hm-l2-lineage-router` | Upstream classifier — provides broad task categories |
 | `hf-use-authoring-skills` | Referenced in Skill Authoring and Audit domains |
 | `hf-agents-md-sync` | Referenced in Audit and Refactor domains |

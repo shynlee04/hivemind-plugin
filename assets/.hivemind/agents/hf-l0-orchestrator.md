@@ -8,7 +8,7 @@ lineage: hf
 domain: Orchestration
 skills:
   - hf-meta-builder
-  - hm-l2-coordinating-loop
+  - hm-coord-loop
   - hm-l2-user-intent-interactive-loop
   - hm-l2-completion-looping
   - gate-lifecycle-integration

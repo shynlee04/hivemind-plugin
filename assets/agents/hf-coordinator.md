@@ -41,7 +41,7 @@ skills:
   - hf-agents-and-subagents-dev
   - hf-agent-composition
   - hf-delegation-gates
-  - hm-l2-coordinating-loop
+  - hm-coord-loop
   - hm-l2-completion-looping
   - gate-lifecycle-integration
   - gate-spec-compliance
