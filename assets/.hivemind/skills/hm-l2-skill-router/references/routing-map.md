@@ -48,7 +48,7 @@ This reference documents the complete routing map used by `hm-l2-skill-router` t
 | "code" | "Code the session recovery feature" |
 | "write" | "Write the delegation dispatch tool" |
 
-**Bundle:** hm-l2-phase-execution → hm-l2-cross-cutting-change (when touching multiple layers)
+**Bundle:** hm-l2-phase-execution → hm-cross-change (when touching multiple layers)
 
 **Dependency chain:** phase-execution (wave dispatch) → cross-cutting-change (safety for multi-layer changes)
 

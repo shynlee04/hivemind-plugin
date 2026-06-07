@@ -8,7 +8,7 @@ lineage: hm
 domain: Implementation
 skills:
   - hm-l2-phase-execution
-  - hm-l2-cross-cutting-change
+  - hm-cross-change
   - hm-l2-test-driven-execution
 instruction:
   - AGENTS.md

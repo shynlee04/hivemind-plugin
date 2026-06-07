@@ -80,14 +80,14 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 |-----------|----------------|
 | Planner | hm-l2-spec-driven-authoring, hm-l2-planning-persistence |
 | Strategist | hm-l2-spec-driven-authoring, hm-l2-roadmap-maintainability, hm-l2-feature-ecosystem |
-| Architect | hm-l2-refactor, hm-l2-cross-cutting-change |
+| Architect | hm-l2-refactor, hm-cross-change |
 | Ecologist | hm-l2-feature-ecosystem, hm-l2-roadmap-maintainability |
 
 ### Implementation Domain
 | Agent Type | Required Skills |
 |-----------|----------------|
-| Executor | hm-l2-phase-execution, hm-l2-cross-cutting-change, hm-l2-test-driven-execution |
-| Builder (hm) | hm-l2-test-driven-execution, hm-l2-cross-cutting-change |
+| Executor | hm-l2-phase-execution, hm-cross-change, hm-l2-test-driven-execution |
+| Builder (hm) | hm-l2-test-driven-execution, hm-cross-change |
 | Integrator | hm-l2-phase-execution, hm-l2-production-readiness |
 | Operator | hm-l2-phase-execution, hm-loop-completion |
 
@@ -145,7 +145,7 @@ Each agent domain loads a mandatory set of skills. These are non-negotiable — 
 | Agent Type | Required Skills |
 |-----------|----------------|
 | Router | hm-l2-skill-router, hm-l2-lineage-router |
-| Connector | hm-l2-cross-cutting-change, hm-coord-loop |
+| Connector | hm-cross-change, hm-coord-loop |
 
 ## Skill-to-Agent Bindings
 
@@ -179,7 +179,7 @@ Each skill declares which agent types consume it. This enables orphan detection 
 | Skill | Consumed By | Lineage |
 |-------|------------|---------|
 | hm-l2-phase-execution | hm-l2-executor, hm-l2-integrator, hm-l2-operator | hm STRICT |
-| hm-l2-cross-cutting-change | hm-l2-executor, hm-l2-builder, hm-l2-connector, hm-l2-architect | hm STRICT |
+| hm-cross-change | hm-l2-executor, hm-l2-builder, hm-l2-connector, hm-l2-architect | hm STRICT |
 | hm-l2-test-driven-execution | hm-l2-executor, hm-l2-builder, hm-l2-validator, hm-l2-reviewer, hm-l2-critic, hm-l2-finisher | hm STRICT |
 | hm-loop-phase | hm-l2-guardian | hm STRICT |
 | hm-loop-completion | hm-l2-debugger, hm-l2-finisher, hm-l2-guardian, hm-l2-investigator, hm-l2-operator, hm-l2-persistor | hm STRICT |

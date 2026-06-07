@@ -43,7 +43,7 @@ This is a **dispatch router** — it bridges the gap between task classification
 |--------|--------|-----|
 | Research | hm-l3-detective + hm-l3-deep-research + hm-l3-tech-stack-ingest | 3 |
 | Planning | hm-l2-spec-driven-authoring + hm-l2-planning-persistence | 2 |
-| Implementation | hm-l2-phase-execution + hm-l2-cross-cutting-change | 2 |
+| Implementation | hm-l2-phase-execution + hm-cross-change | 2 |
 | Quality | hm-l2-test-driven-execution + hm-l2-gate-orchestrator | 2 |
 | Debug | hm-l2-debug + hm-loop-completion | 2 |
 | Review | hm-l2-production-readiness + gate-evidence-truth | 2 |
@@ -104,9 +104,9 @@ This is a **dispatch router** — it bridges the gap between task classification
 | Priority | Skill | Role |
 |----------|-------|------|
 | 1 | `hm-l2-phase-execution` | Wave-based parallelization + checkpoint recovery |
-| 2 | `hm-l2-cross-cutting-change` | Cross-pane modification safety |
+| 2 | `hm-cross-change` | Cross-pane modification safety |
 
-**Loading order:** hm-l2-phase-execution (dispatch) → hm-l2-cross-cutting-change (when touching multiple layers)
+**Loading order:** hm-l2-phase-execution (dispatch) → hm-cross-change (when touching multiple layers)
 
 ### Domain 4: Quality
 

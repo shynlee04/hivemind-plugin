@@ -8,7 +8,7 @@ lineage: hm
 domain: Implementation
 skills:
   - hm-l2-refactor
-  - hm-l2-cross-cutting-change
+  - hm-cross-change
 instruction:
   - AGENTS.md
 permission:

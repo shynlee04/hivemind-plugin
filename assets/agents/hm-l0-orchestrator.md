@@ -230,7 +230,7 @@ Every domain maps to its specialist agents. L0 must know the pool to route any r
 |--------|---------------------|-------------|
 | **Research** | hm-l2-researcher, hm-l2-synthesizer, hm-l3-deep-research, hm-l2-scout, hm-l3-research-chain, hm-l2-analyst, hm-l3-detective | research wave |
 | **Planning** | hm-l2-planner, hm-l2-brainstormer, hm-l2-architect, hm-l2-strategist, hm-l2-ecologist, hm-l2-roadmap-maintainability, hm-l2-intent-loop | planning wave |
-| **Implementation** | hm-l2-executor, hm-l2-technician, hm-l2-writer, hm-l2-build, hm-l2-integrator, hm-l2-connector, hm-l2-refactor, hm-l2-optimizer, hm-l2-cross-cutting-change | implementation wave |
+| **Implementation** | hm-l2-executor, hm-l2-technician, hm-l2-writer, hm-l2-build, hm-l2-integrator, hm-l2-connector, hm-l2-refactor, hm-l2-optimizer, hm-cross-change | implementation wave |
 | **Quality** | hm-l2-reviewer, hm-l2-validator, hm-l2-critic, hm-l2-auditor, hm-l2-assessor, hm-l2-spec-verifier, gate-lifecycle-integration, gate-spec-compliance, gate-evidence-truth | quality wave |
 | **Documentation** | hm-l2-writer, hm-l2-synthesizer, hm-l2-meta-synthesis | docs wave |
 | **Phase Lifecycle** | hm-l2-persistor, hm-l2-finisher, hm-l2-guardian, hm-l2-operator, hm-l2-phase-guardian, hm-loop-phase, hm-l2-phase-execution | lifecycle wave |

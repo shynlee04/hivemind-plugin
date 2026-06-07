@@ -22,7 +22,7 @@
       "assertions": [
         "Classifies as Implementation domain",
         "Routes to hm-l2-phase-execution as primary",
-        "Adds hm-l2-cross-cutting-change if touching multiple layers",
+        "Adds hm-cross-change if touching multiple layers",
         "Provides loading order with depth-qualified names"
       ]
     },

@@ -7,7 +7,7 @@ depth: L2
 lineage: hm
 domain: Integration
 skills:
-  - hm-l2-cross-cutting-change
+  - hm-cross-change
   - hm-coord-loop
 instruction:
   - AGENTS.md

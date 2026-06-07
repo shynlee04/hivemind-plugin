@@ -16,11 +16,11 @@ Map task domains to specialist L2 agents. coordinators use these tables to dispa
 | **Product Validation** | hm-l2-assessor | hm-l2-product-validation |
 | **Architecture Design** | hm-l2-architect | hm-l2-spec-driven-authoring |
 | **Planning / Spec Authoring** | hm-l2-planner | hm-l2-spec-driven-authoring |
-| **Implementation / Execution** | hm-l2-executor | hm-l2-phase-execution + hm-l2-cross-cutting-change |
+| **Implementation / Execution** | hm-l2-executor | hm-l2-phase-execution + hm-cross-change |
 | **Testing / TDD** | hm-l2-spec-verifier | hm-l2-test-driven-execution |
 | **Code Review** | hm-l2-reviewer | gate-lifecycle-integration → gate-spec-compliance → gate-evidence-truth |
 | **Debugging** | hm-l2-debugger | hm-l2-debug + hm-loop-completion |
-| **Refactoring** | hm-l2-optimizer | hm-l2-refactor + hm-l2-cross-cutting-change |
+| **Refactoring** | hm-l2-optimizer | hm-l2-refactor + hm-cross-change |
 | **Production Readiness** | hm-l2-curator | hm-l2-production-readiness + gate-evidence-truth |
 | **Deep Research** | hm-l2-researcher | hm-l3-detective → hm-l3-deep-research → hm-l3-synthesis |
 | **Tech Stack Validation** | hm-l2-technician | hm-l3-tech-context-compliance + hm-l3-tech-stack-ingest |

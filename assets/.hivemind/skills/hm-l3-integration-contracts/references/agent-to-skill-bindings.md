@@ -20,15 +20,15 @@ This is the canonical reference for which skills each agent domain loads. These 
 |-----------|----------------|---------------|
 | Planner | hm-l2-spec-driven-authoring, hm-l2-planning-persistence | 1. spec-driven-authoring, 2. planning-persistence |
 | Strategist | hm-l2-spec-driven-authoring, hm-l2-roadmap-maintainability, hm-l2-feature-ecosystem | 1. spec-driven-authoring, 2. feature-ecosystem, 3. roadmap-maintainability |
-| Architect | hm-l2-refactor, hm-l2-cross-cutting-change | 1. refactor, 2. cross-cutting-change |
+| Architect | hm-l2-refactor, hm-cross-change | 1. refactor, 2. cross-cutting-change |
 | Ecologist | hm-l2-feature-ecosystem, hm-l2-roadmap-maintainability | 1. feature-ecosystem, 2. roadmap-maintainability |
 
 ## Implementation Domain
 
 | Agent Type | Required Skills | Load Priority |
 |-----------|----------------|---------------|
-| Executor | hm-l2-phase-execution, hm-l2-cross-cutting-change, hm-l2-test-driven-execution | 1. phase-execution, 2. test-driven-execution, 3. cross-cutting-change |
-| Builder (hm) | hm-l2-test-driven-execution, hm-l2-cross-cutting-change | 1. test-driven-execution, 2. cross-cutting-change |
+| Executor | hm-l2-phase-execution, hm-cross-change, hm-l2-test-driven-execution | 1. phase-execution, 2. test-driven-execution, 3. cross-cutting-change |
+| Builder (hm) | hm-l2-test-driven-execution, hm-cross-change | 1. test-driven-execution, 2. cross-cutting-change |
 | Integrator | hm-l2-phase-execution, hm-l2-production-readiness | 1. phase-execution, 2. production-readiness |
 | Operator | hm-l2-phase-execution, hm-loop-completion | 1. phase-execution, 2. completion-looping |
 
@@ -93,7 +93,7 @@ This is the canonical reference for which skills each agent domain loads. These 
 | Agent Type | Required Skills | Load Priority |
 |-----------|----------------|---------------|
 | Router | hm-l2-skill-router, hm-l2-lineage-router | 1. skill-router, 2. lineage-router |
-| Connector | hm-l2-cross-cutting-change, hm-coord-loop | 1. cross-cutting-change, 2. coordinating-loop |
+| Connector | hm-cross-change, hm-coord-loop | 1. cross-cutting-change, 2. coordinating-loop |
 
 ## Human-Facing Interaction Domain
 
