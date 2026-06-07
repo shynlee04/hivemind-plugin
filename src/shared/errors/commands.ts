@@ -1,34 +1,34 @@
-import { HarnessError } from "./harness-error.js"
+import { HivemindError } from "./hivemind-error.js"
 
-export class CommandNotFoundError extends HarnessError {
+export class CommandNotFoundError extends HivemindError {
   readonly name = "CommandNotFoundError" as const
   constructor(message?: string) {
     super("C8", "errors", message ?? "Command not found", "COMMAND_NOT_FOUND")
   }
 }
 
-export class AgentNotFoundError extends HarnessError {
+export class AgentNotFoundError extends HivemindError {
   readonly name = "AgentNotFoundError" as const
   constructor(message?: string) {
     super("C8", "errors", message ?? "Agent not found", "AGENT_NOT_FOUND")
   }
 }
 
-export class DelegationTimeoutError extends HarnessError {
+export class DelegationTimeoutError extends HivemindError {
   readonly name = "DelegationTimeoutError" as const
   constructor(message?: string) {
     super("C8", "errors", message ?? "Delegation timeout", "DELEGATION_TIMEOUT")
   }
 }
 
-export class InvalidCommandError extends HarnessError {
+export class InvalidCommandError extends HivemindError {
   readonly name = "InvalidCommandError" as const
   constructor(message?: string) {
     super("C8", "errors", message ?? "Invalid command", "INVALID_COMMAND")
   }
 }
 
-export class DelegationContextError extends HarnessError {
+export class DelegationContextError extends HivemindError {
   readonly name = "DelegationContextError" as const
   constructor(message?: string) {
     super("C8", "errors", message ?? "Delegation context error", "DELEGATION_CONTEXT_ERROR")

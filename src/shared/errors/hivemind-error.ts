@@ -1,13 +1,13 @@
 /**
  * Base class for all Hivemind runtime errors.
  *
- * Every `HarnessError` automatically prepends `[Harness]` to the error message,
+ * Every `HivemindError` automatically prepends `[Harness]` to the error message,
  * which the TUI suppression layer (REQ-34C) uses to route the error to
  * `client.app.log()` instead of `client.tui.showToast()`.
  *
  * @example
  * ```ts
- * class ConfigNotFoundError extends HarnessError {
+ * class ConfigNotFoundError extends HivemindError {
  *   readonly name = "ConfigNotFoundError" as const
  *   constructor(message?: string) {
  *     super("C8", "config", message ?? "Configuration file not found")
@@ -15,7 +15,7 @@
  * }
  * ```
  */
-export class HarnessError extends Error {
+export class HivemindError extends Error {
   /** Machine-readable error code, e.g. `"CONFIG_NOT_FOUND"`. */
   readonly code: string
 
@@ -33,7 +33,7 @@ export class HarnessError extends Error {
   constructor(cluster: string, module: string, message: string, code?: string) {
     const prefixed = `[Harness] ${message}`
     super(prefixed)
-    this.name = "HarnessError"
+    this.name = "HivemindError"
     this.cluster = cluster
     this.module = module
     this.code = code ?? "UNKNOWN"
