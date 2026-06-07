@@ -78,6 +78,24 @@ const PRIMITIVE_MAP = {
   rules: join(stage.consumerRoot, ".opencode", "rules"),
 };
 
+// ── Excluded assets/ subdirectories (defensive documentation) ──────────────
+// These subdirectories are intentionally NOT deployed to .opencode/.
+// PRIMITIVE_MAP above iterates only the 7 primitive kinds, so by construction
+// these are skipped. We list them here for self-documentation so future
+// maintainers understand the boundary without re-deriving it from PRIMITIVE_MAP.
+//
+// Per AUDIT-04 (F-C) and master plan §13 Q4:
+//   - assets/.archive/        : archive for superseded / dev-tooling-only assets
+//   - assets/.hivemind-config/: internal Hivemind config root (naming rules, validators)
+//   - assets/.hivemind/       : runtime state (consumed by Hivemind engine, not OpenCode)
+//   - assets/.opencode/       : auxiliary opencode.json source (synced explicitly below)
+const EXCLUDED_ASSETS_SUBDIRS = new Set([
+  ".archive",
+  ".hivemind-config",
+  ".hivemind",
+  ".opencode",
+]);
+
 
 
 // ── Root-level files (outside .opencode/) ──────────────────────────────────────

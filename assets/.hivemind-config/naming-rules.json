@@ -1,0 +1,240 @@
+{
+  "version": "1.0.0",
+  "locked_by": "AUDIT-04 / 04-03-NAMING-TAXONOMY.md / Appendix B (with 04-04 §3 cycle-validator subset)",
+  "locked_date": "2026-06-07",
+  "generated_by": "hm-executor (Cycle 0 preflight, F-B resolution)",
+  "schema_version": "1.0.0",
+  "applies_to_surfaces": [
+    "assets/skills/",
+    "assets/agents/",
+    "assets/commands/",
+    "assets/references/",
+    "assets/workflows/",
+    "assets/templates/",
+    "assets/agent-instructions/"
+  ],
+  "not_deployed_to": ".opencode/ (scripts/sync-assets.js excludes this directory by default; defensive check added in Cycle 0)",
+  "forbidden_patterns": [
+    {
+      "id": "F01",
+      "regex": "^hm-l[0-3]-",
+      "description": "Residual L0-L3 hierarchy in hm- lineage",
+      "severity": "error",
+      "applies_to": "all",
+      "forbidden_by": "04-03 ADR §2.2 F1; master plan §10, Q2",
+      "reason": "Residual L0-L3 hierarchy — replaced by 22 domain prefixes"
+    },
+    {
+      "id": "F02",
+      "regex": "^hf-l[0-3]-",
+      "description": "Residual L0-L3 hierarchy in hf- lineage",
+      "severity": "error",
+      "applies_to": "all",
+      "forbidden_by": "04-03 ADR §2.2 F2; master plan §10, Q2",
+      "reason": "HF lineage also drops l0-l3"
+    },
+    {
+      "id": "F03",
+      "regex": "[/_-]l[0-3][/_-]",
+      "case_insensitive": true,
+      "description": "Embedded l0/l1/l2/l3 substring in any artifact name",
+      "severity": "error",
+      "applies_to": "all",
+      "forbidden_by": "04-03 ADR §2.2 F3; master plan §10",
+      "reason": "Even embedded l0/l1/l2/l3 substrings are banned (e.g., a hypothetical hm-research-l0-detective is still forbidden)"
+    },
+    {
+      "id": "F04",
+      "regex": "^gsd-",
+      "description": "gsd- prefix in shipped asset (developer-tooling only)",
+      "severity": "error",
+      "applies_to": "skill,agent,command,reference,workflow,template,agent-instruction",
+      "forbidden_by": "04-03 ADR §2.2 F4; master plan §9.1, Q3",
+      "reason": "GSD is developer tooling, lives in .opencode/get-shit-done/, not in shipped assets"
+    },
+    {
+      "id": "F05",
+      "regex": "^gate-",
+      "description": "gate- prefix in shipped skills (dev-tooling only)",
+      "severity": "error",
+      "applies_to": "skill",
+      "forbidden_by": "04-03 ADR §2.2 F5; Q3",
+      "reason": "gate-* is dev-tooling only; replaced by hm-gate-* in shipped surface"
+    },
+    {
+      "id": "F06",
+      "regex": "^stack-",
+      "description": "stack- prefix in shipped skills (dev-tooling only)",
+      "severity": "error",
+      "applies_to": "skill",
+      "forbidden_by": "04-03 ADR §2.2 F6; Q3",
+      "reason": "stack-* is dev-tooling only; replaced by hm-stack-authoring in shipped surface"
+    },
+    {
+      "id": "F07",
+      "regex": "-(nextjs|react|vue|angular|express|tauri|bun|python|rust|go|java|swift|kotlin|django|flask|fastapi|laravel|symfony|spring|electron)-",
+      "case_insensitive": true,
+      "description": "Hardcoded tech stack/framework in shipped skill name",
+      "severity": "error",
+      "applies_to": "skill",
+      "forbidden_by": "04-03 ADR §2.2 F7; master plan §9 (tech-agnostic + stack-agnostic principle)",
+      "reason": "Tech-agnostic + stack-agnostic: references may use these tokens, but never shipped skills"
+    },
+    {
+      "id": "F08",
+      "regex": "^(?!.*(delegate-task|execute-slash-command|hivemind-doc|hivemind-trajectory|hivemind-pressure|hivemind-session-view|hivemind-agent-work|hivemind-steer|hivemind-sdk-supervisor|run-background-command|configure-primitive|bootstrap-init|bootstrap-recover|validate-restart|prompt-analyze|prompt-skim|tmux-copilot|tmux-state-query|semantic-agent-selector)).*$",
+      "description": "Show-don't-tell: SKILL.md body must name at least one Hivemind custom tool (validator checks SKILL.md body, not the name)",
+      "severity": "error",
+      "applies_to": "skill",
+      "forbidden_by": "04-03 ADR §2.2 F8; master plan §8",
+      "reason": "Show-don't-tell rule: SKILL.md must name at least one Hivemind custom tool or OpenCode runtime primitive",
+      "implementation_note": "Body scan, not name regex. Shell validator reports this pattern as 'requires body scan (see 04-04 §3.2 validator script).'"
+    },
+    {
+      "id": "F09",
+      "regex": "gsd-",
+      "description": "gsd- reference in SKILL.md body (must be in '## GSD Compatibility' section only)",
+      "severity": "error",
+      "applies_to": "skill",
+      "forbidden_by": "04-03 ADR §2.2 F9; master plan §9.1",
+      "reason": "All gsd-* references in SKILL.md body must be replaced with hm-* canonical; the ## GSD Compatibility section is the only allowed gsd-* surface",
+      "implementation_note": "Body scan with section whitelist. Shell validator reports this pattern as 'requires body scan'."
+    },
+    {
+      "id": "F10",
+      "regex": "^.{50001,}$",
+      "description": "SKILL.md body line count check (>50001 chars or 500+ lines target)",
+      "severity": "error",
+      "applies_to": "skill",
+      "forbidden_by": "04-03 ADR §2.2 F10; master plan §1.1.4",
+      "reason": "Progressive disclosure: SKILL.md should be <500 lines ideal, <300 target. Use Pattern 2/3 references for larger content.",
+      "implementation_note": "Line count check on SKILL.md body, not name regex. Shell validator documents this rule but does not enforce from name input."
+    },
+    {
+      "id": "F11",
+      "regex": "5-realm-coverage-failure",
+      "description": "5-realm coverage gate (spec, test, doc, arch, clean-code) — sentinel string for gate-orchestrator verdict",
+      "severity": "error",
+      "applies_to": "skill",
+      "forbidden_by": "04-03 ADR §2.2 F11; master plan §1.1.3 + §7",
+      "reason": "5-realm gate is non-negotiable; if any realm is unsatisfied, the cycle fails",
+      "implementation_note": "Not a regex; this is a gate-orchestrator verdict. Shell validator documents this rule only."
+    },
+    {
+      "id": "F12",
+      "regex": "^hm-l[4-9]-",
+      "description": "Preventive: no l4+ hierarchy (defense against future hierarchy reinflation)",
+      "severity": "error",
+      "applies_to": "all",
+      "forbidden_by": "04-03 ADR §2.2 F12; 04-02 auditor §0",
+      "reason": "No l4+ exists today; rule is preventive against future hierarchy reinflation"
+    }
+  ],
+  "allowed_prefixes": [
+    {"prefix": "hm-coord-", "domain": "Coordination, delegation, stacking", "locked_by": "master plan §10 + 04-03 §2.1 row 1"},
+    {"prefix": "hm-loop-", "domain": "Iteration, completion, phase looping", "locked_by": "master plan §10 + 04-03 §2.1 row 2"},
+    {"prefix": "hm-routing-", "domain": "Skill / command / agent routing", "locked_by": "master plan §10 + 04-03 §2.1 row 3"},
+    {"prefix": "hm-spec-", "domain": "Spec-driven authoring, requirements", "locked_by": "master plan §10 + 04-03 §2.1 row 4"},
+    {"prefix": "hm-test-", "domain": "Test-driven execution, coverage", "locked_by": "master plan §10 + 04-03 §2.1 row 5"},
+    {"prefix": "hm-doc-", "domain": "Documentation, references, templates (reserved, no anchor skill today)", "locked_by": "master plan §10 + 04-03 §2.1 row 6"},
+    {"prefix": "hm-arch-", "domain": "Architecture decisions, refactor", "locked_by": "master plan §10 + 04-03 §2.1 row 7"},
+    {"prefix": "hm-cross-", "domain": "Cross-cutting changes, integration", "locked_by": "master plan §10 + 04-03 §2.1 row 8"},
+    {"prefix": "hm-ship-", "domain": "Production readiness, deployment", "locked_by": "master plan §10 + 04-03 §2.1 row 9"},
+    {"prefix": "hm-intent-", "domain": "User intent, brainstorming, discuss", "locked_by": "master plan §10 + 04-03 §2.1 row 10"},
+    {"prefix": "hm-product-", "domain": "Product validation, roadmap, ecosystem", "locked_by": "master plan §10 + 04-03 §2.1 row 11"},
+    {"prefix": "hm-debug-", "domain": "Debug, diagnose, forensics", "locked_by": "master plan §10 + 04-03 §2.1 row 12"},
+    {"prefix": "hm-research-", "domain": "Deep research, synthesis, detective, chain", "locked_by": "master plan §10 + 04-03 §2.1 row 13"},
+    {"prefix": "hm-platform-", "domain": "OpenCode / Hivemind platform reference (SDK + audits)", "locked_by": "master plan §10 + 04-03 §2.1 row 14"},
+    {"prefix": "hm-engine-", "domain": "Engine contracts, state, integrations, OMO reference", "locked_by": "master plan §10 + 04-03 §2.1 row 15"},
+    {"prefix": "hm-tooling-", "domain": "Tooling reference (capability matrix, non-shell)", "locked_by": "master plan §10 + 04-03 §2.1 row 16"},
+    {"prefix": "hm-subagent-", "domain": "Subagent delegation patterns", "locked_by": "master plan §10 + 04-03 §2.1 row 17"},
+    {"prefix": "hm-rules-", "domain": "Universal rules, governance config", "locked_by": "master plan §10 + 04-03 §2.1 row 18"},
+    {"prefix": "hm-build-", "domain": "Build / front-facing orchestrator handbook", "locked_by": "master plan §10 + 04-03 §2.1 row 19"},
+    {"prefix": "hm-gate-", "domain": "Tech-agnostic quality gate triad (replaces shipped gate-*)", "locked_by": "master plan §10 + 04-03 §2.1 row 20 + Q3"},
+    {"prefix": "hm-stack-authoring", "domain": "Help users author own stack-* post-install (replaces shipped stack-*)", "locked_by": "master plan §10 + 04-03 §2.1 row 21 + Q3"},
+    {"prefix": "hm-tech-", "domain": "External third-party tech-stack validation, ingestion, context compliance", "locked_by": "master plan §10 + 04-03 §2.1 row 22 (NEW per mapper §E.2)"}
+  ],
+  "allowed_prefixes_count": 22,
+  "additional_allowed_lineages": [
+    {"lineage": "hf-", "policy": "FLEXIBLE (hf-* lineage; only F01-F03, F12 forbidden rules apply)"},
+    {"lineage": "hivemind-", "policy": "canonical (only hivemind-power-on exists today)"},
+    {"lineage": "unprefixed", "policy": "framework-agnostic whitelist (10 skills: completion-detection, cross-cutting-change-mgmt, iterative-loop, marketing-market-research, opencode-config-workflow, quality-gate-orchestration, session-foundation, subagent-delegation-patterns, user-intent-patterns, wave-execution)"}
+  ],
+  "unprefixed_whitelist": [
+    "completion-detection",
+    "cross-cutting-change-mgmt",
+    "iterative-loop",
+    "marketing-market-research",
+    "opencode-config-workflow",
+    "quality-gate-orchestration",
+    "session-foundation",
+    "subagent-delegation-patterns",
+    "user-intent-patterns",
+    "wave-execution"
+  ],
+  "schema_rules": {
+    "name_format": "kebab-case (lowercase, digits, hyphens only)",
+    "allowed_chars": "a-z, 0-9, hyphen (-)",
+    "forbidden_chars": "uppercase A-Z, underscore (_), period (.), slash (/)",
+    "max_length": 128,
+    "min_length": 3,
+    "no_leading_hyphen": true,
+    "no_trailing_hyphen": true,
+    "no_consecutive_hyphens": true
+  },
+  "asset_type_prefix_requirements": {
+    "skill": {
+      "must_have_prefix_set": "allowed_prefixes | hf- | hivemind- | unprefixed_whitelist",
+      "must_have_prefix": "one of allowed_prefixes, hf-, hivemind-, or unprefixed_whitelist",
+      "forbidden_prefixes": ["^hm-l[0-3]-", "^gsd-", "^gate-", "^stack-", "tech-stack-tokens"],
+      "exit_on_missing": 3,
+      "real_codebase_audit_2026_06_07": {
+        "total_skills": 70,
+        "compliant_with_all_rules": 21,
+        "violations": {
+          "hm-l[0-3]-prefix": 35,
+          "gsd-prefix": 0,
+          "gate-prefix": 3,
+          "stack-prefix": 6,
+          "tech-stack-tokens": 0
+        },
+        "violations_total": 44,
+        "note": "Cycle 0 surfaces violations; migration is a separate phase (post-AUDIT-04)"
+      }
+    },
+    "agent": {
+      "must_have_prefix_set": "allowed_prefixes | hf- | hivemind-",
+      "must_have_prefix": "one of allowed_prefixes, hf-, or hivemind-",
+      "exit_on_missing": 3
+    },
+    "command": {
+      "must_have_prefix_set": "allowed_prefixes | hf- | hivemind- | unprefixed framework-agnostic",
+      "must_have_prefix": "one of allowed_prefixes, hf-, hivemind-, or unprefixed framework-agnostic",
+      "exit_on_missing": 3
+    },
+    "reference": {"must_have_prefix": "any (free-form)", "exit_on_missing": 0},
+    "template": {"must_have_prefix": "any (free-form)", "exit_on_missing": 0},
+    "workflow": {"must_have_prefix": "any (free-form)", "exit_on_missing": 0},
+    "agent-instruction": {"must_have_prefix": "any (free-form)", "exit_on_missing": 0}
+  },
+  "realm_coverage_required": [
+    "spec-driven",
+    "test-driven",
+    "doc-driven",
+    "arch-driven",
+    "clean-code-driven"
+  ],
+  "evidence_levels": {
+    "L1": "runtime-truthful",
+    "L2": "transport-mocked",
+    "L3": "mock-heavy",
+    "L4": "manual-only",
+    "L5": "documentation-summary"
+  },
+  "exit_code_semantics": {
+    "0": "PASS — name satisfies all schema + forbidden-pattern + required-prefix checks",
+    "1": "FAIL — name matches one of the 12 forbidden patterns (F01-F12, name-applicable subset)",
+    "2": "FAIL — schema validation (not kebab-case, too long, leading/trailing hyphen, etc.)",
+    "3": "FAIL — in-scope asset type missing required prefix (e.g., a 'skill' in routing domain without hm-routing- prefix)"
+  }
+}
