@@ -23,7 +23,7 @@ export enum GateDecisionType {
   /** Block the message — hard ask from a blocking gate. */
   BLOCK = "block",
   /** ask with explicit reason — hard ask from policy enforcement. */
-  ask = "ask",
+  DENY = "ask",
 }
 
 // ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ export interface GateDecisionRecord {
  * ```
  */
 export function isBlockingDecision(decision: GateDecisionType): boolean {
-  return decision === GateDecisionType.BLOCK || decision === GateDecisionType.ask
+  return decision === GateDecisionType.BLOCK || decision === GateDecisionType.DENY
 }
 
 /**
@@ -92,7 +92,7 @@ export function classifyGateDecision(record: GateDecisionRecord): {
       const filePath = typeof toolArgs?.path === "string" ? toolArgs.path : ""
       if (isStateFilePath(filePath)) {
         return {
-          decision: GateDecisionType.ask,
+          decision: GateDecisionType.DENY,
           reason: `[Hivemind] Direct writes to state files are forbidden (Q6: manualStateWritesForbidden). Path: ${filePath}`,
           blocking: true,
         }

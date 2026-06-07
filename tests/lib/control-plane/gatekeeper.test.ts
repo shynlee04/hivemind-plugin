@@ -47,7 +47,7 @@ afterEach(async () => {
 describe("GateDecision classification", () => {
   it("should classify blocking decisions correctly", () => {
     expect(isBlockingDecision(GateDecisionType.BLOCK)).toBe(true)
-    expect(isBlockingDecision(GateDecisionType.ask)).toBe(true)
+    expect(isBlockingDecision(GateDecisionType.DENY)).toBe(true)
   })
 
   it("should classify non-blocking decisions correctly", () => {
