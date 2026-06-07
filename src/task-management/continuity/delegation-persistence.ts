@@ -8,6 +8,30 @@ import { HierarchyManifestWriter } from "../../features/session-tracker/persiste
 import type { ChildSessionRecord, HierarchyManifest } from "../../features/session-tracker/types.js"
 import type { Delegation, DelegationStatus, DelegationTerminalKind } from "../../shared/types.js"
 
+// ---------------------------------------------------------------------------
+// Logger (local to avoid cross-module circular deps)
+// ---------------------------------------------------------------------------
+
+/** Minimal structured logger matching the harness pattern. */
+interface Logger {
+  debug: (msg: string, data?: unknown) => void
+  warn: (msg: string, data?: unknown) => void
+  error: (msg: string, data?: unknown) => void
+}
+
+const noopLog: Logger = { debug: () => {}, warn: () => {}, error: () => {} }
+
+/** Module-level logger. Default is no-op. Use `setDelegationPersistenceLog()` to inject. */
+let log: Logger = noopLog
+
+/**
+ * Inject a structured logger into the delegation-persistence module.
+ * Called by the plugin composition root to wire the harness-level logger.
+ */
+export function setDelegationPersistenceLog(injected: Logger): void {
+  log = injected
+}
+
 function getDelegationStoreDirectory(): string {
   return dirname(getContinuityStoragePath())
 }
@@ -76,14 +100,20 @@ export function persistDelegations(delegations: Delegation[]): void {
 
     for (const d of delegations) {
       if (!d.childSessionId || !d.parentSessionId) {
-        console.warn(`[Hivemind] persistDelegations dual-write: skipping delegation ${d.id} — missing session IDs`)
+        log.warn("continuity: persistDelegations skipping delegation with missing session IDs", {
+          service: "continuity",
+          delegationID: d.id,
+        })
         continue
       }
 
       const childRecord = buildChildRecordFromDelegation(d)
       childWriter.createChildFile(d.parentSessionId, d.childSessionId, childRecord).catch((err) => {
         // Fire-and-forget: log, never throw — old sync path already wrote to delegations.json
-        console.error(`[Hivemind] persistDelegations dual-write (child file): ${err instanceof Error ? err.message : String(err)}`)
+        log.error("continuity: persistDelegations dual-write (child file) error", {
+          service: "continuity",
+          error: err instanceof Error ? err.message : String(err),
+        })
       })
 
       manifestWriter.addChild({
@@ -100,12 +130,18 @@ export function persistDelegations(delegations: Delegation[]): void {
         // both writers must be updated together to prevent drift.
         delegationType: d.delegationType ?? "sdk-direct",
       }).catch((err) => {
-        console.error(`[Hivemind] persistDelegations dual-write (manifest): ${err instanceof Error ? err.message : String(err)}`)
+        log.error("continuity: persistDelegations dual-write (manifest) error", {
+          service: "continuity",
+          error: err instanceof Error ? err.message : String(err),
+        })
       })
     }
   } catch (err) {
     // Fire-and-forget: log but never throw — old sync path already wrote to delegations.json
-    console.error(`[Hivemind] persistDelegations dual-write error: ${err instanceof Error ? err.message : String(err)}`)
+    log.error("continuity: persistDelegations dual-write error", {
+      service: "continuity",
+      error: err instanceof Error ? err.message : String(err),
+    })
   }
 }
 

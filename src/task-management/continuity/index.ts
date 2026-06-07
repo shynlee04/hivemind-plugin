@@ -21,6 +21,30 @@ import type {
   SessionContinuityRecord,
 } from "../../shared/types.js"
 
+// ---------------------------------------------------------------------------
+// Logger (local to avoid cross-module circular deps)
+// ---------------------------------------------------------------------------
+
+/** Minimal structured logger matching the harness pattern. */
+interface Logger {
+  debug: (msg: string, data?: unknown) => void
+  warn: (msg: string, data?: unknown) => void
+  error: (msg: string, data?: unknown) => void
+}
+
+const noopLog: Logger = { debug: () => {}, warn: () => {}, error: () => {} }
+
+/** Module-level logger. Default is no-op. Use `setContinuityLog()` to inject. */
+let log: Logger = noopLog
+
+/**
+ * Inject a structured logger into the continuity store module.
+ * Called by the plugin composition root to wire the harness-level logger.
+ */
+export function setContinuityLog(injected: Logger): void {
+  log = injected
+}
+
 const CONTINUITY_VERSION = 1 as const
 
 export function getCanonicalStateDir(projectRoot?: string): string {
@@ -250,10 +274,16 @@ export function recordSessionContinuity(record: SessionContinuityRecord): Sessio
         pendingNotifications: record.metadata.pendingNotifications?.length ? record.metadata.pendingNotifications : undefined,
         compactionCheckpoint: record.metadata.compactionCheckpoint,
       }).catch((err) => {
-        console.error(`[Hivemind] recordSessionContinuity dual-write error: ${err instanceof Error ? err.message : String(err)}`)
+        log.error("continuity: recordSessionContinuity dual-write error", {
+          service: "continuity",
+          error: err instanceof Error ? err.message : String(err),
+        })
       })
     } catch (err) {
-      console.error(`[Hivemind] recordSessionContinuity dual-write error: ${err instanceof Error ? err.message : String(err)}`)
+      log.error("continuity: recordSessionContinuity dual-write error", {
+        service: "continuity",
+        error: err instanceof Error ? err.message : String(err),
+      })
     }
   }
 
@@ -329,10 +359,18 @@ export function patchSessionContinuity(
             pendingNotifications: patch.pendingNotifications?.length ? patch.pendingNotifications : undefined,
             compactionCheckpoint: patch.compactionCheckpoint,
           }).catch((err) => {
-            console.warn(`[Hivemind] patchSessionContinuity dual-write error for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`)
+            log.warn("continuity: patchSessionContinuity dual-write error", {
+              service: "continuity",
+              sessionID,
+              error: err instanceof Error ? err.message : String(err),
+            })
           })
         } catch (err) {
-          console.warn(`[Hivemind] patchSessionContinuity dual-write: skipping session-tracker write for ${sessionID}: ${err instanceof Error ? err.message : String(err)}`)
+          log.warn("continuity: patchSessionContinuity dual-write skipped", {
+            service: "continuity",
+            sessionID,
+            error: err instanceof Error ? err.message : String(err),
+          })
         }
       })()
     }
