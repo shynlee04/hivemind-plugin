@@ -4,14 +4,14 @@ description: >-
   LOAD FIRST — session governance core. Use actual tools to discover session
   state, filter active/resumable sessions, query hierarchy, and aggregate
   cross-session data. No aspirational workflow — only real tool capabilities.
-version: 2.2.0
+version: 2.3.0
 lineage: hivemind
 load_priority: 1
 consumed-by:
-  - orchestrator (L0)
-  - coordinator (L1)
-  - conductor (L2)
-  - meta-builder (L2)
+  - hm-orchestrator
+  - hm-coordinator
+  - hf-coordinator
+  - hf-meta-builder
 allowed-tools:
   - skill
   - read
