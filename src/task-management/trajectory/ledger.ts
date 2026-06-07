@@ -47,7 +47,7 @@ export function readTrajectoryLedger(projectRoot: string): TrajectoryLedger {
   try {
     const parsed = JSON.parse(readFileSync(ledgerPath, "utf-8")) as unknown
     if (!isTrajectoryLedger(parsed)) {
-      throw new Error("invalid schema")
+      throw new Error("[Harness] invalid schema")
     }
     return normalizeTrajectoryLedger(parsed)
   } catch (caughtError) {

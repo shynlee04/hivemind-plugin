@@ -101,7 +101,7 @@ export class SdkDelegationHandler {
       ])
       const status = statusMap[delegation.childSessionId]
       if (!status?.type) {
-        throw new Error("missing")
+        throw new Error("[Harness] missing")
       }
 
       this.clearStaleRecoveryError(delegation)
