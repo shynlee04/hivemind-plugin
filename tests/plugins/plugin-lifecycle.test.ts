@@ -20,7 +20,7 @@ import { TaskStateManager } from "../../src/shared/state.js"
 import { DelegationManager } from "../../src/coordination/delegation/manager.js"
 import { createHarnessLifecycleManager } from "../../src/task-management/lifecycle/index.js"
 import { PtyManager } from "../../src/features/background-command/pty/pty-manager.js"
-import { HarnessControlPlane } from "../../src/plugin.js"
+import { HivemindControlPlane } from "../../src/plugin.js"
 
 function createPluginClient() {
   return {
@@ -63,8 +63,8 @@ describe("plugin lifecycle wiring", () => {
     rmSync(stateDir, { recursive: true, force: true })
   })
 
-  it("builds HarnessControlPlane without relying on an independent delegated-session lifecycle implementation", async () => {
-    const plugin = await HarnessControlPlane({
+  it("builds HivemindControlPlane without relying on an independent delegated-session lifecycle implementation", async () => {
+    const plugin = await HivemindControlPlane({
       client: createPluginClient(),
       directory: process.cwd(),
     } as never)
@@ -82,7 +82,7 @@ describe("plugin lifecycle wiring", () => {
     const client = createPluginClient()
 
     try {
-      const plugin = await HarnessControlPlane({
+      const plugin = await HivemindControlPlane({
         client,
         directory: projectRoot,
       } as never)
@@ -133,7 +133,7 @@ describe("plugin lifecycle wiring", () => {
     const output: { metadata?: unknown } = {}
 
     try {
-      const plugin = await HarnessControlPlane({
+      const plugin = await HivemindControlPlane({
         client: createPluginClient(),
         directory: projectRoot,
       } as never)
@@ -153,7 +153,7 @@ describe("plugin lifecycle wiring", () => {
   it("registers run-background-command when a shared PTY manager is supported", async () => {
     vi.spyOn(PtyManager.prototype, "isSupported").mockReturnValue(true)
 
-    const plugin = await HarnessControlPlane({
+    const plugin = await HivemindControlPlane({
       client: createPluginClient(),
       directory: process.cwd(),
     } as never)
@@ -164,7 +164,7 @@ describe("plugin lifecycle wiring", () => {
   it("registers run-background-command even when PTY manager is unsupported", async () => {
     vi.spyOn(PtyManager.prototype, "isSupported").mockReturnValue(false)
 
-    const plugin = await HarnessControlPlane({
+    const plugin = await HivemindControlPlane({
       client: createPluginClient(),
       directory: process.cwd(),
     } as never)

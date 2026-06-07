@@ -49,7 +49,7 @@ const EXTERNAL_COMMAND_RUNNER: ToolPressureBehavior = {
 }
 
 /**
- * Authority matrix for tools currently registered by `HarnessControlPlane`.
+ * Authority matrix for tools currently registered by `HivemindControlPlane`.
  *
  * Every entry is a complete contract row — all fields required by the
  * Phase 57 planning contract are populated. Adding a new tool elsewhere

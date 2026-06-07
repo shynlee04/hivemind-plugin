@@ -1,5 +1,5 @@
-export { HarnessControlPlane } from "./plugin.js"
-export { HarnessControlPlane as default } from "./plugin.js"
+export { HivemindControlPlane } from "./plugin.js"
+export { HivemindControlPlane as default } from "./plugin.js"
 
 export * from "./coordination/concurrency/queue.js"
 export * from "./task-management/continuity/index.js"

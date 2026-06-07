@@ -4,7 +4,7 @@ import { TOOL_AUTHORITY_MATRIX, getToolAuthority, inspectToolAuthorityCatalog } 
 import { detectRuntimePressure } from "../../../src/features/runtime-pressure/control-plane.js"
 
 /**
- * Canonical list of all 24 tools registered by HarnessControlPlane in plugin.ts.
+ * Canonical list of all 24 tools registered by HivemindControlPlane in plugin.ts.
  *
  * Source: src/plugin.ts — registerDelegationTools (3), registerSessionTools (7),
  * registerHivemindTools (8), registerConfigTools (6).

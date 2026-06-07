@@ -17,7 +17,7 @@ import {
 import { createPromptSkimTool } from "../../src/tools/prompt/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "../../src/tools/prompt/prompt-analyze/index.js"
 import { createSessionPatchTool } from "../../src/tools/session/session-patch/index.js"
-import { HarnessControlPlane } from "../../src/plugin.js"
+import { HivemindControlPlane } from "../../src/plugin.js"
 
 const mockCtx = {
   sessionID: "test_ses_001",
@@ -145,8 +145,8 @@ describe("full pipeline E2E", () => {
 // ---------------------------------------------------------------------------
 
 describe("plugin tools are registered and callable", () => {
-  it("HarnessControlPlane returns all prompt-enhance tools", async () => {
-    const plugin = await HarnessControlPlane({} as any)
+  it("HivemindControlPlane returns all prompt-enhance tools", async () => {
+    const plugin = await HivemindControlPlane({} as any)
     const tools = plugin.tool as Record<string, { execute: Function }>
 
     expect(tools).toBeDefined()
@@ -160,7 +160,7 @@ describe("plugin tools are registered and callable", () => {
   })
 
   it("each registered tool executes without error", async () => {
-    const plugin = await HarnessControlPlane({} as any)
+    const plugin = await HivemindControlPlane({} as any)
     const tools = plugin.tool as Record<string, { execute: Function }>
 
     const skimResult = await tools["prompt-skim"].execute(

@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 
 import { DelegationManager } from "../../src/coordination/delegation/manager.js"
-import { HarnessControlPlane } from "../../src/plugin.js"
+import { HivemindControlPlane } from "../../src/plugin.js"
 import { createDelegateTaskTool, DelegateTaskInputSchema } from "../../src/tools/delegation/delegate-task.js"
 
 let tempDir: string | undefined
@@ -83,13 +83,13 @@ describe("delegate-task tool", () => {
   // ---------------------------------------------------------------------------
 
   it("is registered in the plugin tool surface as delegate-task", async () => {
-    const plugin = await HarnessControlPlane({ client: createPluginClient() } as never)
+    const plugin = await HivemindControlPlane({ client: createPluginClient() } as never)
     expect(plugin.tool["delegate-task"]).toBeDefined()
   })
 
   it("routes session.idle events using canonical lifecycle event session IDs", async () => {
     const idleSpy = vi.spyOn(DelegationManager.prototype, "handleSessionIdle")
-    const plugin = await HarnessControlPlane({ client: createPluginClient() } as never)
+    const plugin = await HivemindControlPlane({ client: createPluginClient() } as never)
 
     await plugin.event({
       event: {

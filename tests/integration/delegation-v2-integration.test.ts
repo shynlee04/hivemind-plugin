@@ -6,7 +6,7 @@ import { createDelegateTaskTool } from "../../src/tools/delegation/delegate-task
 import { createDelegationStatusTool } from "../../src/tools/delegation/delegation-status.js"
 import { AutoLoopEngine } from "../../src/features/auto-loop/index.js"
 import { RalphLoopEngine } from "../../src/features/ralph-loop/index.js"
-import { HarnessControlPlane, setupDelegationModules, replayPendingDelegationNotifications } from "../../src/plugin.js"
+import { HivemindControlPlane, setupDelegationModules, replayPendingDelegationNotifications } from "../../src/plugin.js"
 
 function parse(raw: string): Record<string, unknown> {
   return JSON.parse(raw) as Record<string, unknown>
@@ -141,7 +141,7 @@ describe("delegation v2 plugin integration", () => {
 
   it("confirms first action and extracts completion result through plugin message/tool/session hooks", async () => {
     const client = createRuntimeClient()
-    const plugin = await HarnessControlPlane({ client: client as never, directory: "/tmp/project" } as never)
+    const plugin = await HivemindControlPlane({ client: client as never, directory: "/tmp/project" } as never)
     const dispatchRaw = await plugin.tool["delegate-task"].execute({ agent: "builder", prompt: "build" } as never, { sessionID: "parent-1" })
     const delegationId = (parse(dispatchRaw).data as Record<string, unknown>).delegationId as string
 
@@ -263,7 +263,7 @@ describe("delegation v2 plugin integration", () => {
       promptParams: {},
     })
 
-    await HarnessControlPlane({ client: client as never, directory: "/tmp/project" } as never)
+    await HivemindControlPlane({ client: client as never, directory: "/tmp/project" } as never)
 
     // Init should replay the pending notification (fire-and-forget, so retry via waitFor)
     await vi.waitFor(() => {

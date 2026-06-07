@@ -58,15 +58,15 @@ describe("bootstrap tool registration", () => {
 
   it("registers bootstrap-init and bootstrap-recover on the plugin tool registry", async () => {
     tempDir = mkdtempSync(join(tmpdir(), "bootstrap-test-"))
-    const { HarnessControlPlane } = await import("../../src/plugin.js")
-    const plugin = await HarnessControlPlane({ client: {}, directory: tempDir } as never)
+    const { HivemindControlPlane } = await import("../../src/plugin.js")
+    const plugin = await HivemindControlPlane({ client: {}, directory: tempDir } as never)
     expect(Object.keys(plugin.tool ?? {})).toEqual(expect.arrayContaining(["bootstrap-init", "bootstrap-recover"]))
   }, 15_000)
 
   it("rejects invalid bootstrap tool scope before mutation", async () => {
     tempDir = mkdtempSync(join(tmpdir(), "bootstrap-test-"))
-    const { HarnessControlPlane } = await import("../../src/plugin.js")
-    const plugin = await HarnessControlPlane({ client: {}, directory: tempDir } as never)
+    const { HivemindControlPlane } = await import("../../src/plugin.js")
+    const plugin = await HivemindControlPlane({ client: {}, directory: tempDir } as never)
 
     const initTool = plugin.tool?.["bootstrap-init"]
     const recoverTool = plugin.tool?.["bootstrap-recover"]

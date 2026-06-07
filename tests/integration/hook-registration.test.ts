@@ -3,7 +3,7 @@ import os from "node:os"
 import { rmSync } from "node:fs"
 import { join } from "node:path"
 
-import { HarnessControlPlane } from "../../src/plugin.ts"
+import { HivemindControlPlane } from "../../src/plugin.ts"
 
 const tmpdir = join(os.tmpdir(), "hivemind-hook-test")
 let cleanupDir = tmpdir
@@ -17,12 +17,12 @@ afterAll(() => {
 })
 
 describe("Hook Registration Completeness", () => {
-  it("HarnessControlPlane export exists and is a function", () => {
-    expect(HarnessControlPlane).toBeDefined()
-    expect(typeof HarnessControlPlane).toBe("function")
+  it("HivemindControlPlane export exists and is a function", () => {
+    expect(HivemindControlPlane).toBeDefined()
+    expect(typeof HivemindControlPlane).toBe("function")
   })
 
-  it("HarnessControlPlane returns plugin object with required hooks", async () => {
+  it("HivemindControlPlane returns plugin object with required hooks", async () => {
     const mockClient = {
       app: { log: async () => {} },
       session: { prompt: async () => {}, list: async () => [] },
@@ -30,7 +30,7 @@ describe("Hook Registration Completeness", () => {
       hook: () => {},
     }
 
-    const result = await HarnessControlPlane({
+    const result = await HivemindControlPlane({
       client: mockClient as any,
       directory: tmpdir,
     })
@@ -58,7 +58,7 @@ describe("Hook Registration Completeness", () => {
   })
 
   it("experimental.chat.system.transform hook exists", () => {
-    expect((HarnessControlPlane as any)).not.toBeUndefined()
+    expect((HivemindControlPlane as any)).not.toBeUndefined()
   })
 
   it("experimental.chat.system.transform and system.transform hook aliases are async functions", async () => {
@@ -69,7 +69,7 @@ describe("Hook Registration Completeness", () => {
       hook: () => {},
     }
 
-    const result = await HarnessControlPlane({
+    const result = await HivemindControlPlane({
       client: mockClient as any,
       directory: tmpdir,
     })
@@ -91,7 +91,7 @@ describe("Hook Registration Completeness", () => {
       hook: () => {},
     }
 
-    const result = await HarnessControlPlane({
+    const result = await HivemindControlPlane({
       client: mockClient as any,
       directory: tmpdir,
     })
@@ -116,7 +116,7 @@ describe("Hook Registration Completeness", () => {
       hook: () => {},
     }
 
-    const result = await HarnessControlPlane({
+    const result = await HivemindControlPlane({
       client: mockClient as any,
       directory: tmpdir,
     })

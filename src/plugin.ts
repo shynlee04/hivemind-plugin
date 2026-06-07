@@ -114,7 +114,7 @@ export {
 // Plugin composition root
 // ---------------------------------------------------------------------------
 
-export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
+export const HivemindControlPlane: Plugin = async ({ client, directory }) => {
   const projectDirectory = directory ?? process.cwd()
 
   // Startup diagnostic: confirm plugin loaded by logging to OpenCode app log.
@@ -358,7 +358,7 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   // handle is retained (closure-captured retry timers must not be GC'd)
   // for the lifetime of the plugin instance.
   const paneMonitorHook = createPaneMonitorHook({
-    sessionId: "harness",
+    sessionId: "hivemind",
     observer: tmuxObserver,
     journalRoot: join(projectDirectory, ".hivemind/journal"),
     logWarn: (msg: string, err?: unknown) => {
@@ -497,4 +497,4 @@ export const HarnessControlPlane: Plugin = async ({ client, directory }) => {
   }
 }
 
-export default { server: HarnessControlPlane }
+export default { server: HivemindControlPlane }
