@@ -18,6 +18,19 @@ import { dirname, resolve } from "node:path"
 import { atomicWriteJson, sessionTrackerRoot } from "./atomic-write.js"
 
 // ---------------------------------------------------------------------------
+// Logger (local to avoid cross-module circular deps)
+// ---------------------------------------------------------------------------
+
+/** Minimal structured logger matching the harness pattern. */
+interface Logger {
+  debug: (msg: string, data?: unknown) => void
+  warn: (msg: string, data?: unknown) => void
+  error: (msg: string, data?: unknown) => void
+}
+
+const noopLog: Logger = { debug: () => {}, warn: () => {}, error: () => {} }
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -97,6 +110,7 @@ export const FLUSH_INTERVAL_MS = 30_000
 export class ChildWriteRetryQueue {
   private projectRoot: string
   private records: Map<string, RetryRecord> = new Map()
+  private log: Logger = noopLog
   private timers: Map<string, ReturnType<typeof setTimeout>> = new Map()
   private pendingRetries: Map<string, Promise<void>> = new Map()
   private onDegraded?: (record: RetryRecord) => void
@@ -109,6 +123,14 @@ export class ChildWriteRetryQueue {
   constructor(config: RetryQueueConfig) {
     this.projectRoot = config.projectRoot
     this.onDegraded = config.onDegraded
+  }
+
+  /**
+   * Inject a structured logger. Default is no-op.
+   * Called by the plugin composition root to wire the harness-level logger.
+   */
+  setLogger(injected: Logger): void {
+    this.log = injected
   }
 
   /**
@@ -323,10 +345,11 @@ export class ChildWriteRetryQueue {
       await atomicWriteJson(degradedPath, existing)
     } catch (err) {
       // Persist failure is non-fatal — log but don't throw
-      console.error(
-        `[Hivemind] Session tracker: failed to persist degraded retry record for "${record.sessionID}":`,
-        err instanceof Error ? err.message : String(err),
-      )
+      this.log.error("session-tracker: Retry queue persist failed", {
+        service: "session-tracker",
+        sessionID: record.sessionID,
+        error: err instanceof Error ? err.message : String(err),
+      })
     }
   }
 

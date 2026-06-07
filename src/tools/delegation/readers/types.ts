@@ -64,10 +64,10 @@ export const HierarchyManifestChildSchema = z.object({
   rootMainSessionID: z.string().optional(),
   delegatedBy: z.string().optional(),
   turnCount: z.number().optional(),
-  // TODO-2 (2026-06-04): optional discriminator (R2 mitigation — use
+  // optional discriminator (R2 mitigation — use
   // .optional() so existing manifest entries without the field still parse).
   // Source: src/features/session-tracker/types.ts DelegationType
-  delegationType: z.string().optional(),
+  delegationType: z.enum(["async-spawn", "native-task", "slash-cmd", "sdk-direct"]).optional(),
 })
 
 export type HierarchyManifestChildValidated = z.infer<typeof HierarchyManifestChildSchema>
@@ -147,7 +147,7 @@ export function hierarchyChildToDelegation(
     explicitCancellation: false,
     lastMessageCount: 0,
     stablePollCount: 0,
-    // TODO-2 (2026-06-04, MVD §12.4 read-side enrichment): propagate
+    // (2026-06-04, MVD §12.4 read-side enrichment): propagate
     // delegationType from the validated child record to the resulting
     // Delegation. The Zod schema uses z.string() (intentionally — R2
     // mitigation allows any string for forward compat) so we cast to

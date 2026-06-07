@@ -69,7 +69,7 @@ export class HierarchyManifestWriter {
     childFile: string
     status?: string
     /**
-     * TODO-2 (2026-06-04): Optional delegation discriminator. Set at the
+     * Optional delegation discriminator. Set at the
      * writer call site (never derived from event payloads — R7 mitigation).
      */
     delegationType?: import("../types.js").DelegationType

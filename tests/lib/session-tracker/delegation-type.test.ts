@@ -80,10 +80,9 @@ describe("DelegationType discriminator (TODO-2 MVD)", () => {
       }
     })
 
-    it("accepts any string for delegationType (forward-compat — not enum-locked)", () => {
-      // The Zod schema uses z.string() (not z.enum) so future enum values
-      // can be added without breaking existing manifests. The 4-literal
-      // union is enforced at the writer (TS) level only.
+    it("rejects unknown delegationType values (enum-locked per REQ-10)", () => {
+      // The Zod schema uses z.enum() (not z.string()) so only the 4 locked
+      // literal values are accepted. Unknown values fail validation.
       const futureEntry = {
         parentSessionID: "parent-1",
         status: "active",
@@ -91,10 +90,7 @@ describe("DelegationType discriminator (TODO-2 MVD)", () => {
         delegationType: "future-enum-value-not-yet-defined",
       }
       const parsed = HierarchyManifestChildSchema.safeParse(futureEntry)
-      expect(parsed.success).toBe(true)
-      if (parsed.success) {
-        expect(parsed.data.delegationType).toBe("future-enum-value-not-yet-defined")
-      }
+      expect(parsed.success).toBe(false)
     })
   })
 

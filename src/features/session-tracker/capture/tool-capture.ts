@@ -301,7 +301,7 @@ export class ToolCapture {
         turns: [],
         journey: [],
         children: [],
-        // TODO-2 (2026-06-04, R7): This handler is reached ONLY for the
+        // This handler is reached ONLY for the
         // OpenCode native `task` tool — write time is unambiguous.
         delegationType: "native-task",
       }

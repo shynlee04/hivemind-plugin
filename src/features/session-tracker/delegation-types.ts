@@ -8,6 +8,24 @@
  * @module session-tracker/delegation-types
  */
 
+import { z } from "zod"
+
+// ---------------------------------------------------------------------------
+// DelegationType — Zod schema + TypeScript type
+// ---------------------------------------------------------------------------
+
+/**
+ * Zod enum schema for the delegation mechanism discriminator.
+ * Schema-type parity ensures validated runtime values exactly match
+ * the TypeScript union. Used by readers/types.ts for Zod parsing.
+ */
+export const DelegationTypeSchema = z.enum([
+  "async-spawn",
+  "native-task",
+  "slash-cmd",
+  "sdk-direct",
+])
+
 // ---------------------------------------------------------------------------
 // Phase 58 (G6, REQ-58-06): Delegation lifecycle types
 // ---------------------------------------------------------------------------
@@ -29,7 +47,7 @@ export type DelegationLifecycleStatus =
   | "paused"
 
 /**
- * TODO-2 (2026-06-04, user-locked enum): Discriminator for the delegation
+ * Discriminator for the delegation
  * mechanism that produced a child session. Differentiates Hivemind-owned
  * tools (delegate-task, execute-slash-command) from OpenCode's native
  * `task` tool and direct SDK calls.
@@ -48,11 +66,7 @@ export type DelegationLifecycleStatus =
  * MVD scope: 10 files, ~80 lines. See
  * `.planning/research/session-tracker-cluster-map-2026-06-04.md` §12.
  */
-export type DelegationType =
-  | "async-spawn"
-  | "native-task"
-  | "slash-cmd"
-  | "sdk-direct"
+export type DelegationType = z.infer<typeof DelegationTypeSchema>
 
 /**
  * Phase 58 G6 (REQ-58-06, D-58-13): Base shape for all 3 delegation lifecycle

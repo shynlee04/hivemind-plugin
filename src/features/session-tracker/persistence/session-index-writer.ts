@@ -19,6 +19,19 @@ import {
 import type { SessionContinuityIndex, ChildHierarchyEntry } from "../types.js"
 
 // ---------------------------------------------------------------------------
+// Logger (local to avoid cross-module circular deps)
+// ---------------------------------------------------------------------------
+
+/** Minimal structured logger matching the harness pattern. */
+interface Logger {
+  debug: (msg: string, data?: unknown) => void
+  warn: (msg: string, data?: unknown) => void
+  error: (msg: string, data?: unknown) => void
+}
+
+const noopLog: Logger = { debug: () => {}, warn: () => {}, error: () => {} }
+
+// ---------------------------------------------------------------------------
 // SessionIndexWriter class
 // ---------------------------------------------------------------------------
 
@@ -30,6 +43,7 @@ import type { SessionContinuityIndex, ChildHierarchyEntry } from "../types.js"
  */
 export class SessionIndexWriter {
   private projectRoot: string
+  private log: Logger = noopLog
 
   /**
    * Per-session serial write queues to prevent concurrent read-modify-write
@@ -56,6 +70,14 @@ export class SessionIndexWriter {
    */
   constructor(deps: { projectRoot: string }) {
     this.projectRoot = deps.projectRoot
+  }
+
+  /**
+   * Inject a structured logger. Default is no-op.
+   * Called by the plugin composition root to wire the harness-level logger.
+   */
+  setLogger(injected: Logger): void {
+    this.log = injected
   }
 
   /**
@@ -117,10 +139,11 @@ export class SessionIndexWriter {
       })
       .catch((err) => {
         // Best-effort: keep queue alive but log the error for observability (GA-1)
-        console.error(
-          `[Hivemind] SessionIndexWriter: write queue error for session ${sessionID}`,
-          err instanceof Error ? err.message : String(err),
-        )
+        this.log.error("session-tracker: SessionIndexWriter write queue error", {
+          service: "session-tracker",
+          sessionID,
+          error: err instanceof Error ? err.message : String(err),
+        })
       })
       .then(() => {})
     this.writeQueues.set(sessionID, next)
@@ -222,9 +245,11 @@ export class SessionIndexWriter {
           // BUG-5 FIX: Parent not yet in on-disk hierarchy (race between in-memory
           // hierarchyIndex and session-index writes). Fallback to top-level insertion
           // with a warning instead of throwing — prevents the child from being lost.
-          console.warn(
-            `[Hivemind] SessionIndexWriter: parent "${parentSessionID}" not found in hierarchy for nested child "${childSessionID}", inserting as top-level`,
-          )
+          this.log.warn("session-tracker: Parent not found in hierarchy", {
+            service: "session-tracker",
+            parentSessionID,
+            childSessionID,
+          })
           index.hierarchy.children[childSessionID] = entry
         }
       } else {

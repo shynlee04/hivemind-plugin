@@ -52,6 +52,8 @@ export type {
   SessionTrackerEvent,
 } from "./delegation-types.js"
 
+export { DelegationTypeSchema } from "./delegation-types.js"
+
 /**
  * Main session file frontmatter (YAML section of the `.md` knowledge file).
  * Mirrors the SPEC.md Section 5.1 format with camelCase field names.
@@ -151,7 +153,7 @@ export interface HierarchyManifestChild {
   /** Filename of the child .json file. */
   childFile: string
   /**
-   * TODO-2 (2026-06-04): Optional discriminator identifying the delegation
+   * Optional discriminator identifying the delegation
    * mechanism that produced this child. See DelegationType in types.ts.
    * Set at WRITE time only (R7). Optional for backward compat (R1).
    */
@@ -277,7 +279,7 @@ export interface ChildSessionRecord {
   /** Session lifecycle state (from continuity store). REF: REQ-P41B-02 */
   lifecycle?: SessionLifecycleState
   /**
-   * TODO-2 (2026-06-04): Optional discriminator identifying the delegation
+   * Optional discriminator identifying the delegation
    * mechanism that produced this child. See DelegationType in types.ts.
    * Mirrored on both ChildSessionRecord AND HierarchyManifestChild to
    * prevent regeneration drift (R9 mitigation). Set at WRITE time only.
@@ -320,7 +322,7 @@ export interface ChildHierarchyEntry {
   /** Nested children map, keyed by child session ID. */
   children: Record<string, ChildHierarchyEntry>
   /**
-   * TODO-2 (2026-06-04, R9 mitigation): Optional discriminator identifying the
+   * Optional discriminator identifying the
    * delegation mechanism. Type-erased `string` (not `DelegationType`) because
    * the tree regeneration pass at hierarchy-manifest.ts:285-297 is type-agnostic.
    * Set at WRITE time only. Optional for backward compat (R1).

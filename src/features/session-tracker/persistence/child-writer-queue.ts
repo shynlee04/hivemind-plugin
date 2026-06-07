@@ -10,6 +10,30 @@
 import type { ChildWriteRetryQueue } from "./retry-queue.js"
 
 // ---------------------------------------------------------------------------
+// Logger (local to avoid cross-module circular deps)
+// ---------------------------------------------------------------------------
+
+/** Minimal structured logger matching the harness pattern. */
+interface Logger {
+  debug: (msg: string, data?: unknown) => void
+  warn: (msg: string, data?: unknown) => void
+  error: (msg: string, data?: unknown) => void
+}
+
+const noopLog: Logger = { debug: () => {}, warn: () => {}, error: () => {} }
+
+/** Module-level logger. Default is no-op. Use `setQueueLogger()` to inject. */
+let log: Logger = noopLog
+
+/**
+ * Inject a structured logger into the child-writer-queue module.
+ * Called by the plugin composition root to wire the harness-level logger.
+ */
+export function setQueueLogger(injected: Logger): void {
+  log = injected
+}
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -110,15 +134,16 @@ export function enqueueWrite(
     next.catch((err) => {
       // Error already propagated via throw and enters retry queue.
       // This catch prevents unhandled rejection while still logging for observability.
-      // P41-G: Suppress console.warn for ENOENT (child file missing) — already handled
+      // P41-G: Suppress log for ENOENT (child file missing) — already handled
       // by per-method try-catch; this catch only fires when an unexpected error occurs.
       if (err && typeof err === "object" && "code" in err && (err as Record<string, unknown>).code === "ENOENT") {
         return
       }
-      console.warn(
-        `[Hivemind] ChildWriter queue: write failed for "${queueKey}" (enqueued to retry queue):`,
-        err instanceof Error ? err.message : String(err),
-      )
+      log.warn("session-tracker: ChildWriter queue write failed", {
+        service: "session-tracker",
+        queueKey,
+        error: err instanceof Error ? err.message : String(err),
+      })
     }),
   )
   return next

@@ -256,7 +256,7 @@ export class ToolDelegation {
       typeof args.agent === "string" ? args.agent :
       "unknown"
 
-    // TODO-2 (2026-06-04, R7): Set delegationType at WRITE time from
+    // Set delegationType at WRITE time from
     // input.tool — never derived from event payloads. The 4 locked enum
     // values map directly to the tool that produced the child session.
     const delegationType: DelegationType =
@@ -305,7 +305,7 @@ export class ToolDelegation {
       turns: [],
       children: [],
       journey: [],
-      // TODO-2: mirror to both writers (R9 mitigation)
+      // mirror to both writers (R9 mitigation)
       delegationType,
     }
 
@@ -360,7 +360,7 @@ export class ToolDelegation {
       delegatedBy: deriveAgentNameFromSession(input as unknown as Record<string, unknown>) ?? input.tool ?? "unknown",
       subagentType,
       childFile: `${childSessionID}.json`,
-      // TODO-2 (2026-06-04): mirror delegationType into the manifest (R9).
+      // mirror delegationType into the manifest (R9).
       // Same field on both writers — the dual-write invariant.
       delegationType,
     })
