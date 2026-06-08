@@ -15,7 +15,14 @@ npm install hivemind-3.0
 # or: yarn add hivemind-3.0
 # or: bun add hivemind-3.0
 
-# 2. Add the plugin reference to your opencode.json
+# 2. Bootstrap Hivemind's OpenCode primitives into your project
+#    (interactive wizard — asks for language, expert level, delegation mode)
+npx hivemind init
+
+# 2b. Or non-interactive with defaults:
+npx hivemind init --non-interactive
+
+# 3. Add the plugin reference to your opencode.json
 cat >> opencode.json <<'EOF'
 {
   "plugin": ["hivemind-3.0"]
@@ -26,6 +33,11 @@ EOF
 That's it. Next time you start OpenCode, Bun will auto-install `hivemind-3.0` and its dependencies into `~/.cache/opencode/node_modules/` and load the plugin from the published `dist/plugin.js`.
 
 If your project already has an `opencode.json`, edit it directly and add the `plugin` array.
+
+The `hivemind init` step copies all Hivemind agents (`hm-orchestrator`,
+`hm-planner`, `hm-executor`, etc.), skills, commands, and rules into your
+project's `.opencode/` directory. Without it, the plugin loads but no
+agents are available.
 
 ---
 
@@ -87,6 +99,40 @@ The package declares `hivemind-3.0` as its name, `"./plugin": "./dist/plugin.js"
 as the plugin subpath export, and `@opencode-ai/plugin ^1.15.13` as a
 peer dependency. OpenCode resolves `"plugin": ["hivemind-3.0"]` to the
 `./plugin` subpath automatically.
+
+---
+
+## What `hivemind init` does
+
+Running `npx hivemind init` in your project:
+
+1. Creates `.hivemind/configs.json` with your chosen language, expert level,
+   delegation mode, governance rules, and tool access pattern.
+2. Installs symlinks (or copies) from `node_modules/hivemind-3.0/assets/*` into
+   your project's `.opencode/`:
+   - `.opencode/agents/` — `hm-orchestrator`, `hm-planner`, `hm-executor`,
+     `hm-verifier`, plus all `hm-l2-*`, `hm-l3-*`, `hm-coord-*`, `hm-debug-*`
+     product-dev agents and `hf-*` meta-builder agents
+   - `.opencode/skills/` — `hm-coord-router`, `hm-routing-skill`, all
+     `hm-l2-*` execution skills, `gate-*` quality gates, `hf-*` meta-builder
+     skills, `stack-*` references
+   - `.opencode/commands/` — `hm-*` and `hf-*` slash commands
+   - `.opencode/rules/` — `universal-rules.md` and friends
+   - `.opencode/workflows/` — phase-loop and routing workflows
+   - `.opencode/templates/` — config and document templates
+   - `.opencode/plugins/` — local plugin bridge if you ever clone the source
+3. Idempotent — re-running it does not duplicate files.
+
+The interactive TTY wizard (powered by `@clack/prompts`) asks for:
+- Conversation language (`en`, `vi`, `zh`, `ja`, `ko`, etc.)
+- Documents/artifacts language
+- User expert level (`clumsy-vibecoder`, `mid`, `senior`, `principal`)
+- Delegation mode (`waiter`, `fire-and-forget`)
+- Guardrail level (`strict`, `moderate`, `permissive`)
+- Hivemind mode (`hivemind-powered`, `standalone`)
+
+In non-interactive mode (`--non-interactive` or no TTY), it uses sane defaults
+from `.hivemind/configs.schema.json`.
 
 ---
 
