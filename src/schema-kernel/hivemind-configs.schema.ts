@@ -283,7 +283,20 @@ export const GovernanceRuleSchema = z.object({
     depth: DepthConditionSchema.optional(),
   }).catchall(z.unknown()),
   action: z.object({
-    type: z.string(), // e.g. "block", "warn", "escalate"
+    /**
+     * Tool-intelligence decision severity for a matched governance rule.
+     * - `allow`: permit the tool call.
+     * - `warn`: permit but emit a soft warning.
+     * - `block`: hard-block the call.
+     * - `escalate`: surface the call for human escalation; engine treats as
+     *   `needs_jit_grant` (requires explicit grant before proceeding).
+     * - `needs_jit_grant`: requires an explicit JIT grant before proceeding.
+     *
+     * Configured by users in `.hivemind/configs.json` under
+     * `governance.rules[].action.type`. Code in `src/features/tool-intelligence/`
+     * reads this at engine construction; default is `allow` when no rule matches.
+     */
+    type: z.enum(["allow", "warn", "block", "escalate", "needs_jit_grant"]),
     escalation: z.record(z.string(), z.unknown()).optional(),
   }).catchall(z.unknown()),
   enabled: z.boolean().default(true),
@@ -366,10 +379,11 @@ export const HivemindConfigsSchema = z.object({
   /**
    * Configurable document path prefixes for language enforcement.
    * Flat array of strings, each relative to project root.
-   * Default: [".planning//"] — supports recursive subdirectory globbing.
+   * Default: [".planning/"] — planning artifacts live under `.planning/`,
+   * not under `.hivemind/planning/` (per Hivemind pathing convention 2026-06-07).
    * @see D-08, D-09, D-10 in BOOT-09-CONTEXT.md
    */
-  document_paths: z.array(z.string()).default([".planning//"]),
+  document_paths: z.array(z.string()).default([".planning/"]),
   mode: HivemindModeSchema.default("expert-advisor"),
   user_expert_level: UserExpertLevelSchema.default("intermediate-high-level"),
   delegation_systems: DelegationSystemsSchema,

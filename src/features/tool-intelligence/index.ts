@@ -16,13 +16,14 @@
  * @module tool-intelligence
  */
 
-import { TOOL_CAPABILITY_MAP } from "../capability-gate/index.js";
+import { TOOL_CAPABILITY_MAP } from "../capability-gate/index.js"
 import type {
   ToolIntelligenceEvent,
   ToolIntelligenceDecision,
   ToolIntelligenceGuidance,
   JITGrant,
-} from "./types.js";
+  ToolIntelligenceDecisionKind,
+} from "./types.js"
 
 export type {
   ToolIntelligenceEvent,
@@ -30,7 +31,30 @@ export type {
   ToolIntelligenceDecisionKind,
   ToolIntelligenceGuidance,
   JITGrant,
-} from "./types.js";
+} from "./types.js"
+
+/**
+ * Config-side severity for governance rules. Mirrors the enum in
+ * `.hivemind/configs.schema.json` (governance.rules[].action.type).
+ * - `escalate` and `needs_jit_grant` are both mapped to the runtime kind
+ *   `needs_jit_grant` — they require an explicit JIT grant before proceeding.
+ */
+export type GovernanceActionType =
+  | "allow"
+  | "warn"
+  | "block"
+  | "escalate"
+  | "needs_jit_grant"
+
+/**
+ * Map a config-side severity to the runtime-side decision kind.
+ * - `escalate` / `needs_jit_grant` → `needs_jit_grant`
+ * - `allow` / `warn` / `block` → pass-through
+ */
+function toDecisionKind(s: GovernanceActionType): ToolIntelligenceDecisionKind {
+  if (s === "escalate" || s === "needs_jit_grant") return "needs_jit_grant"
+  return s
+}
 
 // ---------------------------------------------------------------------------
 // Guidance formatting
@@ -74,6 +98,38 @@ export function renderGuidance(g: ToolIntelligenceGuidance): string {
  */
 export class ToolIntelligenceEngine {
   private readonly jitGrants: Map<string, JITGrant> = new Map();
+
+  // Read .hivemind/configs.json governance rules to make severity configurable.
+  // Per user: default is warn; configs.json can override to allow/warn/block.
+  // Schema reference: .hivemind/configs.schema.json (governance.rules[].action.type)
+  // Config path: .hivemind/configs.json
+  private readonly severityOverrides: Map<string, GovernanceActionType>;
+
+  constructor(
+    governanceRules?: ReadonlyArray<{ id: string; action: { type: GovernanceActionType } }>,
+  ) {
+    this.severityOverrides = new Map();
+    if (governanceRules) {
+      for (const rule of governanceRules) {
+        this.severityOverrides.set(rule.id, rule.action.type);
+      }
+    }
+  }
+
+  /**
+   * Resolve decision severity for a rule, checking config first.
+   * Falls back to the hardcoded default if no config rule matches.
+   *
+   * Per binding contract: status is driven by `.hivemind/configs.json`;
+   * never hardcoded. Default severity is `warn` when no rule matches.
+   */
+  private resolveSeverity(
+    ruleId: string,
+    fallback: GovernanceActionType,
+  ): GovernanceActionType {
+    return this.severityOverrides.get(ruleId) ?? fallback;
+  }
+
 
   /**
    * Grant a JIT capability for a specific session+agent+tool.
@@ -127,9 +183,16 @@ export class ToolIntelligenceEngine {
           "task({ subagent_type: 'agent-name', prompt: '...' })",
           `Session ${event.sessionID}, depth=${event.delegationDepth}, child=${event.isChildSession}`,
         );
+        const kind = toDecisionKind(this.resolveSeverity("R1-malformed-task", "block"));
         return {
-          kind: "warn",
-          reason: "Malformed task call: missing subagent_type (soft governance — call will proceed with warning)",
+          kind,
+          reason: kind === "needs_jit_grant"
+            ? "Malformed task call: missing subagent_type (config: needs_jit_grant)"
+            : kind === "block"
+              ? "Malformed task call: missing subagent_type (config-driven block)"
+              : kind === "warn"
+                ? "Malformed task call: missing subagent_type (soft governance — call will proceed with warning)"
+                : "Malformed task call: missing subagent_type (config-driven allow)",
           guidance,
           toolCategory: toolCategory ?? "delegate",
           fromCapabilityBaseline: false,
@@ -150,9 +213,16 @@ export class ToolIntelligenceEngine {
           "Return results to the parent session. The parent orchestrator will decide if further delegation is needed.",
           `Session ${event.sessionID} is a child session at depth=${event.delegationDepth}. A JIT grant is required for recursive task dispatch.`,
         );
+        const kind = toDecisionKind(this.resolveSeverity("R2-child-recursive-task", "needs_jit_grant"));
         return {
-          kind: "warn",
-          reason: "Child session recursive task without JIT grant (soft governance — call will proceed with warning; orchestrator may want to review)",
+          kind,
+          reason: kind === "needs_jit_grant"
+            ? "Child session recursive task without JIT grant (config: needs_jit_grant — return to parent orchestrator)"
+            : kind === "block"
+              ? "Child session recursive task without JIT grant (config-driven block — security boundary)"
+              : kind === "warn"
+                ? "Child session recursive task without JIT grant (soft governance — call will proceed with warning; orchestrator may want to review)"
+                : "Child session recursive task without JIT grant (config-driven allow)",
           guidance,
           toolCategory: toolCategory ?? "delegate",
           fromCapabilityBaseline: false,
@@ -202,9 +272,16 @@ export class ToolIntelligenceEngine {
           "task({ subagent_type: 'specialist-agent', prompt: '...' })",
           `Session ${event.sessionID} attempted delegate-task. User's intent takes precedence over this suggestion.`,
         );
+        const kind = toDecisionKind(this.resolveSeverity("R4-delegate-task-code-intent", "block"));
         return {
-          kind: "warn",
-          reason: "SOFT GOVERNANCE: delegate-task detected with code/artifact intent. Call will proceed with warning logged. User intent takes precedence.",
+          kind,
+          reason: kind === "needs_jit_grant"
+            ? "delegate-task with code/artifact intent requires JIT grant (config-driven)"
+            : kind === "block"
+              ? "delegate-task blocked for code/artifact intent by config — use native task"
+              : kind === "warn"
+                ? "SOFT GOVERNANCE: delegate-task detected with code/artifact intent. Call will proceed with warning logged. User intent takes precedence."
+                : "delegate-task with code/artifact intent (config-driven allow)",
           guidance,
           toolCategory: toolCategory ?? "delegate",
           fromCapabilityBaseline: false,
@@ -214,11 +291,32 @@ export class ToolIntelligenceEngine {
     }
 
     // -----------------------------------------------------------------------
-    // Default: allow (existing governance: budget, circuit breaker, etc. still runs)
+    // Default: allow (existing governance: budget, circuit breaker, capability gate still runs)
+    // Config-driven — `.hivemind/configs.json` `governance.rules[]` can override
+    // any rule to `warn` / `block` / `escalate` without code change.
     // -----------------------------------------------------------------------
+    const defaultKind = toDecisionKind(this.resolveSeverity("default", "allow"));
+    if (defaultKind === "block") {
+      return {
+        kind: "block",
+        reason: "No tool intelligence rule matched — config default is block",
+        toolCategory: toolCategory?.toString(),
+        fromCapabilityBaseline: false,
+        timestamp,
+      };
+    }
+    if (defaultKind === "warn") {
+      return {
+        kind: "warn",
+        reason: "No tool intelligence rule matched — config default is warn",
+        toolCategory: toolCategory?.toString(),
+        fromCapabilityBaseline: false,
+        timestamp,
+      };
+    }
     return {
       kind: "allow",
-      reason: "No tool intelligence rule matched — defaulting to allow",
+      reason: "No tool intelligence rule matched — defaulting to allow (config-driven)",
       toolCategory: toolCategory?.toString(),
       fromCapabilityBaseline: false,
       timestamp,
@@ -233,12 +331,36 @@ export class ToolIntelligenceEngine {
 let _instance: ToolIntelligenceEngine | undefined;
 
 /**
+ * Reset the shared singleton. Used by tests and by config-reload hooks.
+ * After reset, the next `getToolIntelligenceEngine()` call rebuilds the engine
+ * from the current `.hivemind/configs.json` governance rules.
+ */
+export function resetToolIntelligenceEngine(): void {
+  _instance = undefined;
+}
+
+/**
  * Get the shared ToolIntelligenceEngine singleton.
- * Lazily created on first access.
+ * Lazily created on first access. On first creation, the engine reads
+ * `.hivemind/configs.json` `governance.rules[]` and uses the `action.type`
+ * of each enabled rule to override the per-rule severity.
+ *
+ * Per binding contract: severity is never hardcoded; it is config-driven.
+ * Default severity is `warn` when no rule matches.
  */
 export function getToolIntelligenceEngine(): ToolIntelligenceEngine {
   if (!_instance) {
-    _instance = new ToolIntelligenceEngine();
+    let governanceRules: ReadonlyArray<{ id: string; action: { type: GovernanceActionType } }> | undefined;
+    try {
+      // Lazy require to avoid a hard dep cycle with the config layer.
+      const { readConfigs } = require("../../schema-kernel/hivemind-configs.schema.js") as typeof import("../../schema-kernel/hivemind-configs.schema.js");
+      const cfgs = readConfigs(process.cwd());
+      governanceRules = cfgs.governance?.rules as ReadonlyArray<{ id: string; action: { type: GovernanceActionType } }>;
+    } catch {
+      // Config load failed — proceed with no overrides; defaults apply.
+      governanceRules = undefined;
+    }
+    _instance = new ToolIntelligenceEngine(governanceRules);
   }
   return _instance;
 }

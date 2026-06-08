@@ -2,6 +2,7 @@
   "$schema": "./configs.schema.json",
   "conversation_language": "vi",
   "documents_and_artifacts_language": "en",
+  "document_paths": [".planning/"],
   "mode": "hivemind-powered",
   "user_expert_level": "clumsy-vibecoder",
   "delegation_systems": {
@@ -183,18 +184,54 @@
         },
         "enabled": true
       },
-      {
-        "id": "gov-run-background-command-warn",
-        "condition": {
-          "toolNames": [
-            "run-background-command"
-          ]
-        },
-        "action": {
-          "type": "warn"
-        },
-        "enabled": true
-      }
+    {
+      "id": "gov-run-background-command-warn",
+      "condition": {
+        "toolNames": [
+          "run-background-command"
+        ]
+      },
+      "action": {
+        "type": "warn"
+      },
+      "enabled": true
+    },
+    {
+      "id": "R1-malformed-task",
+      "condition": {
+        "toolNames": [
+          "task"
+        ]
+      },
+      "action": {
+        "type": "block"
+      },
+      "enabled": true
+    },
+    {
+      "id": "R2-child-recursive-task",
+      "condition": {
+        "toolNames": [
+          "task"
+        ]
+      },
+      "action": {
+        "type": "needs_jit_grant"
+      },
+      "enabled": true
+    },
+    {
+      "id": "R4-delegate-task-code-intent",
+      "condition": {
+        "toolNames": [
+          "delegate-task"
+        ]
+      },
+      "action": {
+        "type": "block"
+      },
+      "enabled": true
+    }
     ],
     "naming_standards": {
       "allowed_frameworks": [

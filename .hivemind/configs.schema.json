@@ -44,7 +44,7 @@
     },
     "document_paths": {
       "default": [
-        ".hivemind/planning/"
+        ".planning/"
       ],
       "type": "array",
       "items": {
@@ -233,7 +233,14 @@
                 "type": "object",
                 "properties": {
                   "type": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "allow",
+                      "warn",
+                      "block",
+                      "escalate",
+                      "needs_jit_grant"
+                    ]
                   },
                   "escalation": {
                     "type": "object",
