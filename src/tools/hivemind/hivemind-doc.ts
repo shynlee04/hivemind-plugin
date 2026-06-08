@@ -20,38 +20,46 @@ type ToolContext = { sessionID?: string }
  * ```
  */
 export function createHivemindDocTool(projectRoot: string): ReturnType<typeof tool> {
-  const s = tool.schema
+  const z = tool.schema
 
   return tool({
     description: "Document intelligence for hierarchy-aware CRUD, search, indexing, and cross-reference operations.",
     args: {
-      action: s.string().describe("Action: skim, skim_directory, read, chunk, search, read_lines, read_offset, create, write, upsert, append, insert, delete, batch, batch_files, metadata, set_metadata, delete_metadata, toc, outline, inspect, xref, index, context"),
-      path: s.string().describe("Project-root-relative file or directory path"),
-      query: s.string().optional().describe("Search query for search/context actions"),
-      maxCharacters: s.number().optional().describe("Maximum characters for read/chunk sizing"),
-      maxResults: s.number().optional().describe("Maximum matches for search actions"),
-      format: s.string().optional().describe("Format filter for skim_directory (md, json, yaml, xml)"),
-      heading: s.string().optional().describe("Heading for targeted section read/write/delete"),
-      startLine: s.number().optional().describe("Start line for read_lines action"),
-      endLine: s.number().optional().describe("End line for read_lines action"),
-      offset: s.number().optional().describe("Character offset for read_offset action"),
-      limit: s.number().optional().describe("Character limit for read_offset action"),
-      title: s.string().optional().describe("Title for create action"),
-      metadata: s.string().optional().describe("JSON metadata string for create/set_metadata actions"),
-      initialContent: s.string().optional().describe("Custom initial content for create action"),
-      body: s.string().optional().describe("Section body content for write/upsert/insert"),
-      content: s.string().optional().describe("Content to append"),
-      afterHeading: s.string().optional().describe("Target heading for insert action"),
-      newHeading: s.string().optional().describe("New heading for insert action"),
-      level: s.number().optional().describe("Heading level (1-6) for upsert/insert"),
-      expectedHash: s.string().optional().describe("Expected SHA-256 hash for stale-file detection"),
-      mode: s.string().optional().describe("Mode for delete: 'file' to delete entire file"),
-      ops: s.string().optional().describe("JSON array of batch section edit operations"),
-      files: s.string().optional().describe("JSON array of file operations for batch_files"),
-      field: s.string().optional().describe("Metadata field name for delete_metadata action"),
-      tokenBudget: s.number().optional().describe("Token budget for context extraction"),
-      regex: s.boolean().optional().describe("Enable regex mode for search"),
-      headingOnly: s.boolean().optional().describe("Search headings only"),
+      action: z.enum(["skim","skim_directory","read","chunk","search","read_lines","read_offset","create","write","upsert","append","insert","delete","batch","batch_files","metadata","set_metadata","delete_metadata","toc","outline","inspect","xref","index","context"]).describe(
+        "Operation to perform. Read: skim, skim_directory, read, chunk, search, read_lines, read_offset, toc, outline, metadata, xref, index. Write: create, write, upsert, append, insert, delete, batch, batch_files, set_metadata, delete_metadata. Code: inspect, context."
+      ),
+      path: z.string().describe("Project-root-relative file or directory path"),
+
+      // Read params
+      maxCharacters: z.number().int().positive().optional().describe("[read,chunk] Max characters"),
+      heading: z.string().optional().describe("[read,write,upsert,append,insert,delete,metadata] Target heading"),
+      startLine: z.number().int().positive().optional().describe("[read_lines] Start line (1-based)"),
+      endLine: z.number().int().positive().optional().describe("[read_lines] End line (1-based)"),
+      offset: z.number().int().nonnegative().optional().describe("[read_offset] Char offset"),
+      limit: z.number().int().positive().optional().describe("[read_offset] Char count"),
+      query: z.string().optional().describe("[search,context] Search query"),
+      maxResults: z.number().int().positive().optional().describe("[search] Max results"),
+      regex: z.boolean().optional().describe("[search] Enable regex"),
+      headingOnly: z.boolean().optional().describe("[search] Headings only"),
+      tokenBudget: z.number().int().positive().optional().describe("[context] Token budget"),
+      format: z.enum(["md","json","yaml","xml"]).optional().describe("[skim_directory] Format filter"),
+
+      // Write params
+      title: z.string().optional().describe("[create] Document title"),
+      metadata: z.string().optional().describe("[create,set_metadata] Frontmatter as JSON"),
+      initialContent: z.string().optional().describe("[create] Custom body content"),
+      body: z.string().optional().describe("[write,upsert,insert] Section body"),
+      content: z.string().optional().describe("[append] Content to append"),
+      afterHeading: z.string().optional().describe("[insert] Insert after heading"),
+      newHeading: z.string().optional().describe("[insert] New heading name"),
+      level: z.number().int().min(1).max(6).optional().describe("[upsert,insert] Heading level"),
+      expectedHash: z.string().optional().describe("[write,upsert,append,insert,set_metadata,delete_metadata] SHA-256 for stale detection"),
+      mode: z.enum(["file"]).optional().describe("[delete] 'file' to delete entire file"),
+      field: z.string().optional().describe("[delete_metadata] Field to remove"),
+
+      // Batch params
+      ops: z.string().optional().describe("[batch] JSON array of section ops"),
+      files: z.string().optional().describe("[batch_files] JSON array of file ops"),
     },
     async execute(rawArgs: Record<string, unknown>, _context: ToolContext): Promise<string> {
       try {
