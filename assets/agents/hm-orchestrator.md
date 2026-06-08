@@ -9,6 +9,7 @@ hidden: true
 tools:
   - delegate-task
   - delegation-status
+  - hivemind-doc
   - hivemind-trajectory
   - hivemind-steer
   - hivemind-agent-work
