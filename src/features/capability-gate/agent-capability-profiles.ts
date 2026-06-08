@@ -29,8 +29,8 @@ export const AGENT_CAPABILITY_PROFILES: readonly AgentCapabilityProfile[] = [
     id: "l2-implementation-specialists",
     match: { includes: ["executor", "code-fixer", "debugger", "integration-checker"] },
     categories: [ToolCategory.Read, ToolCategory.Write, ToolCategory.Session],
-    tools: ["hivemind-sdk-supervisor", "session-tracker", "session-context"],
-    rationale: "Implementation specialists need local source inspection, bounded mutation tools, and session context for recovery and evidence.",
+    tools: ["hivemind-doc", "hivemind-sdk-supervisor", "session-tracker", "session-context"],
+    rationale: "Implementation specialists need document CRUD, local source inspection, bounded mutation tools, and session context for recovery and evidence.",
   },
   {
     id: "quality-verification-specialists",

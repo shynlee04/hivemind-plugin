@@ -721,8 +721,8 @@ export const DEFAULT_GOVERNANCE_CONFIGS: GovernanceConfigs = {
     },
     "hivemind-doc": {
       name: "hivemind-doc",
-      description: "Read-only document intelligence for Markdown skim, directory skim, read, chunk, and search actions.",
-      permissions: ["read"],
+      description: "Multi-format CRUD document intelligence: skim, read, chunk, search, section-read, line-read, offset-read, create, write, upsert, append, insert, delete-section, delete-file, search-and-replace, batch-section-edits, batch-multi-file, metadata-read, metadata-write, metadata-delete, toc, heading-tree, code-inspect, xref-validate, index, context-extract — 24 actions across md/json/yaml/xml.",
+      permissions: ["read", "write"],
     },
     "hivemind-pressure": {
       name: "hivemind-pressure",

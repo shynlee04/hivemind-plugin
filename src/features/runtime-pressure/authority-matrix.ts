@@ -129,13 +129,13 @@ export const TOOL_AUTHORITY_MATRIX: readonly ToolAuthority[] = [
   },
   {
     name: "hivemind-doc",
-    authority: "read",
-    mutatesState: false,
+    authority: "write",
+    mutatesState: true,
     canExecute: false,
-    stateSurface: "read-only",
-    pressureBehavior: READ_ONLY_INSPECTOR,
+    stateSurface: "read-only", // hivemind-doc reads/writes project files — no dedicated surface type exists; "read-only" is the closest match
+    pressureBehavior: HIVEMIND_STATE_WRITER,
     evidenceAttachment: "none",
-    reason: "read-only document intelligence",
+    reason: "multi-format CRUD document intelligence: read, write, batch, metadata, hierarchy, code-inspect, xref, index, context-extraction — 24 actions across 11 domains",
   },
   {
     name: "hivemind-trajectory",

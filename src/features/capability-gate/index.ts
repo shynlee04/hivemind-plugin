@@ -39,7 +39,7 @@ export const TOOL_CAPABILITY_MAP: ReadonlyMap<string, ToolCapabilityRecord> = ne
   ["hivemind-agent-work-export", { category: ToolCategory.Session, description: "Export agent work contract", source: "hivemind" }],
   ["hivemind-sdk-supervisor", { category: ToolCategory.Session, description: "Inspect SDK wrapper health", source: "hivemind" }],
   ["session-patch", { category: ToolCategory.Session, description: "Patch session prompt", source: "hivemind" }],
-  ["hivemind-doc", { category: ToolCategory.Read, description: "Read project markdown docs", source: "hivemind" }],
+  ["hivemind-doc", { category: ToolCategory.Write, description: "Multi-format CRUD document intelligence: skim, read, chunk, search, section-read, line-read, offset-read, create, write, upsert, append, insert, delete-section, delete-file, search-and-replace, batch-section-edits, batch-multi-file, metadata-read, metadata-write, metadata-delete, toc, heading-tree, code-inspect, xref-validate, index, context-extract", source: "hivemind" }],
   ["prompt-analyze", { category: ToolCategory.Read, description: "Analyze prompt structure", source: "hivemind" }],
   ["prompt-skim", { category: ToolCategory.Read, description: "Skim prompt content", source: "hivemind" }],
   ["tmux-copilot", { category: ToolCategory.Delegate, description: "Tmux visual orchestration co-pilot", source: "hivemind" }],

@@ -55,8 +55,8 @@ describe("Phase 67 conformance — runtime pressure control plane", () => {
       expect(detectRuntimePressure({ tier: 6, toolName: "session-patch" }).outcome).toBe(
         "require_approval",
       )
-      // Blocking → defer (read-only inspector defers at blocking).
-      expect(detectRuntimePressure({ tier: 9, toolName: "hivemind-doc" }).outcome).toBe("defer")
+      // Blocking → block (state writer blocks at blocking).
+      expect(detectRuntimePressure({ tier: 9, toolName: "hivemind-doc" }).outcome).toBe("block")
       // Blocking → block (mutator at blocking blocks).
       expect(detectRuntimePressure({ tier: 9, toolName: "configure-primitive" }).outcome).toBe(
         "block",
