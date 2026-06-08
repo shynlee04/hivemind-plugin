@@ -1,0 +1,41 @@
+{
+  "skill_name": "hm-loop-completion",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": 1,
+      "name": "agent-claimed-done-but-output-empty",
+      "prompt": "Agent reports DONE but output file doesn't exist",
+      "expected": "Loop detects fake completion, re-dispatches",
+      "assertions": [{"text": "Pattern 1: output file check catches it", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 2,
+      "name": "agent-claimed-done-verification-fails",
+      "prompt": "Output exists, but verification command exits non-zero",
+      "expected": "Loop detects verification failure, re-dispatches with augmented context",
+      "assertions": [{"text": "Pattern 3: verification exit code caught", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 3,
+      "name": "agent-claimed-done-but-criteria-missing",
+      "prompt": "Output exists, verification passes, but acceptance criterion 3 was never tested",
+      "expected": "Loop detects missing criterion, re-dispatches",
+      "assertions": [{"text": "Pattern 2: criteria check catches gap", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 4,
+      "name": "agent-claimed-done-cursor-not-persisted",
+      "prompt": "Multi-step loop, agent reports step 3 of 5 complete, but no cursor.json",
+      "expected": "Loop detects missing cursor, re-dispatches with persistence instruction",
+      "assertions": [{"text": "Pattern 5: cursor check catches it", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 5,
+      "name": "agent-claimed-done-silently-suppressed",
+      "prompt": "Agent's output uses '|| true' or '2>/dev/null' to hide errors",
+      "expected": "Loop detects silent suppression, re-dispatches without the suppression",
+      "assertions": [{"text": "Anti-pattern check catches it", "passed": null, "evidence": null}]
+    }
+  ]
+}
