@@ -7,6 +7,7 @@ import { searchDocuments } from "./search-ops.js"
 import { generateToc, generateOutline } from "./hierarchy-ops.js"
 import { readDocumentMetadata, writeDocumentMetadata, deleteDocumentMetadataField } from "./metadata-ops.js"
 import { createDocument, writeSectionBody, upsertSection, appendSection, insertSection, deleteSection, deleteFile } from "./write-ops.js"
+import { writeLines, writeOffset, insertLines, insertOffset, deleteLines, deleteOffset } from "./line-offset-ops.js"
 import { batchSectionEdits, batchMultiFileEdits } from "./batch-ops.js"
 import { inspectCodeFile } from "./code-inspect.js"
 import { analyzeCrossReferences } from "./xref-ops.js"
@@ -111,6 +112,38 @@ export function executeDocIntelligenceAction(
       }
       return deleteSection(projectRoot, input.path, input.heading as string).then(
         (result) => ({ action: "delete", result }) as unknown as DocIntelligenceResult,
+      )
+    }
+
+    // ── Line/Offset Write (universal across formats) ──
+    case "write_lines": {
+      return writeLines(projectRoot, input.path, input.startLine as number, input.endLine as number, input.content as string, input.expectedHash as string | undefined).then(
+        ({ hash, opId }) => ({ action: "write_lines", hash, opId }) as DocIntelligenceResult,
+      )
+    }
+    case "write_offset": {
+      return writeOffset(projectRoot, input.path, input.offset as number, input.limit as number, input.content as string, input.expectedHash as string | undefined).then(
+        ({ hash, opId }) => ({ action: "write_offset", hash, opId }) as DocIntelligenceResult,
+      )
+    }
+    case "insert_lines": {
+      return insertLines(projectRoot, input.path, input.startLine as number, input.content as string, input.expectedHash as string | undefined).then(
+        ({ hash, opId }) => ({ action: "insert_lines", hash, opId }) as DocIntelligenceResult,
+      )
+    }
+    case "insert_offset": {
+      return insertOffset(projectRoot, input.path, input.offset as number, input.content as string, input.expectedHash as string | undefined).then(
+        ({ hash, opId }) => ({ action: "insert_offset", hash, opId }) as DocIntelligenceResult,
+      )
+    }
+    case "delete_lines": {
+      return deleteLines(projectRoot, input.path, input.startLine as number, input.endLine as number, input.expectedHash as string | undefined).then(
+        ({ hash, opId }) => ({ action: "delete_lines", hash, opId }) as DocIntelligenceResult,
+      )
+    }
+    case "delete_offset": {
+      return deleteOffset(projectRoot, input.path, input.offset as number, input.limit as number, input.expectedHash as string | undefined).then(
+        ({ hash, opId }) => ({ action: "delete_offset", hash, opId }) as DocIntelligenceResult,
       )
     }
 

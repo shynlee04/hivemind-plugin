@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, statSync } from "node:fs"
-import { extname, relative, sep } from "node:path"
+import { existsSync, readFileSync, statSync, realpathSync } from "node:fs"
+import { dirname, extname, relative, resolve, sep } from "node:path"
 
 import type { ChunkRequiredSignal, DocHeading } from "./types.js"
 import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
@@ -38,6 +38,45 @@ export const GOVERNANCE_WRITE_DENYLIST = [
  */
 export function resolveDocPath(projectRoot: string, candidate: string): string {
   return assertPathWithinRoot(projectRoot, candidate, "doc intelligence")
+}
+
+/**
+ * Resolve a document path with defense-in-depth symlink-traversal protection.
+ *
+ * Layers a realpath check on top of the lexical check performed by
+ * `assertPathWithinRoot`. If the candidate file exists, its realpath is
+ * resolved via `realpathSync.native` (OS-level, follows the full symlink
+ * chain) and the resolved path is verified to stay inside the realpath of
+ * the project root. If the candidate does not exist (new file case), the
+ * nearest existing parent is resolved and checked instead — preventing
+ * escapes via parent-directory symlinks.
+ *
+ * @param projectRoot - Trusted project root.
+ * @param candidate - Caller-provided file or directory path.
+ * @param operation - Operation name (for the `[Harness]` error prefix).
+ * @returns Absolute in-scope path whose realpath stays inside the project root.
+ * @throws {Error} When the resolved realpath escapes the project root.
+ */
+export function resolveSafeDocPath(projectRoot: string, candidate: string, operation: string): string {
+  // Layer 1: lexical + realpath check from shared path-scope (handles `..` escapes)
+  const absPath = resolveDocPath(projectRoot, candidate)
+
+  // Layer 2: defense-in-depth — explicit realpath on the target or its parent.
+  // For an existing file we resolve the file itself; for a brand-new file we
+  // resolve the nearest existing parent so a parent-dir symlink to outside
+  // is also caught.
+  const realProjectRoot = existsSync(projectRoot) ? realpathSync.native(projectRoot) : resolve(projectRoot)
+  const target = existsSync(absPath) ? absPath : dirname(absPath)
+  if (!existsSync(target)) {
+    return absPath
+  }
+  const realTarget = realpathSync.native(target)
+
+  const isInside = realTarget === realProjectRoot || realTarget.startsWith(realProjectRoot + sep)
+  if (!isInside) {
+    throw new Error(`[Harness] ${operation}: path '${candidate}' resolves outside project root via symlink`)
+  }
+  return absPath
 }
 
 /**

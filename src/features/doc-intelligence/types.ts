@@ -6,6 +6,8 @@ export type DocIntelligenceAction =
   | "read_lines" | "read_offset"
   // Write
   | "create" | "write" | "upsert" | "append" | "insert" | "delete"
+  // Write (line/offset — universal across formats)
+  | "write_lines" | "write_offset" | "insert_lines" | "insert_offset" | "delete_lines" | "delete_offset"
   // Batch
   | "batch" | "batch_files"
   // Metadata
@@ -269,6 +271,13 @@ export type DocIntelligenceResult =
   | { action: "append"; result: SectionWriteResult }
   | { action: "insert"; result: SectionWriteResult }
   | { action: "delete"; result: DeleteResult | ChunkRequiredSignal }
+  // Write (line/offset — universal across formats)
+  | { action: "write_lines"; hash: string; opId: string }
+  | { action: "write_offset"; hash: string; opId: string }
+  | { action: "insert_lines"; hash: string; opId: string }
+  | { action: "insert_offset"; hash: string; opId: string }
+  | { action: "delete_lines"; hash: string; opId: string }
+  | { action: "delete_offset"; hash: string; opId: string }
   // Batch
   | { action: "batch"; results: BatchOpResult[]; hash: string }
   | { action: "batch_files"; results: Array<{ path: string; ops: BatchOpResult[]; error?: string }> }
