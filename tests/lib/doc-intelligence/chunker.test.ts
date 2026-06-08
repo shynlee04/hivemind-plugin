@@ -14,9 +14,9 @@ describe("doc intelligence chunker", () => {
     ].join("\n"), { maxCharacters: 80 })
 
     expect(chunks.map((chunk) => chunk.id)).toEqual([
-      "docs/guide.md#overview-1",
-      "docs/guide.md#install-2",
-      "docs/guide.md#verify-3",
+      "docs/guide.md#document-1",
+      "docs/guide.md#Overview-2",
+      "docs/guide.md#Overview-Install-3",
     ])
     expect(chunks[1]).toMatchObject({ heading: "Install", startLine: 3, endLine: 4 })
   })

@@ -77,6 +77,14 @@ export type DocChunk = {
   characterCount: number
   /** Approximate token count using a conservative four-chars-per-token heuristic. */
   estimatedTokens: number
+  /** Full heading path breadcrumb from root to this chunk's heading. e.g. ["Installation", "Prerequisites", "Node.js"] */
+  headingPath: string[]
+  /** Heading depth (1-6) of the nearest parent heading, or 0 for preamble. */
+  depth: number
+  /** Direct parent heading text, or null for top-level sections. */
+  parentHeading: string | null
+  /** Frontmatter metadata carried into each chunk for context. */
+  frontmatter: Record<string, unknown>
 }
 
 /** Input accepted by the document intelligence router. */
@@ -210,6 +218,9 @@ export type CodeInspectionResult = {
   signatures: FunctionSignature[]
 }
 
+/** Heading with nested children for tree structure. */
+export type DocHeadingTree = DocHeading & { children: DocHeadingTree[] }
+
 /** Single cross-reference link entry. */
 export type XrefLink = {
   from: string
@@ -267,7 +278,7 @@ export type DocIntelligenceResult =
   | { action: "delete_metadata"; hash: string; opId: string }
   // Hierarchy
   | { action: "toc"; toc: string }
-  | { action: "outline"; outline: DocHeading[] }
+  | { action: "outline"; flat: DocHeading[]; tree: DocHeadingTree[] }
   // Search (extended with heading context)
   | { action: "search"; query: string; matches: DocSearchMatch[] }
   // Code inspect

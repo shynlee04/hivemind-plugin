@@ -146,7 +146,8 @@ export function executeDocIntelligenceAction(
       return { action: "toc", toc: generateToc(projectRoot, input.path) }
     }
     case "outline": {
-      return { action: "outline", outline: generateOutline(projectRoot, input.path) }
+      const result = generateOutline(projectRoot, input.path)
+      return { action: "outline", flat: result.flat, tree: result.tree }
     }
 
     // ── Code Inspect ──

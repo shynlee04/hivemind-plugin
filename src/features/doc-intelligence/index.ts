@@ -17,6 +17,7 @@ export { assertWritableExtension, assertGovernanceWriteAllowed, checkChunkThresh
 export { skimDocument, skimDirectory, readDocument, readSectionByHeading, readLines, readOffset } from "./read-ops.js"
 export { searchDocuments } from "./search-ops.js"
 export { generateToc, generateOutline, buildHeadingTree } from "./hierarchy-ops.js"
+export type { DocHeadingTree } from "./hierarchy-ops.js"
 export { readDocumentMetadata, writeDocumentMetadata, deleteDocumentMetadataField } from "./metadata-ops.js"
 export { createDocument, writeSectionBody, upsertSection, appendSection, insertSection, deleteSection, deleteFile, searchAndReplace, patchSectionBody, findSectionRange } from "./write-ops.js"
 export { batchSectionEdits, batchMultiFileEdits } from "./batch-ops.js"

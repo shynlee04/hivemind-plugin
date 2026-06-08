@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs"
 
 import { parseDocument } from "./parser.js"
 import { resolveDocPath, toRootRelativePath } from "./safety.js"
-import type { DocHeading } from "./types.js"
+import type { DocHeading, DocHeadingTree } from "./types.js"
+
+export type { DocHeadingTree }
 
 /**
  * Generate a Markdown-formatted table of contents from a document's heading hierarchy.
@@ -26,20 +28,23 @@ export function generateToc(projectRoot: string, filePath: string): string {
 }
 
 /**
- * Generate a heading outline tree with parent-child nesting.
+ * Generate a heading outline returning both flat list and tree structure.
  *
  * @param projectRoot - Trusted project root.
  * @param filePath - Project-root-relative file path.
- * @returns Heading tree with children nested under parents.
+ * @returns Object with flat heading list and nested tree structure.
  */
-export function generateOutline(projectRoot: string, filePath: string): DocHeading[] {
+export function generateOutline(projectRoot: string, filePath: string): {
+  flat: DocHeading[]
+  tree: DocHeadingTree[]
+} {
   const absPath = resolveDocPath(projectRoot, filePath)
   const content = readFileSync(absPath, "utf-8")
   const parsed = parseDocument(toRootRelativePath(projectRoot, absPath), content)
-
-  // Return flat heading list in source order
-  // For tree structure, use buildHeadingTree(parsed.outline)
-  return parsed.outline
+  return {
+    flat: parsed.outline,
+    tree: buildHeadingTree(parsed.outline),
+  }
 }
 
 /**
@@ -72,5 +77,4 @@ export function buildHeadingTree(headings: DocHeading[]): DocHeadingTree[] {
   return tree
 }
 
-/** Heading with nested children for tree structure. */
-export type DocHeadingTree = DocHeading & { children: DocHeadingTree[] }
+// DocHeadingTree is defined in types.ts and re-exported above.

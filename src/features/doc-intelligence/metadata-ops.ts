@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 
 import matter from "gray-matter"
+import YAML from "yaml"
 
 import { resolveDocPath, assertWritableExtension, assertGovernanceWriteAllowed, checkChunkThreshold } from "./safety.js"
 import { lockedTransform } from "./concurrency.js"
@@ -38,6 +39,15 @@ export function readDocumentMetadata(
         }
       }
       return Object.keys(meta).length > 0 ? meta : null
+    } catch {
+      return null
+    }
+  }
+
+  if (ext === "yaml" || ext === "yml") {
+    try {
+      const data = YAML.parse(content) as Record<string, unknown>
+      return Object.keys(data).length > 0 ? data : null
     } catch {
       return null
     }

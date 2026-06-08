@@ -40,6 +40,41 @@ describe("metadata", () => {
     rmSync(dir, { recursive: true, force: true })
   })
 
+  it("reads metadata from YAML files", () => {
+    const dir = mkdtempSync(join(tmpdir(), "doc-test-"))
+    writeFileSync(join(dir, "sample.yaml"), "title: Config\ndescription: Test YAML\nversion: 1\n", "utf-8")
+
+    const meta = readDocumentMetadata(dir, "sample.yaml")
+    expect(meta).not.toBeNull()
+    expect(meta?.title).toBe("Config")
+    expect(meta?.description).toBe("Test YAML")
+    expect(meta?.version).toBe(1)
+
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it("returns null for YAML files without metadata", () => {
+    const dir = mkdtempSync(join(tmpdir(), "doc-test-"))
+    writeFileSync(join(dir, "empty.yaml"), "", "utf-8")
+
+    const meta = readDocumentMetadata(dir, "empty.yaml")
+    expect(meta).toBeNull()
+
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it("reads metadata from .yml extension", () => {
+    const dir = mkdtempSync(join(tmpdir(), "doc-test-"))
+    writeFileSync(join(dir, "config.yml"), "name: test\nenabled: true\n", "utf-8")
+
+    const meta = readDocumentMetadata(dir, "config.yml")
+    expect(meta).not.toBeNull()
+    expect(meta?.name).toBe("test")
+    expect(meta?.enabled).toBe(true)
+
+    rmSync(dir, { recursive: true, force: true })
+  })
+
   it("deletes a metadata field", async () => {
     const dir = mkdtempSync(join(tmpdir(), "doc-test-"))
     writeFileSync(join(dir, "doc.md"), "---\ntitle: Test\ndraft: true\n---\n# Content", "utf-8")
