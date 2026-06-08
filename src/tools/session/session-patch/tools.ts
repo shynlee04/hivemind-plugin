@@ -1,5 +1,13 @@
 /**
  * Session-patch tool: patch sections in session file with automatic backup.
+ *
+ * @CQRS-BOUNDARY: Deliberate exception — session-patch writes user-facing .md
+ * session files directly. Session-tracker owns `.hivemind/session-tracker/*.json`
+ * for child session records — a different data plane. Direct I/O is the correct
+ * architecture: this is a content-editing utility, not a state-management operation.
+ * Path safety is enforced by `assertPathWithinRoot` and `FORBIDDEN_PATH` gating.
+ * Decision date: 2026-06-08. Phase: 60 (C2-Residuals, REQ-R6-02).
+ *
  * @module tools/session-patch/tools
  */
 import { tool } from "@opencode-ai/plugin/tool"
