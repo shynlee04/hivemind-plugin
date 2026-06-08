@@ -1,6 +1,13 @@
 ---
 description: "Run harness diagnostics. Checks configuration, agents, plugin control path, and harness health."
 agent: hm-l0-orchestrator
+tools:
+  - delegate-task
+  - delegation-status
+  - hivemind-trajectory
+  - hivemind-steer
+  - hivemind-pressure
+  - semantic-agent-selector
 subtask: false
 ---
 

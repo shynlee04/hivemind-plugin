@@ -1,6 +1,13 @@
 ---
 description: "Sync AGENTS.md files with current codebase state. Detects drift between documentation and actual source code, produces a report, and applies fixes."
 agent: hm-l0-orchestrator
+tools:
+  - delegate-task
+  - delegation-status
+  - hivemind-trajectory
+  - hivemind-steer
+  - hivemind-pressure
+  - semantic-agent-selector
 subtask: false
 ---
 

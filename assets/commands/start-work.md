@@ -1,6 +1,13 @@
 ---
 description: "Execute a task plan with full orchestration. Reads plan and runs pending phases through controlled delegation."
 agent: hm-l0-orchestrator
+tools:
+  - delegate-task
+  - delegation-status
+  - hivemind-trajectory
+  - hivemind-steer
+  - hivemind-pressure
+  - semantic-agent-selector
 subtask: false
 ---
 

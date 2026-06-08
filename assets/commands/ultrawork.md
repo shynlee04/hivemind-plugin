@@ -1,6 +1,13 @@
 ---
 description: "Activate full autonomous orchestration. Agent explores, plans, and executes until done."
 agent: hm-l0-orchestrator
+tools:
+  - delegate-task
+  - delegation-status
+  - hivemind-trajectory
+  - hivemind-steer
+  - hivemind-pressure
+  - semantic-agent-selector
 subtask: false
 ---
 

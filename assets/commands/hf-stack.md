@@ -1,6 +1,11 @@
 ---
 description: "Stack multiple skills together for a specific workflow. Triggers: 'stack skills', 'combine skills', 'chain skills for...'"
 agent: hf-l0-orchestrator
+tools:
+  - delegate-task
+  - delegation-status
+  - configure-primitive
+  - hivemind-steer
 subtask: true
 ---
 

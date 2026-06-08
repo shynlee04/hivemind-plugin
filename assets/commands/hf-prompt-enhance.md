@@ -1,6 +1,10 @@
 ---
 description: "Enhance, audit, or repack a prompt through skim, investigation lanes, clarification gating, and structured final assembly. Triggers: 'enhance this prompt', 'audit this prompt', 'repack this prompt'."
 agent: hm-coordinator
+tools:
+  - delegate-task
+  - delegation-status
+  - hivemind-trajectory
 subtask: true
 ---
 

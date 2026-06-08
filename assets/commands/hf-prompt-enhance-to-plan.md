@@ -1,6 +1,8 @@
 ---
 description: "Enhance, improve, and export as plan repack a prompt through selection of suitable template and references: using question tool to ask for clarification, do few shot research, loading skill to make a fully well prepared plan."
 agent: hf-prompter
+tools:
+  - hivemind-doc
 subtask: false
 ---
 ## Gaining the overview context

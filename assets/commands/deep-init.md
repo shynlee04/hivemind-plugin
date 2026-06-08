@@ -1,6 +1,10 @@
 ---
 description: "Generate hierarchical AGENTS.md files with root + complexity-scored subdirectories. Supports update mode, full regeneration, and depth limiting."
 agent: hm-executor
+tools:
+  - delegate-task
+  - hivemind-doc
+  - run-background-command
 ---
 
 Generate hierarchical AGENTS.md files. Root + complexity-scored subdirectories.

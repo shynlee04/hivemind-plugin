@@ -1,6 +1,13 @@
 ---
 description: "Enter strategic planning mode. Agent interviews you to build a detailed plan before any code is written."
 agent: hm-l0-orchestrator
+tools:
+  - delegate-task
+  - delegation-status
+  - hivemind-trajectory
+  - hivemind-steer
+  - hivemind-pressure
+  - semantic-agent-selector
 subtask: false
 ---
 

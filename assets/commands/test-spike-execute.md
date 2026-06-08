@@ -1,6 +1,9 @@
 ---
 description: "Tests the programmatic execution of slash commands by an agent."
 agent: build
+tools:
+  - delegate-task
+  - hivemind-steer
 subtask: false
 ---
 
