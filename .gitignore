@@ -95,4 +95,6 @@ graphify-out/
 
 # Exclude planning archives
 .planning/archive/
-ggggg
+
+# npm auth — never commit, use ~/.npmrc on local or GitHub Secrets in CI
+.npmrc
