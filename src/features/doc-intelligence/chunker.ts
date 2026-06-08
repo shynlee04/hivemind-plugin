@@ -1,7 +1,8 @@
 import { extractMarkdownOutline, slugifyHeading } from "./parser.js"
 import type { DocChunk, DocChunkOptions } from "./types.js"
 
-const DEFAULT_MAX_CHARACTERS = 4000
+/** Default maximum characters per chunk. */
+export const DEFAULT_MAX_CHARACTERS = 4000
 
 type DraftDocChunk = Omit<DocChunk, "id" | "index"> & { index: number }
 

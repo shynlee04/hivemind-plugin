@@ -1,4 +1,7 @@
+import { extname } from "node:path"
+
 import matter from "gray-matter"
+import yaml from "yaml"
 
 import type { DocHeading, ParsedMarkdownDocument } from "./types.js"
 
@@ -72,9 +75,146 @@ export function parseMarkdownDocument(relativePath: string, content: string): Pa
 }
 
 /**
- * Count visible words in Markdown text for skim summaries.
+ * Parse JSON content: extract title from "title" key, return flat metadata.
  *
- * @param text - Markdown body content.
+ * @param relativePath - Project-root-relative POSIX document path.
+ * @param content - Raw JSON content.
+ * @returns Parsed document metadata (outline will be empty).
+ */
+export function parseJsonDocument(relativePath: string, content: string): ParsedMarkdownDocument {
+  let data: Record<string, unknown> = {}
+  try {
+    data = JSON.parse(content) as Record<string, unknown>
+  } catch {
+    // Invalid JSON — return minimal metadata
+  }
+
+  const title = typeof data.title === "string" ? data.title : null
+  const frontmatter: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(data)) {
+    if (key !== "title" && typeof value !== "object") {
+      frontmatter[key] = value
+    }
+  }
+
+  return {
+    path: relativePath,
+    frontmatter,
+    title,
+    outline: [],
+    wordCount: countWords(content),
+    characterCount: content.length,
+  }
+}
+
+/**
+ * Parse YAML content: extract title from "title" key, return flat metadata.
+ *
+ * @param relativePath - Project-root-relative POSIX document path.
+ * @param content - Raw YAML content.
+ * @returns Parsed document metadata (outline will be empty).
+ */
+export function parseYamlDocument(relativePath: string, content: string): ParsedMarkdownDocument {
+  let data: Record<string, unknown> = {}
+  try {
+    data = yaml.parse(content) as Record<string, unknown>
+  } catch {
+    // Invalid YAML — return minimal metadata
+  }
+
+  const title = typeof data.title === "string" ? data.title : null
+  const frontmatter: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(data)) {
+    if (key !== "title" && typeof value !== "object") {
+      frontmatter[key] = value
+    }
+  }
+
+  return {
+    path: relativePath,
+    frontmatter,
+    title,
+    outline: [],
+    wordCount: countWords(content),
+    characterCount: content.length,
+  }
+}
+
+/**
+ * Parse XML content: extract title from <title> element, return minimal metadata.
+ *
+ * @param relativePath - Project-root-relative POSIX document path.
+ * @param content - Raw XML content.
+ * @returns Parsed document metadata (outline will be empty).
+ */
+export function parseXmlDocument(relativePath: string, content: string): ParsedMarkdownDocument {
+  const titleMatch = /<title[^>]*>([^<]+)<\/title>/i.exec(content)
+  const title = titleMatch ? titleMatch[1].trim() : null
+
+  return {
+    path: relativePath,
+    frontmatter: {},
+    title,
+    outline: [],
+    wordCount: countWords(content),
+    characterCount: content.length,
+  }
+}
+
+/**
+ * Parse plain text: extract title from first line, minimal metadata.
+ *
+ * @param relativePath - Project-root-relative POSIX document path.
+ * @param content - Raw text content.
+ * @returns Parsed document metadata (outline will be empty).
+ */
+export function parsePlainTextDocument(relativePath: string, content: string): ParsedMarkdownDocument {
+  const lines = content.split(/\r?\n/)
+  const title = lines[0]?.trim() || null
+
+  return {
+    path: relativePath,
+    frontmatter: {},
+    title,
+    outline: [],
+    wordCount: countWords(content),
+    characterCount: content.length,
+  }
+}
+
+/**
+ * Parse a document based on its file extension.
+ * Returns a uniform `ParsedMarkdownDocument`-shaped result.
+ *
+ * @param relativePath - Project-root-relative POSIX path.
+ * @param content - Raw file content.
+ * @returns Parsed document metadata.
+ */
+export function parseDocument(
+  relativePath: string,
+  content: string,
+): ParsedMarkdownDocument {
+  const ext = extname(relativePath).toLowerCase()
+  switch (ext) {
+    case ".md":
+    case ".mdx":
+      return parseMarkdownDocument(relativePath, content)
+    case ".json":
+      return parseJsonDocument(relativePath, content)
+    case ".yaml":
+    case ".yml":
+      return parseYamlDocument(relativePath, content)
+    case ".xml":
+      return parseXmlDocument(relativePath, content)
+    default:
+      return parsePlainTextDocument(relativePath, content)
+  }
+}
+
+/**
+ * Count visible words in text for skim summaries.
+ *
+ * @param text - Text content.
  * @returns Count of non-empty word-like tokens.
  */
 function countWords(text: string): number {
@@ -94,3 +234,5 @@ function countFrontmatterLines(content: string): number {
   const endIndex = lines.findIndex((line, index) => index > 0 && line === "---")
   return endIndex === -1 ? 0 : endIndex + 1
 }
+
+
