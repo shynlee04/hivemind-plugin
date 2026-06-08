@@ -321,3 +321,23 @@ When an agent or workflow needs to validate work through quality gates:
 4. Route to individual gate skills for each gate check
 5. Return unified verdict to the calling workflow
 6. If any gate failed, provide structured remediation routing
+
+## Hivemind Tooling Alignment
+
+This skill aligns with Hivemind's custom toolings. The loading agent should declare:
+
+```yaml
+tools:
+  - hivemind-doc
+  - delegate-task
+  - configure-primitive
+```
+
+### Cross-References
+
+- Routing: `hm-coord-router` (intent classification)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed.

@@ -317,3 +317,23 @@ Trước khi kết luận research, kiểm tra:
 ---
 
 *Skill được tạo bởi hf-skill-builder — Cross-lineage: đã tham khảo hm-l2-brainstorm (entry gate, phase workflow), hm-l2-product-validation (RICE pattern), hm-l3-deep-research (IRON CLAW, citation tracking), hm-l3-research-chain (pipeline orchestration)*
+
+## Hivemind Tooling Alignment
+
+This skill aligns with Hivemind's custom toolings. The loading agent should declare:
+
+```yaml
+tools:
+  - hivemind-doc
+  - delegate-task
+  - configure-primitive
+```
+
+### Cross-References
+
+- Routing: `hm-coord-router` (intent classification)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed.

@@ -155,3 +155,36 @@ This is not a "load once at start" skill:
 | session-tracker not responding | Fallback: `glob(".hivemind/session-tracker/*/")` |
 | Ambiguous lineage routing | Load `user-intent-interactive-loop` → clarify with user |
 | task_id not found | Session may not be resumable. Check SDK version. Create fresh dispatch. |
+
+## Hivemind Tooling Alignment (Migration Note)
+
+This is the canonical governance skill for Hivemind. All Hivemind custom tools are available:
+
+| Hivemind Tool | Use |
+|---|---|
+| `delegate-task` | Dispatch subagents (with optional `stackOnSessionId` for resume) |
+| `delegation-status` | Poll/list/abort delegations |
+| `hivemind-session-view` | Cross-root session query (replaces 3 separate tool calls) |
+| `hivemind-trajectory` | Record events, checkpoint, lifecycle |
+| `hivemind-pressure` | Runtime pressure classification (L0 vs L1 vs L2+ agent load) |
+| `hivemind-steer` | Inject context into root session |
+| `hivemind-doc` | Read/chunk/search planning docs |
+| `hivemind-agent-work` | Create/export agent work contracts |
+| `hivemind-sdk-supervisor` | Check SDK wrapper health |
+| `hivemind-command-engine` | Discover and analyze commands before execution |
+| `semantic-agent-selector` | Pick best agent by semantic match |
+| `run-background-command` | Run shell/PTY in background |
+| `configure-primitive` | Create/edit/inspect OpenCode primitives |
+| `validate-restart` | Verify restart readiness |
+| `bootstrap-init` | Bootstrap new project with Hivemind |
+| `bootstrap-recover` | Repair primitive symlinks/copies |
+| `tmux-copilot` | Manipulate tmux panes |
+| `tmux-state-query` | Read tmux session state |
+| `prompt-analyze` | Detect contradictions in prompts |
+| `prompt-skim` | Count/verify prompts |
+
+### Migration from GSD SDK
+
+This skill replaces ALL `gsd-*` SDK functions. If you see GSD references in
+other skills, treat them as compatibility pointers (per master plan §9.2)
+and use the Hivemind equivalent for actual work.

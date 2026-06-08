@@ -272,3 +272,23 @@ On recovery (interrupted mid-wave or between waves):
 | `hm-coord-loop` | Coordinates multi-agent dispatch — owns the delegation mechanics | Wave execution uses dispatch mechanics but does not teach coordination patterns. |
 | `hm-loop-phase` | Owns iterative loop semantics and entry/exit criteria | Wave execution's iteration guard is a safety mechanism, not a loop control pattern. |
 | `hm-loop-completion` | Owns completion detection and guardrail loops | Wave execution enforces wave-level completion but does not own loop-back semantics. |
+
+## Hivemind Tooling Alignment
+
+This skill aligns with Hivemind's custom toolings. The loading agent should declare:
+
+```yaml
+tools:
+  - hivemind-doc
+  - delegate-task
+  - configure-primitive
+```
+
+### Cross-References
+
+- Routing: `hm-coord-router` (intent classification)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed.
