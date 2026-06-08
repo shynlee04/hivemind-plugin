@@ -48,3 +48,70 @@
 8. **Commit H**: feat(audit-05): apply 22-category prefix taxonomy retroactively to all 31 remaining skills + add `## GSD Compatibility` to hm-test-driven
 
 Each commit is atomic; each passes `node assets/.hivemind-config/validate-name.sh`, `node scripts/sync-assets.js`, `npm run typecheck`, `npm test`.
+
+## D8 — Per-Tool Permission Granularity (binding rule)
+
+**Source:** User clarification on `REMOVED-TOOLS-MANIFEST-2026-06-08.md` (2026-06-08T23:50Z)
+
+**Scope:** `assets/agents/*.md` frontmatter (manifest's binding scope)
+
+**Rules:**
+
+1. **No `tools:` field** in any agent frontmatter (the manifest rule). All tool access declared under `permission:` only.
+
+2. **Per-tool granularity** — each tool name appears on its own line in the `permission:` block with explicit `allow` | `deny` | `ask`:
+   ```yaml
+   permission:
+     read: allow
+     edit: deny
+     write: allow
+     glob: allow
+     grep: allow
+     bash: allow
+     task: allow
+     delegate-task: allow
+     delegation-status: allow
+     hivemind-doc: allow
+     # ... every tool named explicitly
+   ```
+
+3. **No top-level wildcards** at the root of the `permission:` map. The following are FORBIDDEN:
+   ```yaml
+   permission:
+     "*": allow              # FORBIDDEN
+     "hm-*": allow           # FORBIDDEN  
+     "gate-*": allow         # FORBIDDEN
+     "stack-*": allow        # FORBIDDEN
+   ```
+
+4. **Sub-patterns under a specific tool ARE allowed** — the tool is named, the sub-pattern scopes the sub-decision:
+   ```yaml
+   permission:
+     task:
+       "*": ask                          # unmapped subagent → ask
+       hm-architect: allow               # explicit allow per agent
+       hm-executor: allow
+       # ... up to 30 explicit entries
+     bash:
+       "*": ask                          # unmapped command → ask
+       git *: allow                      # scoped to git commands
+       node *: allow                     # scoped to node commands
+     skill:
+       "*": ask
+       hm-*: allow                       # explicit allow per skill namespace
+   ```
+   This is the pattern in 14 agents (hm-orchestrator, build, hf-*, hm-l0-orchestrator).
+
+5. **No silent drops** — if a tool was in the original `tools:` list, it MUST appear in the new `permission:` block. Migration audit must verify the count matches.
+
+**Verification method (for audit-05 commits B → H):**
+```bash
+# Count tools in old vs new for every agent
+for f in assets/agents/*.md; do
+  tools_count=$(grep -c "^- [a-z]" <(awk '/^---$/{f++; next} f==1 && f<2' "$f" | grep -A100 "^tools:") 2>/dev/null)
+  perm_count=$(awk '/^---$/{f++; next} f==1' "$f" | grep -E "^  [a-z][a-z0-9_-]+:" | wc -l)
+  # warn if perm_count << tools_count
+done
+```
+
+**Status:** Existing migration in `ed12617f` + `fb002608` is compliant. 14 agents with `task: { ... }` sub-patterns are valid (tool is named, sub-patterns are scoped). No further fix needed.
