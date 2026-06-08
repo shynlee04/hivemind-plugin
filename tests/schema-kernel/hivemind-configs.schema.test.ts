@@ -357,11 +357,11 @@ describe("HivemindConfigsSchema", () => {
 // ===========================================================================
 
 describe("document_paths", () => {
-  it("defaults to ['.hivemind/planning/'] when omitted", () => {
+  it("defaults to ['.planning/'] when omitted", () => {
     const result = sp(HivemindConfigsSchema, {})
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.document_paths).toEqual([".hivemind/planning/"])
+      expect(result.data.document_paths).toEqual([".planning/"])
     }
   })
 
@@ -377,7 +377,7 @@ describe("document_paths", () => {
     const result = sp(HivemindConfigsSchema, { conversation_language: "en" })
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.document_paths).toEqual([".hivemind/planning/"])
+      expect(result.data.document_paths).toEqual([".planning/"])
     }
   })
 })
