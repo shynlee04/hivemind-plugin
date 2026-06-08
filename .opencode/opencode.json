@@ -1,5 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "plugin": "hivemind-3.0",
   "permission": {
     "read": {
       "/Users/apple/hivemind-plugin-private/.opencode/get-shit-done/*": "allow"
