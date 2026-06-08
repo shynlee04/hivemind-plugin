@@ -44,7 +44,7 @@ specialist. This skill figures out what they need and routes them.
 specialist skill directly (e.g., they said "audit this skill" and
 `hf-use-authoring-skills` is available). Route directly instead. For
 runtime state or session recovery, use `hivemind-power-on`. For
-intent-classification at the L0 entry point, use `hm-coord-router`.
+intent classification at the front-facing entry point, use `hm-coord-router`.
 
 ### What This Skill Handles
 
@@ -68,7 +68,7 @@ then `node scripts/sync-assets.js` mirrors to `.opencode/`. The
 | "Run the test suite"                        | Direct execution              |
 | "Explain how React hooks work"              | Web search or direct answer   |
 | Session discovery / resume                  | `hivemind-power-on`           |
-| L0 intent classification                    | `hm-coord-router`             |
+| Front-facing intent classification         | `hm-coord-router`             |
 
 ## Principles
 
@@ -103,7 +103,7 @@ then `node scripts/sync-assets.js` mirrors to `.opencode/`. The
 | "enforce pre-delegation authorization"                   | `hf-delegation-gates`             | Capability matrix + gates     |
 | "design an agent interface"                              | `hf-agent-composition`            | 3+ designs + synthesis        |
 | "compose a specialist workflow from user intent"         | `hf-agent-composition`            | XML markup + step protocols   |
-| ambiguous / "help me figure out" / "I'm not sure"        | `hm-coord-router`                 | Upstream L0 intent classifier |
+| ambiguous / "help me figure out" / "I'm not sure"        | `hm-coord-router`                 | Upstream front-facing intent classifier |
 | out of scope for any row above                           | do NOT activate this skill        | Route to owning specialist     |
 
 **Fallback:** if a specialist skill is missing or broken, report
@@ -126,7 +126,7 @@ unnecessary skill dilutes the ones that matter.
 
 | Skill                     | Boundary                                        |
 |---------------------------|-------------------------------------------------|
-| `hm-coord-router`         | Upstream L0 intent classifier (different role)  |
+| `hm-coord-router`         | Upstream front-facing intent classifier (different role)  |
 | `hm-coord-loop`           | Multi-agent dispatch (when 3+ tasks parallel)   |
 | `hm-platform-references`  | Routes platform/SDK questions to one skill      |
 | `hm-config-governance`    | Config-driven governance rule editing           |
@@ -164,7 +164,7 @@ meta-concepts.
 Before declaring any meta-concept task complete:
 
 - [ ] Output matches requirements (nothing extra, nothing missing)
-- [ ] Output references shipped skills only (no archived l2/l3)
+- [ ] Output references shipped skills only (no archived or forbidden-prefix skills)
 - [ ] No `metadata.layer: "0|2|3"` in shipped frontmatter
 - [ ] No deprecated v1 product name tokens (see `hf-naming-syndicate` for the forbidden list)
 - [ ] Description is third-person with 5+ trigger phrases

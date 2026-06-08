@@ -160,7 +160,7 @@ The shipped Hivemind custom tools (`delegate_task`,
 Before declaring any platform-routing task complete:
 
 - [ ] Routed to a SHIPPED skill (verified via `ls assets/skills/<name>/SKILL.md`)
-- [ ] No archived l2/l3 / gate-* / stack-* skill named in the response
+- [ ] No archived or forbidden-prefix skill (e.g., gate-*, stack-*, the archived layer-numbered skills) named in the response
 - [ ] Cross-references resolve to shipped surface
 - [ ] Anti-pattern audit: did NOT load all 6 destinations at once
 - [ ] Committed to git with descriptive message

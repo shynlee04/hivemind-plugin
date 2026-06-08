@@ -55,7 +55,7 @@ A task is done when verification proves it is done.
 ```
 
 The skill merges two layers:
-1. **Loop mechanics** (from `hm-l2-completion-looping`): bounded iteration, durable cursors, three gates, the three loop types.
+1. **Loop mechanics**: bounded iteration, durable cursors, three gates, the three loop types.
 2. **Detection discipline** (from `completion-detection`): the dual-signal protocol, the fresh-evidence rule, completion-claim grading.
 
 The Hivemind binding layer exposes the runtime tools that make the loop executable end-to-end: `hivemind-sdk-supervisor` for session lifecycle, `delegation-status` for agent return polling, and the standard `delegate-task` custom tool for re-dispatch on failure.

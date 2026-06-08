@@ -49,7 +49,7 @@ You can use either; the Hivemind path is canonical, the GSD path is supported vi
 `hm-cross-change` is the governance skill for changes that span multiple pans, layers, or frameworks. It merges two layers:
 
 1. **Framework-agnostic methodology** (from `cross-cutting-change-mgmt`): the 7-phase workflow (Scan → Classify → Impact Analysis → Red-First → Implement → Verify → Handoff), rollback governance, anti-patterns, verification checklist.
-2. **Pan-classification taxonomy** (from `hm-l2-cross-cutting-change`): 5-pan model (interface / deep_module / test / config / consumer), lifecycle-impact matrix, 6-gate system, decision tree, handoff packet schema.
+2. **Pan-classification taxonomy**: 5-pan model (interface / deep_module / test / config / consumer), lifecycle-impact matrix, 6-gate system, decision tree, handoff packet schema.
 
 The skill is **framework-agnostic** in methodology. The Hivemind binding layer names the runtime tools that make the governance executable end-to-end.
 

@@ -48,7 +48,7 @@ You can use either; the Hivemind path is canonical, the GSD path is supported vi
 `hm-loop-phase` is the iteration controller for phase plans. It merges two layers:
 
 1. **Loop discipline** (from `iterative-loop`): the 5-phase loop protocol (Setup → Execute → Verify → Gate → Exit), decision matrix, max-iteration guard, checkpoint recovery, anti-patterns.
-2. **Phase-specific mechanics** (from `hm-l2-phase-loop`): durable phase cursor, issue severity levels (PASSED / INFO / WARNING / BLOCKER), exit criteria, stall detection.
+2. **Phase-specific mechanics**: durable phase cursor, issue severity levels (PASSED / INFO / WARNING / BLOCKER), exit criteria, stall detection.
 
 The skill is **tech-agnostic** in discipline; the Hivemind binding layer names the runtime tools that make the loop executable end-to-end.
 

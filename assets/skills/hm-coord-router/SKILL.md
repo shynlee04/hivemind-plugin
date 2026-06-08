@@ -98,10 +98,10 @@ agent pair. The agent is a specialist; the command is the user-facing surface.
 | `hm-debug-systematic` | `hm-debugger` | Reproduce-minimize-hypothesize-instrument |
 | `hm-arch-refactor` | `hm-architect` | ADR + clean-code refactor |
 | `hm-ship` | `hm-shipper` | Production readiness + rollback |
-| `hm-research-deep` | `hm-l3-deep-research` | Citation tracking, source synthesis |
-| `hm-cross-change` | `hm-l2-cross-cutting-change` | Pan-impact + ordering |
-| `hm-product-validation` | `hm-l2-product-validation` | RICE scoring, user impact |
-| `hm-intent-brainstorm` | `hm-l2-brainstorm` | Socratic ideation |
+| `hm-research-deep` | `hm-phase-researcher` | Citation tracking, source synthesis |
+| `hm-cross-change` | `hm-ecologist` | Pan-impact + ordering |
+| `hm-product-validation` | `hm-planner` | RICE scoring, user impact |
+| `hm-intent-brainstorm` | `hm-intent-loop` | Socratic ideation |
 | `hm-coord-loop` | `hm-orchestrator` | Wave dispatch + handoff |
 
 ## Delegation Packet (5 required sections)
