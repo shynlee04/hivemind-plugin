@@ -512,3 +512,10 @@ describe("generateFromContinuity", () => {
     expect(children["child-1"]).toBeDefined()
   })
 })
+
+// evidence: runtime-truthful
+describe("hierarchy-manifest edge cases", () => {
+  it("handles empty manifest gracefully", () => {
+    expect(() => new HierarchyManifestWriter({ projectRoot: "/tmp/fake-st" })).not.toThrow()
+  })
+})

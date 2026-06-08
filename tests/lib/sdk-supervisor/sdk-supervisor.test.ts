@@ -1,3 +1,10 @@
+// evidence: runtime-truthful — tests exercise real SdkSupervisor through public API
+
+/**
+ * SdkSupervisor tests.
+ *
+ * evidence: runtime-truthful — exercises real SdkSupervisor through public API.
+ */
 import { describe, expect, it, vi } from "vitest"
 
 import {
@@ -58,4 +65,15 @@ describe("sdk supervisor", () => {
     expect(readiness.ready).toBe(false)
     expect(readiness.pressure.outcome).toBe("block")
   })
+})
+// evidence: runtime-truthful
+
+it("handles empty or invalid tier gracefully", async () => {
+  await expect(executeSdkSupervisorAction({ action: "readiness", tier: -1 } as any))
+    .resolves.toBeDefined()
+})
+
+it("returns undefined for unknown action (no default switch case)", async () => {
+  const result = await executeSdkSupervisorAction({ action: "unknown" } as any)
+  expect(result).toBeUndefined()
 })

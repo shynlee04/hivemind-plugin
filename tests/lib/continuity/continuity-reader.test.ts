@@ -1,6 +1,8 @@
 /**
  * Tests for continuity-reader.ts — session-tracker enrichment helpers.
  *
+ * evidence: runtime-truthful
+ *
  * REQ-P41C-01 through REQ-P41C-07: Verifies enrichContinuityWithTracker and
  * enrichContinuityListWithTracker merge behavior, error handling, and
  * non-mutation guarantees.

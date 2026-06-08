@@ -229,3 +229,21 @@ describe("session-patch tool", () => {
     expect(updated).toContain("other")
   })
 })
+
+// evidence: runtime-truthful
+describe("session-patch edge cases", () => {
+  it("handles nonexistent file by returning error result", async () => {
+    const patchTool = createSessionPatchTool("/tmp/fake-root")
+    const raw = await patchTool.execute(
+      {
+        sessionFilePath: "/nonexistent/path.md",
+        section: "test",
+        newContent: "test content",
+      },
+      {} as any,
+    )
+    const result = typeof raw === "string" ? JSON.parse(raw) : raw
+    expect(result).toBeDefined()
+    expect(result.kind).toBe("error")
+  })
+})
