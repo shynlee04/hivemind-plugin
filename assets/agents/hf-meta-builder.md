@@ -53,6 +53,8 @@ tools:
   - hm-l2-planning-persistence
 instruction:
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hf-meta-builder

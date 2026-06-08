@@ -10,6 +10,8 @@ tools:
   - delegate-task
   - hivemind-doc
   - run-background-command
+skills:
+  - hm-config-governance
 ---
 
 # hm-executor — Implementation

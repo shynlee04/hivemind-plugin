@@ -8,6 +8,8 @@ mode: all
 hidden: true
 tools:
   - hivemind-doc
+skills:
+  - hm-config-governance
 ---
 
 # hm-doc-verifier — Documentation Verification

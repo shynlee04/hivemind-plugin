@@ -150,12 +150,27 @@ export class ToolIntelligenceEngine {
   /**
    * Walk the rules list and return the first enabled rule that matches.
    * Falls back to the rule with id `default`, or `undefined` if none.
+   *
+   * R-prefix filter: when a detector fired and propagated `detectorRuleId`,
+   * rules whose id starts with `R\d+-` only match if their id equals the
+   * detector's id. This prevents a config rule like
+   * `R4-delegate-task-code-intent` (with `toolNames: ["delegate-task"]`)
+   * from matching every `delegate-task` call regardless of intent — the
+   * walker must only honor R-prefixed rules when the corresponding detector
+   * actually classified the event. Non-R rules (e.g. depth or toolName-only
+   * rules authored by users) still match by `toolNames`/`sessionIDs`/`depth`.
    */
-  private findMatchingRule(event: ToolIntelligenceEvent) {
+  private findMatchingRule(
+    event: ToolIntelligenceEvent,
+    detectorRuleId?: string,
+  ) {
     let defaultRule: typeof this.rules[number] | undefined;
     for (const rule of this.rules) {
       if (!rule.enabled) continue;
       if (rule.id === "default") { defaultRule = rule; continue; }
+      const isDetectorPrefixed = /^R\d+-/.test(rule.id);
+      if (isDetectorPrefixed && detectorRuleId && rule.id !== detectorRuleId) continue;
+      if (isDetectorPrefixed && !detectorRuleId) continue;
       if (this.ruleMatches(rule, event)) return rule;
     }
     return defaultRule;
@@ -166,11 +181,15 @@ export class ToolIntelligenceEngine {
    * Per binding contract: status is driven by `.hivemind/configs.json`;
    * never hardcoded. Hardcoded `allow` is the LAST resort when no rule
    * matches AND no `default` rule is configured.
+   *
+   * `detectorRuleId` is propagated to the rule walker so R-prefixed
+   * config rules only fire when the corresponding detector fired.
    */
   private resolveFromConfig(
     event: ToolIntelligenceEvent,
+    detectorRuleId?: string,
   ): { severity: GovernanceActionType; ruleId: string } {
-    const matched = this.findMatchingRule(event);
+    const matched = this.findMatchingRule(event, detectorRuleId);
     if (matched) {
       return { severity: matched.action.type, ruleId: matched.id };
     }
@@ -284,28 +303,19 @@ export class ToolIntelligenceEngine {
 
     // -----------------------------------------------------------------------
     // Now: resolve severity FROM CONFIG via the unified rule walker.
-    // If a detector fired, prefer that rule's id; otherwise the walker
-    // matches by toolNames/depth/sessionIDs across all rules.
-    //
-    // Hybrid model: per-detector hardcoded fallbacks apply ONLY when the
-    // config does not provide an explicit rule for the matched detector id.
-    // This preserves backward compatibility with the original R1-R4 tests
-    // while keeping config the single source of truth for users.
+    // The walker receives `matchedRuleId` so R-prefixed rules only fire
+    // when the corresponding detector classified the event. If a detector
+    // rule exists in config (e.g. `R1-malformed-task → block`), its
+    // `action.type` is the severity; otherwise we fall back to the
+    // walker's first-toolName-match verdict (or `allow` if nothing matches).
     // -----------------------------------------------------------------------
-    const resolved = this.resolveFromConfig(event)
-    // If a detector fired but config has no rule for that id, fall back to
-    // the detector's hardcoded default. Otherwise use the config severity.
-    // Severity is always config-driven. Default (no config rule) is `allow`.
-    // The detector classifies; config decides. If config has a rule for the
-    // detector's id, use it. Otherwise fall back to the engine's default
-    // (also config-driven via the `default` rule, or hardcoded `allow` if
-    // no `default` rule is configured).
-    const configHasDetectorRule = matchedRuleId
-      ? this.rules.some((r) => r.id === matchedRuleId && r.enabled)
-      : false
-    const severity: GovernanceActionType = configHasDetectorRule
-      ? resolved.severity
-      : resolved.severity  // already falls back to `allow` in resolveFromConfig
+    const resolved = this.resolveFromConfig(event, matchedRuleId)
+    const detectorRule = matchedRuleId
+      ? this.rules.find((r) => r.id === matchedRuleId && r.enabled)
+      : undefined
+    const severity: GovernanceActionType = detectorRule
+      ? detectorRule.action.type
+      : resolved.severity
     const kind = toDecisionKind(severity)
     const ruleId = matchedRuleId ?? resolved.ruleId
     // Per-detector reason labels — used to make the reason text informative

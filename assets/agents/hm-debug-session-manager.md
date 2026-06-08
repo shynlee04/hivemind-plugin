@@ -9,6 +9,8 @@ tools:
   - delegate-task
   - hivemind-doc
   - hivemind-trajectory
+skills:
+  - hm-config-governance
 ---
 
 # hm-debug-session-manager — Debug Session Orchestration

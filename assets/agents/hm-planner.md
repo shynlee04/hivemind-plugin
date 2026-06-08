@@ -8,6 +8,8 @@ hidden: true
 tools:
   - hivemind-doc
   - hivemind-agent-work
+skills:
+  - hm-config-governance
 ---
 
 # hm-planner — Planning

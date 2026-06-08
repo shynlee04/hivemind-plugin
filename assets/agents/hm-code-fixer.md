@@ -8,6 +8,8 @@ hidden: true
 tools:
   - hivemind-doc
   - run-background-command
+skills:
+  - hm-config-governance
 ---
 
 # hm-code-fixer — Code Fix Application

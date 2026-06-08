@@ -12,6 +12,8 @@ tools:
   - hivemind-trajectory
   - hivemind-steer
   - hivemind-agent-work
+skills:
+  - hm-config-governance
 ---
 
 # hm-orchestrator — Session Orchestration

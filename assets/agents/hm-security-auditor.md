@@ -9,6 +9,8 @@ tools:
   - hivemind-doc
   - delegate-task
   - hivemind-trajectory
+skills:
+  - hm-config-governance
 ---
 
 # hm-security-auditor — Security Audit

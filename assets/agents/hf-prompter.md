@@ -55,6 +55,8 @@ tools:
   - hm-l3-opencode-non-interactive-shell
 instruction:
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hf-prompter

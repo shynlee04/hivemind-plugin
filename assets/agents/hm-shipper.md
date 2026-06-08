@@ -9,6 +9,8 @@ hidden: true
 tools:
   - delegate-task
   - validate-restart
+skills:
+  - hm-config-governance
 ---
 
 # hm-shipper — Release Coordination

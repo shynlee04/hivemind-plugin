@@ -48,6 +48,8 @@ tools:
   - hm-gate-triad
 instruction:
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hf-coordinator

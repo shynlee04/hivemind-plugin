@@ -51,6 +51,8 @@ tools:
   - hf-agent-composition
 instruction:
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hf-agent-builder

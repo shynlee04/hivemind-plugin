@@ -9,6 +9,8 @@ hidden: true
 tools:
   - hivemind-doc
   - hivemind-trajectory
+skills:
+  - hm-config-governance
 ---
 
 # hm-debugger — Bug Investigation

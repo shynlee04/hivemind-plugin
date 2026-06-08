@@ -50,6 +50,8 @@ tools:
   - hf-skill-synthesis
 instruction:
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hf-synthesizer

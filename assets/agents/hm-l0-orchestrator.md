@@ -131,6 +131,8 @@ tools:
 instruction:
   - .opencode/rules/universal-rules.md
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hm-orchestrator — L0 Strategist / Battle Commander

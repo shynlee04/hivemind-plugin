@@ -9,6 +9,8 @@ hidden: true
 tools:
   - hivemind-doc
   - delegate-task
+skills:
+  - hm-config-governance
 ---
 
 # hm-synthesizer — Research

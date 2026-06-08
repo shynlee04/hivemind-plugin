@@ -51,6 +51,8 @@ tools:
   - hf-use-authoring-skills
 instruction:
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hf-refactorer

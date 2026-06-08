@@ -51,6 +51,8 @@ tools:
   - hf-command-parser
 instruction:
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hf-command-builder

@@ -51,6 +51,8 @@ tools:
   - hf-agents-md-sync
 instruction:
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hf-auditor

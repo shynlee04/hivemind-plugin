@@ -35,6 +35,8 @@ tools:
   - hf-custom-tools-dev
 instruction:
   - AGENTS.md
+skills:
+  - hm-config-governance
 ---
 
 # hf-tool-builder
