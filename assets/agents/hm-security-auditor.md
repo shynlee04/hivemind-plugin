@@ -1,16 +1,15 @@
 ---
 description: >
-  Performs STRIDE threat model verification against implemented code,
-  producing SECURITY.md with threat assessments and mitigations. Called by
-  hm-orchestrator during hm-secure-phase after implementation completes.
+  Performs STRIDE threat model verification against implemented code, producing SECURITY.md with threat assessments and mitigations. Called by hm-orchestrator during hm-secure-phase after
+  implementation completes.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
-  - hivemind-trajectory
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
+  hivemind-trajectory: allow
 ---
 
 # hm-security-auditor — Security Audit

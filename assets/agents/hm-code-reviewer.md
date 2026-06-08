@@ -1,16 +1,14 @@
 ---
 description: >
-  Performs adversarial code review against spec compliance and code quality
-  standards. Produces REVIEW.md with categorized findings. Called by
-  hm-orchestrator during hm-code-review after hm-executor completes
-  implementation of a plan.
+  Performs adversarial code review against spec compliance and code quality standards. Produces REVIEW.md with categorized findings. Called by hm-orchestrator during hm-code-review after hm-executor
+  completes implementation of a plan.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-code-reviewer — Code Review

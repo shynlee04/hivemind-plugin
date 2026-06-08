@@ -1,16 +1,14 @@
 ---
 description: >
-  Breaks project scope into phases and maps requirements, producing ROADMAP.md
-  with phase definitions, dependency tracking, and requirement traceability.
-  Called by hm-orchestrator during hm-new-project after research synthesis
-  completes and a structured delivery plan is needed.
+  Breaks project scope into phases and maps requirements, producing ROADMAP.md with phase definitions, dependency tracking, and requirement traceability. Called by hm-orchestrator during
+  hm-new-project after research synthesis completes and a structured delivery plan is needed.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - hivemind-agent-work
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  hivemind-agent-work: allow
 ---
 
 # hm-roadmapper — Roadmap Planning

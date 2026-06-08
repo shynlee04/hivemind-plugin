@@ -1,15 +1,14 @@
 ---
 description: >
-  Conducts domain ecosystem research before roadmap creation, producing STACK.md,
-  FEATURES.md, ARCHITECTURE.md, and PITFALLS.md artifacts. Called by hm-orchestrator
-  during new project initialization to establish technical landscape understanding.
+  Conducts domain ecosystem research before roadmap creation, producing STACK.md, FEATURES.md, ARCHITECTURE.md, and PITFALLS.md artifacts. Called by hm-orchestrator during new project initialization
+  to establish technical landscape understanding.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-project-researcher — Research

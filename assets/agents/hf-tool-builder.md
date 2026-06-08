@@ -9,9 +9,9 @@ permission:
   write: allow
   bash:
     "*": allow
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    git *: allow
+    node *: allow
+    npx *: allow
   glob: allow
   grep: allow
   task:
@@ -27,12 +27,10 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-custom-tools-dev: allow
 depth: L2
 lineage: hf
 domain: Tool Building
-skills:
-tools:
-  - hf-custom-tools-dev
 instruction:
   - AGENTS.md
 skills:

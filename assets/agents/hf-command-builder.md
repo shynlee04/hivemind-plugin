@@ -1,6 +1,7 @@
 ---
 name: hf-command-builder
-description: Creates and audits OpenCode command definitions with YAML frontmatter, $ARGUMENTS parsing, and non-interactive shell safety. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for safety checks.
+description: Creates and audits OpenCode command definitions with YAML frontmatter, $ARGUMENTS parsing, and non-interactive shell safety. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage —
+  may load hm-* skills for safety checks.
 mode: subagent
 temperature: 0.1
 permission:
@@ -22,10 +23,10 @@ permission:
     "*.yml": allow
     "*": ask
   bash:
-    "mkdir *": allow
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    mkdir *: allow
+    git *: allow
+    node *: allow
+    npx *: allow
     "*": ask
   glob: allow
   grep: allow
@@ -42,13 +43,11 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-command-dev: allow
+  hf-command-parser: allow
 depth: L2
 lineage: hf
 domain: Command Building
-skills:
-tools:
-  - hf-command-dev
-  - hf-command-parser
 instruction:
   - AGENTS.md
 skills:

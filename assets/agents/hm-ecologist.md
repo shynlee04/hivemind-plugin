@@ -1,16 +1,14 @@
 ---
 description: >
-  Maps feature dependencies and cross-cutting impact across the project
-  ecosystem. Produces ECOSYSTEM.md with dependency graphs and impact
-  analysis. Called by hm-orchestrator during hm-ecologist when features
-  have cross-cutting concerns or shared dependencies.
+  Maps feature dependencies and cross-cutting impact across the project ecosystem. Produces ECOSYSTEM.md with dependency graphs and impact analysis. Called by hm-orchestrator during hm-ecologist when
+  features have cross-cutting concerns or shared dependencies.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-ecologist — Feature Ecosystem Mapping

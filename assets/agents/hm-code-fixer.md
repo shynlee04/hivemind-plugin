@@ -1,15 +1,14 @@
 ---
 description: >
-  Applies code review fixes atomically, producing one commit per fix and
-  generating REVIEW-FIX.md. Called by hm-orchestrator during hm-code-review
-  with the --fix flag after hm-code-reviewer produces REVIEW.md.
+  Applies code review fixes atomically, producing one commit per fix and generating REVIEW-FIX.md. Called by hm-orchestrator during hm-code-review with the --fix flag after hm-code-reviewer produces
+  REVIEW.md.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - run-background-command
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  run-background-command: allow
 ---
 
 # hm-code-fixer — Code Fix Application

@@ -1,15 +1,14 @@
 ---
 description: >
-  Decomposes phase objectives into executable tasks with dependency analysis,
-  producing PLAN.md artifacts. Called by hm-orchestrator during the hm-plan-phase
-  workflow after hm-phase-researcher completes its research phase.
+  Decomposes phase objectives into executable tasks with dependency analysis, producing PLAN.md artifacts. Called by hm-orchestrator during the hm-plan-phase workflow after hm-phase-researcher
+  completes its research phase.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - hivemind-agent-work
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  hivemind-agent-work: allow
 ---
 
 # hm-planner — Planning

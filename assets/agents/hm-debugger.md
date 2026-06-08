@@ -1,16 +1,14 @@
 ---
 description: >
-  Investigates bugs through hypothesis-driven root cause analysis, producing
-  DEBUG.md with findings and fix recommendations. Called by
-  hm-debug-session-manager during multi-cycle debug sessions when a specific
-  issue needs investigation.
+  Investigates bugs through hypothesis-driven root cause analysis, producing DEBUG.md with findings and fix recommendations. Called by hm-debug-session-manager during multi-cycle debug sessions when a
+  specific issue needs investigation.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - hivemind-trajectory
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  hivemind-trajectory: allow
 ---
 
 # hm-debugger — Bug Investigation

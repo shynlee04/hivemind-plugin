@@ -1,16 +1,14 @@
 ---
 description: >
-  Conducts phase-specific implementation research before planning, producing
-  a RESEARCH.md artifact with approach recommendations and risk assessment. Called
-  by hm-planner during the hm-plan-phase workflow to inform task breakdown and
-  dependency analysis.
+  Conducts phase-specific implementation research before planning, producing a RESEARCH.md artifact with approach recommendations and risk assessment. Called by hm-planner during the hm-plan-phase
+  workflow to inform task breakdown and dependency analysis.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-phase-researcher — Research

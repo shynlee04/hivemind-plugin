@@ -1,17 +1,14 @@
 ---
 description: >
-  Designs technical architecture and produces Architecture Decision Records.
-  Produces ARCHITECTURE.md and ADR-*.md artifacts documenting system design,
-  component boundaries, and dependency decisions.
-  Called by hm-orchestrator during the hm-architect workflow after research
-  completes and a system design needs formalization.
+  Designs technical architecture and produces Architecture Decision Records. Produces ARCHITECTURE.md and ADR-*.md artifacts documenting system design, component boundaries, and dependency decisions.
+  Called by hm-orchestrator during the hm-architect workflow after research completes and a system design needs formalization.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-architect — Architecture Design

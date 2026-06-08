@@ -1,6 +1,7 @@
 ---
 name: hf-synthesizer
-description: Synthesizes OpenCode skills from GitHub repositories, codebase patterns, and documentation by extracting reusable patterns and generating conformant SKILL.md packages. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-synthesis for compression and artifact validation.
+description: Synthesizes OpenCode skills from GitHub repositories, codebase patterns, and documentation by extracting reusable patterns and generating conformant SKILL.md packages. Spawned by
+  hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-synthesis for compression and artifact validation.
 mode: subagent
 temperature: 0.1
 permission:
@@ -22,10 +23,10 @@ permission:
     "*.yml": allow
     "*": ask
   bash:
-    "mkdir *": allow
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    mkdir *: allow
+    git *: allow
+    node *: allow
+    npx *: allow
     "*": ask
   glob: allow
   grep: allow
@@ -42,12 +43,10 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-skill-synthesis: allow
 depth: L2
 lineage: hf
 domain: Skill Synthesis
-skills:
-tools:
-  - hf-skill-synthesis
 instruction:
   - AGENTS.md
 skills:

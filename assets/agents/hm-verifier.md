@@ -1,17 +1,15 @@
 ---
 description: >
-  Verifies implementation completeness through goal-backward validation against
-  plan must_haves, producing VERIFICATION.md with evidence truth assessment.
-  Called by hm-orchestrator during the hm-execute-phase workflow after hm-executor
-  completes all plan tasks.
+  Verifies implementation completeness through goal-backward validation against plan must_haves, producing VERIFICATION.md with evidence truth assessment. Called by hm-orchestrator during the
+  hm-execute-phase workflow after hm-executor completes all plan tasks.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
-  - hivemind-trajectory
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
+  hivemind-trajectory: allow
 ---
 
 # hm-verifier — Verification

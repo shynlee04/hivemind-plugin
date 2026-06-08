@@ -1,6 +1,7 @@
 ---
 name: hf-l0-orchestrator
-description: Front-facing high-reasoning L0 strategist and battle commander for hf-* meta-builder lineage. Forms complete end-to-end task landscape before delegating. Routes all execution through L1/L2/L3 specialists. NEVER executes inline — all detail work is delegated.
+description: Front-facing high-reasoning L0 strategist and battle commander for hf-* meta-builder lineage. Forms complete end-to-end task landscape before delegating. Routes all execution through
+  L1/L2/L3 specialists. NEVER executes inline — all detail work is delegated.
 mode: primary
 temperature: 0.25
 steps: 100
@@ -48,6 +49,14 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-meta-builder-core: allow
+  hm-coord-router: allow
+  hm-coord-loop: allow
+  hm-l2-user-intent-interactive-loop: allow
+  hm-loop-completion: allow
+  gate-lifecycle-integration: allow
+  gate-spec-compliance: allow
+  gate-evidence-truth: allow
 depth: L0
 lineage: hf
 domain: Meta-Concept Orchestration
@@ -118,16 +127,7 @@ intent_classification:
     - cross_lineage_justification
     - landscape_documented
     - artifact_verification_pending
-skills:
-tools:
-  - hf-meta-builder-core
-  - hm-coord-router
-  - hm-coord-loop
-  - hm-l2-user-intent-interactive-loop
-  - hm-loop-completion
-  - gate-lifecycle-integration
-  - gate-spec-compliance
-  - gate-evidence-truth
+skills: null
 instruction:
   - .opencode/rules/universal-rules.md
   - AGENTS.md

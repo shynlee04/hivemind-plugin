@@ -1,15 +1,13 @@
 ---
 description: >
-  Authors project documentation including README, API references, and usage
-  guides based on implemented code and architecture decisions. Called by
-  hm-orchestrator during hm-docs-update after implementation phases
-  complete and documentation needs updating.
+  Authors project documentation including README, API references, and usage guides based on implemented code and architecture decisions. Called by hm-orchestrator during hm-docs-update after
+  implementation phases complete and documentation needs updating.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
 ---
 
 # hm-doc-writer — Documentation Authoring

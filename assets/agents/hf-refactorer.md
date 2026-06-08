@@ -1,6 +1,7 @@
 ---
 name: hf-refactorer
-description: Refactors OpenCode skills and agents to improve structural quality, reduce technical debt, eliminate anti-patterns, and align with lineage standards. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-refactor for systematic refactoring methodology.
+description: Refactors OpenCode skills and agents to improve structural quality, reduce technical debt, eliminate anti-patterns, and align with lineage standards. Spawned by hf-coordinator. Cannot
+  delegate. FLEXIBLE lineage — may load hm-refactor for systematic refactoring methodology.
 mode: subagent
 temperature: 0.1
 permission:
@@ -22,10 +23,10 @@ permission:
     "*.yml": allow
     "*": allow
   bash:
-    "mkdir *": allow
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    mkdir *: allow
+    git *: allow
+    node *: allow
+    npx *: allow
     "*": allow
   glob: allow
   grep: allow
@@ -42,13 +43,11 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-agents-md-sync: allow
+  hf-use-authoring-skills: allow
 depth: L2
 lineage: hf
 domain: Primitive Refactoring
-skills:
-tools:
-  - hf-agents-md-sync
-  - hf-use-authoring-skills
 instruction:
   - AGENTS.md
 skills:

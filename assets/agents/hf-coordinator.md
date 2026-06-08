@@ -1,6 +1,7 @@
 ---
 name: hf-coordinator
-description: Meta-builder category coordinator for hf-* lineage. Dispatches meta-concept specialists (agent builders, skill authors, tool builders), manages creation waves, validates AQUAL compliance, and returns consolidated results. Spawned by L0 hf-orchestrator. FLEXIBLE cross-lineage access.
+description: Meta-builder category coordinator for hf-* lineage. Dispatches meta-concept specialists (agent builders, skill authors, tool builders), manages creation waves, validates AQUAL compliance,
+  and returns consolidated results. Spawned by L0 hf-orchestrator. FLEXIBLE cross-lineage access.
 mode: subagent
 temperature: 0.15
 permission:
@@ -34,18 +35,15 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-agents-and-subagents-dev: allow
+  hf-agent-composition: allow
+  hf-delegation-gates: allow
+  hm-coord-loop: allow
+  hm-loop-completion: allow
+  hm-gate-triad (x2): allow
 depth: L1
 lineage: hf
 domain: Orchestration
-skills:
-tools:
-  - hf-agents-and-subagents-dev
-  - hf-agent-composition
-  - hf-delegation-gates
-  - hm-coord-loop
-  - hm-loop-completion
-  - hm-gate-triad
-  - hm-gate-triad
 instruction:
   - AGENTS.md
 skills:

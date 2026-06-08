@@ -1,6 +1,7 @@
 ---
 name: hf-skill-builder
-description: Creates and audits SKILL.md packages with progressive disclosure, trigger phrases, and agentskills.io compliance. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for cross-validation.
+description: Creates and audits SKILL.md packages with progressive disclosure, trigger phrases, and agentskills.io compliance. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load
+  hm-* skills for cross-validation.
 mode: subagent
 temperature: 0.1
 permission:
@@ -22,10 +23,10 @@ permission:
     "*.yml": allow
     "*": allow
   bash:
-    "mkdir *": allow
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    mkdir *: allow
+    git *: allow
+    node *: allow
+    npx *: allow
     "*": allow
   glob: allow
   grep: allow
@@ -42,13 +43,11 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-use-authoring-skills: allow
+  hf-skill-synthesis: allow
 depth: L2
 lineage: hf
 domain: Skill Authoring
-skills:
-tools:
-  - hf-use-authoring-skills
-  - hf-skill-synthesis
 instruction:
   - AGENTS.md
 skills:

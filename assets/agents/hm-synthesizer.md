@@ -1,16 +1,14 @@
 ---
 description: >
-  Combines outputs from parallel research agents into a consolidated SUMMARY.md
-  artifact with cross-referenced findings and confidence assessments. Called by
-  hm-orchestrator after parallel researcher dispatch to produce unified research
-  context for downstream planning.
+  Combines outputs from parallel research agents into a consolidated SUMMARY.md artifact with cross-referenced findings and confidence assessments. Called by hm-orchestrator after parallel researcher
+  dispatch to produce unified research context for downstream planning.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-synthesizer — Research

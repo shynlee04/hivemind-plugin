@@ -1,16 +1,14 @@
 ---
 description: >
-  Extracts codebase structure, dependency graphs, and pattern maps, producing
-  .planning/codebase/*.md artifacts for the planning layer. Called by hm-orchestrator
-  during new project initialization or when the codebase needs structural analysis
-  for informed planning.
+  Extracts codebase structure, dependency graphs, and pattern maps, producing .planning/codebase/*.md artifacts for the planning layer. Called by hm-orchestrator during new project initialization or
+  when the codebase needs structural analysis for informed planning.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-codebase-mapper — Planning

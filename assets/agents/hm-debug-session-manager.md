@@ -1,16 +1,15 @@
 ---
 description: >
-  Orchestrates multi-cycle debugging sessions with checkpoint state persistence
-  and investigator dispatch. Called by hm-orchestrator during hm-debug after
-  a bug is reported during execution or verification.
+  Orchestrates multi-cycle debugging sessions with checkpoint state persistence and investigator dispatch. Called by hm-orchestrator during hm-debug after a bug is reported during execution or
+  verification.
 mode: all
 hidden: true
-tools:
-  - delegate-task
-  - hivemind-doc
-  - hivemind-trajectory
 skills:
   - hm-config-governance
+permission:
+  delegate-task: allow
+  hivemind-doc: allow
+  hivemind-trajectory: allow
 ---
 
 # hm-debug-session-manager — Debug Session Orchestration

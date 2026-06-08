@@ -1,16 +1,14 @@
 ---
 description: >
-  Analyzes developer session interactions to build a behavioral profile,
-  producing USER-PROFILE.md with communication style and decision speed
-  dimensions. Called by hm-orchestrator during hm-profile-user to
-  adapt agent behavior to developer preferences.
+  Analyzes developer session interactions to build a behavioral profile, producing USER-PROFILE.md with communication style and decision speed dimensions. Called by hm-orchestrator during
+  hm-profile-user to adapt agent behavior to developer preferences.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-user-profiler — User Profiling

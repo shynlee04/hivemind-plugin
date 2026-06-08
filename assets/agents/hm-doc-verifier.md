@@ -1,15 +1,13 @@
 ---
 description: >
-  Verifies documentation claims against actual code implementation, producing
-  per-document JSON verification reports. Called by hm-orchestrator during
-  hm-docs-update after hm-doc-writer produces documentation, ensuring every
-  claim is grounded in code reality.
+  Verifies documentation claims against actual code implementation, producing per-document JSON verification reports. Called by hm-orchestrator during hm-docs-update after hm-doc-writer produces
+  documentation, ensuring every claim is grounded in code reality.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
 ---
 
 # hm-doc-verifier — Documentation Verification

@@ -1,6 +1,7 @@
 ---
 name: hf-prompter
-description: Expert prompt engineering and validation specialist for creating, optimizing, and testing high-quality prompts through multi-agent workflows. Spawned by hf-coordinator for prompt engineering tasks. Cannot delegate.
+description: Expert prompt engineering and validation specialist for creating, optimizing, and testing high-quality prompts through multi-agent workflows. Spawned by hf-coordinator for prompt
+  engineering tasks. Cannot delegate.
 mode: subagent
 temperature: 0.2
 permission:
@@ -22,10 +23,10 @@ permission:
     "*.yml": allow
     "*": ask
   bash:
-    "mkdir *": allow
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    mkdir *: allow
+    git *: allow
+    node *: allow
+    npx *: allow
     "*": ask
   glob: allow
   grep: allow
@@ -42,17 +43,15 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-command-parser: allow
+  hm-l3-deep-research: allow
+  hm-l3-detective: allow
+  hm-l3-synthesis: allow
+  hm-l2-planning-persistence: allow
+  hm-l3-opencode-non-interactive-shell: allow
 depth: L2
 lineage: hf
 domain: Prompt Engineering
-skills:
-tools:
-  - hf-command-parser
-  - hm-l3-deep-research
-  - hm-l3-detective
-  - hm-l3-synthesis
-  - hm-l2-planning-persistence
-  - hm-l3-opencode-non-interactive-shell
 instruction:
   - AGENTS.md
 skills:

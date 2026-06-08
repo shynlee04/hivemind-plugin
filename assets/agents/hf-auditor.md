@@ -1,6 +1,7 @@
 ---
 name: hf-auditor
-description: Audits OpenCode primitives (agents, skills, commands, tools) for quality compliance, drift detection, anti-pattern discovery, and structural integrity. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-gate-orchestrator for quality gate orchestration.
+description: Audits OpenCode primitives (agents, skills, commands, tools) for quality compliance, drift detection, anti-pattern discovery, and structural integrity. Spawned by hf-coordinator. Cannot
+  delegate. FLEXIBLE lineage — may load hm-gate-orchestrator for quality gate orchestration.
 mode: subagent
 temperature: 0.05
 permission:
@@ -22,10 +23,10 @@ permission:
     "*.yml": allow
     "*": ask
   bash:
-    "mkdir *": allow
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    mkdir *: allow
+    git *: allow
+    node *: allow
+    npx *: allow
     "*": ask
   glob: allow
   grep: allow
@@ -42,13 +43,11 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-use-authoring-skills: allow
+  hf-agents-md-sync: allow
 depth: L2
 lineage: hf
 domain: Primitive Auditing
-skills:
-tools:
-  - hf-use-authoring-skills
-  - hf-agents-md-sync
 instruction:
   - AGENTS.md
 skills:

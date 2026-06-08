@@ -1,10 +1,7 @@
 ---
 description: >
-  Routes the `hm-config-govern` user command to the config-edit workflow
-  (`assets/workflows/hm-config-edit.md`). Owns the read → prompt → validate →
-  diff → write → reset loop for `.hivemind/configs.json` `governance.rules[]`.
-  Triggers on 'governance rule', 'config tool', 'action.type', 'block list',
-  'warn list', 'add rule', 'remove rule', 'set severity'.
+  Routes the `hm-config-govern` user command to the config-edit workflow (`assets/workflows/hm-config-edit.md`). Owns the read → prompt → validate → diff → write → reset loop for
+  `.hivemind/configs.json` `governance.rules[]`. Triggers on 'governance rule', 'config tool', 'action.type', 'block list', 'warn list', 'add rule', 'remove rule', 'set severity'.
 mode: all
 hidden: true
 skills:
@@ -12,17 +9,7 @@ skills:
   - hm-config-governance
 commands:
   - hm-config-govern
-tools:
-  - delegate-task
-  - delegation-status
-  - configure-primitive
-  - hivemind-steer
-  - hivemind-doc
-  - hivemind-command-engine
-  - read
-  - glob
-  - grep
-  - bash
+permission: {}
 ---
 
 # hm-platform-references — Config Governance Gateway

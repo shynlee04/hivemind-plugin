@@ -1,16 +1,14 @@
 ---
 description: >
-  Coordinates release preparation including CHANGELOG.md generation, version
-  bumping, and release manifest creation. Called by hm-orchestrator during
-  hm-ship after all milestone phases complete and the release is ready for
-  packaging.
+  Coordinates release preparation including CHANGELOG.md generation, version bumping, and release manifest creation. Called by hm-orchestrator during hm-ship after all milestone phases complete and
+  the release is ready for packaging.
 mode: all
 hidden: true
-tools:
-  - delegate-task
-  - validate-restart
 skills:
   - hm-config-governance
+permission:
+  delegate-task: allow
+  validate-restart: allow
 ---
 
 # hm-shipper — Release Coordination

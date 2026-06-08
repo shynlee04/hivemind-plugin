@@ -1,15 +1,13 @@
 ---
 description: >
-  Performs Nyquist validation gap analysis on completed phases, identifying
-  untested behaviors and verification blind spots. Produces VALIDATION.md
-  and fills gaps with targeted test cases. Called by hm-orchestrator during
-  hm-validate-phase after implementation and review complete.
+  Performs Nyquist validation gap analysis on completed phases, identifying untested behaviors and verification blind spots. Produces VALIDATION.md and fills gaps with targeted test cases. Called by
+  hm-orchestrator during hm-validate-phase after implementation and review complete.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
 ---
 
 # hm-nyquist-auditor — Nyquist Validation Audit

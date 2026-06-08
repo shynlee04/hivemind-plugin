@@ -1,17 +1,15 @@
 ---
 description: >
-  Executes PLAN.md tasks atomically with wave-based parallelization, deviation
-  handling, and checkpoint protocols, producing code changes and SUMMARY.md
-  artifacts. Called by hm-orchestrator during the hm-execute-phase workflow
-  after hm-planner produces a verified plan.
+  Executes PLAN.md tasks atomically with wave-based parallelization, deviation handling, and checkpoint protocols, producing code changes and SUMMARY.md artifacts. Called by hm-orchestrator during the
+  hm-execute-phase workflow after hm-planner produces a verified plan.
 mode: all
 hidden: true
-tools:
-  - delegate-task
-  - hivemind-doc
-  - run-background-command
 skills:
   - hm-config-governance
+permission:
+  delegate-task: allow
+  hivemind-doc: allow
+  run-background-command: allow
 ---
 
 # hm-executor — Implementation

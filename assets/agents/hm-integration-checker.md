@@ -1,15 +1,14 @@
 ---
 description: >
-  Validates cross-phase integration and end-to-end flow correctness, producing
-  integration reports. Called by hm-orchestrator during hm-audit-milestone
-  after multiple phases complete and cross-phase coherence needs verification.
+  Validates cross-phase integration and end-to-end flow correctness, producing integration reports. Called by hm-orchestrator during hm-audit-milestone after multiple phases complete and cross-phase
+  coherence needs verification.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-integration-checker — Integration Validation

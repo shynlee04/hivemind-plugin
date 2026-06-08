@@ -1,15 +1,14 @@
 ---
 description: >
-  Validates plan completeness through goal-backward analysis, producing a PASS/FAIL
-  verdict with detailed findings. Called by hm-planner during the hm-plan-phase
-  workflow as a quality gate before plan is accepted for execution.
+  Validates plan completeness through goal-backward analysis, producing a PASS/FAIL verdict with detailed findings. Called by hm-planner during the hm-plan-phase workflow as a quality gate before plan
+  is accepted for execution.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
-  - delegate-task
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
+  delegate-task: allow
 ---
 
 # hm-plan-checker — Planning

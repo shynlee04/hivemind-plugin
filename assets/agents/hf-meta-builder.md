@@ -1,6 +1,7 @@
 ---
 name: hf-meta-builder
-description: Meta-concept workflow specialist for the hf-* lineage. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft concepts (skills, agents, commands). Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for cross-validation.
+description: Meta-concept workflow specialist for the hf-* lineage. Architects multi-agent workflows through MINDNETWORK graphs, manages long-horizon cross-session projects, and chains OpenCode soft
+  concepts (skills, agents, commands). Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for cross-validation.
 mode: subagent
 temperature: 0.15
 permission:
@@ -22,10 +23,10 @@ permission:
     "*.yml": allow
     "*": ask
   bash:
-    "mkdir *": allow
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    mkdir *: allow
+    git *: allow
+    node *: allow
+    npx *: allow
     "*": ask
   glob: allow
   grep: allow
@@ -42,15 +43,13 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-meta-builder-core: allow
+  hf-skill-synthesis: allow
+  hm-coord-loop: allow
+  hm-l2-planning-persistence: allow
 depth: L2
 lineage: hf
 domain: Meta-Building
-skills:
-tools:
-  - hf-meta-builder-core
-  - hf-skill-synthesis
-  - hm-coord-loop
-  - hm-l2-planning-persistence
 instruction:
   - AGENTS.md
 skills:

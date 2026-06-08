@@ -1,14 +1,12 @@
 ---
-description: >
-  Maps code patterns and conventions for new file creation, producing
-  PATTERNS.md reference documents. Called by hm-orchestrator during
-  hm-plan-phase to ensure new code follows established patterns.
+description: |
+  Maps code patterns and conventions for new file creation, producing PATTERNS.md reference documents. Called by hm-orchestrator during hm-plan-phase to ensure new code follows established patterns.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
 ---
 
 # hm-pattern-mapper — Pattern Mapping

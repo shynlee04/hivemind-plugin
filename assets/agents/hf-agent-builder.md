@@ -1,6 +1,7 @@
 ---
 name: hf-agent-builder
-description: Creates, audits, and repairs OpenCode agent definitions with YAML frontmatter, granular permissions, and XML-tagged execution flows. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE lineage — may load hm-* skills for validation.
+description: Creates, audits, and repairs OpenCode agent definitions with YAML frontmatter, granular permissions, and XML-tagged execution flows. Spawned by hf-coordinator. Cannot delegate. FLEXIBLE
+  lineage — may load hm-* skills for validation.
 mode: subagent
 temperature: 0.1
 permission:
@@ -22,10 +23,10 @@ permission:
     "*.yml": allow
     "*": ask
   bash:
-    "mkdir *": allow
-    "git *": allow
-    "node *": allow
-    "npx *": allow
+    mkdir *: allow
+    git *: allow
+    node *: allow
+    npx *: allow
     "*": ask
   glob: allow
   grep: allow
@@ -42,13 +43,11 @@ permission:
     hm-*: allow
     gate-*: allow
     stack-*: allow
+  hf-agents-and-subagents-dev: allow
+  hf-agent-composition: allow
 depth: L2
 lineage: hf
 domain: Agent Building
-skills:
-tools:
-  - hf-agents-and-subagents-dev
-  - hf-agent-composition
 instruction:
   - AGENTS.md
 skills:

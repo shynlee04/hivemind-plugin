@@ -1,15 +1,13 @@
 ---
 description: >
-  Performs 6-pillar visual audit of implemented frontend screens, producing
-  UI-REVIEW.md with per-pillar scores and improvement recommendations.
-  Called by hm-orchestrator during hm-ui-review after frontend implementation
-  is complete and deployed.
+  Performs 6-pillar visual audit of implemented frontend screens, producing UI-REVIEW.md with per-pillar scores and improvement recommendations. Called by hm-orchestrator during hm-ui-review after
+  frontend implementation is complete and deployed.
 mode: all
 hidden: true
-tools:
-  - hivemind-doc
 skills:
   - hm-config-governance
+permission:
+  hivemind-doc: allow
 ---
 
 # hm-ui-auditor — Visual UI Audit
