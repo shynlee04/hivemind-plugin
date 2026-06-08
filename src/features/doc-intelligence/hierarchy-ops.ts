@@ -37,8 +37,9 @@ export function generateOutline(projectRoot: string, filePath: string): DocHeadi
   const content = readFileSync(absPath, "utf-8")
   const parsed = parseDocument(toRootRelativePath(projectRoot, absPath), content)
 
-  // Build parent-child nesting
-  return buildHeadingTree(parsed.outline)
+  // Return flat heading list in source order
+  // For tree structure, use buildHeadingTree(parsed.outline)
+  return parsed.outline
 }
 
 /**

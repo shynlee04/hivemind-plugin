@@ -56,8 +56,12 @@ export async function lockedTransform(
 ): Promise<LockedTransformResult> {
   const opId = generateOpId()
 
-  // Acquire lock
-  lockSync(filePath, { realpath: false, retries: { retries: 50, minTimeout: 100, maxTimeout: 100 } })
+  // Acquire lock — use lockSync for simplicity, single attempt
+  try {
+    lockSync(filePath, { realpath: false })
+  } catch (e) {
+    throw new Error(`[Harness] Failed to acquire lock for ${filePath}: ${e instanceof Error ? e.message : String(e)}`)
+  }
 
   try {
     // Read current content
@@ -103,6 +107,7 @@ export async function lockedTransform(
  * Sync variant of lockedTransform for hot-path single-section writes.
  *
  * Identical flow but uses sync FS exclusively. No async/await.
+ * Note: lockSync does not support retries — fails immediately if lock held.
  *
  * @param filePath - Absolute path to the target file.
  * @param transform - Transform function receiving current content + hash.
@@ -116,8 +121,8 @@ export function lockedTransformSync(
 ): LockedTransformResult {
   const opId = generateOpId()
 
-  // Acquire lock
-  lockSync(filePath, { realpath: false, retries: { retries: 50, minTimeout: 100, maxTimeout: 100 } })
+  // Acquire lock (sync — single attempt, no retries)
+  lockSync(filePath, { realpath: false })
 
   try {
     // Read current content
