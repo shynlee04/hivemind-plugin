@@ -6,6 +6,9 @@ description: >
   issue needs investigation.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - hivemind-trajectory
 ---
 
 # hm-debugger — Bug Investigation

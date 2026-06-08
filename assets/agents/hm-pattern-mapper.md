@@ -5,6 +5,8 @@ description: >
   hm-plan-phase to ensure new code follows established patterns.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
 ---
 
 # hm-pattern-mapper — Pattern Mapping

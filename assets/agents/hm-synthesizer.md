@@ -6,6 +6,9 @@ description: >
   context for downstream planning.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-synthesizer — Research

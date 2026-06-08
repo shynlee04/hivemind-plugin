@@ -38,6 +38,7 @@ depth: L1
 lineage: hf
 domain: Orchestration
 skills:
+tools:
   - hf-agents-and-subagents-dev
   - hf-agent-composition
   - hf-delegation-gates

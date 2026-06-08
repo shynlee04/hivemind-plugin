@@ -5,6 +5,10 @@ description: >
   hm-orchestrator during hm-secure-phase after implementation completes.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
+  - hivemind-trajectory
 ---
 
 # hm-security-auditor — Security Audit

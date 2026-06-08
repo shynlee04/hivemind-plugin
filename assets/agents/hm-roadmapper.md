@@ -6,6 +6,9 @@ description: >
   completes and a structured delivery plan is needed.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - hivemind-agent-work
 ---
 
 # hm-roadmapper — Roadmap Planning

@@ -7,6 +7,9 @@ description: >
   completes and a system design needs formalization.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-architect — Architecture Design

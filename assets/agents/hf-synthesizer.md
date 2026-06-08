@@ -46,6 +46,7 @@ depth: L2
 lineage: hf
 domain: Skill Synthesis
 skills:
+tools:
   - hf-skill-synthesis
 instruction:
   - AGENTS.md

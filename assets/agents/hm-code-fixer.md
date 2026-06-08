@@ -5,6 +5,9 @@ description: >
   with the --fix flag after hm-code-reviewer produces REVIEW.md.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - run-background-command
 ---
 
 # hm-code-fixer — Code Fix Application

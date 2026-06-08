@@ -6,6 +6,8 @@ description: >
   is complete and deployed.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
 ---
 
 # hm-ui-auditor — Visual UI Audit

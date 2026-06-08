@@ -6,6 +6,9 @@ description: >
   hm-plan-phase when the plan brief is underspecified.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-intent-loop — Intent Clarification

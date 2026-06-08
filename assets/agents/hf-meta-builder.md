@@ -46,6 +46,7 @@ depth: L2
 lineage: hf
 domain: Meta-Building
 skills:
+tools:
   - hf-meta-builder-core
   - hf-skill-synthesis
   - hm-coord-loop

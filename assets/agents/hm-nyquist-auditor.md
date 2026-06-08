@@ -6,6 +6,8 @@ description: >
   hm-validate-phase after implementation and review complete.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
 ---
 
 # hm-nyquist-auditor — Nyquist Validation Audit

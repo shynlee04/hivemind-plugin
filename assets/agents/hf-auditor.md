@@ -46,6 +46,7 @@ depth: L2
 lineage: hf
 domain: Primitive Auditing
 skills:
+tools:
   - hf-use-authoring-skills
   - hf-agents-md-sync
 instruction:

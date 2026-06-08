@@ -31,6 +31,7 @@ depth: L2
 lineage: hf
 domain: Tool Building
 skills:
+tools:
   - hf-custom-tools-dev
 instruction:
   - AGENTS.md

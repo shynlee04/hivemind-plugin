@@ -46,6 +46,7 @@ depth: L2
 lineage: hf
 domain: Primitive Refactoring
 skills:
+tools:
   - hf-agents-md-sync
   - hf-use-authoring-skills
 instruction:

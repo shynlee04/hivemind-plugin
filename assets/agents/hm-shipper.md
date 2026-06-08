@@ -6,6 +6,9 @@ description: >
   packaging.
 mode: all
 hidden: true
+tools:
+  - delegate-task
+  - validate-restart
 ---
 
 # hm-shipper — Release Coordination

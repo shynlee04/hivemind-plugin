@@ -46,6 +46,7 @@ depth: L2
 lineage: hf
 domain: Command Building
 skills:
+tools:
   - hf-command-dev
   - hf-command-parser
 instruction:

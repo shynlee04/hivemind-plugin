@@ -46,6 +46,7 @@ depth: L2
 lineage: hf
 domain: Agent Building
 skills:
+tools:
   - hf-agents-and-subagents-dev
   - hf-agent-composition
 instruction:

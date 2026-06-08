@@ -6,6 +6,8 @@ description: >
   claim is grounded in code reality.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
 ---
 
 # hm-doc-verifier — Documentation Verification

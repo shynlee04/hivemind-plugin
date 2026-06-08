@@ -5,6 +5,9 @@ description: >
   workflow after hm-phase-researcher completes its research phase.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - hivemind-agent-work
 ---
 
 # hm-planner — Planning

@@ -6,6 +6,10 @@ description: >
   after hm-planner produces a verified plan.
 mode: all
 hidden: true
+tools:
+  - delegate-task
+  - hivemind-doc
+  - run-background-command
 ---
 
 # hm-executor — Implementation

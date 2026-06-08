@@ -6,6 +6,8 @@ description: >
   complete and documentation needs updating.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
 ---
 
 # hm-doc-writer — Documentation Authoring

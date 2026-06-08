@@ -6,6 +6,9 @@ description: >
   dependency analysis.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-phase-researcher — Research

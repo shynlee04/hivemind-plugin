@@ -6,6 +6,9 @@ description: >
   implementation of a plan.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-code-reviewer — Code Review

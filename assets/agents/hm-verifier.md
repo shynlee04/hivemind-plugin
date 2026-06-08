@@ -214,27 +214,17 @@ status: passed | gaps_found | human_needed
 score: N/M must-haves verified
 overrides_applied: 0
 overrides:
+tools:
   - must_have: "Must-have text"
-    reason: "Reason"
-    accepted_by: "username"
-    accepted_at: "timestamp"
 gaps:
   - truth: "Truth that failed"
-    status: failed
-    reason: "Reason"
-    artifacts:
       - path: "src/path"
         issue: "Issue"
-    missing:
       - "Thing to fix"
 deferred:
   - truth: "Deferred truth"
-    addressed_in: "Phase N"
-    evidence: "Roadmap text"
 human_verification:
   - test: "How to test"
-    expected: "Expected output"
-    why_human: "Why"
 ---
 
 # Phase {X}: {Name} Verification Report

@@ -5,6 +5,9 @@ description: >
   during new project initialization to establish technical landscape understanding.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-project-researcher — Research

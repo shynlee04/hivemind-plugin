@@ -46,6 +46,7 @@ depth: L2
 lineage: hf
 domain: Prompt Engineering
 skills:
+tools:
   - hf-command-parser
   - hm-l3-deep-research
   - hm-l3-detective

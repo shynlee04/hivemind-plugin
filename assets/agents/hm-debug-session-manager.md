@@ -5,6 +5,10 @@ description: >
   a bug is reported during execution or verification.
 mode: all
 hidden: true
+tools:
+  - delegate-task
+  - hivemind-doc
+  - hivemind-trajectory
 ---
 
 # hm-debug-session-manager — Debug Session Orchestration

@@ -5,6 +5,9 @@ description: >
   workflow as a quality gate before plan is accepted for execution.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-plan-checker — Planning

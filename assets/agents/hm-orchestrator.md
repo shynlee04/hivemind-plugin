@@ -6,6 +6,12 @@ description: >
   all Hm workflows.
 mode: all
 hidden: true
+tools:
+  - delegate-task
+  - delegation-status
+  - hivemind-trajectory
+  - hivemind-steer
+  - hivemind-agent-work
 ---
 
 # hm-orchestrator — Session Orchestration

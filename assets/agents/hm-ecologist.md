@@ -6,6 +6,9 @@ description: >
   have cross-cutting concerns or shared dependencies.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-ecologist — Feature Ecosystem Mapping

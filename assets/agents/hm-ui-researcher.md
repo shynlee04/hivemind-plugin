@@ -6,6 +6,8 @@ description: >
   design specifications before implementation.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
 ---
 
 # hm-ui-researcher — UI Design Contract

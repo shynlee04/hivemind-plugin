@@ -6,6 +6,8 @@ description: >
   is complete.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
 ---
 
 # hm-ui-checker — UI Design Validation

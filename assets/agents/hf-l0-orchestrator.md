@@ -119,6 +119,7 @@ intent_classification:
     - landscape_documented
     - artifact_verification_pending
 skills:
+tools:
   - hf-meta-builder-core
   - hm-coord-router
   - hm-coord-loop

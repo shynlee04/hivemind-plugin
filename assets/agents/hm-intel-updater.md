@@ -6,6 +6,8 @@ description: >
   produces raw findings that need structured persistence.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
 ---
 
 # hm-intel-updater — Codebase Intelligence

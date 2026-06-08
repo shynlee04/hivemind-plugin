@@ -5,6 +5,9 @@ description: >
   after multiple phases complete and cross-phase coherence needs verification.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-integration-checker — Integration Validation

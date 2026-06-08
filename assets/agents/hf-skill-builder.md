@@ -46,6 +46,7 @@ depth: L2
 lineage: hf
 domain: Skill Authoring
 skills:
+tools:
   - hf-use-authoring-skills
   - hf-skill-synthesis
 instruction:

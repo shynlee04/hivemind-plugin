@@ -118,6 +118,7 @@ intent_classification:
     - landscape_documented
     - artifact_tracking
 skills:
+tools:
   - hm-coord-router
   - hm-routing-skill
   - hm-coord-loop

@@ -6,6 +6,9 @@ description: >
   adapt agent behavior to developer preferences.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-user-profiler — User Profiling

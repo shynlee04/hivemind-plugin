@@ -6,6 +6,9 @@ description: >
   requirements need formal specification.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - hivemind-agent-work
 ---
 
 # hm-specifier — Spec-Driven Authoring

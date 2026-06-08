@@ -6,6 +6,9 @@ description: >
   for informed planning.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
 ---
 
 # hm-codebase-mapper — Planning
