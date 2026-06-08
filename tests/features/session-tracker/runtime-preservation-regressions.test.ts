@@ -526,6 +526,7 @@ describe("CP-ST-06 runtime preservation regressions", () => {
         projectRoot,
       }),
       hierarchyIndex,
+      sessionRouter: { route: vi.fn().mockResolvedValue({ route: "main" }) },
     })
 
     await toolCapture.handleToolExecuteAfter(

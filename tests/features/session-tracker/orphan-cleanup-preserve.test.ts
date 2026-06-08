@@ -118,6 +118,14 @@ describe("OrphanCleanup preserves child records before quarantine", () => {
       client: { app: { log: vi.fn() } } as never,
       projectRoot,
       hierarchyIndex,
+      sessionRouter: {
+        route: vi.fn().mockImplementation(async (sessionID: string) => {
+          const isChild = hierarchyIndex.isChild(sessionID)
+          return isChild
+            ? { route: "child", parentID: hierarchyIndex.getParent(sessionID) ?? "", classification: { kind: "child", parentID: hierarchyIndex.getParent(sessionID) ?? "" } }
+            : { route: "main", classification: { kind: "root" } }
+        }),
+      },
       quarantine: new OrphanQuarantine({ trackerRoot }),
     })
 

@@ -162,6 +162,7 @@ describe("tool-delegation integration: trajectory + contract auto-creation", () 
     const deps: ToolDelegationDeps = {
       client,
       classifier: createMockClassifier(),
+      sessionRouter: { route: vi.fn().mockResolvedValue({ route: "main" }) },
       childWriter: createMockChildWriter(),
       sessionIndexWriter: createMockSessionIndexWriter(),
       projectIndexWriter: createMockProjectIndexWriter(),

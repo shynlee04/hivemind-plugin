@@ -29,7 +29,7 @@ function buildTestCtx(mockLog: ReturnType<typeof vi.fn>): TrackerHandlerContext 
     projectIndexWriter: undefined,
     sessionIndexWriter: undefined,
     bootstrap: {} as any,
-    sessionRouter: {} as any,
+    sessionRouter: { route: vi.fn().mockResolvedValue({ route: "main" }) },
     childRecorder: {} as any,
   }
 }

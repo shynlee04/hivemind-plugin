@@ -52,6 +52,7 @@ function createMockDeps(pendingRegistry?: PendingDispatchRegistry) {
         getDepth: getDepthSpy,
         isChild: isChildSpy,
       } as any,
+      sessionRouter: { route: vi.fn().mockResolvedValue({ route: "main" }) } as any,
       pendingRegistry,
     },
     spies: {

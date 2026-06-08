@@ -84,6 +84,7 @@ describe("ToolCapture — child session (DEFECT-03)", () => {
         getDepth: vi.fn().mockReturnValue(1),
         isChild: vi.fn().mockReturnValue(false),
       } as unknown as HierarchyIndex,
+      sessionRouter: { route: vi.fn().mockResolvedValue({ route: "main" }) } as any,
     })
   })
 

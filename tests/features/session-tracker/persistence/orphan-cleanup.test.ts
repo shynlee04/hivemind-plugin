@@ -76,6 +76,7 @@ describe("OrphanCleanup — G-6 guardrail (REQ-21-14)", () => {
       cleanup = new OrphanCleanup({
         client: { app: { log: vi.fn() } } as any,
         projectRoot,
+        sessionRouter: { route: vi.fn().mockResolvedValue({ route: "main" }) },
         quarantine,
       })
     })
@@ -132,6 +133,7 @@ describe("OrphanCleanup — G-6 guardrail (REQ-21-14)", () => {
         client: { app: { log: mockLog } } as any,
         projectRoot,
         hierarchyIndex,
+        sessionRouter: { route: vi.fn().mockResolvedValue({ route: "child" }) },
         quarantine,
       })
 
@@ -168,6 +170,7 @@ describe("OrphanCleanup — G-6 guardrail (REQ-21-14)", () => {
         client: { app: { log: mockLog } } as any,
         projectRoot,
         hierarchyIndex,
+        sessionRouter: { route: vi.fn().mockResolvedValue({ route: "child" }) },
         quarantine,
       })
 

@@ -1,9 +1,9 @@
 /**
  * Tests for session routing classification in handleChatMessage and handleToolExecuteAfter.
  *
- * After CP-ST-06, handleChatMessage uses sessionRouter.route() while
- * handleToolExecuteAfter uses classifier.classify() directly. Both route
- * child sessions to childWriter and main sessions to their respective capture handlers.
+ * After CP-ST-06, both handleChatMessage and handleToolExecuteAfter use
+ * sessionRouter.route() for routing decisions. All routing goes through
+ * the single SessionRouter authority.
  *
  * @module tests/features/session-tracker/session-routing
  */
@@ -25,7 +25,6 @@ describe("Session routing classification", () => {
   let mockHandleChatMessage: ReturnType<typeof vi.fn>
   let mockHandleToolExecuteAfter: ReturnType<typeof vi.fn>
   let mockRoute: ReturnType<typeof vi.fn>
-  let mockClassify: ReturnType<typeof vi.fn>
   let mockRecordChildMessage: ReturnType<typeof vi.fn>
   let mockRecordChildToolJourney: ReturnType<typeof vi.fn>
 
@@ -35,7 +34,6 @@ describe("Session routing classification", () => {
     mockHandleChatMessage = vi.fn()
     mockHandleToolExecuteAfter = vi.fn()
     mockRoute = vi.fn()
-    mockClassify = vi.fn()
     mockRecordChildMessage = vi.fn()
     mockRecordChildToolJourney = vi.fn()
 
@@ -52,7 +50,7 @@ describe("Session routing classification", () => {
     ;(tracker as any).messageCapture = { handleChatMessage: mockHandleChatMessage, backfillUserTurnsFromSdk: vi.fn() }
     ;(tracker as any).toolCapture = { handleToolExecuteAfter: mockHandleToolExecuteAfter }
     ;(tracker as any).sessionRouter = { route: mockRoute }
-    ;(tracker as any).classifier = { classify: mockClassify }
+    ;(tracker as any).classifier = { classify: vi.fn() }
     ;(tracker as any).bootstrap = {
       ensureSessionReady: vi.fn().mockResolvedValue(undefined),
     }
@@ -115,20 +113,20 @@ describe("Session routing classification", () => {
   })
 
   it("handleToolExecuteAfter routes main session to toolCapture", async () => {
-    mockClassify.mockResolvedValue({ kind: "main" })
+    mockRoute.mockResolvedValue({ route: "main", classification: { kind: "main" } })
 
     await tracker.handleToolExecuteAfter(
       { tool: "read", sessionID: "ses_root789", callID: "call-1", args: {} },
       { title: "read", output: "ok", metadata: {} },
     )
 
-    expect(mockClassify).toHaveBeenCalledWith("ses_root789", expect.any(Function))
+    expect(mockRoute).toHaveBeenCalledWith("ses_root789")
     expect(mockHandleToolExecuteAfter).toHaveBeenCalled()
     expect(mockRecordChildToolJourney).not.toHaveBeenCalled()
   })
 
   it("handleToolExecuteAfter routes child session to toolDelegation", async () => {
-    mockClassify.mockResolvedValue({ kind: "child", parentID: "ses_parent123" })
+    mockRoute.mockResolvedValue({ route: "child", parentID: "ses_parent123", classification: { kind: "child", parentID: "ses_parent123" } })
     ;(tracker as any).childWriter = { appendChildTurn: vi.fn() }
 
     await tracker.handleToolExecuteAfter(
@@ -136,13 +134,13 @@ describe("Session routing classification", () => {
       { title: "read", output: "ok", metadata: {} },
     )
 
-    expect(mockClassify).toHaveBeenCalledWith("ses_child456", expect.any(Function))
+    expect(mockRoute).toHaveBeenCalledWith("ses_child456")
     expect(mockHandleToolExecuteAfter).not.toHaveBeenCalled()
     expect(mockRecordChildToolJourney).toHaveBeenCalled()
   })
 
   it("handleToolExecuteAfter refreshes pending entry timestamp by callID", async () => {
-    mockClassify.mockResolvedValue({ kind: "main" })
+    mockRoute.mockResolvedValue({ route: "main", classification: { kind: "main" } })
 
     await tracker.handleToolExecuteAfter(
       { tool: "read", sessionID: "ses_root789", callID: "call-pending", args: {} },
