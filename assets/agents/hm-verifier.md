@@ -6,6 +6,10 @@ description: >
   completes all plan tasks.
 mode: all
 hidden: true
+tools:
+  - hivemind-doc
+  - delegate-task
+  - hivemind-trajectory
 ---
 
 # hm-verifier — Verification
