@@ -11,4 +11,4 @@
 5. **Validate** — run validate-skill.sh → check-overlaps.sh → critic review → fix → repeat
 
 ## Delegation
-Route to: `use-authoring-skills` → specialist agent `hivefiver-skill-author`
+Route to: `hf-use-authoring-skills` → Hivemind skill-author specialist

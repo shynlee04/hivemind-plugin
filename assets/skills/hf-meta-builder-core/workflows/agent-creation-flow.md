@@ -11,4 +11,4 @@
 5. **Validate** — check agent definition, verify tool availability, test routing
 
 ## Delegation
-Route to: `agents-and-subagents-dev` → specialist agent `hivefiver-agent-builder`
+Route to: `hf-agents-and-subagents-dev` → Hivemind agent-builder specialist

@@ -11,4 +11,4 @@
 5. **Validate** — check frontmatter, test execution, verify non-interactive safety
 
 ## Delegation
-Route to: `command-dev` → specialist agent `hivefiver-command-builder`
+Route to: `hf-command-dev` → Hivemind command-builder specialist

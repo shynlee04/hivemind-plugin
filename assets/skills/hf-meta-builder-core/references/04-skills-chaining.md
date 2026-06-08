@@ -84,7 +84,7 @@ Skills can stack with other OpenCode concepts:
 
 | Concept | How It Stacks | Example |
 |---------|--------------|---------|
-| **Agents** | Agent provides execution context for skill | `hivefiver` agent runs meta-builder skill |
+| **Agents** | Agent provides execution context for skill | Hivemind orchestrator agent runs meta-builder skill |
 | **Commands** | Command triggers skill chain | `/start-work` → meta-builder → planning → execution |
 | **Permissions** | Permissions gate which skills can load | `permission.skill: {"meta-builder": "allow"}` |
 | **Rules** | Rules constrain skill behavior | "Never edit .opencode/ without user confirmation" |

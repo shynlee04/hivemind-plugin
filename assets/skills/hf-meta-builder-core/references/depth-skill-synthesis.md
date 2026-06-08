@@ -137,7 +137,7 @@ done
 **Goal:** Make the new skill discoverable and usable within the hivemind.
 
 **Steps:**
-1. Move skill to `.hivefiver-meta-builder/skills-lab/active/refactoring/skill-name/`
+1. Move skill to `assets/skills/<skill-name>/` (source of truth)
 2. Verify it appears in `.opencode/skills/` via the directory-level symlink
 3. Update `meta-builder/SKILL.md` routing table if this skill handles a new task type
 4. Update `validate-gate.sh` if this skill needs to be callable from scripts
@@ -158,7 +158,7 @@ webfetch: "https://agentskills.io/spec/v1"
 # If not, adapt before declaring complete.
 ```
 
-**Error handling:** If agentskills.io is unreachable, use the local spec from `.hivefiver-meta-builder/skills-lab/specs/` as fallback.
+**Error handling:** If agentskills.io is unreachable, use the local spec from `assets/.hivemind-config/skill-specs/` as fallback.
 
 ### websearch — Corpus Research
 
