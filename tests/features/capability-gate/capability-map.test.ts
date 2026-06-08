@@ -8,8 +8,8 @@ import {
 const READ_ONLY_TOOLS = ["read", "glob", "grep"] as const;
 
 describe("ToolCapabilityMap classifications", () => {
-  it("classifies all 31 harness tools plus native task (map size)", () => {
-    expect(TOOL_CAPABILITY_MAP.size).toBe(32);
+  it("classifies all 33 harness tools plus native task (map size)", () => {
+    expect(TOOL_CAPABILITY_MAP.size).toBe(34);
     const validCategories = new Set(Object.values(ToolCategory));
     for (const [, record] of TOOL_CAPABILITY_MAP) {
       expect(validCategories.has(record.category)).toBe(true);
@@ -50,7 +50,7 @@ describe("ToolCapabilityMap classifications", () => {
     }
   });
 
-  it("contains the remaining 10 registered harness tools", () => {
+  it("contains the remaining 12 registered harness tools", () => {
     for (const tool of [
       "session-tracker",
       "session-hierarchy",
@@ -62,6 +62,8 @@ describe("ToolCapabilityMap classifications", () => {
       "hivemind-sdk-supervisor",
       "session-patch",
       "prompt-skim",
+      "tmux-copilot",
+      "tmux-state-query",
     ]) {
       expect(TOOL_CAPABILITY_MAP.has(tool)).toBe(true);
     }
