@@ -253,9 +253,12 @@ try {
 
 
 
-  // ── Root-level opencode.json sync ──────────────────────────────────────
-  const shippedSource = join(assetsRoot, ".opencode", "opencode.json");
-  const destConfig = join(stage.consumerRoot, "opencode.json");
+  // ── Root-level opencode.json.example sync ─────────────────────────────
+  // The shipped artifact is opencode.json.example (not opencode.json) so the
+  // user's local dev opencode.json is never overwritten by the build/install
+  // pipeline. Users copy opencode.json.example → opencode.json to bootstrap.
+  const shippedSource = join(assetsRoot, ".opencode", "opencode.json.example");
+  const destConfig = join(stage.consumerRoot, "opencode.json.example");
   syncRootFile(shippedSource, destConfig);
 
   // Write version stamp after successful install-mode sync

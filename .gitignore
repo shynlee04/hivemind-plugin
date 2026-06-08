@@ -31,9 +31,8 @@ npm-debug.log*
 !.hivemind/
 !package-lock.json
 
-# Runtime state
+# Runtime state — opencode.json is the user's local dev file, NEVER shipped
 opencode.json
-!assets/.opencode/opencode.json
 !.opencode/
 .harness/
 
