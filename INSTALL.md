@@ -85,6 +85,34 @@ peer dependency. OpenCode resolves `"plugin": ["hivemind-3.0"]` to the
 
 ---
 
+## What you get
+
+Hivemind registers **28 custom tools** and **12 lifecycle hooks** at OpenCode
+startup. The tools, grouped by registration source:
+
+| Group | Count | Tools |
+|-------|-------|-------|
+| `registerDelegationTools` | 3 | `delegate-task`, `delegation-status`, `run-background-command` |
+| `registerSessionTools` | 7 | `execute-slash-command`, `session-patch`, `session-journal-export`, `session-tracker`, `session-hierarchy`, `session-context`, `create-governance-session` |
+| `registerHivemindTools` | 9 | `hivemind-doc`, `hivemind-trajectory`, `hivemind-pressure`, `hivemind-sdk-supervisor`, `hivemind-command-engine`, `hivemind-session-view`, `hivemind-agent-work-create`, `hivemind-agent-work-export`, `session-delegation-query` |
+| `registerConfigTools` | 6 | `configure-primitive`, `validate-restart`, `bootstrap-init`, `bootstrap-recover`, `prompt-skim`, `prompt-analyze` |
+| Inline in `src/plugin.ts` | 3 | `tmux-copilot`, `tmux-state-query`, `hivemind-steer` |
+
+The plugin is also a typed runtime composition engine — it composes 12
+lifecycle hooks (`session.start`, `session.idle`, `tool.execute.before`,
+`tool.execute.after`, `chat.message`, `event`, plus 6 observer/transform
+hooks) for delegation tracking, budget enforcement, session continuity,
+and tmux visual orchestration.
+
+The full OpenCode primitive surface is also shipped: `hm-*` product-dev
+agents, `hf-*` meta-builder agents, `gate-*` quality gates, `hm-*` / `hf-*`
+skills, slash commands, the universal rules file at
+`.opencode/rules/universal-rules.md`, and the `opencode.json` config
+schema. See `assets/agents/`, `assets/skills/`, and `assets/commands/`
+for the full inventory.
+
+---
+
 ## Troubleshooting
 
 **`Cannot find module '../../dist/plugin.js'` on first run**
@@ -98,8 +126,9 @@ is an array of strings, e.g. `"plugin": ["hivemind-3.0"]`. Restart OpenCode
 so Bun re-runs the package installer.
 
 **`.opencode/plugins/harness-control-plane.ts` was deleted**
-It's not in `assets/`, so the `sync-assets.js` script does not restore it.
-Re-create it from this template:
+Run `node scripts/sync-assets.js` — the file lives in `assets/plugins/`
+(added in commit 8ebe844) and is mirrored to `.opencode/plugins/` on every
+sync. If you want to recreate it manually, the template is:
 
 ```ts
 export { HivemindControlPlane as default, HivemindControlPlane } from "../../src/plugin.ts"
