@@ -3,18 +3,111 @@ description: >
   L0 front-facing agent for session orchestration, routing, and governance.
   Dispatches specialist agents, validates results, and manages delegation
   state. Called by user commands and serves as the primary entry point for
-  all Hm workflows.
+  all Hm workflows. Does NOT write code directly — focuses on document handling,
+  coordination, gatekeeping, orchestration, and routing.
 mode: all
 hidden: true
-tools:
-  - delegate-task
-  - delegation-status
-  - hivemind-doc
-  - hivemind-trajectory
-  - hivemind-steer
-  - hivemind-agent-work
+reasoningEffort: high
+depth: L1
+lineage: hm
+domain: Session Orchestration
+instructions:
+  - .opencode/rules/universal-rules.md
+  - AGENTS.md
 skills:
   - hm-config-governance
+permission:
+  read: allow
+  edit: deny
+  write: ask
+  glob: allow
+  grep: allow
+
+  bash:
+    "*": ask
+    "git *": allow
+    "node *": allow
+    "npx *": allow
+    "mkdir *": allow
+    "echo *": allow
+    "ls *": allow
+
+  task:
+    "*": ask
+    "hm-architect": allow
+    "hm-code-fixer": allow
+    "hm-code-reviewer": allow
+    "hm-codebase-mapper": allow
+    "hm-debug-session-manager": allow
+    "hm-debugger": allow
+    "hm-doc-verifier": allow
+    "hm-doc-writer": allow
+    "hm-ecologist": allow
+    "hm-executor": allow
+    "hm-integration-checker": allow
+    "hm-intel-updater": allow
+    "hm-intent-loop": allow
+    "hm-l0-orchestrator": allow
+    "hm-nyquist-auditor": allow
+    "hm-orchestrator": allow
+    "hm-pattern-mapper": allow
+    "hm-phase-researcher": allow
+    "hm-plan-checker": allow
+    "hm-planner": allow
+    "hm-platform-references": allow
+    "hm-project-researcher": allow
+    "hm-roadmapper": allow
+    "hm-security-auditor": allow
+    "hm-shipper": allow
+    "hm-specifier": allow
+    "hm-synthesizer": allow
+    "hm-ui-auditor": allow
+    "hm-ui-checker": allow
+    "hm-ui-researcher": allow
+    "hm-user-profiler": allow
+    "hm-verifier": allow
+  delegate-task: allow
+  delegation-status: allow
+  execute-command: allow
+  execute-slash-command: allow
+  run-background-command: allow
+
+  session-journal-export: allow
+  session-patch: ask
+  session-tracker: allow
+  session-hierarchy: allow
+  session-context: allow
+  session-delegation-query: allow
+  create-governance-session: allow
+
+  hivemind-doc: allow
+  hivemind-trajectory: allow
+  hivemind-pressure: allow
+  hivemind-sdk-supervisor: allow
+  hivemind-command-engine: allow
+  hivemind-session-view: allow
+  hivemind-agent-work-create: allow
+  hivemind-agent-work-export: allow
+  hivemind-steer: allow
+
+  configure-primitive: allow
+  validate-restart: allow
+  bootstrap-init: allow
+  bootstrap-recover: allow
+
+  prompt-skim: allow
+  prompt-analyze: allow
+
+  tmux-copilot: allow
+
+  webfetch: allow
+  websearch: allow
+
+  skill:
+    "*": ask
+    "hm-*": allow
+    "gate-*": allow
+    "stack-*": allow
 ---
 
 # hm-orchestrator — Session Orchestration
