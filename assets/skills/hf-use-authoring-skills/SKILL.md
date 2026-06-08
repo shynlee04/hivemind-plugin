@@ -282,3 +282,34 @@ Before a skill is done:
 ### When an Edge Case Is Encountered
 [Detection] Skill being audited uses a non-standard frontmatter format (different YAML spec). User wants to author a skill for a platform not in the adaptation table. Script fails due to missing dependency (bash version, jq not installed). Skill has content in multiple languages.
 [Recovery] For non-standard frontmatter: validate against agentskills.io spec and flag deviations. For unsupported platforms: apply agentskills.io patterns as the lowest common denominator, then document platform-specific adaptations. For missing dependencies: check if the script has fallback logic — if not, inform the user which dependency is needed. For multi-language skills: treat the primary language as canonical and flag translations for separate review.
+
+## Hivemind Tooling Alignment
+
+This skill teaches the loading agent how to use Hivemind's custom toolings. The agent that loads this skill should declare the following tools in its frontmatter:
+
+```yaml
+tools:
+  - configure-primitive,delegate-task,hivemind-doc
+```
+
+### Migration from GSD
+
+If the loading agent has legacy `gsd-*` SDK references, replace with Hivemind equivalents:
+
+| GSD tool | Hivemind equivalent |
+|---|---|
+| `gsd-tools` CLI | `configure-primitive` + `delegate-task` |
+| `gsd-state` JSON manipulation | `hivemind-doc` (read/chunk/search) |
+| `gsd-context-monitor` | `hivemind-trajectory` (record events) |
+| `gsd-prompt-guard` | `prompt-analyze` (or manual review) |
+
+### Cross-References
+
+This skill aligns with the new tech-agnostic primitive ecosystem:
+- Routing: `hm-coord-router` (intent classification + agent pairing)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Specialist example: `hm-test-driven`, `hm-debug-systematic`, `hm-arch-refactor`
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed for end-to-end workflows.

@@ -97,3 +97,34 @@ For the complete list, load `references/non-interactive-shell.md`.
 ### When an Edge Case Is Encountered
 [Detection] Command needs to run on both macOS and Linux but uses platform-specific tools. Command file path references differ between development and deployment. Agent selection depends on runtime conditions not known at command definition time. $ARGUMENTS contains shell metacharacters.
 [Recovery] For cross-platform: use POSIX-compatible commands within !bash blocks. Avoid GNU-specific flags (--long-options) when BSD equivalents differ — use the portable form. For variable paths: use environment variables or project-root-relative paths instead of hardcoded absolute paths. For conditional agent selection: use a router agent that inspects context and dispatches to the right specialist. For metacharacters in $ARGUMENTS: always quote variable references and sanitize input before use in shell commands.
+
+## Hivemind Tooling Alignment
+
+This skill teaches the loading agent how to use Hivemind's custom toolings. The agent that loads this skill should declare the following tools in its frontmatter:
+
+```yaml
+tools:
+  - configure-primitive,delegate-task,hivemind-doc
+```
+
+### Migration from GSD
+
+If the loading agent has legacy `gsd-*` SDK references, replace with Hivemind equivalents:
+
+| GSD tool | Hivemind equivalent |
+|---|---|
+| `gsd-tools` CLI | `configure-primitive` + `delegate-task` |
+| `gsd-state` JSON manipulation | `hivemind-doc` (read/chunk/search) |
+| `gsd-context-monitor` | `hivemind-trajectory` (record events) |
+| `gsd-prompt-guard` | `prompt-analyze` (or manual review) |
+
+### Cross-References
+
+This skill aligns with the new tech-agnostic primitive ecosystem:
+- Routing: `hm-coord-router` (intent classification + agent pairing)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Specialist example: `hm-test-driven`, `hm-debug-systematic`, `hm-arch-refactor`
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed for end-to-end workflows.

@@ -286,3 +286,34 @@ After authorization is complete:
 ### When an Edge Case Is Encountered
 [Detection] Task spans multiple specialist domains. No single specialist covers all capabilities. Checkpoint format doesn't fit approve/reject/modify shape.
 [Recovery] For multi-domain tasks: split into sequential sub-tasks, each with its own authorization. For unusual checkpoint shapes: use `checkpoint:human-action` with a free-form prompt describing the unusual situation. Always include a resume pointer so the user knows how to continue.
+
+## Hivemind Tooling Alignment
+
+This skill teaches the loading agent how to use Hivemind's custom toolings. The agent that loads this skill should declare the following tools in its frontmatter:
+
+```yaml
+tools:
+  - configure-primitive,delegate-task,hivemind-doc
+```
+
+### Migration from GSD
+
+If the loading agent has legacy `gsd-*` SDK references, replace with Hivemind equivalents:
+
+| GSD tool | Hivemind equivalent |
+|---|---|
+| `gsd-tools` CLI | `configure-primitive` + `delegate-task` |
+| `gsd-state` JSON manipulation | `hivemind-doc` (read/chunk/search) |
+| `gsd-context-monitor` | `hivemind-trajectory` (record events) |
+| `gsd-prompt-guard` | `prompt-analyze` (or manual review) |
+
+### Cross-References
+
+This skill aligns with the new tech-agnostic primitive ecosystem:
+- Routing: `hm-coord-router` (intent classification + agent pairing)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Specialist example: `hm-test-driven`, `hm-debug-systematic`, `hm-arch-refactor`
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed for end-to-end workflows.

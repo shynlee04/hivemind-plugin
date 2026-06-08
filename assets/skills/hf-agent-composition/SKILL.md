@@ -174,3 +174,34 @@ Before declaring an agent definition complete:
 ### When an Edge Case Is Encountered
 [Detection] Agent needs a pattern not covered by the 15 XML blocks (e.g., rate-limiting, retry logic, circuit-breaking). Agent combines multiple execution patterns (executor + verifier hybrid). Agent must work across platforms with different tool names.
 [Recovery] For missing patterns: analyze whether the pattern can be composed from existing XML blocks. Rate-limiting could be a `<deviation_rules>` entry. Circuit-breaking could be an `<analysis_paralysis_guard>` variant. For hybrid agents: apply the strictest pattern. For cross-platform: define the canonical pattern in the agent definition and document platform-specific tool mappings in a platform adapter section.
+
+## Hivemind Tooling Alignment
+
+This skill teaches the loading agent how to use Hivemind's custom toolings. The agent that loads this skill should declare the following tools in its frontmatter:
+
+```yaml
+tools:
+  - configure-primitive,delegate-task,hivemind-doc
+```
+
+### Migration from GSD
+
+If the loading agent has legacy `gsd-*` SDK references, replace with Hivemind equivalents:
+
+| GSD tool | Hivemind equivalent |
+|---|---|
+| `gsd-tools` CLI | `configure-primitive` + `delegate-task` |
+| `gsd-state` JSON manipulation | `hivemind-doc` (read/chunk/search) |
+| `gsd-context-monitor` | `hivemind-trajectory` (record events) |
+| `gsd-prompt-guard` | `prompt-analyze` (or manual review) |
+
+### Cross-References
+
+This skill aligns with the new tech-agnostic primitive ecosystem:
+- Routing: `hm-coord-router` (intent classification + agent pairing)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Specialist example: `hm-test-driven`, `hm-debug-systematic`, `hm-arch-refactor`
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed for end-to-end workflows.

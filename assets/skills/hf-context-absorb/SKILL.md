@@ -134,3 +134,34 @@ New content appended as:
 ### When an Edge Case Is Encountered
 [Detection] Input contains binary attachments or non-text content. Session-context-prompt.md has grown beyond practical token limits. Multiple absorb sessions running concurrently (race condition on append). YAML frontmatter uses a schema this skill doesn't recognize.
 [Recovery] For binary content: skip with a note in sources that binary content was ignored. For oversized files: suggest archiving older absorb-session blocks to a separate archive file and keeping only recent sessions in the active file. For concurrent sessions: DO NOT proceed — detect the conflict by checking file modification time vs last read time, and wait or escalate. For unknown YAML schemas: preserve all unknown fields (per merge rules), add absorb-specific fields alongside them, and note the unknown schema in the absorb_session metadata.
+
+## Hivemind Tooling Alignment
+
+This skill teaches the loading agent how to use Hivemind's custom toolings. The agent that loads this skill should declare the following tools in its frontmatter:
+
+```yaml
+tools:
+  - configure-primitive,delegate-task,hivemind-doc
+```
+
+### Migration from GSD
+
+If the loading agent has legacy `gsd-*` SDK references, replace with Hivemind equivalents:
+
+| GSD tool | Hivemind equivalent |
+|---|---|
+| `gsd-tools` CLI | `configure-primitive` + `delegate-task` |
+| `gsd-state` JSON manipulation | `hivemind-doc` (read/chunk/search) |
+| `gsd-context-monitor` | `hivemind-trajectory` (record events) |
+| `gsd-prompt-guard` | `prompt-analyze` (or manual review) |
+
+### Cross-References
+
+This skill aligns with the new tech-agnostic primitive ecosystem:
+- Routing: `hm-coord-router` (intent classification + agent pairing)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Specialist example: `hm-test-driven`, `hm-debug-systematic`, `hm-arch-refactor`
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed for end-to-end workflows.

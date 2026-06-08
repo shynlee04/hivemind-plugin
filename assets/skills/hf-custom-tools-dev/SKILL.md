@@ -137,3 +137,34 @@ export default tool({
 ### When an Edge Case Is Encountered
 [Detection] Tool needs to call an external API (not covered by existing SDK). Hook needs to intercept an event that the SDK doesn't expose. Tool requires async initialization before it can be registered. Script needs to read a file that might not exist yet.
 [Recovery] For external APIs: wrap the API call in the tool's execute function with proper error handling. The tool is the integration point. For missing SDK events: check if the event can be synthesized from available hooks. If not, document the gap and suggest an SDK feature request. For async init: perform initialization lazily on first execute() call rather than at registration time. For missing files: the script should report "file not found" as a fact (exit 0) and let the agent decide what to do — never crash or exit non-zero on missing optional files.
+
+## Hivemind Tooling Alignment
+
+This skill teaches the loading agent how to use Hivemind's custom toolings. The agent that loads this skill should declare the following tools in its frontmatter:
+
+```yaml
+tools:
+  - configure-primitive,delegate-task,hivemind-doc
+```
+
+### Migration from GSD
+
+If the loading agent has legacy `gsd-*` SDK references, replace with Hivemind equivalents:
+
+| GSD tool | Hivemind equivalent |
+|---|---|
+| `gsd-tools` CLI | `configure-primitive` + `delegate-task` |
+| `gsd-state` JSON manipulation | `hivemind-doc` (read/chunk/search) |
+| `gsd-context-monitor` | `hivemind-trajectory` (record events) |
+| `gsd-prompt-guard` | `prompt-analyze` (or manual review) |
+
+### Cross-References
+
+This skill aligns with the new tech-agnostic primitive ecosystem:
+- Routing: `hm-coord-router` (intent classification + agent pairing)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Specialist example: `hm-test-driven`, `hm-debug-systematic`, `hm-arch-refactor`
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed for end-to-end workflows.

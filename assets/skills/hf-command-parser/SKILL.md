@@ -131,3 +131,34 @@ When reconstructing commands from parsed arguments: always add `-y`/`--yes`/`--n
 ### When an Edge Case Is Encountered
 [Detection] Command string contains shell operators (`|`, `&&`, `;`, `>`). Token has special characters in value position. Empty string after `=` in key=value. Large values with special Unicode characters. Flag name contains hyphens beyond the leading `--`.
 [Recovery] For shell operators: do NOT expand or execute them — treat them as literal characters in the value or flag as appropriate. For empty values (`key=`): set value to empty string `""`. For special characters: pass through literally in the value, quoting in output. For multi-hyphen flags (`--flag-name`): treat the entire `--flag-name` as the flag key. Always prefer literal preservation over interpretation — the parser should not modify input.
+
+## Hivemind Tooling Alignment
+
+This skill teaches the loading agent how to use Hivemind's custom toolings. The agent that loads this skill should declare the following tools in its frontmatter:
+
+```yaml
+tools:
+  - configure-primitive,delegate-task,hivemind-doc
+```
+
+### Migration from GSD
+
+If the loading agent has legacy `gsd-*` SDK references, replace with Hivemind equivalents:
+
+| GSD tool | Hivemind equivalent |
+|---|---|
+| `gsd-tools` CLI | `configure-primitive` + `delegate-task` |
+| `gsd-state` JSON manipulation | `hivemind-doc` (read/chunk/search) |
+| `gsd-context-monitor` | `hivemind-trajectory` (record events) |
+| `gsd-prompt-guard` | `prompt-analyze` (or manual review) |
+
+### Cross-References
+
+This skill aligns with the new tech-agnostic primitive ecosystem:
+- Routing: `hm-coord-router` (intent classification + agent pairing)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Specialist example: `hm-test-driven`, `hm-debug-systematic`, `hm-arch-refactor`
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed for end-to-end workflows.
