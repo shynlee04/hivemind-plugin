@@ -267,3 +267,23 @@ Before claiming intent is understood, verify:
 - [ ] Scope boundaries are documented (what's IN, what's OUT)
 - [ ] Question count has not exceeded the budget without good reason
 - [ ] The user's communication style matches the chosen approach
+
+## Hivemind Tooling Alignment
+
+This skill aligns with Hivemind's custom toolings. The loading agent should declare:
+
+```yaml
+tools:
+  - hivemind-doc
+  - delegate-task
+  - configure-primitive
+```
+
+### Cross-References
+
+- Routing: `hm-coord-router` (intent classification)
+- Coordination: `hm-coord-loop` (multi-agent dispatch)
+- Governance: `hivemind-power-on` (load first)
+- Quality gates: `hm-gate-triad` (3-gate sequence)
+
+When this skill is loaded, the agent should also load these as needed.
