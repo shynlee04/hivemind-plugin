@@ -1,3 +1,24 @@
+/**
+ * Canonical continuity store for session state.
+ *
+ * This module is the single authoritative source for continuity session
+ * state. It reads/writes `.hivemind/state/session-continuity.json` (Q6).
+ *
+ * CANONICAL SOURCE: Continuity's own `session-continuity.json` (Q6) is the
+ * canonical source for continuity session state (metadata, lifecycle,
+ * delegation meta, compaction checkpoints).
+ *
+ * CANONICAL SOURCE: Session-tracker (`.hivemind/session-tracker/`) is the
+ * canonical source for delegation/hierarchy state (REQ-P41D-01).
+ *
+ * Cross-module reads: This module writes TO session-tracker via ChildWriter
+ * (architecturally acceptable — task-management writes TO features per CQRS).
+ * Read-side: `delegation-persistence.ts` reads delegation state through
+ * session-tracker's public API (`readRawDelegations`), not via direct I/O.
+ *
+ * @module task-management/continuity
+ */
+
 import { randomUUID } from "node:crypto"
 import { existsSync, readFileSync, renameSync } from "node:fs"
 import { dirname, resolve } from "node:path"

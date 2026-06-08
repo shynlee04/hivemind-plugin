@@ -8,6 +8,11 @@
  * Architecture: Read-side observer (hooks) → SessionTracker → persistence layer.
  * CQRS compliance: hooks must NEVER write files directly (REQ-ST-11).
  *
+ * CANONICAL SOURCE: Session-tracker (`.hivemind/session-tracker/`) is the
+ * canonical source for delegation/hierarchy state (REQ-P41D-01).
+ * Continuity's `session-continuity.json` (Q6) is the canonical source for
+ * continuity session state (metadata, lifecycle, delegation meta).
+ *
  * Event handler logic is extracted to `session-event-handler.ts` (GA-4 ≤500 LOC).
  *
  * @module session-tracker
@@ -28,6 +33,8 @@ export type {
   ChildRef,
   ChildHierarchyEntry,
 } from "./types.js"
+
+export { readRawDelegations } from "./read-delegations.js"
 
 export { isValidSessionID, isValidHookPayload } from "./types.js"
 export { SessionRecovery } from "./recovery/session-recovery.js"
