@@ -3,55 +3,61 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 
 /**
- * P58.9 REQ-58.9-04 / AC-58.9-04-01: regression guard for the 27-tool-key
- * invariant locked by P49. Parses `src/plugin.ts` for the top-level
- * `tool({...})` spread object keys and asserts the count is exactly 27.
+ * P58.9 REQ-58.9-04 / AC-58.9-04-01: regression guard for the 28-tool-key
+ * invariant. Parses both `src/plugin.ts` and `src/plugin-registration.ts`
+ * for the top-level tool keys — 4 spread registration functions
+ * (delegate/session/hivemind/config) plus 3 inline entries
+ * (tmux-copilot, tmux-state-query, hivemind-steer).
  *
- * This is a structural assertion: it scans the source file for the
- * `registerXxxTools` returns + the inline `tmux-copilot` + `tmux-state-query`
- * entries that form the plugin tool object. The count is a hard contract
- * from P49 — adding a new tool requires a deliberate atomic commit that
- * also updates the `EXPECTED_TOOL_COUNT` constant below.
+ * This is a structural assertion: it scans both source files for the
+ * explicit tool key patterns and asserts the total count is exactly 28.
+ * The count is a hard contract — adding a new tool requires a deliberate
+ * atomic commit that also updates the `EXPECTED_TOOL_COUNT` constant below.
  *
  * If you intentionally add or remove a tool, update `EXPECTED_TOOL_COUNT`
  * AND add a one-line rationale in the constant's JSDoc below.
  */
-const EXPECTED_TOOL_COUNT = 27
+const EXPECTED_TOOL_COUNT = 28
 
 /**
- * Extract the tool keys from `src/plugin.ts`. The plugin tool object is
- * built in 4 registerXxxTools functions (delegate/session/hivemind/config)
- * + 2 inline entries (tmux-copilot, tmux-state-query). This regex picks
- * up the key: functionCall pattern.
+ * Extract the tool keys from both `src/plugin.ts` and `src/plugin-registration.ts`.
+ * Tools are registered via 4 spread functions (registerDelegationTools,
+ * registerSessionTools, registerHivemindTools, registerConfigTools) in
+ * plugin-registration.ts + 3 inline entries in plugin.ts.
+ * This regex picks up the "key": createXxxTool(...) OR "key": xxxTool pattern
+ * from both files.
  */
-function extractToolKeys(source: string): string[] {
+function extractToolKeys(): string[] {
+  const sources = [
+    readFileSync(join(process.cwd(), "src/plugin.ts"), "utf8"),
+    readFileSync(join(process.cwd(), "src/plugin-registration.ts"), "utf8"),
+  ]
   // Match: "key": createXxxTool(...) OR "key": xxxTool,
   const keyRegex = /^\s*"([a-z][a-z0-9-]*)":\s*(create\w+Tool|\w+Tool)\b/gm
   const keys = new Set<string>()
-  let match: RegExpExecArray | null
-  while ((match = keyRegex.exec(source)) !== null) {
-    keys.add(match[1]!)
+  for (const source of sources) {
+    let match: RegExpExecArray | null
+    while ((match = keyRegex.exec(source)) !== null) {
+      keys.add(match[1]!)
+    }
   }
   return Array.from(keys).sort()
 }
 
-describe("27-tool-key invariant (P49, REQ-58.9-04 AC-01)", () => {
-  it("src/plugin.ts has exactly the expected number of top-level tool keys", () => {
-    const source = readFileSync(join(process.cwd(), "src/plugin.ts"), "utf8")
-    const keys = extractToolKeys(source)
+describe("28-tool-key invariant (P49, REQ-58.9-04 AC-01)", () => {
+  it("the combined plugin tool key count is exactly 28", () => {
+    const keys = extractToolKeys()
     expect(keys.length).toBe(EXPECTED_TOOL_COUNT)
   })
 
   it("tool keys are unique (no duplicates)", () => {
-    const source = readFileSync(join(process.cwd(), "src/plugin.ts"), "utf8")
-    const keys = extractToolKeys(source)
+    const keys = extractToolKeys()
     expect(new Set(keys).size).toBe(keys.length)
   })
 
-  it("expected tool set includes the canonical P49 keys", () => {
-    const source = readFileSync(join(process.cwd(), "src/plugin.ts"), "utf8")
-    const keys = extractToolKeys(source)
-    // Spot-check a few canonical P49 keys to ensure the extract isn't
+  it("expected tool set includes the canonical keys", () => {
+    const keys = extractToolKeys()
+    // Spot-check a few canonical keys to ensure the extract isn't
     // accidentally pulling in non-tool entries.
     const expected = [
       "delegate-task",
@@ -59,8 +65,12 @@ describe("27-tool-key invariant (P49, REQ-58.9-04 AC-01)", () => {
       "execute-slash-command",
       "session-tracker",
       "hivemind-doc",
+      "hivemind-trajectory",
       "tmux-copilot",
       "tmux-state-query",
+      "hivemind-steer",
+      "prompt-skim",
+      "prompt-analyze",
     ]
     for (const key of expected) {
       expect(keys).toContain(key)
