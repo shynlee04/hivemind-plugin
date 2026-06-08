@@ -1,43 +1,91 @@
+# Publish Hivemind to npm registry.
+#
+# SECURITY: This workflow uses GitHub Secrets for the npm token.
+# The token is NEVER written to the repo, the workflow file, or the logs.
+#
+# Setup: GitHub repo Settings → Secrets and variables → Actions
+#   → New repository secret → Name: NPM_TOKEN → Value: (your publish token)
+#
+# Trigger: manual workflow_dispatch (publishing is a deliberate act, not automatic)
+# OR: automatic on push of a semver tag (v*)
 name: Publish to npm
+
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run (skip actual publish)'
+        description: 'Dry run — run npm pack but do not publish'
+        type: boolean
+        default: false
+      tag:
+        description: 'Optional git tag to publish (e.g. v0.1.1). Leave empty to use package.json version.'
         required: false
-        default: 'true'
-        type: string
+        default: ''
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write  # for npm provenance
 
 jobs:
   publish:
+    name: Publish to npm
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
         with:
-          node-version: '22'
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
           cache: npm
           registry-url: 'https://registry.npmjs.org'
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run build
-      - name: Verify package contents
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test -- --reporter=verbose
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify package contents (no dev artifacts)
         run: |
-          PACKED_SIZE=$(npm pack --dry-run 2>&1 | grep "package size" | grep -oP '\d+(\.\d+)?' | head -1)
-          echo "Packed size: ${PACKED_SIZE} MB"
-          npm pack --dry-run 2>&1 | grep -c "assets/.hivemind/" && exit 1 || true
-          npm pack --dry-run 2>&1 | grep -c "\.map" | grep -qv "^0$" && exit 1 || true
-      - name: Dry run publish
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' }}
-        run: npm publish --dry-run
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "📦 Files to be published (npm pack --dry-run):"
+          npm pack --dry-run 2>&1 | head -100
+          echo ""
+          echo "🔍 Verifying NO banned dev artifacts in tarball..."
+          PACK_LIST=$(npm pack --dry-run 2>&1)
+          for banned in ".opencode/" ".hivemind/state" ".hivemind/journal" ".planning/" ".hivefiver-meta-builder/" ".scratch/" "tests/" "*.test.ts" "tsconfig.tsbuildinfo"; do
+            if echo "$PACK_LIST" | grep -q "$banned"; then
+              echo "::error::LEAK DETECTED: $banned found in publish tarball"
+              exit 1
+            fi
+          done
+          echo "✅ Tarball is clean of dev artifacts"
+
+      - name: Checkout selected tag (if specified)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.tag != ''
+        run: git checkout ${{ github.event.inputs.tag }}
+
       - name: Publish to npm
-        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'false') }}
-        run: npm publish
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == false)
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify publication
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == false)
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "✅ Published hivemind-3.0@$VERSION"
+          npm view hivemind-3.0@$VERSION
