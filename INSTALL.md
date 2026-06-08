@@ -65,6 +65,11 @@ npm run build           # compile to dist/ + regenerate JSON schema
 
 You want to cut a new npm release.
 
+A template for the local auth file lives at `.npmrc.example` — copy it to
+`~/.npmrc` and add your publish token (do not commit the populated file).
+For CI, set `NPM_TOKEN` as a GitHub Actions secret; see
+`.github/workflows/publish.yml`.
+
 ```bash
 # 1. Verify the build is clean
 npm run typecheck
