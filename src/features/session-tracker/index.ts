@@ -282,6 +282,7 @@ export class SessionTracker {
       this.toolDelegation = new ToolDelegation({
         client: this.client,
         classifier: this.classifier,
+        sessionRouter: this.sessionRouter,
         childWriter: this.childWriter,
         sessionIndexWriter: this.sessionIndexWriter,
         projectIndexWriter: this.projectIndexWriter,

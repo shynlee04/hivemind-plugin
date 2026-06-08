@@ -13,7 +13,7 @@ Manage the project roadmap: display phases with status, analyze dependency chain
 | Roadmapping | hm-roadmapper | Loads, analyzes, modifies, and reports on roadmap |
 
 ## Execution Phases
-1. **Load Roadmap**: Read ROADMAP.md from .planning/ or .hivemind/planning/.
+1. **Load Roadmap**: Read ROADMAP.md from .planning/ or .planning//.
 2. **Display**: Render categorized phase list with status (planned/in-progress/complete/blocked), dependencies, and priority.
 3. **Dependency Analysis**: Trace dependency chains, detect circular dependencies, find orphan phases, identify critical path.
 4. **Gap Detection**: Check for missing phases between completed work and roadmap targets.

@@ -139,6 +139,7 @@ export function constructDependencies(
     client,
     projectRoot,
     hierarchyIndex,
+    sessionRouter,
     quarantine,
   })
 
@@ -239,6 +240,7 @@ export function constructDependencies(
     sessionIndexWriter,
     projectIndexWriter,
     hierarchyIndex,
+    sessionRouter,
     pendingRegistry,
   })
 

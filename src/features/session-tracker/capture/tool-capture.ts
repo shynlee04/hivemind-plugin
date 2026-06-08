@@ -19,6 +19,7 @@ import type { ChildWriter } from "../persistence/child-writer.js"
 import type { SessionIndexWriter } from "../persistence/session-index-writer.js"
 import type { ProjectIndexWriter } from "../persistence/project-index-writer.js"
 import type { HierarchyIndex } from "../persistence/hierarchy-index.js"
+import type { SessionRouter } from "../session-router.js"
 import type { PendingDispatchRegistry } from "../persistence/pending-dispatch-registry.js"
 import type { ChildSessionRecord } from "../types.js"
 import { isValidSessionID } from "../types.js"
@@ -68,6 +69,7 @@ export class ToolCapture {
   private projectIndexWriter: ProjectIndexWriter
   private hierarchyIndex: HierarchyIndex
   private pendingRegistry: PendingDispatchRegistry | undefined
+  private sessionRouter: SessionRouter
 
   /**
    * @param deps - Injected dependencies.
@@ -84,6 +86,7 @@ export class ToolCapture {
     sessionIndexWriter: SessionIndexWriter
     projectIndexWriter: ProjectIndexWriter
     hierarchyIndex: HierarchyIndex
+    sessionRouter: SessionRouter
     pendingRegistry?: PendingDispatchRegistry
   }) {
     this.client = deps.client
@@ -92,6 +95,7 @@ export class ToolCapture {
     this.sessionIndexWriter = deps.sessionIndexWriter
     this.projectIndexWriter = deps.projectIndexWriter
     this.hierarchyIndex = deps.hierarchyIndex
+    this.sessionRouter = deps.sessionRouter
     this.pendingRegistry = deps.pendingRegistry
   }
 
@@ -253,7 +257,8 @@ export class ToolCapture {
       // infer depth from parent's status. Depth is capped at 2 per SPEC §1.2.
       // parent-is-child → depth=2 (cap), parent-is-main → depth=1
       if (depth === 0) {
-        depth = this.hierarchyIndex.isChild(input.sessionID) ? 2 : 1
+        const route = await this.sessionRouter.route(input.sessionID)
+        depth = route.route === "child" ? 2 : 1
       }
 
       await this.sessionIndexWriter.updateToolSummary(input.sessionID, "task")

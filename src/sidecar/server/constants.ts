@@ -15,7 +15,7 @@
  *   2. `HIVEMIND_PLUGIN_PORT_LIST`  — comma-separated list
  *   3. `HIVEMIND_PLUGIN_PORT_LIST` default constant
  *
- * @see /Users/apple/hivemind-plugin-private/.hivemind/planning/plugin-port-pool-2026-06-07/00-landscape.md
+ * @see /Users/apple/hivemind-plugin-private/.planning//plugin-port-pool-2026-06-07/00-landscape.md
  * @module sidecar/server/constants
  */
 

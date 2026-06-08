@@ -16,6 +16,7 @@ import type { HierarchyIndex } from "./persistence/hierarchy-index.js"
 import type { SessionClassifier } from "./classification.js"
 import type { ToolDelegation } from "./tool-delegation.js"
 import type { MessageCapture } from "./capture/message-capture.js"
+import type { SessionRouter } from "./session-router.js"
 import { isValidSessionID } from "./types.js"
 import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
@@ -58,7 +59,7 @@ export interface TrackerHandlerContext {
   }
 
   /** Session router for classify-before-I/O routing. */
-  sessionRouter: { route(sessionID: string): Promise<{ route: string; parentID?: string }> }
+  sessionRouter: SessionRouter
 
   /** Child recorder for delegation message capture. */
   childRecorder: {
@@ -110,8 +111,11 @@ export async function handleSessionEvent(
           session && typeof session === "object" && "parentID" in session
             ? (session as { parentID?: string }).parentID
             : undefined
-        if (parentID && !ctx.hierarchyIndex.isChild(event.sessionID)) {
-          await ctx.bootstrap.copyForkedChildren(event.sessionID, parentID)
+        if (parentID) {
+          const routeDecision = await ctx.sessionRouter.route(event.sessionID)
+          if (routeDecision.route !== "child") {
+            await ctx.bootstrap.copyForkedChildren(event.sessionID, parentID)
+          }
         }
       } catch (err) {
         void ctx.client.app?.log?.({
@@ -210,11 +214,8 @@ export async function handleToolExecuteAfter(
   ensureSessionReady: (sessionID: string) => Promise<void>,
 ): Promise<void> {
   try {
-    const classification = await ctx.classifier.classify(
-      input.sessionID,
-      (id: string) => ctx.bootstrap.getSessionSafely(id),
-    )
-    const parentID = classification.kind === "child" ? classification.parentID : undefined
+    const decision = await ctx.sessionRouter.route(input.sessionID)
+    const parentID = decision.route === "child" ? decision.parentID : undefined
 
     if (parentID && ctx.childWriter) {
       ctx.bootstrappedSessions.add(input.sessionID)
@@ -234,7 +235,7 @@ export async function handleToolExecuteAfter(
       return
     }
 
-    if (classification.kind === "unknownSub") {
+    if (decision.classification.kind === "unknownSub") {
       const hasMainFile = await hasMainSessionFile(ctx.projectRoot, input.sessionID)
       if (!hasMainFile && input.tool === "task" && await isSdkRootSession(ctx, input.sessionID)) {
         await ensureSessionReady(input.sessionID)
@@ -322,16 +323,16 @@ async function isSdkRootSession(
  * @param parentID - Immediate parent session ID.
  * @param childID - Child session ID being written.
  */
-function ensureChildRoute(
+async function ensureChildRoute(
   ctx: TrackerHandlerContext,
   parentID: string,
   childID: string,
 ): Promise<void> {
-  return ensureAncestorRoute(ctx, parentID, new Set<string>()).then(() => {
-    if (!ctx.hierarchyIndex.isChild(childID)) {
-      ctx.hierarchyIndex.registerChild(parentID, childID)
-    }
-  })
+  await ensureAncestorRoute(ctx, parentID, new Set<string>())
+  const routeDecision = await ctx.sessionRouter.route(childID)
+  if (routeDecision.route !== "child") {
+    ctx.hierarchyIndex.registerChild(parentID, childID)
+  }
 }
 
 /**
@@ -375,7 +376,8 @@ export async function ensureAncestorRoute(
   if (!parentID) return
 
   await ensureAncestorRoute(ctx, parentID, seen, depth + 1)
-  if (!ctx.hierarchyIndex.isChild(sessionID)) {
+  const routeDecision = await ctx.sessionRouter.route(sessionID)
+  if (routeDecision.route !== "child") {
     ctx.hierarchyIndex.registerChild(parentID, sessionID)
   }
 }

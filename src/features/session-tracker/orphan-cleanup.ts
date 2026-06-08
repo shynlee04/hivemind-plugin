@@ -10,6 +10,7 @@
 
 import type { OpenCodeClient } from "../../shared/session-api.js"
 import type { HierarchyIndex } from "./persistence/hierarchy-index.js"
+import type { SessionRouter } from "./session-router.js"
 import type { OrphanQuarantine } from "./persistence/orphan-quarantine.js"
 import { isValidSessionID } from "./types.js"
 import type { ChildHierarchyEntry, SessionContinuityIndex, HierarchyManifest } from "./types.js"
@@ -36,6 +37,7 @@ export class OrphanCleanup {
   private client: OpenCodeClient
   private projectRoot: string
   private hierarchyIndex: HierarchyIndex | undefined
+  private sessionRouter: SessionRouter
   private quarantine: OrphanQuarantine
 
   /**
@@ -45,11 +47,13 @@ export class OrphanCleanup {
     client: OpenCodeClient
     projectRoot: string
     hierarchyIndex?: HierarchyIndex
+    sessionRouter: SessionRouter
     quarantine: OrphanQuarantine
   }) {
     this.client = deps.client
     this.projectRoot = deps.projectRoot
     this.hierarchyIndex = deps.hierarchyIndex
+    this.sessionRouter = deps.sessionRouter
     this.quarantine = deps.quarantine
   }
 
@@ -131,8 +135,8 @@ export class OrphanCleanup {
       let isOrphan = false
       let reason = ""
 
-      // Check 1: hierarchyIndex classifies as child
-      if (this.hierarchyIndex?.isChild(sessionID)) {
+      // Check 1: sessionRouter classifies as child
+      if ((await this.sessionRouter.route(sessionID)).route === "child") {
         isOrphan = true
         reason = "classified as child by HierarchyIndex"
       }
@@ -149,7 +153,7 @@ export class OrphanCleanup {
           // Has session-continuity.json — might be a legitimate main session
         } catch {
           // No session-continuity.json — likely orphan from race condition
-          if (this.hierarchyIndex?.isChild(sessionID)) {
+          if ((await this.sessionRouter.route(sessionID)).route === "child") {
             isOrphan = true
             reason = "no session-continuity.json + classified as child"
           }

@@ -105,7 +105,7 @@ All returned deliverables from specialist waves must pass the three-gate quality
 
 ## 6. Test-Driven Development Discipline
 
-This rule enforces the test-first discipline defined in the project root `AGENTS.md` under `## Test-Driven Development` and operationalized by `.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md`. It is the enforceable surface of that governance; the AGENTS.md section is its project-voice elaboration.
+This rule enforces the test-first discipline defined in the project root `AGENTS.md` under `## Test-Driven Development` and operationalized by `.planning//test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md`. It is the enforceable surface of that governance; the AGENTS.md section is its project-voice elaboration.
 
 ### 6.1 Required Cycle for Every Executable Change
 Every change to executable behavior in this repository must follow the sequence: **RED → GREEN → Coverage → REFACTOR (only if needed)**. The cycle is enforced by the `Evidence Truth Gate` (`gate-evidence-truth`) at acceptance.
@@ -183,7 +183,7 @@ The `Spec Compliance Gate` (`gate-spec-compliance`) refuses to pass when a slice
 ### 6.10 Authority and Sources
 This rule is binding for every specialist wave and every contributor. The full methodology, including the workflow diagram and extended anti-pattern catalogue, is in:
 
-- `.hivemind/planning/test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md` — project-agnostic reference.
+- `.planning//test-driven-governance-2026-06-05/GENERIC-TEST-DRIVEN-GUIDE.md` — project-agnostic reference.
 - `/Users/apple/hivemind-plugin-private/AGENTS.md` → `## Test-Driven Development` — Hivemind-voice elaboration.
 - `.opencode/skills/hm-l2-test-driven-execution/SKILL.md` — source skill with deep references and templates.
 

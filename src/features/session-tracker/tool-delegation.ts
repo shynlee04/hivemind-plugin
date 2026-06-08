@@ -9,6 +9,7 @@
 
 import type { OpenCodeClient } from "../../shared/session-api.js"
 import type { SessionClassifier } from "./classification.js"
+import type { SessionRouter } from "./session-router.js"
 import type { ChildWriter } from "./persistence/child-writer.js"
 import type { SessionIndexWriter } from "./persistence/session-index-writer.js"
 import type { ProjectIndexWriter } from "./persistence/project-index-writer.js"
@@ -34,6 +35,7 @@ import { createDelegationTrajectoryAndContract } from "./delegation-trajectory.j
 export interface ToolDelegationDeps {
   client: OpenCodeClient
   classifier: SessionClassifier
+  sessionRouter: SessionRouter
   childWriter: ChildWriter
   sessionIndexWriter: SessionIndexWriter
   projectIndexWriter: ProjectIndexWriter
@@ -53,6 +55,7 @@ export interface ToolDelegationDeps {
 export class ToolDelegation {
   private readonly client: OpenCodeClient
   private readonly classifier: SessionClassifier
+  private readonly sessionRouter: SessionRouter
   private readonly childWriter: ChildWriter
   private readonly sessionIndexWriter: SessionIndexWriter
   private readonly projectIndexWriter: ProjectIndexWriter
@@ -70,6 +73,7 @@ export class ToolDelegation {
   constructor(deps: ToolDelegationDeps) {
     this.client = deps.client
     this.classifier = deps.classifier
+    this.sessionRouter = deps.sessionRouter
     this.childWriter = deps.childWriter
     this.sessionIndexWriter = deps.sessionIndexWriter
     this.projectIndexWriter = deps.projectIndexWriter
@@ -265,7 +269,8 @@ export class ToolDelegation {
       input.tool === "execute-slash-command" ? "slash-cmd" :
       "sdk-direct"  // fallback for unrecognised tool
 
-    if (!this.hierarchyIndex.isChild(input.sessionID)) {
+    const route = await this.sessionRouter.route(input.sessionID)
+    if (route.route !== "child") {
       this.hierarchyIndex.registerChild(parentID, input.sessionID)
     }
     const rootMain = this.hierarchyIndex.getRootMain(input.sessionID) ?? parentID

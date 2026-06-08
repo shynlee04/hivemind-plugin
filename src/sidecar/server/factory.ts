@@ -19,7 +19,7 @@
  * Server start does NOT block plugin init — start failures are
  * handled by the caller (fire-and-forget with log warning).
  *
- * @see /Users/apple/hivemind-plugin-private/.hivemind/planning/plugin-port-pool-2026-06-07/00-landscape.md
+ * @see /Users/apple/hivemind-plugin-private/.planning//plugin-port-pool-2026-06-07/00-landscape.md
  * @module sidecar/server/factory
  */
 

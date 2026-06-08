@@ -366,10 +366,10 @@ export const HivemindConfigsSchema = z.object({
   /**
    * Configurable document path prefixes for language enforcement.
    * Flat array of strings, each relative to project root.
-   * Default: [".hivemind/planning/"] — supports recursive subdirectory globbing.
+   * Default: [".planning//"] — supports recursive subdirectory globbing.
    * @see D-08, D-09, D-10 in BOOT-09-CONTEXT.md
    */
-  document_paths: z.array(z.string()).default([".hivemind/planning/"]),
+  document_paths: z.array(z.string()).default([".planning//"]),
   mode: HivemindModeSchema.default("expert-advisor"),
   user_expert_level: UserExpertLevelSchema.default("intermediate-high-level"),
   delegation_systems: DelegationSystemsSchema,

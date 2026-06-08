@@ -98,7 +98,7 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
     if (deps.isMainSession?.(sessionID) && config) {
       const convLang = config.conversation_language
       const docLang = config.documents_and_artifacts_language
-      const docPaths = config.document_paths?.join(", ") ?? ".hivemind/planning/"
+      const docPaths = config.document_paths?.join(", ") ?? ".planning//"
 
       if (convLang) {
         const lines = [
