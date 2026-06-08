@@ -14,6 +14,7 @@
  * @module task-management/continuity/delegation-persistence
  */
 
+import { readFileSync, unlinkSync, writeFileSync } from "node:fs"
 import { dirname, join, resolve } from "node:path"
 
 import { getContinuityStoragePath } from "./index.js"
@@ -54,6 +55,32 @@ function getDelegationStoreDirectory(): string {
 
 export function getDelegationsFilePath(): string {
   return join(getDelegationStoreDirectory(), "delegations.json")
+}
+
+/**
+ * Returns the path to the WAL pending marker file.
+ *
+ * The marker is written atomically before the dual-write sequence and
+ * removed after both child file + manifest writes succeed. On recovery
+ * (startup), orphan pending markers indicate a crash mid-write — the
+ * operation is skipped rather than partially applied.
+ */
+function getWalPendingPath(): string {
+  return join(getDelegationStoreDirectory(), ".delegation-wal-pending.json")
+}
+
+/**
+ * Returns the list of delegation IDs currently in the WAL pending state.
+ * If no WAL marker exists, returns an empty array (no pending operations).
+ */
+export function getPendingWalDelegationIds(): string[] {
+  try {
+    const raw = readFileSync(getWalPendingPath(), "utf-8")
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
 }
 
 /**
@@ -107,6 +134,19 @@ export function persistDelegations(delegations: Delegation[]): void {
   //
   // REQ-P41D-01: No delegations.json file I/O. Session-tracker is canonical.
 
+  // --- R1: Write WAL marker before dual-write ---
+  // The WAL marker stores the delegation IDs being written. If the process
+  // crashes between this marker and the completion of all writes, recovery
+  // code skips these IDs on the next startup (see readPersistedDelegations).
+  // This prevents orphan child files without corresponding manifest entries.
+  const walPath = getWalPendingPath()
+  try {
+    const ids = delegations.map((d) => d.id).filter(Boolean)
+    writeFileSync(walPath, JSON.stringify(ids, null, 2), "utf-8")
+  } catch {
+    // WAL write failure is non-fatal — proceed with best-effort dual-write
+  }
+
   // --- P41-B: Dual-write to session-tracker (fire-and-forget, best-effort) ---
   try {
     const storeDir = getDelegationStoreDirectory()
@@ -152,6 +192,13 @@ export function persistDelegations(delegations: Delegation[]): void {
         })
       })
     }
+
+    // --- R1: Clean up WAL marker after dual-write completes ---
+    try {
+      unlinkSync(walPath)
+    } catch {
+      // Best-effort: marker may already be deleted on partial retry
+    }
   } catch (err) {
     // Fire-and-forget: log but never throw — old sync path already wrote to delegations.json
     log.error("continuity: persistDelegations dual-write error", {
@@ -172,6 +219,16 @@ export function readPersistedDelegations(): Delegation[] {
     const rawData = readRawDelegations(trackerRoot)
     const delegations: Delegation[] = []
     const seenIds = new Set<string>()
+
+    // R1 recovery: skip orphan WAL pending entries (crashed mid-write)
+    const pendingWalIds = getPendingWalDelegationIds()
+    for (const id of pendingWalIds) {
+      seenIds.add(id)
+    }
+    // Clean up orphan WAL marker — it was only relevant for this startup pass
+    if (pendingWalIds.length > 0) {
+      try { unlinkSync(getWalPendingPath()) } catch { /* best-effort */ }
+    }
 
     for (const [_rootId, data] of Object.entries(rawData)) {
       // Process hierarchy-manifest entries
