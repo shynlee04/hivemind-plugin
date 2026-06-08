@@ -9,7 +9,7 @@ description: >
   Maps to 6 shipped skills covering coordination, governance, and the
   3-gate quality triad. Pattern 2 Navigation — high freedom across
   shipped-only destinations. Tech-agnostic and framework-agnostic. NOT
-  for: hm-coord-router (user-intent classification for the L0
+  for: hm-coord-router (user-intent classification for the front-facing
   orchestrator), hm-coord-loop (wave-based multi-agent dispatch).
 metadata:
   consumed-by:

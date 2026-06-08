@@ -9,7 +9,6 @@ description: >
   lineage prefix, what prefix should I use, correct prefix for, check naming convention.
   NOT for general project file naming or non-meta-concept naming.
 metadata:
-  layer: "2"
   role: "meta-builder-governance"
   pattern: P2
   version: "1.0.0"

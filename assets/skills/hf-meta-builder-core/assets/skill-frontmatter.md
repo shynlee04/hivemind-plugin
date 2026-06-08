@@ -9,7 +9,6 @@
 name: skill-name-with-hyphens
 description: "Use when [specific triggering conditions and symptoms]"
 metadata:
-  layer: "0-4"
   role: "router|domain-execution"
   pattern: "Navigation|Process|Tool"
   version: "1.0.0"

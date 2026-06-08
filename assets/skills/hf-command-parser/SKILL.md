@@ -3,7 +3,6 @@ name: hf-command-parser
 description: >
   This skill should be used only when parsing $ARGUMENT propositional commands from OpenCode command strings. Handles named arguments, flag extraction, multi-word quoted values, and propositional expressions (entity=value, entity:action). Triggers: "parse $ARGUMENT", "parse OpenCode command arguments", "command parsing framework", "propositional command syntax", "extract flags from command". NOT for general natural-language parsing or shell execution.
 metadata:
-  layer: "3"
   role: "domain-execution"
   pattern: P2
 allowed-tools:

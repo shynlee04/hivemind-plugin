@@ -11,8 +11,8 @@ description: >
   command", "write a custom tool", "audit a skill", "fix skill
   frontmatter", "author a workflow", or "stack authoring skills". The
   hf- lineage is FLEXIBLE per the 22-category prefix taxonomy. NOT for:
-  hm-coord-router (intent classification for the L0 orchestrator);
-  hivemind-power-on (session discovery and resume).
+  hm-coord-router (intent classification for the front-facing
+  orchestrator); hivemind-power-on (session discovery and resume).
 metadata:
   role: "router"
   pattern: "P2-Navigation"

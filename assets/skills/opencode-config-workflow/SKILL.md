@@ -2,7 +2,6 @@
 name: opencode-config-workflow
 description: "Framework-agnostic guided workflow for configuring OpenCode agents, commands, and skills programmatically. Turn-based: Discover → Investigate → Collect → Proposal → Validate → Compile → Test → Save. Supports individual and batch configuration with cross-primitive conflict detection. Coexists safely with GSD, BMAD, Speckit, and other frameworks. Triggers on: 'configure agent', 'configure command', 'configure skill', 'batch configure', 'agent setup', 'set up agent', 'configure OpenCode primitives', 'update agent', 'modify agent', 'change agent', 'batch update', 'reconfigure', 'gatekeeping setup' ."
 metadata:
-  layer: "2"
   role: "workflow-orchestration"
   pattern: "P1-procedural"
   depends_on_tools: ["configure-primitive", "validate-restart"]

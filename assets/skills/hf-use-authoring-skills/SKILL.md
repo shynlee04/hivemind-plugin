@@ -2,7 +2,6 @@
 name: hf-use-authoring-skills
 description: This skill should be used when the user asks to "create a skill", "audit this skill", "refactor skills", "doctor agent skills", "check skill quality", "fix frontmatter", "skill pattern selection", "TDD for skills", "cross-platform skill compatibility", or "score skill quality".
 metadata:
-  layer: "2"
   role: "domain-execution"
   pattern: P2-hybrid
 allowed-tools: Read Write Edit Bash Glob Grep
