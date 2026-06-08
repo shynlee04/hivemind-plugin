@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { readFileSync, statSync } from "node:fs"
 
 import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { chunkMarkdownDocument } from "./chunker.js"
@@ -35,6 +35,10 @@ export function executeDocIntelligenceAction(
   switch (input.action as DocIntelligenceAction) {
     // ── Read (original — parity preserved) ──
     case "skim": {
+      const skimAbsPath = assertPathWithinRoot(projectRoot, input.path, "doc intelligence")
+      if (statSync(skimAbsPath).isDirectory()) {
+        throw new Error("[Harness] Path is a directory. Use 'skim_directory' action to list directory contents.")
+      }
       return { action: "skim", document: skimDocument(projectRoot, input.path) }
     }
     case "skim_directory": {

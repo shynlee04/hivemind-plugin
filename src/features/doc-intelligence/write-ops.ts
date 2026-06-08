@@ -82,7 +82,7 @@ export async function writeSectionBody(
     const newContent = patchSectionBody(content, heading, body)
     if (newContent === content) {
       // Try search-and-replace if exact heading match fails
-      throw new Error(`[Harness] Heading not found: ${heading}`)
+      throw new Error(`[Harness] Heading not found: "${heading}". Use 'upsert' action (instead of 'write') to auto-create the section if the heading might not exist yet.`)
     }
     return newContent
   }, expectedHash ? { expectedHash } : undefined)

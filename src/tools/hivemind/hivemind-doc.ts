@@ -23,43 +23,43 @@ export function createHivemindDocTool(projectRoot: string): ReturnType<typeof to
   const z = tool.schema
 
   return tool({
-    description: "Document intelligence for hierarchy-aware CRUD, search, indexing, and cross-reference operations.",
+    description: "Full document intelligence for files (text, markdown, JSON, YAML, XML). PICK CAREFULLY: skim (single FILE only) vs skim_directory (directory listing). write (replaces EXISTING heading) vs upsert (creates if heading missing). create (new file, fails if exists) vs set_metadata (adds frontmatter to existing).",
     args: {
       action: z.enum(["skim","skim_directory","read","chunk","search","read_lines","read_offset","create","write","upsert","append","insert","delete","batch","batch_files","metadata","set_metadata","delete_metadata","toc","outline","inspect","xref","index","context"]).describe(
-        "Operation to perform. Read: skim, skim_directory, read, chunk, search, read_lines, read_offset, toc, outline, metadata, xref, index. Write: create, write, upsert, append, insert, delete, batch, batch_files, set_metadata, delete_metadata. Code: inspect, context."
+        "READ actions — skim (1 file): heading outline of 1 file. skim_directory (1 dir): list all docs in a dir. read/chunk: full content or chunked. search: keyword/regex across files. read_lines/read_offset: byte-precise extraction. toc/outline: heading tree. metadata: frontmatter keys+values. xref: cross-reference link discovery. index: build heading+hash index.\n\nWRITE actions — create: new file (FAILS if exists). write: REPLACE section under EXISTING heading (use upsert if heading missing). upsert: replace section OR auto-create heading if missing. append: add content to end of a section. insert: insert a NEW section after an existing heading. delete: remove section or (mode:'file') entire file. set_metadata: set frontmatter keys. delete_metadata: remove a frontmatter key. batch/batch_files: multi-section or multi-file edits at once.\n\nCODE actions — inspect: extract JSDoc/exports/signatures from code files. context: relevance-scored section extraction given a query+token budget."
       ),
-      path: z.string().describe("Project-root-relative file or directory path"),
+      path: z.string().describe("Project-root-relative file path (or directory path for skim_directory). REQUIRED for every action."),
 
       // Read params
-      maxCharacters: z.number().int().positive().optional().describe("[read,chunk] Max characters"),
-      heading: z.string().optional().describe("[read,write,upsert,append,insert,delete,metadata] Target heading"),
-      startLine: z.number().int().positive().optional().describe("[read_lines] Start line (1-based)"),
-      endLine: z.number().int().positive().optional().describe("[read_lines] End line (1-based)"),
-      offset: z.number().int().nonnegative().optional().describe("[read_offset] Char offset"),
-      limit: z.number().int().positive().optional().describe("[read_offset] Char count"),
-      query: z.string().optional().describe("[search,context] Search query"),
-      maxResults: z.number().int().positive().optional().describe("[search] Max results"),
-      regex: z.boolean().optional().describe("[search] Enable regex"),
-      headingOnly: z.boolean().optional().describe("[search] Headings only"),
-      tokenBudget: z.number().int().positive().optional().describe("[context] Token budget"),
-      format: z.enum(["md","json","yaml","xml"]).optional().describe("[skim_directory] Format filter"),
+      maxCharacters: z.number().int().positive().optional().describe("[read,chunk] Max characters to return (default 20000)"),
+      heading: z.string().optional().describe("[read,write,upsert,append,insert,delete,metadata] Target section heading text (not regex, not slug)"),
+      startLine: z.number().int().positive().optional().describe("[read_lines] First line number (1-based)"),
+      endLine: z.number().int().positive().optional().describe("[read_lines] Last line number (1-based, inclusive). Omit to read to end."),
+      offset: z.number().int().nonnegative().optional().describe("[read_offset] Character position to start reading from (0-based)"),
+      limit: z.number().int().positive().optional().describe("[read_offset] Number of characters to extract"),
+      query: z.string().optional().describe("[search,context] Keyword or regex pattern. For search: finds matches. For context: selects relevant sections."),
+      maxResults: z.number().int().positive().optional().describe("[search] Maximum result count (default 50)"),
+      regex: z.boolean().optional().describe("[search] Set true to treat query as regex pattern"),
+      headingOnly: z.boolean().optional().describe("[search] Set true to search only in heading text, skip body"),
+      tokenBudget: z.number().int().positive().optional().describe("[context] Target token count for relevance-scoped extraction"),
+      format: z.enum(["md","json","yaml","xml"]).optional().describe("[skim_directory] Filter results to one format: md, json, yaml, xml"),
 
       // Write params
-      title: z.string().optional().describe("[create] Document title"),
-      metadata: z.string().optional().describe("[create,set_metadata] Frontmatter as JSON"),
-      initialContent: z.string().optional().describe("[create] Custom body content"),
-      body: z.string().optional().describe("[write,upsert,insert] Section body"),
-      content: z.string().optional().describe("[append] Content to append"),
-      afterHeading: z.string().optional().describe("[insert] Insert after heading"),
-      newHeading: z.string().optional().describe("[insert] New heading name"),
-      level: z.number().int().min(1).max(6).optional().describe("[upsert,insert] Heading level"),
-      expectedHash: z.string().optional().describe("[write,upsert,append,insert,set_metadata,delete_metadata] SHA-256 for stale detection"),
-      mode: z.enum(["file"]).optional().describe("[delete] 'file' to delete entire file"),
-      field: z.string().optional().describe("[delete_metadata] Field to remove"),
+      title: z.string().optional().describe("[create] Document title (used as H1 + filename stem)"),
+      metadata: z.string().optional().describe("[create,set_metadata] Frontmatter as JSON string. For create: embedded in template. For set_metadata: replaces all frontmatter."),
+      initialContent: z.string().optional().describe("[create] Custom body override (skips template generation)"),
+      body: z.string().optional().describe("[write,upsert,insert] Section body text (markdown content)"),
+      content: z.string().optional().describe("[append] Text to append at end of target section"),
+      afterHeading: z.string().optional().describe("[insert] Existing heading name to insert the NEW section after"),
+      newHeading: z.string().optional().describe("[insert] Name of the NEW section heading to create"),
+      level: z.number().int().min(1).max(6).optional().describe("[upsert,insert] Heading level for newly created section (default 2)"),
+      expectedHash: z.string().optional().describe("[write,upsert,append,insert,set_metadata,delete_metadata] SHA-256 hash for stale-file detection. Read the file first with 'read' to get its hash, then pass it here to prevent overwriting concurrent edits."),
+      mode: z.enum(["file"]).optional().describe("[delete] Set mode='file' to DELETE the ENTIRE FILE. Omit mode to delete only a section by heading."),
+      field: z.string().optional().describe("[delete_metadata] Name of the specific frontmatter field to remove"),
 
       // Batch params
-      ops: z.string().optional().describe("[batch] JSON array of section ops"),
-      files: z.string().optional().describe("[batch_files] JSON array of file ops"),
+      ops: z.string().optional().describe("[batch] JSON array of section operations: [{\"op\":\"write|upsert|append|insert|delete\",\"heading\":\"...\",\"body\":\"...\"}]. All operations on ONE file, executed atomically."),
+      files: z.string().optional().describe("[batch_files] JSON array of per-file batches: [{\"path\":\"...\",\"ops\":[...]}]. Each file is processed independently (best-effort: one file failure does not block others)."),
     },
     async execute(rawArgs: Record<string, unknown>, _context: ToolContext): Promise<string> {
       try {
