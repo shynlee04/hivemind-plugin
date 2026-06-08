@@ -1,5 +1,6 @@
 ---
 description: "Generate hierarchical AGENTS.md files with root + complexity-scored subdirectories. Supports update mode, full regeneration, and depth limiting."
+agent: hm-executor
 ---
 
 Generate hierarchical AGENTS.md files. Root + complexity-scored subdirectories.
