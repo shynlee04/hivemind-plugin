@@ -1,174 +1,174 @@
-import { readdirSync, readFileSync, statSync } from "node:fs"
-import { extname, relative, sep } from "node:path"
+import { readFileSync } from "node:fs"
 
 import { assertPathWithinRoot } from "../../shared/security/path-scope.js"
 import { chunkMarkdownDocument } from "./chunker.js"
-import { parseMarkdownDocument } from "./parser.js"
-import type { DocIntelligenceInput, DocIntelligenceResult, DocSearchMatch, ParsedMarkdownDocument } from "./types.js"
+import { skimDocument, skimDirectory, readDocument, readLines, readOffset } from "./read-ops.js"
+import { searchDocuments } from "./search-ops.js"
+import { generateToc, generateOutline } from "./hierarchy-ops.js"
+import { readDocumentMetadata, writeDocumentMetadata, deleteDocumentMetadataField } from "./metadata-ops.js"
+import { createDocument, writeSectionBody, upsertSection, appendSection, insertSection, deleteSection, deleteFile } from "./write-ops.js"
+import { batchSectionEdits, batchMultiFileEdits } from "./batch-ops.js"
+import { inspectCodeFile } from "./code-inspect.js"
+import { analyzeCrossReferences } from "./xref-ops.js"
+import { buildDocumentIndex } from "./indexer-ops.js"
+import { extractContext } from "./context-extract.js"
+import type { DocIntelligenceAction, DocIntelligenceResult } from "./types.js"
 
-const MARKDOWN_EXTENSIONS = new Set([".md", ".mdx"])
 const DEFAULT_MAX_READ_CHARACTERS = 20000
-const DEFAULT_MAX_SEARCH_RESULTS = 50
 
 /**
- * Execute a read-only document intelligence action inside the project root boundary.
+ * Execute a document intelligence action inside the project root boundary.
+ *
+ * The router is a traffic cop — it dispatches to the appropriate `*-ops.ts`
+ * module based on the action discriminator. No business logic lives here
+ * beyond dispatch and path security.
  *
  * @param projectRoot - Trusted project root for path security.
- * @param input - Action request to execute.
+ * @param input - Parsed action input with discriminated action field.
  * @returns Action-specific document intelligence result.
- * @throws {Error} When the requested path escapes the project root or action arguments are invalid.
- *
- * @example
- * ```typescript
- * const result = executeDocIntelligenceAction(process.cwd(), { action: "skim", path: "README.md" })
- * ```
  */
 export function executeDocIntelligenceAction(
   projectRoot: string,
-  input: DocIntelligenceInput,
-): DocIntelligenceResult {
-  switch (input.action) {
+  input: { action: string; path: string; [key: string]: unknown },
+): DocIntelligenceResult | Promise<DocIntelligenceResult> {
+  // All actions pass through path security
+  switch (input.action as DocIntelligenceAction) {
+    // ── Read (original — parity preserved) ──
     case "skim": {
-      const filePath = resolveDocPath(projectRoot, input.path)
-      return { action: "skim", document: skimFile(projectRoot, filePath) }
+      return { action: "skim", document: skimDocument(projectRoot, input.path) }
     }
     case "skim_directory": {
-      const directoryPath = resolveDocPath(projectRoot, input.path)
-      return { action: "skim_directory", documents: listMarkdownFiles(directoryPath).map((file) => skimFile(projectRoot, file)) }
+      return { action: "skim_directory", documents: skimDirectory(projectRoot, input.path, input.format as string | undefined) }
     }
     case "read": {
-      const filePath = resolveDocPath(projectRoot, input.path)
-      const content = readFileSync(filePath, "utf-8")
-      const maxCharacters = input.maxCharacters ?? DEFAULT_MAX_READ_CHARACTERS
-      return {
-        action: "read",
-        path: toRootRelativePath(projectRoot, filePath),
-        content: content.slice(0, maxCharacters),
-        characterCount: content.length,
-        truncated: content.length > maxCharacters,
-      }
+      const result = readDocument(projectRoot, input.path, (input.maxCharacters as number) ?? DEFAULT_MAX_READ_CHARACTERS)
+      return { action: "read", ...result }
     }
     case "chunk": {
-      const filePath = resolveDocPath(projectRoot, input.path)
-      const content = readFileSync(filePath, "utf-8")
-      return {
-        action: "chunk",
-        path: toRootRelativePath(projectRoot, filePath),
-        chunks: chunkMarkdownDocument(toRootRelativePath(projectRoot, filePath), content, {
-          maxCharacters: input.maxCharacters,
-        }),
-      }
+      const absPath = assertPathWithinRoot(projectRoot, input.path, "doc intelligence")
+      const content = readFileSync(absPath, "utf-8")
+      const chunks = chunkMarkdownDocument(input.path, content, { maxCharacters: input.maxCharacters as number | undefined })
+      return { action: "chunk", path: input.path, chunks }
     }
     case "search": {
-      if (!input.query?.trim()) {
-        throw new Error("[Hivemind] doc intelligence search requires a non-empty query")
-      }
-      const startPath = resolveDocPath(projectRoot, input.path)
       return {
         action: "search",
-        query: input.query,
-        matches: searchMarkdown(projectRoot, startPath, input.query, input.maxResults ?? DEFAULT_MAX_SEARCH_RESULTS),
+        query: (input.query as string) ?? "",
+        matches: searchDocuments(
+          projectRoot,
+          input.path,
+          (input.query as string) ?? "",
+          (input.maxResults as number) ?? 50,
+          (input.regex as boolean) ?? false,
+          (input.headingOnly as boolean) ?? false,
+        ),
       }
     }
-    default:
-      throw new Error(`[Harness] Unsupported doc intelligence action: ${String((input as Record<string, unknown>).action)}`)
-  }
-}
 
-/**
- * Resolve a requested document path while preserving the doc-intelligence error boundary name.
- *
- * @param projectRoot - Trusted project root.
- * @param candidate - Caller-provided file or directory path.
- * @returns Absolute in-scope path.
- */
-function resolveDocPath(projectRoot: string, candidate: string): string {
-  return assertPathWithinRoot(projectRoot, candidate, "doc intelligence")
-}
+    // ── Read (extended) ──
+    case "read_lines": {
+      return { action: "read_lines", result: readLines(projectRoot, input.path, input.startLine as number, input.endLine as number | undefined) }
+    }
+    case "read_offset": {
+      return { action: "read_offset", result: readOffset(projectRoot, input.path, input.offset as number, input.limit as number) }
+    }
 
-/**
- * Read and skim a Markdown file.
- *
- * @param projectRoot - Trusted project root.
- * @param filePath - Absolute document path.
- * @returns Parsed document metadata.
- */
-function skimFile(projectRoot: string, filePath: string): ParsedMarkdownDocument {
-  return parseMarkdownDocument(toRootRelativePath(projectRoot, filePath), readFileSync(filePath, "utf-8"))
-}
-
-/**
- * Recursively list Markdown files in deterministic root-relative order.
- *
- * @param startPath - Absolute file or directory path to inspect.
- * @returns Absolute Markdown file paths sorted deterministically.
- */
-function listMarkdownFiles(startPath: string): string[] {
-  const stats = statSync(startPath)
-  if (stats.isFile()) return isMarkdownFile(startPath) ? [startPath] : []
-  return readdirSync(startPath, { withFileTypes: true })
-    .sort((left, right) => left.name.localeCompare(right.name))
-    .flatMap((entry) => {
-      const entryPath = `${startPath}/${entry.name}`
-      if (entry.isDirectory()) return listMarkdownFiles(entryPath)
-      return isMarkdownFile(entryPath) ? [entryPath] : []
-    })
-}
-
-/**
- * Search Markdown files for a case-insensitive query without building an index.
- *
- * @param projectRoot - Trusted project root.
- * @param startPath - Absolute file or directory path.
- * @param query - Query string to find.
- * @param maxResults - Maximum matches to return.
- * @returns Search matches in deterministic path and line order.
- */
-function searchMarkdown(projectRoot: string, startPath: string, query: string, maxResults: number): DocSearchMatch[] {
-  const normalizedQuery = query.toLowerCase()
-  const matches: DocSearchMatch[] = []
-
-  for (const filePath of listMarkdownFiles(startPath)) {
-    const lines = readFileSync(filePath, "utf-8").split(/\r?\n/)
-    lines.forEach((line, index) => {
-      if (matches.length >= maxResults) return
-      if (line.toLowerCase().includes(normalizedQuery)) {
-        const heading = findNearestHeading(lines, index)
-        matches.push({ path: toRootRelativePath(projectRoot, filePath), line: index + 1, snippet: line.trim(), heading })
+    // ── Write ──
+    case "create": {
+      return createDocument(projectRoot, input.path, input.title as string, input.metadata as Record<string, unknown> | undefined, input.initialContent as string | undefined).then(
+        (result) => ({ action: "create", result }) as DocIntelligenceResult,
+      )
+    }
+    case "write": {
+      return writeSectionBody(projectRoot, input.path, input.heading as string, input.body as string, input.expectedHash as string | undefined).then(
+        (result) => ({ action: "write", result }) as unknown as DocIntelligenceResult,
+      )
+    }
+    case "upsert": {
+      return upsertSection(projectRoot, input.path, input.heading as string, input.body as string, (input.level as number) ?? 2, input.expectedHash as string | undefined).then(
+        (result) => ({ action: "upsert", result }) as unknown as DocIntelligenceResult,
+      )
+    }
+    case "append": {
+      return appendSection(projectRoot, input.path, input.heading as string, input.content as string, input.expectedHash as string | undefined).then(
+        (result) => ({ action: "append", result }) as unknown as DocIntelligenceResult,
+      )
+    }
+    case "insert": {
+      return insertSection(projectRoot, input.path, input.afterHeading as string, input.newHeading as string, input.level as number, input.body as string, input.expectedHash as string | undefined).then(
+        (result) => ({ action: "insert", result }) as unknown as DocIntelligenceResult,
+      )
+    }
+    case "delete": {
+      if (input.mode === "file") {
+        return deleteFile(projectRoot, input.path).then(
+          (result) => ({ action: "delete", result }) as DocIntelligenceResult,
+        )
       }
-    })
-    if (matches.length >= maxResults) break
+      return deleteSection(projectRoot, input.path, input.heading as string).then(
+        (result) => ({ action: "delete", result }) as unknown as DocIntelligenceResult,
+      )
+    }
+
+    // ── Batch ──
+    case "batch": {
+      return batchSectionEdits(projectRoot, input.path, input.ops as never[]).then(
+        (result) => ({ action: "batch", ...result }) as unknown as DocIntelligenceResult,
+      )
+    }
+    case "batch_files": {
+      return batchMultiFileEdits(projectRoot, input.files as never[]).then(
+        (result) => ({ action: "batch_files", results: result.results }) as DocIntelligenceResult,
+      )
+    }
+
+    // ── Metadata ──
+    case "metadata": {
+      return { action: "metadata", metadata: readDocumentMetadata(projectRoot, input.path) }
+    }
+    case "set_metadata": {
+      return writeDocumentMetadata(projectRoot, input.path, input.metadata as Record<string, unknown>).then(
+        ({ hash, opId }) => ({ action: "set_metadata", hash, opId }) as DocIntelligenceResult,
+      )
+    }
+    case "delete_metadata": {
+      return deleteDocumentMetadataField(projectRoot, input.path, input.field as string).then(
+        ({ hash, opId }) => ({ action: "delete_metadata", hash, opId }) as DocIntelligenceResult,
+      )
+    }
+
+    // ── Hierarchy ──
+    case "toc": {
+      return { action: "toc", toc: generateToc(projectRoot, input.path) }
+    }
+    case "outline": {
+      return { action: "outline", outline: generateOutline(projectRoot, input.path) }
+    }
+
+    // ── Code Inspect ──
+    case "inspect": {
+      return { action: "inspect", result: inspectCodeFile(projectRoot, input.path) }
+    }
+
+    // ── Cross-Reference ──
+    case "xref": {
+      return { action: "xref", links: analyzeCrossReferences(projectRoot, input.path) }
+    }
+
+    // ── Index ──
+    case "index": {
+      return { action: "index", entries: buildDocumentIndex(projectRoot, input.path) }
+    }
+
+    // ── Context Extraction ──
+    case "context": {
+      return {
+        action: "context",
+        sections: extractContext(projectRoot, input.path, (input.query as string) ?? "", input.tokenBudget as number | undefined),
+      }
+    }
+
+    default:
+      throw new Error(`[Harness] Unsupported doc intelligence action: ${String(input.action)}`)
   }
-
-  return matches
-}
-
-/** Find the nearest heading line above a given line index. */
-function findNearestHeading(lines: string[], currentIndex: number): string | null {
-  for (let i = currentIndex - 1; i >= 0; i--) {
-    const headingMatch = /^#{1,6}\s+(.+)$/.exec(lines[i])
-    if (headingMatch) return headingMatch[1].trim()
-  }
-  return null
-}
-
-/**
- * Check whether a path uses a Markdown extension supported by Phase 55.
- *
- * @param filePath - Absolute or relative file path.
- * @returns True when the file is Markdown or MDX.
- */
-function isMarkdownFile(filePath: string): boolean {
-  return MARKDOWN_EXTENSIONS.has(extname(filePath).toLowerCase())
-}
-
-/**
- * Convert an absolute path to deterministic project-root-relative POSIX format.
- *
- * @param projectRoot - Trusted project root.
- * @param filePath - Absolute file path inside the project root.
- * @returns POSIX-style relative path.
- */
-function toRootRelativePath(projectRoot: string, filePath: string): string {
-  return relative(projectRoot, filePath).split(sep).join("/")
 }

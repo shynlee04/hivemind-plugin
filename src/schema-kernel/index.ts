@@ -99,8 +99,9 @@ export {
 } from "./generate-config-json-schema.js"
 
 export {
-  DocIntelligenceActionSchema,
   DocIntelligenceInputSchema,
+  SectionEditOpSchema,
+  FileOpsSchema,
 } from "./doc-intelligence.schema.js"
 
 export type { DocIntelligenceSchemaInput } from "./doc-intelligence.schema.js"
