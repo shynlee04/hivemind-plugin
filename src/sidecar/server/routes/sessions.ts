@@ -25,9 +25,8 @@ export function createSessionsRoutes(
       method: "GET",
       path: "/api/state/sessions",
       handler: async (): Promise<RouteResult> => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const st = (registry as any).sessionTracker
-        const sessions = typeof st.list === "function" ? st.list() : new Map()
+        const st = registry.sessionTracker
+        const sessions = typeof (st as any).list === "function" ? (st as any).list() : new Map()
         const sessionArray = Array.from(sessions.values())
         return {
           ok: true,

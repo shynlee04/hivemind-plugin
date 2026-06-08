@@ -39,8 +39,7 @@ export async function handleDelegateTask(options: {
 
   try {
     const dm = registry.delegationManager
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await (dm.dispatch as any)({
+    const result = await dm.dispatch({
       parentSessionId: args.sessionId ?? "sess-1",
       agent: args.agent ?? "default",
       prompt: args.prompt ?? "",

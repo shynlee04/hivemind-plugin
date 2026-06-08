@@ -87,6 +87,7 @@ import {
   ensureAncestorRoute,
 } from "./session-event-handler.js"
 import type { TrackerHandlerContext } from "./session-event-handler.js"
+import { getSessionContinuity } from "../../task-management/continuity/index.js"
 
 // ---------------------------------------------------------------------------
 // SessionTracker class
@@ -134,6 +135,20 @@ export class SessionTracker {
   /** Returns the LastMessageCapture instance for event observer wiring. */
   getLastMessageCapture(): InitializedDeps["lastMessageCapture"] {
     return this.lastMessageCapture
+  }
+
+  /**
+   * Returns the session continuity record for a given session ID.
+   *
+   * Added to support typed `sessionTracker.get()` calls from the sidecar
+   * (eliminates `(sessionTracker as any).get` cast). Delegates to the
+   * continuity store which is the canonical source for session state.
+   *
+   * @param sessionId - The session identifier.
+   * @returns The continuity record, or undefined if not found.
+   */
+  get(sessionId: string): unknown {
+    return getSessionContinuity(sessionId)
   }
 
   /** Builds the handler context for delegation to session-event-handler.ts. */

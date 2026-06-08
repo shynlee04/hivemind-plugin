@@ -47,25 +47,7 @@ export async function handleHivemindSessionView(options: {
   // `(registry as any).sessionTracker` cast, addressing GAP-07 for this
   // handler file.
   const sessionTracker = registry.sessionTracker
-
-  // SessionTracker's public TypeScript surface does not yet expose a
-  // `get(sessionId)` method (the test mock provides one). The cast is
-  // localized to this call site only — the GAP-07 registry cast has
-  // already been removed above. Wave 3 may add `get()` to SessionTracker
-  // proper, eliminating this last cast.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getMethod = (sessionTracker as any).get
-  if (typeof getMethod !== "function") {
-    return {
-      ok: false as const,
-      error: {
-        code: "INTERNAL",
-        message: "[Hivemind] sessionTracker.get is not a function",
-      },
-    }
-  }
-
-  const session = await getMethod.call(sessionTracker, args.sessionId)
+  const session = await sessionTracker.get(args.sessionId)
   if (session === undefined || session === null) {
     return {
       ok: false as const,

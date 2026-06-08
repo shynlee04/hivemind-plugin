@@ -44,9 +44,8 @@ export async function handleHivemindTrajectory(options: {
   }
 
   if (args.action === "inspect") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const t = (registry as any).trajectory
-    const events = typeof t.inspect === "function" ? t.inspect() : []
+    const t = registry.trajectory
+    const events = typeof (t as any).inspect === "function" ? (t as any).inspect() : []
     return {
       ok: true as const,
       data: { events: Array.isArray(events) ? events : [] },

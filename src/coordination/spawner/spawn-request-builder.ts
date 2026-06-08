@@ -20,6 +20,8 @@ type DelegateParams = {
   agent: string
   prompt: string
   title?: string
+  context?: string
+  stackOnSessionId?: string
   workingDirectory?: string
   worktree?: string
   provider?: string
