@@ -6,10 +6,10 @@ status: C4 dispatching
 last_updated: "2026-06-07T22:20:00.000Z"
 progress:
   total_phases: 65
-  completed_phases: 18
-  total_plans: 155
-  completed_plans: 107
-  percent: 28
+  completed_phases: 19
+  total_plans: 156
+  completed_plans: 108
+  percent: 29
 ---
 
 <!-- generated-by: gsd-doc-writer -->
@@ -29,7 +29,7 @@ progress:
 - **P42-03** — Plugin wiring: bootstrap integration + event observer registration
 - **P54-01** — Session persistence + restart-recovery: 9-field JSON persistence on every state transition, restoreAll filter to paused+detached, UUIDv7 inline generator, atomic wx-flag write, SessionManager 7th optional ctor param + 2 persist call sites, kill-parent-restart-recovery BATS L1 evidence (commit `a5c67c19`)
 
-**Current focus:** **Phase 59 — Session Backchannel & tmux-copilot Permission Rework.** ✅ COMPLETE (2026-06-05). Fixed 12 sub-flaws across 3 domains (A, B, C — D deferred by scope). 10 files modified. Typecheck clean, 31/31 completion-detector tests pass. See `.planning/phases/59-session-backchannel-tmux-copilot-permission-rework-2026-06-0/59-SUMMARY.md`. **Next:** Phase 60.
+**Current focus:** **Phase 61 — Doc-Intelligence Rearchitecture.** ✅ COMPLETE (2026-06-08). Transformed the read-only Markdown skim router into a full-spectrum document intelligence layer. 18 source files created/modified (~2,250 LOC feature surface). 16 test suites, 73/73 tests passing. 8 atomic commits. Covers: multi-format CRUD, metadata ops, hierarchy ops, batch ops (atomic + best-effort), code inspection (13 extensions), cross-reference analysis, document indexing, context extraction, governance integration, concurrency safety with `proper-lockfile`. All 48 SPEC requirements covered. See `.planning/phases/61-doc-intelligence-rearchitecture/61-SUMMARY.md`. **Next:** Phase 62.
 
 ---
 
