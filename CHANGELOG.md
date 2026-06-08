@@ -11,11 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed vendored `opencode-tmux/` fork; in-tree tmux-copilot module (P50-P55 synthesis) replaces it.
 
 ### Added
+- **Phase 60 (C2-Residuals)**: TDD tests with evidence labels for 4 modules (session-patch, continuity store, handlers, mocks) — closes §4.9
 - Phase 0 Governance Baseline (docs/governance)
 - Core Architecture (WS-CA) Bootstrap CLI & Config Consumer Runtime Wiring
 - Sector Governance Foundation (Option 3 Docs-Only Route)
 - HER-0 Ecosystem Re-map & Reality Audit (2026-05-05)
 - HER-1 Documentation & Configuration Recovery (2026-05-05)
+
+### Changed
+- **WAL marker (§4.1)**: Added lightweight WAL marker to dual-write path for crash safety — ensures atomicity during concurrent writes
+- **Continuity delegation path (§4.7)**: Canonicalized overlapping continuity state source delegation path — single authority for state reads
+- **Sidecar 7× `as any` elimination (§4.10)**: Replaced all `(registry as any)` casts in sidecar handlers with typed access via `SidecarDependencyRegistry`
+- **`@CQRS-BOUNDARY` annotation (§4.11)**: Added explicit CQRS boundary annotation to `session-patch` — documents read/write surface separation
+
+### Fixed
+- **SessionRouter consolidation (§4.8)**: Updated test mocks for `sessionRouter` consolidation — eliminates classification/router duplication
 
 ### Fixed
 - **S5b**: tmux panel now spawns for every SDK-created child session, even when the OpenCode SDK does not fire `session.created`. The `DelegationCoordinator` now synthesizes an `EnrichedSessionEvent` and calls `tmuxIntegration.adapter.onSessionCreated` directly after `childSessionStarter.start()` returns, mirroring the existing `onChildSessionCreated` fallback for session-tracker. `ChildSessionStartResult` now surfaces `title` and `workingDirectory` so the synthesized event carries the right pane description. Idempotency preserved via `SessionManager.sessions` / `spawningSessions` guards. Resolves live UAT blocker documented in `.planning/debug/s5-panel-spawn-root-cause-2026-06-04.md`.
