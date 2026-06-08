@@ -1,0 +1,65 @@
+{
+  "skill_name": "hm-coord-router",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": 1,
+      "name": "spec-classification-with-verb",
+      "prompt": "Lock the spec for the new auth flow.",
+      "expected_intent": "spec",
+      "expected_command": "hm-spec-phase",
+      "expected_agent": "hm-specifier",
+      "assertions": [
+        {"text": "intent classified as 'spec'", "passed": null, "evidence": null},
+        {"text": "command resolved to hm-spec-phase", "passed": null, "evidence": null},
+        {"text": "agent resolved to hm-specifier", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "debug-classification-with-why-verb",
+      "prompt": "Why is the sidecar timing out?",
+      "expected_intent": "debug",
+      "expected_command": "hm-debug-systematic",
+      "expected_agent": "hm-debugger",
+      "assertions": [
+        {"text": "intent classified as 'debug'", "passed": null, "evidence": null},
+        {"text": "command resolved to hm-debug-systematic", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "ship-classification-with-ship-verb",
+      "prompt": "Ship the v0.2 milestone.",
+      "expected_intent": "ship",
+      "expected_command": "hm-ship",
+      "expected_agent": "hm-shipper",
+      "assertions": [
+        {"text": "intent classified as 'ship'", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "refactor-classification-with-refactor-verb",
+      "prompt": "Refactor the session-tracker to use Maps.",
+      "expected_intent": "refactor",
+      "expected_command": "hm-arch-refactor",
+      "expected_agent": "hm-architect",
+      "assertions": [
+        {"text": "intent classified as 'refactor'", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "multi-intent-escalation",
+      "prompt": "Fix the bug AND write tests.",
+      "expected_intent": "multi-intent",
+      "expected_command": "hm-coord-loop",
+      "expected_agent": "hm-orchestrator",
+      "assertions": [
+        {"text": "intent detected as multi-intent (NOT routed single)", "passed": null, "evidence": null},
+        {"text": "escalation triggered to split into 2 dispatches", "passed": null, "evidence": null}
+      ]
+    }
+  ]
+}

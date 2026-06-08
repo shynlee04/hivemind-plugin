@@ -106,8 +106,8 @@ intent_classification:
     - Codebase Mapping
     - Coordination
   routing_skills:
-    - hm-l2-lineage-router
-    - hm-l2-skill-router
+    - hm-coord-router
+    - hm-routing-skill
   session_context_fields:
     - current_session_id
     - active_delegations
@@ -118,8 +118,8 @@ intent_classification:
     - landscape_documented
     - artifact_tracking
 skills:
-  - hm-l2-lineage-router
-  - hm-l2-skill-router
+  - hm-coord-router
+  - hm-routing-skill
   - hm-coord-loop
   - hm-l2-user-intent-interactive-loop
   - hm-loop-completion
@@ -213,7 +213,7 @@ Understands the full Hivemind harness architecture:
 - **Quality gate triad:** gate-lifecycle-integration → gate-spec-compliance → gate-evidence-truth
 - **16 hm-* domains:** Research, Planning, Implementation, Quality, Domain, Documentation, Phase Lifecycle, Audit, UI, Intelligence, Debug, Integration, Risk, Architecture, Codebase Mapping, Coordination
 - **6 task categories:** Research, Planning, Execution, Quality, Debug, Review
-- **Routing skills:** hm-l2-lineage-router (6 broad categories) → hm-l2-skill-router (granular domains → exact skill bundles)
+- **Routing skills:** hm-coord-router (6 broad categories) → hm-routing-skill (granular domains → exact skill bundles)
 - **Command routing:** `/plan`, `/start-work`, `/ultrawork`, `/deep-init`, `/harness-doctor`, `/harness-audit`, `/deep-research-synthesis-repomix`
 - **Runtime tools:** session-tracker, hivemind-trajectory, hivemind-pressure, hivemind-command-engine
 - **Continuity model:** `.hivemind/state/session-continuity.json`, `.hivemind/state/delegations.json`, hivemind-trajectory
@@ -408,8 +408,8 @@ IRON LAW 12: ALWAYS use session-tracker to find aborted sessions before starting
 hivemind-power-on content (FIRST — already loaded as context) → lineage router → domain skill (MAX 3 TOTAL)
 ```
 - hivemind-power-on is loaded via instruction reference and user context — counts as skill #1
-- Load hm-l2-lineage-router (skill #2) for intent classification
-- Load hm-l2-skill-router (skill #3) for exact skill bundle dispatch — MAX 3 reached
+- Load hm-coord-router (skill #2) for intent classification
+- Load hm-routing-skill (skill #3) for exact skill bundle dispatch — MAX 3 reached
 - Additional skills loaded on demand by REPLACING lower-priority loaded skills
 </loading_order>
 
@@ -481,7 +481,7 @@ hivemind-power-on content (FIRST — already loaded as context) → lineage rout
 - Write files outside `.hivemind/planning/**` allowed paths.
 
 **SHOULD:**
-- Load hm-l2-lineage-router and hm-l2-skill-router for intent classification and skill bundle selection.
+- Load hm-coord-router and hm-routing-skill for intent classification and skill bundle selection.
 - Load hm-coordinating-loop before managing multi-step delegations.
 - Load hm-user-intent-interactive-loop when user intent is ambiguous.
 - Use prompt-skim for long delegation prompts to prevent context overflow.
@@ -525,7 +525,7 @@ hivemind-power-on content (FIRST — already loaded as context) → lineage rout
   </step>
 
   <step name="classify_intent" priority="normal">
-  Analyze user request to classify into one of 16 hm-* domains and one of 6 task categories (Research, Planning, Execution, Quality, Debug, Review). Use `hm-l2-lineage-router` and `hm-l2-skill-router` for intent classification and skill bundle selection.
+  Analyze user request to classify into one of 16 hm-* domains and one of 6 task categories (Research, Planning, Execution, Quality, Debug, Review). Use `hm-coord-router` and `hm-routing-skill` for intent classification and skill bundle selection.
   If intent is ambiguous, load `hm-user-intent-interactive-loop` and ask clarifying questions before delegating.
   If intent is meta-concept work (agents/skills/commands/tools), route to hf-orchestrator (cross-lineage).
   </step>
@@ -703,8 +703,8 @@ This agent delegates ALL work. It never implements, reads code for comprehension
 **MAX 3 SKILLS LOADED AT ONCE** (Iron Law #10). hivemind-power-on counts as skill #1 (loaded as context).
 
 **Session start — always loaded (2 skills max beyond #1):**
-- hm-l2-lineage-router (skill #2) — intent classification and routing to skill bundles
-- hm-l2-skill-router (skill #3) — exact skill bundle dispatch with priority ordering
+- hm-coord-router (skill #2) — intent classification and routing to skill bundles
+- hm-routing-skill (skill #3) — exact skill bundle dispatch with priority ordering
 
 **Load on demand — replace lower-priority loaded skill (keep total ≤3):**
 - hm-coord-loop — when coordinating multi-wave delegation (REPLACE lineage-router)

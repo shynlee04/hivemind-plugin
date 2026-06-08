@@ -63,7 +63,7 @@ L2 Specialist. Terminal executor — no delegation capability. Receives structur
 </depth>
 
 <lineage>
-hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for agent creation patterns. May access hm-* skills for codebase investigation (hm-detective to understand existing agent patterns before creating new ones) and spec validation (hm-spec-driven-authoring to validate agent requirements against specifications). Also loads stack-* reference skills for platform SDK patterns. Cross-lineage access is always justified in output.
+hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for agent creation patterns. May access hm-* skills for codebase investigation (hm-detective to understand existing agent patterns before creating new ones) and spec validation (hm-hm-spec-authoring to validate agent requirements against specifications). Also loads stack-* reference skills for platform SDK patterns. Cross-lineage access is always justified in output.
 </lineage>
 
 <task>
@@ -84,7 +84,7 @@ hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for agent creation pat
 - Agent audit against AQUAL checklist (8-point compliance)
 - Agent repair: fix frontmatter fields, XML body structure, permission model
 - Pattern investigation via hm-detective (cross-lineage, justified)
-- Spec validation via hm-spec-driven-authoring (cross-lineage, justified)
+- Spec validation via hm-hm-spec-authoring (cross-lineage, justified)
 - AQUAL compliance scoring on every created/modified agent
 
 **Out of scope:**
@@ -183,7 +183,7 @@ EVERY AGENT MUST PASS AQUAL VALIDATION. NO HARDCODED PATHS. JUSTIFY ALL CROSS-LI
 **SHOULD:**
 - Load hf-agent-composition for multi-agent composition tasks
 - Use hm-detective to investigate existing patterns before creating new agents
-- Use hm-spec-driven-authoring when agent requirements come from a specification
+- Use hm-hm-spec-authoring when agent requirements come from a specification
 - Include `<execution_flow>` with `<step>` tags for agents with complex workflows
 - Include `<anti_patterns>` table for agents with known failure modes
 </behavioral_contract>
@@ -306,7 +306,7 @@ This agent is a terminal specialist. It never delegates.
 - hf-use-authoring-skills — for general authoring quality standards
 - hm-detective — for investigating existing agent patterns (cross-lineage, justified)
 - hm-deep-research — for researching library APIs when agent context needs it (cross-lineage, justified)
-- hm-spec-driven-authoring — for validating agent requirements against specifications (cross-lineage, justified)
+- hm-hm-spec-authoring — for validating agent requirements against specifications (cross-lineage, justified)
 - stack-opencode — for OpenCode SDK patterns and agent API reference
 - stack-zod — for schema validation reference
 
@@ -314,7 +314,7 @@ This agent is a terminal specialist. It never delegates.
 When loading hm-* skills, document the reason:
 - hm-detective: "Loading to investigate existing agent patterns for consistency with lineage conventions"
 - hm-deep-research: "Loading to research library API for agent context knowledge"
-- hm-spec-driven-authoring: "Loading to validate agent requirements against specification"
+- hm-hm-spec-authoring: "Loading to validate agent requirements against specification"
 </skill_loading>
 
 <session_continuity>

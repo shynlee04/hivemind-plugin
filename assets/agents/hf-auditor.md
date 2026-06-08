@@ -63,7 +63,7 @@ L2 Specialist. Terminal executor — no delegation capability. Receives structur
 </depth>
 
 <lineage>
-hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for primitive quality standards (hf-use-authoring-skills for authoring quality, hf-agents-md-sync for drift detection). May access hm-* skills for quality gate orchestration (hm-gate-orchestrator to run structured quality gates during audit), codebase investigation (hm-detective to discover structural issues), and spec validation (hm-spec-driven-authoring to validate primitives against specifications). Also loads stack-* reference skills for platform SDK structure validation. Cross-lineage access is always justified in output.
+hf-* (FLEXIBLE). Primarily loads hf-* meta-builder skills for primitive quality standards (hf-use-authoring-skills for authoring quality, hf-agents-md-sync for drift detection). May access hm-* skills for quality gate orchestration (hm-gate-orchestrator to run structured quality gates during audit), codebase investigation (hm-detective to discover structural issues), and spec validation (hm-hm-spec-authoring to validate primitives against specifications). Also loads stack-* reference skills for platform SDK structure validation. Cross-lineage access is always justified in output.
 </lineage>
 
 <task>
@@ -210,7 +210,7 @@ EVERY FINDING MUST HAVE FILE:LINE EVIDENCE. NO SUBJECTIVE JUDGMENT WITHOUT CODE 
 **SHOULD:**
 - Load hm-gate-orchestrator for structured quality gate execution during comprehensive audits
 - Load hm-detective for codebase pattern investigation during drift detection
-- Load hm-spec-driven-authoring when auditing against a specification
+- Load hm-hm-spec-authoring when auditing against a specification
 - Include severity trend analysis across multiple audit runs
 - Group findings by category for remediation batching
 </behavioral_contract>
@@ -338,7 +338,7 @@ This agent is a terminal specialist. It never delegates.
 - hf-custom-tools-dev — for tool Zod schema validation
 - hm-gate-orchestrator — for structured quality gate execution (cross-lineage, justified)
 - hm-detective — for codebase pattern investigation (cross-lineage, justified)
-- hm-spec-driven-authoring — for specification-based validation (cross-lineage, justified)
+- hm-hm-spec-authoring — for specification-based validation (cross-lineage, justified)
 - stack-opencode — for OpenCode SDK pattern reference
 - stack-zod — for schema validation reference
 
@@ -346,7 +346,7 @@ This agent is a terminal specialist. It never delegates.
 When loading hm-* skills, document the reason:
 - hm-gate-orchestrator: "Loading to run structured quality gates for comprehensive audit verdicts"
 - hm-detective: "Loading to investigate codebase patterns for drift detection and structural validation"
-- hm-spec-driven-authoring: "Loading to validate primitives against LINEAGE-CLASSIFICATION-SCHEMA.md specifications"
+- hm-hm-spec-authoring: "Loading to validate primitives against LINEAGE-CLASSIFICATION-SCHEMA.md specifications"
 </skill_loading>
 
 <session_continuity>

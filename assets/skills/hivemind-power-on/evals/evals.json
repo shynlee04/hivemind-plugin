@@ -1,0 +1,67 @@
+{
+  "skill_name": "hivemind-power-on",
+  "version": "2.3.0",
+  "evals": [
+    {
+      "id": 1,
+      "name": "state-discovery-on-session-start",
+      "prompt": "User opens new session. Front-facing agent must verify state.",
+      "expected_actions": [
+        "Run validate-state.sh",
+        "Call session-tracker({action: 'filter-sessions', status: 'active'})",
+        "Call session-hierarchy({action: 'get-manifest', sessionId: '<current>'})"
+      ],
+      "assertions": [
+        {"text": "State root is intact", "passed": null, "evidence": null},
+        {"text": "Active sessions enumerated", "passed": null, "evidence": null},
+        {"text": "Current session manifest retrievable", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "resume-vs-stack-decision",
+      "prompt": "User says 'continue from where we left off'. Agent must decide resume vs stack vs create.",
+      "expected_decision": "Either resume (if same agent) or stack (if completed)",
+      "assertions": [
+        {"text": "Agent does NOT create a fresh session when resume is possible", "passed": null, "evidence": null},
+        {"text": "validate-resume.sh passes before resuming", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "stale-session-detection",
+      "prompt": "Last activity was 25 hours ago. Agent must NOT resume a stale session.",
+      "expected_decision": "Create a fresh session; archive the stale one",
+      "assertions": [
+        {"text": "Agent identifies session as stale (>24h)", "passed": null, "evidence": null},
+        {"text": "Does NOT attempt resume on stale session", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "delegate-with-context-envelope",
+      "prompt": "User says 'audit the agents for naming coherence'. Agent must delegate to hf-auditor.",
+      "expected_actions": [
+        "Compose work contract (templates/agent-work-contract-template.md)",
+        "Compose delegation packet (5 required sections)",
+        "Dispatch via task tool",
+        "Poll delegation-status"
+      ],
+      "assertions": [
+        {"text": "Packet has all 5 sections", "passed": null, "evidence": null},
+        {"text": "max_iterations set in metadata (3-5)", "passed": null, "evidence": null},
+        {"text": "Polls for completion (does not orphan)", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "skill-load-priority",
+      "prompt": "At session start, agent must load 3 skills max.",
+      "expected_skills": ["hivemind-power-on", "hm-coord-router", "<1 specialist>"],
+      "assertions": [
+        {"text": "No more than 3 skills loaded at session start", "passed": null, "evidence": null},
+        {"text": "hivemind-power-on is always the first", "passed": null, "evidence": null}
+      ]
+    }
+  ]
+}
