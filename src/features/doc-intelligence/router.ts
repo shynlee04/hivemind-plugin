@@ -70,6 +70,8 @@ export function executeDocIntelligenceAction(
         matches: searchMarkdown(projectRoot, startPath, input.query, input.maxResults ?? DEFAULT_MAX_SEARCH_RESULTS),
       }
     }
+    default:
+      throw new Error(`[Harness] Unsupported doc intelligence action: ${String((input as Record<string, unknown>).action)}`)
   }
 }
 
@@ -131,13 +133,23 @@ function searchMarkdown(projectRoot: string, startPath: string, query: string, m
     lines.forEach((line, index) => {
       if (matches.length >= maxResults) return
       if (line.toLowerCase().includes(normalizedQuery)) {
-        matches.push({ path: toRootRelativePath(projectRoot, filePath), line: index + 1, snippet: line.trim() })
+        const heading = findNearestHeading(lines, index)
+        matches.push({ path: toRootRelativePath(projectRoot, filePath), line: index + 1, snippet: line.trim(), heading })
       }
     })
     if (matches.length >= maxResults) break
   }
 
   return matches
+}
+
+/** Find the nearest heading line above a given line index. */
+function findNearestHeading(lines: string[], currentIndex: number): string | null {
+  for (let i = currentIndex - 1; i >= 0; i--) {
+    const headingMatch = /^#{1,6}\s+(.+)$/.exec(lines[i])
+    if (headingMatch) return headingMatch[1].trim()
+  }
+  return null
 }
 
 /**

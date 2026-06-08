@@ -1,5 +1,27 @@
-/** Supported read-only document intelligence actions. */
-export type DocIntelligenceAction = "skim" | "skim_directory" | "read" | "chunk" | "search"
+/** Supported document intelligence actions — read, write, batch, metadata, and analysis. */
+export type DocIntelligenceAction =
+  // Read (original — parity preserved)
+  | "skim" | "skim_directory" | "read" | "chunk"
+  // Read (new)
+  | "read_lines" | "read_offset"
+  // Write
+  | "create" | "write" | "upsert" | "append" | "insert" | "delete"
+  // Batch
+  | "batch" | "batch_files"
+  // Metadata
+  | "metadata" | "set_metadata" | "delete_metadata"
+  // Hierarchy
+  | "toc" | "outline"
+  // Search (extended)
+  | "search"
+  // Code inspect
+  | "inspect"
+  // Cross-reference
+  | "xref"
+  // Index
+  | "index"
+  // Context extraction
+  | "context"
 
 /** Heading metadata extracted from a Markdown document. */
 export type DocHeading = {
@@ -69,9 +91,17 @@ export type DocIntelligenceInput = {
   maxCharacters?: number
   /** Maximum match count for search actions. */
   maxResults?: number
+  /** Optional format filter for skim_directory. */
+  format?: "md" | "json" | "yaml" | "xml"
+  /** Optional heading parameter for targeted section read. */
+  heading?: string
+  /** Optional regex flag for search. */
+  regex?: boolean
+  /** Optional heading-only flag for search. */
+  headingOnly?: boolean
 }
 
-/** Single full-text search match. */
+/** Single full-text search match with heading context. */
 export type DocSearchMatch = {
   /** Project-root-relative POSIX path for the matched document. */
   path: string
@@ -79,12 +109,172 @@ export type DocSearchMatch = {
   line: number
   /** Trimmed matching line snippet. */
   snippet: string
+  /** Nearest heading above the match (for context). */
+  heading: string | null
 }
 
-/** Union of read-only document intelligence results. */
+/** Verification receipt for create operations. */
+export type WriteReceipt = {
+  opId: string
+  hash: string
+  path: string
+  created: boolean
+}
+
+/** Result from a write/upsert/append/insert operation. */
+export type SectionWriteResult = {
+  opId: string
+  hash: string
+  path: string
+  heading: string
+  changed: boolean
+  bytesChanged: number
+}
+
+/** Result from a delete operation (section or file). */
+export type DeleteResult = {
+  opId: string
+  path: string
+  deleted: boolean
+  mode: "section" | "file"
+}
+
+/** Signal returned when file exceeds chunk threshold. */
+export type ChunkRequiredSignal = {
+  status: "chunk_required"
+  path: string
+  lineCount: number
+  threshold: number
+  outline: DocHeading[]
+}
+
+/** Line-range read result. */
+export type LineReadResult = {
+  path: string
+  content: string
+  startLine: number
+  endLine: number
+  totalLines: number
+  hash: string
+}
+
+/** Offset-based read result. */
+export type OffsetReadResult = {
+  path: string
+  content: string
+  offset: number
+  limit: number
+  totalCharacters: number
+}
+
+/** A single section edit operation within a batch. */
+export type SectionEditOp =
+  | { op: "write"; heading: string; body: string }
+  | { op: "upsert"; heading: string; body: string; level?: number }
+  | { op: "append"; heading: string; content: string }
+  | { op: "insert"; afterHeading: string; newHeading: string; level: number; body: string }
+  | { op: "delete"; heading: string }
+
+/** Single-file batch edit result per operation. */
+export type BatchOpResult = SectionWriteResult | DeleteResult | { op: string; error: string }
+
+/** JSDoc block with paired declaration. */
+export type JsDocBlock = {
+  /** The raw JSDoc comment text (including /** ... *\/). */
+  comment: string
+  /** Name of the next declaration after this block. */
+  pairedName: string | null
+}
+
+/** Extracted export symbol. */
+export type ExportSymbol = {
+  name: string
+  kind: "function" | "class" | "interface" | "type" | "variable" | "const"
+  line: number
+}
+
+/** Function or method signature. */
+export type FunctionSignature = {
+  name: string
+  params: string[]
+  returnType: string | null
+  line: number
+}
+
+/** Full code inspection result. */
+export type CodeInspectionResult = {
+  path: string
+  jsdocBlocks: JsDocBlock[]
+  comments: string[]
+  exports: ExportSymbol[]
+  signatures: FunctionSignature[]
+}
+
+/** Single cross-reference link entry. */
+export type XrefLink = {
+  from: string
+  to: string
+  line: number
+  text: string
+  valid: boolean
+}
+
+/** Single document index entry. */
+export type DocumentIndexEntry = {
+  path: string
+  title: string | null
+  headingPath: string
+  lineCount: number
+  sizeBytes: number
+  hash: string
+  lastModified: string
+  headingCount: number
+  linkCount: number
+}
+
+/** Relevance-scored section for context extraction. */
+export type ContextSection = {
+  path: string
+  heading: string | null
+  content: string
+  relevanceScore: number
+  tokenEstimate: number
+}
+
+/** Union of all document intelligence results. */
 export type DocIntelligenceResult =
+  // Read (original — shapes preserved)
   | { action: "skim"; document: ParsedMarkdownDocument }
   | { action: "skim_directory"; documents: ParsedMarkdownDocument[] }
   | { action: "read"; path: string; content: string; characterCount: number; truncated: boolean }
   | { action: "chunk"; path: string; chunks: DocChunk[] }
+  // Read (extended)
+  | { action: "read_lines"; result: LineReadResult }
+  | { action: "read_offset"; result: OffsetReadResult }
+  // Write
+  | { action: "create"; result: WriteReceipt }
+  | { action: "write"; result: SectionWriteResult }
+  | { action: "upsert"; result: SectionWriteResult }
+  | { action: "append"; result: SectionWriteResult }
+  | { action: "insert"; result: SectionWriteResult }
+  | { action: "delete"; result: DeleteResult | ChunkRequiredSignal }
+  // Batch
+  | { action: "batch"; results: BatchOpResult[]; hash: string }
+  | { action: "batch_files"; results: Array<{ path: string; ops: BatchOpResult[]; error?: string }> }
+  // Metadata
+  | { action: "metadata"; metadata: Record<string, unknown> | null }
+  | { action: "set_metadata"; hash: string; opId: string }
+  | { action: "delete_metadata"; hash: string; opId: string }
+  // Hierarchy
+  | { action: "toc"; toc: string }
+  | { action: "outline"; outline: DocHeading[] }
+  // Search (extended with heading context)
   | { action: "search"; query: string; matches: DocSearchMatch[] }
+  // Code inspect
+  | { action: "inspect"; result: CodeInspectionResult }
+  // Cross-reference
+  | { action: "xref"; links: XrefLink[] }
+  // Index
+  | { action: "index"; entries: DocumentIndexEntry[] }
+  // Context extraction
+  | { action: "context"; sections: ContextSection[] }
