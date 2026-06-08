@@ -106,8 +106,10 @@ describe("manualOverride-first invariant (D-58-22, REQ-58.9-04 AC-02/03)", () =>
     expect(combined).toMatch(/getManualOverrideState\(/)
   })
 
-  it("AC#10: src/plugin.ts replayPendingDelegationNotifications loop body's first statement is getManualOverrideState check", () => {
-    const source = readFileSync(join(process.cwd(), "src/plugin.ts"), "utf8")
+  it("AC#10: src/one-shot-migrations.ts replayPendingDelegationNotifications loop body's first statement is getManualOverrideState check", () => {
+    // Function was moved from src/plugin.ts to src/one-shot-migrations.ts during
+    // the SR restructuring (d2008915).
+    const source = readFileSync(join(process.cwd(), "src/one-shot-migrations.ts"), "utf8")
     const loopBody = findAppendTuiPromptLoopBody(source)
     expect(loopBody).not.toBeNull()
     if (!loopBody) return
