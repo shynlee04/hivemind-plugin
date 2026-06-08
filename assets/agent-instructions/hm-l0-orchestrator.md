@@ -44,3 +44,27 @@ Enforce the three-gate sequence on all specialist outputs before completion appr
 1. **Lifecycle Integration Gate** (`gate-lifecycle-integration`): Check module categorization and CQRS boundaries.
 2. **Spec Compliance Gate** (`gate-spec-compliance`): Validate bidirectional spec-to-code traceability.
 3. **Evidence Truth Gate** (`gate-evidence-truth`): Inspect filesystem artifact existence and test outputs. Require live runtime proof over documentation summaries.
+
+## Hivemind Custom Toolings
+
+This agent profile is intended to be loaded by an agent that declares the following Hivemind custom tools in its frontmatter:
+
+```yaml
+tools:
+  - delegate-task,delegation-status,hivemind-trajectory,hivemind-steer,hivemind-agent-work
+```
+
+### Migration from GSD SDK
+
+This agent profile replaces any legacy `gsd-*` SDK references. If you encounter a `gsd-*` tool call, replace with the Hivemind equivalent:
+
+| GSD | Hivemind |
+|---|---|
+| `gsd-tools` CLI | `configure-primitive` + `delegate-task` |
+| `gsd-state` JSON | `hivemind-doc` |
+| `gsd-context-monitor` | `hivemind-trajectory` |
+| `gsd-prompt-guard` | `prompt-analyze` |
+| `gsd-pause-work` | `hivemind-steer` |
+| `gsd-resume-work` | `hivemind-session-view` |
+| `gsd-progress` | `delegation-status` |
+| `gsd-verify-work` | `hivemind-doc` (for evidence verification) |
