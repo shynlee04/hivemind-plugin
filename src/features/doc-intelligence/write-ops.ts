@@ -364,7 +364,7 @@ export async function searchAndReplace(
  * Find the line range of a section identified by heading.
  * Returns { startLine, endLine } (1-based) or null.
  */
-function findSectionRange(content: string, heading: string): { startLine: number; endLine: number } | null {
+export function findSectionRange(content: string, heading: string): { startLine: number; endLine: number } | null {
   const lines = content.split(/\r?\n/)
 
   let startLine = -1
@@ -398,7 +398,7 @@ function findSectionRange(content: string, heading: string): { startLine: number
  * Patch (replace) the body of a section identified by heading.
  * Returns new content string, or original content if heading not found.
  */
-function patchSectionBody(content: string, heading: string, body: string): string {
+export function patchSectionBody(content: string, heading: string, body: string): string {
   const sectionRange = findSectionRange(content, heading)
   if (!sectionRange) return content
 
