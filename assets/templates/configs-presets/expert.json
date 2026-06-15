@@ -1,0 +1,38 @@
+{
+  "$schema": "./configs.schema.json",
+  "conversation_language": "en",
+  "documents_and_artifacts_language": "en",
+  "mode": "hivemind-powered",
+  "user_expert_level": "absolute-expert",
+  "delegation_systems": {
+    "native_task": true,
+    "delegate_task": true,
+    "background_delegation": true
+  },
+  "parallelization": true,
+  "atomic_commit": true,
+  "commit_docs": true,
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "trajectory_control": true,
+    "advanced_continuity_validation": true,
+    "use_worktrees": true,
+    "intent_lock": {
+      "enabled": true
+    },
+    "discuss_mode": "skip-phase-discussion",
+    "research_before_questions": false
+  },
+  "behavioral": {
+    "guardrail_level": "strict",
+    "delegation_mode": "autonomous",
+    "tool_access_pattern": "full",
+    "skill_filter": "full",
+    "communication_style": "concise",
+    "decision_speed": "fast",
+    "expertise": "senior"
+  },
+  "description": "Expert user with minimal guardrails. Full tool access, autonomous delegation."
+}

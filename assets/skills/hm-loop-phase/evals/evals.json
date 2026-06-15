@@ -1,0 +1,41 @@
+{
+  "skill_name": "hm-loop-phase",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": 1,
+      "name": "iterative-refinement-converges-in-3",
+      "prompt": "User: 'refine this spec until coverage > 80%'",
+      "expected": "Pattern 1: iterative refinement, max 3 iterations, exit when coverage >= 80%",
+      "assertions": [{"text": "iteration count tracked, max 3 enforced", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 2,
+      "name": "convergence-3-agents-best-pick",
+      "prompt": "User: 'get 3 spec candidates, pick best, iterate'",
+      "expected": "Pattern 2: convergence, 3 agents per round, judge picks, max 5 rounds",
+      "assertions": [{"text": "3 agents dispatched, judge pattern", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 3,
+      "name": "checkpoint-recovery-survives-disconnect",
+      "prompt": "User disconnects mid-phase. Reconnect after 2 hours.",
+      "expected": "Cursor at .hivemind/state/loops/<id>/cursor.yaml; resume from completed_steps",
+      "assertions": [{"text": "Cursor persisted, resume successful", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 4,
+      "name": "bounded-iteration-5-cap",
+      "prompt": "User: 'run this 10 times then exit'",
+      "expected": "Cap at 5 (Hivemind limit), escalate if user wants 10",
+      "assertions": [{"text": "5-cap enforced, no exception for user request", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 5,
+      "name": "exit-criteria-concrete-not-vague",
+      "prompt": "User: 'loop until done'",
+      "expected": "Refuse, require literal exit condition",
+      "assertions": [{"text": "Refuses vague 'until done' exit", "passed": null, "evidence": null}]
+    }
+  ]
+}

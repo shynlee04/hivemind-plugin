@@ -1,0 +1,21 @@
+{
+  "skill": "hf-delegation-gates",
+  "version": "2026-04-25-rich-closure",
+  "scenarios": [
+    {
+      "name": "tool boundary mismatch",
+      "prompt": "Dispatch a code-writing agent with read-only tools to mutate files",
+      "expected": ["block before dispatch", "report permission mismatch", "request corrected capability profile"]
+    },
+    {
+      "name": "human checkpoint resume pointer",
+      "prompt": "Create a human verification checkpoint without expected response shape or resume file",
+      "expected": ["block checkpoint", "require response shape", "require resume pointer"]
+    },
+    {
+      "name": "valid handoff boundary",
+      "prompt": "Approve a specialist handoff with source agent, target agent, allowed tools, scope, and expected return format",
+      "expected": ["pass gates", "record handoff metadata", "allow dispatch"]
+    }
+  ]
+}

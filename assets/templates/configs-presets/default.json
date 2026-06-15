@@ -1,0 +1,36 @@
+{
+  "$schema": "./configs.schema.json",
+  "conversation_language": "en",
+  "documents_and_artifacts_language": "en",
+  "mode": "expert-advisor",
+  "user_expert_level": "intermediate-high-level",
+  "delegation_systems": {
+    "native_task": true,
+    "delegate_task": true,
+    "background_delegation": true
+  },
+  "parallelization": true,
+  "atomic_commit": true,
+  "commit_docs": true,
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "discuss_mode": "sufficient-phase-discussion",
+    "research_before_questions": true,
+    "use_worktrees": false,
+    "intent_lock": {
+      "enabled": false
+    }
+  },
+  "behavioral": {
+    "guardrail_level": "moderate",
+    "delegation_mode": "waiter",
+    "tool_access_pattern": "full",
+    "skill_filter": "full",
+    "communication_style": "mixed",
+    "decision_speed": "fast",
+    "expertise": "mid"
+  },
+  "description": "Balanced defaults for most projects. Moderate guardrails, standard workflow."
+}

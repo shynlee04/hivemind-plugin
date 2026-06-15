@@ -1,0 +1,52 @@
+---
+name: [kebab-case-name]
+description: [What it does]. Use when [specific trigger conditions].
+metadata:
+  author: [author]
+  version: "1.0.0"
+  pattern: "[P1|P2|P3]"
+allowed-tools: Read Write Edit Bash Glob Grep
+---
+
+# [Skill Name]
+
+## When This Skill Loads — Do THIS First
+
+1. [First action]
+2. [Second action]
+3. [Third action]
+
+## Decision Tree
+
+```
+User says... → Load
+─────────────────────────
+"[trigger phrase]" → references/[file].md
+"[trigger phrase]" → references/[file].md
+```
+
+## Core Workflow
+
+### Step 1: [Name]
+[Description]
+
+### Step 2: [Name]
+[Description]
+
+### Step 3: [Name]
+[Description]
+
+## Anti-Patterns
+
+| Anti-Pattern | Detection | Correction |
+|-------------|-----------|------------|
+| [Pattern] | [How to detect] | [How to fix] |
+
+## Platform Adaptation
+
+| Platform | Location | Notes |
+|----------|----------|-------|
+| **OpenCode** | `.opencode/skills/<name>/SKILL.md` | Use `skill` tool to load |
+| **Claude Code** | `.claude/skills/<name>/SKILL.md` | Same frontmatter spec |
+| **Codex** | `.agents/skills/<name>/SKILL.md` | May need `allowed-tools` |
+| **Cursor** | `.cursor/skills/<name>/SKILL.md` | Frontmatter may vary |

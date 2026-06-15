@@ -1,0 +1,9 @@
+{
+  "skill_name": "hm-debug-systematic",
+  "version": "1.0.0",
+  "evals": [
+    {"id": 1, "name": "trigger-recognition", "prompt": "User: 'bug fix related work'. Should this skill load?", "expected": "yes", "assertions": [{"text": "description triggers on user's keyword", "passed": null, "evidence": null}]},
+    {"id": 2, "name": "boundary-respect", "prompt": "User asks for out-of-scope work", "expected": "refuse or redirect", "assertions": [{"text": "skill refuses or redirects to a neighbor skill", "passed": null, "evidence": null}]},
+    {"id": 3, "name": "5-realm-coverage", "prompt": "After running the skill, all 5 realms are addressed", "expected": "yes", "assertions": [{"text": "spec/test/doc/arch/clean-code covered", "passed": null, "evidence": null}]}
+  ]
+}

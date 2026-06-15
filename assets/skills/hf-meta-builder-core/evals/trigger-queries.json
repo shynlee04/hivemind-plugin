@@ -1,0 +1,24 @@
+{
+  "queries": [
+    {"query": "create a skill like this @file", "should_trigger": true},
+    {"query": "build a new skill for my project", "should_trigger": true},
+    {"query": "set up a command for OpenCode", "should_trigger": true},
+    {"query": "configure an agent in opencode.json", "should_trigger": true},
+    {"query": "add a custom tool to my workflow", "should_trigger": true},
+    {"query": "stack these skills together", "should_trigger": true},
+    {"query": "write a rule for AGENTS.md", "should_trigger": true},
+    {"query": "add an MCP server to my config", "should_trigger": true},
+    {"query": "combine skill-creator with use-authoring-skills", "should_trigger": true},
+    {"query": "modify my OpenCode configuration", "should_trigger": true},
+    {"query": "fix the bug in my auth module", "should_trigger": false},
+    {"query": "what does this function do?", "should_trigger": false},
+    {"query": "run the tests", "should_trigger": false},
+    {"query": "explain how the routing works", "should_trigger": false},
+    {"query": "write a unit test for this", "should_trigger": false},
+    {"query": "refactor this class", "should_trigger": false},
+    {"query": "search for all usages of foo", "should_trigger": false},
+    {"query": "deploy to production", "should_trigger": false},
+    {"query": "create a new git branch", "should_trigger": false},
+    {"query": "what's the difference between X and Y", "should_trigger": false}
+  ]
+}

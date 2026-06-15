@@ -1,0 +1,62 @@
+{
+  "skill_name": "hm-spec-authoring",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": 1,
+      "name": "prd-to-ears-conversion",
+      "prompt": "PRD: 'The auth service shall validate user credentials within 200ms. When a user submits an invalid password, the service shall return 401 and log the attempt. If 5 failed attempts occur within 10 minutes, the service shall lock the account for 30 minutes.'",
+      "expected_reqs": [
+        "REQ-001: Event-Driven — When user submits credentials, service shall validate within 200ms",
+        "REQ-002: Unwanted Behavior — If password invalid, service shall return 401 and log",
+        "REQ-003: Unwanted Behavior — If 5 failed attempts in 10 min, service shall lock for 30 min"
+      ],
+      "assertions": [
+        {"text": "All 3 EARS rows present with correct pattern", "passed": null, "evidence": null},
+        {"text": "All REQs end with measurable outcome (200ms, 401, 5/10min, 30min)", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "vague-prompt-refusal",
+      "prompt": "Make the system user-friendly and fast.",
+      "expected_outcome": "BLOCKED — return with the request: 'Replace with measurable outcomes'",
+      "assertions": [
+        {"text": "Skill refuses to write the spec", "passed": null, "evidence": null},
+        {"text": "Returns 5 ambiguity failures (no actor, no trigger, no outcome, no scope, no success criteria)", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "unbounded-scope-rejection",
+      "prompt": "Build a comprehensive user management system.",
+      "expected_outcome": "BLOCKED — return with: 'Scope not bounded. List what is in vs out of scope.'",
+      "assertions": [
+        {"text": "Skill identifies scope as unbounded", "passed": null, "evidence": null},
+        {"text": "Asks for out-of-scope statement before proceeding", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "state-driven-pattern",
+      "prompt": "While the user is unauthenticated, the API shall return 401 for protected routes.",
+      "expected_reqs": [
+        "REQ-001: State-Driven — While user unauthenticated, API shall return 401 for protected routes"
+      ],
+      "assertions": [
+        {"text": "Correct EARS pattern (State-Driven)", "passed": null, "evidence": null}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "optional-feature-pattern",
+      "prompt": "Where 2FA is enabled, the system shall require a TOTP token in addition to the password.",
+      "expected_reqs": [
+        "REQ-001: Optional — Where 2FA enabled, system shall require TOTP token with password"
+      ],
+      "assertions": [
+        {"text": "Correct EARS pattern (Optional)", "passed": null, "evidence": null}
+      ]
+    }
+  ]
+}

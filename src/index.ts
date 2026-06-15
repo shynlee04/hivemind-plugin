@@ -1,0 +1,30 @@
+export { HivemindControlPlane } from "./plugin.js"
+export { HivemindControlPlane as default } from "./plugin.js"
+
+export * from "./coordination/concurrency/queue.js"
+export * from "./task-management/continuity/index.js"
+export * from "./shared/helpers.js"
+export * from "./task-management/lifecycle/index.js"
+export * from "./shared/runtime.js"
+export * from "./shared/session-api.js"
+export * from "./shared/state.js"
+export * from "./shared/types.js"
+export * from "./shared/task-status.js"
+export * from "./coordination/completion/detector.js"
+export * from "./shared/runtime-policy.js"
+export * from "./task-management/journal/index.js"
+export * from "./task-management/journal/query.js"
+export * from "./task-management/journal/replay.js"
+export * from "./task-management/journal/execution-lineage.js"
+export * from "./features/doc-intelligence/index.js"
+export * from "./task-management/trajectory/index.js"
+export * from "./features/runtime-pressure/index.js"
+export * from "./features/agent-work-contracts/index.js"
+export * from "./features/sdk-supervisor/index.js"
+export {
+  executeCommandEngineAction,
+  listCommands,
+  discoverCommandBundles,
+} from "./routing/command-engine/index.js"
+export * from "./features/bootstrap/primitive-registry.js"
+export * from "./features/bootstrap/control-plane/index.js"

@@ -1,0 +1,126 @@
+{
+  "skill_name": "use-authoring-skills",
+  "description": "Trigger queries for testing the use-authoring-skills description. Run each query 3+ times and compute trigger rate.",
+  "queries": [
+    {
+      "id": 1,
+      "query": "I need to create a new agent skill for processing PDFs. Walk me through the whole thing.",
+      "should_trigger": true,
+      "category": "explicit-creation"
+    },
+    {
+      "id": 2,
+      "query": "Audit this skill and tell me what's wrong: name: data-tool, description: Helps with data.",
+      "should_trigger": true,
+      "category": "explicit-audit"
+    },
+    {
+      "id": 3,
+      "query": "My skill's description never triggers even when it should. How do I fix it?",
+      "should_trigger": true,
+      "category": "description-optimization"
+    },
+    {
+      "id": 4,
+      "query": "Write evals for a skill that creates React components from design specs.",
+      "should_trigger": true,
+      "category": "eval-writing"
+    },
+    {
+      "id": 5,
+      "query": "I have two skills that seem to overlap — one handles code review and another handles PR review. Should I merge them?",
+      "should_trigger": true,
+      "category": "conflict-resolution"
+    },
+    {
+      "id": 6,
+      "query": "my boss wants me to build a reusable agent capability for our team's workflow — where do I start?",
+      "should_trigger": true,
+      "category": "implicit-creation"
+    },
+    {
+      "id": 7,
+      "query": "This instruction set is confusing and the agent keeps ignoring it. How do I make it follow the rules?",
+      "should_trigger": true,
+      "category": "implicit-improvement"
+    },
+    {
+      "id": 8,
+      "query": "Score my skill quality and tell me if it's ready to ship.",
+      "should_trigger": true,
+      "category": "quality-evaluation"
+    },
+    {
+      "id": 9,
+      "query": "I wrote a skill but I'm not sure about the frontmatter format. Can you check it?",
+      "should_trigger": true,
+      "category": "frontmatter-check"
+    },
+    {
+      "id": 10,
+      "query": "Package this skill for distribution — it needs validation scripts and a proper structure.",
+      "should_trigger": true,
+      "category": "packaging"
+    },
+    {
+      "id": 11,
+      "query": "Write a Python function that reads a CSV and uploads each row to our PostgreSQL database.",
+      "should_trigger": false,
+      "category": "adjacent-domain"
+    },
+    {
+      "id": 12,
+      "query": "Fix the bug in my React component where the state doesn't update on click.",
+      "should_trigger": false,
+      "category": "debugging"
+    },
+    {
+      "id": 13,
+      "query": "Create a new REST API endpoint for user registration with Express.js.",
+      "should_trigger": false,
+      "category": "feature-development"
+    },
+    {
+      "id": 14,
+      "query": "What's the difference between git merge and git rebase?",
+      "should_trigger": false,
+      "category": "general-knowledge"
+    },
+    {
+      "id": 15,
+      "query": "Update the formulas in my Excel budget spreadsheet to include tax calculations.",
+      "should_trigger": false,
+      "category": "adjacent-domain"
+    },
+    {
+      "id": 16,
+      "query": "Set up a CI/CD pipeline with GitHub Actions for my Node.js project.",
+      "should_trigger": false,
+      "category": "devops"
+    },
+    {
+      "id": 17,
+      "query": "Convert this JSON file to YAML format.",
+      "should_trigger": false,
+      "category": "data-conversion"
+    },
+    {
+      "id": 18,
+      "query": "Write unit tests for this authentication middleware.",
+      "should_trigger": false,
+      "category": "testing"
+    },
+    {
+      "id": 19,
+      "query": "Explain how the transformer architecture works in large language models.",
+      "should_trigger": false,
+      "category": "general-knowledge"
+    },
+    {
+      "id": 20,
+      "query": "Refactor this monolithic function into smaller, testable units.",
+      "should_trigger": false,
+      "category": "refactoring"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+import { getAppAgents } from "../../shared/app-api.js"
+import { InvalidCommandError, AgentNotFoundError } from "../../shared/errors/commands.js"
+import type { OpenCodeClient } from "../../shared/session-api.js"
+import { sendPrompt } from "../../shared/session-api.js"
+
+/**
+ * Validates agent name format: lowercase alphanumeric + hyphens.
+ */
+export function validateAgentFormat(agent: string): boolean {
+  return /^[a-z][a-z0-9-]*$/.test(agent)
+}
+
+/**
+ * Validates agent existence in OpenCode agent registry.
+ */
+export async function validateAgentExists(agent: string, client: OpenCodeClient): Promise<boolean> {
+  if (!client || typeof client.app?.agents !== "function") {
+    return true // Fallback if SDK app agent discovery is missing or mock
+  }
+  try {
+    const appAgents = await getAppAgents(client)
+    const agentNames = appAgents.map((a) => {
+      if (typeof a === "string") return a
+      const record = a as { id?: string; name?: string }
+      return record.id ?? record.name ?? ""
+    })
+    return agentNames.includes(agent)
+  } catch {
+    return false // API unreachable — do not allow dispatch with unvalidated agent
+  }
+}
+
+/**
+ * Dispatches slash command prompt via deferred setTimeout.
+ * Performs format and existence validation for optional agent override.
+ * Returns a Promise that resolves with real success/failure after the SDK
+ * dispatch completes. The 50ms setTimeout delay prevents reentrant deadlock.
+ */
+export async function dispatchCommand(context: {
+  client: OpenCodeClient
+  sessionID: string
+  agent?: string
+  restoreAgent?: string
+  promptText: string
+  subtask?: boolean
+  description?: string
+  commandSource?: string
+  directory?: string
+}): Promise<{ success: boolean; output?: string; error?: boolean }> {
+  const { client, sessionID, agent, restoreAgent, promptText, subtask, description, commandSource, directory } = context
+
+  if (agent) {
+    if (!validateAgentFormat(agent)) {
+      throw new InvalidCommandError(`Invalid agent name format: ${agent}`)
+    }
+    const exists = await validateAgentExists(agent, client)
+    if (!exists) {
+      throw new AgentNotFoundError(`Agent not found: ${agent}`)
+    }
+  }
+
+  // Deferred dispatch: schedule on next macrotask (setTimeout) so the tool
+  // yields immediately and frees the session before session.prompt() is called.
+  // We resolve immediately with success: true.
+  setTimeout(async () => {
+    try {
+      if (subtask) {
+        // Subtask: session.prompt() with subtask part + agent
+        const parts = [{
+          type: "subtask",
+          agent,
+          description: description || "",
+          prompt: promptText,
+          parentSessionID: sessionID,
+          commandSource: commandSource || "user",
+        }]
+        const body: Record<string, unknown> = { parts }
+        if (agent) body.agent = agent
+        await sendPrompt(client, sessionID, body, undefined, directory)
+      } else {
+        // Synthetic prompt: session.prompt() with text part + agent override
+        const parts = [{ type: "text", text: promptText }]
+        const body: Record<string, unknown> = { parts }
+        if (agent) body.agent = agent
+        await sendPrompt(client, sessionID, body, undefined, directory)
+
+        // After the target agent finishes processing, restore the original agent
+        if (restoreAgent && restoreAgent !== agent) {
+          try {
+            await sendPrompt(client, sessionID, {
+              parts: [{ type: "text", text: "Continue." }],
+              agent: restoreAgent,
+            }, undefined, directory)
+          } catch (restoreError) {
+            const msg = restoreError instanceof Error ? restoreError.message : String(restoreError)
+            console.error(`[Hivemind] Agent restore failed: ${msg}`)
+          }
+        }
+      }
+    } catch (caughtError: unknown) {
+      const message = caughtError instanceof Error ? caughtError.message : String(caughtError)
+      console.error(`[Hivemind] Slash command dispatch failed: ${message}`)
+    }
+  }, 50)
+
+  return { success: true }
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "eval-1",
+    "scenario": "User asks 'create a command that runs git status, shows recent commits, and then delegates to gsd-executor for plan execution.' The command must include non-interactive shell safety and proper frontmatter.",
+    "expected_behavior": "Skill loads non-interactive-shell.md and command-anatomy.md. Command includes: YAML frontmatter with description (with trigger phrases) and agent fields, !bash blocks for git status and git log (with --no-pager), $ARGUMENTS for plan path, agent: gsd-executor, subtask: true. All shell commands are CI=true safe (no vim, no interactive git, no pagers).",
+    "pass_condition": "Command frontmatter has all required fields. All shell commands pass CI=true check (no banned commands, non-interactive flags used). Skill loading section present."
+  },
+  {
+    "id": "eval-2",
+    "scenario": "A command definition contains 'git commit' without -m flag, 'npm install' without --yes, and a call to 'vim config.json'. The auditor must detect and fix all non-interactive violations.",
+    "expected_behavior": "Skill detects: (1) git commit without -m → add '-m \"message\"', (2) npm install without --yes → add '--yes' or set npm_config_yes=true, (3) vim → replace with Write/Edit tool. All banned commands are identified and corrected with non-interactive equivalents.",
+    "pass_condition": "All 3 violations are detected and corrected. Final command contains zero banned commands and all operations survive CI=true."
+  },
+  {
+    "id": "eval-3",
+    "scenario": "User provides a command with $ARGUMENTS that includes a file path with spaces: '/Users/name/My Documents/plan.md'. The command must handle this safely in !bash blocks.",
+    "expected_behavior": "Skill recognizes that $ARGUMENTS values must be quoted in !bash blocks. Command wraps the argument reference in double quotes: \"$ARGUMENTS\". Anti-pattern check confirms no unquoted variable references in shell commands. Command anatomy checklist includes quoting verification.",
+    "pass_condition": "All $ARGUMENTS references in !bash blocks are properly quoted. Command survives spaces and special characters in input. No unsafe shell expansions."
+  }
+]

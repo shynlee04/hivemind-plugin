@@ -1,0 +1,41 @@
+{
+  "skill_name": "hm-coord-loop",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": 1,
+      "name": "task-count-1-inline",
+      "prompt": "User: 'fix the typo in this file'. Should this skill load?",
+      "expected": "no",
+      "assertions": [{"text": "1 task = do inline, not load this skill", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 2,
+      "name": "parallel-dispatch-3-independent-tasks",
+      "prompt": "User: 'audit 3 modules in parallel, no shared files'",
+      "expected": "Parallel dispatch, cap 3",
+      "assertions": [{"text": "Pattern 1: parallel", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 3,
+      "name": "wave-dispatch-3-layers",
+      "prompt": "User: 'layer 1: scan, layer 2: refactor based on scan, layer 3: test'",
+      "expected": "Wave-based, 3 waves, gate between each",
+      "assertions": [{"text": "Pattern 2: wave", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 4,
+      "name": "pipeline-5-stages",
+      "prompt": "User: 'A produces schema, B produces code, C produces tests, D runs tests, E reports'",
+      "expected": "Pipeline, 5 stages, sequential with verification",
+      "assertions": [{"text": "Pattern 3: pipeline", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 5,
+      "name": "max-iteration-enforcement",
+      "prompt": "Workflow has looped 5 times. Same error. What now?",
+      "expected": "HARD STOP, escalate, summary",
+      "assertions": [{"text": "5-iteration cap enforced", "passed": null, "evidence": null}]
+    }
+  ]
+}

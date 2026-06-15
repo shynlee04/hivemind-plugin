@@ -1,0 +1,100 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+!.env.*
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
+
+# IDE-managed skill sync artifacts (not project deliverables)
+.trae/
+.windsurf/
+.agent/
+.agents/
+.codex/
+.github/skills/
+.claude/
+.codexdisabled/
+!.hivemind/
+!package-lock.json
+
+# Runtime state — opencode.json is the user's local dev file, NEVER shipped
+opencode.json
+!.opencode/
+.harness/
+
+# Hivemind runtime state — gitignored (per Q6 + WS1-01-SPEC §7)
+.hivemind/state/
+.hivemind/event-tracker/
+.hivemind/journal/
+.hivemind/lineage/
+.hivemind/daily-notes/
+.hivemind/hm-brain/
+.hivemind/delegation-managements/
+.hivemind/task-managements/
+.hivemind/runtime/
+.hivemind/artifacts/
+.hivemind/sidecar/
+.hivemind/logs/
+.hivemind/poor-prompts/
+.hivemind/uat/
+
+# Hivemind committed — project config + structure (NOT gitignored)
+# configs.json, manifests/, hf-brain/, registries/, onboarding/, .gitkeep, README.md
+
+# Temporary files
+*.bak
+*.bak.*
+*.tmp
+*.backup
+*.backup*
+
+.qwen/
+gha-creds-*.json
+
+# Exclude heavy session tracker and session journals
+.hivemind/session-tracker/
+.hivemind/.hivemind/
+.hivemind/logs/
+.hivemind/poor-prompts/
+.hivemind/uat/
+session-ses_*.md
+improve-tools-*.md
+tools_hooks_*.md
+trialrun-*.md
+qwen-code-export-*.md
+INVESTIGATOR-B-*.md
+OVERVIEW-Unmodified.md
+
+# Exclude next.js build artifacts in sidecar
+sidecar/.next/
+sidecar/out/
+sidecar/node_modules/
+
+# Exclude HTML/JSON visualization graphs and outputs
+graphify-out/
+*.html
+*.json.map
+*.js.map
+
+# Exclude playwright cache and other tools
+.playwright-mcp/
+
+# Exclude planning archives
+.planning/archive/
+
+# npm auth — never commit, use ~/.npmrc on local or GitHub Secrets in CI
+.npmrc

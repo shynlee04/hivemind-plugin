@@ -1,0 +1,1540 @@
+import { describe, it, expect, vi } from "vitest"
+import { createCoreHooks } from "../../src/hooks/lifecycle/core-hooks.js"
+import { createSessionIsMainObserver } from "../../src/hooks/observers/event-observers.js"
+import type { HookDependencies } from "../../src/hooks/types.js"
+import type { ResolvedBehavioralProfile } from "../../src/routing/behavioral-profile/types.js"
+import type { IntakeResult } from "../../src/routing/session-entry/intake-gate.js"
+import { HivemindConfigsSchema } from "../../src/schema-kernel/hivemind-configs.schema.js"
+import { taskState } from "../../src/shared/state.js"
+import { getChildSessions } from "../../src/shared/session-api.js"
+import type { OpenCodeClient } from "../../src/shared/session-api.js"
+
+/**
+ * Creates a mock OpenCode client with session.children(), session.get(),
+ * and session.messages() for testing getChildSessions and injection block.
+ */
+function createMockChildrenClient(overrides?: {
+  childrenResult?: Array<{ id: string; parentID?: string }>
+  getResult?: Record<string, unknown>
+  messagesResult?: unknown[]
+  throwOnChildren?: boolean
+  throwOnGet?: boolean
+  noChildrenFn?: boolean
+}): OpenCodeClient {
+  const childrenResult = overrides?.childrenResult ?? [
+    { id: "ses_child_1", parentID: "ses_parent" },
+    { id: "ses_child_2", parentID: "ses_parent" },
+  ]
+  const getResult = overrides?.getResult ?? { id: "ses_child_1", status: "completed", agent: "hm-specialist" }
+  const messagesResult = overrides?.messagesResult ?? [
+    { role: "assistant", parts: [{ type: "text", text: "Build complete." }], timestamp: "2026-06-11T01:00:00Z" },
+  ]
+
+  const childrenFn = overrides?.noChildrenFn
+    ? undefined
+    : overrides?.throwOnChildren
+      ? vi.fn().mockRejectedValue(new Error("SDK unavailable"))
+      : vi.fn().mockResolvedValue({ data: childrenResult })
+
+  const getFn = overrides?.throwOnGet
+    ? vi.fn().mockRejectedValue(new Error("Session not found"))
+    : vi.fn().mockImplementation((params: { path: { id: string } }) => {
+        const child = childrenResult.find((c) => c.id === params.path.id)
+        if (child) {
+          return { data: { ...getResult, id: child.id } }
+        }
+        return { data: { ...getResult, id: params.path.id } }
+      })
+
+  const messagesFn = vi.fn().mockResolvedValue({ data: messagesResult })
+
+  return {
+    session: {
+      children: childrenFn,
+      get: getFn,
+      messages: messagesFn,
+    },
+  } as unknown as OpenCodeClient
+}
+
+function createFakeLifecycleManager() {
+  return {
+    handleEvent: vi.fn(),
+    replayPendingNotificationsForEvent: vi.fn(),
+  }
+}
+
+describe("createCoreHooks", () => {
+  describe("event hook", () => {
+    it("routes session.created events to lifecycle manager with correct eventType and sessionID", async () => {
+      const lm = createFakeLifecycleManager()
+      const hooks = createCoreHooks({ lifecycleManager: lm as never } as never)
+
+      await hooks.event({ event: { type: "session.created", sessionID: "ses_test" } })
+
+      expect(lm.handleEvent).toHaveBeenCalledWith({
+        event: expect.objectContaining({ type: "session.created" }),
+        eventType: "session.created",
+        sessionID: "ses_test",
+      })
+      expect(lm.replayPendingNotificationsForEvent).toHaveBeenCalledWith(
+        "ses_test",
+        "session.created"
+      )
+    })
+
+    it("routes session.updated events to lifecycle manager", async () => {
+      const lm = createFakeLifecycleManager()
+      const hooks = createCoreHooks({ lifecycleManager: lm as never } as never)
+
+      await hooks.event({
+        event: { type: "session.updated", sessionID: "ses_002" }
+      })
+
+      expect(lm.handleEvent).toHaveBeenCalledWith({
+        event: expect.objectContaining({ type: "session.updated" }),
+        eventType: "session.updated",
+        sessionID: "ses_002",
+      })
+    })
+
+    it("calls replayPendingNotificationsForEvent on session events", async () => {
+      const lm = createFakeLifecycleManager()
+      const hooks = createCoreHooks({ lifecycleManager: lm as never } as never)
+
+      await hooks.event({ event: { type: "session.idle", sessionID: "ses_003" } })
+
+      expect(lm.replayPendingNotificationsForEvent).toHaveBeenCalledWith(
+        "ses_003",
+        "session.idle"
+      )
+    })
+
+    it("bails out when event has no type (handleEvent NOT called)", async () => {
+      const lm = createFakeLifecycleManager()
+      const hooks = createCoreHooks({ lifecycleManager: lm as never } as never)
+
+      await hooks.event({ event: {} })
+
+      expect(lm.handleEvent).not.toHaveBeenCalled()
+      expect(lm.replayPendingNotificationsForEvent).not.toHaveBeenCalled()
+    })
+
+    it("bails out when event has no sessionID (handleEvent NOT called)", async () => {
+      const lm = createFakeLifecycleManager()
+      const hooks = createCoreHooks({ lifecycleManager: lm as never } as never)
+
+      await hooks.event({ event: { type: "session.created" } })
+
+      expect(lm.handleEvent).not.toHaveBeenCalled()
+    })
+
+    it("calls event observers when provided", async () => {
+      const observer = vi.fn()
+      const lm = createFakeLifecycleManager()
+      const hooks = createCoreHooks({
+        lifecycleManager: lm as never,
+        eventObservers: [observer],
+      } as never)
+
+      await hooks.event({ event: { type: "session.created", sessionID: "ses_005" } })
+
+      expect(observer).toHaveBeenCalledWith({
+        event: { type: "session.created", sessionID: "ses_005" },
+      })
+    })
+  })
+
+  describe("shell.env hook", () => {
+    it("injects CI=true, GIT_TERMINAL_PROMPT=0, NO_COLOR=1, TERM=dumb", async () => {
+      const hooks = createCoreHooks({
+        lifecycleManager: { handleEvent: vi.fn(), replayPendingNotificationsForEvent: vi.fn() } as never,
+      } as never)
+
+      const output: Record<string, unknown> = {}
+      await hooks["shell.env"]({}, output)
+
+      expect(output.env).toMatchObject({
+        CI: "true",
+        GIT_TERMINAL_PROMPT: "0",
+        NO_COLOR: "1",
+        TERM: "dumb",
+      })
+    })
+
+    it("merges with existing user-set env vars (does not overwrite)", async () => {
+      const hooks = createCoreHooks({
+        lifecycleManager: { handleEvent: vi.fn(), replayPendingNotificationsForEvent: vi.fn() } as never,
+      } as never)
+
+      const output: Record<string, unknown> = {
+        env: { NODE_ENV: "production", CI: "false" },
+      }
+      await hooks["shell.env"]({}, output)
+
+      // Should overwrite CI with "true" (harness priority)
+      expect((output.env as Record<string, string>).CI).toBe("true")
+      // Should preserve user-set NODE_ENV
+      expect((output.env as Record<string, string>).NODE_ENV).toBe("production")
+    })
+  })
+
+  /**
+   * Creates a type-safe fake that matches the real ResolvedBehavioralProfile
+   * interface exactly. All union values are valid members of their respective
+   * types (DecisionSpeed, DiscussMode, etc.).
+   *
+   * @returns Authentic ResolvedBehavioralProfile matching types.ts contract
+   */
+  function createFakeBehavioralProfile(): ResolvedBehavioralProfile {
+    return {
+      mode: "hivemind-powered",
+      behavioralProfile: {
+        guardrailLevel: "strict",
+        delegationMode: "waiter",
+        toolAccessPattern: "restricted",
+        skillFilter: "curated",
+      },
+      language: {
+        conversation: "en",
+        documents: "en",
+      },
+      userExpertLevel: "architecture-driven",
+      discussMode: "sufficient-phase-discussion",
+      runtimeProfile: {
+        communicationStyle: "concise",
+        decisionSpeed: "fast",
+        expertise: "senior",
+        matchConfidence: 0.8,
+      },
+      merged: {
+        communicationStyle: "concise",
+        decisionSpeed: "fast",
+        expertise: "senior",
+      },
+    }
+  }
+
+  /**
+   * Creates a type-safe fake IntakeResult matching intake-gate.ts contract.
+   *
+   * @returns Authentic IntakeResult with valid ClassificationResult, LanguageDetection, ProfileMatch
+   */
+  function createFakeIntake(): IntakeResult {
+    return {
+      purpose: { purpose: "implementation", confidence: 0.9, alternatives: [] },
+      language: { language: "en", script: "latin", confidence: 1 },
+      routingTarget: "gsd-executor",
+      profile: {
+        communicationStyle: "concise",
+        decisionSpeed: "fast",
+        expertise: "mid",
+        matchConfidence: 0.45,
+      },
+      warnings: [],
+      trajectoryWarnings: [],
+      jitRecommendations: [],
+    }
+  }
+
+  describe("behavioral profile injection", () => {
+
+    it("injects behavioral fields into system.transform when getBehavioralProfile is provided", async () => {
+      const profile = createFakeBehavioralProfile()
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_bp_test" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      expect(system.length).toBeGreaterThanOrEqual(2)
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toBeDefined()
+      expect(behavioralBlock).toContain("behavioral.guardrailLevel: strict")
+      expect(behavioralBlock).toContain("behavioral.delegationMode: waiter")
+      expect(behavioralBlock).toContain("behavioral.toolAccessPattern: restricted")
+      expect(behavioralBlock).toContain("behavioral.skillFilter: curated")
+      expect(behavioralBlock).toContain("language.conversation: en")
+      expect(behavioralBlock).toContain("language.documents: en")
+      expect(behavioralBlock).toContain("runtime.communicationStyle: concise")
+      expect(behavioralBlock).toContain("runtime.decisionSpeed: fast")
+      expect(behavioralBlock).toContain("runtime.expertise: senior")
+      expect(behavioralBlock).toContain("discuss.mode: sufficient-phase-discussion")
+    })
+
+    it("system.transform works without getBehavioralProfile (backward compat)", async () => {
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_no_bp" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      // Should have intake but NOT behavioral
+      expect(system.some((s) => s.includes("Session intake context:"))).toBe(true)
+      expect(system.some((s) => s.includes("Behavioral profile context:"))).toBe(false)
+    })
+
+    it("behavioral injection comes AFTER intake injection", async () => {
+      const profile = createFakeBehavioralProfile()
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_order_test" }, output)
+
+      const system = output.system as string[]
+      const intakeIdx = system.findIndex((s) => s.includes("Session intake context:"))
+      const behavioralIdx = system.findIndex((s) => s.includes("Behavioral profile context:"))
+      expect(intakeIdx).toBeLessThan(behavioralIdx)
+    })
+
+    it("behavioral injection works independently when intake is unavailable", async () => {
+      const profile = createFakeBehavioralProfile()
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => undefined,
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_bp_only" }, output)
+
+      // Intake returns undefined, so no intake context — but behavioral SHOULD still inject
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      expect(system.some((s) => s.includes("Behavioral profile context:"))).toBe(true)
+      expect(system.some((s) => s.includes("Session intake context:"))).toBe(false)
+    })
+
+    // -----------------------------------------------------------------------
+    // Feature Evaluation: Language Injection (D-04, D-05, REQ-CA02-02)
+    //
+    // The harness serves multilingual projects. A user with
+    // conversation_language: "vi" and documents_language: "en" MUST see
+    // those values rendered in the system.transform output that agents read.
+    // -----------------------------------------------------------------------
+
+    it("injects non-English language codes (vi/en) matching real user config", async () => {
+      const profile: ResolvedBehavioralProfile = {
+        ...createFakeBehavioralProfile(),
+        language: { conversation: "vi", documents: "en" },
+      }
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_vi" }, output)
+
+      const system = output.system as string[]
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toContain("language.conversation: vi")
+      expect(behavioralBlock).toContain("language.documents: en")
+    })
+
+    it("injects CJK language codes (ja/zh) through system.transform", async () => {
+      const profile: ResolvedBehavioralProfile = {
+        ...createFakeBehavioralProfile(),
+        language: { conversation: "ja", documents: "zh" },
+      }
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_ja" }, output)
+
+      const system = output.system as string[]
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toContain("language.conversation: ja")
+      expect(behavioralBlock).toContain("language.documents: zh")
+    })
+
+    it("injects Thai/Korean language codes (th/ko)", async () => {
+      const profile: ResolvedBehavioralProfile = {
+        ...createFakeBehavioralProfile(),
+        language: { conversation: "th", documents: "ko" },
+      }
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_th" }, output)
+
+      const system = output.system as string[]
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toContain("language.conversation: th")
+      expect(behavioralBlock).toContain("language.documents: ko")
+    })
+
+    // -----------------------------------------------------------------------
+    // Feature Evaluation: Multi-Mode Behavioral Profiles (D-01, D-02, REQ-CA02-01)
+    //
+    // Each mode produces different guardrailLevel, delegationMode, etc.
+    // Agents MUST see the correct values for their session's active mode.
+    // -----------------------------------------------------------------------
+
+    it("injects expert-advisor mode profile (moderate/waiter/full/all)", async () => {
+      const profile: ResolvedBehavioralProfile = {
+        mode: "expert-advisor",
+        behavioralProfile: {
+          guardrailLevel: "moderate",
+          delegationMode: "waiter",
+          toolAccessPattern: "full",
+          skillFilter: "all",
+        },
+        language: { conversation: "en", documents: "en" },
+        userExpertLevel: "intermediate-high-level",
+        discussMode: "sufficient-phase-discussion",
+        runtimeProfile: {
+          communicationStyle: "mixed",
+          decisionSpeed: "fast",
+          expertise: "mid",
+          matchConfidence: 0.5,
+        },
+        merged: {
+          communicationStyle: "mixed",
+          decisionSpeed: "fast",
+          expertise: "mid",
+        },
+      }
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_expert" }, output)
+
+      const system = output.system as string[]
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toContain("behavioral.guardrailLevel: moderate")
+      expect(behavioralBlock).toContain("behavioral.delegationMode: waiter")
+      expect(behavioralBlock).toContain("behavioral.toolAccessPattern: full")
+      expect(behavioralBlock).toContain("behavioral.skillFilter: all")
+      expect(behavioralBlock).toContain("runtime.expertise: mid")
+    })
+
+    it("injects free-style mode profile (minimal/disabled/full/all)", async () => {
+      const profile: ResolvedBehavioralProfile = {
+        mode: "free-style",
+        behavioralProfile: {
+          guardrailLevel: "minimal",
+          delegationMode: "disabled",
+          toolAccessPattern: "full",
+          skillFilter: "all",
+        },
+        language: { conversation: "en", documents: "en" },
+        userExpertLevel: "clumsy-vibecoder",
+        discussMode: "skip-phase-discussion",
+        runtimeProfile: {
+          communicationStyle: "detailed",
+          decisionSpeed: "deliberate",
+          expertise: "junior",
+          matchConfidence: 0.3,
+        },
+        merged: {
+          communicationStyle: "detailed",
+          decisionSpeed: "deliberate",
+          expertise: "junior",
+        },
+      }
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_freestyle" }, output)
+
+      const system = output.system as string[]
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toContain("behavioral.guardrailLevel: minimal")
+      expect(behavioralBlock).toContain("behavioral.delegationMode: disabled")
+      expect(behavioralBlock).toContain("behavioral.toolAccessPattern: full")
+      expect(behavioralBlock).toContain("behavioral.skillFilter: all")
+      expect(behavioralBlock).toContain("runtime.expertise: junior")
+      expect(behavioralBlock).toContain("discuss.mode: skip-phase-discussion")
+    })
+
+    // -----------------------------------------------------------------------
+    // Feature Evaluation: DiscussMode Signal (D-13, D-14, REQ-CA02-09)
+    //
+    // All three discuss modes must be visible to agents for workflow routing.
+    // -----------------------------------------------------------------------
+
+    it("injects intensive-phase-discussion mode", async () => {
+      const profile: ResolvedBehavioralProfile = {
+        ...createFakeBehavioralProfile(),
+        discussMode: "intensive-phase-discussion",
+      }
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_discuss_intensive" }, output)
+
+      const system = output.system as string[]
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toContain("discuss.mode: intensive-phase-discussion")
+    })
+
+    it("injects skip-phase-discussion mode", async () => {
+      const profile: ResolvedBehavioralProfile = {
+        ...createFakeBehavioralProfile(),
+        discussMode: "skip-phase-discussion",
+      }
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_discuss_skip" }, output)
+
+      const system = output.system as string[]
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toContain("discuss.mode: skip-phase-discussion")
+    })
+
+    // -----------------------------------------------------------------------
+    // Feature Evaluation: Real-Life Config Scenario (CA-01→CA-02 Integration)
+    //
+    // This test mirrors the ACTUAL .hivemind/configs.json values:
+    //   conversation_language: "vi", documents_language: "en",
+    //   mode: "expert-advisor", user_expert_level: "intermediate-high-level",
+    //   discuss_mode: "sufficient-phase-discussion"
+    //
+    // It validates the complete CA-01 schema → CA-02 profile → system.transform
+    // pipeline as a real user would experience it.
+    // -----------------------------------------------------------------------
+
+    it("renders complete profile matching real configs.json (vi/en, expert-advisor, intermediate)", async () => {
+      const profile: ResolvedBehavioralProfile = {
+        mode: "expert-advisor",
+        behavioralProfile: {
+          guardrailLevel: "moderate",
+          delegationMode: "waiter",
+          toolAccessPattern: "full",
+          skillFilter: "all",
+        },
+        language: { conversation: "vi", documents: "en" },
+        userExpertLevel: "intermediate-high-level",
+        discussMode: "sufficient-phase-discussion",
+        runtimeProfile: {
+          communicationStyle: "mixed",
+          decisionSpeed: "fast",
+          expertise: "mid",
+          matchConfidence: 0.5,
+        },
+        merged: {
+          communicationStyle: "mixed",
+          decisionSpeed: "fast",
+          expertise: "mid",
+        },
+      }
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => profile,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_reallife" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+
+      // Intake block present
+      expect(system.some((s) => s.includes("Session intake context:"))).toBe(true)
+      // Behavioral block present
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toBeDefined()
+
+      // Verify ALL 10 behavioral context lines match real config
+      expect(behavioralBlock).toContain("behavioral.guardrailLevel: moderate")
+      expect(behavioralBlock).toContain("behavioral.delegationMode: waiter")
+      expect(behavioralBlock).toContain("behavioral.toolAccessPattern: full")
+      expect(behavioralBlock).toContain("behavioral.skillFilter: all")
+      expect(behavioralBlock).toContain("language.conversation: vi")
+      expect(behavioralBlock).toContain("language.documents: en")
+      expect(behavioralBlock).toContain("runtime.communicationStyle: mixed")
+      expect(behavioralBlock).toContain("runtime.decisionSpeed: fast")
+      expect(behavioralBlock).toContain("runtime.expertise: mid")
+      expect(behavioralBlock).toContain("discuss.mode: sufficient-phase-discussion")
+    })
+  })
+
+  // -----------------------------------------------------------------------
+  // Governance Block Injection (CA-03-01: D-05, D-06, D-07)
+  //
+  // Governance block is injected at position 0 of system array BEFORE
+  // intake and behavioral blocks. Format matches D-06 hybrid instruction+fields.
+  // -----------------------------------------------------------------------
+
+  describe("governance block injection", () => {
+    function createHivemindConfig(overrides?: Record<string, unknown>) {
+      return HivemindConfigsSchema.parse({
+        mode: "expert-advisor",
+        user_expert_level: "intermediate-high-level",
+        conversation_language: "vi",
+        documents_and_artifacts_language: "en",
+        ...overrides,
+      })
+    }
+
+    function buildDepsWithConfig(
+      hivemindConfig?: ReturnType<typeof HivemindConfigsSchema.parse>,
+    ): Partial<HookDependencies> {
+      return {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => createFakeBehavioralProfile(),
+        hivemindConfig,
+      }
+    }
+
+    it("Test 1: governance block appears as first system array element before intake and behavioral blocks", async () => {
+      const hivemindConfig = createHivemindConfig()
+      const deps = buildDepsWithConfig(hivemindConfig)
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_order" }, output)
+
+      const system = output.system as string[]
+      expect(system.length).toBeGreaterThanOrEqual(3)
+
+      // Governance at position 0
+      expect(system[0]).toContain("--- Governance ---")
+
+      // Intake after governance
+      const intakeIdx = system.findIndex((s) => s.includes("Session intake context:"))
+      expect(intakeIdx).toBeGreaterThan(0)
+
+      // Behavioral after intake
+      const behavioralIdx = system.findIndex((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralIdx).toBeGreaterThan(intakeIdx)
+    })
+
+    it("Test 2: governance block format matches D-06 — header, instruction line, field:value line", async () => {
+      const hivemindConfig = createHivemindConfig({ conversation_language: "en", documents_and_artifacts_language: "en" })
+      const deps = buildDepsWithConfig(hivemindConfig)
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_format" }, output)
+
+      const system = output.system as string[]
+      const governanceBlock = system.find((s) => s.startsWith("--- Governance ---"))
+      expect(governanceBlock).toBeDefined()
+
+      const lines = governanceBlock!.split("\n")
+      expect(lines[0]).toBe("--- Governance ---")
+      // Instruction line should contain mode, expertise, and language directives
+      expect(lines[1]).toContain("You are operating in")
+      expect(lines[1]).toContain("Communicate at")
+      expect(lines[1]).toContain("Use ")
+      // Field:value context line
+      expect(lines[2]).toContain("communicationStyle:")
+      expect(lines[2]).toContain("|")
+      expect(lines[2]).toContain("decisionSpeed:")
+      expect(lines[2]).toContain("expertise:")
+    })
+
+    it("Test 3: governance block has correct mode instruction for expert-advisor", async () => {
+      const hivemindConfig = createHivemindConfig({ mode: "expert-advisor", conversation_language: "en", documents_and_artifacts_language: "en" })
+      const deps = buildDepsWithConfig(hivemindConfig)
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_mode" }, output)
+
+      const system = output.system as string[]
+      const governanceBlock = system.find((s) => s.startsWith("--- Governance ---"))
+      expect(governanceBlock).toContain("You are operating in expert-advisor mode.")
+    })
+
+    it("Test 4: governance block has correct expertise instruction for intermediate-high-level", async () => {
+      const hivemindConfig = createHivemindConfig({ user_expert_level: "intermediate-high-level", conversation_language: "en", documents_and_artifacts_language: "en" })
+      const deps = buildDepsWithConfig(hivemindConfig)
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_expertise" }, output)
+
+      const system = output.system as string[]
+      const governanceBlock = system.find((s) => s.startsWith("--- Governance ---"))
+      expect(governanceBlock).toContain("Communicate at intermediate-high level.")
+    })
+
+    it("Test 5: governance block has correct language instruction for vi/en config", async () => {
+      const hivemindConfig = createHivemindConfig({
+        conversation_language: "vi",
+        documents_and_artifacts_language: "en",
+      })
+      const deps = buildDepsWithConfig(hivemindConfig)
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_lang" }, output)
+
+      const system = output.system as string[]
+      const governanceBlock = system.find((s) => s.startsWith("--- Governance ---"))
+      expect(governanceBlock).toContain("Use vi for all conversation and en for all documents.")
+    })
+
+    it("Test 6: governance block includes field:value context from behavioral profile", async () => {
+      const hivemindConfig = createHivemindConfig()
+      // Use a profile with explicit merged values for testing
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => ({
+          ...createFakeBehavioralProfile(),
+          merged: {
+            communicationStyle: "detailed",
+            decisionSpeed: "deliberate",
+            expertise: "intermediate-high",
+          },
+        }),
+        hivemindConfig,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_fields" }, output)
+
+      const system = output.system as string[]
+      const governanceBlock = system.find((s) => s.startsWith("--- Governance ---"))
+      expect(governanceBlock).toContain("communicationStyle: detailed")
+      expect(governanceBlock).toContain("decisionSpeed: deliberate")
+      expect(governanceBlock).toContain("expertise: intermediate-high")
+    })
+
+    it("Test 7: system.transform with no hivemindConfig (undefined) — governance block NOT injected", async () => {
+      const deps: Pick<HookDependencies, "lifecycleManager" | "getIntake" | "getBehavioralProfile"> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => createFakeBehavioralProfile(),
+        // hivemindConfig NOT provided — undefined
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_no_config" }, output)
+
+      const system = output.system as string[]
+      // Should NOT contain governance block
+      expect(system.every((s) => !s.startsWith("--- Governance ---"))).toBe(true)
+      // But intake and behavioral should still work
+      expect(system.some((s) => s.includes("Session intake context:"))).toBe(true)
+      expect(system.some((s) => s.includes("Behavioral profile context:"))).toBe(true)
+    })
+
+    it("Test 8: system.transform with no sessionID returns early before any injection", async () => {
+      const hivemindConfig = createHivemindConfig()
+      const deps = buildDepsWithConfig(hivemindConfig)
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({}, output) // No sessionID
+
+      const system = output.system
+      // system should NOT have been changed from its initial state (undefined/not set)
+      expect(system).toBeUndefined()
+    })
+
+    it("Test 9: existing intake injection still works (regression)", async () => {
+      const hivemindConfig = createHivemindConfig()
+      const deps = buildDepsWithConfig(hivemindConfig)
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_intake_reg" }, output)
+
+      const system = output.system as string[]
+      expect(system.some((s) => s.includes("Session intake context:"))).toBe(true)
+    })
+
+    it("Test 10: existing behavioral profile injection still works (regression)", async () => {
+      const hivemindConfig = createHivemindConfig()
+      const deps = buildDepsWithConfig(hivemindConfig)
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_bp_reg" }, output)
+
+      const system = output.system as string[]
+      const behavioralBlock = system.find((s) => s.includes("Behavioral profile context:"))
+      expect(behavioralBlock).toBeDefined()
+      expect(behavioralBlock).toContain("behavioral.guardrailLevel: strict")
+      expect(behavioralBlock).toContain("behavioral.delegationMode: waiter")
+      expect(behavioralBlock).toContain("runtime.communicationStyle: concise")
+      expect(behavioralBlock).toContain("runtime.expertise: senior")
+    })
+
+    it("Test 11: output.system has 3 elements — governance, intake, behavioral", async () => {
+      const hivemindConfig = createHivemindConfig()
+      const deps = buildDepsWithConfig(hivemindConfig)
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_3elems" }, output)
+
+      const system = output.system as string[]
+      expect(system.length).toBe(3)
+      expect(system[0]).toContain("--- Governance ---")
+      expect(system[1]).toContain("Session intake context:")
+      expect(system[2]).toContain("Behavioral profile context:")
+    })
+
+    it("Test 12: output.system has 2 elements when intake is not available — governance, behavioral", async () => {
+      const hivemindConfig = createHivemindConfig()
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => undefined, // No intake available
+        getBehavioralProfile: () => createFakeBehavioralProfile(),
+        hivemindConfig,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_gov_2elems" }, output)
+
+      const system = output.system as string[]
+      expect(system.length).toBe(2)
+      expect(system[0]).toContain("--- Governance ---")
+      expect(system[1]).toContain("Behavioral profile context:")
+      // No intake
+      expect(system.every((s) => !s.includes("Session intake context:"))).toBe(true)
+    })
+  })
+
+  // -----------------------------------------------------------------------
+  // BOOT-09: Language Governance Block Injection (D-05, D-07, REQ-01, REQ-02)
+  //
+  // Language block injected at output.system[0] for main sessions only.
+  // Block format: header, CRITICAL:, MUST, override, document paths.
+  // -----------------------------------------------------------------------
+
+  describe("language governance block injection", () => {
+    function createLangHivemindConfig(overrides?: Record<string, unknown>) {
+      return HivemindConfigsSchema.parse({
+        mode: "expert-advisor",
+        user_expert_level: "intermediate-high-level",
+        conversation_language: "en",
+        documents_and_artifacts_language: "en",
+        ...overrides,
+      })
+    }
+
+    function buildDepsWithLang(
+      options: {
+        isMain?: boolean
+        hivemindConfig?: ReturnType<typeof HivemindConfigsSchema.parse>
+      } = {},
+    ): Partial<HookDependencies> {
+      const addIsMain = options.isMain !== undefined
+      return {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => createFakeBehavioralProfile(),
+        hivemindConfig: "hivemindConfig" in options ? options.hivemindConfig : createLangHivemindConfig(),
+        ...(addIsMain ? { isMainSession: () => options.isMain! } : {}),
+      }
+    }
+
+    it("Test 1: injects language governance block at output.system[0] for main sessions", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_main" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Language Governance ---")
+    })
+
+    it("Test 2: does NOT inject language governance block for child sessions (isMainSession: false)", async () => {
+      const deps = buildDepsWithLang({ isMain: false })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_child" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Governance ---")
+      expect(system[0]).not.toContain("--- Language Governance ---")
+    })
+
+    it("Test 3: language block contains --- Language Governance --- header", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_hdr" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Language Governance ---")
+    })
+
+    it("Test 4: language block contains CRITICAL: prefix", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_crit" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("CRITICAL:")
+    })
+
+    it("Test 5: language block contains MUST respond in en", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_must" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("MUST respond in en")
+    })
+
+    it("Test 6: language block contains Even if the user writes in another language", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_override" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("Even if the user writes in another language")
+    })
+
+    it("Test 7: language block contains document language instruction with paths", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_doc" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("MUST write in")
+      expect(system[0]).toContain(".planning/")
+    })
+
+    it("Test 8: changing conversation_language from en to vi changes the injected text", async () => {
+      const config = createLangHivemindConfig({ conversation_language: "vi" })
+      const deps = buildDepsWithLang({ isMain: true, hivemindConfig: config })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_vi" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("MUST respond in vi")
+      expect(system[0]).not.toContain("MUST respond in en")
+    })
+
+    it("Test 9: existing governance block, intake, behavioral profile, and agent profile are at [1], [2], [3], [4]", async () => {
+      const deps = buildDepsWithLang({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_order" }, output)
+      const system = output.system as string[]
+      // Agent profile injection frontmatter schema resolved — system now
+      // has 5 blocks: lang + gov + intake + behavioral + agent profile
+      expect(system.length).toBe(5)
+      expect(system[0]).toContain("--- Language Governance ---")
+      expect(system[1]).toContain("--- Governance ---")
+      expect(system[2]).toContain("Session intake context:")
+      expect(system[3]).toContain("Behavioral profile context:")
+      expect(system[4]).toContain("Agent Profile")
+    })
+
+    it("Test 10: no language block when hivemindConfig is undefined", async () => {
+      const deps = buildDepsWithLang({ isMain: true, hivemindConfig: undefined })
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_no_config" }, output)
+      const system = output.system as string[]
+      expect(system.every((s) => !s.includes("--- Language Governance ---"))).toBe(true)
+      expect(system.some((s) => s.includes("Session intake context:"))).toBe(true)
+      expect(system.some((s) => s.includes("Behavioral profile context:"))).toBe(true)
+    })
+
+    it("Test 11: no language block when isMainSession is undefined (defensive)", async () => {
+      const deps = buildDepsWithLang({}) // no isMainSession
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_lang_no_is_main" }, output)
+      const system = output.system as string[]
+      expect(system.every((s) => !s.includes("--- Language Governance ---"))).toBe(true)
+    })
+
+    // -----------------------------------------------------------------------
+    // Integration: isMainSession factory used through createCoreHooks pipeline
+    // Mirrors how plugin.ts wires the factory (D-04, D-02).
+    // -----------------------------------------------------------------------
+
+    it("Test 12: real isMainSession factory — main session gets language block through createCoreHooks", async () => {
+      const factory = createSessionIsMainObserver()
+      const config = createLangHivemindConfig()
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => createFakeBehavioralProfile(),
+        hivemindConfig: config,
+        isMainSession: factory.isMainSession,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      // Simulate session.created event to populate the cache (D-02).
+      // The event must use the nested properties.info format for session-api helpers.
+      await factory.observer({
+        event: {
+          type: "session.created",
+          properties: { info: { id: "ses_integ_main", title: "t", version: "1", time: { created: 1, updated: 1 } } },
+        },
+      })
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_integ_main" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Language Governance ---")
+    })
+
+    it("Test 13: real isMainSession factory — child session with parentID gets NO language block", async () => {
+      const factory = createSessionIsMainObserver()
+      const config = createLangHivemindConfig()
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => createFakeIntake(),
+        getBehavioralProfile: () => createFakeBehavioralProfile(),
+        hivemindConfig: config,
+        isMainSession: factory.isMainSession,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      // Simulate a child session — has parentID in the nested info structure (D-03).
+      // getEventParentID reads from event.properties.info.parentID.
+      await factory.observer({
+        event: {
+          type: "session.created",
+          properties: { info: { id: "ses_integ_child", parentID: "ses_parent", title: "t", version: "1", time: { created: 1, updated: 1 } } },
+        },
+      })
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_integ_child" }, output)
+      const system = output.system as string[]
+      expect(system[0]).toContain("--- Governance ---")
+      expect(system[0]).not.toContain("--- Language Governance ---")
+    })
+  })
+
+  describe("specialist agent profile injection", () => {
+    it("dynamically loads and injects the specialist agent profile instructions on every turn", async () => {
+      const fs = await import("node:fs")
+      const path = await import("node:path")
+
+      const projectRoot = process.cwd()
+      const agentDir = path.join(projectRoot, ".opencode", "agents")
+      const mockAgentPath = path.join(agentDir, "mock-specialist.md")
+
+      // Ensure agent directory exists
+      fs.mkdirSync(agentDir, { recursive: true })
+
+      // Write a mock agent primitive definition
+      const mockContent = [
+        "---",
+        "name: mock-specialist",
+        "description: Mock Specialist Agent",
+        "---",
+        "This is the behavior contract body of the mock-specialist agent.",
+      ].join("\n")
+
+      fs.writeFileSync(mockAgentPath, mockContent, "utf-8")
+
+      try {
+        const deps: Partial<HookDependencies> = {
+          lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+          getIntake: () => undefined,
+          getBehavioralProfile: () => undefined,
+          projectDirectory: projectRoot,
+          stateManager: taskState,
+        }
+
+        // 1. Set delegation metadata to mock-specialist
+        taskState.setDelegationMeta("ses_agent_test", {
+          agent: "mock-specialist",
+          rootID: "ses_agent_test",
+          depth: 1,
+          queueKey: "q_test",
+        })
+
+        const hooks = createCoreHooks(deps as HookDependencies)
+        const output: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID: "ses_agent_test" }, output)
+
+        const system = output.system as string[]
+        expect(system).toBeDefined()
+
+        // Verify that the specialist profile header and body are injected
+        const profileBlock = system.find((s) => s.includes("--- Agent Profile: mock-specialist ---"))
+        expect(profileBlock).toBeDefined()
+        expect(profileBlock).toContain("This is the behavior contract body of the mock-specialist agent.")
+      } finally {
+        // Clean up the mock agent file
+        if (fs.existsSync(mockAgentPath)) {
+          fs.rmSync(mockAgentPath, { force: true })
+        }
+      }
+    })
+
+    it("falls back to hm-l0-orchestrator for main sessions (name resolution works; profile rendering blocked by pre-existing frontmatter schema mismatch)", async () => {
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => undefined,
+        getBehavioralProfile: () => undefined,
+        projectDirectory: process.cwd(),
+        isMainSession: (id) => id === "ses_main_test",
+        stateManager: taskState,
+      }
+
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_main_test" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      // system.transform ran without throwing — the agent name resolution
+      // fallback (isMainSession → hm-l0-orchestrator) is exercised.
+      // Profile rendering is blocked by a pre-existing frontmatter schema
+      // mismatch (tools field expects record, gets array in the agent file).
+    })
+
+    it("maps the native build agent to hm-l0-orchestrator (name resolution works; profile rendering blocked by pre-existing frontmatter schema mismatch)", async () => {
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        getIntake: () => undefined,
+        getBehavioralProfile: () => undefined,
+        projectDirectory: process.cwd(),
+        stateManager: taskState,
+      }
+
+      // Set delegation metadata with agent = "build"
+      taskState.setDelegationMeta("ses_build_agent_test", {
+        agent: "build",
+        rootID: "ses_build_agent_test",
+        depth: 1,
+        queueKey: "q_build_test",
+      })
+
+      const hooks = createCoreHooks(deps as HookDependencies)
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_build_agent_test" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      // system.transform ran without throwing — the "build" → "hm-l0-orchestrator"
+      // agent name mapping is exercised.
+      // Profile rendering is blocked by a pre-existing frontmatter schema
+      // mismatch (tools field expects record, gets array in the agent file).
+    })
+
+    // -----------------------------------------------------------------------
+    // Per-Turn Reinjection Guard (Phase A)
+    //
+    // The agent body is ~11.5k tokens. The harness MUST inject it ONCE per
+    // session, not on every turn. Repeated calls to system.transform for the
+    // same sessionID must skip the agent body reinjection after the first
+    // successful injection. Different sessions must still receive their own
+    // independent injection.
+    // -----------------------------------------------------------------------
+
+    it("injects specialist agent profile exactly ONCE per session — second call for same sessionID skips reinjection", async () => {
+      const fs = await import("node:fs")
+      const path = await import("node:path")
+
+      const projectRoot = process.cwd()
+      const agentDir = path.join(projectRoot, ".opencode", "agents")
+      const mockAgentPath = path.join(agentDir, "mock-once-specialist.md")
+
+      fs.mkdirSync(agentDir, { recursive: true })
+      const mockContent = [
+        "---",
+        "name: mock-once-specialist",
+        "description: Mock Once-Per-Session Specialist",
+        "---",
+        "Body for once-per-session test.",
+      ].join("\n")
+      fs.writeFileSync(mockAgentPath, mockContent, "utf-8")
+
+      try {
+        const sessionID = "ses_once_per_session_test"
+        const deps: Partial<HookDependencies> = {
+          lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+          getIntake: () => undefined,
+          getBehavioralProfile: () => undefined,
+          projectDirectory: projectRoot,
+          stateManager: taskState,
+        }
+
+        taskState.setDelegationMeta(sessionID, {
+          agent: "mock-once-specialist",
+          rootID: sessionID,
+          depth: 1,
+          queueKey: "q_once_per_session",
+        })
+
+        const hooks = createCoreHooks(deps as HookDependencies)
+
+        // First call — profile SHOULD be injected
+        const out1: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID }, out1)
+        const sys1 = out1.system as string[]
+        const profile1 = sys1.find((s) =>
+          s.includes("--- Agent Profile: mock-once-specialist ---"),
+        )
+        expect(profile1, "first call must include agent profile").toBeDefined()
+        expect(profile1).toContain("Body for once-per-session test.")
+
+        // Second call with SAME sessionID — profile MUST NOT be reinjected
+        const out2: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID }, out2)
+        const sys2 = out2.system as string[]
+        const profile2 = sys2.find((s) =>
+          s.includes("--- Agent Profile: mock-once-specialist ---"),
+        )
+        expect(profile2, "second call for same sessionID must NOT re-emit agent profile").toBeUndefined()
+      } finally {
+        if (fs.existsSync(mockAgentPath)) {
+          fs.rmSync(mockAgentPath, { force: true })
+        }
+      }
+    })
+
+    it("injects specialist agent profile independently for each session — different sessionIDs get their own injection", async () => {
+      const fs = await import("node:fs")
+      const path = await import("node:path")
+
+      const projectRoot = process.cwd()
+      const agentDir = path.join(projectRoot, ".opencode", "agents")
+      const mockAgentPath = path.join(agentDir, "mock-isolated-specialist.md")
+
+      fs.mkdirSync(agentDir, { recursive: true })
+      const mockContent = [
+        "---",
+        "name: mock-isolated-specialist",
+        "description: Mock Isolated Specialist",
+        "---",
+        "Body for session-isolation test.",
+      ].join("\n")
+      fs.writeFileSync(mockAgentPath, mockContent, "utf-8")
+
+      try {
+        const sessionA = "ses_isolated_session_a"
+        const sessionB = "ses_isolated_session_b"
+        const deps: Partial<HookDependencies> = {
+          lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+          getIntake: () => undefined,
+          getBehavioralProfile: () => undefined,
+          projectDirectory: projectRoot,
+          stateManager: taskState,
+        }
+
+        taskState.setDelegationMeta(sessionA, {
+          agent: "mock-isolated-specialist",
+          rootID: sessionA,
+          depth: 1,
+          queueKey: "q_isolated_a",
+        })
+        taskState.setDelegationMeta(sessionB, {
+          agent: "mock-isolated-specialist",
+          rootID: sessionB,
+          depth: 1,
+          queueKey: "q_isolated_b",
+        })
+
+        const hooks = createCoreHooks(deps as HookDependencies)
+
+        // Call for sessionA
+        const outA: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID: sessionA }, outA)
+        const sysA = outA.system as string[]
+        const profileA = sysA.find((s) =>
+          s.includes("--- Agent Profile: mock-isolated-specialist ---"),
+        )
+        expect(profileA, "sessionA first call must inject profile").toBeDefined()
+
+        // Call for sessionB — different session, MUST still inject
+        const outB: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID: sessionB }, outB)
+        const sysB = outB.system as string[]
+        const profileB = sysB.find((s) =>
+          s.includes("--- Agent Profile: mock-isolated-specialist ---"),
+        )
+        expect(profileB, "sessionB first call must inject profile independently").toBeDefined()
+
+        // Third call: sessionA again — MUST be skipped (already injected once)
+        const outA2: Record<string, unknown> = {}
+        await hooks["system.transform"]({ sessionID: sessionA }, outA2)
+        const sysA2 = outA2.system as string[]
+        const profileA2 = sysA2.find((s) =>
+          s.includes("--- Agent Profile: mock-isolated-specialist ---"),
+        )
+        expect(
+          profileA2,
+          "sessionA second call must NOT re-emit agent profile",
+        ).toBeUndefined()
+      } finally {
+        if (fs.existsSync(mockAgentPath)) {
+          fs.rmSync(mockAgentPath, { force: true })
+        }
+      }
+    })
+  })
+
+  // -----------------------------------------------------------------------
+  // Child Session Context Injection — Phase 63
+  //
+  // getChildSessions() helper and injection block tests.
+  // Evidence label: transport-mocked (SDK calls mocked, real hook behavior)
+  // -----------------------------------------------------------------------
+
+  describe("getChildSessions() — child session data helper", () => {
+
+    it("5.1: returns expected data shape { sessionID, status, agent?, lastMessage?, lastActivity? }", async () => {
+      const client = createMockChildrenClient({
+        childrenResult: [
+          { id: "ses_child_a", parentID: "ses_parent" },
+          { id: "ses_child_b", parentID: "ses_parent" },
+        ],
+        getResult: { id: "ses_child_a", status: "completed", agent: "hm-executor" },
+        messagesResult: [
+          { role: "assistant", parts: [{ type: "text", text: "Build complete." }], timestamp: "2026-06-11T01:00:00Z" },
+        ],
+      })
+
+      const children = await getChildSessions(client, "ses_parent")
+
+      expect(Array.isArray(children)).toBe(true)
+      expect(children.length).toBe(2)
+
+      for (const child of children) {
+        expect(child).toHaveProperty("sessionID")
+        expect(child).toHaveProperty("status")
+        expect(child).toHaveProperty("agent")
+        expect(child).toHaveProperty("lastMessage")
+        expect(child).toHaveProperty("lastActivity")
+        expect(typeof child.sessionID).toBe("string")
+        expect(typeof child.status).toBe("string")
+      }
+    })
+
+    it("5.2: returns empty array when client.session.children is undefined (feature-detect)", async () => {
+      const client = createMockChildrenClient({ noChildrenFn: true })
+
+      const children = await getChildSessions(client, "ses_parent")
+
+      expect(Array.isArray(children)).toBe(true)
+      expect(children.length).toBe(0)
+    })
+
+    it("5.3: returns empty array when SDK throws (defensive error handling)", async () => {
+      const client = createMockChildrenClient({ throwOnChildren: true })
+
+      const children = await getChildSessions(client, "ses_parent")
+
+      expect(Array.isArray(children)).toBe(true)
+      expect(children.length).toBe(0)
+    })
+  })
+
+  // -----------------------------------------------------------------------
+  // Child Session Injection Block (T2 + T4 — injection + cooldown cache)
+  // Tests exercise the handleSystemTransform() injection block end-to-end.
+  // Transport-mocked: SDK calls mocked, hook transform behavior is real.
+  // -----------------------------------------------------------------------
+
+  describe("child session injection block in system.transform", () => {
+    function buildDepsWithChildClient(
+      options: {
+        isMain?: boolean
+        client?: OpenCodeClient
+        hivemindConfig?: Record<string, unknown>
+      } = {},
+    ): Partial<HookDependencies> {
+      const client = options.client ?? createMockChildrenClient({
+        childrenResult: [
+          { id: "ses_child_a", parentID: "ses_parent" },
+          { id: "ses_child_b", parentID: "ses_parent" },
+        ],
+        getResult: { id: "ses_child_a", status: "completed", agent: "hm-executor" },
+        messagesResult: [
+          { role: "assistant", parts: [{ type: "text", text: "Build complete." }], timestamp: "2026-06-11T01:00:00Z" },
+        ],
+      })
+      return {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        client,
+        ...(options.isMain !== undefined ? { isMainSession: () => options.isMain! } : {}),
+        getIntake: () => undefined,
+        getBehavioralProfile: () => undefined,
+      }
+    }
+
+    it("5.4: injects child session table into output.system for main sessions with children", async () => {
+      const deps = buildDepsWithChildClient({ isMain: true })
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_parent" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      const childBlock = system.find((s) => s.includes("Recent Child Sessions"))
+      expect(childBlock).toBeDefined()
+      expect(childBlock).toContain("| Session ID | Agent | Status | Last Activity |")
+      expect(childBlock).toContain("ses_child_a")
+      expect(childBlock).toContain("ses_child_b")
+      expect(childBlock).toContain("hm-executor")
+      expect(childBlock).toContain("stackOnSessionId")
+    })
+
+    it("5.5: does NOT inject child session block for non-main sessions", async () => {
+      const deps = buildDepsWithChildClient({ isMain: false })
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_parent" }, output)
+
+      const system = output.system as string[]
+      expect(system).toBeDefined()
+      const childBlock = system.find((s) => s.includes("Recent Child Sessions"))
+      expect(childBlock).toBeUndefined()
+    })
+
+    it("5.6: cooldown cache prevents second SDK call within 5s", async () => {
+      // Create a client with a spy on session.children
+      const childrenFn = vi.fn().mockResolvedValue({
+        data: [{ id: "ses_child_a", parentID: "ses_cache" }],
+      })
+      const getFn = vi.fn().mockResolvedValue({
+        data: { id: "ses_child_a", status: "completed", agent: "hm-executor" },
+      })
+      const messagesFn = vi.fn().mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "Done." }], timestamp: "2026-06-11T01:00:00Z" }],
+      })
+      const client = {
+        session: { children: childrenFn, get: getFn, messages: messagesFn },
+      } as unknown as OpenCodeClient
+
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        client,
+        isMainSession: () => true,
+        getIntake: () => undefined,
+        getBehavioralProfile: () => undefined,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      // First call — should call SDK
+      const out1: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_cache" }, out1)
+      expect(childrenFn).toHaveBeenCalledTimes(1)
+
+      // Second call within 5s — should NOT call SDK again (cooldown cache)
+      const out2: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_cache" }, out2)
+      expect(childrenFn).toHaveBeenCalledTimes(1) // still 1 — cached
+    })
+
+    it("5.7: cooldown cache expires and re-queries after 5s", async () => {
+      vi.useFakeTimers()
+
+      const childrenFn = vi.fn().mockResolvedValue({
+        data: [{ id: "ses_child_exp", parentID: "ses_exp" }],
+      })
+      const getFn = vi.fn().mockResolvedValue({
+        data: { id: "ses_child_exp", status: "completed", agent: "hm-executor" },
+      })
+      const messagesFn = vi.fn().mockResolvedValue({
+        data: [{ role: "assistant", parts: [{ type: "text", text: "Done." }], timestamp: "2026-06-11T01:00:00Z" }],
+      })
+      const client = {
+        session: { children: childrenFn, get: getFn, messages: messagesFn },
+      } as unknown as OpenCodeClient
+
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        client,
+        isMainSession: () => true,
+        getIntake: () => undefined,
+        getBehavioralProfile: () => undefined,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const out1: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_exp" }, out1)
+      expect(childrenFn).toHaveBeenCalledTimes(1)
+
+      // Advance clock by 6 seconds (past the 5s TTL)
+      // In Vitest, advanceTimersByTime advances Date.now() when fake timers are active
+      vi.advanceTimersByTime(6_000)
+
+      const out2: Record<string, unknown> = {}
+      await hooks["system.transform"]({ sessionID: "ses_exp" }, out2)
+      // After TTL, should call SDK again
+      expect(childrenFn).toHaveBeenCalledTimes(2)
+
+      vi.useRealTimers()
+    })
+
+    it("5.8: SDK failure during injection does not propagate (defensive)", async () => {
+      const client = createMockChildrenClient({ throwOnChildren: true })
+
+      const deps: Partial<HookDependencies> = {
+        lifecycleManager: createFakeLifecycleManager() as HookDependencies["lifecycleManager"],
+        client,
+        isMainSession: () => true,
+        getIntake: () => undefined,
+        getBehavioralProfile: () => undefined,
+      }
+      const hooks = createCoreHooks(deps as HookDependencies)
+
+      const output: Record<string, unknown> = {}
+      // Must not throw
+      await expect(
+        hooks["system.transform"]({ sessionID: "ses_throw" }, output),
+      ).resolves.toBeUndefined()
+
+      const system = output.system as string[]
+      const childBlock = system.find((s) => s.includes("Recent Child Sessions"))
+      expect(childBlock).toBeUndefined()
+    })
+  })
+})

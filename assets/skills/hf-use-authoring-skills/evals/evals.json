@@ -1,0 +1,137 @@
+{
+  "skill_name": "hf-use-authoring-skills",
+  "evals": [
+    {
+      "id": "TC-001",
+      "prompt": "Convert this markdown file into a skill",
+      "expected_output": {
+        "should_trigger": true,
+        "path": "template",
+        "pattern": "P2",
+        "gate_0_passes": true
+      },
+      "assertions": [
+        {"text": "validate-gate.sh exits 0", "passed": false, "evidence": ""},
+        {"text": "output contains GATE OK", "passed": false, "evidence": ""},
+        {"text": "output contains Intent", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-002",
+      "prompt": "Review this skill and tell me what's wrong",
+      "expected_output": {
+        "should_trigger": true,
+        "path": "audit",
+        "reference": "references/05-skill-quality-matrix.md"
+      },
+      "assertions": [
+        {"text": "validate-gate.sh exits 1", "passed": false, "evidence": ""},
+        {"text": "stderr contains SKILL.md not found", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-003",
+      "prompt": "This skill never loads when I ask for it",
+      "expected_output": {
+        "should_trigger": true,
+        "path": "fix-triggers",
+        "reference": "references/11-description-optimization.md"
+      },
+      "assertions": [
+        {"text": "validate-gate.sh exits 1", "passed": false, "evidence": ""},
+        {"text": "stderr contains SKILL.md not found", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-004",
+      "prompt": "Create a skill from this template",
+      "expected_output": {
+        "should_trigger": true,
+        "validation_loop": true,
+        "max_iterations": 5
+      },
+      "assertions": [
+        {"text": "validate-gate.sh exits 0", "passed": false, "evidence": ""},
+        {"text": "output contains GATE OK", "passed": false, "evidence": ""},
+        {"text": "output contains Created task_plan.md", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-005",
+      "prompt": "Create a skill with compatibility field",
+      "expected_output": {
+        "should_trigger": true,
+        "gate_2_fails": true,
+        "error": "Banned field: compatibility"
+      },
+      "assertions": [
+        {"text": "validate-gate.sh exits 0", "passed": false, "evidence": ""},
+        {"text": "output contains GATE OK", "passed": false, "evidence": ""},
+        {"text": "output contains Created task_plan.md", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-006",
+      "prompt": "Convert this markdown command file into a fully compliant skill with frontmatter, references, scripts, and evals — it's at .kilo/commands/deep-research.md and needs to follow the P2 pattern with all 10 steps of the creation checklist completed.",
+      "expected_output": {
+        "should_trigger": true,
+        "path": "create",
+        "pattern": "P2",
+        "gate_0_passes": true,
+        "checklist_steps": 10
+      },
+      "assertions": [
+        {"text": "validate-gate.sh exits 0", "passed": false, "evidence": ""},
+        {"text": "output contains GATE OK", "passed": false, "evidence": ""},
+        {"text": "output contains Intent:", "passed": false, "evidence": ""},
+        {"text": "output contains Created task_plan.md", "passed": false, "evidence": ""},
+        {"text": "output contains ACTION=create", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "intent-confirmed"
+    },
+    {
+      "id": "TC-007",
+      "prompt": "Audit this skill pack — it has 56 flaws according to the failure analysis. Fix all CRITICAL and HIGH issues first, then we'll handle MEDIUM and LOW. The audit report is in findings.md with full categorization.",
+      "expected_output": {
+        "should_trigger": true,
+        "path": "audit",
+        "quality_matrix_reference": "references/05-skill-quality-matrix.md",
+        "iterative_fix_loop": true,
+        "severity_order": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+      },
+      "assertions": [
+        {"text": "validate-gate.sh exits 0", "passed": false, "evidence": ""},
+        {"text": "output contains GATE OK", "passed": false, "evidence": ""},
+        {"text": "output contains Intent:", "passed": false, "evidence": ""},
+        {"text": "output contains ACTION=audit", "passed": false, "evidence": ""}
+      ],
+      "files": ["fixtures/skill-audit-report/findings.md", "fixtures/skill-audit-report/task_plan.md"],
+      "fixture": "skill-audit-report"
+    },
+    {
+      "id": "TC-008",
+      "prompt": "This skill never triggers when I ask for it — optimize the description, triggers, and eval queries. I've been saying 'make skill load more often' and 'optimize skill triggers' but it keeps routing to meta-builder instead.",
+      "expected_output": {
+        "should_trigger": true,
+        "path": "fix-triggers",
+        "reference": "references/11-description-optimization.md",
+        "train_validation_split": true,
+        "trigger_optimization": true
+      },
+      "assertions": [
+        {"text": "validate-gate.sh exits 0", "passed": false, "evidence": ""},
+        {"text": "output contains GATE OK", "passed": false, "evidence": ""},
+        {"text": "output contains Intent:", "passed": false, "evidence": ""},
+        {"text": "output contains ACTION=edit", "passed": false, "evidence": ""}
+      ],
+      "files": ["fixtures/trigger-optimization/trigger-queries.json"],
+      "fixture": "trigger-optimization"
+    }
+  ]
+}

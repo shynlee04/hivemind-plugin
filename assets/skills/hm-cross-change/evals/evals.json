@@ -1,0 +1,41 @@
+{
+  "skill_name": "hm-cross-change",
+  "version": "1.0.0",
+  "evals": [
+    {
+      "id": 1,
+      "name": "cross-cutting-inventory-7-surfaces",
+      "prompt": "User: 'rename hm-l2-foo to hm-bar across the project'",
+      "expected": "Step 1: inventory, 7 surfaces scanned, count reported",
+      "assertions": [{"text": "All 7 surfaces inventoried", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 2,
+      "name": "risk-tier-classification",
+      "prompt": "Change affects 25 files across 4 surfaces. Risk tier?",
+      "expected": "HIGH RISK (>=20 refs) -> deprecation shim required",
+      "assertions": [{"text": "Tier correctly identified as HIGH", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 3,
+      "name": "atomic-commit-ordering",
+      "prompt": "User: 'do all in one commit'",
+      "expected": "Refuse, 4-phase strategy, atomic per surface",
+      "assertions": [{"text": "Refuses big-bang, splits into atomic commits", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 4,
+      "name": "phase-ordering-matters",
+      "prompt": "User: 'update commands before skills'",
+      "expected": "Refuse, explain ordering (references -> templates -> skills -> commands -> workflows -> agents)",
+      "assertions": [{"text": "Ordering explained, refusal documented", "passed": null, "evidence": null}]
+    },
+    {
+      "id": 5,
+      "name": "post-phase-validation",
+      "prompt": "After Phase B (skills), 3 stale refs remain in agents",
+      "expected": "Detect with check-cross-cutting.sh, fix before Phase C",
+      "assertions": [{"text": "Validation script catches it", "passed": null, "evidence": null}]
+    }
+  ]
+}

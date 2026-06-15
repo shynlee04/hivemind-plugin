@@ -1,0 +1,19 @@
+name: test-document
+version: 2.0.0
+settings:
+  enabled: true
+  maxRetries: 3
+  tags:
+    - alpha
+    - beta
+    - gamma
+  nested:
+    key1: value1
+    key2: 42
+items:
+  - id: 1
+    label: first
+  - id: 2
+    label: second
+  - id: 3
+    label: third

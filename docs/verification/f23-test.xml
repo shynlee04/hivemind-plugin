@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <name>test-document</name>
+  <version>2.0.0</version>
+  <settings>
+    <enabled>true</enabled>
+    <maxRetries>3</maxRetries>
+    <tags>
+      <tag>alpha</tag>
+      <tag>beta</tag>
+      <tag>gamma</tag>
+    </tags>
+    <nested>
+      <key1>value1</key1>
+      <key2>42</key2>
+    </nested>
+  </settings>
+  <items>
+    <item id="1" label="first"/>
+    <item id="2" label="second"/>
+    <item id="3" label="third"/>
+  </items>
+</config>

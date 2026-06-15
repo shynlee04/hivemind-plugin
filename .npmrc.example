@@ -1,0 +1,16 @@
+# Example npm config for Hivemind maintainers.
+#
+# 1. Copy this file to ~/.npmrc on your local machine:
+#      cp .npmrc.example ~/.npmrc
+#      chmod 600 ~/.npmrc
+#
+# 2. Replace YOUR_TOKEN_HERE with a publish token from
+#    https://www.npmjs.com/settings/tokens (classic, type: publish)
+#
+# 3. Verify with: npm whoami
+#
+# 4. NEVER commit the populated ~/.npmrc — it is gitignored.
+#
+# 5. For CI publishing, set NPM_TOKEN in
+#    GitHub repo Settings → Secrets and variables → Actions
+#    and reference it as ${{ secrets.NPM_TOKEN }} in .github/workflows/publish.yml

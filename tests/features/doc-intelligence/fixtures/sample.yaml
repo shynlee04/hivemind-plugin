@@ -1,0 +1,4 @@
+title: Sample YAML Document
+version: "1.0.0"
+author: Test
+description: A sample YAML file for testing multi-format skim

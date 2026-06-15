@@ -1,0 +1,458 @@
+/**
+ * Tool Intelligence Engine — Hivemind-owned runtime tool decision engine.
+ *
+ * This engine evaluates tool calls before execution using session hierarchy,
+ * agent role, delegation depth, tool arguments, and config rule walker.
+ * It is **independent** of OpenCode's native `permission:` allow/ask/deny
+ * system and does not consult it as an authority.
+ *
+ * Initial narrow rules cover:
+ * 1. Allow native `task` for front-facing/root orchestration when valid dispatch shape
+ * 2. Block native `task` inside child sessions without JIT grant
+ * 3. Block `delegate-task` for code/artifact editing intent → recommend native `task`
+ * 4. Block malformed task calls missing subagent target
+ * 5. Unknown cases fall back to allow (existing governance still runs)
+ *
+ * @module tool-intelligence
+ */
+
+import { TOOL_CATEGORY_MAP } from "../capability-gate/index.js"
+import type {
+  ToolIntelligenceEvent,
+  ToolIntelligenceDecision,
+  ToolIntelligenceGuidance,
+  JITGrant,
+  ToolIntelligenceDecisionKind,
+} from "./types.js"
+
+export type {
+  ToolIntelligenceEvent,
+  ToolIntelligenceDecision,
+  ToolIntelligenceDecisionKind,
+  ToolIntelligenceGuidance,
+  JITGrant,
+} from "./types.js"
+
+/**
+ * Config-side severity for governance rules. Mirrors the enum in
+ * `.hivemind/configs.schema.json` (governance.rules[].action.type).
+ * - `escalate` and `needs_jit_grant` are both mapped to the runtime kind
+ *   `needs_jit_grant` — they require an explicit JIT grant before proceeding.
+ */
+export type GovernanceActionType =
+  | "allow"
+  | "warn"
+  | "block"
+  | "escalate"
+  | "needs_jit_grant"
+
+/**
+ * Map a config-side severity to the runtime-side decision kind.
+ * - `escalate` / `needs_jit_grant` → `needs_jit_grant`
+ * - `allow` / `warn` / `block` → pass-through
+ */
+function toDecisionKind(s: GovernanceActionType): ToolIntelligenceDecisionKind {
+  if (s === "escalate" || s === "needs_jit_grant") return "needs_jit_grant"
+  return s
+}
+
+// ---------------------------------------------------------------------------
+// Guidance formatting
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a structured guidance object for block/warn decisions.
+ */
+/**
+ * Render guidance as a human-readable multi-line string for error messages.
+ */
+export function renderGuidance(g: ToolIntelligenceGuidance): string {
+  return [
+    `Agent: ${g.agent}`,
+    `Tool: ${g.tool}`,
+    `Reason: ${g.reason}`,
+    `Use instead: ${g.useInstead}`,
+    `Context: ${g.context}`,
+  ].join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// ToolIntelligenceEngine
+// ---------------------------------------------------------------------------
+
+/**
+ * Runtime tool intelligence engine.
+ *
+ * Stateless evaluation of tool calls against Hivemind policy. JIT grants
+ * are tracked in-memory for the current process lifetime.
+ */
+export class ToolIntelligenceEngine {
+  private readonly jitGrants: Map<string, JITGrant> = new Map();
+
+  /**
+   * The fallback action when no governance rule matches a tool call.
+   * Read from `governance.default_action` in configs.json.
+   * Defaults to `allow` (soft governance).
+   */
+  private readonly defaultAction: GovernanceActionType;
+
+  /**
+   * The full ordered list of governance rules, populated from
+   * `.hivemind/configs.json` `governance.rules[]` at construction.
+   * `evaluateToolCall` walks this list and returns the first matching
+   * rule's severity. If no rule matches, `defaultAction` applies.
+   *
+   * Per binding contract: severity is fully driven by config, never hardcoded.
+   */
+  private readonly rules: ReadonlyArray<{
+    id: string
+    enabled: boolean
+    condition: {
+      toolNames?: ReadonlyArray<string>
+      sessionIDs?: ReadonlyArray<string>
+      depth?: { min?: number; max?: number }
+    }
+    action: { type: GovernanceActionType; message?: string }
+  }>;
+
+  constructor(
+    governanceRules?: ReadonlyArray<{
+      id: string
+      enabled?: boolean
+      condition?: {
+        toolNames?: ReadonlyArray<string>
+        sessionIDs?: ReadonlyArray<string>
+        depth?: { min?: number; max?: number }
+      }
+      action: { type: GovernanceActionType; message?: string }
+    }>,
+    defaultAction?: GovernanceActionType,
+  ) {
+    this.rules = (governanceRules ?? []).map((r) => ({
+      id: r.id,
+      enabled: r.enabled ?? true,
+      condition: r.condition ?? {},
+      action: r.action,
+    }));
+    this.defaultAction = defaultAction ?? "allow";
+  }
+
+  /**
+   * Test whether a single rule's condition matches the incoming event.
+   */
+  private ruleMatches(
+    rule: { condition: { toolNames?: ReadonlyArray<string>; sessionIDs?: ReadonlyArray<string>; depth?: { min?: number; max?: number } } },
+    event: ToolIntelligenceEvent,
+  ): boolean {
+    const c = rule.condition;
+    if (c.toolNames && c.toolNames.length > 0 && !c.toolNames.includes(event.toolName)) return false;
+    if (c.sessionIDs && c.sessionIDs.length > 0 && !c.sessionIDs.includes(event.sessionID)) return false;
+    if (c.depth) {
+      const d = event.delegationDepth;
+      if (c.depth.min !== undefined && d < c.depth.min) return false;
+      if (c.depth.max !== undefined && d > c.depth.max) return false;
+    }
+    return true;
+  }
+
+  /**
+   * Walk the rules list and return the first enabled rule that matches.
+   * Falls back to the rule with id `default`, or `undefined` if none.
+   *
+   * R-prefix filter: when a detector fired and propagated `detectorRuleId`,
+   * rules whose id starts with `R\d+-` only match if their id equals the
+   * detector's id. This prevents a config rule like
+   * `R4-delegate-task-code-intent` (with `toolNames: ["delegate-task"]`)
+   * from matching every `delegate-task` call regardless of intent — the
+   * walker must only honor R-prefixed rules when the corresponding detector
+   * actually classified the event. Non-R rules (e.g. depth or toolName-only
+   * rules authored by users) still match by `toolNames`/`sessionIDs`/`depth`.
+   */
+  private findMatchingRule(
+    event: ToolIntelligenceEvent,
+    detectorRuleId?: string,
+  ) {
+    let defaultRule: typeof this.rules[number] | undefined;
+    for (const rule of this.rules) {
+      if (!rule.enabled) continue;
+      if (rule.id === "default") { defaultRule = rule; continue; }
+      const isDetectorPrefixed = /^R\d+-/.test(rule.id);
+      if (isDetectorPrefixed && detectorRuleId && rule.id !== detectorRuleId) continue;
+      if (isDetectorPrefixed && !detectorRuleId) continue;
+      if (this.ruleMatches(rule, event)) return rule;
+    }
+    return defaultRule;
+  }
+
+  /**
+   * Resolve decision severity for a tool call. Fully config-driven.
+   * Per binding contract: status is driven by `.hivemind/configs.json`;
+   * never hardcoded. Hardcoded `allow` is the LAST resort when no rule
+   * matches AND no `default` rule is configured.
+   *
+   * `detectorRuleId` is propagated to the rule walker so R-prefixed
+   * config rules only fire when the corresponding detector fired.
+   */
+  private resolveFromConfig(
+    event: ToolIntelligenceEvent,
+    detectorRuleId?: string,
+  ): { severity: GovernanceActionType; ruleId: string; message?: string } {
+    const matched = this.findMatchingRule(event, detectorRuleId);
+    if (matched) {
+      return { severity: matched.action.type, ruleId: matched.id, message: matched.action.message };
+    }
+    return { severity: this.defaultAction, ruleId: "<default-action>" };
+  }
+
+
+  /**
+   * Grant a JIT capability for a specific session+agent+tool.
+   * The key is `${sessionID}:${agentName}:${toolName}`.
+   */
+  grantJIT(sessionID: string, agentName: string, toolName: string, reason: string): void {
+    const key = `${sessionID}:${agentName}:${toolName}`;
+    this.jitGrants.set(key, {
+      sessionID,
+      agentName,
+      toolName,
+      grantedAt: new Date().toISOString(),
+      reason,
+    });
+  }
+
+  /**
+   * Check whether a JIT grant exists for the given tuple.
+   */
+  hasJITGrant(sessionID: string, agentName: string, toolName: string): boolean {
+    const key = `${sessionID}:${agentName}:${toolName}`;
+    return this.jitGrants.has(key);
+  }
+
+  /**
+   * Evaluate a tool call and return a decision.
+   *
+   * This is the main entry point called from `tool.execute.before`.
+   * Rules are evaluated in priority order; the first matching rule wins.
+   * If no rule matches, the decision defaults to `allow`.
+   */
+  evaluateToolCall(event: ToolIntelligenceEvent): ToolIntelligenceDecision {
+    const timestamp = new Date().toISOString();
+    const toolCategory = TOOL_CATEGORY_MAP.get(event.toolName);
+
+    // -----------------------------------------------------------------------
+    // Per-tool intelligence detectors. Each detector classifies the event into
+    // a matched `ruleId` if a known pattern fires. The rule walker then
+    // resolves the severity FROM CONFIG for that ruleId.
+    //
+    // The 4 detectors below cover the historical R1-R4 surfaces. Other tools
+    // fall through to the config walker which uses toolName/depth matching.
+    // -----------------------------------------------------------------------
+
+    let matchedRuleId: string | undefined
+    let detectorContext: { reason: string; useInstead: string; context: string } | undefined
+
+    // R1: malformed task call (missing subagent_type)
+    if (event.toolName === "task") {
+      const args = event.args ?? {}
+      const hasSubagentType = typeof args.subagent_type === "string" && args.subagent_type.length > 0
+      if (!hasSubagentType) {
+        matchedRuleId = "R1-malformed-task"
+        detectorContext = {
+          reason: "Native task call is missing required 'subagent_type' argument. Every delegation must name its target agent.",
+          useInstead: "task({ subagent_type: 'agent-name', prompt: '...' })",
+          context: `Session ${event.sessionID}, depth=${event.delegationDepth}, child=${event.isChildSession}`,
+        }
+      }
+    }
+
+    // R2: recursive task in child session without JIT grant
+    if (!matchedRuleId && event.toolName === "task" && event.isChildSession) {
+      if (!this.hasJITGrant(event.sessionID, event.agentName, "task")) {
+        matchedRuleId = "R2-child-recursive-task"
+        detectorContext = {
+          reason: "Recursive native task spawning inside a child session requires a JIT grant. Only the root/front-facing orchestration layer may dispatch new subagents.",
+          useInstead: "Return results to the parent session. The parent orchestrator will decide if further delegation is needed.",
+          context: `Session ${event.sessionID} is a child session at depth=${event.delegationDepth}. A JIT grant is required for recursive task dispatch.`,
+        }
+      }
+    }
+
+    // R3: root task dispatch (no detector needed; falls through to config walker
+    // and is naturally allow unless a config rule with toolName=task + depth.max=0
+    // overrides it to warn/block).
+
+    // R4: delegate-task with code/artifact intent
+    if (!matchedRuleId && event.toolName === "delegate-task") {
+      const args = event.args ?? {}
+      const prompt = typeof args.prompt === "string" ? args.prompt.toLowerCase() : ""
+      const isCodeOrArtifactEdit =
+        prompt.includes("implement") ||
+        prompt.includes("write code") ||
+        prompt.includes("edit file") ||
+        prompt.includes("create file") ||
+        prompt.includes("modify file") ||
+        prompt.includes("fix bug") ||
+        prompt.includes("refactor") ||
+        prompt.includes("build feature") ||
+        prompt.includes("apply patch") ||
+        prompt.includes("update source") ||
+        prompt.includes("create component") ||
+        prompt.includes("code change")
+      if (isCodeOrArtifactEdit) {
+        matchedRuleId = "R4-delegate-task-code-intent"
+        detectorContext = {
+          reason: "delegate-task with code/artifact editing intent. Native task is preferred for synchronous, first-class subagent dispatch with full parent-child hierarchy tracking.",
+          useInstead: "task({ subagent_type: 'specialist-agent', prompt: '...' })",
+          context: `Session ${event.sessionID} attempted delegate-task with code/artifact prompt. User's intent takes precedence over this suggestion.`,
+        }
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // Now: resolve severity FROM CONFIG via the unified rule walker.
+    // The walker receives `matchedRuleId` so R-prefixed rules only fire
+    // when the corresponding detector classified the event. If a detector
+    // rule exists in config (e.g. `R1-malformed-task → block`), its
+    // `action.type` is the severity; otherwise we fall back to the
+    // walker's first-toolName-match verdict (or `allow` if nothing matches).
+    // -----------------------------------------------------------------------
+    const resolved = this.resolveFromConfig(event, matchedRuleId)
+    const detectorRule = matchedRuleId
+      ? this.rules.find((r) => r.id === matchedRuleId && r.enabled)
+      : undefined
+    const severity: GovernanceActionType = detectorRule
+      ? detectorRule.action.type
+      : resolved.severity
+    const kind = toDecisionKind(severity)
+    const ruleId = matchedRuleId ?? resolved.ruleId
+    // Per-detector reason labels — used to make the reason text informative
+    // even when the engine defaults to allow. These are LABEL strings, not
+    // severity hints.
+    const detectorLabel: Record<string, string> = {
+      "R1-malformed-task": "Malformed task call: missing subagent_type",
+      "R2-child-recursive-task": "Child session recursive task without JIT grant",
+      "R4-delegate-task-code-intent": "delegate-task with code/artifact intent",
+    }
+    const configMessage = (detectorRule?.action.message) ?? resolved.message
+    const reasonText = matchedRuleId
+      ? `${detectorLabel[matchedRuleId] ?? matchedRuleId} (rule=${ruleId}, config severity=${severity})`
+      : configMessage
+        ? `${configMessage} (rule=${ruleId}, config severity=${severity})`
+        : `No tool intelligence rule matched — config rule ${ruleId} (${severity}) applies`
+
+    if (detectorContext) {
+      return {
+        kind,
+        reason: reasonText,
+        guidance: {
+          agent: event.agentName,
+          tool: event.toolName,
+          reason: detectorContext.reason,
+          useInstead: detectorContext.useInstead,
+          context: detectorContext.context,
+        },
+        toolCategory: toolCategory ?? "delegate",
+        fromCapabilityBaseline: false,
+        timestamp,
+      }
+    }
+
+    // R3: root/front-facing orchestration task dispatch. This is a special
+    // case of "no detector fired" where the event is a native task from the
+    // root session. We surface a specific "Root/front-facing" reason and
+    // mark fromCapabilityBaseline=true so the gate can identify baseline
+    // allow from engine-side allow.
+    if (event.toolName === "task" && !event.isChildSession) {
+      return {
+        kind: "allow",
+        reason: "Root/front-facing orchestration dispatching via native task",
+        toolCategory: toolCategory ?? "delegate",
+        fromCapabilityBaseline: true,
+        timestamp,
+      }
+    }
+
+    // No detector fired — return the config-walker's verdict as a baseline
+    // decision. The reason text matches the test contract.
+    if (kind === "block") {
+      return {
+        kind: "block",
+        reason: `No tool intelligence rule matched — config rule ${ruleId} (${severity}) applies`,
+        toolCategory: toolCategory?.toString(),
+        fromCapabilityBaseline: false,
+        timestamp,
+      }
+    }
+    if (kind === "warn") {
+      return {
+        kind: "warn",
+        reason: `No tool intelligence rule matched — config rule ${ruleId} (${severity}) applies`,
+        toolCategory: toolCategory?.toString(),
+        fromCapabilityBaseline: false,
+        timestamp,
+      }
+    }
+    if (kind === "needs_jit_grant") {
+      return {
+        kind: "needs_jit_grant",
+        reason: `No tool intelligence rule matched — config rule ${ruleId} (${severity}) applies`,
+        toolCategory: toolCategory?.toString(),
+        fromCapabilityBaseline: false,
+        timestamp,
+      }
+    }
+    return {
+      kind: "allow",
+      reason: `No tool intelligence rule matched — defaulting to allow`,
+      toolCategory: toolCategory?.toString(),
+      fromCapabilityBaseline: false,
+      timestamp,
+    }
+  }
+}
+
+
+
+// ---------------------------------------------------------------------------
+// Singleton (shared across hook instances within a process)
+// ---------------------------------------------------------------------------
+
+let _instance: ToolIntelligenceEngine | undefined;
+
+/**
+ * Reset the shared singleton. Used by tests and by config-reload hooks.
+ * After reset, the next `getToolIntelligenceEngine()` call rebuilds the engine
+ * from the current `.hivemind/configs.json` governance rules.
+ */
+export function resetToolIntelligenceEngine(): void {
+  _instance = undefined;
+}
+
+/**
+ * Get the shared ToolIntelligenceEngine singleton.
+ * Lazily created on first access. On first creation, the engine reads
+ * `.hivemind/configs.json` `governance.rules[]` and uses the `action.type`
+ * of each enabled rule to override the per-rule severity.
+ *
+ * Per binding contract: severity is never hardcoded; it is config-driven.
+ * Default severity is `allow` (via `governance.default_action`) when no rule matches.
+ */
+export function getToolIntelligenceEngine(): ToolIntelligenceEngine {
+  if (!_instance) {
+    let governanceRules: ReadonlyArray<{ id: string; action: { type: GovernanceActionType } }> | undefined;
+    let defaultAction: GovernanceActionType | undefined;
+    try {
+      // Lazy require to avoid a hard dep cycle with the config layer.
+      const { readConfigs } = require("../../schema-kernel/hivemind-configs.schema.js") as typeof import("../../schema-kernel/hivemind-configs.schema.js");
+      const cfgs = readConfigs(process.cwd());
+      governanceRules = cfgs.governance?.rules as ReadonlyArray<{ id: string; action: { type: GovernanceActionType } }>;
+      defaultAction = cfgs.governance?.default_action as GovernanceActionType | undefined;
+    } catch {
+      // Config load failed — proceed with no overrides; defaults apply.
+      governanceRules = undefined;
+      defaultAction = undefined;
+    }
+    _instance = new ToolIntelligenceEngine(governanceRules, defaultAction);
+  }
+  return _instance;
+}

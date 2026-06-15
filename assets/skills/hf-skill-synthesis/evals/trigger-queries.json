@@ -1,0 +1,24 @@
+{
+  "queries": [
+    { "query": "create skills from GitHub repos", "should_trigger": true },
+    { "query": "find skill patterns", "should_trigger": true },
+    { "query": "build a skill template library", "should_trigger": true },
+    { "query": "classify skills by pattern type", "should_trigger": true },
+    { "query": "generate eval frameworks for skills", "should_trigger": true },
+    { "query": "synthesize a skill from a codebase", "should_trigger": true },
+    { "query": "extract patterns from anthropics/skills", "should_trigger": true },
+    { "query": "score this skill quality", "should_trigger": true },
+    { "query": "build evals for my agent skill", "should_trigger": true },
+    { "query": "create a skill from this repo", "should_trigger": true },
+    { "query": "fix the bug in my auth module", "should_trigger": false },
+    { "query": "write a Python script to parse logs", "should_trigger": false },
+    { "query": "create an agent definition", "should_trigger": false },
+    { "query": "set up a command with bash", "should_trigger": false },
+    { "query": "build a custom tool with Zod", "should_trigger": false },
+    { "query": "audit this skill for quality", "should_trigger": false },
+    { "query": "improve my command description", "should_trigger": false },
+    { "query": "configure OpenCode permissions", "should_trigger": false },
+    { "query": "write documentation for my API", "should_trigger": false },
+    { "query": "debug my TypeScript compilation error", "should_trigger": false }
+  ]
+}
