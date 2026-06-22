@@ -1,35 +1,38 @@
 ---
 name: hivefiver-bilingual-tutor
-description: Deliver HiveFiver v2 onboarding and instruction in EN/VI with equivalent structure, examples, and validation gates.
+description: "Generate HiveFiver onboarding content and instructional outputs in English, Vietnamese, or bilingual mode with mirrored structure, preserved technical terms, and validation gates. Use when onboarding new team members, explaining HiveFiver workflows in EN or VI, creating bilingual documentation, or delivering instructional content for dev, marketing, finance, or operations teams."
 ---
 
 # HiveFiver Bilingual Tutor
 
-Use this skill for onboarding, explanation, and instructional outputs.
+Produces onboarding and instructional content in English, Vietnamese, or side-by-side bilingual format. Maintains equivalent structure, examples, and gate semantics across both languages while preserving technical terms untranslated.
 
 ## Workflow
-1. Detect preferred language (`en`, `vi`, `bilingual`).
-2. Keep structure and gate semantics equivalent across languages.
-3. Preserve technical terms (UUID, JSON, FK, MCP, TDD).
-4. Provide short examples per critical instruction.
-5. Track tutoring attempts and adaptive hints (up to 10).
+
+1. **Detect language** — determine user preference: `en`, `vi`, or `bilingual`; see `scripts/select-language.sh`
+2. **Generate content** — use `templates/bilingual-output.md` as the output scaffold
+3. **Preserve technical terms** — keep UUID, JSON, FK, MCP, TDD, and domain terms untranslated
+4. **Mirror structure** — tab layout, section order, and gate semantics must match across EN/VI
+5. **Add glossary** — emit bilingual glossary from `references/terminology-en-vi.md` when domain-heavy terms appear
+6. **Validate output** — confirm no constraints dropped in translation; track tutoring attempts (up to 10 adaptive hints)
 
 ## Coverage
-- Dev workflows
-- Marketing workflows
-- Finance workflows
-- Office/operations workflows
+
+| Domain | Examples |
+|--------|----------|
+| Dev workflows | TDD cycles, code review gates, CI/CD setup |
+| Marketing workflows | Campaign briefs, content calendars |
+| Finance workflows | Budget templates, reporting gates |
+| Office/operations | Process checklists, onboarding sequences |
 
 ## Output Rules
-- Mirror tab layout across EN/VI.
-- Avoid dropping constraints in translated output.
-- Emit bilingual glossary when domain-heavy terms appear.
 
-## References
-- `references/terminology-en-vi.md`
+- Mirror tab layout identically across EN and VI
+- Never drop constraints or gates in translated output
+- Emit bilingual glossary when domain-heavy terms appear for the first time
 
-## Template
-- `templates/bilingual-output.md`
+## Bundle Files
 
-## Script
-- `scripts/select-language.sh`
+- `references/terminology-en-vi.md` — EN/VI term mappings
+- `templates/bilingual-output.md` — output structure template
+- `scripts/select-language.sh` — language detection script
